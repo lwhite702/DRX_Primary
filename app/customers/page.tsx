@@ -1,17 +1,317 @@
-import { Card } from "@/components/ui/card"
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useBusiness } from "@/lib/hooks/use-business";
+import { getSupabaseClient } from "@/lib/supabase/client";
+import { Plus, Edit, Search } from "lucide-react";
+import { toast } from "sonner";
+import { customerSchema, type Customer } from "@/lib/validations/schemas";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function CustomersPage() {
+  const { business, loading: businessLoading } = useBusiness();
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const supabase = getSupabaseClient();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<Customer>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      business_id: business?.id || "",
+      is_active: true,
+    },
+  });
+
+  useEffect(() => {
+    if (!business?.id || !supabase) return;
+
+    fetchCustomers();
+  }, [business?.id, supabase]);
+
+  const fetchCustomers = async () => {
+    if (!business?.id || !supabase) return;
+
+    const { data, error } = await supabase
+      .from("customers")
+      .select("*")
+      .eq("business_id", business.id)
+      .order("first_name");
+
+    if (error) {
+      toast.error("Failed to load customers");
+    } else {
+      setCustomers(data || []);
+    }
+  };
+
+  const onSubmit = async (data: Customer) => {
+    if (!business?.id || !supabase) {
+      toast.error("Business not found");
+      return;
+    }
+
+    try {
+      if (editingCustomer?.id) {
+        const { error } = await supabase
+          .from("customers")
+          .update({
+            ...data,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", editingCustomer.id);
+
+        if (error) throw error;
+        toast.success("Customer updated successfully");
+      } else {
+        const { error } = await supabase.from("customers").insert({
+          ...data,
+          business_id: business.id,
+        });
+
+        if (error) throw error;
+        toast.success("Customer added successfully");
+      }
+
+      setShowDialog(false);
+      setEditingCustomer(null);
+      reset();
+      fetchCustomers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save customer");
+    }
+  };
+
+  const handleEdit = (customer: any) => {
+    setEditingCustomer(customer);
+    reset(customer);
+    setShowDialog(true);
+  };
+
+  const handleNew = () => {
+    setEditingCustomer(null);
+    reset({
+      business_id: business?.id || "",
+      is_active: true,
+    });
+    setShowDialog(true);
+  };
+
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (businessLoading) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (!business) {
+    return <div className="p-8">No business found. Please set up your business first.</div>;
+  }
+
   return (
     <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Customers</h1>
-        <p className="text-muted-foreground mt-2">Manage customer profiles and data</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Customers</h1>
+          <p className="text-muted-foreground mt-2">Manage customer profiles and data</p>
+        </div>
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogTrigger asChild>
+            <Button onClick={handleNew}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingCustomer ? "Edit Customer" : "Add New Customer"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingCustomer
+                  ? "Update customer information"
+                  : "Add a new customer to your database"}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name">First Name *</Label>
+                  <Input id="first_name" {...register("first_name")} />
+                  {errors.first_name && (
+                    <p className="text-sm text-destructive">{errors.first_name.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Input id="last_name" {...register("last_name")} />
+                  {errors.last_name && (
+                    <p className="text-sm text-destructive">{errors.last_name.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone_number">Phone Number</Label>
+                  <Input id="phone_number" {...register("phone_number")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" {...register("email")} />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input id="address" {...register("address")} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input id="city" {...register("city")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State</Label>
+                  <Input id="state" {...register("state")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zip_code">Zip Code</Label>
+                  <Input id="zip_code" {...register("zip_code")} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customer_type">Customer Type</Label>
+                <Input id="customer_type" {...register("customer_type")} />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowDialog(false);
+                    setEditingCustomer(null);
+                    reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : editingCustomer ? "Update" : "Add"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-bold">Customer List</h2>
-        <p className="text-muted-foreground mt-4">No customers yet</p>
+      {/* Search */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Customers Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Customer List ({filteredCustomers.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredCustomers.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No customers found</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Total Purchases</TableHead>
+                    <TableHead>Credit Used</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCustomers.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">
+                        {customer.first_name} {customer.last_name}
+                      </TableCell>
+                      <TableCell>{customer.phone_number || "-"}</TableCell>
+                      <TableCell>{customer.email || "-"}</TableCell>
+                      <TableCell>
+                        {customer.address
+                          ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>${Number(customer.total_purchases || 0).toFixed(2)}</TableCell>
+                      <TableCell>${Number(customer.total_credit_used || 0).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(customer)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,0 +1,6 @@
+
+
+#Ignore cursor AI rules
+.cursor/rules/codacy.mdc
+.vercel
+node_modules

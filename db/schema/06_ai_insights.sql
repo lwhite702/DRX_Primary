@@ -11,3 +11,14 @@ CREATE TABLE IF NOT EXISTS ai_insights (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- AI Insights Failures Table (for error tracking)
+CREATE TABLE IF NOT EXISTS ai_insights_failures (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id UUID REFERENCES business_profile(id) ON DELETE CASCADE,
+  function_name VARCHAR(100),
+  error_message TEXT,
+  error_stack TEXT,
+  input_data JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
