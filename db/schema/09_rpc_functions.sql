@@ -75,8 +75,10 @@ BEGIN
       v_unit_price := (v_item->>'unit_price')::DECIMAL(12, 2);
       v_line_total := v_quantity * v_unit_price;
 
+  v_unit_cost DECIMAL(12, 2);
+
       -- Check stock availability
-      SELECT quantity_on_hand INTO v_current_stock
+      SELECT quantity_on_hand, unit_cost INTO v_current_stock, v_unit_cost
       FROM inventory
       WHERE id = v_inventory_id AND business_id = p_business_id;
 
@@ -111,18 +113,20 @@ BEGIN
 
       -- Create line item
       INSERT INTO sales_line_items (
-        sale_id,
-        inventory_id,
-        quantity,
-        unit_price,
-        line_total
-      ) VALUES (
-        v_sale_id,
-        v_inventory_id,
-        v_quantity,
-        v_unit_price,
-        v_line_total
-      );
+          sale_id,
+          inventory_id,
+          quantity,
+          unit_price,
+          line_total,
+          unit_cost
+        ) VALUES (
+          v_sale_id,
+          v_inventory_id,
+          v_quantity,
+          v_unit_price,
+          v_line_total,
+          v_unit_cost
+        );
     END LOOP;
 
     -- Update customer total purchases
