@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
-import { Building2, Users, Zap, Bot } from 'lucide-react'
+import { Building2, Users, Zap, Bot, LayoutDashboard } from 'lucide-react'
 
 const adminNav = [
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/businesses", label: "Businesses", icon: Building2 },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/audit", label: "Audit Logs", icon: Zap },
@@ -19,21 +20,21 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   return (
-    <div className="flex gap-0">
-      <div className="w-48 bg-muted border-r border-border p-4">
-        <h2 className="text-lg font-bold text-accent mb-6">Susana's Console</h2>
-        <nav className="space-y-2">
+    <div className="h-full flex flex-col">
+      {/* Admin Navigation Tabs */}
+      <div className="border-b border-border bg-muted/30">
+        <div className="flex gap-1 px-4 py-2">
           {adminNav.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || (item.href === "/admin" && pathname === "/admin")
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-colors text-sm font-medium ${
                   isActive
-                    ? "bg-accent text-background"
-                    : "text-foreground hover:bg-border"
+                    ? "bg-background text-foreground border-t border-x border-border"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -41,10 +42,11 @@ export default function AdminLayout({
               </Link>
             )
           })}
-        </nav>
+        </div>
       </div>
 
-      <main className="flex-1 overflow-auto">{children}</main>
+      {/* Admin Content */}
+      <div className="flex-1 overflow-auto">{children}</div>
     </div>
   )
 }
