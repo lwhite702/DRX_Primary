@@ -352,27 +352,35 @@ BEGIN
   SELECT
     c.id,
     (c.first_name || ' ' || c.last_name)::TEXT,
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '7 days' 
-                      AND ct.due_date < CURRENT_DATE 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '14 days' 
-                      AND ct.due_date < CURRENT_DATE - INTERVAL '7 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '30 days' 
-                      AND ct.due_date < CURRENT_DATE - INTERVAL '14 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date < CURRENT_DATE - INTERVAL '30 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 1-7 days overdue: due_date between 1 and 7 days in the past
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE 
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '7 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 8-14 days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '7 days'
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '14 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 15-30 days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '14 days'
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '30 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 31+ days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '30 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- Total outstanding (all pending)
     COALESCE(SUM(CASE WHEN ct.status = 'pending' THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2)
   FROM customers c
-  JOIN credit_transactions ct ON ct.customer_id = c.id
+  LEFT JOIN credit_transactions ct ON ct.customer_id = c.id AND ct.transaction_type = 'extension'
   WHERE c.business_id = p_business_id
     AND (p_customer_id IS NULL OR c.id = p_customer_id)
-    AND ct.transaction_type = 'extension'
   GROUP BY c.id, c.first_name, c.last_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
