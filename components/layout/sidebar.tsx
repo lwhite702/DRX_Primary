@@ -1,8 +1,42 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { BarChart3, ShoppingCart, Package, Users, CreditCard, Settings, TrendingUp, FileText, LogOut } from 'lucide-react'
+import { getSupabaseClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
+
+function LogoutButton() {
+  const router = useRouter()
+  const supabase = getSupabaseClient()
+
+  const handleLogout = async () => {
+    if (!supabase) {
+      toast.error("Supabase client not available")
+      return
+    }
+
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success("Logged out successfully")
+      router.push("/login")
+      router.refresh()
+    }
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
+    >
+      <LogOut className="w-5 h-5" />
+      Logout
+    </button>
+  )
+}
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
@@ -54,10 +88,7 @@ export function Sidebar() {
           <Settings className="w-5 h-5" />
           Admin Console
         </Link>
-        <button className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium">
-          <LogOut className="w-5 h-5" />
-          Logout
-        </button>
+        <LogoutButton />
       </div>
     </aside>
   )

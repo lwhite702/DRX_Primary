@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css"
 import { Sidebar } from "@/components/layout/sidebar"
 import { TopNav } from "@/components/layout/top-nav"
+import { Toaster } from "sonner"
 
 const _geistSans = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -41,6 +42,7 @@ export default function RootLayout({
             </div>
           </main>
         </div>
+        <Toaster position="top-right" />
       </body>
     </html>
   )
