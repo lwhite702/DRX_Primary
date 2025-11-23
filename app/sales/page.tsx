@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { POSEngine, type CartState } from "@/lib/utils/pos-engine";
+import { POSEngine, type CartState, type MiscFee } from "@/lib/utils/pos-engine";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -45,6 +45,7 @@ export default function SalesPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>();
   const [processing, setProcessing] = useState(false);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
+  const [fees, setFees] = useState<MiscFee[]>([]);
 
   const supabase = getSupabaseClient();
 
@@ -113,13 +114,14 @@ export default function SalesPage() {
     setProcessing(true);
     try {
       posEngine.setCustomer(selectedCustomer);
-      const result = await posEngine.checkout(business.id);
+      const result = await posEngine.checkout(business.id, fees);
 
       if (result.success) {
         toast.success(`Order completed! Order ID: ${result.sale_id}`);
         posEngine.clearCart();
         setCart(posEngine.getCart());
         setSelectedCustomer(undefined);
+        setFees([]);
       } else {
         toast.error(result.error || "Checkout failed");
       }
@@ -263,6 +265,57 @@ export default function SalesPage() {
               )}
             </div>
 
+            {/* Misc Fees Section */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label>Additional Fees</Label>
+              {fees.map((fee, idx) => (
+                <div key={idx} className="flex items-center gap-2 mb-2">
+                  <Input
+                    placeholder="Type"
+                    value={fee.type}
+                    onChange={(e) => {
+                      const newFees = [...fees];
+                      newFees[idx].type = e.target.value;
+                      setFees(newFees);
+                    }}
+                    className="flex-1 h-8 text-sm"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={fee.amount}
+                    onChange={(e) => {
+                      const newFees = [...fees];
+                      newFees[idx].amount = parseFloat(e.target.value) || 0;
+                      setFees(newFees);
+                    }}
+                    className="w-20 h-8 text-sm"
+                    min="0"
+                    step="0.01"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newFees = fees.filter((_, i) => i !== idx);
+                      setFees(newFees);
+                    }}
+                    className="h-8 w-8 p-0 text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFees([...fees, { type: "", amount: 0 }])}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Fee
+              </Button>
+            </div>
+
             {/* Totals */}
             <div className="space-y-2 pt-4 border-t">
               <div className="flex justify-between text-sm">
@@ -273,9 +326,17 @@ export default function SalesPage() {
                 <span>Tax:</span>
                 <span>${cart.tax_amount.toFixed(2)}</span>
               </div>
+              {fees.length > 0 && (
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Fees:</span>
+                  <span>${fees.reduce((sum, f) => sum + f.amount, 0).toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total:</span>
-                <span>${cart.total.toFixed(2)}</span>
+                <span>
+                  ${(cart.total + fees.reduce((sum, f) => sum + f.amount, 0)).toFixed(2)}
+                </span>
               </div>
             </div>
 

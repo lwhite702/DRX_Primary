@@ -4,6 +4,15 @@ All notable changes to DRX will be documented in this file.
 
 ## [Unreleased] - Production Hardening Branch
 
+### 2025-11-21 02:30 ET
+
+**[feature][pos][db] Added configurable misc-fee support to POS checkout**
+- New `fees JSONB` column on `sales` (migration `20251121_add_fees_to_sales.sql`)
+- RPC `process_pos_checkout` now accepts `p_fees JSONB` and adds the total to the sale amount
+- POS engine (`pos-engine.ts`) now accepts an array of `{type, amount}` and sends it to the RPC
+- UI on checkout page includes a dynamic "Additional Fees" section
+- Audit log now records the fees JSON for traceability
+
 ### 2025-11-21 02:18 ET
 
 **[fix][credit][db] Fixed critical credit aging bucket calculation bug**
