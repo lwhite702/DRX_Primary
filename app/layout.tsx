@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { Toaster } from "sonner";
+import { OfflineProvider } from "@/components/providers/offline-provider";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -34,14 +35,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans bg-background text-foreground antialiased">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 flex flex-col">
-            <TopNav />
-            <div className="flex-1 overflow-auto">{children}</div>
-          </main>
-        </div>
-        <Toaster position="top-right" />
+        <OfflineProvider>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 flex flex-col">
+              <TopNav />
+              <div className="flex-1 overflow-auto">{children}</div>
+            </main>
+          </div>
+          <Toaster position="top-right" />
+        </OfflineProvider>
       </body>
     </html>
   );

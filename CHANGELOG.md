@@ -4,6 +4,15 @@ All notable changes to DRX will be documented in this file.
 
 ## [Unreleased] - Production Hardening Branch
 
+### 2025-11-21 02:45 ET
+
+**[fix][offline][ux] Initialized offline sync manager and added status UI**
+- Created `OfflineProvider` to initialize sync manager and monitor network status
+- Added visual indicator for Online/Offline/Syncing states
+- Implemented auto-sync on reconnection
+- Updated `offlineSyncManager` to handle `fees` and `getPendingCount`
+- Fixed type safety issues with IndexedDB boolean indices
+
 ### 2025-11-21 02:30 ET
 
 **[feature][pos][db] Added configurable misc-fee support to POS checkout**

@@ -91,9 +91,24 @@ export class OfflineSyncManager {
       const tx = this.db!.transaction([STORES.transactions], "readonly");
       const store = tx.objectStore(STORES.transactions);
       const index = store.index("synced");
-      const request = index.getAll(false);
+      const request = index.getAll(false as any);
 
       request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Get count of pending transactions
+  async getPendingCount(): Promise<number> {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const tx = this.db!.transaction([STORES.transactions], "readonly");
+      const store = tx.objectStore(STORES.transactions);
+      const index = store.index("synced");
+      const request = index.count(IDBKeyRange.only(false as any));
+
+      request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
   }
@@ -205,8 +220,9 @@ export class OfflineSyncManager {
               p_customer_id: transaction.data.customer_id || null,
               p_order_type: transaction.data.order_type,
               p_payment_method: transaction.data.payment_method,
-              p_line_items: JSON.stringify(transaction.data.line_items),
+              p_line_items: transaction.data.line_items,
               p_tax_amount: transaction.data.tax_amount,
+              p_fees: transaction.data.fees || [],
             });
 
             if (error) throw error;
