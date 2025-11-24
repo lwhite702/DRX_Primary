@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /api
+Disallow: /.next
+Disallow: /private
+
+# Specific crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+Sitemap: https://deelrx.com/sitemap.xml

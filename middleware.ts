@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/api/auth"]
+  const publicRoutes = ["/login", "/api/auth", "/privacy", "/terms", "/accessibility"]
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   if (supabaseUrl && supabaseAnonKey) {
