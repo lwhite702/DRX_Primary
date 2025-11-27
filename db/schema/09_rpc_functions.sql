@@ -8,13 +8,15 @@ CREATE OR REPLACE FUNCTION process_pos_checkout(
   p_order_type VARCHAR(50),
   p_payment_method VARCHAR(50),
   p_line_items JSONB,
-  p_tax_amount DECIMAL(12, 2) DEFAULT 0
+  p_tax_amount DECIMAL(12, 2) DEFAULT 0,
+  p_fees JSONB DEFAULT '[]'::jsonb
 )
 RETURNS UUID AS $$
 DECLARE
   v_sale_id UUID;
   v_order_number VARCHAR(50);
   v_subtotal DECIMAL(12, 2) := 0;
+  v_fee_total DECIMAL(12, 2) := 0;
   v_total DECIMAL(12, 2);
   v_item JSONB;
   v_inventory_id UUID;
@@ -22,6 +24,7 @@ DECLARE
   v_unit_price DECIMAL(12, 2);
   v_line_total DECIMAL(12, 2);
   v_current_stock INTEGER;
+  v_unit_cost DECIMAL(12, 2);
 BEGIN
   -- Verify business access
   IF NOT has_business_access(auth.uid(), p_business_id) THEN
@@ -38,7 +41,12 @@ BEGIN
     v_subtotal := v_subtotal + v_line_total;
   END LOOP;
 
-  v_total := v_subtotal + p_tax_amount;
+  -- Calculate total of misc fees
+  SELECT COALESCE(SUM((fee->>'amount')::DECIMAL(12,2)),0)
+    INTO v_fee_total
+    FROM jsonb_array_elements(p_fees) AS fee;
+
+  v_total := v_subtotal + p_tax_amount + v_fee_total;
 
   -- Start transaction
   BEGIN
@@ -53,6 +61,7 @@ BEGIN
       tax_amount,
       total_amount,
       payment_method,
+      fees,
       created_by
     ) VALUES (
       p_business_id,
@@ -64,6 +73,7 @@ BEGIN
       p_tax_amount,
       v_total,
       p_payment_method,
+      p_fees,
       auth.uid()
     ) RETURNING id INTO v_sale_id;
 
@@ -76,7 +86,7 @@ BEGIN
       v_line_total := v_quantity * v_unit_price;
 
       -- Check stock availability
-      SELECT quantity_on_hand INTO v_current_stock
+      SELECT quantity_on_hand, unit_cost INTO v_current_stock, v_unit_cost
       FROM inventory
       WHERE id = v_inventory_id AND business_id = p_business_id;
 
@@ -111,18 +121,20 @@ BEGIN
 
       -- Create line item
       INSERT INTO sales_line_items (
-        sale_id,
-        inventory_id,
-        quantity,
-        unit_price,
-        line_total
-      ) VALUES (
-        v_sale_id,
-        v_inventory_id,
-        v_quantity,
-        v_unit_price,
-        v_line_total
-      );
+          sale_id,
+          inventory_id,
+          quantity,
+          unit_price,
+          line_total,
+          unit_cost
+        ) VALUES (
+          v_sale_id,
+          v_inventory_id,
+          v_quantity,
+          v_unit_price,
+          v_line_total,
+          v_unit_cost
+        );
     END LOOP;
 
     -- Update customer total purchases
@@ -148,7 +160,8 @@ BEGIN
       jsonb_build_object(
         'order_number', v_order_number,
         'total', v_total,
-        'payment_method', p_payment_method
+        'payment_method', p_payment_method,
+        'fees', p_fees
       )
     );
 
@@ -352,27 +365,35 @@ BEGIN
   SELECT
     c.id,
     (c.first_name || ' ' || c.last_name)::TEXT,
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '7 days' 
-                      AND ct.due_date < CURRENT_DATE 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '14 days' 
-                      AND ct.due_date < CURRENT_DATE - INTERVAL '7 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date >= CURRENT_DATE - INTERVAL '30 days' 
-                      AND ct.due_date < CURRENT_DATE - INTERVAL '14 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
-    COALESCE(SUM(CASE WHEN ct.due_date < CURRENT_DATE - INTERVAL '30 days' 
-                      AND ct.status = 'pending' 
-                 THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 1-7 days overdue: due_date between 1 and 7 days in the past
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE 
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '7 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 8-14 days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '7 days'
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '14 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 15-30 days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '14 days'
+       AND ct.due_date >= CURRENT_DATE - INTERVAL '30 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- 31+ days overdue
+    COALESCE(SUM(CASE 
+      WHEN ct.due_date < CURRENT_DATE - INTERVAL '30 days'
+       AND ct.status = 'pending'
+      THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2),
+    -- Total outstanding (all pending)
     COALESCE(SUM(CASE WHEN ct.status = 'pending' THEN ct.amount ELSE 0 END), 0)::DECIMAL(12, 2)
   FROM customers c
-  JOIN credit_transactions ct ON ct.customer_id = c.id
+  LEFT JOIN credit_transactions ct ON ct.customer_id = c.id AND ct.transaction_type = 'extension'
   WHERE c.business_id = p_business_id
     AND (p_customer_id IS NULL OR c.id = p_customer_id)
-    AND ct.transaction_type = 'extension'
   GROUP BY c.id, c.first_name, c.last_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

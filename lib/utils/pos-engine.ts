@@ -2,6 +2,14 @@ import { z } from "zod";
 import { posCheckoutSchema, type POSCheckout, type SalesLineItem } from "@/lib/validations/schemas";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
+export type MiscFee = {
+  type: string;
+  amount: number;
+};
+
+export const calculateFees = (fees: MiscFee[]): number =>
+  fees.reduce((sum, f) => sum + f.amount, 0);
+
 export interface CartItem {
   inventory_id: string;
   product_name: string;
@@ -197,6 +205,10 @@ export class POSEngine {
       return { success: false, error: "Cart is empty" };
     }
 
+    if (!this.cart.payment_method) {
+      return { success: false, error: "Payment method required" };
+    }
+
     // Prepare checkout data
     const checkoutData: POSCheckout = {
       business_id,
@@ -209,6 +221,7 @@ export class POSEngine {
         unit_price: item.unit_price,
       })),
       tax_amount: this.cart.tax_amount,
+      fees: miscFees,
     };
 
     // Validate with Zod
@@ -226,8 +239,9 @@ export class POSEngine {
       p_customer_id: this.cart.customer_id || null,
       p_order_type: checkoutData.order_type,
       p_payment_method: checkoutData.payment_method,
-      p_line_items: JSON.stringify(checkoutData.line_items),
+      p_line_items: checkoutData.line_items,
       p_tax_amount: this.cart.tax_amount,
+      p_fees: miscFees,
     });
 
     if (error) {

@@ -104,13 +104,19 @@ export type Sales = z.infer<typeof salesSchema>;
 export type SalesLineItem = z.infer<typeof salesLineItemSchema>;
 
 // POS Checkout Schema
+export const miscFeeSchema = z.object({
+  type: z.string(),
+  amount: z.number().nonnegative(),
+});
+
 export const posCheckoutSchema = z.object({
   business_id: z.string().uuid(),
-  customer_id: z.string().uuid().optional(),
+  customer_id: z.string().uuid().optional().nullable(),
   order_type: z.string().max(50).default("retail"),
   payment_method: z.enum(["cash", "card", "credit", "mixed"]),
   line_items: z.array(salesLineItemSchema).min(1),
   tax_amount: z.number().nonnegative().default(0),
+  fees: z.array(miscFeeSchema).optional().default([]),
 });
 
 export type POSCheckout = z.infer<typeof posCheckoutSchema>;
