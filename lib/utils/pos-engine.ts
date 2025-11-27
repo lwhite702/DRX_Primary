@@ -182,7 +182,7 @@ export class POSEngine {
   }
 
   // Process checkout
-  async checkout(business_id: string): Promise<{
+  async checkout(business_id: string, fees: MiscFee[] = []): Promise<{
     success: boolean;
     sale_id?: string;
     error?: string;
@@ -221,7 +221,7 @@ export class POSEngine {
         unit_price: item.unit_price,
       })),
       tax_amount: this.cart.tax_amount,
-      fees: miscFees,
+      fees: fees,
     };
 
     // Validate with Zod
@@ -241,7 +241,7 @@ export class POSEngine {
       p_payment_method: checkoutData.payment_method,
       p_line_items: checkoutData.line_items,
       p_tax_amount: this.cart.tax_amount,
-      p_fees: miscFees,
+      p_fees: fees,
     });
 
     if (error) {

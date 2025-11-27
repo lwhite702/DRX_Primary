@@ -258,15 +258,18 @@ export default function CreditPage() {
                   <Input {...paymentForm.register("description")} />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowPaymentDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">Process Payment</Button>
-                </div>
+                   <Button
+                     type="button"
+                     variant="outline"
+                     onClick={() => setShowPaymentDialog(false)}
+                     disabled={paymentForm.formState.isSubmitting}
+                   >
+                     Cancel
+                   </Button>
+                   <Button type="submit" disabled={paymentForm.formState.isSubmitting}>
+                     {paymentForm.formState.isSubmitting ? "Processing..." : "Process Payment"}
+                   </Button>
+                 </div>
               </form>
             </DialogContent>
           </Dialog>
@@ -339,15 +342,18 @@ export default function CreditPage() {
                   <Input {...extensionForm.register("description")} />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowExtensionDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">Extend Credit</Button>
-                </div>
+                   <Button
+                     type="button"
+                     variant="outline"
+                     onClick={() => setShowExtensionDialog(false)}
+                     disabled={extensionForm.formState.isSubmitting}
+                   >
+                     Cancel
+                   </Button>
+                   <Button type="submit" disabled={extensionForm.formState.isSubmitting}>
+                     {extensionForm.formState.isSubmitting ? "Processing..." : "Extend Credit"}
+                   </Button>
+                 </div>
               </form>
             </DialogContent>
           </Dialog>

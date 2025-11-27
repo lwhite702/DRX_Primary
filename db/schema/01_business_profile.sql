@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS business_profile (
 CREATE TABLE IF NOT EXISTS business_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID NOT NULL REFERENCES business_profile(id) ON DELETE CASCADE,
+  default_tax_rate DECIMAL(5, 4) DEFAULT 0.08,
   theme_preference VARCHAR(50),
   currency VARCHAR(3) DEFAULT 'USD',
   timezone VARCHAR(100),
