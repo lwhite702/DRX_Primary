@@ -28,7 +28,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { POSEngine, type CartState, type MiscFee } from "@/lib/utils/pos-engine";
+import {
+  POSEngine,
+  type CartState,
+  type MiscFee,
+} from "@/lib/utils/pos-engine";
+import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -42,7 +47,9 @@ export default function SalesPage() {
   const [cart, setCart] = useState<CartState>(posEngine.getCart());
   const [customers, setCustomers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>();
+  const [selectedCustomer, setSelectedCustomer] = useState<
+    string | undefined
+  >();
   const [processing, setProcessing] = useState(false);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [fees, setFees] = useState<MiscFee[]>([]);
@@ -137,14 +144,20 @@ export default function SalesPage() {
   }
 
   if (!business) {
-    return <div className="p-8">No business found. Please set up your business first.</div>;
+    return (
+      <div className="p-8">
+        No business found. Please set up your business first.
+      </div>
+    );
   }
 
   return (
     <div className="p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Point of Sale</h1>
-        <p className="text-muted-foreground mt-2">Process sales and manage transactions</p>
+        <p className="text-muted-foreground mt-2">
+          Process sales and manage transactions
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -165,7 +178,9 @@ export default function SalesPage() {
           <CardContent>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {filteredInventory.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No items found</p>
+                <p className="text-muted-foreground text-center py-8">
+                  No items found
+                </p>
               ) : (
                 filteredInventory.map((item) => (
                   <div
@@ -205,9 +220,15 @@ export default function SalesPage() {
           <CardContent className="space-y-4">
             {/* Customer Selection */}
             <div className="space-y-2">
-              <Label>Customer (Optional)</Label>
+              <Label>
+                Customer (Optional)
+                <HelpTooltip content="Select a customer to track their purchase history and credit. Leave as 'Walk-in' for anonymous sales." />
+              </Label>
               <div className="flex gap-2">
-                <Select value={selectedCustomer || ""} onValueChange={setSelectedCustomer}>
+                <Select
+                  value={selectedCustomer || ""}
+                  onValueChange={setSelectedCustomer}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
@@ -226,10 +247,15 @@ export default function SalesPage() {
             {/* Cart Items */}
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {cart.items.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">Cart is empty</p>
+                <p className="text-muted-foreground text-center py-4">
+                  Cart is empty
+                </p>
               ) : (
                 cart.items.map((item) => (
-                  <div key={item.inventory_id} className="flex items-center gap-2 p-2 border rounded">
+                  <div
+                    key={item.inventory_id}
+                    className="flex items-center gap-2 p-2 border rounded"
+                  >
                     <div className="flex-1">
                       <p className="text-sm font-medium">{item.product_name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -240,15 +266,21 @@ export default function SalesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUpdateQuantity(item.inventory_id, -1)}
+                        onClick={() =>
+                          handleUpdateQuantity(item.inventory_id, -1)
+                        }
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-8 text-center text-sm">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm">
+                        {item.quantity}
+                      </span>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUpdateQuantity(item.inventory_id, 1)}
+                        onClick={() =>
+                          handleUpdateQuantity(item.inventory_id, 1)
+                        }
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -267,7 +299,10 @@ export default function SalesPage() {
 
             {/* Misc Fees Section */}
             <div className="space-y-2 pt-4 border-t">
-              <Label>Additional Fees</Label>
+              <Label>
+                Additional Fees
+                <HelpTooltip content="Add processing fees, delivery charges, or other misc costs to this sale." />
+              </Label>
               {fees.map((fee, idx) => (
                 <div key={idx} className="flex items-center gap-2 mb-2">
                   <Input
@@ -329,20 +364,28 @@ export default function SalesPage() {
               {fees.length > 0 && (
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Fees:</span>
-                  <span>${fees.reduce((sum, f) => sum + f.amount, 0).toFixed(2)}</span>
+                  <span>
+                    ${fees.reduce((sum, f) => sum + f.amount, 0).toFixed(2)}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total:</span>
                 <span>
-                  ${(cart.total + fees.reduce((sum, f) => sum + f.amount, 0)).toFixed(2)}
+                  $
+                  {(
+                    cart.total + fees.reduce((sum, f) => sum + f.amount, 0)
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label>Payment Method</Label>
+              <Label>
+                Payment Method
+                <HelpTooltip content="Choose how the customer is paying. 'Credit' will add to their account balance for later payment." />
+              </Label>
               <Select
                 value={cart.payment_method}
                 onValueChange={(value: any) => {
@@ -369,7 +412,9 @@ export default function SalesPage() {
               className="w-full"
               size="lg"
             >
-              {processing ? "Processing..." : `Checkout - $${cart.total.toFixed(2)}`}
+              {processing
+                ? "Processing..."
+                : `Checkout - $${cart.total.toFixed(2)}`}
             </Button>
           </CardContent>
         </Card>

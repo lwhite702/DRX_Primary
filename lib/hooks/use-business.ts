@@ -14,7 +14,9 @@ export function useBusiness() {
 
     async function fetchBusiness() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           setLoading(false);
           return;
@@ -59,6 +61,9 @@ export function useBusiness() {
     fetchBusiness();
   }, [supabase]);
 
-  return { business, loading };
+  return {
+    business,
+    loading,
+    needsSetup: !loading && !business,
+  };
 }
-
