@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/card";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Building2, CheckCircle2, Settings } from "lucide-react";
+import { CheckCircle2, Settings, Sparkles } from "lucide-react";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
+import Image from "next/image";
 
 interface BusinessFormData {
   business_name: string;
@@ -53,7 +54,9 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
     if (!supabase) {
       toast.error("Unable to connect to database");
       return;
@@ -96,7 +99,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
         .from("business_settings")
         .insert({
           business_id: business.id,
-          default_tax_rate: formData.default_tax_rate / 100, // Convert percentage to decimal
+          default_tax_rate: formData.default_tax_rate / 100,
           currency: "USD",
           timezone: "America/New_York",
         });
@@ -120,30 +123,43 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-2xl border-accent/20">
         <CardHeader>
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/icon.svg"
+              alt="DRX Logo"
+              width={48}
+              height={48}
+              className="opacity-90"
+            />
+          </div>
+
+          {/* Progress Bar */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1">
               {[1, 2, 3].map((s) => (
                 <div
                   key={s}
-                  className={`h-2 w-16 rounded-full ${
-                    s <= step ? "bg-primary" : "bg-muted"
+                  className={`h-2 flex-1 rounded-full transition-all ${
+                    s <= step ? "bg-accent" : "bg-muted"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground ml-4">
               Step {step} of 3
             </span>
           </div>
-          <CardTitle className="text-2xl">
+
+          <CardTitle className="text-2xl text-center">
             {step === 1 && "Welcome to DRX"}
             {step === 2 && "Business Information"}
             {step === 3 && "Business Settings"}
             {step === 4 && "All Set!"}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-center">
             {step === 1 && "Let's set up your business to get started"}
             {step === 2 && "Tell us about your business"}
             {step === 3 && "Configure your business preferences"}
@@ -155,7 +171,10 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex justify-center py-8">
-                <Building2 className="h-24 w-24 text-primary" />
+                <div className="relative">
+                  <Sparkles className="h-24 w-24 text-accent" />
+                  <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full" />
+                </div>
               </div>
               <div className="space-y-2 text-center">
                 <h3 className="text-lg font-semibold">
@@ -168,19 +187,19 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
                   <p className="font-medium">Point of Sale</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Fast checkout with inventory tracking
                   </p>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
                   <p className="font-medium">Credit Management</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Track customer credit and payments
                   </p>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
                   <p className="font-medium">Inventory Control</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Real-time stock management
@@ -188,7 +207,11 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                 </div>
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={() => setStep(2)} size="lg">
+                <Button
+                  onClick={() => setStep(2)}
+                  size="lg"
+                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
+                >
                   Get Started
                 </Button>
               </div>
@@ -197,7 +220,13 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
 
           {/* Step 2: Business Info */}
           {step === 2 && (
-            <div className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setStep(3);
+              }}
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="business_name">
                   Business Name <span className="text-destructive">*</span>
@@ -208,6 +237,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                   onChange={(e) => updateField("business_name", e.target.value)}
                   placeholder="e.g., Acme Dispensary"
                   required
+                  className="border-accent/20 focus:border-accent"
                 />
               </div>
 
@@ -221,6 +251,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                   value={formData.business_type}
                   onChange={(e) => updateField("business_type", e.target.value)}
                   placeholder="e.g., Retail, Dispensary, Wholesale"
+                  className="border-accent/20 focus:border-accent"
                 />
               </div>
 
@@ -235,6 +266,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                       updateField("phone_number", e.target.value)
                     }
                     placeholder="(555) 123-4567"
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
@@ -245,6 +277,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                     value={formData.email}
                     onChange={(e) => updateField("email", e.target.value)}
                     placeholder="contact@business.com"
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
               </div>
@@ -256,6 +289,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                   value={formData.address}
                   onChange={(e) => updateField("address", e.target.value)}
                   placeholder="123 Main St"
+                  className="border-accent/20 focus:border-accent"
                 />
               </div>
 
@@ -267,6 +301,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                     value={formData.city}
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="New York"
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
@@ -277,6 +312,7 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                     onChange={(e) => updateField("state", e.target.value)}
                     placeholder="NY"
                     maxLength={2}
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
@@ -286,29 +322,35 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                     value={formData.zip_code}
                     onChange={(e) => updateField("zip_code", e.target.value)}
                     placeholder="10001"
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
               </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(1)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(1)}
+                >
                   Back
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
+                  type="submit"
                   disabled={!formData.business_name.trim()}
+                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
                 >
                   Continue
                 </Button>
               </div>
-            </div>
+            </form>
           )}
 
           {/* Step 3: Settings */}
           {step === 3 && (
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex justify-center py-4">
-                <Settings className="h-16 w-16 text-primary" />
+                <Settings className="h-16 w-16 text-accent" />
               </div>
 
               <div className="space-y-2">
@@ -330,13 +372,14 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
                     )
                   }
                   placeholder="8.0"
+                  className="border-accent/20 focus:border-accent"
                 />
                 <p className="text-sm text-muted-foreground">
                   Example: 8.0 for 8% sales tax
                 </p>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg space-y-2">
+              <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg space-y-2">
                 <h4 className="font-medium">Review Your Information</h4>
                 <div className="text-sm space-y-1">
                   <p>
@@ -363,21 +406,32 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
               </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(2)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(2)}
+                >
                   Back
                 </Button>
-                <Button onClick={handleSubmit} disabled={loading}>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
+                >
                   {loading ? "Creating..." : "Create Business"}
                 </Button>
               </div>
-            </div>
+            </form>
           )}
 
           {/* Step 4: Success */}
           {step === 4 && (
             <div className="space-y-4 text-center py-8">
               <div className="flex justify-center">
-                <CheckCircle2 className="h-24 w-24 text-green-500" />
+                <div className="relative">
+                  <CheckCircle2 className="h-24 w-24 text-accent" />
+                  <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full" />
+                </div>
               </div>
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold">You're All Set!</h3>
