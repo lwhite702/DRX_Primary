@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { Plus, Edit, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -83,7 +84,9 @@ export default function InventoryPage() {
       setEditingItem(null);
       reset();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save item");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save item"
+      );
     }
   };
 
@@ -112,7 +115,11 @@ export default function InventoryPage() {
   }
 
   if (!business) {
-    return <div className="p-8">No business found. Please set up your business first.</div>;
+    return (
+      <div className="p-8">
+        No business found. Please set up your business first.
+      </div>
+    );
   }
 
   return (
@@ -120,7 +127,9 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Inventory</h1>
-          <p className="text-muted-foreground mt-2">Manage inventory and stock levels</p>
+          <p className="text-muted-foreground mt-2">
+            Manage inventory and stock levels
+          </p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
@@ -131,7 +140,9 @@ export default function InventoryPage() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
+              <DialogTitle>
+                {editingItem ? "Edit Item" : "Add New Item"}
+              </DialogTitle>
               <DialogDescription>
                 {editingItem
                   ? "Update inventory item details"
@@ -141,17 +152,24 @@ export default function InventoryPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sku">SKU *</Label>
+                  <Label htmlFor="sku">
+                    SKU *
+                    <HelpTooltip content="Stock Keeping Unit - a unique identifier for this product" />
+                  </Label>
                   <Input id="sku" {...register("sku")} />
                   {errors.sku && (
-                    <p className="text-sm text-destructive">{errors.sku.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.sku.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="product_name">Product Name *</Label>
                   <Input id="product_name" {...register("product_name")} />
                   {errors.product_name && (
-                    <p className="text-sm text-destructive">{errors.product_name.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.product_name.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -174,25 +192,35 @@ export default function InventoryPage() {
                     {...register("quantity_on_hand", { valueAsNumber: true })}
                   />
                   {errors.quantity_on_hand && (
-                    <p className="text-sm text-destructive">{errors.quantity_on_hand.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.quantity_on_hand.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reorder_level">Reorder Level *</Label>
+                  <Label htmlFor="reorder_level">
+                    Reorder Level *
+                    <HelpTooltip content="You'll be notified when stock falls below this amount" />
+                  </Label>
                   <Input
                     id="reorder_level"
                     type="number"
                     {...register("reorder_level", { valueAsNumber: true })}
                   />
                   {errors.reorder_level && (
-                    <p className="text-sm text-destructive">{errors.reorder_level.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.reorder_level.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="unit_cost">Unit Cost</Label>
+                  <Label htmlFor="unit_cost">
+                    Unit Cost
+                    <HelpTooltip content="What you pay for this item (used for profit calculations)" />
+                  </Label>
                   <Input
                     id="unit_cost"
                     type="number"
@@ -203,7 +231,10 @@ export default function InventoryPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="selling_price">Selling Price</Label>
+                <Label htmlFor="selling_price">
+                  Selling Price
+                  <HelpTooltip content="What customers pay for this item" />
+                </Label>
                 <Input
                   id="selling_price"
                   type="number"
@@ -254,7 +285,9 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           {inventory.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No inventory items yet</p>
+            <p className="text-muted-foreground text-center py-8">
+              No inventory items yet
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -272,11 +305,17 @@ export default function InventoryPage() {
                 </TableHeader>
                 <TableBody>
                   {inventory.map((item) => {
-                    const isLowStock = item.quantity_on_hand <= item.reorder_level;
+                    const isLowStock =
+                      item.quantity_on_hand <= item.reorder_level;
                     return (
-                      <TableRow key={item.id} className={isLowStock ? "bg-destructive/10" : ""}>
+                      <TableRow
+                        key={item.id}
+                        className={isLowStock ? "bg-destructive/10" : ""}
+                      >
                         <TableCell className="font-mono">{item.sku}</TableCell>
-                        <TableCell className="font-medium">{item.product_name}</TableCell>
+                        <TableCell className="font-medium">
+                          {item.product_name}
+                        </TableCell>
                         <TableCell>{item.category || "-"}</TableCell>
                         <TableCell>
                           <span
@@ -289,7 +328,9 @@ export default function InventoryPage() {
                         </TableCell>
                         <TableCell>{item.reorder_level}</TableCell>
                         <TableCell>
-                          {item.unit_cost ? `$${Number(item.unit_cost).toFixed(2)}` : "-"}
+                          {item.unit_cost
+                            ? `$${Number(item.unit_cost).toFixed(2)}`
+                            : "-"}
                         </TableCell>
                         <TableCell>
                           {item.selling_price

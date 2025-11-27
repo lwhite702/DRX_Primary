@@ -67,7 +67,9 @@ export default function CreditPage() {
       customer_id: "",
       amount: 0,
       description: "",
-      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
     },
   });
 
@@ -176,7 +178,9 @@ export default function CreditPage() {
     }
   };
 
-  const pendingTransactions = creditTransactions.filter((tx) => tx.status === "pending");
+  const pendingTransactions = creditTransactions.filter(
+    (tx) => tx.status === "pending"
+  );
   const delinquentCount = agingData.filter(
     (a) => a.bucket_31_plus > 0 || a.bucket_15_30 > 0
   ).length;
@@ -186,7 +190,11 @@ export default function CreditPage() {
   }
 
   if (!business) {
-    return <div className="p-8">No business found. Please set up your business first.</div>;
+    return (
+      <div className="p-8">
+        No business found. Please set up your business first.
+      </div>
+    );
   }
 
   return (
@@ -194,7 +202,9 @@ export default function CreditPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Credit Management</h1>
-          <p className="text-muted-foreground mt-2">Track credit transactions and fronts</p>
+          <p className="text-muted-foreground mt-2">
+            Track credit transactions and fronts
+          </p>
         </div>
         <div className="flex gap-2">
           <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
@@ -207,14 +217,21 @@ export default function CreditPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Process Credit Payment</DialogTitle>
-                <DialogDescription>Record a payment against a credit account</DialogDescription>
+                <DialogDescription>
+                  Record a payment against a credit account
+                </DialogDescription>
               </DialogHeader>
-              <form onSubmit={paymentForm.handleSubmit(handlePayment)} className="space-y-4">
+              <form
+                onSubmit={paymentForm.handleSubmit(handlePayment)}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
                   <Label>Customer *</Label>
                   <Select
                     value={paymentForm.watch("customer_id")}
-                    onValueChange={(value) => paymentForm.setValue("customer_id", value)}
+                    onValueChange={(value) =>
+                      paymentForm.setValue("customer_id", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select customer" />
@@ -253,7 +270,10 @@ export default function CreditPage() {
               </form>
             </DialogContent>
           </Dialog>
-          <Dialog open={showExtensionDialog} onOpenChange={setShowExtensionDialog}>
+          <Dialog
+            open={showExtensionDialog}
+            onOpenChange={setShowExtensionDialog}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -263,14 +283,21 @@ export default function CreditPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Extend Credit (Front)</DialogTitle>
-                <DialogDescription>Extend credit to a customer</DialogDescription>
+                <DialogDescription>
+                  Extend credit to a customer
+                </DialogDescription>
               </DialogHeader>
-              <form onSubmit={extensionForm.handleSubmit(handleExtension)} className="space-y-4">
+              <form
+                onSubmit={extensionForm.handleSubmit(handleExtension)}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
                   <Label>Customer *</Label>
                   <Select
                     value={extensionForm.watch("customer_id")}
-                    onValueChange={(value) => extensionForm.setValue("customer_id", value)}
+                    onValueChange={(value) =>
+                      extensionForm.setValue("customer_id", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select customer" />
@@ -281,7 +308,12 @@ export default function CreditPage() {
                         return (
                           <SelectItem key={customer.id} value={customer.id}>
                             {customer.first_name} {customer.last_name}
-                            {limit && ` (Balance: $${Number(limit.current_balance).toFixed(2)} / $${Number(limit.max_credit_limit).toFixed(2)})`}
+                            {limit &&
+                              ` (Balance: $${Number(
+                                limit.current_balance
+                              ).toFixed(2)} / $${Number(
+                                limit.max_credit_limit
+                              ).toFixed(2)})`}
                           </SelectItem>
                         );
                       })}
@@ -293,7 +325,9 @@ export default function CreditPage() {
                   <Input
                     type="number"
                     step="0.01"
-                    {...extensionForm.register("amount", { valueAsNumber: true })}
+                    {...extensionForm.register("amount", {
+                      valueAsNumber: true,
+                    })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -324,14 +358,18 @@ export default function CreditPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Pending Transactions</p>
+            <p className="text-sm text-muted-foreground">
+              Pending Transactions
+            </p>
             <p className="text-2xl font-bold">{pendingTransactions.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">Delinquent Accounts</p>
-            <p className="text-2xl font-bold text-destructive">{delinquentCount}</p>
+            <p className="text-2xl font-bold text-destructive">
+              {delinquentCount}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -369,11 +407,25 @@ export default function CreditPage() {
                 <TableBody>
                   {agingData.map((aging) => (
                     <TableRow key={aging.customer_id}>
-                      <TableCell className="font-medium">{aging.customer_name}</TableCell>
-                      <TableCell>${Number(aging.bucket_1_7).toFixed(2)}</TableCell>
-                      <TableCell>${Number(aging.bucket_8_14).toFixed(2)}</TableCell>
-                      <TableCell>${Number(aging.bucket_15_30).toFixed(2)}</TableCell>
-                      <TableCell className={aging.bucket_31_plus > 0 ? "text-destructive font-bold" : ""}>
+                      <TableCell className="font-medium">
+                        {aging.customer_name}
+                      </TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_1_7).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_8_14).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_15_30).toFixed(2)}
+                      </TableCell>
+                      <TableCell
+                        className={
+                          aging.bucket_31_plus > 0
+                            ? "text-destructive font-bold"
+                            : ""
+                        }
+                      >
                         ${Number(aging.bucket_31_plus).toFixed(2)}
                       </TableCell>
                       <TableCell className="font-bold">
@@ -395,7 +447,9 @@ export default function CreditPage() {
         </CardHeader>
         <CardContent>
           {creditTransactions.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No transactions yet</p>
+            <p className="text-muted-foreground text-center py-8">
+              No transactions yet
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -414,10 +468,14 @@ export default function CreditPage() {
                       <TableCell>
                         {new Date(tx.created_at).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="capitalize">{tx.transaction_type}</TableCell>
+                      <TableCell className="capitalize">
+                        {tx.transaction_type}
+                      </TableCell>
                       <TableCell>${Number(tx.amount).toFixed(2)}</TableCell>
                       <TableCell>
-                        {tx.due_date ? new Date(tx.due_date).toLocaleDateString() : "-"}
+                        {tx.due_date
+                          ? new Date(tx.due_date).toLocaleDateString()
+                          : "-"}
                       </TableCell>
                       <TableCell>
                         <span
