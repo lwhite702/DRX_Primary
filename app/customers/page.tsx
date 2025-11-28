@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -284,7 +285,12 @@ export default function CustomersPage() {
                   {filteredCustomers.map((customer) => (
                     <TableRow key={customer.id}>
                       <TableCell className="font-medium">
-                        {customer.first_name} {customer.last_name}
+                        <Link
+                          href={`/customers/${customer.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {customer.first_name} {customer.last_name}
+                        </Link>
                       </TableCell>
                       <TableCell>{customer.phone_number || "-"}</TableCell>
                       <TableCell>{customer.email || "-"}</TableCell>

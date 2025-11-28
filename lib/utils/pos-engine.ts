@@ -181,6 +181,81 @@ export class POSEngine {
     };
   }
 
+  // Validate credit limit (AI-aware)
+  async validateCreditLimit(business_id: string): Promise<{
+    valid: boolean;
+    credit_limit?: number;
+    ai_limit?: number;
+    current_balance?: number;
+    warning?: string;
+  }> {
+    if (!this.cart.customer_id || this.cart.payment_method !== "credit") {
+      return { valid: true };
+    }
+
+    if (!this.supabase) {
+      return { valid: true, warning: "Could not validate credit limits" };
+    }
+
+    try {
+      // Get customer credit info
+      const { data: customer, error: customerError } = await this.supabase
+        .from("customers")
+        .select("credit_limit, credit_limit_ai_recommended")
+        .eq("id", this.cart.customer_id)
+        .single();
+
+      if (customerError || !customer) {
+        return { valid: true, warning: "Customer not found for credit check" };
+      }
+
+      // Get current balance
+      const { data: creditLimit, error: balanceError } = await this.supabase
+        .from("credit_limits")
+        .select("current_balance")
+        .eq("customer_id", this.cart.customer_id)
+        .eq("business_id", business_id)
+        .single();
+
+      const current_balance = creditLimit ? Number(creditLimit.current_balance || 0) : 0;
+      const credit_limit = Number(customer.credit_limit || 1000);
+      const ai_limit = Number(customer.credit_limit_ai_recommended || credit_limit);
+
+      // Check against AI recommended limit (softer check - generates warning)
+      const projected_balance = current_balance + this.cart.total;
+      
+      if (ai_limit > 0 && projected_balance > ai_limit) {
+        return {
+          valid: true,
+          credit_limit,
+          ai_limit,
+          current_balance,
+          warning: `Transaction would exceed AI recommended limit (${ai_limit.toFixed(2)}). Manager approval required.`,
+        };
+      }
+
+      // Check against hard limit (hard block)
+      if (credit_limit > 0 && projected_balance > credit_limit) {
+        return {
+          valid: false,
+          credit_limit,
+          ai_limit,
+          current_balance,
+        };
+      }
+
+      return {
+        valid: true,
+        credit_limit,
+        ai_limit,
+        current_balance,
+      };
+    } catch (error) {
+      console.error("Error validating credit limit:", error);
+      return { valid: true, warning: "Could not validate credit limits" };
+    }
+  }
+
   // Process checkout
   async checkout(business_id: string, fees: MiscFee[] = []): Promise<{
     success: boolean;
@@ -197,6 +272,15 @@ export class POSEngine {
       return {
         success: false,
         error: stockValidation.errors.map((e) => e.message).join(", "),
+      };
+    }
+
+    // Validate credit limit (AI-aware)
+    const creditValidation = await this.validateCreditLimit(business_id);
+    if (!creditValidation.valid) {
+      return {
+        success: false,
+        error: `Credit limit exceeded. Limit: ${creditValidation.credit_limit?.toFixed(2)}, Current Balance: ${creditValidation.current_balance?.toFixed(2)}`,
       };
     }
 
