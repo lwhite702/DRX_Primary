@@ -62,8 +62,18 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
       return;
     }
 
+    if (loading) {
+      return;
+    }
+
     setLoading(true);
     try {
+      if (!formData.business_name.trim()) {
+        toast.error("Business name is required");
+        setLoading(false);
+        return;
+      }
+
       // Create business profile
       const { data: business, error: businessError } = await supabase
         .from("business_profile")
@@ -109,14 +119,12 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
       setStep(4);
       toast.success("Business created successfully!");
 
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
         router.refresh();
       }, 2000);
     } catch (error) {
       console.error("Error creating business:", error);
       toast.error("Failed to create business. Please try again.");
-    } finally {
       setLoading(false);
     }
   };

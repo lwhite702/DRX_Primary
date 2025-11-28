@@ -118,6 +118,10 @@ export default function SalesPage() {
       return;
     }
 
+    if (processing) {
+      return;
+    }
+
     setProcessing(true);
     try {
       posEngine.setCustomer(selectedCustomer);
@@ -131,10 +135,10 @@ export default function SalesPage() {
         setFees([]);
       } else {
         toast.error(result.error || "Checkout failed");
+        setProcessing(false);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Checkout failed");
-    } finally {
       setProcessing(false);
     }
   };

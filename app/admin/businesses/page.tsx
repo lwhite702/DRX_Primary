@@ -10,14 +10,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Toggle } from "@/components/ui/toggle";
+import { Plus } from "lucide-react";
 
 export default function AdminBusinessesPage() {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [ownerEmail, setOwnerEmail] = useState("");
   const supabase = getSupabaseClient();
 
   useEffect(() => {
@@ -66,15 +81,161 @@ export default function AdminBusinessesPage() {
     }
   };
 
+  const handleCreateBusiness = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!supabase) {
+      toast.error("Supabase not available");
+      return;
+    }
+
+    if (!businessName || !ownerEmail) {
+      toast.error("Business name and owner email are required");
+      return;
+    }
+
+    setCreateLoading(true);
+
+    try {
+      // Get the owner user ID from their email
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
+      
+      let ownerId: string | null = null;
+      if (users) {
+        const owner = users.find(u => u.email === ownerEmail);
+        ownerId = owner?.id || null;
+      }
+
+      if (!ownerId) {
+        toast.error("User with this email not found. Please ensure the user has signed up.");
+        setCreateLoading(false);
+        return;
+      }
+
+      // Create business
+      const { data: business, error: businessError } = await supabase
+        .from("business_profile")
+        .insert({
+          business_name: businessName,
+          business_type: businessType || null,
+          owner_id: ownerId,
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (businessError) throw businessError;
+
+      // Create user role
+      const { error: roleError } = await supabase.from("user_roles").insert({
+        business_id: business.id,
+        user_id: ownerId,
+        role: "owner",
+        permissions: {},
+      });
+
+      if (roleError) throw roleError;
+
+      // Create business settings
+      const { error: settingsError } = await supabase
+        .from("business_settings")
+        .insert({
+          business_id: business.id,
+          default_tax_rate: 0.08,
+          currency: "USD",
+          timezone: "America/New_York",
+        });
+
+      if (settingsError) throw settingsError;
+
+      toast.success(`Business "${businessName}" created successfully`);
+      setShowCreateDialog(false);
+      setBusinessName("");
+      setBusinessType("");
+      setOwnerEmail("");
+      fetchBusinesses();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create business");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8">Loading...</div>;
   }
 
   return (
     <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Businesses</h1>
-        <p className="text-muted-foreground mt-2">Manage all businesses in the system</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Businesses</h1>
+          <p className="text-muted-foreground mt-2">Manage all businesses in the system</p>
+        </div>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Business
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Business</DialogTitle>
+              <DialogDescription>
+                Create a new business and assign it to an owner
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateBusiness} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="businessName">Business Name *</Label>
+                <Input
+                  id="businessName"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  placeholder="e.g., Acme Dispensary"
+                  disabled={createLoading}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessType">Business Type</Label>
+                <Input
+                  id="businessType"
+                  value={businessType}
+                  onChange={(e) => setBusinessType(e.target.value)}
+                  placeholder="e.g., Retail, Wholesale"
+                  disabled={createLoading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ownerEmail">Owner Email *</Label>
+                <Input
+                  id="ownerEmail"
+                  type="email"
+                  value={ownerEmail}
+                  onChange={(e) => setOwnerEmail(e.target.value)}
+                  placeholder="owner@example.com"
+                  disabled={createLoading}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateDialog(false)}
+                  disabled={createLoading}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={createLoading}>
+                  {createLoading ? "Creating..." : "Create Business"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
