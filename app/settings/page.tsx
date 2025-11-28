@@ -44,7 +44,7 @@ export default function SettingsPage() {
         .select("default_tax_rate")
         .eq("business_id", business.id)
         .single()
-        .then(({ data }) => {
+        .then(({ data }: any) => {
           if (data) {
             setTaxRate((data.default_tax_rate * 100).toFixed(2));
           }

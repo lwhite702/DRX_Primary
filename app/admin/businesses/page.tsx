@@ -102,7 +102,7 @@ export default function AdminBusinessesPage() {
       
       let ownerId: string | null = null;
       if (users) {
-        const owner = users.find(u => u.email === ownerEmail);
+        const owner = users.find((u: any) => u.email === ownerEmail);
         ownerId = owner?.id || null;
       }
 

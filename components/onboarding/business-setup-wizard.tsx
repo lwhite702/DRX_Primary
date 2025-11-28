@@ -30,7 +30,7 @@ interface BusinessFormData {
   default_tax_rate: number;
 }
 
-export function BusinessSetupWizard({ userId }: { userId: string }) {
+export function BusinessSetupWizard({ userId, onComplete }: { userId: string; onComplete?: () => Promise<void> }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<BusinessFormData>({
@@ -120,7 +120,11 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
       toast.success("Business created successfully!");
 
       setTimeout(() => {
-        router.refresh();
+        if (onComplete) {
+          onComplete();
+        } else {
+          router.refresh();
+        }
       }, 2000);
     } catch (error) {
       console.error("Error creating business:", error);
