@@ -10,9 +10,18 @@ pnpm-lock.yaml
 # Next.js
 /.next/
 /out/
+.next/
 
 # Production
 /build
+/dist
+
+# Build artifacts and caches
+.turbo/
+.swc/
+.cache/
+*.tsbuildinfo
+*.vercel
 
 # Misc
 .DS_Store
