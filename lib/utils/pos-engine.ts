@@ -7,6 +7,25 @@ export type MiscFee = {
   amount: number;
 };
 
+export type DeliveryOption = {
+  id: string;
+  name: string;
+  provider?: string;
+  base_price: number;
+  allow_price_override: boolean;
+};
+
+export type AIPricingRecommendation = {
+  id: string;
+  inventory_id: string;
+  product_name: string;
+  current_price: number;
+  recommended_price: number;
+  confidence_score: number;
+  price_change_percentage: number;
+  recommendation_reason?: string;
+};
+
 export const calculateFees = (fees: MiscFee[]): number =>
   fees.reduce((sum, f) => sum + f.amount, 0);
 
@@ -27,6 +46,11 @@ export interface CartState {
   subtotal: number;
   tax_amount: number;
   total: number;
+  delivery_management_id?: string;
+  delivery_address?: string;
+  delivery_price: number;
+  amount_paid?: number;
+  change_amount?: number;
 }
 
 export class POSEngine {
@@ -41,6 +65,7 @@ export class POSEngine {
       subtotal: 0,
       tax_amount: 0,
       total: 0,
+      delivery_price: 0,
     };
   }
 
@@ -119,12 +144,46 @@ export class POSEngine {
       0
     );
     this.cart.tax_amount = this.cart.subtotal * this.cart.tax_rate;
-    this.cart.total = this.cart.subtotal + this.cart.tax_amount;
+    this.cart.total = this.cart.subtotal + this.cart.tax_amount + this.cart.delivery_price;
+    
+    if (this.cart.amount_paid) {
+      this.cart.change_amount = this.cart.amount_paid - this.cart.total;
+    }
   }
 
   // Get current cart state
   getCart(): CartState {
     return { ...this.cart };
+  }
+
+  // Set delivery management
+  setDelivery(delivery_id: string | undefined, delivery_address?: string, delivery_price?: number) {
+    this.cart.delivery_management_id = delivery_id;
+    this.cart.delivery_address = delivery_address;
+    if (delivery_price !== undefined) {
+      this.cart.delivery_price = delivery_price;
+      this.recalculate();
+    }
+    return this.cart;
+  }
+
+  // Set amount paid and calculate change
+  setAmountPaid(amount: number) {
+    this.cart.amount_paid = amount;
+    this.recalculate();
+    return this.cart;
+  }
+
+  // Calculate product quantity from amount paid (for single item)
+  calculateQuantityFromAmount(unitPrice: number, amountPaid: number): {
+    quantity: number;
+    amountUsed: number;
+    changeAmount: number;
+  } {
+    const quantity = Math.floor(amountPaid / unitPrice);
+    const amountUsed = quantity * unitPrice;
+    const changeAmount = amountPaid - amountUsed;
+    return { quantity, amountUsed, changeAmount };
   }
 
   // Clear cart
@@ -136,8 +195,75 @@ export class POSEngine {
       subtotal: 0,
       tax_amount: 0,
       total: 0,
+      delivery_price: 0,
     };
     return this.cart;
+  }
+
+  // Get delivery options
+  async getDeliveryOptions(business_id: string): Promise<DeliveryOption[]> {
+    if (!this.supabase) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase
+      .from("delivery_management")
+      .select("id, name, provider, base_price, allow_price_override")
+      .eq("business_id", business_id)
+      .eq("is_active", true);
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data;
+  }
+
+  // Get AI pricing recommendations
+  async getAIPricingRecommendations(business_id: string): Promise<AIPricingRecommendation[]> {
+    if (!this.supabase) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase.rpc("get_ai_pricing_recommendations", {
+      p_business_id: business_id,
+      p_limit: 10,
+    });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data;
+  }
+
+  // Apply AI pricing recommendation
+  async applyAIPricingRecommendation(
+    business_id: string,
+    recommendationId: string,
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    newPrice?: number;
+  }> {
+    if (!this.supabase) {
+      return { success: false, message: "Supabase client not available" };
+    }
+
+    const { data, error } = await this.supabase.rpc("apply_ai_pricing_recommendation", {
+      p_business_id: business_id,
+      p_recommendation_id: recommendationId,
+    });
+
+    if (error || !data) {
+      return { success: false, message: error?.message || "Failed to apply recommendation" };
+    }
+
+    return {
+      success: data.success,
+      message: data.message,
+      newPrice: data.new_price,
+    };
   }
 
   // Validate stock availability
@@ -233,25 +359,54 @@ export class POSEngine {
       };
     }
 
-    // Call RPC function
-    const { data, error } = await this.supabase.rpc("process_pos_checkout", {
-      p_business_id: business_id,
-      p_customer_id: this.cart.customer_id || null,
-      p_order_type: checkoutData.order_type,
-      p_payment_method: checkoutData.payment_method,
-      p_line_items: checkoutData.line_items,
-      p_tax_amount: this.cart.tax_amount,
-      p_fees: fees,
-    });
+    // Call RPC function - use enhanced version if delivery or amount_paid is set
+    if (this.cart.delivery_management_id || this.cart.amount_paid) {
+      const { data, error } = await this.supabase.rpc("process_pos_checkout_enhanced", {
+        p_business_id: business_id,
+        p_customer_id: this.cart.customer_id || null,
+        p_order_type: checkoutData.order_type,
+        p_payment_method: checkoutData.payment_method,
+        p_line_items: checkoutData.line_items,
+        p_tax_amount: this.cart.tax_amount,
+        p_fees: fees,
+        p_delivery_management_id: this.cart.delivery_management_id || null,
+        p_delivery_address: this.cart.delivery_address || null,
+        p_delivery_price: this.cart.delivery_price || 0,
+        p_amount_paid: this.cart.amount_paid || 0,
+      });
 
-    if (error) {
-      return { success: false, error: error.message };
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data && data.length > 0 && !data[0].success) {
+        return { success: false, error: data[0].error_message };
+      }
+
+      // Clear cart on success
+      this.clearCart();
+
+      return { success: true, sale_id: data?.[0]?.sale_id };
+    } else {
+      const { data, error } = await this.supabase.rpc("process_pos_checkout", {
+        p_business_id: business_id,
+        p_customer_id: this.cart.customer_id || null,
+        p_order_type: checkoutData.order_type,
+        p_payment_method: checkoutData.payment_method,
+        p_line_items: checkoutData.line_items,
+        p_tax_amount: this.cart.tax_amount,
+        p_fees: fees,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Clear cart on success
+      this.clearCart();
+
+      return { success: true, sale_id: data };
     }
-
-    // Clear cart on success
-    this.clearCart();
-
-    return { success: true, sale_id: data };
   }
 }
 

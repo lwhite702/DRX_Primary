@@ -32,12 +32,14 @@ import {
   POSEngine,
   type CartState,
   type MiscFee,
+  type DeliveryOption,
+  type AIPricingRecommendation,
 } from "@/lib/utils/pos-engine";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Trash2, Plus, Minus, ShoppingCart, Search } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingCart, Search, Truck, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SalesPage() {
@@ -53,6 +55,12 @@ export default function SalesPage() {
   const [processing, setProcessing] = useState(false);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [fees, setFees] = useState<MiscFee[]>([]);
+  const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<AIPricingRecommendation[]>([]);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryPrice, setDeliveryPrice] = useState(0);
+  const [amountPaid, setAmountPaid] = useState("");
+  const [showAmountPaidMode, setShowAmountPaidMode] = useState(false);
 
   const supabase = getSupabaseClient();
 
@@ -69,6 +77,23 @@ export default function SalesPage() {
         if (data) setCustomers(data);
       });
   }, [business?.id, supabase]);
+
+  useEffect(() => {
+    if (!business?.id) return;
+
+    const loadDeliveryOptions = async () => {
+      const options = await posEngine.getDeliveryOptions(business.id);
+      setDeliveryOptions(options);
+    };
+
+    const loadAIPricingRecommendations = async () => {
+      const recommendations = await posEngine.getAIPricingRecommendations(business.id);
+      setAiRecommendations(recommendations);
+    };
+
+    loadDeliveryOptions();
+    loadAIPricingRecommendations();
+  }, [business?.id]);
 
   const filteredInventory = inventory.filter(
     (item) =>
@@ -125,6 +150,11 @@ export default function SalesPage() {
     setProcessing(true);
     try {
       posEngine.setCustomer(selectedCustomer);
+
+      if (amountPaid) {
+        posEngine.setAmountPaid(parseFloat(amountPaid));
+      }
+
       const result = await posEngine.checkout(business.id, fees);
 
       if (result.success) {
@@ -133,6 +163,10 @@ export default function SalesPage() {
         setCart(posEngine.getCart());
         setSelectedCustomer(undefined);
         setFees([]);
+        setAmountPaid("");
+        setDeliveryAddress("");
+        setDeliveryPrice(0);
+        setShowAmountPaidMode(false);
       } else {
         toast.error(result.error || "Checkout failed");
         setProcessing(false);
@@ -140,6 +174,35 @@ export default function SalesPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Checkout failed");
       setProcessing(false);
+    }
+  };
+
+  const handleDeliveryChange = (deliveryId: string) => {
+    const selected = deliveryOptions.find((d) => d.id === deliveryId);
+    if (selected) {
+      posEngine.setDelivery(deliveryId, deliveryAddress, selected.base_price);
+      setDeliveryPrice(selected.base_price);
+      setCart(posEngine.getCart());
+    }
+  };
+
+  const handleApplyAIPricing = async (recommendation: AIPricingRecommendation) => {
+    if (!business?.id) return;
+
+    try {
+      const result = await posEngine.applyAIPricingRecommendation(
+        business.id,
+        recommendation.id
+      );
+
+      if (result.success) {
+        toast.success(`Price updated to ${result.newPrice?.toFixed(2)}`);
+        setAiRecommendations(aiRecommendations.filter((r) => r.id !== recommendation.id));
+      } else {
+        toast.error(result.message || "Failed to apply pricing");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to apply pricing");
     }
   };
 
@@ -165,53 +228,124 @@ export default function SalesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Inventory Selection */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Inventory</CardTitle>
-            <div className="relative mt-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {filteredInventory.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No items found
-                </p>
-              ) : (
-                filteredInventory.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{item.product_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        SKU: {item.sku} • Stock: {item.quantity_on_hand} • $
-                        {Number(item.selling_price || 0).toFixed(2)}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleAddToCart(item)}
-                      disabled={item.quantity_on_hand <= 0}
-                      size="sm"
+        {/* Inventory Selection and AI Pricing */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Inventory</CardTitle>
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                {filteredInventory.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    No items found
+                  </p>
+                ) : (
+                  filteredInventory.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                      <div className="flex-1">
+                        <p className="font-medium">{item.product_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          SKU: {item.sku} • Stock: {item.quantity_on_hand} • $
+                          {Number(item.selling_price || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => handleAddToCart(item)}
+                        disabled={item.quantity_on_hand <= 0}
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Pricing Recommendations */}
+          {aiRecommendations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  AI Price Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {aiRecommendations.map((rec) => (
+                    <div
+                      key={rec.id}
+                      className="p-3 border rounded-lg hover:bg-muted/50 space-y-2"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium">{rec.product_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Confidence: {rec.confidence_score}%
+                          </p>
+                        </div>
+                        <span
+                          className={`text-sm font-bold px-2 py-1 rounded ${
+                            rec.price_change_percentage > 0
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {rec.price_change_percentage > 0 ? "+" : ""}
+                          {rec.price_change_percentage}%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Current</p>
+                          <p className="font-medium">
+                            ${rec.current_price.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="text-muted-foreground">→</div>
+                        <div>
+                          <p className="text-muted-foreground">Recommended</p>
+                          <p className="font-medium">
+                            ${rec.recommended_price.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      {rec.recommendation_reason && (
+                        <p className="text-xs text-muted-foreground italic">
+                          {rec.recommendation_reason}
+                        </p>
+                      )}
+                      <Button
+                        onClick={() => handleApplyAIPricing(rec)}
+                        size="sm"
+                        className="w-full"
+                        variant="outline"
+                      >
+                        Apply Recommendation
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Cart */}
         <Card>
@@ -301,6 +435,64 @@ export default function SalesPage() {
               )}
             </div>
 
+            {/* Delivery Management Section */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label>
+                <Truck className="h-4 w-4 inline mr-2" />
+                Delivery Management
+                <HelpTooltip content="Select delivery option and address for this order." />
+              </Label>
+              {deliveryOptions.length > 0 ? (
+                <>
+                  <Select
+                    value={cart.delivery_management_id || ""}
+                    onValueChange={handleDeliveryChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delivery option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Delivery</SelectItem>
+                      {deliveryOptions.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.name} {option.provider && `(${option.provider})`} - $
+                          {option.base_price.toFixed(2)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {cart.delivery_management_id && (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Delivery Address"
+                        value={deliveryAddress}
+                        onChange={(e) => {
+                          setDeliveryAddress(e.target.value);
+                          posEngine.setDelivery(
+                            cart.delivery_management_id,
+                            e.target.value,
+                            deliveryPrice
+                          );
+                          setCart(posEngine.getCart());
+                        }}
+                        className="h-8 text-sm"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Price:</span>
+                        <span className="text-sm font-medium">
+                          ${deliveryPrice.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No delivery options configured
+                </p>
+              )}
+            </div>
+
             {/* Misc Fees Section */}
             <div className="space-y-2 pt-4 border-t">
               <Label>
@@ -373,15 +565,51 @@ export default function SalesPage() {
                   </span>
                 </div>
               )}
+              {cart.delivery_price > 0 && (
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Delivery:</span>
+                  <span>${cart.delivery_price.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total:</span>
-                <span>
-                  $
-                  {(
-                    cart.total + fees.reduce((sum, f) => sum + f.amount, 0)
-                  ).toFixed(2)}
-                </span>
+                <span>${cart.total.toFixed(2)}</span>
               </div>
+            </div>
+
+            {/* Amount Paid Section */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label>
+                Amount Paid
+                <HelpTooltip content="Enter the amount customer paid. System will calculate change." />
+              </Label>
+              <Input
+                type="number"
+                placeholder="Enter amount paid"
+                value={amountPaid}
+                onChange={(e) => setAmountPaid(e.target.value)}
+                className="text-sm"
+                min="0"
+                step="0.01"
+              />
+              {amountPaid && cart.total > 0 && (
+                <div className="space-y-1 p-2 bg-muted rounded-sm text-sm">
+                  <div className="flex justify-between">
+                    <span>Amount Paid:</span>
+                    <span className="font-medium">${parseFloat(amountPaid).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total:</span>
+                    <span className="font-medium">${cart.total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600 font-bold border-t pt-1">
+                    <span>Change:</span>
+                    <span>
+                      ${(parseFloat(amountPaid) - cart.total).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Payment Method */}
