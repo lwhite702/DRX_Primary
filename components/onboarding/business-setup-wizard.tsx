@@ -30,7 +30,7 @@ interface BusinessFormData {
   default_tax_rate: number;
 }
 
-export function BusinessSetupWizard({ userId }: { userId: string }) {
+export function BusinessSetupWizard({ userId, onComplete }: { userId: string; onComplete?: () => Promise<void> }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<BusinessFormData>({
@@ -62,8 +62,18 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
       return;
     }
 
+    if (loading) {
+      return;
+    }
+
     setLoading(true);
     try {
+      if (!formData.business_name.trim()) {
+        toast.error("Business name is required");
+        setLoading(false);
+        return;
+      }
+
       // Create business profile
       const { data: business, error: businessError } = await supabase
         .from("business_profile")
@@ -109,14 +119,16 @@ export function BusinessSetupWizard({ userId }: { userId: string }) {
       setStep(4);
       toast.success("Business created successfully!");
 
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
-        router.refresh();
+        if (onComplete) {
+          onComplete();
+        } else {
+          router.refresh();
+        }
       }, 2000);
     } catch (error) {
       console.error("Error creating business:", error);
       toast.error("Failed to create business. Please try again.");
-    } finally {
       setLoading(false);
     }
   };

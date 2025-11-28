@@ -131,7 +131,14 @@ export default function InventoryPage() {
             Manage inventory and stock levels
           </p>
         </div>
-        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <div className="flex gap-2">
+          <a href="/inventory/intake">
+            <Button variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Intake Stock
+            </Button>
+          </a>
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
             <Button onClick={handleNew}>
               <Plus className="h-4 w-4 mr-2" />
@@ -262,6 +269,7 @@ export default function InventoryPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Low Stock Alert */}
