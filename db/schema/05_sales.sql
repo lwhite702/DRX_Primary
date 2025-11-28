@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS sales (
   tax_amount DECIMAL(12, 2) DEFAULT 0,
   total_amount DECIMAL(12, 2),
   payment_method VARCHAR(50),
+  fees JSONB DEFAULT '[]'::jsonb,
   created_by UUID,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -24,5 +25,6 @@ CREATE TABLE IF NOT EXISTS sales_line_items (
   quantity INTEGER NOT NULL,
   unit_price DECIMAL(12, 2) NOT NULL,
   line_total DECIMAL(12, 2),
+  unit_cost DECIMAL(12, 2),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
