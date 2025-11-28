@@ -32,6 +32,7 @@ import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeCredit } from "@/lib/hooks/use-realtime";
 import { creditSystem } from "@/lib/utils/credit-system";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { CreditExposureDashboard } from "@/components/credit/CreditExposureDashboard";
 import { Plus, DollarSign, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -359,6 +360,9 @@ export default function CreditPage() {
           </Dialog>
         </div>
       </div>
+
+      {/* AI Credit Exposure Dashboard */}
+      <CreditExposureDashboard business_id={business.id} />
 
       {/* Alerts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
