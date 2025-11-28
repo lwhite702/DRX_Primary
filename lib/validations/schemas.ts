@@ -146,3 +146,93 @@ export const userRoleSchema = z.object({
 
 export type UserRole = z.infer<typeof userRoleSchema>;
 
+// AI Pricing Recommendation Schemas
+export const aiPricingRecommendationSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  inventory_id: z.string().uuid(),
+  current_price: z.number().nonnegative(),
+  recommended_price: z.number().nonnegative(),
+  recommended_range_min: z.number().nonnegative(),
+  recommended_range_max: z.number().nonnegative(),
+  confidence_score: z.number().min(0).max(100).optional(),
+  reasoning: z.string(),
+  factors: z.record(z.any()).optional(),
+  status: z.enum(["pending", "applied", "rejected"]).default("pending"),
+  applied_at: z.string().datetime().optional(),
+});
+
+export type AIPricingRecommendation = z.infer<typeof aiPricingRecommendationSchema>;
+
+// Inventory Forecast Schemas
+export const inventoryForecastSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  inventory_id: z.string().uuid(),
+  current_stock: z.number().int().nonnegative(),
+  velocity_7d: z.number().optional(),
+  velocity_30d: z.number().optional(),
+  velocity_90d: z.number().optional(),
+  velocity_trend: z.enum(["accelerating", "stable", "declining", "stagnant"]).optional(),
+  projected_stockout_date: z.string().date().optional(),
+  days_until_stockout: z.number().int().optional(),
+  recommended_restock_quantity: z.number().int().nonnegative().optional(),
+  restock_urgency: z.enum(["low", "medium", "high", "critical"]).optional(),
+  inventory_risk_level: z.enum(["low", "medium", "high"]).optional(),
+  restock_cost: z.number().nonnegative().optional(),
+  cash_exposure: z.number().nonnegative().optional(),
+  reasoning: z.string().optional(),
+  confidence_score: z.number().min(0).max(100).optional(),
+  forecast_factors: z.record(z.any()).optional(),
+});
+
+export type InventoryForecast = z.infer<typeof inventoryForecastSchema>;
+
+// AI Decision Log Schema
+export const aiDecisionLogSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  product_id: z.string().uuid().optional(),
+  decision_type: z.enum(["pricing", "inventory", "forecast"]),
+  old_value: z.record(z.any()).optional(),
+  new_value: z.record(z.any()).optional(),
+  ai_recommendation: z.record(z.any()),
+  reasoning: z.string().optional(),
+  decided_by: z.enum(["system", "user"]),
+  decided_by_user_id: z.string().uuid().optional(),
+  override_reason: z.string().optional(),
+});
+
+export type AIDecisionLog = z.infer<typeof aiDecisionLogSchema>;
+
+// Inventory Alert Schema
+export const inventoryAlertSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  inventory_id: z.string().uuid(),
+  alert_type: z.string(),
+  severity: z.enum(["low", "medium", "high", "critical"]),
+  message: z.string(),
+  data: z.record(z.any()).optional(),
+  acknowledged: z.boolean().default(false),
+  acknowledged_by: z.string().uuid().optional(),
+  acknowledged_at: z.string().datetime().optional(),
+});
+
+export type InventoryAlert = z.infer<typeof inventoryAlertSchema>;
+
+// Sales Velocity Cache Schema
+export const salesVelocityCacheSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  inventory_id: z.string().uuid(),
+  velocity_7d: z.number().optional(),
+  velocity_30d: z.number().optional(),
+  velocity_90d: z.number().optional(),
+  last_7d_units: z.number().int().optional(),
+  last_30d_units: z.number().int().optional(),
+  last_90d_units: z.number().int().optional(),
+  cache_updated_at: z.string().datetime().optional(),
+});
+
+export type SalesVelocityCache = z.infer<typeof salesVelocityCacheSchema>;
