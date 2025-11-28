@@ -39,8 +39,14 @@ import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Trash2, Plus, Minus, ShoppingCart, Search, Truck, Zap } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingCart, Search, Truck, Zap, Lock, Package, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { ShrinkageForm } from "@/components/pos/shrinkage-form";
+import { InventoryCheckModal } from "@/components/pos/inventory-check-modal";
+import { WeightEntryModal } from "@/components/pos/weight-entry-modal";
+import { NoSaleButton } from "@/components/pos/no-sale-button";
+import { LoyaltyBadge } from "@/components/pos/loyalty-badge";
+import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -62,6 +68,14 @@ export default function SalesPage() {
   const [amountPaid, setAmountPaid] = useState("");
   const [showAmountPaidMode, setShowAmountPaidMode] = useState(false);
 
+  // New features for weight-based sales, shrinkage, and loyalty
+  const [showShrinkageForm, setShowShrinkageForm] = useState(false);
+  const [showInventoryCheck, setShowInventoryCheck] = useState(false);
+  const [showWeightEntry, setShowWeightEntry] = useState(false);
+  const [selectedProductForWeight, setSelectedProductForWeight] = useState<any>(null);
+  const [customerLoyalty, setCustomerLoyalty] = useState<any>(null);
+  const [showLoyaltyDiscount, setShowLoyaltyDiscount] = useState(false);
+
   const supabase = getSupabaseClient();
 
   useEffect(() => {
@@ -69,7 +83,7 @@ export default function SalesPage() {
 
     supabase
       .from("customers")
-      .select("id, first_name, last_name, phone_number")
+      .select("id, first_name, last_name, phone_number, loyalty_tier, discount_rate, purchase_count")
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("first_name")
@@ -77,6 +91,35 @@ export default function SalesPage() {
         if (data) setCustomers(data);
       });
   }, [business?.id, supabase]);
+
+  // Load customer loyalty info when customer is selected
+  useEffect(() => {
+    if (!selectedCustomer || !business?.id) return;
+
+    const loadLoyalty = async () => {
+      const loyalty = await posWeightEngine.getLoyaltyInfo(
+        business.id,
+        selectedCustomer
+      );
+      setCustomerLoyalty(loyalty);
+    };
+
+    loadLoyalty();
+  }, [selectedCustomer, business?.id]);
+
+  // Check if random inventory check should be triggered
+  useEffect(() => {
+    if (!business?.id) return;
+
+    const checkRandomTrigger = async () => {
+      const result = await posWeightEngine.shouldTriggerRandomCheck(business.id);
+      if (result.should_check) {
+        setShowInventoryCheck(true);
+      }
+    };
+
+    // Don't check on every render, only on significant events
+  }, []);
 
   useEffect(() => {
     if (!business?.id) return;
@@ -130,6 +173,25 @@ export default function SalesPage() {
     posEngine.removeItem(inventory_id);
     setCart(posEngine.getCart());
     toast.success("Item removed from cart");
+  };
+
+  const handleAddWeightedItem = (item: {
+    inventory_id: string;
+    product_name: string;
+    sku: string;
+    weight_grams: number;
+    unit_price: number;
+    bulk_tier_applied?: string;
+    line_total: number;
+  }) => {
+    posEngine.addItem({
+      inventory_id: item.inventory_id,
+      product_name: `${item.product_name} (${item.weight_grams.toFixed(2)}g)`,
+      sku: item.sku,
+      quantity: 1,
+      unit_price: item.line_total,
+    });
+    setCart(posEngine.getCart());
   };
 
   const handleCheckout = async () => {
@@ -258,18 +320,34 @@ export default function SalesPage() {
                       <div className="flex-1">
                         <p className="font-medium">{item.product_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          SKU: {item.sku} • Stock: {item.quantity_on_hand} • $
+                          SKU: {item.sku} • Stock: {item.base_unit === 'g' ? `${(item.inventory_in_grams || item.quantity_on_hand).toFixed(2)}g` : item.quantity_on_hand} • $
                           {Number(item.selling_price || 0).toFixed(2)}
                         </p>
                       </div>
-                      <Button
-                        onClick={() => handleAddToCart(item)}
-                        disabled={item.quantity_on_hand <= 0}
-                        size="sm"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add
-                      </Button>
+                      <div className="flex gap-1">
+                        {item.base_unit === 'g' && item.inventory_in_grams > 0 && (
+                          <Button
+                            onClick={() => {
+                              setSelectedProductForWeight(item);
+                              setShowWeightEntry(true);
+                            }}
+                            disabled={item.inventory_in_grams <= 0}
+                            size="sm"
+                            variant="outline"
+                            title="Weight-based sale"
+                          >
+                            <Package className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => handleAddToCart(item)}
+                          disabled={item.quantity_on_hand <= 0}
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -380,6 +458,15 @@ export default function SalesPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {customerLoyalty && customerLoyalty.loyalty_tier !== "none" && (
+                <div className="mt-2">
+                  <LoyaltyBadge
+                    tier={customerLoyalty.loyalty_tier}
+                    discount_rate={customerLoyalty.discount_rate}
+                    purchase_count={customerLoyalty.purchase_count}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Cart Items */}
@@ -637,6 +724,41 @@ export default function SalesPage() {
               </Select>
             </div>
 
+            {/* POS Admin Actions */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label className="text-xs font-semibold">Admin Functions</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <NoSaleButton businessId={business.id} />
+                <Button
+                  onClick={() => setShowShrinkageForm(true)}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                >
+                  <Lock className="h-4 w-4" />
+                  Shrinkage
+                </Button>
+                <Button
+                  onClick={() => setShowInventoryCheck(true)}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                >
+                  <Package className="h-4 w-4" />
+                  Inv. Check
+                </Button>
+                <Button
+                  onClick={() => window.location.href = "/reports"}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Reports
+                </Button>
+              </div>
+            </div>
+
             {/* Checkout Button */}
             <Button
               onClick={handleCheckout}
@@ -646,11 +768,35 @@ export default function SalesPage() {
             >
               {processing
                 ? "Processing..."
-                : `Checkout - $${cart.total.toFixed(2)}`}
+                : `Checkout - ${cart.total.toFixed(2)}`}
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+           </CardContent>
+         </Card>
+       </div>
+
+       {/* Modals */}
+       <ShrinkageForm
+         open={showShrinkageForm}
+         onClose={() => setShowShrinkageForm(false)}
+         businessId={business?.id || ""}
+         onSuccess={() => setShowShrinkageForm(false)}
+       />
+       <InventoryCheckModal
+         open={showInventoryCheck}
+         onClose={() => setShowInventoryCheck(false)}
+         businessId={business?.id || ""}
+         onSuccess={() => setShowInventoryCheck(false)}
+       />
+       <WeightEntryModal
+         open={showWeightEntry}
+         onClose={() => {
+           setShowWeightEntry(false);
+           setSelectedProductForWeight(null);
+         }}
+         product={selectedProductForWeight}
+         businessId={business?.id || ""}
+         onAddToCart={handleAddWeightedItem}
+       />
+     </div>
+   );
 }
