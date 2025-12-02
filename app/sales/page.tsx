@@ -39,7 +39,18 @@ import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Trash2, Plus, Minus, ShoppingCart, Search, Truck, Zap, Lock, Package, BarChart3 } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Search,
+  Truck,
+  Zap,
+  Lock,
+  Package,
+  BarChart3,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ShrinkageForm } from "@/components/pos/shrinkage-form";
 import { InventoryCheckModal } from "@/components/pos/inventory-check-modal";
@@ -62,7 +73,9 @@ export default function SalesPage() {
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [fees, setFees] = useState<MiscFee[]>([]);
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
-  const [aiRecommendations, setAiRecommendations] = useState<AIPricingRecommendation[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<
+    AIPricingRecommendation[]
+  >([]);
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryPrice, setDeliveryPrice] = useState(0);
   const [amountPaid, setAmountPaid] = useState("");
@@ -72,7 +85,8 @@ export default function SalesPage() {
   const [showShrinkageForm, setShowShrinkageForm] = useState(false);
   const [showInventoryCheck, setShowInventoryCheck] = useState(false);
   const [showWeightEntry, setShowWeightEntry] = useState(false);
-  const [selectedProductForWeight, setSelectedProductForWeight] = useState<any>(null);
+  const [selectedProductForWeight, setSelectedProductForWeight] =
+    useState<any>(null);
   const [customerLoyalty, setCustomerLoyalty] = useState<any>(null);
   const [showLoyaltyDiscount, setShowLoyaltyDiscount] = useState(false);
 
@@ -83,11 +97,13 @@ export default function SalesPage() {
 
     supabase
       .from("customers")
-      .select("id, first_name, last_name, phone_number, loyalty_tier, discount_rate, purchase_count")
+      .select(
+        "id, first_name, last_name, phone_number, loyalty_tier, discount_rate, purchase_count"
+      )
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("first_name")
-      .then(({ data }) => {
+      .then(({ data }: { data: any[] | null }) => {
         if (data) setCustomers(data);
       });
   }, [business?.id, supabase]);
@@ -112,7 +128,9 @@ export default function SalesPage() {
     if (!business?.id) return;
 
     const checkRandomTrigger = async () => {
-      const result = await posWeightEngine.shouldTriggerRandomCheck(business.id);
+      const result = await posWeightEngine.shouldTriggerRandomCheck(
+        business.id
+      );
       if (result.should_check) {
         setShowInventoryCheck(true);
       }
@@ -130,7 +148,9 @@ export default function SalesPage() {
     };
 
     const loadAIPricingRecommendations = async () => {
-      const recommendations = await posEngine.getAIPricingRecommendations(business.id);
+      const recommendations = await posEngine.getAIPricingRecommendations(
+        business.id
+      );
       setAiRecommendations(recommendations);
     };
 
@@ -248,7 +268,9 @@ export default function SalesPage() {
     }
   };
 
-  const handleApplyAIPricing = async (recommendation: AIPricingRecommendation) => {
+  const handleApplyAIPricing = async (
+    recommendation: AIPricingRecommendation
+  ) => {
     if (!business?.id) return;
 
     try {
@@ -259,12 +281,16 @@ export default function SalesPage() {
 
       if (result.success) {
         toast.success(`Price updated to ${result.newPrice?.toFixed(2)}`);
-        setAiRecommendations(aiRecommendations.filter((r) => r.id !== recommendation.id));
+        setAiRecommendations(
+          aiRecommendations.filter((r) => r.id !== recommendation.id)
+        );
       } else {
         toast.error(result.message || "Failed to apply pricing");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to apply pricing");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to apply pricing"
+      );
     }
   };
 
@@ -320,25 +346,31 @@ export default function SalesPage() {
                       <div className="flex-1">
                         <p className="font-medium">{item.product_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          SKU: {item.sku} • Stock: {item.base_unit === 'g' ? `${(item.inventory_in_grams || item.quantity_on_hand).toFixed(2)}g` : item.quantity_on_hand} • $
-                          {Number(item.selling_price || 0).toFixed(2)}
+                          SKU: {item.sku} • Stock:{" "}
+                          {item.base_unit === "g"
+                            ? `${(
+                                item.inventory_in_grams || item.quantity_on_hand
+                              ).toFixed(2)}g`
+                            : item.quantity_on_hand}{" "}
+                          • ${Number(item.selling_price || 0).toFixed(2)}
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        {item.base_unit === 'g' && item.inventory_in_grams > 0 && (
-                          <Button
-                            onClick={() => {
-                              setSelectedProductForWeight(item);
-                              setShowWeightEntry(true);
-                            }}
-                            disabled={item.inventory_in_grams <= 0}
-                            size="sm"
-                            variant="outline"
-                            title="Weight-based sale"
-                          >
-                            <Package className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {item.base_unit === "g" &&
+                          item.inventory_in_grams > 0 && (
+                            <Button
+                              onClick={() => {
+                                setSelectedProductForWeight(item);
+                                setShowWeightEntry(true);
+                              }}
+                              disabled={item.inventory_in_grams <= 0}
+                              size="sm"
+                              variant="outline"
+                              title="Weight-based sale"
+                            >
+                              <Package className="h-4 w-4" />
+                            </Button>
+                          )}
                         <Button
                           onClick={() => handleAddToCart(item)}
                           disabled={item.quantity_on_hand <= 0}
@@ -442,14 +474,16 @@ export default function SalesPage() {
               </Label>
               <div className="flex gap-2">
                 <Select
-                  value={selectedCustomer || ""}
-                  onValueChange={setSelectedCustomer}
+                  value={selectedCustomer || "walk-in"}
+                  onValueChange={(value) =>
+                    setSelectedCustomer(value === "walk-in" ? undefined : value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Walk-in</SelectItem>
+                    <SelectItem value="walk-in">Walk-in</SelectItem>
                     {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
                         {customer.first_name} {customer.last_name}
@@ -532,17 +566,27 @@ export default function SalesPage() {
               {deliveryOptions.length > 0 ? (
                 <>
                   <Select
-                    value={cart.delivery_management_id || ""}
-                    onValueChange={handleDeliveryChange}
+                    value={cart.delivery_management_id || "no-delivery"}
+                    onValueChange={(value) => {
+                      if (value === "no-delivery") {
+                        posEngine.setDelivery(undefined, "", 0);
+                        setDeliveryPrice(0);
+                        setDeliveryAddress("");
+                        setCart(posEngine.getCart());
+                      } else {
+                        handleDeliveryChange(value);
+                      }
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select delivery option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Delivery</SelectItem>
+                      <SelectItem value="no-delivery">No Delivery</SelectItem>
                       {deliveryOptions.map((option) => (
                         <SelectItem key={option.id} value={option.id}>
-                          {option.name} {option.provider && `(${option.provider})`} - $
+                          {option.name}{" "}
+                          {option.provider && `(${option.provider})`} - $
                           {option.base_price.toFixed(2)}
                         </SelectItem>
                       ))}
@@ -565,7 +609,9 @@ export default function SalesPage() {
                         className="h-8 text-sm"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Price:</span>
+                        <span className="text-sm text-muted-foreground">
+                          Price:
+                        </span>
                         <span className="text-sm font-medium">
                           ${deliveryPrice.toFixed(2)}
                         </span>
@@ -683,11 +729,15 @@ export default function SalesPage() {
                 <div className="space-y-1 p-2 bg-muted rounded-sm text-sm">
                   <div className="flex justify-between">
                     <span>Amount Paid:</span>
-                    <span className="font-medium">${parseFloat(amountPaid).toFixed(2)}</span>
+                    <span className="font-medium">
+                      ${parseFloat(amountPaid).toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total:</span>
-                    <span className="font-medium">${cart.total.toFixed(2)}</span>
+                    <span className="font-medium">
+                      ${cart.total.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-green-600 font-bold border-t pt-1">
                     <span>Change:</span>
@@ -748,7 +798,7 @@ export default function SalesPage() {
                   Inv. Check
                 </Button>
                 <Button
-                  onClick={() => window.location.href = "/reports"}
+                  onClick={() => (window.location.href = "/reports")}
                   size="sm"
                   variant="outline"
                   className="gap-1"
@@ -770,33 +820,33 @@ export default function SalesPage() {
                 ? "Processing..."
                 : `Checkout - ${cart.total.toFixed(2)}`}
             </Button>
-           </CardContent>
-         </Card>
-       </div>
+          </CardContent>
+        </Card>
+      </div>
 
-       {/* Modals */}
-       <ShrinkageForm
-         open={showShrinkageForm}
-         onClose={() => setShowShrinkageForm(false)}
-         businessId={business?.id || ""}
-         onSuccess={() => setShowShrinkageForm(false)}
-       />
-       <InventoryCheckModal
-         open={showInventoryCheck}
-         onClose={() => setShowInventoryCheck(false)}
-         businessId={business?.id || ""}
-         onSuccess={() => setShowInventoryCheck(false)}
-       />
-       <WeightEntryModal
-         open={showWeightEntry}
-         onClose={() => {
-           setShowWeightEntry(false);
-           setSelectedProductForWeight(null);
-         }}
-         product={selectedProductForWeight}
-         businessId={business?.id || ""}
-         onAddToCart={handleAddWeightedItem}
-       />
-     </div>
-   );
+      {/* Modals */}
+      <ShrinkageForm
+        open={showShrinkageForm}
+        onClose={() => setShowShrinkageForm(false)}
+        businessId={business?.id || ""}
+        onSuccess={() => setShowShrinkageForm(false)}
+      />
+      <InventoryCheckModal
+        open={showInventoryCheck}
+        onClose={() => setShowInventoryCheck(false)}
+        businessId={business?.id || ""}
+        onSuccess={() => setShowInventoryCheck(false)}
+      />
+      <WeightEntryModal
+        open={showWeightEntry}
+        onClose={() => {
+          setShowWeightEntry(false);
+          setSelectedProductForWeight(null);
+        }}
+        product={selectedProductForWeight}
+        businessId={business?.id || ""}
+        onAddToCart={handleAddWeightedItem}
+      />
+    </div>
+  );
 }
