@@ -25,16 +25,19 @@ import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Plus, Edit, AlertTriangle } from "lucide-react";
+import { Plus, Edit, AlertTriangle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { inventorySchema, type Inventory } from "@/lib/validations/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ProductCostBreakdown } from "@/components/crm/ProductCostBreakdown";
 
 export default function InventoryPage() {
   const { business, loading: businessLoading } = useBusiness();
   const inventory = useRealtimeInventory(business?.id || null);
   const [showDialog, setShowDialog] = useState(false);
+  const [showCostBreakdown, setShowCostBreakdown] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [editingItem, setEditingItem] = useState<Inventory | null>(null);
   const supabase = getSupabaseClient();
 
@@ -139,136 +142,140 @@ export default function InventoryPage() {
             </Button>
           </a>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogTrigger asChild>
-            <Button onClick={handleNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem ? "Edit Item" : "Add New Item"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingItem
-                  ? "Update inventory item details"
-                  : "Add a new item to your inventory"}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sku">
-                    SKU *
-                    <HelpTooltip content="Stock Keeping Unit - a unique identifier for this product" />
-                  </Label>
-                  <Input id="sku" {...register("sku")} />
-                  {errors.sku && (
-                    <p className="text-sm text-destructive">
-                      {errors.sku.message}
-                    </p>
-                  )}
+            <DialogTrigger asChild>
+              <Button onClick={handleNew}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingItem ? "Edit Item" : "Add New Item"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingItem
+                    ? "Update inventory item details"
+                    : "Add a new item to your inventory"}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sku">
+                      SKU *
+                      <HelpTooltip content="Stock Keeping Unit - a unique identifier for this product" />
+                    </Label>
+                    <Input id="sku" {...register("sku")} />
+                    {errors.sku && (
+                      <p className="text-sm text-destructive">
+                        {errors.sku.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="product_name">Product Name *</Label>
+                    <Input id="product_name" {...register("product_name")} />
+                    {errors.product_name && (
+                      <p className="text-sm text-destructive">
+                        {errors.product_name.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product_name">Product Name *</Label>
-                  <Input id="product_name" {...register("product_name")} />
-                  {errors.product_name && (
-                    <p className="text-sm text-destructive">
-                      {errors.product_name.message}
-                    </p>
-                  )}
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" {...register("description")} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Input id="category" {...register("category")} />
+                  <Label htmlFor="description">Description</Label>
+                  <Input id="description" {...register("description")} />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="quantity_on_hand">Quantity on Hand *</Label>
-                  <Input
-                    id="quantity_on_hand"
-                    type="number"
-                    {...register("quantity_on_hand", { valueAsNumber: true })}
-                  />
-                  {errors.quantity_on_hand && (
-                    <p className="text-sm text-destructive">
-                      {errors.quantity_on_hand.message}
-                    </p>
-                  )}
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input id="category" {...register("category")} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity_on_hand">Quantity on Hand *</Label>
+                    <Input
+                      id="quantity_on_hand"
+                      type="number"
+                      {...register("quantity_on_hand", { valueAsNumber: true })}
+                    />
+                    {errors.quantity_on_hand && (
+                      <p className="text-sm text-destructive">
+                        {errors.quantity_on_hand.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reorder_level">
+                      Reorder Level *
+                      <HelpTooltip content="You'll be notified when stock falls below this amount" />
+                    </Label>
+                    <Input
+                      id="reorder_level"
+                      type="number"
+                      {...register("reorder_level", { valueAsNumber: true })}
+                    />
+                    {errors.reorder_level && (
+                      <p className="text-sm text-destructive">
+                        {errors.reorder_level.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit_cost">
+                      Unit Cost
+                      <HelpTooltip content="What you pay for this item (used for profit calculations)" />
+                    </Label>
+                    <Input
+                      id="unit_cost"
+                      type="number"
+                      step="0.01"
+                      {...register("unit_cost", { valueAsNumber: true })}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="reorder_level">
-                    Reorder Level *
-                    <HelpTooltip content="You'll be notified when stock falls below this amount" />
+                  <Label htmlFor="selling_price">
+                    Selling Price
+                    <HelpTooltip content="What customers pay for this item" />
                   </Label>
                   <Input
-                    id="reorder_level"
-                    type="number"
-                    {...register("reorder_level", { valueAsNumber: true })}
-                  />
-                  {errors.reorder_level && (
-                    <p className="text-sm text-destructive">
-                      {errors.reorder_level.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="unit_cost">
-                    Unit Cost
-                    <HelpTooltip content="What you pay for this item (used for profit calculations)" />
-                  </Label>
-                  <Input
-                    id="unit_cost"
+                    id="selling_price"
                     type="number"
                     step="0.01"
-                    {...register("unit_cost", { valueAsNumber: true })}
+                    {...register("selling_price", { valueAsNumber: true })}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="selling_price">
-                  Selling Price
-                  <HelpTooltip content="What customers pay for this item" />
-                </Label>
-                <Input
-                  id="selling_price"
-                  type="number"
-                  step="0.01"
-                  {...register("selling_price", { valueAsNumber: true })}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowDialog(false);
-                    setEditingItem(null);
-                    reset();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : editingItem ? "Update" : "Add"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowDialog(false);
+                      setEditingItem(null);
+                      reset();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting
+                      ? "Saving..."
+                      : editingItem
+                      ? "Update"
+                      : "Add"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -285,6 +292,26 @@ export default function InventoryPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Cost Breakdown Dialog */}
+      <Dialog open={showCostBreakdown} onOpenChange={setShowCostBreakdown}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedProduct?.product_name || "Product"} - Cost Breakdown
+            </DialogTitle>
+            <DialogDescription>
+              Detailed cost history and breakdown for this product
+            </DialogDescription>
+          </DialogHeader>
+          {selectedProduct && (
+            <ProductCostBreakdown
+              inventoryId={selectedProduct.id}
+              productName={selectedProduct.product_name}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Inventory Table */}
       <Card>
@@ -346,13 +373,26 @@ export default function InventoryPage() {
                             : "-"}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(item)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedProduct(item);
+                                setShowCostBreakdown(true);
+                              }}
+                              title="View cost breakdown"
+                            >
+                              <DollarSign className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
