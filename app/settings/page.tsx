@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ export default function SettingsPage() {
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [taxRate, setTaxRate] = useState("");
+  const [collectTax, setCollectTax] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = getSupabaseClient();
 
@@ -41,13 +43,17 @@ export default function SettingsPage() {
     if (business?.id && supabase) {
       supabase
         .from("business_settings")
-        .select("default_tax_rate")
+        .select("default_tax_rate, collect_tax")
         .eq("business_id", business.id)
         .single()
         .then(({ data }: any) => {
           if (data) {
             setTaxRate((data.default_tax_rate * 100).toFixed(2));
+            setCollectTax(data.collect_tax !== false); // Default to true if null
           }
+        })
+        .catch((error: any) => {
+          console.error("Error loading business settings:", error);
         });
     }
   }, [business?.id, supabase]);
@@ -90,6 +96,7 @@ export default function SettingsPage() {
           .from("business_settings")
           .update({
             default_tax_rate: parseFloat(taxRate) / 100,
+            collect_tax: collectTax,
             updated_at: new Date().toISOString(),
           })
           .eq("business_id", business.id);
@@ -98,10 +105,16 @@ export default function SettingsPage() {
       }
 
       toast.success("Settings saved successfully!");
-      refreshBusiness();
-    } catch (error) {
+      await refreshBusiness();
+
+      // Force a small delay to ensure data is persisted
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (error: any) {
+      console.error("Error saving settings:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to save settings"
+        error?.message || "Failed to save settings. Please try again."
       );
     } finally {
       setSaving(false);
@@ -124,7 +137,9 @@ export default function SettingsPage() {
     <div className="p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">Configure your business settings</p>
+        <p className="text-muted-foreground mt-2">
+          Configure your business settings
+        </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
@@ -235,6 +250,26 @@ export default function SettingsPage() {
             <CardTitle>Business Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Tax Collection Toggle */}
+            <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+              <div className="space-y-0.5 flex-1">
+                <Label htmlFor="collect-tax" className="text-base">
+                  Enable Tax Collection
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  When disabled, no tax will be charged on sales. Subtotal =
+                  Total.
+                </p>
+              </div>
+              <Switch
+                id="collect-tax"
+                checked={collectTax}
+                onCheckedChange={setCollectTax}
+                disabled={saving}
+              />
+            </div>
+
+            {/* Tax Rate */}
             <div className="space-y-2">
               <Label htmlFor="taxRate">Default Tax Rate (%)</Label>
               <Input
@@ -257,11 +292,7 @@ export default function SettingsPage() {
 
         {/* Save Button */}
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={saving}
-            size="lg"
-          >
+          <Button type="submit" disabled={saving} size="lg">
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

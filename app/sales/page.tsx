@@ -50,6 +50,8 @@ import {
   Lock,
   Package,
   BarChart3,
+  User,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ShrinkageForm } from "@/components/pos/shrinkage-form";
@@ -57,6 +59,9 @@ import { InventoryCheckModal } from "@/components/pos/inventory-check-modal";
 import { WeightEntryModal } from "@/components/pos/weight-entry-modal";
 import { NoSaleButton } from "@/components/pos/no-sale-button";
 import { LoyaltyBadge } from "@/components/pos/loyalty-badge";
+import { PriceOverrideModal } from "@/components/pos/price-override-modal";
+import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
+import { useUserRole } from "@/lib/hooks/use-user-role";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 
 export default function SalesPage() {
@@ -89,6 +94,14 @@ export default function SalesPage() {
     useState<any>(null);
   const [customerLoyalty, setCustomerLoyalty] = useState<any>(null);
   const [showLoyaltyDiscount, setShowLoyaltyDiscount] = useState(false);
+
+  // Price override and customer selector
+  const [showPriceOverride, setShowPriceOverride] = useState(false);
+  const [selectedItemForOverride, setSelectedItemForOverride] =
+    useState<any>(null);
+  const [showCustomerSelector, setShowCustomerSelector] = useState(false);
+  const { canOverridePrice } = useUserRole(business?.id);
+  const [taxEnabled, setTaxEnabled] = useState(true);
 
   const supabase = getSupabaseClient();
 
@@ -157,6 +170,28 @@ export default function SalesPage() {
     loadDeliveryOptions();
     loadAIPricingRecommendations();
   }, [business?.id]);
+
+  // Load tax collection setting
+  useEffect(() => {
+    if (!business?.id || !supabase) return;
+
+    const loadTaxSettings = async () => {
+      const { data } = await supabase
+        .from("business_settings")
+        .select("collect_tax")
+        .eq("business_id", business.id)
+        .single();
+
+      if (data) {
+        const taxCollectionEnabled = data.collect_tax !== false;
+        setTaxEnabled(taxCollectionEnabled);
+        posEngine.setTaxEnabled(taxCollectionEnabled);
+        setCart(posEngine.getCart());
+      }
+    };
+
+    loadTaxSettings();
+  }, [business?.id, supabase, posEngine]);
 
   const filteredInventory = inventory.filter(
     (item) =>
@@ -292,6 +327,31 @@ export default function SalesPage() {
         error instanceof Error ? error.message : "Failed to apply pricing"
       );
     }
+  };
+
+  // Handle price override
+  const handlePriceOverride = (item: any) => {
+    setSelectedItemForOverride(item);
+    setShowPriceOverride(true);
+  };
+
+  const handleConfirmPriceOverride = (newPrice: number, reason?: string) => {
+    if (selectedItemForOverride) {
+      posEngine.overrideItemPrice(
+        selectedItemForOverride.inventory_id,
+        newPrice,
+        reason
+      );
+      setCart(posEngine.getCart());
+      toast.success(`Price overridden to $${newPrice.toFixed(2)}`);
+    }
+  };
+
+  // Handle customer selection
+  const handleCustomerSelect = (customerId: string) => {
+    setSelectedCustomer(customerId || undefined);
+    posEngine.setCustomer(customerId || undefined);
+    setCart(posEngine.getCart());
   };
 
   if (businessLoading) {
@@ -472,26 +532,24 @@ export default function SalesPage() {
                 Customer (Optional)
                 <HelpTooltip content="Select a customer to track their purchase history and credit. Leave as 'Walk-in' for anonymous sales." />
               </Label>
-              <div className="flex gap-2">
-                <Select
-                  value={selectedCustomer || "walk-in"}
-                  onValueChange={(value) =>
-                    setSelectedCustomer(value === "walk-in" ? undefined : value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="walk-in">Walk-in</SelectItem>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.first_name} {customer.last_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowCustomerSelector(true)}
+              >
+                <User className="h-4 w-4 mr-2" />
+                {selectedCustomer
+                  ? customers.find((c) => c.id === selectedCustomer)
+                    ? `${
+                        customers.find((c) => c.id === selectedCustomer)
+                          ?.first_name
+                      } ${
+                        customers.find((c) => c.id === selectedCustomer)
+                          ?.last_name
+                      }`
+                    : "Select Customer"
+                  : "Walk-in Customer"}
+              </Button>
               {customerLoyalty && customerLoyalty.loyalty_tier !== "none" && (
                 <div className="mt-2">
                   <LoyaltyBadge
@@ -513,15 +571,39 @@ export default function SalesPage() {
                 cart.items.map((item) => (
                   <div
                     key={item.inventory_id}
-                    className="flex items-center gap-2 p-2 border rounded"
+                    className="flex items-start gap-2 p-2 border rounded"
                   >
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{item.product_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">
+                          {item.product_name}
+                        </p>
+                        {item.overridden_price && (
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                            ⚠️ Override
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         ${item.unit_price.toFixed(2)} × {item.quantity}
+                        {item.overridden_price && item.original_price && (
+                          <span className="ml-2 line-through text-muted-foreground">
+                            (was ${item.original_price.toFixed(2)})
+                          </span>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
+                      {canOverridePrice && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePriceOverride(item)}
+                          title="Override Price"
+                        >
+                          <DollarSign className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
@@ -688,7 +770,14 @@ export default function SalesPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Tax:</span>
-                <span>${cart.tax_amount.toFixed(2)}</span>
+                <span>
+                  ${cart.tax_amount.toFixed(2)}
+                  {!taxEnabled && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      (Disabled)
+                    </span>
+                  )}
+                </span>
               </div>
               {fees.length > 0 && (
                 <div className="flex justify-between text-sm text-muted-foreground">
@@ -846,6 +935,24 @@ export default function SalesPage() {
         product={selectedProductForWeight}
         businessId={business?.id || ""}
         onAddToCart={handleAddWeightedItem}
+      />
+
+      {/* Price Override Modal */}
+      <PriceOverrideModal
+        open={showPriceOverride}
+        onOpenChange={setShowPriceOverride}
+        productName={selectedItemForOverride?.product_name || ""}
+        currentPrice={selectedItemForOverride?.unit_price || 0}
+        onConfirm={handleConfirmPriceOverride}
+      />
+
+      {/* Customer Selector Modal */}
+      <CustomerSelectorModal
+        open={showCustomerSelector}
+        onOpenChange={setShowCustomerSelector}
+        customers={customers}
+        onSelect={handleCustomerSelect}
+        selectedCustomerId={selectedCustomer}
       />
     </div>
   );

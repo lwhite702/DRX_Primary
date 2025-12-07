@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { posCheckoutSchema, type POSCheckout, type SalesLineItem } from "@/lib/validations/schemas";
+import {
+  posCheckoutSchema,
+  type POSCheckout,
+  type SalesLineItem,
+} from "@/lib/validations/schemas";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 export type MiscFee = {
@@ -36,6 +40,9 @@ export interface CartItem {
   quantity: number;
   unit_price: number;
   line_total: number;
+  overridden_price?: number;
+  original_price?: number;
+  override_reason?: string;
 }
 
 export interface CartState {
@@ -43,6 +50,7 @@ export interface CartState {
   customer_id?: string;
   payment_method: "cash" | "card" | "credit" | "mixed";
   tax_rate: number;
+  tax_enabled: boolean;
   subtotal: number;
   tax_amount: number;
   total: number;
@@ -62,6 +70,7 @@ export class POSEngine {
       items: [],
       payment_method: "cash",
       tax_rate: 0.08, // Default 8% tax
+      tax_enabled: true, // Default enabled
       subtotal: 0,
       tax_amount: 0,
       total: 0,
@@ -137,15 +146,58 @@ export class POSEngine {
     return this.cart;
   }
 
+  // Set tax enabled/disabled
+  setTaxEnabled(enabled: boolean) {
+    this.cart.tax_enabled = enabled;
+    this.recalculate();
+    return this.cart;
+  }
+
+  // Override item price
+  overrideItemPrice(inventory_id: string, new_price: number, reason?: string) {
+    const item = this.cart.items.find(
+      (item) => item.inventory_id === inventory_id
+    );
+    if (item) {
+      item.original_price = item.unit_price;
+      item.overridden_price = new_price;
+      item.unit_price = new_price;
+      item.override_reason = reason;
+      item.line_total = item.quantity * new_price;
+      this.recalculate();
+    }
+    return this.cart;
+  }
+
+  // Clear price override for an item
+  clearPriceOverride(inventory_id: string) {
+    const item = this.cart.items.find(
+      (item) => item.inventory_id === inventory_id
+    );
+    if (item && item.original_price) {
+      item.unit_price = item.original_price;
+      item.overridden_price = undefined;
+      item.original_price = undefined;
+      item.override_reason = undefined;
+      item.line_total = item.quantity * item.unit_price;
+      this.recalculate();
+    }
+    return this.cart;
+  }
+
   // Recalculate totals
   private recalculate() {
     this.cart.subtotal = this.cart.items.reduce(
       (sum, item) => sum + item.line_total,
       0
     );
-    this.cart.tax_amount = this.cart.subtotal * this.cart.tax_rate;
-    this.cart.total = this.cart.subtotal + this.cart.tax_amount + this.cart.delivery_price;
-    
+    // Only calculate tax if tax is enabled
+    this.cart.tax_amount = this.cart.tax_enabled
+      ? this.cart.subtotal * this.cart.tax_rate
+      : 0;
+    this.cart.total =
+      this.cart.subtotal + this.cart.tax_amount + this.cart.delivery_price;
+
     if (this.cart.amount_paid) {
       this.cart.change_amount = this.cart.amount_paid - this.cart.total;
     }
@@ -157,7 +209,11 @@ export class POSEngine {
   }
 
   // Set delivery management
-  setDelivery(delivery_id: string | undefined, delivery_address?: string, delivery_price?: number) {
+  setDelivery(
+    delivery_id: string | undefined,
+    delivery_address?: string,
+    delivery_price?: number
+  ) {
     this.cart.delivery_management_id = delivery_id;
     this.cart.delivery_address = delivery_address;
     if (delivery_price !== undefined) {
@@ -175,7 +231,10 @@ export class POSEngine {
   }
 
   // Calculate product quantity from amount paid (for single item)
-  calculateQuantityFromAmount(unitPrice: number, amountPaid: number): {
+  calculateQuantityFromAmount(
+    unitPrice: number,
+    amountPaid: number
+  ): {
     quantity: number;
     amountUsed: number;
     changeAmount: number;
@@ -192,6 +251,7 @@ export class POSEngine {
       items: [],
       payment_method: "cash",
       tax_rate: 0.08,
+      tax_enabled: true,
       subtotal: 0,
       tax_amount: 0,
       total: 0,
@@ -220,15 +280,20 @@ export class POSEngine {
   }
 
   // Get AI pricing recommendations
-  async getAIPricingRecommendations(business_id: string): Promise<AIPricingRecommendation[]> {
+  async getAIPricingRecommendations(
+    business_id: string
+  ): Promise<AIPricingRecommendation[]> {
     if (!this.supabase) {
       return [];
     }
 
-    const { data, error } = await this.supabase.rpc("get_ai_pricing_recommendations", {
-      p_business_id: business_id,
-      p_limit: 10,
-    });
+    const { data, error } = await this.supabase.rpc(
+      "get_ai_pricing_recommendations",
+      {
+        p_business_id: business_id,
+        p_limit: 10,
+      }
+    );
 
     if (error || !data) {
       return [];
@@ -240,7 +305,7 @@ export class POSEngine {
   // Apply AI pricing recommendation
   async applyAIPricingRecommendation(
     business_id: string,
-    recommendationId: string,
+    recommendationId: string
   ): Promise<{
     success: boolean;
     message?: string;
@@ -250,13 +315,19 @@ export class POSEngine {
       return { success: false, message: "Supabase client not available" };
     }
 
-    const { data, error } = await this.supabase.rpc("apply_ai_pricing_recommendation", {
-      p_business_id: business_id,
-      p_recommendation_id: recommendationId,
-    });
+    const { data, error } = await this.supabase.rpc(
+      "apply_ai_pricing_recommendation",
+      {
+        p_business_id: business_id,
+        p_recommendation_id: recommendationId,
+      }
+    );
 
     if (error || !data) {
-      return { success: false, message: error?.message || "Failed to apply recommendation" };
+      return {
+        success: false,
+        message: error?.message || "Failed to apply recommendation",
+      };
     }
 
     return {
@@ -272,7 +343,12 @@ export class POSEngine {
     errors: Array<{ inventory_id: string; message: string }>;
   }> {
     if (!this.supabase) {
-      return { valid: false, errors: [{ inventory_id: "", message: "Supabase client not available" }] };
+      return {
+        valid: false,
+        errors: [
+          { inventory_id: "", message: "Supabase client not available" },
+        ],
+      };
     }
 
     const errors: Array<{ inventory_id: string; message: string }> = [];
@@ -343,20 +419,26 @@ export class POSEngine {
         .eq("business_id", business_id)
         .single();
 
-      const current_balance = creditLimit ? Number(creditLimit.current_balance || 0) : 0;
+      const current_balance = creditLimit
+        ? Number(creditLimit.current_balance || 0)
+        : 0;
       const credit_limit = Number(customer.credit_limit || 1000);
-      const ai_limit = Number(customer.credit_limit_ai_recommended || credit_limit);
+      const ai_limit = Number(
+        customer.credit_limit_ai_recommended || credit_limit
+      );
 
       // Check against AI recommended limit (softer check - generates warning)
       const projected_balance = current_balance + this.cart.total;
-      
+
       if (ai_limit > 0 && projected_balance > ai_limit) {
         return {
           valid: true,
           credit_limit,
           ai_limit,
           current_balance,
-          warning: `Transaction would exceed AI recommended limit (${ai_limit.toFixed(2)}). Manager approval required.`,
+          warning: `Transaction would exceed AI recommended limit (${ai_limit.toFixed(
+            2
+          )}). Manager approval required.`,
         };
       }
 
@@ -383,7 +465,10 @@ export class POSEngine {
   }
 
   // Process checkout
-  async checkout(business_id: string, fees: MiscFee[] = []): Promise<{
+  async checkout(
+    business_id: string,
+    fees: MiscFee[] = []
+  ): Promise<{
     success: boolean;
     sale_id?: string;
     error?: string;
@@ -406,7 +491,9 @@ export class POSEngine {
     if (!creditValidation.valid) {
       return {
         success: false,
-        error: `Credit limit exceeded. Limit: ${creditValidation.credit_limit?.toFixed(2)}, Current Balance: ${creditValidation.current_balance?.toFixed(2)}`,
+        error: `Credit limit exceeded. Limit: ${creditValidation.credit_limit?.toFixed(
+          2
+        )}, Current Balance: ${creditValidation.current_balance?.toFixed(2)}`,
       };
     }
 
@@ -429,6 +516,8 @@ export class POSEngine {
         inventory_id: item.inventory_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        overridden_price: item.overridden_price,
+        override_reason: item.override_reason,
       })),
       tax_amount: this.cart.tax_amount,
       fees: fees,
@@ -445,19 +534,22 @@ export class POSEngine {
 
     // Call RPC function - use enhanced version if delivery or amount_paid is set
     if (this.cart.delivery_management_id || this.cart.amount_paid) {
-      const { data, error } = await this.supabase.rpc("process_pos_checkout_enhanced", {
-        p_business_id: business_id,
-        p_customer_id: this.cart.customer_id || null,
-        p_order_type: checkoutData.order_type,
-        p_payment_method: checkoutData.payment_method,
-        p_line_items: checkoutData.line_items,
-        p_tax_amount: this.cart.tax_amount,
-        p_fees: fees,
-        p_delivery_management_id: this.cart.delivery_management_id || null,
-        p_delivery_address: this.cart.delivery_address || null,
-        p_delivery_price: this.cart.delivery_price || 0,
-        p_amount_paid: this.cart.amount_paid || 0,
-      });
+      const { data, error } = await this.supabase.rpc(
+        "process_pos_checkout_enhanced",
+        {
+          p_business_id: business_id,
+          p_customer_id: this.cart.customer_id || null,
+          p_order_type: checkoutData.order_type,
+          p_payment_method: checkoutData.payment_method,
+          p_line_items: checkoutData.line_items,
+          p_tax_amount: this.cart.tax_amount,
+          p_fees: fees,
+          p_delivery_management_id: this.cart.delivery_management_id || null,
+          p_delivery_address: this.cart.delivery_address || null,
+          p_delivery_price: this.cart.delivery_price || 0,
+          p_amount_paid: this.cart.amount_paid || 0,
+        }
+      );
 
       if (error) {
         return { success: false, error: error.message };
@@ -493,4 +585,3 @@ export class POSEngine {
     }
   }
 }
-
