@@ -13,151 +13,144 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
 
-interface IntakeLineItem {
+interface IntakeFormData {
   inventory_id: string;
   product_name: string;
-  quantity: number;
-  unit_cost: number;
+  total_cost: string;
+  total_weight_grams: string;
+  delivery_cost: string;
+  supplier: string;
 }
 
 export default function InventoryIntakePage() {
   const { business, loading: businessLoading } = useBusiness();
   const inventory = useRealtimeInventory(business?.id || null);
-  const [intakeItems, setIntakeItems] = useState<IntakeLineItem[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [selectedInventoryId, setSelectedInventoryId] = useState("");
-  const [intakeQuantity, setIntakeQuantity] = useState("");
-  const [unitCost, setUnitCost] = useState("");
-  const [supplier, setSupplier] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [formData, setFormData] = useState<IntakeFormData>({
+    inventory_id: "",
+    product_name: "",
+    total_cost: "",
+    total_weight_grams: "",
+    delivery_cost: "0",
+    supplier: "",
+  });
+
   const supabase = getSupabaseClient();
 
-  const handleAddItem = () => {
-    if (!selectedInventoryId || !intakeQuantity) {
-      toast.error("Please select a product and enter quantity");
-      return;
-    }
+  // Calculate cost per gram
+  const costPerGram =
+    parseFloat(formData.total_cost) && parseFloat(formData.total_weight_grams)
+      ? parseFloat(formData.total_cost) /
+        parseFloat(formData.total_weight_grams)
+      : 0;
 
-    const selectedItem = inventory.find((i) => i.id === selectedInventoryId);
-    if (!selectedItem) {
-      toast.error("Product not found");
-      return;
-    }
+  const totalIntakeCost =
+    parseFloat(formData.total_cost || "0") +
+    parseFloat(formData.delivery_cost || "0");
 
-    const quantity = parseFloat(intakeQuantity);
-    const cost = parseFloat(unitCost) || selectedItem.unit_cost || 0;
-
-    if (quantity <= 0) {
-      toast.error("Quantity must be greater than 0");
-      return;
-    }
-
-    const existingIndex = intakeItems.findIndex(
-      (item) => item.inventory_id === selectedInventoryId
-    );
-
-    if (existingIndex >= 0) {
-      const updated = [...intakeItems];
-      updated[existingIndex].quantity += quantity;
-      updated[existingIndex].unit_cost = cost;
-      setIntakeItems(updated);
-    } else {
-      setIntakeItems([
-        ...intakeItems,
-        {
-          inventory_id: selectedInventoryId,
-          product_name: selectedItem.product_name,
-          quantity,
-          unit_cost: cost,
-        },
-      ]);
-    }
-
-    setSelectedInventoryId("");
-    setIntakeQuantity("");
-    setUnitCost("");
-    toast.success(`${selectedItem.product_name} added to intake`);
+  const handleProductChange = (value: string) => {
+    const selectedItem = inventory.find((i) => i.id === value);
+    setFormData({
+      ...formData,
+      inventory_id: value,
+      product_name: selectedItem?.product_name || "",
+    });
   };
 
-  const handleRemoveItem = (index: number) => {
-    setIntakeItems(intakeItems.filter((_, i) => i !== index));
+  const handleOpenConfirmModal = () => {
+    // Validation
+    if (!formData.inventory_id) {
+      toast.error("Please select a product");
+      return;
+    }
+
+    if (!formData.total_cost || parseFloat(formData.total_cost) <= 0) {
+      toast.error("Please enter a valid total cost");
+      return;
+    }
+
+    if (
+      !formData.total_weight_grams ||
+      parseFloat(formData.total_weight_grams) < 0.01
+    ) {
+      toast.error("Please enter a valid weight (minimum 0.01g)");
+      return;
+    }
+
+    if (parseFloat(formData.delivery_cost || "0") < 0) {
+      toast.error("Delivery cost cannot be negative");
+      return;
+    }
+
+    setShowConfirmModal(true);
   };
 
   const handleProcessIntake = async () => {
-    if (intakeItems.length === 0) {
-      toast.error("No items to intake");
-      return;
-    }
-
     if (!business?.id || !supabase) {
       toast.error("Business not found");
       return;
     }
 
     setProcessing(true);
+    setShowConfirmModal(false);
 
     try {
-      for (const item of intakeItems) {
-        const { data: currentInventory, error: fetchError } = await supabase
-          .from("inventory")
-          .select("quantity_on_hand")
-          .eq("id", item.inventory_id)
-          .eq("business_id", business.id)
-          .single();
+      const response = await fetch("/api/inventory/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inventory_id: formData.inventory_id,
+          total_cost: parseFloat(formData.total_cost),
+          total_weight_grams: parseFloat(formData.total_weight_grams),
+          delivery_cost: parseFloat(formData.delivery_cost || "0"),
+          supplier: formData.supplier || undefined,
+        }),
+      });
 
-        if (fetchError || !currentInventory) {
-          throw new Error(`Failed to fetch inventory for ${item.product_name}`);
-        }
+      const result = await response.json();
 
-        const newQuantity = currentInventory.quantity_on_hand + item.quantity;
-
-        const { error: updateError } = await supabase
-          .from("inventory")
-          .update({
-            quantity_on_hand: newQuantity,
-            unit_cost: item.unit_cost,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", item.inventory_id);
-
-        if (updateError) {
-          throw updateError;
-        }
-
-        const { error: logError } = await supabase
-          .from("inventory_log")
-          .insert({
-            inventory_id: item.inventory_id,
-            transaction_type: "intake",
-            quantity_change: item.quantity,
-            reason: supplier ? `Supplier: ${supplier}` : "Manual intake",
-          });
-
-        if (logError) {
-          console.warn("Failed to log inventory movement:", logError);
-        }
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to process intake");
       }
 
-      toast.success(
-        `Successfully intaked ${intakeItems.length} product(s)`
-      );
-      setIntakeItems([]);
-      setSupplier("");
+      if (result.requires_approval) {
+        toast.warning(result.message, {
+          description: "A manager will need to review and approve this intake.",
+          duration: 5000,
+        });
+      } else {
+        toast.success(result.message);
+      }
+
+      // Reset form
+      setFormData({
+        inventory_id: "",
+        product_name: "",
+        total_cost: "",
+        total_weight_grams: "",
+        delivery_cost: "0",
+        supplier: "",
+      });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to process intake");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process intake"
+      );
     } finally {
       setProcessing(false);
     }
@@ -175,17 +168,12 @@ export default function InventoryIntakePage() {
     );
   }
 
-  const totalIntakeCost = intakeItems.reduce(
-    (sum, item) => sum + item.quantity * item.unit_cost,
-    0
-  );
-
   return (
     <div className="p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Inventory Intake</h1>
         <p className="text-muted-foreground mt-2">
-          Add inventory items to your stock
+          Add inventory with complete cost tracking
         </p>
       </div>
 
@@ -193,65 +181,143 @@ export default function InventoryIntakePage() {
         {/* Intake Form */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Add Items to Intake</CardTitle>
+            <CardTitle>Intake Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="supplier">Supplier (Optional)</Label>
-              <Input
-                id="supplier"
-                placeholder="Supplier name"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-              />
-            </div>
-
+            {/* Product Selection */}
             <div className="space-y-2">
               <Label htmlFor="product">Product *</Label>
-              <Select value={selectedInventoryId} onValueChange={setSelectedInventoryId}>
+              <Select
+                value={formData.inventory_id}
+                onValueChange={handleProductChange}
+              >
                 <SelectTrigger id="product">
                   <SelectValue placeholder="Select product to intake" />
                 </SelectTrigger>
                 <SelectContent>
                   {inventory.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.product_name} (SKU: {item.sku}, Current: {item.quantity_on_hand})
+                      {item.product_name} (SKU: {item.sku}, Stock:{" "}
+                      {item.quantity_on_hand}g)
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Supplier */}
+            <div className="space-y-2">
+              <Label htmlFor="supplier">Supplier (Optional)</Label>
+              <Input
+                id="supplier"
+                placeholder="Supplier name"
+                value={formData.supplier}
+                onChange={(e) =>
+                  setFormData({ ...formData, supplier: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
+              <h3 className="font-semibold text-sm text-muted-foreground">
+                Cost Structure
+              </h3>
+
+              {/* Total Cost */}
               <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity *</Label>
+                <Label htmlFor="total_cost">Total Cost of Product ($) *</Label>
                 <Input
-                  id="quantity"
-                  type="number"
-                  placeholder="0"
-                  value={intakeQuantity}
-                  onChange={(e) => setIntakeQuantity(e.target.value)}
-                  min="0"
-                  step="1"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="unitCost">Unit Cost (Optional)</Label>
-                <Input
-                  id="unitCost"
+                  id="total_cost"
                   type="number"
                   placeholder="0.00"
-                  value={unitCost}
-                  onChange={(e) => setUnitCost(e.target.value)}
+                  value={formData.total_cost}
+                  onChange={(e) =>
+                    setFormData({ ...formData, total_cost: e.target.value })
+                  }
+                  min="0.01"
+                  step="0.01"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Total amount paid for this bulk purchase
+                </p>
+              </div>
+
+              {/* Total Weight */}
+              <div className="space-y-2">
+                <Label htmlFor="total_weight">
+                  Total Weight Received (grams) *
+                </Label>
+                <Input
+                  id="total_weight"
+                  type="number"
+                  placeholder="0.00"
+                  value={formData.total_weight_grams}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      total_weight_grams: e.target.value,
+                    })
+                  }
+                  min="0.01"
+                  step="0.01"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Total weight of product received in this shipment
+                </p>
+              </div>
+
+              {/* Calculated Cost Per Gram */}
+              <div className="space-y-2">
+                <Label>Cost Per Gram (calculated)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={
+                      costPerGram > 0
+                        ? `$${costPerGram.toFixed(6)}/g`
+                        : "$0.000000/g"
+                    }
+                    readOnly
+                    className="bg-muted"
+                  />
+                  {costPerGram > 0 && (
+                    <Badge variant="secondary">Auto-calculated</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Automatically calculated from total cost ÷ total weight
+                </p>
+              </div>
+
+              {/* Delivery Cost */}
+              <div className="space-y-2">
+                <Label htmlFor="delivery_cost">
+                  Delivery / Shipping Cost ($) (Optional)
+                </Label>
+                <Input
+                  id="delivery_cost"
+                  type="number"
+                  placeholder="0.00"
+                  value={formData.delivery_cost}
+                  onChange={(e) =>
+                    setFormData({ ...formData, delivery_cost: e.target.value })
+                  }
                   min="0"
                   step="0.01"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Separate delivery cost - NOT included in cost-per-gram
+                </p>
               </div>
             </div>
 
-            <Button onClick={handleAddItem} className="w-full" disabled={processing}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add to Intake
+            <Button
+              onClick={handleOpenConfirmModal}
+              className="w-full"
+              disabled={processing}
+              size="lg"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Review & Process Intake
             </Button>
           </CardContent>
         </Card>
@@ -262,80 +328,127 @@ export default function InventoryIntakePage() {
             <CardTitle>Intake Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Items:</span>
-                <span className="font-medium">{intakeItems.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Units:</span>
-                <span className="font-medium">
-                  {intakeItems.reduce((sum, item) => sum + item.quantity, 0)}
+                <span className="text-muted-foreground">Product:</span>
+                <span className="font-medium text-right">
+                  {formData.product_name || "-"}
                 </span>
               </div>
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-muted-foreground">Total Cost:</span>
-                <span className="font-bold">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Weight:</span>
+                <span className="font-medium">
+                  {formData.total_weight_grams || "0"}g
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Product Cost:</span>
+                <span className="font-medium">
+                  ${parseFloat(formData.total_cost || "0").toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Delivery Cost:</span>
+                <span className="font-medium">
+                  ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t pt-3">
+                <span className="text-muted-foreground font-semibold">
+                  Total Intake Cost:
+                </span>
+                <span className="font-bold text-lg">
                   ${totalIntakeCost.toFixed(2)}
                 </span>
               </div>
+              {costPerGram > 0 && (
+                <div className="flex justify-between border-t pt-3">
+                  <span className="text-muted-foreground">Cost/Gram:</span>
+                  <span className="font-mono font-bold text-primary">
+                    ${costPerGram.toFixed(6)}
+                  </span>
+                </div>
+              )}
             </div>
-
-            <Button
-              onClick={handleProcessIntake}
-              disabled={intakeItems.length === 0 || processing}
-              className="w-full"
-              size="lg"
-            >
-              {processing ? "Processing..." : "Process Intake"}
-            </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Intake Items Table */}
-      {intakeItems.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Items for Intake</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Unit Cost</TableHead>
-                    <TableHead>Total Cost</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {intakeItems.map((item, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">{item.product_name}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${item.unit_cost.toFixed(2)}</TableCell>
-                      <TableCell>${(item.quantity * item.unit_cost).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveItem(idx)}
-                          disabled={processing}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Inventory Intake</DialogTitle>
+            <DialogDescription>
+              Please review the intake details before processing
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Product:</span>
+                <span className="font-medium">{formData.product_name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Supplier:</span>
+                <span className="font-medium">
+                  {formData.supplier || "N/A"}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total Weight:</span>
+                <span className="font-medium">
+                  {formData.total_weight_grams}g
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Product Cost:</span>
+                <span className="font-medium">
+                  ${parseFloat(formData.total_cost).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Delivery Cost:</span>
+                <span className="font-medium">
+                  ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm border-t pt-2">
+                <span className="font-semibold">Total Cost:</span>
+                <span className="font-bold">${totalIntakeCost.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
+                <span className="font-semibold">Cost Per Gram:</span>
+                <span className="font-mono font-bold text-primary">
+                  ${costPerGram.toFixed(6)}/g
+                </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+
+            <Alert>
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertTitle>Ready to Process</AlertTitle>
+              <AlertDescription>
+                This intake will update inventory quantity and cost history.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+              disabled={processing}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleProcessIntake} disabled={processing}>
+              {processing ? "Processing..." : "Confirm Intake"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

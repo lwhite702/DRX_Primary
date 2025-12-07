@@ -4,8 +4,11 @@ export interface PricingFactors {
   cost: number;
   currentPrice: number;
   costHistory: number[];
+  deliveryCostHistory?: number[]; // NEW: historical delivery costs
+  avgDeliveryCostPerUnit?: number; // NEW: average delivery cost per unit sold
   salesVelocity7d: number;
   salesVelocity30d: number;
+  salesVelocity90d?: number; // Made optional for consistency
   currentStock: number;
   marginRequirement: number;
   reorderQuantity?: number;
@@ -32,7 +35,10 @@ export class PricingEngine {
   /**
    * Calculate baseline deterministic price
    */
-  private calculateBaselinePrice(cost: number, marginRequirement: number): number {
+  private calculateBaselinePrice(
+    cost: number,
+    marginRequirement: number
+  ): number {
     if (cost <= 0) return 0;
     return cost * (1 + marginRequirement);
   }
@@ -40,7 +46,10 @@ export class PricingEngine {
   /**
    * Detect cost trend from history
    */
-  private detectCostTrend(costHistory: number[]): { trend: string; change: number } {
+  private detectCostTrend(costHistory: number[]): {
+    trend: string;
+    change: number;
+  } {
     if (costHistory.length < 2) return { trend: "stable", change: 0 };
 
     const recent = costHistory.slice(-5);
@@ -139,7 +148,9 @@ export class PricingEngine {
   /**
    * Generate AI pricing recommendation
    */
-  async generateRecommendation(factors: PricingFactors): Promise<PricingRecommendation> {
+  async generateRecommendation(
+    factors: PricingFactors
+  ): Promise<PricingRecommendation> {
     const {
       cost,
       currentPrice,
@@ -191,20 +202,61 @@ export class PricingEngine {
       demand_analysis: demandAnalysis,
     };
 
+    // NEW: Analyze delivery cost trends
+    const deliveryCostHistory = factors.deliveryCostHistory || [];
+    const avgDeliveryCost = factors.avgDeliveryCostPerUnit || 0;
+    if (deliveryCostHistory.length > 0) {
+      const recentDeliveryCosts = deliveryCostHistory.slice(-5);
+      const avgRecent =
+        recentDeliveryCosts.reduce((a, b) => a + b, 0) /
+        recentDeliveryCosts.length;
+      const avgHistorical =
+        deliveryCostHistory.reduce((a, b) => a + b, 0) /
+        deliveryCostHistory.length;
+      const deliveryCostChange =
+        avgHistorical > 0
+          ? ((avgRecent - avgHistorical) / avgHistorical) * 100
+          : 0;
+
+      factors_detail.delivery_cost_trend = {
+        avg_recent: avgRecent,
+        avg_historical: avgHistorical,
+        change_percent: deliveryCostChange,
+      };
+
+      // Adjust pricing if delivery costs are rising significantly
+      if (deliveryCostChange > 15) {
+        priceAdjustment *= 1.03;
+        reasoning += `Delivery costs rising ${deliveryCostChange.toFixed(
+          1
+        )}% - slight price increase to maintain margin. `;
+      } else if (deliveryCostChange < -15) {
+        reasoning += `Delivery costs declining ${Math.abs(
+          deliveryCostChange
+        ).toFixed(1)}% - opportunity for competitive pricing. `;
+      }
+    }
+
     // Adjust for cost changes
     if (costTrend.change > 5) {
       priceAdjustment *= 1.05;
-      reasoning += `Cost rising ${costTrend.change.toFixed(1)}% - slight increase. `;
+      reasoning += `Cost rising ${costTrend.change.toFixed(
+        1
+      )}% - slight increase. `;
     } else if (costTrend.change < -5) {
       priceAdjustment *= 0.95;
-      reasoning += `Cost declining ${Math.abs(costTrend.change).toFixed(1)}% - consider price reduction. `;
+      reasoning += `Cost declining ${Math.abs(costTrend.change).toFixed(
+        1
+      )}% - consider price reduction. `;
     }
 
     // Adjust for inventory position
     if (inventoryAnalysis.position === "overstock") {
       priceAdjustment *= 0.92;
       confidenceScore = Math.max(60, confidenceScore - 10);
-      reasoning += `Overstock detected (${inventoryAnalysis.daysSupply.toFixed(0)}d supply) - recommend discount to clear inventory. `;
+      reasoning += `Overstock detected (${inventoryAnalysis.daysSupply.toFixed(
+        0
+      )}d supply) - recommend discount to clear inventory. `;
     } else if (inventoryAnalysis.position === "critical") {
       priceAdjustment *= 1.08;
       confidenceScore = Math.max(65, confidenceScore - 5);
@@ -218,11 +270,15 @@ export class PricingEngine {
     if (demandAnalysis.elasticity === "accelerating") {
       priceAdjustment *= 1.06;
       confidenceScore = Math.max(70, confidenceScore - 5);
-      reasoning += `Strong demand acceleration detected (${demandAnalysis.acceleration.toFixed(1)}%) - can support higher prices. `;
+      reasoning += `Strong demand acceleration detected (${demandAnalysis.acceleration.toFixed(
+        1
+      )}%) - can support higher prices. `;
     } else if (demandAnalysis.elasticity === "declining") {
       priceAdjustment *= 0.97;
       confidenceScore = Math.max(65, confidenceScore - 10);
-      reasoning += `Demand decline detected (${demandAnalysis.acceleration.toFixed(1)}%) - consider competitive pricing. `;
+      reasoning += `Demand decline detected (${demandAnalysis.acceleration.toFixed(
+        1
+      )}%) - consider competitive pricing. `;
     }
 
     // Handle stagnant products
@@ -376,7 +432,10 @@ export class PricingEngine {
   /**
    * Get historical cost data for an inventory item
    */
-  async getCostHistory(inventoryId: string, days: number = 90): Promise<number[]> {
+  async getCostHistory(
+    inventoryId: string,
+    days: number = 90
+  ): Promise<number[]> {
     if (!this.supabase) {
       return [];
     }

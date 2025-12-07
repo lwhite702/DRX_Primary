@@ -56,7 +56,58 @@ All notable changes to DRX will be documented in this file.
 
 ---
 
-## Changelog Conventions
+## Changelog
+
+## [Unreleased] - 2025-12-06
+
+### Added - Inventory Intake System Redesign
+
+**Complete cost tracking and automatic unit cost calculation**
+
+- **Database Schema**
+
+  - New `inventory_intakes` table with comprehensive cost structure
+  - New `cost_history` table for tracking cost changes over time
+  - Added `metadata` JSONB column to `inventory_log` for delivery cost tracking
+  - Helper functions: `is_manager()` and `get_avg_cost_per_gram()`
+  - RLS policies and performance indexes for new tables
+
+- **Backend APIs**
+
+  - `POST /api/inventory/intake` - Process inventory intakes with automatic cost calculation
+  - `POST /api/inventory/intake/approve` - Manager approval workflow for unusual costs
+  - Automatic cost-per-gram calculation: `total_cost / total_weight_grams`
+  - Unusual cost detection (>50% deviation triggers manager approval)
+  - Dual ledger entries (product cost + delivery cost tracked separately)
+
+- **Intake UI**
+
+  - Redesigned intake form with new cost structure fields
+  - Real-time cost-per-gram calculation display
+  - Separate delivery/shipping cost input (NOT included in unit cost)
+  - Confirmation modal with complete cost breakdown
+  - Warning system for unusual cost values
+  - Auto-calculated cost per gram with 6 decimal precision
+
+- **AI Pricing Integration**
+  - Updated `PricingFactors` interface to include delivery cost history
+  - Enhanced pricing logic to factor delivery cost trends
+  - Delivery cost treated as separate overhead (not inflating unit cost)
+
+### Changed
+
+- Inventory intake workflow now requires total cost and total weight instead of unit cost
+- Cost per gram automatically calculated and stored in cost history
+- Delivery costs tracked separately from product costs
+
+### Technical Details
+
+- Migration: `20251207000001_inventory_intake_cost_tracking.sql`
+- Weight precision: minimum 0.01 grams
+- Cost precision: 6 decimal places for cost-per-gram
+- Manager approval threshold: 50% deviation from 90-day average
+
+Conventions
 
 Tags: `[fix]`, `[feature]`, `[refactor]`, `[risk]`, `[pos]`, `[inventory]`, `[credit]`, `[reporting]`, `[security]`, `[db]`
 
