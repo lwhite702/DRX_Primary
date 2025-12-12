@@ -156,12 +156,12 @@ export default function SaleDetailPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading sale details...</div>;
+    return <div className="p-4 md:p-8">Loading sale details...</div>;
   }
 
   if (!sale) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <p>Sale not found</p>
         <Button onClick={() => router.back()} className="mt-4">
           Go Back
@@ -171,17 +171,17 @@ export default function SaleDetailPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-start gap-3 min-w-0">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Sale Details</h1>
-            <p className="text-muted-foreground mt-1">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold">Sale Details</h1>
+            <p className="text-muted-foreground mt-1 break-words">
               Order #{sale.order_number}
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function SaleDetailPage() {
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
@@ -261,46 +261,94 @@ export default function SaleDetailPage() {
               <CardTitle>Items</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {lineItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
-                        {item.inventory?.product_name || "Unknown Product"}
-                        {item.overridden_price && (
-                          <Badge variant="outline" className="ml-2 text-xs">
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {lineItems.map((item) => (
+                  <Card key={item.id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium break-words">
+                            {item.inventory?.product_name || "Unknown Product"}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            SKU: <span className="font-mono">{item.inventory?.sku || "N/A"}</span>
+                          </p>
+                        </div>
+                        <p className="font-bold">${Number(item.line_total).toFixed(2)}</p>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Qty</p>
+                          <p className="font-medium">{item.quantity}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Unit Price</p>
+                          <p className="font-medium">${Number(item.unit_price).toFixed(2)}</p>
+                          {item.overridden_price && item.original_price && (
+                            <p className="text-xs text-muted-foreground line-through">
+                              ${Number(item.original_price).toFixed(2)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {item.overridden_price && (
+                        <div className="mt-3">
+                          <Badge variant="outline" className="text-xs">
                             Price Override
                           </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{item.inventory?.sku || "N/A"}</TableCell>
-                      <TableCell className="text-right">
-                        {item.quantity}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        ${Number(item.unit_price).toFixed(2)}
-                        {item.overridden_price && item.original_price && (
-                          <span className="block text-xs text-muted-foreground line-through">
-                            ${Number(item.original_price).toFixed(2)}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        ${Number(item.line_total).toFixed(2)}
-                      </TableCell>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {lineItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">
+                          {item.inventory?.product_name || "Unknown Product"}
+                          {item.overridden_price && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              Price Override
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{item.inventory?.sku || "N/A"}</TableCell>
+                        <TableCell className="text-right">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${Number(item.unit_price).toFixed(2)}
+                          {item.overridden_price && item.original_price && (
+                            <span className="block text-xs text-muted-foreground line-through">
+                              ${Number(item.original_price).toFixed(2)}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${Number(item.line_total).toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

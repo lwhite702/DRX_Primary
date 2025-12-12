@@ -162,19 +162,19 @@ export default function AdminBusinessesPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Businesses</h1>
           <p className="text-muted-foreground mt-2">Manage all businesses in the system</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full md:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Create Business
             </Button>
@@ -246,54 +246,49 @@ export default function AdminBusinessesPage() {
           {businesses.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">No businesses found</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Business Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {businesses.map((business) => (
-                    <TableRow key={business.id}>
-                      <TableCell className="font-medium">{business.business_name}</TableCell>
-                      <TableCell>{business.business_type || "-"}</TableCell>
-                      <TableCell>
-                        {business.city && business.state
-                          ? `${business.city}, ${business.state}`
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {business.phone_number && (
-                            <p className="text-sm">{business.phone_number}</p>
-                          )}
-                          {business.email && (
-                            <p className="text-sm text-muted-foreground">{business.email}</p>
-                          )}
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {businesses.map((business) => (
+                  <Card key={business.id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium break-words">{business.business_name}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {business.business_type || "-"}
+                            {business.city && business.state
+                              ? ` • ${business.city}, ${business.state}`
+                              : ""}
+                          </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(business.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
                         <span
                           className={
-                            business.is_active
-                              ? "text-green-600 font-medium"
-                              : "text-gray-500"
+                            "text-xs font-medium mt-1 " +
+                            (business.is_active
+                              ? "text-green-600"
+                              : "text-muted-foreground")
                           }
                         >
                           {business.is_active ? "Active" : "Inactive"}
                         </span>
-                      </TableCell>
-                      <TableCell>
+                      </div>
+
+                      {(business.phone_number || business.email) && (
+                        <div className="mt-3 text-sm">
+                          {business.phone_number && <p>{business.phone_number}</p>}
+                          {business.email && (
+                            <p className="text-muted-foreground break-words">
+                              {business.email}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex items-center justify-between gap-2">
+                        <p className="text-xs text-muted-foreground">
+                          Created {new Date(business.created_at).toLocaleDateString()}
+                        </p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -301,12 +296,75 @@ export default function AdminBusinessesPage() {
                         >
                           {business.is_active ? "Deactivate" : "Activate"}
                         </Button>
-                      </TableCell>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Business Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {businesses.map((business) => (
+                      <TableRow key={business.id}>
+                        <TableCell className="font-medium">{business.business_name}</TableCell>
+                        <TableCell>{business.business_type || "-"}</TableCell>
+                        <TableCell>
+                          {business.city && business.state
+                            ? `${business.city}, ${business.state}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {business.phone_number && (
+                              <p className="text-sm">{business.phone_number}</p>
+                            )}
+                            {business.email && (
+                              <p className="text-sm text-muted-foreground">{business.email}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(business.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={
+                              business.is_active
+                                ? "text-green-600 font-medium"
+                                : "text-gray-500"
+                            }
+                          >
+                            {business.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleActive(business.id, business.is_active)}
+                          >
+                            {business.is_active ? "Deactivate" : "Activate"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

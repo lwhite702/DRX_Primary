@@ -23,7 +23,7 @@ export default function AdminLayout({
     <div className="h-full flex flex-col">
       {/* Admin Navigation Tabs */}
       <div className="border-b border-border bg-muted/30">
-        <div className="flex gap-1 px-4 py-2">
+        <div className="flex flex-wrap gap-1 px-2 sm:px-4 py-2">
           {adminNav.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href || (item.href === "/admin" && pathname === "/admin")
@@ -31,12 +31,12 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-colors text-sm font-medium ${
-                  isActive
-                    ? "bg-background text-foreground border-t border-x border-border"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg md:rounded-t-lg transition-colors text-sm font-medium ${
+                                   isActive
+                                     ? "bg-background text-foreground border md:border-t md:border-x border-border"
+                                     : "text-muted-foreground hover:text-foreground"
+                                 }`}
+                               >
                 <Icon className="w-4 h-4" />
                 {item.label}
               </Link>

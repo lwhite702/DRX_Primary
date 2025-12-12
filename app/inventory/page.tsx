@@ -114,36 +114,36 @@ export default function InventoryPage() {
   );
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Inventory</h1>
           <p className="text-muted-foreground mt-2">
             Manage inventory and stock levels
           </p>
         </div>
-        <div className="flex gap-2">
-          <a href="/inventory/intake">
-            <Button variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <a href="/inventory/intake" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Intake Stock
             </Button>
           </a>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
-              <Button onClick={handleNew}>
+              <Button onClick={handleNew} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
@@ -160,7 +160,7 @@ export default function InventoryPage() {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="sku">
                       SKU *
@@ -189,7 +189,7 @@ export default function InventoryPage() {
                   <Input id="description" {...register("description")} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
                     <Input id="category" {...register("category")} />
@@ -209,7 +209,7 @@ export default function InventoryPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="reorder_level">
                       Reorder Level *
@@ -324,82 +324,155 @@ export default function InventoryPage() {
               No inventory items yet
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Product Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Reorder Level</TableHead>
-                    <TableHead>Unit Cost</TableHead>
-                    <TableHead>Selling Price</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {inventory.map((item) => {
-                    const isLowStock =
-                      item.quantity_on_hand <= item.reorder_level;
-                    return (
-                      <TableRow
-                        key={item.id}
-                        className={isLowStock ? "bg-destructive/10" : ""}
-                      >
-                        <TableCell className="font-mono">{item.sku}</TableCell>
-                        <TableCell className="font-medium">
-                          {item.product_name}
-                        </TableCell>
-                        <TableCell>{item.category || "-"}</TableCell>
-                        <TableCell>
-                          <span
-                            className={
-                              isLowStock ? "text-destructive font-bold" : ""
-                            }
-                          >
-                            {item.quantity_on_hand}
-                          </span>
-                        </TableCell>
-                        <TableCell>{item.reorder_level}</TableCell>
-                        <TableCell>
-                          {item.unit_cost
-                            ? `$${Number(item.unit_cost).toFixed(2)}`
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {item.selling_price
-                            ? `$${Number(item.selling_price).toFixed(2)}`
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {inventory.map((item) => {
+                  const isLowStock = item.quantity_on_hand <= item.reorder_level;
+                  return (
+                    <Card
+                      key={item.id}
+                      className={isLowStock ? "border-destructive/50" : "border-border/80"}
+                    >
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium break-words">{item.product_name}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              <span className="font-mono">{item.sku}</span>
+                              {item.category ? ` • ${item.category}` : ""}
+                            </p>
+                          </div>
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
                               onClick={() => {
                                 setSelectedProduct(item);
                                 setShowCostBreakdown(true);
                               }}
-                              title="View cost breakdown"
+                              aria-label="View cost breakdown"
                             >
                               <DollarSign className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
                               onClick={() => handleEdit(item)}
+                              aria-label="Edit item"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Stock</p>
+                            <p className={isLowStock ? "font-bold text-destructive" : "font-medium"}>
+                              {item.quantity_on_hand}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Reorder Level</p>
+                            <p className="font-medium">{item.reorder_level}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Unit Cost</p>
+                            <p className="font-medium">
+                              {item.unit_cost
+                                ? "$" + Number(item.unit_cost).toFixed(2)
+                                : "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Selling Price</p>
+                            <p className="font-medium">
+                              {item.selling_price
+                                ? "$" + Number(item.selling_price).toFixed(2)
+                                : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Product Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Reorder Level</TableHead>
+                      <TableHead>Unit Cost</TableHead>
+                      <TableHead>Selling Price</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {inventory.map((item) => {
+                      const isLowStock = item.quantity_on_hand <= item.reorder_level;
+                      return (
+                        <TableRow
+                          key={item.id}
+                          className={isLowStock ? "bg-destructive/10" : ""}
+                        >
+                          <TableCell className="font-mono">{item.sku}</TableCell>
+                          <TableCell className="font-medium">{item.product_name}</TableCell>
+                          <TableCell>{item.category || "-"}</TableCell>
+                          <TableCell>
+                            <span
+                              className={isLowStock ? "text-destructive font-bold" : ""}
+                            >
+                              {item.quantity_on_hand}
+                            </span>
+                          </TableCell>
+                          <TableCell>{item.reorder_level}</TableCell>
+                          <TableCell>
+                            {item.unit_cost
+                              ? "$" + Number(item.unit_cost).toFixed(2)
+                              : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {item.selling_price
+                              ? "$" + Number(item.selling_price).toFixed(2)
+                              : "-"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedProduct(item);
+                                  setShowCostBreakdown(true);
+                                }}
+                                title="View cost breakdown"
+                              >
+                                <DollarSign className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

@@ -187,30 +187,30 @@ export default function CreditPage() {
   ).length;
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Credit Management</h1>
           <p className="text-muted-foreground mt-2">
             Track credit transactions and fronts
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <DollarSign className="h-4 w-4 mr-2" />
                 Process Payment
               </Button>
@@ -279,7 +279,7 @@ export default function CreditPage() {
             onOpenChange={setShowExtensionDialog}
           >
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Extend Credit
               </Button>
@@ -402,7 +402,46 @@ export default function CreditPage() {
             <CardTitle>Credit Aging Report</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {agingData.map((aging) => {
+                const hasDelinquent = Number(aging.bucket_31_plus) > 0
+                return (
+                  <Card key={aging.customer_id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium break-words">{aging.customer_name}</p>
+                        <p className="font-bold">${Number(aging.total_outstanding).toFixed(2)}</p>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">1–7 Days</p>
+                          <p className="font-medium">${Number(aging.bucket_1_7).toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">8–14 Days</p>
+                          <p className="font-medium">${Number(aging.bucket_8_14).toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">15–30 Days</p>
+                          <p className="font-medium">${Number(aging.bucket_15_30).toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">31+ Days</p>
+                          <p className={hasDelinquent ? "font-bold text-destructive" : "font-medium"}>
+                            ${Number(aging.bucket_31_plus).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -420,15 +459,9 @@ export default function CreditPage() {
                       <TableCell className="font-medium">
                         {aging.customer_name}
                       </TableCell>
-                      <TableCell>
-                        ${Number(aging.bucket_1_7).toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        ${Number(aging.bucket_8_14).toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        ${Number(aging.bucket_15_30).toFixed(2)}
-                      </TableCell>
+                      <TableCell>${Number(aging.bucket_1_7).toFixed(2)}</TableCell>
+                      <TableCell>${Number(aging.bucket_8_14).toFixed(2)}</TableCell>
+                      <TableCell>${Number(aging.bucket_15_30).toFixed(2)}</TableCell>
                       <TableCell
                         className={
                           aging.bucket_31_plus > 0
@@ -461,50 +494,91 @@ export default function CreditPage() {
               No transactions yet
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {creditTransactions.slice(0, 20).map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell>
-                        {new Date(tx.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {tx.transaction_type}
-                      </TableCell>
-                      <TableCell>${Number(tx.amount).toFixed(2)}</TableCell>
-                      <TableCell>
-                        {tx.due_date
-                          ? new Date(tx.due_date).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={
-                            tx.status === "completed"
-                              ? "text-green-600"
-                              : tx.status === "pending"
-                              ? "text-yellow-600"
-                              : "text-gray-600"
-                          }
-                        >
-                          {tx.status}
-                        </span>
-                      </TableCell>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {creditTransactions.slice(0, 20).map((tx) => (
+                  <Card key={tx.id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium capitalize">
+                            {tx.transaction_type}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {new Date(tx.created_at).toLocaleDateString()}
+                            {tx.due_date
+                              ? ` • Due ${new Date(tx.due_date).toLocaleDateString()}`
+                              : ""}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">${Number(tx.amount).toFixed(2)}</p>
+                          <p
+                            className={
+                              "text-xs mt-1 capitalize " +
+                              (tx.status === "completed"
+                                ? "text-green-600"
+                                : tx.status === "pending"
+                                ? "text-yellow-600"
+                                : "text-muted-foreground")
+                            }
+                          >
+                            {tx.status}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {creditTransactions.slice(0, 20).map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell>
+                          {new Date(tx.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {tx.transaction_type}
+                        </TableCell>
+                        <TableCell>${Number(tx.amount).toFixed(2)}</TableCell>
+                        <TableCell>
+                          {tx.due_date
+                            ? new Date(tx.due_date).toLocaleDateString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={
+                              tx.status === "completed"
+                                ? "text-green-600"
+                                : tx.status === "pending"
+                                ? "text-yellow-600"
+                                : "text-gray-600"
+                            }
+                          >
+                            {tx.status}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
