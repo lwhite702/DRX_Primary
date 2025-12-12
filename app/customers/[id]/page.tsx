@@ -4,13 +4,18 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface CustomerDetail {
   id: string;
@@ -120,18 +125,18 @@ export default function CustomerDetailPage() {
   }, [business?.id, customerId, supabase]);
 
   if (businessLoading || loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business || !customer) {
-    return <div className="p-8">Customer not found</div>;
+    return <div className="p-4 md:p-8">Customer not found</div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-start gap-3">
           <Button
             variant="ghost"
             size="sm"
@@ -140,12 +145,44 @@ export default function CustomerDetailPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold break-words">
               {customer.first_name} {customer.last_name}
             </h1>
-            <p className="text-muted-foreground mt-1">Customer ID: {customer.id}</p>
+            <p className="text-muted-foreground mt-1 text-xs break-all">
+              Customer ID: {customer.id}
+            </p>
           </div>
+        </div>
+
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full md:w-auto">
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Credit Panel
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="p-0">
+              <SheetHeader className="p-4 border-b border-border">
+                <SheetTitle>AI Credit Panel</SheetTitle>
+              </SheetHeader>
+              <div className="p-4 overflow-y-auto">
+                <AICreditPanel
+                  customer_id={customer.id}
+                  business_id={business.id}
+                  current_limit={Number(customer.credit_limit || 0)}
+                  ai_recommended_limit={Number(
+                    customer.credit_limit_ai_recommended || 0
+                  )}
+                  risk_score={Number(customer.credit_risk_score || 0)}
+                  last_reviewed_at={customer.credit_limit_last_reviewed_at}
+                  can_apply={can_apply_changes}
+                  user_id={user_id}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
@@ -158,7 +195,7 @@ export default function CustomerDetailPage() {
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <div>
@@ -195,7 +232,7 @@ export default function CustomerDetailPage() {
               <CardTitle>Sales & Credit Metrics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded">
                   <p className="text-xs text-muted-foreground">Sales (30 Days)</p>
                   <p className="text-xl font-bold">
@@ -248,7 +285,7 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Sidebar - AI Credit Panel */}
-        <div>
+        <div className="hidden lg:block">
           <AICreditPanel
             customer_id={customer.id}
             business_id={business.id}

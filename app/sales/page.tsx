@@ -20,14 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   POSEngine,
   type CartState,
@@ -355,19 +348,19 @@ export default function SalesPage() {
   };
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Point of Sale</h1>
         <p className="text-muted-foreground mt-2">

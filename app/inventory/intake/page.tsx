@@ -157,19 +157,19 @@ export default function InventoryIntakePage() {
   };
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Inventory Intake</h1>
         <p className="text-muted-foreground mt-2">

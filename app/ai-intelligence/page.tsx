@@ -125,12 +125,12 @@ export default function AIIntelligencePage() {
   };
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <p className="text-muted-foreground">
           No business found. Please set up your business first.
         </p>
@@ -139,16 +139,21 @@ export default function AIIntelligencePage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">AI Intelligence Center</h1>
           <p className="text-muted-foreground mt-2">
             Pricing recommendations, inventory forecasting, and demand analytics
           </p>
         </div>
-        <Button onClick={handleAnalyzeAll} disabled={loading} size="lg">
+        <Button
+          onClick={handleAnalyzeAll}
+          disabled={loading}
+          size="lg"
+          className="w-full md:w-auto"
+        >
           <RefreshCw className="h-4 w-4 mr-2" />
           {loading ? "Analyzing..." : "Analyze All Products"}
         </Button>
@@ -178,46 +183,25 @@ export default function AIIntelligencePage() {
               No products found
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Product Name</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Margin</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredInventory.map((item) => {
-                    const cost = Number(item.unit_cost || 0);
-                    const price = Number(item.selling_price || 0);
-                    const margin = cost > 0 ? ((price - cost) / cost * 100).toFixed(0) : "0";
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {filteredInventory.map((item) => {
+                  const cost = Number(item.unit_cost || 0);
+                  const price = Number(item.selling_price || 0);
+                  const margin = cost > 0 ? (((price - cost) / cost) * 100).toFixed(0) : "0";
+                  const lowStock = item.quantity_on_hand <= item.reorder_level;
 
-                    return (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-mono font-bold">
-                          {item.sku}
-                        </TableCell>
-                        <TableCell>{item.product_name}</TableCell>
-                        <TableCell>
-                          <span
-                            className={
-                              item.quantity_on_hand <= item.reorder_level
-                                ? "text-destructive font-bold"
-                                : ""
-                            }
-                          >
-                            {item.quantity_on_hand}
-                          </span>
-                        </TableCell>
-                        <TableCell>${cost.toFixed(2)}</TableCell>
-                        <TableCell>${price.toFixed(2)}</TableCell>
-                        <TableCell>{margin}%</TableCell>
-                        <TableCell>
+                  return (
+                    <Card key={item.id} className="border-border/80">
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium break-words">{item.product_name}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              <span className="font-mono">{item.sku}</span>
+                            </p>
+                          </div>
                           <Button
                             onClick={() => handleAnalyzeProduct(item)}
                             disabled={loading}
@@ -226,13 +210,91 @@ export default function AIIntelligencePage() {
                           >
                             Analyze
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Stock</p>
+                            <p className={lowStock ? "font-bold text-destructive" : "font-medium"}>
+                              {item.quantity_on_hand}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Margin</p>
+                            <p className="font-medium">{margin}%</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Cost</p>
+                            <p className="font-medium">${cost.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Price</p>
+                            <p className="font-medium">${price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Product Name</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Margin</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInventory.map((item) => {
+                      const cost = Number(item.unit_cost || 0);
+                      const price = Number(item.selling_price || 0);
+                      const margin = cost > 0 ? ((price - cost) / cost * 100).toFixed(0) : "0";
+
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-mono font-bold">
+                            {item.sku}
+                          </TableCell>
+                          <TableCell>{item.product_name}</TableCell>
+                          <TableCell>
+                            <span
+                              className={
+                                item.quantity_on_hand <= item.reorder_level
+                                  ? "text-destructive font-bold"
+                                  : ""
+                              }
+                            >
+                              {item.quantity_on_hand}
+                            </span>
+                          </TableCell>
+                          <TableCell>${cost.toFixed(2)}</TableCell>
+                          <TableCell>${price.toFixed(2)}</TableCell>
+                          <TableCell>{margin}%</TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleAnalyzeProduct(item)}
+                              disabled={loading}
+                              size="sm"
+                              variant="outline"
+                            >
+                              Analyze
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

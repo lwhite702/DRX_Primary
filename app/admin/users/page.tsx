@@ -80,11 +80,11 @@ export default function AdminUsersPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Users</h1>
         <p className="text-muted-foreground mt-2">Manage system users and roles</p>
@@ -98,8 +98,51 @@ export default function AdminUsersPage() {
           {users.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">No users found</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {users.map((user) => (
+                  <Card key={user.id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium break-all">{user.user_id}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {user.business_name}
+                          </p>
+                        </div>
+                        <span
+                          className={
+                            "text-xs font-medium " +
+                            (user.is_admin
+                              ? "text-purple-600"
+                              : "text-muted-foreground")
+                          }
+                        >
+                          {user.is_admin ? "Admin" : "Business User"}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Role</p>
+                          <p className="font-medium capitalize">{user.role}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Created</p>
+                          <p className="font-medium">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User ID</TableHead>
@@ -134,8 +177,9 @@ export default function AdminUsersPage() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
-            </div>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

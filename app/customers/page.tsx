@@ -134,16 +134,20 @@ export default function CustomersPage() {
   );
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
-    return <div className="p-8">No business found. Please set up your business first.</div>;
+    return (
+      <div className="p-4 md:p-8">
+        No business found. Please set up your business first.
+      </div>
+    );
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Customers</h1>
           <p className="text-muted-foreground mt-2">Manage customer profiles and data</p>
@@ -167,7 +171,7 @@ export default function CustomersPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">First Name *</Label>
                   <Input id="first_name" {...register("first_name")} />
@@ -184,7 +188,7 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone_number">Phone Number</Label>
                   <Input id="phone_number" {...register("phone_number")} />
@@ -203,7 +207,7 @@ export default function CustomersPage() {
                 <Input id="address" {...register("address")} />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
                   <Input id="city" {...register("city")} />
@@ -268,53 +272,106 @@ export default function CustomersPage() {
           {filteredCustomers.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">No customers found</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead>Total Purchases</TableHead>
-                    <TableHead>Credit Used</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCustomers.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/customers/${customer.id}`}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {customer.first_name} {customer.last_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{customer.phone_number || "-"}</TableCell>
-                      <TableCell>{customer.email || "-"}</TableCell>
-                      <TableCell>
-                        {customer.address
-                          ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
-                          : "-"}
-                      </TableCell>
-                      <TableCell>${Number(customer.total_purchases || 0).toFixed(2)}</TableCell>
-                      <TableCell>${Number(customer.total_credit_used || 0).toFixed(2)}</TableCell>
-                      <TableCell>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {filteredCustomers.map((customer) => (
+                  <Card key={customer.id} className="border-border/80">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <Link
+                            href={`/customers/${customer.id}`}
+                            className="font-medium text-foreground hover:underline"
+                          >
+                            {customer.first_name} {customer.last_name}
+                          </Link>
+                          <p className="text-sm text-muted-foreground mt-1 break-words">
+                            {customer.email || customer.phone_number || "No contact info"}
+                          </p>
+                        </div>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => handleEdit(customer)}
+                          aria-label="Edit customer"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                      </TableCell>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">Total Purchases</p>
+                          <p className="font-medium">${Number(customer.total_purchases || 0).toFixed(2)}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">Credit Used</p>
+                          <p className="font-medium">${Number(customer.total_credit_used || 0).toFixed(2)}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-xs text-muted-foreground">Address</p>
+                          <p className="text-sm text-foreground break-words">
+                            {customer.address
+                              ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                              : "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Address</TableHead>
+                      <TableHead>Total Purchases</TableHead>
+                      <TableHead>Credit Used</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCustomers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={`/customers/${customer.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {customer.first_name} {customer.last_name}
+                          </Link>
+                        </TableCell>
+                        <TableCell>{customer.phone_number || "-"}</TableCell>
+                        <TableCell>{customer.email || "-"}</TableCell>
+                        <TableCell>
+                          {customer.address
+                            ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell>${Number(customer.total_purchases || 0).toFixed(2)}</TableCell>
+                        <TableCell>${Number(customer.total_credit_used || 0).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(customer)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

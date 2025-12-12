@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [taxRate, setTaxRate] = useState("");
   const [collectTax, setCollectTax] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mobileStep, setMobileStep] = useState<1 | 2>(1);
   const supabase = getSupabaseClient();
 
   useEffect(() => {
@@ -122,19 +123,19 @@ export default function SettingsPage() {
   };
 
   if (businessLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-4 md:p-8">Loading...</div>;
   }
 
   if (!business) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
         <p className="text-muted-foreground mt-2">
@@ -142,14 +143,34 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
+        {/* Mobile progress */}
+        <div className="md:hidden">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 flex items-center gap-2">
+              {[1, 2].map((s) => (
+                <div
+                  key={s}
+                  className={
+                    "h-2 flex-1 rounded-full transition-all " +
+                    (s <= mobileStep ? "bg-accent" : "bg-muted")
+                  }
+                />
+              ))}
+            </div>
+            <span className="text-sm text-muted-foreground shrink-0">
+              Step {mobileStep} of 2
+            </span>
+          </div>
+        </div>
+
         {/* Business Profile */}
-        <Card>
+        <Card className={mobileStep === 1 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle>Business Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="businessName">Business Name *</Label>
                 <Input
@@ -173,7 +194,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
@@ -208,7 +229,7 @@ export default function SettingsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">City</Label>
                 <Input
@@ -245,7 +266,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Business Preferences */}
-        <Card>
+        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle>Business Preferences</CardTitle>
           </CardHeader>
@@ -290,8 +311,47 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
+        {/* Mobile step controls */}
+        <div className="md:hidden flex gap-2">
+          {mobileStep === 2 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="flex-1"
+              onClick={() => setMobileStep(1)}
+              disabled={saving}
+            >
+              Back
+            </Button>
+          )}
+
+          {mobileStep === 1 ? (
+            <Button
+              type="button"
+              size="lg"
+              className="flex-1"
+              onClick={() => setMobileStep(2)}
+              disabled={saving || !businessName.trim()}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button type="submit" disabled={saving} size="lg" className="flex-1">
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Settings"
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Desktop save */}
+        <div className="hidden md:flex justify-end">
           <Button type="submit" disabled={saving} size="lg">
             {saving ? (
               <>

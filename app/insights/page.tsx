@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card"
 
 export default function InsightsPage() {
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">AI Insights</h1>
         <p className="text-muted-foreground mt-2">AI-powered business intelligence and recommendations</p>
