@@ -25,7 +25,9 @@ serve(async (req) => {
     // Fetch inventory data
     const { data: inventory, error: inventoryError } = await supabase
       .from("inventory")
-      .select("id, product_name, sku, quantity_on_hand, reorder_level, unit_cost, selling_price")
+      .select(
+        "id, product_name, sku, quantity_on_hand, reorder_level, unit_cost, selling_price"
+      )
       .eq("business_id", business_id);
 
     if (inventoryError) throw inventoryError;
@@ -34,7 +36,10 @@ serve(async (req) => {
     const { data: recentSales, error: salesError } = await supabase
       .from("sales_line_items")
       .select("inventory_id, quantity, created_at")
-      .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .gte(
+        "created_at",
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      )
       .in(
         "sale_id",
         (
@@ -42,7 +47,10 @@ serve(async (req) => {
             .from("sales")
             .select("id")
             .eq("business_id", business_id)
-            .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+            .gte(
+              "created_at",
+              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+            )
         ).data?.map((s) => s.id) || []
       );
 
@@ -52,7 +60,9 @@ serve(async (req) => {
     const lowStockItems = (inventory || []).filter(
       (item) => item.quantity_on_hand <= item.reorder_level
     );
-    const outOfStockItems = (inventory || []).filter((item) => item.quantity_on_hand === 0);
+    const outOfStockItems = (inventory || []).filter(
+      (item) => item.quantity_on_hand === 0
+    );
     const totalInventoryValue = (inventory || []).reduce(
       (sum, item) => sum + item.quantity_on_hand * Number(item.unit_cost || 0),
       0
@@ -69,8 +79,10 @@ serve(async (req) => {
     const reorderPredictions = (inventory || []).map((item) => {
       const demand30Days = demandMap.get(item.id) || 0;
       const dailyDemand = demand30Days / 30;
-      const daysUntilReorder = dailyDemand > 0 ? item.quantity_on_hand / dailyDemand : Infinity;
-      const shouldReorder = item.quantity_on_hand <= item.reorder_level || daysUntilReorder < 7;
+      const daysUntilReorder =
+        dailyDemand > 0 ? item.quantity_on_hand / dailyDemand : Infinity;
+      const shouldReorder =
+        item.quantity_on_hand <= item.reorder_level || daysUntilReorder < 7;
 
       return {
         inventory_id: item.id,
@@ -79,7 +91,9 @@ serve(async (req) => {
         reorder_level: item.reorder_level,
         estimated_days_until_stockout: daysUntilReorder,
         should_reorder: shouldReorder,
-        recommended_quantity: shouldReorder ? Math.max(item.reorder_level * 2, demand30Days) : 0,
+        recommended_quantity: shouldReorder
+          ? Math.max(item.reorder_level * 2, demand30Days)
+          : 0,
       };
     });
 
@@ -95,7 +109,12 @@ Out of stock items: ${outOfStockItems.length}
 Total inventory value: $${totalInventoryValue.toFixed(2)}
 
 Low stock items:
-${lowStockItems.map((item) => `- ${item.product_name}: ${item.quantity_on_hand} (reorder at ${item.reorder_level})`).join("\n")}
+${lowStockItems
+  .map(
+    (item) =>
+      `- ${item.product_name}: ${item.quantity_on_hand} (reorder at ${item.reorder_level})`
+  )
+  .join("\n")}
 
 Provide a JSON response with:
 - insight_title: Brief title
@@ -105,38 +124,45 @@ Provide a JSON response with:
 
 Focus on items that need immediate attention.`;
 
-        const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content: "You are an inventory management expert. Respond with valid JSON only.",
-              },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 800,
-          }),
-        });
+        const openaiResponse = await fetch(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-5.1",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are an inventory management expert. Respond with valid JSON only.",
+                },
+                { role: "user", content: prompt },
+              ],
+              temperature: 0.7,
+              max_tokens: 800,
+            }),
+          }
+        );
 
         if (openaiResponse.ok) {
           const openaiData = await openaiResponse.json();
           const content = openaiData.choices[0]?.message?.content;
           if (content) {
-            const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
+            const jsonMatch =
+              content.match(/```json\s*([\s\S]*?)\s*```/) ||
+              content.match(/```\s*([\s\S]*?)\s*```/);
             aiInsight = JSON.parse(jsonMatch ? jsonMatch[1] : content);
 
             // Store insight
             await supabase.from("ai_insights").insert({
               business_id,
               insight_type: "inventory",
-              insight_title: aiInsight.insight_title || "Inventory Health Analysis",
+              insight_title:
+                aiInsight.insight_title || "Inventory Health Analysis",
               insight_content: aiInsight.insight_content || content,
               priority: aiInsight.priority || "medium",
               action_recommended: aiInsight.action_recommended || "",

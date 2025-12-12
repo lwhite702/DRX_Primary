@@ -40,28 +40,40 @@ serve(async (req) => {
           .from("sales")
           .select("total_amount, created_at")
           .eq("business_id", business_id)
-          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+          .gte(
+            "created_at",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+          );
 
         data = { inventory, sales };
-        context = `Inventory items: ${JSON.stringify(inventory || [])}. Recent sales: ${JSON.stringify(sales || [])}`;
+        context = `Inventory items: ${JSON.stringify(
+          inventory || []
+        )}. Recent sales: ${JSON.stringify(sales || [])}`;
         break;
 
       case "inventory":
         const { data: inventoryData } = await supabase
           .from("inventory")
-          .select("product_name, quantity_on_hand, reorder_level, unit_cost, selling_price")
+          .select(
+            "product_name, quantity_on_hand, reorder_level, unit_cost, selling_price"
+          )
           .eq("business_id", business_id);
 
         const { data: inventoryLogs } = await supabase
           .from("inventory_log")
           .select("transaction_type, quantity_change, created_at")
           .eq("business_id", business_id)
-          .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .gte(
+            "created_at",
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+          )
           .order("created_at", { ascending: false })
           .limit(50);
 
         data = { inventory: inventoryData, logs: inventoryLogs };
-        context = `Current inventory: ${JSON.stringify(inventoryData || [])}. Recent changes: ${JSON.stringify(inventoryLogs || [])}`;
+        context = `Current inventory: ${JSON.stringify(
+          inventoryData || []
+        )}. Recent changes: ${JSON.stringify(inventoryLogs || [])}`;
         break;
 
       case "credit":
@@ -78,7 +90,9 @@ serve(async (req) => {
           .eq("business_id", business_id);
 
         data = { transactions: creditTransactions, limits: creditLimits };
-        context = `Pending credit transactions: ${JSON.stringify(creditTransactions || [])}. Credit limits: ${JSON.stringify(creditLimits || [])}`;
+        context = `Pending credit transactions: ${JSON.stringify(
+          creditTransactions || []
+        )}. Credit limits: ${JSON.stringify(creditLimits || [])}`;
         break;
 
       case "cashflow":
@@ -86,7 +100,10 @@ serve(async (req) => {
           .from("sales")
           .select("total_amount, payment_method, created_at")
           .eq("business_id", business_id)
-          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .gte(
+            "created_at",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+          )
           .order("created_at", { ascending: false });
 
         const { data: creditPayments } = await supabase
@@ -94,10 +111,15 @@ serve(async (req) => {
           .select("amount, paid_date, transaction_type")
           .eq("business_id", business_id)
           .eq("transaction_type", "payment")
-          .gte("paid_date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+          .gte(
+            "paid_date",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+          );
 
         data = { sales: recentSales, payments: creditPayments };
-        context = `Recent sales: ${JSON.stringify(recentSales || [])}. Credit payments: ${JSON.stringify(creditPayments || [])}`;
+        context = `Recent sales: ${JSON.stringify(
+          recentSales || []
+        )}. Credit payments: ${JSON.stringify(creditPayments || [])}`;
         break;
 
       default:
@@ -123,28 +145,32 @@ Provide a JSON response with:
 
 Focus on practical, actionable insights that can help improve business operations.`;
 
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are a business intelligence assistant. Always respond with valid JSON only.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
+    const openaiResponse = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-5.1",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a business intelligence assistant. Always respond with valid JSON only.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+        }),
+      }
+    );
 
     if (!openaiResponse.ok) {
       const error = await openaiResponse.text();
@@ -162,7 +188,9 @@ Focus on practical, actionable insights that can help improve business operation
     let insightData;
     try {
       // Extract JSON from markdown code blocks if present
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
+      const jsonMatch =
+        content.match(/```json\s*([\s\S]*?)\s*```/) ||
+        content.match(/```\s*([\s\S]*?)\s*```/);
       insightData = JSON.parse(jsonMatch ? jsonMatch[1] : content);
     } catch {
       // Fallback: try to parse entire content

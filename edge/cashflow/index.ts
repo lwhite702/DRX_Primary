@@ -55,7 +55,10 @@ serve(async (req) => {
     if (creditError) throw creditError;
 
     // Calculate metrics
-    const totalRevenue = (sales || []).reduce((sum, s) => sum + Number(s.total_amount || 0), 0);
+    const totalRevenue = (sales || []).reduce(
+      (sum, s) => sum + Number(s.total_amount || 0),
+      0
+    );
     const cashRevenue = (sales || [])
       .filter((s) => s.payment_method === "cash")
       .reduce((sum, s) => sum + Number(s.total_amount || 0), 0);
@@ -95,31 +98,37 @@ Provide a JSON response with:
 
 Focus on cashflow health, payment method trends, and credit risk.`;
 
-        const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content: "You are a financial analyst. Respond with valid JSON only.",
-              },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 800,
-          }),
-        });
+        const openaiResponse = await fetch(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-5.1",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a financial analyst. Respond with valid JSON only.",
+                },
+                { role: "user", content: prompt },
+              ],
+              temperature: 0.7,
+              max_tokens: 800,
+            }),
+          }
+        );
 
         if (openaiResponse.ok) {
           const openaiData = await openaiResponse.json();
           const content = openaiData.choices[0]?.message?.content;
           if (content) {
-            const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
+            const jsonMatch =
+              content.match(/```json\s*([\s\S]*?)\s*```/) ||
+              content.match(/```\s*([\s\S]*?)\s*```/);
             aiInsight = JSON.parse(jsonMatch ? jsonMatch[1] : content);
 
             // Store insight

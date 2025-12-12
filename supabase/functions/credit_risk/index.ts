@@ -26,7 +26,9 @@ serve(async (req) => {
     // Fetch credit data
     let creditQuery = supabase
       .from("credit_transactions")
-      .select("id, customer_id, transaction_type, amount, due_date, paid_date, status, created_at")
+      .select(
+        "id, customer_id, transaction_type, amount, due_date, paid_date, status, created_at"
+      )
       .eq("business_id", business_id)
       .eq("transaction_type", "extension");
 
@@ -86,7 +88,9 @@ serve(async (req) => {
     (creditTransactions || []).forEach((transaction) => {
       if (transaction.status === "pending" && transaction.due_date) {
         const dueDate = new Date(transaction.due_date);
-        const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysOverdue = Math.floor(
+          (now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
         if (daysOverdue > 0) {
           const amount = Number(transaction.amount || 0);
@@ -102,7 +106,9 @@ serve(async (req) => {
           }
 
           // Track delinquent accounts
-          const existing = delinquentAccounts.find((d) => d.customer_id === transaction.customer_id);
+          const existing = delinquentAccounts.find(
+            (d) => d.customer_id === transaction.customer_id
+          );
           if (existing) {
             existing.total_delinquent += amount;
             if (dueDate < new Date(existing.oldest_due_date)) {
@@ -110,7 +116,9 @@ serve(async (req) => {
               existing.days_overdue = daysOverdue;
             }
           } else {
-            const customer = customers?.find((c) => c.id === transaction.customer_id);
+            const customer = customers?.find(
+              (c) => c.id === transaction.customer_id
+            );
             delinquentAccounts.push({
               customer_id: transaction.customer_id,
               customer_name: customer
@@ -132,12 +140,22 @@ serve(async (req) => {
       );
       const totalExtensions = customerTransactions.length;
       const paidOnTime = customerTransactions.filter(
-        (t) => t.status === "completed" && t.paid_date && t.due_date && new Date(t.paid_date) <= new Date(t.due_date)
+        (t) =>
+          t.status === "completed" &&
+          t.paid_date &&
+          t.due_date &&
+          new Date(t.paid_date) <= new Date(t.due_date)
       ).length;
       const paidLate = customerTransactions.filter(
-        (t) => t.status === "completed" && t.paid_date && t.due_date && new Date(t.paid_date) > new Date(t.due_date)
+        (t) =>
+          t.status === "completed" &&
+          t.paid_date &&
+          t.due_date &&
+          new Date(t.paid_date) > new Date(t.due_date)
       ).length;
-      const pending = customerTransactions.filter((t) => t.status === "pending").length;
+      const pending = customerTransactions.filter(
+        (t) => t.status === "pending"
+      ).length;
 
       const reliabilityScore =
         totalExtensions > 0 ? (paidOnTime / totalExtensions) * 100 : 100;
@@ -181,7 +199,9 @@ ${delinquentAccounts
   .slice(0, 5)
   .map(
     (a) =>
-      `- ${a.customer_name}: $${a.total_delinquent.toFixed(2)} (${a.days_overdue} days overdue)`
+      `- ${a.customer_name}: $${a.total_delinquent.toFixed(2)} (${
+        a.days_overdue
+      } days overdue)`
   )
   .join("\n")}
 
@@ -193,31 +213,37 @@ Provide a JSON response with:
 
 Focus on accounts that need immediate attention and collection strategies.`;
 
-        const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content: "You are a credit risk analyst. Respond with valid JSON only.",
-              },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 800,
-          }),
-        });
+        const openaiResponse = await fetch(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-5.1",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a credit risk analyst. Respond with valid JSON only.",
+                },
+                { role: "user", content: prompt },
+              ],
+              temperature: 0.7,
+              max_tokens: 800,
+            }),
+          }
+        );
 
         if (openaiResponse.ok) {
           const openaiData = await openaiResponse.json();
           const content = openaiData.choices[0]?.message?.content;
           if (content) {
-            const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
+            const jsonMatch =
+              content.match(/```json\s*([\s\S]*?)\s*```/) ||
+              content.match(/```\s*([\s\S]*?)\s*```/);
             aiInsight = JSON.parse(jsonMatch ? jsonMatch[1] : content);
 
             // Store insight
@@ -243,13 +269,18 @@ Focus on accounts that need immediate attention and collection strategies.`;
         metrics: {
           total_delinquent_accounts: delinquentAccounts.length,
           total_delinquent_amount:
-            agingBuckets["1-7"] + agingBuckets["8-14"] + agingBuckets["15-30"] + agingBuckets["31+"],
+            agingBuckets["1-7"] +
+            agingBuckets["8-14"] +
+            agingBuckets["15-30"] +
+            agingBuckets["31+"],
           aging_buckets: agingBuckets,
         },
         delinquent_accounts: delinquentAccounts
           .sort((a, b) => b.total_delinquent - a.total_delinquent)
           .slice(0, 10),
-        reliability_scores: reliabilityScores.sort((a, b) => a.reliability_score - b.reliability_score),
+        reliability_scores: reliabilityScores.sort(
+          (a, b) => a.reliability_score - b.reliability_score
+        ),
         ai_insight: aiInsight,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
@@ -280,4 +311,3 @@ Focus on accounts that need immediate attention and collection strategies.`;
     );
   }
 });
-

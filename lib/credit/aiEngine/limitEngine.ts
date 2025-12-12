@@ -26,9 +26,7 @@ interface AIEngineResponse {
   justification: string;
 }
 
-async function getBusinessConfig(
-  business_id: string
-): Promise<AIEngineConfig> {
+async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
   const supabase = getSupabaseClient();
 
   if (!supabase) {
@@ -57,12 +55,15 @@ async function getBusinessConfig(
     }
 
     return {
-      global_max_credit_per_customer:
-        Number(data.global_max_credit_per_customer || 10000),
-      global_max_credit_ratio_of_inventory:
-        Number(data.global_max_credit_ratio_of_inventory || 0.5),
-      default_credit_limit_for_new_customer:
-        Number(data.default_credit_limit_for_new_customer || 1000),
+      global_max_credit_per_customer: Number(
+        data.global_max_credit_per_customer || 10000
+      ),
+      global_max_credit_ratio_of_inventory: Number(
+        data.global_max_credit_ratio_of_inventory || 0.5
+      ),
+      default_credit_limit_for_new_customer: Number(
+        data.default_credit_limit_for_new_customer || 1000
+      ),
     };
   } catch (error) {
     console.error("Error fetching business config:", error);
@@ -102,7 +103,7 @@ async function callAILimitEngine(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-5.1",
         messages: [
           {
             role: "system",
@@ -150,8 +151,9 @@ Always return valid JSON with no additional text.`,
         Number(parsed.suggested_range_max || 5000)
       ),
       risk_score: Math.min(100, Math.max(0, Number(parsed.risk_score || 50))),
-      justification:
-        String(parsed.justification || "AI recommendation").substring(0, 200),
+      justification: String(
+        parsed.justification || "AI recommendation"
+      ).substring(0, 200),
     };
   } catch (error) {
     console.error("Error calling AI limit engine:", error);
@@ -178,13 +180,19 @@ CUSTOMER METRICS:
 - Credit Issued in Last 30 Days: $${features.credit_issued_30d.toFixed(2)}
 - Current Credit Balance: $${current_balance.toFixed(2)}
 - Business Inventory Value: $${total_inventory_value.toFixed(2)}
-- Inventory Coverage Ratio (0-1): ${features.inventory_coverage_ratio.toFixed(2)}
+- Inventory Coverage Ratio (0-1): ${features.inventory_coverage_ratio.toFixed(
+    2
+  )}
 - Inventory Turnover Score (0-100): ${features.inventory_turnover.toFixed(1)}
 
 CONSTRAINTS:
 - Maximum Per Customer: $${config.global_max_credit_per_customer.toFixed(2)}
-- Maximum as % of Inventory: $${(total_inventory_value * config.global_max_credit_ratio_of_inventory).toFixed(2)}
-- Recommended Default (New Customer): $${config.default_credit_limit_for_new_customer.toFixed(2)}
+- Maximum as % of Inventory: $${(
+    total_inventory_value * config.global_max_credit_ratio_of_inventory
+  ).toFixed(2)}
+- Recommended Default (New Customer): $${config.default_credit_limit_for_new_customer.toFixed(
+    2
+  )}
 
 SCORING RULES:
 - New customer (tenure < 30 days): Start conservative, near default or lower
@@ -259,7 +267,10 @@ function applyRuleBasedFallback(
   recommended_limit = Math.min(recommended_limit, inventory_based_cap);
 
   // Apply global maximum cap
-  recommended_limit = Math.min(recommended_limit, config.global_max_credit_per_customer);
+  recommended_limit = Math.min(
+    recommended_limit,
+    config.global_max_credit_per_customer
+  );
 
   // Never return negative
   recommended_limit = Math.max(recommended_limit, 0);
