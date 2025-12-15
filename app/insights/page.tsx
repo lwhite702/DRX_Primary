@@ -47,69 +47,61 @@ export default function EventDeskPage() {
     try {
       setLoading(true);
 
-      // Get today's sales
+      // Get today's date for sales filtering
       const today = new Date().toISOString().split('T')[0];
-      const { data: todaySales } = await supabase
-        .from("sales")
-        .select("total_amount")
-        .eq("business_id", business.id)
-        .eq("order_status", "completed")
-        .gte("created_at", today);
 
-      const totalSales = todaySales?.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) || 0;
-      const salesCount = todaySales?.length || 0;
+      // Fetch all event desk data concurrently
+      const [todaySales, lowStockItems, pendingIntakes, activeCustomers, creditData, recentIntakes] = await Promise.all([
+        supabase
+          .from("sales")
+          .select("total_amount")
+          .eq("business_id", business.id)
+          .eq("order_status", "completed")
+          .gte("created_at", today),
+        supabase
+          .from("inventory")
+          .select("id, product_name, sku, quantity_on_hand, reorder_level")
+          .eq("business_id", business.id)
+          .lte("quantity_on_hand", "reorder_level")
+          .limit(5),
+        supabase
+          .from("inventory_intakes")
+          .select("*", { count: "exact", head: true })
+          .eq("business_id", business.id)
+          .eq("status", "pending"),
+        supabase
+          .from("customers")
+          .select("*", { count: "exact", head: true })
+          .eq("business_id", business.id)
+          .eq("is_active", true),
+        supabase
+          .from("credit_limits")
+          .select("current_balance")
+          .eq("business_id", business.id),
+        supabase
+          .from("inventory_intakes")
+          .select("id, total_cost, total_weight_grams, created_at, status, inventory!inner(product_name)")
+          .eq("business_id", business.id)
+          .order("created_at", { ascending: false })
+          .limit(5)
+      ]);
+
+      const totalSales = todaySales.data?.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) || 0;
+      const salesCount = todaySales.data?.length || 0;
       const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
-
-      // Get inventory alerts (low stock items)
-      const { data: lowStockItems } = await supabase
-        .from("inventory")
-        .select("id, product_name, sku, quantity_on_hand, reorder_level")
-        .eq("business_id", business.id)
-        .lte("quantity_on_hand", "reorder_level")
-        .limit(5);
-
-      const inventoryAlerts = lowStockItems?.length || 0;
-
-      // Get pending intakes
-      const { count: pendingIntakes } = await supabase
-        .from("inventory_intakes")
-        .select("*", { count: "exact", head: true })
-        .eq("business_id", business.id)
-        .eq("status", "pending");
-
-      // Get active customers
-      const { count: activeCustomers } = await supabase
-        .from("customers")
-        .select("*", { count: "exact", head: true })
-        .eq("business_id", business.id)
-        .eq("is_active", true);
-
-      // Get credit outstanding
-      const { data: creditData } = await supabase
-        .from("credit_limits")
-        .select("current_balance")
-        .eq("business_id", business.id);
-
-      const creditOutstanding = creditData?.reduce((sum, credit) => sum + (credit.current_balance || 0), 0) || 0;
-
-      // Get recent intakes
-      const { data: recentIntakes } = await supabase
-        .from("inventory_intakes")
-        .select("id, total_cost, total_weight_grams, created_at, status, inventory!inner(product_name)")
-        .eq("business_id", business.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const inventoryAlerts = lowStockItems.data?.length || 0;
+      const creditOutstanding = creditData.data?.reduce((sum, credit) => sum + (credit.current_balance || 0), 0) || 0;
 
       setMetrics({
         totalSales,
         salesCount,
         averageSale,
         inventoryAlerts,
-        pendingIntakes: pendingIntakes || 0,
-        activeCustomers: activeCustomers || 0,
+        pendingIntakes: pendingIntakes.count || 0,
+        activeCustomers: activeCustomers.count || 0,
         creditOutstanding,
-        recentIntakes: recentIntakes || [],
-        lowStockItems: lowStockItems || []
+        recentIntakes: recentIntakes.data || [],
+        lowStockItems: lowStockItems.data || []
       });
     } catch (error) {
       console.error("Failed to load event desk data:", error);
