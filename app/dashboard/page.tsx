@@ -39,51 +39,44 @@ export default function DashboardPage() {
     try {
       setLoading(true);
 
-      // Get total sales from last 30 days
-      const { data: salesData } = await supabase
-        .from("sales")
-        .select("total_amount")
-        .eq("business_id", business.id)
-        .eq("order_status", "completed")
-        .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      // Fetch all dashboard data concurrently
+      const [salesData, activeCustomers, inventoryItems, creditData, recentSales] = await Promise.all([
+        supabase
+          .from("sales")
+          .select("total_amount")
+          .eq("business_id", business.id)
+          .eq("order_status", "completed")
+          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+        supabase
+          .from("customers")
+          .select("*", { count: "exact", head: true })
+          .eq("business_id", business.id)
+          .eq("is_active", true),
+        supabase
+          .from("inventory")
+          .select("*", { count: "exact", head: true })
+          .eq("business_id", business.id),
+        supabase
+          .from("credit_limits")
+          .select("current_balance")
+          .eq("business_id", business.id),
+        supabase
+          .from("sales")
+          .select("id, total_amount, created_at, order_status")
+          .eq("business_id", business.id)
+          .order("created_at", { ascending: false })
+          .limit(5)
+      ]);
 
-      const totalSales = salesData?.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) || 0;
-
-      // Get active customers count
-      const { count: activeCustomers } = await supabase
-        .from("customers")
-        .select("*", { count: "exact", head: true })
-        .eq("business_id", business.id)
-        .eq("is_active", true);
-
-      // Get inventory items count
-      const { count: inventoryItems } = await supabase
-        .from("inventory")
-        .select("*", { count: "exact", head: true })
-        .eq("business_id", business.id);
-
-      // Get credit outstanding
-      const { data: creditData } = await supabase
-        .from("credit_limits")
-        .select("current_balance")
-        .eq("business_id", business.id);
-
-      const creditOutstanding = creditData?.reduce((sum, credit) => sum + (credit.current_balance || 0), 0) || 0;
-
-      // Get recent activity (sales and customer additions)
-      const { data: recentSales } = await supabase
-        .from("sales")
-        .select("id, total_amount, created_at, order_status")
-        .eq("business_id", business.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const totalSales = salesData.data?.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) || 0;
+      const creditOutstanding = creditData.data?.reduce((sum, credit) => sum + (credit.current_balance || 0), 0) || 0;
 
       setStats({
         totalSales,
-        activeCustomers: activeCustomers || 0,
-        inventoryItems: inventoryItems || 0,
+        activeCustomers: activeCustomers.count || 0,
+        inventoryItems: inventoryItems.count || 0,
         creditOutstanding,
-        recentActivity: recentSales || []
+        recentActivity: recentSales.data || []
       });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
