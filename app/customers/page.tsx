@@ -180,7 +180,7 @@ export default function CustomersPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Label htmlFor="last_name">Last Name</Label>
                   <Input id="last_name" {...register("last_name")} />
                   {errors.last_name && (
                     <p className="text-sm text-destructive">{errors.last_name.message}</p>
@@ -188,10 +188,21 @@ export default function CustomersPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="alias">Alias (Optional)</Label>
+                <Input id="alias" {...register("alias")} />
+                {errors.alias && (
+                  <p className="text-sm text-destructive">{errors.alias.message}</p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone_number">Phone Number</Label>
                   <Input id="phone_number" {...register("phone_number")} />
+                  {errors.phone_number && (
+                    <p className="text-sm text-destructive">{errors.phone_number.message}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -201,6 +212,10 @@ export default function CustomersPage() {
                   )}
                 </div>
               </div>
+              
+              <p className="text-sm text-muted-foreground">
+                * Either phone number or email is required
+              </p>
 
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
@@ -289,6 +304,9 @@ export default function CustomersPage() {
                           <p className="text-sm text-muted-foreground mt-1 break-words">
                             {customer.email || customer.phone_number || "No contact info"}
                           </p>
+                          {customer.alias && (
+                            <p className="text-xs text-muted-foreground mt-1">Alias: {customer.alias}</p>
+                          )}
                         </div>
                         <Button
                           variant="ghost"
@@ -341,12 +359,17 @@ export default function CustomersPage() {
                     {filteredCustomers.map((customer) => (
                       <TableRow key={customer.id}>
                         <TableCell className="font-medium">
-                          <Link
-                            href={`/customers/${customer.id}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {customer.first_name} {customer.last_name}
-                          </Link>
+                          <div>
+                            <Link
+                              href={`/customers/${customer.id}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {customer.first_name} {customer.last_name}
+                            </Link>
+                            {customer.alias && (
+                              <p className="text-xs text-muted-foreground">({customer.alias})</p>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>{customer.phone_number || "-"}</TableCell>
                         <TableCell>{customer.email || "-"}</TableCell>

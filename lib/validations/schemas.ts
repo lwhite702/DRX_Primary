@@ -39,7 +39,8 @@ export const customerSchema = z.object({
   id: z.string().uuid().optional(),
   business_id: z.string().uuid(),
   first_name: z.string().min(1).max(100),
-  last_name: z.string().min(1).max(100),
+  last_name: z.string().max(100).optional(),
+  alias: z.string().max(100).optional(),
   phone_number: z.string().max(20).optional(),
   email: z.string().email().optional(),
   address: z.string().optional(),
@@ -48,6 +49,12 @@ export const customerSchema = z.object({
   zip_code: z.string().max(20).optional(),
   customer_type: z.string().max(50).optional(),
   is_active: z.boolean().default(true),
+}).refine((data) => {
+  // Either phone number OR email is required (at least one must be present)
+  return data.phone_number || data.email;
+}, {
+  message: "Either phone number or email is required",
+  path: ["phone_number"], // Error will appear on phone_number field
 });
 
 export type Customer = z.infer<typeof customerSchema>;

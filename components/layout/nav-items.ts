@@ -22,7 +22,7 @@ export const primaryNav: NavItem[] = [
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/credit", label: "Credit", icon: CreditCard },
-  { href: "/insights", label: "Insights", icon: TrendingUp },
+  { href: "/insights", label: "Event Desk Board", icon: TrendingUp },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
