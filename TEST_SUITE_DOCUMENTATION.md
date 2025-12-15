@@ -6,18 +6,26 @@ Comprehensive unit and integration tests for the DRX CRM dashboard and Event Des
 ## Test Files Created
 
 ### 1. Core Logic Tests
-- **`tests/final-validation.test.js`** - ✅ **WORKING**
-  - Simple JavaScript tests for core calculation functions
+- **`tests/data-processing-vitest.test.ts`** - ✅ **Vitest Format**
+  - Refactored from simple console validation to formal Vitest unit tests
   - Tests sales calculations, inventory alerts, credit processing, and intake calculations
-  - All tests passing ✅
+  - Comprehensive test coverage with performance validation ✅
+  - **NEW**: `tests/customer-validation.unit.test.ts` - Customer creation validation tests ✅
 
-### 2. Data Processing Tests
+### 2. Customer Validation Tests
+- **`tests/customer-validation.unit.test.ts`** - ✅ **NEW**
+  - Comprehensive unit tests for customer creation validation rules
+  - Tests last name optional, alias optional, phone OR email required
+  - Validates edge cases, type safety, and error handling
+  - Ensures robust input validation for customer forms ✅
+
+### 3. Data Processing Tests
 - **`tests/data-processing-logic.test.ts`**
   - Unit tests for EventDesk and Dashboard data processing
   - Tests data aggregation, metric calculations, and edge cases
   - Includes TypeScript support and proper test structure
 
-### 3. Component-Specific Tests
+### 4. Component-Specific Tests
 - **`tests/event-desk-data-processing.unit.test.ts`**
   - Tests EventDesk page data processing logic
   - Validates sales, inventory, credit, and intake data handling
@@ -26,20 +34,40 @@ Comprehensive unit and integration tests for the DRX CRM dashboard and Event Des
   - Tests Dashboard page data processing logic
   - Validates 30-day sales, customer counts, and activity feeds
 
-### 4. API Integration Tests
+### 5. API Integration Tests
 - **`tests/inventory-intake-processing.unit.test.ts`**
   - Tests inventory intake API data processing
   - Validates cost calculations, quantity updates, and error handling
 
-### 5. End-to-End Tests
+### 6. End-to-End Tests
 - **`tests/event-desk-integration.spec.ts`**
   - Playwright integration tests for EventDesk page
   - Tests complete data flow from UI to Supabase backend
   - Includes mobile responsiveness and performance tests
 
-### 6. Configuration Files
+### 7. Configuration Files
 - **`vitest.config.ts`** - Vitest configuration for unit tests
 - **`tests/setup.ts`** - Global test setup and mocks
+
+## Test Commands
+
+```bash
+# Run unit tests with Vitest
+npm run test
+npm run test:run
+npm run test:coverage
+
+# Run specific test categories
+npm run test -- tests/customer-validation.unit.test.ts
+npm run test -- tests/data-processing-vitest.test.ts
+
+# Run integration tests with Playwright
+npm run test:e2e
+npm run test:e2e:ui
+
+# Run tests with UI
+npm run test:ui
+```
 
 ## Test Results Summary
 
@@ -49,6 +77,8 @@ Comprehensive unit and integration tests for the DRX CRM dashboard and Event Des
 📦 INVENTORY ALERTS TEST - ✅ PASS  
 💳 CREDIT CALCULATIONS TEST - ✅ PASS
 📥 INTAKE CALCULATIONS TEST - ✅ PASS
+👥 CUSTOMER VALIDATION TEST - ✅ PASS
+🔄 DATA PROCESSING VITEST TEST - ✅ PASS
 ```
 
 ### Core Functionality Validated
