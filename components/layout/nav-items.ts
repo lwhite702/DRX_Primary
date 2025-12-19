@@ -7,14 +7,15 @@ import {
   TrendingUp,
   FileText,
   Settings,
+  HelpCircle,
   type LucideIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 export type NavItem = {
-  href: string
-  label: string
-  icon: LucideIcon
-}
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
 
 export const primaryNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
@@ -24,5 +25,6 @@ export const primaryNav: NavItem[] = [
   { href: "/credit", label: "Credit", icon: CreditCard },
   { href: "/insights", label: "Event Desk Board", icon: TrendingUp },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/help", label: "Help", icon: HelpCircle },
   { href: "/settings", label: "Settings", icon: Settings },
-]
+];

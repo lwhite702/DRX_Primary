@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import { OfflineProvider } from "@/components/providers/offline-provider";
 import { BusinessSetupProvider } from "@/components/providers/business-setup-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -58,12 +60,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans bg-background text-foreground antialiased">
-        <BusinessSetupProvider>
-          <OfflineProvider>
-            <AppShell>{children}</AppShell>
-            <Toaster position="top-right" />
-          </OfflineProvider>
-        </BusinessSetupProvider>
+        <GlobalErrorBoundary>
+          <BusinessSetupProvider>
+            <OfflineProvider>
+              <AppShell>{children}</AppShell>
+              <OnboardingFlow />
+              <Toaster position="top-right" />
+            </OfflineProvider>
+          </BusinessSetupProvider>
+        </GlobalErrorBoundary>
       </body>
     </html>
   );

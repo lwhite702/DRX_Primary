@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Bell, Menu, Search, Settings, User } from "lucide-react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Bell, Menu, Search, Settings, User } from "lucide-react";
 
-import { AppLogo } from "@/components/layout/app-logo"
-import { LogoutButton } from "@/components/layout/logout-button"
-import { primaryNav } from "@/components/layout/nav-items"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AppLogo } from "@/components/layout/app-logo";
+import { LogoutButton } from "@/components/layout/logout-button";
+import { primaryNav } from "@/components/layout/nav-items";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
 export function TopNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <header className="h-14 md:h-16 bg-muted border-b border-border flex items-center justify-between px-4 md:px-6 gap-3 min-w-0">
@@ -41,10 +41,7 @@ export function TopNav() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="p-0"
-          >
+          <SheetContent side="left" className="p-0">
             <SheetHeader className="p-4 border-b border-border">
               <SheetTitle className="text-left">
                 <AppLogo showTagline />
@@ -53,8 +50,10 @@ export function TopNav() {
             <div className="p-2 overflow-y-auto">
               <nav className="space-y-1" aria-label="Main menu">
                 {primaryNav.map((item) => {
-                  const Icon = item.icon
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(item.href + "/");
 
                   return (
                     <Link
@@ -71,7 +70,7 @@ export function TopNav() {
                       <Icon className="h-5 w-5" />
                       <span className="min-w-0 truncate">{item.label}</span>
                     </Link>
-                  )
+                  );
                 })}
               </nav>
 
@@ -83,6 +82,30 @@ export function TopNav() {
                   <Settings className="h-5 w-5" />
                   <span className="min-w-0 truncate">Admin Console</span>
                 </Link>
+                <button
+                  onClick={() => {
+                    const feedback = (window as any).Sentry?.getFeedback?.();
+                    if (feedback) {
+                      feedback.createWidget();
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="min-w-0 truncate">Report a Bug</span>
+                </button>
                 <LogoutButton className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border" />
               </div>
             </div>
@@ -120,22 +143,14 @@ export function TopNav() {
           <Search className="w-5 h-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="Notifications"
-        >
+        <Button variant="ghost" size="icon-lg" aria-label="Notifications">
           <Bell className="w-5 h-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="User menu"
-        >
+        <Button variant="ghost" size="icon-lg" aria-label="User menu">
           <User className="w-5 h-5" />
         </Button>
       </div>
     </header>
-  )
+  );
 }
