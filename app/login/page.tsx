@@ -1,11 +1,18 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -22,7 +29,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!supabase) {
       toast.error("Supabase client not available");
       return;
@@ -60,7 +67,7 @@ export default function LoginPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!supabase) {
       toast.error("Supabase client not available");
       return;
@@ -125,11 +132,16 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-3xl font-bold">DRX CRM</CardTitle>
           <CardDescription className="text-base">
-            {isSignUp ? "Create your account" : "DeelRx Point of Sale & Customer Management"}
+            {isSignUp
+              ? "Create your account"
+              : "DeelRx Point of Sale & Customer Management"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
+          <form
+            onSubmit={isSignUp ? handleSignUp : handleLogin}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -171,18 +183,16 @@ export default function LoginPage() {
                 />
               </div>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {isSignUp ? "Creating account..." : "Signing in..."}
                 </>
+              ) : isSignUp ? (
+                "Create Account"
               ) : (
-                isSignUp ? "Create Account" : "Sign In"
+                "Sign In"
               )}
             </Button>
           </form>
@@ -198,8 +208,35 @@ export default function LoginPage() {
               disabled={loading}
               className="text-muted-foreground hover:text-foreground underline disabled:opacity-50"
             >
-              {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+              {isSignUp
+                ? "Already have an account? Sign In"
+                : "Don't have an account? Sign Up"}
             </button>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    // Check Sentry connectivity first
+                    const connectivity = await Sentry.diagnoseSdkConnectivity();
+                    console.log("Sentry connectivity:", connectivity);
+
+                    // @ts-ignore - intentionally calling non-existent function
+                    nonExistentFunction();
+                  } catch (error) {
+                    const eventId = Sentry.captureException(error);
+                    console.error("Error captured by Sentry:", error);
+                    console.log("Sentry Event ID:", eventId);
+                    alert(
+                      `Error sent to Sentry! Event ID: ${eventId}\nCheck console for details.`
+                    );
+                  }
+                }}
+                className="text-red-500 hover:text-red-700 underline text-xs"
+              >
+                Trigger Sentry Error
+              </button>
+            </div>
           </div>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Protected by DRX Security</p>
@@ -209,4 +246,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

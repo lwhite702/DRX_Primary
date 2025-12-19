@@ -1,3 +1,4 @@
+
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 export interface PricingFactors {
