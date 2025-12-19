@@ -1,6 +1,5 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -212,31 +211,6 @@ export default function LoginPage() {
                 ? "Already have an account? Sign In"
                 : "Don't have an account? Sign Up"}
             </button>
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    // Check Sentry connectivity first
-                    const connectivity = await Sentry.diagnoseSdkConnectivity();
-                    console.log("Sentry connectivity:", connectivity);
-
-                    // @ts-ignore - intentionally calling non-existent function
-                    nonExistentFunction();
-                  } catch (error) {
-                    const eventId = Sentry.captureException(error);
-                    console.error("Error captured by Sentry:", error);
-                    console.log("Sentry Event ID:", eventId);
-                    alert(
-                      `Error sent to Sentry! Event ID: ${eventId}\nCheck console for details.`
-                    );
-                  }
-                }}
-                className="text-red-500 hover:text-red-700 underline text-xs"
-              >
-                Trigger Sentry Error
-              </button>
-            </div>
           </div>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Protected by DRX Security</p>
