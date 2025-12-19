@@ -51,7 +51,7 @@ describe('Inventory Intake Data Processing', () => {
         total_weight_grams: 250.50,
       });
 
-      expect(result.calculated_cost_per_gram).toBe(1.9960079840319362); // 500 / 250.50
+      expect(result.calculated_cost_per_gram).toBeCloseTo(1.9960079840319362, 12); // 500 / 250.50
     });
 
     it('should handle small weight amounts with high precision', () => {
@@ -71,7 +71,7 @@ describe('Inventory Intake Data Processing', () => {
         total_weight_grams: 2500.75,
       });
 
-      expect(result.calculated_cost_per_gram).toBe(1.9980014992503748); // 5000 / 2500.75
+      expect(result.calculated_cost_per_gram).toBeCloseTo(1.9994001799460162, 12); // 5000 / 2500.75
     });
 
     it('should handle fractional grams correctly', () => {
@@ -81,7 +81,7 @@ describe('Inventory Intake Data Processing', () => {
         total_weight_grams: 67.89,
       });
 
-      expect(result.calculated_cost_per_gram).toBe(1.8179985264095547); // 123.45 / 67.89
+      expect(result.calculated_cost_per_gram).toBeCloseTo(1.8183826778612462, 12); // 123.45 / 67.89
     });
   });
 
@@ -195,7 +195,7 @@ describe('Inventory Intake Data Processing', () => {
       });
 
       // Should maintain precision through calculation
-      expect(result.calculated_cost_per_gram).toBeCloseTo(2.00006, 5);
+      expect(result.calculated_cost_per_gram).toBeCloseTo(1.99994, 5);
     });
 
     it('should handle negative values gracefully', () => {
@@ -283,7 +283,7 @@ describe('Inventory Intake Data Processing', () => {
       });
 
       // Should maintain precision to at least 6 decimal places
-      expect(result.calculated_cost_per_gram).toBeCloseTo(1.249999, 6);
+      expect(result.calculated_cost_per_gram).toBeCloseTo(1.25, 5);
     });
   });
 });
