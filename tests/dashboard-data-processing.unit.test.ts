@@ -29,7 +29,7 @@ const processDashboardData = (data: {
     activeCustomers: customerCount,
     inventoryItems: inventoryCount,
     creditOutstanding: creditData?.reduce((sum, credit) => sum + (credit.current_balance || 0), 0) || 0,
-    recentActivity: recentSales || [],
+    recentActivity: recentSales ? [...recentSales] : [],
   };
 };
 

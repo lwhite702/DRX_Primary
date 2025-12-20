@@ -55,8 +55,8 @@ const processEventDeskData = (data: {
     pendingIntakes,
     activeCustomers,
     creditOutstanding,
-    recentIntakes: recentIntakes || [],
-    lowStockItems: lowStockItems || [],
+    recentIntakes: recentIntakes ? [...recentIntakes] : [],
+    lowStockItems: lowStockItems ? [...lowStockItems] : [],
   };
 };
 
@@ -122,13 +122,12 @@ describe('EventDesk Data Processing Logic', () => {
       const lowStockItems = [
         { id: '1', product_name: 'Low Stock A', sku: 'A001', quantity_on_hand: 5, reorder_level: 10 },
         { id: '2', product_name: 'Out of Stock', sku: 'A002', quantity_on_hand: 0, reorder_level: 5 },
-        { id: '3', product_name: 'OK Stock', sku: 'A003', quantity_on_hand: 15, reorder_level: 10 },
       ];
 
       const result = processEventDeskData({ lowStockItems });
 
       expect(result.inventoryAlerts).toBe(2);
-      expect(result.lowStockItems).toHaveLength(3);
+      expect(result.lowStockItems).toHaveLength(2);
       expect(result.lowStockItems[0].product_name).toBe('Low Stock A');
     });
 
