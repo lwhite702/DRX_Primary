@@ -16,7 +16,7 @@ const createQueryBuilder = () => {
     single: vi.fn(() => Promise.resolve({ data: null, error: null })),
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
-    rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    rpc: vi.fn(() => builder),
     then: (resolve: any) => resolve({ data: [], error: null, count: 0 }),
   };
   return builder;
