@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { usePermission } from "@/lib/hooks/use-permission";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { business, loading: businessLoading, refreshBusiness } = useBusiness();
+  const { hasPermission } = usePermission(business?.id);
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [phone, setPhone] = useState("");
@@ -136,11 +139,21 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Configure your business settings
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-2">
+            Configure your business settings
+          </p>
+        </div>
+        {hasPermission("users.manage") && (
+          <Link href="/settings/team">
+            <Button variant="outline" className="gap-2">
+              <Users className="w-4 h-4" />
+              Manage Team
+            </Button>
+          </Link>
+        )}
       </div>
 
       <form onSubmit={handleSave} className="space-y-4 md:space-y-6">

@@ -7,6 +7,8 @@ export type UserRole =
   | "admin"
   | "staff"
   | "cashier"
+  | "supervisor"
+  | "super_admin"
   | null;
 
 export function useUserRole(businessId: string | undefined) {

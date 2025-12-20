@@ -17,8 +17,36 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { useBusiness } from "@/lib/hooks/use-business";
+import { usePermission } from "@/lib/hooks/use-permission";
+import { useUserRole } from "@/lib/hooks/use-user-role";
+
 export function TopNav() {
   const pathname = usePathname();
+  const { business } = useBusiness();
+  const { hasPermission, loading } = usePermission(business?.id);
+  const { role } = useUserRole(business?.id);
+
+  const filteredNav = primaryNav.filter((item) => {
+    if (loading) return false;
+
+    switch (item.href) {
+      case "/settings":
+        return hasPermission("settings.manage");
+      case "/reports":
+        return hasPermission("reports.view_daily") || hasPermission("reports.view_all");
+      case "/inventory":
+        return hasPermission("catalog.view");
+      case "/sales":
+        return hasPermission("sales.create") || hasPermission("sales.view_all");
+      case "/customers":
+        return hasPermission("customers.view");
+      default:
+        return true;
+    }
+  });
+
+  const showAdminConsole = hasPermission("system.config") || hasPermission("users.manage_any");
 
   return (
     <header className="h-14 md:h-16 bg-muted border-b border-border flex items-center justify-between px-4 md:px-6 gap-3 min-w-0">
@@ -49,7 +77,7 @@ export function TopNav() {
             </SheetHeader>
             <div className="p-2 overflow-y-auto">
               <nav className="space-y-1" aria-label="Main menu">
-                {primaryNav.map((item) => {
+                {filteredNav.map((item) => {
                   const Icon = item.icon;
                   const isActive =
                     pathname === item.href ||
@@ -75,13 +103,15 @@ export function TopNav() {
               </nav>
 
               <div className="mt-3 pt-3 border-t border-border space-y-1">
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span className="min-w-0 truncate">Admin Console</span>
-                </Link>
+                {showAdminConsole && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="min-w-0 truncate">Admin Console</span>
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     const feedback = (window as any).Sentry?.getFeedback?.();
@@ -147,9 +177,16 @@ export function TopNav() {
           <Bell className="w-5 h-5" />
         </Button>
 
-        <Button variant="ghost" size="icon-lg" aria-label="User menu">
-          <User className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {role && (
+            <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">
+              {role.replace("_", " ")}
+            </span>
+          )}
+          <Button variant="ghost" size="icon-lg" aria-label="User menu">
+            <User className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
     </header>
   );
