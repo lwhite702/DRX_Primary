@@ -15,7 +15,7 @@ interface OfflineTransaction {
   type: "pos_checkout" | "credit_extension" | "credit_payment" | "inventory_update";
   data: any;
   timestamp: number;
-  synced: boolean;
+  synced: number; // 0 = unsynced, 1 = synced
   retry_count: number;
 }
 
@@ -69,7 +69,7 @@ export class OfflineSyncManager {
       type,
       data,
       timestamp: Date.now(),
-      synced: false,
+      synced: 0,
       retry_count: 0,
     };
 
@@ -91,7 +91,7 @@ export class OfflineSyncManager {
       const tx = this.db!.transaction([STORES.transactions], "readonly");
       const store = tx.objectStore(STORES.transactions);
       const index = store.index("synced");
-      const request = index.getAll(false as any);
+      const request = index.getAll(0);
 
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
@@ -106,7 +106,7 @@ export class OfflineSyncManager {
       const tx = this.db!.transaction([STORES.transactions], "readonly");
       const store = tx.objectStore(STORES.transactions);
       const index = store.index("synced");
-      const request = index.count(IDBKeyRange.only(false as any));
+      const request = index.count(IDBKeyRange.only(0));
 
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -125,7 +125,7 @@ export class OfflineSyncManager {
       getRequest.onsuccess = () => {
         const transaction = getRequest.result;
         if (transaction) {
-          transaction.synced = true;
+          transaction.synced = 1;
           const updateRequest = store.put(transaction);
           updateRequest.onsuccess = () => resolve();
           updateRequest.onerror = () => reject(updateRequest.error);
@@ -176,7 +176,7 @@ export class OfflineSyncManager {
       request.onsuccess = (event) => {
         const cursor = (event.target as IDBRequest).result;
         if (cursor) {
-          if (cursor.value.synced) {
+          if (cursor.value.synced === 1) {
             cursor.delete();
           }
           cursor.continue();
