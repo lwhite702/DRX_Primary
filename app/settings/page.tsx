@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [zipCode, setZipCode] = useState("");
   const [taxRate, setTaxRate] = useState("");
   const [collectTax, setCollectTax] = useState(true);
+  const [posManagerPin, setPosManagerPin] = useState("");
   const [saving, setSaving] = useState(false);
   const [mobileStep, setMobileStep] = useState<1 | 2>(1);
   const supabase = getSupabaseClient();
@@ -44,13 +45,14 @@ export default function SettingsPage() {
     if (business?.id && supabase) {
       supabase
         .from("business_settings")
-        .select("default_tax_rate, collect_tax")
+        .select("default_tax_rate, collect_tax, pos_manager_pin")
         .eq("business_id", business.id)
         .single()
         .then(({ data }: any) => {
           if (data) {
             setTaxRate((data.default_tax_rate * 100).toFixed(2));
-            setCollectTax(data.collect_tax !== false); // Default to true if null
+            setCollectTax(data.collect_tax !== false);
+            setPosManagerPin(data.pos_manager_pin || "");
           }
         })
         .catch((error: any) => {
@@ -98,6 +100,7 @@ export default function SettingsPage() {
           .update({
             default_tax_rate: parseFloat(taxRate) / 100,
             collect_tax: collectTax,
+            pos_manager_pin: posManagerPin || null,
             updated_at: new Date().toISOString(),
           })
           .eq("business_id", business.id);
@@ -311,6 +314,33 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* POS Security */}
+        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
+          <CardHeader>
+            <CardTitle>POS Security</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="posManagerPin">Manager PIN</Label>
+              <Input
+                id="posManagerPin"
+                type="text"
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength={4}
+                value={posManagerPin}
+                onChange={(e) => setPosManagerPin(e.target.value)}
+                placeholder="1234"
+                disabled={saving}
+              />
+              <p className="text-sm text-muted-foreground">
+                PIN required for manager overrides (e.g., selling below cost).
+                Default is 1234.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Mobile step controls */}
         <div className="md:hidden flex gap-2">
           {mobileStep === 2 && (
@@ -337,7 +367,12 @@ export default function SettingsPage() {
               Continue
             </Button>
           ) : (
-            <Button type="submit" disabled={saving} size="lg" className="flex-1">
+            <Button
+              type="submit"
+              disabled={saving}
+              size="lg"
+              className="flex-1"
+            >
               {saving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

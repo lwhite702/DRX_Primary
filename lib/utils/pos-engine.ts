@@ -43,6 +43,7 @@ export interface CartItem {
   overridden_price?: number;
   original_price?: number;
   override_reason?: string;
+  unit_cost?: number;
 }
 
 export interface CartState {

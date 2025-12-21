@@ -55,6 +55,7 @@ import { LoyaltyBadge } from "@/components/pos/loyalty-badge";
 import { PriceOverrideModal } from "@/components/pos/price-override-modal";
 import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
 import { useUserRole } from "@/lib/hooks/use-user-role";
+import { PermissionGuard } from "@/components/auth/role-guard";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 
 export default function SalesPage() {
@@ -95,6 +96,7 @@ export default function SalesPage() {
   const [showCustomerSelector, setShowCustomerSelector] = useState(false);
   const { canOverridePrice } = useUserRole(business?.id);
   const [taxEnabled, setTaxEnabled] = useState(true);
+  const [managerPin, setManagerPin] = useState("1234"); // Default, will be overwritten by settings
 
   const supabase = getSupabaseClient();
 
@@ -171,13 +173,16 @@ export default function SalesPage() {
     const loadTaxSettings = async () => {
       const { data } = await supabase
         .from("business_settings")
-        .select("collect_tax")
+        .select("collect_tax, pos_manager_pin")
         .eq("business_id", business.id)
         .single();
 
       if (data) {
         const taxCollectionEnabled = data.collect_tax !== false;
         setTaxEnabled(taxCollectionEnabled);
+        if (data.pos_manager_pin) {
+          setManagerPin(data.pos_manager_pin);
+        }
         posEngine.setTaxEnabled(taxCollectionEnabled);
         setCart(posEngine.getCart());
       }
@@ -204,6 +209,7 @@ export default function SalesPage() {
       sku: item.sku,
       quantity: 1,
       unit_price: Number(item.selling_price || 0),
+      unit_cost: Number(item.unit_cost || 0),
     });
     setCart(posEngine.getCart());
     toast.success(`${item.product_name} added to cart`);
@@ -588,14 +594,16 @@ export default function SalesPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       {canOverridePrice && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePriceOverride(item)}
-                          title="Override Price"
-                        >
-                          <DollarSign className="h-4 w-4" />
-                        </Button>
+                        <PermissionGuard requiredPermission="pricing.manage">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePriceOverride(item)}
+                            title="Override Price"
+                          >
+                            <DollarSign className="h-4 w-4" />
+                          </Button>
+                        </PermissionGuard>
                       )}
                       <Button
                         variant="outline"

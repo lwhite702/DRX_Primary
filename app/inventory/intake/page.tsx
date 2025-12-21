@@ -27,6 +27,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { PermissionGuard } from "@/components/auth/role-guard";
 
 interface IntakeFormData {
   inventory_id: string;
@@ -169,286 +170,307 @@ export default function InventoryIntakePage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Inventory Intake</h1>
-        <p className="text-muted-foreground mt-2">
-          Add inventory with complete cost tracking
-        </p>
-      </div>
+    <PermissionGuard
+      requiredPermission="inventory.manage"
+      fallback={
+        <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">
+            Access Denied
+          </h1>
+          <p className="text-muted-foreground">
+            You do not have permission to access Inventory Intake.
+          </p>
+        </div>
+      }
+    >
+      <div className="p-4 md:p-8 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Inventory Intake</h1>
+          <p className="text-muted-foreground mt-2">
+            Add inventory with complete cost tracking
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Intake Form */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Intake Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Product Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="product">Product *</Label>
-              <Select
-                value={formData.inventory_id}
-                onValueChange={handleProductChange}
-              >
-                <SelectTrigger id="product">
-                  <SelectValue placeholder="Select product to intake" />
-                </SelectTrigger>
-                <SelectContent>
-                  {inventory.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.product_name} (SKU: {item.sku}, Stock:{" "}
-                      {item.quantity_on_hand}g)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Supplier */}
-            <div className="space-y-2">
-              <Label htmlFor="supplier">Supplier (Optional)</Label>
-              <Input
-                id="supplier"
-                placeholder="Supplier name"
-                value={formData.supplier}
-                onChange={(e) =>
-                  setFormData({ ...formData, supplier: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="border-t pt-4 space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground">
-                Cost Structure
-              </h3>
-
-              {/* Total Cost */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Intake Form */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Intake Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Product Selection */}
               <div className="space-y-2">
-                <Label htmlFor="total_cost">Total Cost of Product ($) *</Label>
-                <Input
-                  id="total_cost"
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.total_cost}
-                  onChange={(e) =>
-                    setFormData({ ...formData, total_cost: e.target.value })
-                  }
-                  min="0.01"
-                  step="0.01"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Total amount paid for this bulk purchase
-                </p>
+                <Label htmlFor="product">Product *</Label>
+                <Select
+                  value={formData.inventory_id}
+                  onValueChange={handleProductChange}
+                >
+                  <SelectTrigger id="product">
+                    <SelectValue placeholder="Select product to intake" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {inventory.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.product_name} (SKU: {item.sku}, Stock:{" "}
+                        {item.quantity_on_hand}g)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Total Weight */}
+              {/* Supplier */}
               <div className="space-y-2">
-                <Label htmlFor="total_weight">
-                  Total Weight Received (grams) *
-                </Label>
+                <Label htmlFor="supplier">Supplier (Optional)</Label>
                 <Input
-                  id="total_weight"
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.total_weight_grams}
+                  id="supplier"
+                  placeholder="Supplier name"
+                  value={formData.supplier}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      total_weight_grams: e.target.value,
-                    })
+                    setFormData({ ...formData, supplier: e.target.value })
                   }
-                  min="0.01"
-                  step="0.01"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Total weight of product received in this shipment
-                </p>
               </div>
 
-              {/* Calculated Cost Per Gram */}
-              <div className="space-y-2">
-                <Label>Cost Per Gram (calculated)</Label>
-                <div className="flex items-center gap-2">
+              <div className="border-t pt-4 space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground">
+                  Cost Structure
+                </h3>
+
+                {/* Total Cost */}
+                <div className="space-y-2">
+                  <Label htmlFor="total_cost">
+                    Total Cost of Product ($) *
+                  </Label>
                   <Input
-                    value={
-                      costPerGram > 0
-                        ? `$${costPerGram.toFixed(6)}/g`
-                        : "$0.000000/g"
+                    id="total_cost"
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.total_cost}
+                    onChange={(e) =>
+                      setFormData({ ...formData, total_cost: e.target.value })
                     }
-                    readOnly
-                    className="bg-muted"
+                    min="0.01"
+                    step="0.01"
                   />
-                  {costPerGram > 0 && (
-                    <Badge variant="secondary">Auto-calculated</Badge>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Total amount paid for this bulk purchase
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Automatically calculated from total cost ÷ total weight
-                </p>
+
+                {/* Total Weight */}
+                <div className="space-y-2">
+                  <Label htmlFor="total_weight">
+                    Total Weight Received (grams) *
+                  </Label>
+                  <Input
+                    id="total_weight"
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.total_weight_grams}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        total_weight_grams: e.target.value,
+                      })
+                    }
+                    min="0.01"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Total weight of product received in this shipment
+                  </p>
+                </div>
+
+                {/* Calculated Cost Per Gram */}
+                <div className="space-y-2">
+                  <Label>Cost Per Gram (calculated)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={
+                        costPerGram > 0
+                          ? `$${costPerGram.toFixed(6)}/g`
+                          : "$0.000000/g"
+                      }
+                      readOnly
+                      className="bg-muted"
+                    />
+                    {costPerGram > 0 && (
+                      <Badge variant="secondary">Auto-calculated</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically calculated from total cost ÷ total weight
+                  </p>
+                </div>
+
+                {/* Delivery Cost */}
+                <div className="space-y-2">
+                  <Label htmlFor="delivery_cost">
+                    Delivery / Shipping Cost ($) (Optional)
+                  </Label>
+                  <Input
+                    id="delivery_cost"
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.delivery_cost}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        delivery_cost: e.target.value,
+                      })
+                    }
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Separate delivery cost - NOT included in cost-per-gram
+                  </p>
+                </div>
               </div>
 
-              {/* Delivery Cost */}
-              <div className="space-y-2">
-                <Label htmlFor="delivery_cost">
-                  Delivery / Shipping Cost ($) (Optional)
-                </Label>
-                <Input
-                  id="delivery_cost"
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.delivery_cost}
-                  onChange={(e) =>
-                    setFormData({ ...formData, delivery_cost: e.target.value })
-                  }
-                  min="0"
-                  step="0.01"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Separate delivery cost - NOT included in cost-per-gram
-                </p>
-              </div>
-            </div>
+              <Button
+                onClick={handleOpenConfirmModal}
+                className="w-full"
+                disabled={processing}
+                size="lg"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Review & Process Intake
+              </Button>
+            </CardContent>
+          </Card>
 
-            <Button
-              onClick={handleOpenConfirmModal}
-              className="w-full"
-              disabled={processing}
-              size="lg"
-            >
-              <Package className="h-4 w-4 mr-2" />
-              Review & Process Intake
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Intake Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Intake Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Product:</span>
-                <span className="font-medium text-right">
-                  {formData.product_name || "-"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Weight:</span>
-                <span className="font-medium">
-                  {formData.total_weight_grams || "0"}g
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Product Cost:</span>
-                <span className="font-medium">
-                  ${parseFloat(formData.total_cost || "0").toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Delivery Cost:</span>
-                <span className="font-medium">
-                  ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between border-t pt-3">
-                <span className="text-muted-foreground font-semibold">
-                  Total Intake Cost:
-                </span>
-                <span className="font-bold text-lg">
-                  ${totalIntakeCost.toFixed(2)}
-                </span>
-              </div>
-              {costPerGram > 0 && (
-                <div className="flex justify-between border-t pt-3">
-                  <span className="text-muted-foreground">Cost/Gram:</span>
-                  <span className="font-mono font-bold text-primary">
-                    ${costPerGram.toFixed(6)}
+          {/* Intake Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Intake Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Product:</span>
+                  <span className="font-medium text-right">
+                    {formData.product_name || "-"}
                   </span>
                 </div>
-              )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Weight:</span>
+                  <span className="font-medium">
+                    {formData.total_weight_grams || "0"}g
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Product Cost:</span>
+                  <span className="font-medium">
+                    ${parseFloat(formData.total_cost || "0").toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery Cost:</span>
+                  <span className="font-medium">
+                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t pt-3">
+                  <span className="text-muted-foreground font-semibold">
+                    Total Intake Cost:
+                  </span>
+                  <span className="font-bold text-lg">
+                    ${totalIntakeCost.toFixed(2)}
+                  </span>
+                </div>
+                {costPerGram > 0 && (
+                  <div className="flex justify-between border-t pt-3">
+                    <span className="text-muted-foreground">Cost/Gram:</span>
+                    <span className="font-mono font-bold text-primary">
+                      ${costPerGram.toFixed(6)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Confirmation Modal */}
+        <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm Inventory Intake</DialogTitle>
+              <DialogDescription>
+                Please review the intake details before processing
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Product:</span>
+                  <span className="font-medium">{formData.product_name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Supplier:</span>
+                  <span className="font-medium">
+                    {formData.supplier || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Weight:</span>
+                  <span className="font-medium">
+                    {formData.total_weight_grams}g
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Product Cost:</span>
+                  <span className="font-medium">
+                    ${parseFloat(formData.total_cost).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Delivery Cost:</span>
+                  <span className="font-medium">
+                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm border-t pt-2">
+                  <span className="font-semibold">Total Cost:</span>
+                  <span className="font-bold">
+                    ${totalIntakeCost.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
+                  <span className="font-semibold">Cost Per Gram:</span>
+                  <span className="font-mono font-bold text-primary">
+                    ${costPerGram.toFixed(6)}/g
+                  </span>
+                </div>
+              </div>
+
+              <Alert>
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertTitle>Ready to Process</AlertTitle>
+                <AlertDescription>
+                  This intake will update inventory quantity and cost history.
+                </AlertDescription>
+              </Alert>
             </div>
-          </CardContent>
-        </Card>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={processing}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleProcessIntake} disabled={processing}>
+                {processing ? "Processing..." : "Confirm Intake"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Confirmation Modal */}
-      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Inventory Intake</DialogTitle>
-            <DialogDescription>
-              Please review the intake details before processing
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Product:</span>
-                <span className="font-medium">{formData.product_name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Supplier:</span>
-                <span className="font-medium">
-                  {formData.supplier || "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Weight:</span>
-                <span className="font-medium">
-                  {formData.total_weight_grams}g
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Product Cost:</span>
-                <span className="font-medium">
-                  ${parseFloat(formData.total_cost).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Delivery Cost:</span>
-                <span className="font-medium">
-                  ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm border-t pt-2">
-                <span className="font-semibold">Total Cost:</span>
-                <span className="font-bold">${totalIntakeCost.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
-                <span className="font-semibold">Cost Per Gram:</span>
-                <span className="font-mono font-bold text-primary">
-                  ${costPerGram.toFixed(6)}/g
-                </span>
-              </div>
-            </div>
-
-            <Alert>
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertTitle>Ready to Process</AlertTitle>
-              <AlertDescription>
-                This intake will update inventory quantity and cost history.
-              </AlertDescription>
-            </Alert>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowConfirmModal(false)}
-              disabled={processing}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleProcessIntake} disabled={processing}>
-              {processing ? "Processing..." : "Confirm Intake"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </PermissionGuard>
   );
 }

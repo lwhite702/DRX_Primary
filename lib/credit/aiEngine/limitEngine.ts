@@ -1,4 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { redis, cache } from "@/lib/redis";
+import { Ratelimit } from "@upstash/ratelimit";
 import type { CustomerFeatures, NormalizedFeatures } from "./features";
 import { normalizeFeatures } from "./features";
 
@@ -27,26 +29,10 @@ interface AIEngineResponse {
 }
 
 async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
-  const supabase = getSupabaseClient();
+  return cache(`business_config:${business_id}`, 300, async () => {
+    const supabase = getSupabaseClient();
 
-  if (!supabase) {
-    return {
-      global_max_credit_per_customer: 10000,
-      global_max_credit_ratio_of_inventory: 0.5,
-      default_credit_limit_for_new_customer: 1000,
-    };
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from("business_settings")
-      .select(
-        "global_max_credit_per_customer, global_max_credit_ratio_of_inventory, default_credit_limit_for_new_customer"
-      )
-      .eq("business_id", business_id)
-      .single();
-
-    if (error || !data) {
+    if (!supabase) {
       return {
         global_max_credit_per_customer: 10000,
         global_max_credit_ratio_of_inventory: 0.5,
@@ -54,25 +40,43 @@ async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
       };
     }
 
-    return {
-      global_max_credit_per_customer: Number(
-        data.global_max_credit_per_customer || 10000
-      ),
-      global_max_credit_ratio_of_inventory: Number(
-        data.global_max_credit_ratio_of_inventory || 0.5
-      ),
-      default_credit_limit_for_new_customer: Number(
-        data.default_credit_limit_for_new_customer || 1000
-      ),
-    };
-  } catch (error) {
-    console.error("Error fetching business config:", error);
-    return {
-      global_max_credit_per_customer: 10000,
-      global_max_credit_ratio_of_inventory: 0.5,
-      default_credit_limit_for_new_customer: 1000,
-    };
-  }
+    try {
+      const { data, error } = await supabase
+        .from("business_settings")
+        .select(
+          "global_max_credit_per_customer, global_max_credit_ratio_of_inventory, default_credit_limit_for_new_customer"
+        )
+        .eq("business_id", business_id)
+        .single();
+
+      if (error || !data) {
+        return {
+          global_max_credit_per_customer: 10000,
+          global_max_credit_ratio_of_inventory: 0.5,
+          default_credit_limit_for_new_customer: 1000,
+        };
+      }
+
+      return {
+        global_max_credit_per_customer: Number(
+          data.global_max_credit_per_customer || 10000
+        ),
+        global_max_credit_ratio_of_inventory: Number(
+          data.global_max_credit_ratio_of_inventory || 0.5
+        ),
+        default_credit_limit_for_new_customer: Number(
+          data.default_credit_limit_for_new_customer || 1000
+        ),
+      };
+    } catch (error) {
+      console.error("Error fetching business config:", error);
+      return {
+        global_max_credit_per_customer: 10000,
+        global_max_credit_ratio_of_inventory: 0.5,
+        default_credit_limit_for_new_customer: 1000,
+      };
+    }
+  });
 }
 
 async function callAILimitEngine(
@@ -353,6 +357,37 @@ export async function computeAICreditLimit(
   current_balance: number
 ): Promise<AILimitRecommendation> {
   try {
+    // 1. Rate Limiting
+    const ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "1 h"),
+    });
+
+    const { success } = await ratelimit.limit(`limit_engine:${business_id}`);
+    if (!success) {
+      return {
+        recommended_limit_final: current_limit,
+        risk_score_final: 50,
+        justification_final: "Rate limit exceeded - please try again later",
+        suggested_range_min: current_limit * 0.9,
+        suggested_range_max: current_limit * 1.1,
+        used_ai: false,
+        fallback_reason: "Rate limit exceeded",
+      };
+    }
+
+    // 2. Cache Check
+    // 2. Cache Check
+
+    // We use a simplified cache key for now to prioritize speed
+    const simpleCacheKey = `credit_limit:${business_id}:${customer_id}`;
+
+    // Check cache
+    const cachedResult = await redis.get<AILimitRecommendation>(simpleCacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const normalized = normalizeFeatures(features);
     const config = await getBusinessConfig(business_id);
 
@@ -364,6 +399,8 @@ export async function computeAICreditLimit(
       config
     );
 
+    let finalResult: AILimitRecommendation;
+
     if (aiRecommendation) {
       const clamped = await clampAndValidateResult(
         aiRecommendation,
@@ -371,7 +408,7 @@ export async function computeAICreditLimit(
         features.total_inventory_value
       );
 
-      return {
+      finalResult = {
         recommended_limit_final: clamped.recommended_limit,
         risk_score_final: clamped.risk_score,
         justification_final: clamped.justification,
@@ -379,16 +416,21 @@ export async function computeAICreditLimit(
         suggested_range_max: clamped.suggested_range_max,
         used_ai: true,
       };
+    } else {
+      // Fallback to rule-based
+      finalResult = applyRuleBasedFallback(
+        normalized,
+        current_balance,
+        features.total_inventory_value,
+        config,
+        current_limit
+      );
     }
 
-    // Fallback to rule-based
-    return applyRuleBasedFallback(
-      normalized,
-      current_balance,
-      features.total_inventory_value,
-      config,
-      current_limit
-    );
+    // Cache the result for 1 hour
+    await redis.set(simpleCacheKey, finalResult, { ex: 3600 });
+
+    return finalResult;
   } catch (error) {
     console.error("Error in computeAICreditLimit:", error);
 
