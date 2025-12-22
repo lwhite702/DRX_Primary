@@ -24,10 +24,18 @@ import { toast } from "sonner";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+interface TeamMember {
+  id: string;
+  user_id: string;
+  business_id: string;
+  role: string;
+  created_at: string;
+}
+
 export default function TeamSettingsPage() {
   const { business } = useBusiness();
   const { hasPermission, loading: permsLoading } = usePermission(business?.id);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const supabase = getSupabaseClient();
