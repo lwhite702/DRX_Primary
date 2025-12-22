@@ -2,42 +2,40 @@ import { useEffect, useState, useCallback } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useUserRole } from "./use-user-role";
 
+const getFallbackPermissions = (role: string | null): string[] => {
+  if (!role) return [];
+  
+  // Normalize role
+  const r = role.toLowerCase();
+  
+  const cashierPerms = [
+    'sales.create', 'sales.view_own', 'catalog.view', 'customers.view'
+  ];
+  
+  const supervisorPerms = [
+    ...cashierPerms,
+    'sales.view_all', 'sales.void', 'sales.adjust', 'sales.discount',
+    'customers.manage', 'reports.view_shift', 'reports.view_daily'
+  ];
+  
+  const managerPerms = [
+    ...supervisorPerms,
+    'inventory.manage', 'reports.view_all', 'settings.manage', 'users.manage'
+  ];
+
+  if (r === 'cashier' || r === 'staff') return cashierPerms;
+  if (r === 'supervisor') return supervisorPerms;
+  if (r === 'manager' || r === 'owner' || r === 'admin') return managerPerms;
+  if (r === 'super_admin') return [...managerPerms, 'system.config']; // simplify
+
+  return [];
+};
+
 export function usePermission(businessId: string | undefined) {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
   const { role } = useUserRole(businessId);
-
-  // Fallback map for when RPC is not available or fails (redundancy)
-  // This mirrors the DB definition
-  const getFallbackPermissions = (role: string | null): string[] => {
-    if (!role) return [];
-    
-    // Normalize role
-    const r = role.toLowerCase();
-    
-    const cashierPerms = [
-      'sales.create', 'sales.view_own', 'catalog.view', 'customers.view'
-    ];
-    
-    const supervisorPerms = [
-      ...cashierPerms,
-      'sales.view_all', 'sales.void', 'sales.adjust', 'sales.discount',
-      'customers.manage', 'reports.view_shift', 'reports.view_daily'
-    ];
-    
-    const managerPerms = [
-      ...supervisorPerms,
-      'inventory.manage', 'reports.view_all', 'settings.manage', 'users.manage'
-    ];
-
-    if (r === 'cashier' || r === 'staff') return cashierPerms;
-    if (r === 'supervisor') return supervisorPerms;
-    if (r === 'manager' || r === 'owner' || r === 'admin') return managerPerms;
-    if (r === 'super_admin') return [...managerPerms, 'system.config']; // simplify
-
-    return [];
-  };
 
   const fetchPermissions = useCallback(async () => {
     if (!businessId || !supabase) {
