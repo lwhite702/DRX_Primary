@@ -20,6 +20,19 @@ export function useUserRole() {
           return;
         }
 
+        // Check admin_users first (global admins)
+        const { data: adminUser } = await supabase
+          .from("admin_users")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (adminUser) {
+          setRole(adminUser.role as Role);
+          setLoading(false);
+          return;
+        }
+
         const { data: userRole, error } = await supabase
           .from("user_roles")
           .select("role")
@@ -28,7 +41,7 @@ export function useUserRole() {
 
         if (error || !userRole) {
           console.error("Error fetching role:", error);
-          setRole("cashier"); // Default fallback? Or null?
+          setRole("cashier"); // Default fallback
         } else {
           setRole(userRole.role as Role);
         }

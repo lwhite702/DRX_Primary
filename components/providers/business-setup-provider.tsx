@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { useUserRole } from "@/hooks/use-user-role";
 import { BusinessSetupWizard } from "@/components/onboarding/business-setup-wizard";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -10,7 +11,12 @@ export function BusinessSetupProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { needsSetup, loading, refreshBusiness } = useBusiness();
+  const {
+    needsSetup,
+    loading: businessLoading,
+    refreshBusiness,
+  } = useBusiness();
+  const { role, loading: roleLoading } = useUserRole();
   const [userId, setUserId] = useState<string | null>(null);
   const supabase = getSupabaseClient();
 
@@ -27,7 +33,7 @@ export function BusinessSetupProvider({
     getUser();
   }, [supabase]);
 
-  if (loading) {
+  if (businessLoading || roleLoading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -35,7 +41,8 @@ export function BusinessSetupProvider({
     );
   }
 
-  if (needsSetup && userId) {
+  // Super admins bypass setup requirement
+  if (needsSetup && userId && role !== "super_admin") {
     return <BusinessSetupWizard userId={userId} onComplete={refreshBusiness} />;
   }
 

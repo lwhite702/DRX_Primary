@@ -149,7 +149,7 @@ async function resetDatabase() {
     const { error: roleError } = await supabase.from("user_roles").insert({
       business_id: business.id,
       user_id: adminId,
-      role: "manager", // Using 'manager' as it maps to owner privileges in app_role enum logic generally, or 'super_admin' if enum supports it
+      role: "manager", // Using 'manager' as it maps to owner privileges in app_role enum
       // defined in migration: app_role IS 'cashier', 'supervisor', 'manager', 'super_admin'
       permissions: {}, // Permissions handled by role
     });
