@@ -116,7 +116,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center mb-6">
             <div className="relative w-24 h-24">
@@ -124,7 +124,7 @@ export default function LoginPage() {
                 src="/icon.svg"
                 alt="DRX CRM Logo"
                 fill
-                className="object-contain dark:invert"
+                className="object-contain"
                 priority
               />
             </div>

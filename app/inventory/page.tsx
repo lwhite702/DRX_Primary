@@ -61,7 +61,7 @@ export default function InventoryPage() {
       return;
     }
 
-    try {
+    const promise = async () => {
       if (editingItem?.id) {
         const { error } = await supabase
           .from("inventory")
@@ -72,7 +72,7 @@ export default function InventoryPage() {
           .eq("id", editingItem.id);
 
         if (error) throw error;
-        toast.success("Item updated successfully");
+        return "Item updated successfully";
       } else {
         const { error } = await supabase.from("inventory").insert({
           ...data,
@@ -80,17 +80,21 @@ export default function InventoryPage() {
         });
 
         if (error) throw error;
-        toast.success("Item added successfully");
+        return "Item added successfully";
       }
+    };
 
-      setShowDialog(false);
-      setEditingItem(null);
-      reset();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save item"
-      );
-    }
+    toast.promise(promise(), {
+      loading: editingItem ? "Updating item..." : "Adding item...",
+      success: (message) => {
+        setShowDialog(false);
+        setEditingItem(null);
+        reset();
+        return message;
+      },
+      error: (error) =>
+        error instanceof Error ? error.message : "Failed to save item",
+    });
   };
 
   const handleEdit = (item: any) => {
@@ -101,8 +105,11 @@ export default function InventoryPage() {
 
   const handleNew = () => {
     setEditingItem(null);
+    // Auto-generate SKU: PROD- + 6 random digits
+    const randomSku = `PROD-${Math.floor(100000 + Math.random() * 900000)}`;
     reset({
       business_id: business?.id || "",
+      sku: randomSku,
       quantity_on_hand: 0,
       reorder_level: 10,
     });
@@ -328,16 +335,23 @@ export default function InventoryPage() {
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
                 {inventory.map((item) => {
-                  const isLowStock = item.quantity_on_hand <= item.reorder_level;
+                  const isLowStock =
+                    item.quantity_on_hand <= item.reorder_level;
                   return (
                     <Card
                       key={item.id}
-                      className={isLowStock ? "border-destructive/50" : "border-border/80"}
+                      className={
+                        isLowStock
+                          ? "border-destructive/50"
+                          : "border-border/80"
+                      }
                     >
                       <CardContent className="pt-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="font-medium break-words">{item.product_name}</p>
+                            <p className="font-medium break-words">
+                              {item.product_name}
+                            </p>
                             <p className="text-sm text-muted-foreground mt-1">
                               <span className="font-mono">{item.sku}</span>
                               {item.category ? ` • ${item.category}` : ""}
@@ -368,17 +382,29 @@ export default function InventoryPage() {
 
                         <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <p className="text-xs text-muted-foreground">Stock</p>
-                            <p className={isLowStock ? "font-bold text-destructive" : "font-medium"}>
+                            <p className="text-xs text-muted-foreground">
+                              Stock
+                            </p>
+                            <p
+                              className={
+                                isLowStock
+                                  ? "font-bold text-destructive"
+                                  : "font-medium"
+                              }
+                            >
                               {item.quantity_on_hand}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Reorder Level</p>
+                            <p className="text-xs text-muted-foreground">
+                              Reorder Level
+                            </p>
                             <p className="font-medium">{item.reorder_level}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Unit Cost</p>
+                            <p className="text-xs text-muted-foreground">
+                              Unit Cost
+                            </p>
                             <p className="font-medium">
                               {item.unit_cost
                                 ? "$" + Number(item.unit_cost).toFixed(2)
@@ -386,7 +412,9 @@ export default function InventoryPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Selling Price</p>
+                            <p className="text-xs text-muted-foreground">
+                              Selling Price
+                            </p>
                             <p className="font-medium">
                               {item.selling_price
                                 ? "$" + Number(item.selling_price).toFixed(2)
@@ -417,18 +445,25 @@ export default function InventoryPage() {
                   </TableHeader>
                   <TableBody>
                     {inventory.map((item) => {
-                      const isLowStock = item.quantity_on_hand <= item.reorder_level;
+                      const isLowStock =
+                        item.quantity_on_hand <= item.reorder_level;
                       return (
                         <TableRow
                           key={item.id}
                           className={isLowStock ? "bg-destructive/10" : ""}
                         >
-                          <TableCell className="font-mono">{item.sku}</TableCell>
-                          <TableCell className="font-medium">{item.product_name}</TableCell>
+                          <TableCell className="font-mono">
+                            {item.sku}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {item.product_name}
+                          </TableCell>
                           <TableCell>{item.category || "-"}</TableCell>
                           <TableCell>
                             <span
-                              className={isLowStock ? "text-destructive font-bold" : ""}
+                              className={
+                                isLowStock ? "text-destructive font-bold" : ""
+                              }
                             >
                               {item.quantity_on_hand}
                             </span>

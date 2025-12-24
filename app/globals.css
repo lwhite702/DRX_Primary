@@ -1,42 +1,57 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
 
   /* Dark theme - primary colors */
-  --color-background: #0B0B0C;
-  --color-foreground: #E6E6E6;
-  --color-accent: #22C55E;
-  --color-accent-dark: #16A34A;
-  --color-accent-light: #4ADE80;
+  --color-background: #0b0b0c;
+  --color-foreground: #e6e6e6;
+  --color-accent: #22c55e;
+  --color-accent-dark: #16a34a;
+  --color-accent-light: #4ade80;
 
   /* Neutral grays */
-  --color-muted: #2D2D2D;
-  --color-muted-foreground: #A0A0A0;
+  --color-muted: #2d2d2d;
+  --color-muted-foreground: #a0a0a0;
   --color-border: #404040;
-  --color-input: #1A1A1B;
-  --color-ring: #22C55E;
+  --color-input: #1a1a1b;
+  --color-ring: #22c55e;
 
   /* Semantic colors */
-  --color-destructive: #EF4444;
-  --color-destructive-foreground: #FFFFFF;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-info: #3B82F6;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+
+  /* Shadcn standard colors */
+  --color-popover: #0b0b0c;
+  --color-popover-foreground: #e6e6e6;
+  --color-card: #0b0b0c;
+  --color-card-foreground: #e6e6e6;
+  --color-primary: #22c55e;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #2d2d2d;
+  --color-secondary-foreground: #e6e6e6;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
+
   html,
   body {
     @apply bg-background text-foreground overflow-x-hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 

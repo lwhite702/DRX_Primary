@@ -18,7 +18,7 @@ export function Sidebar() {
 
   // Filter nav items
   const filteredNav = primaryNav.filter((item) => {
-    // If loading, maintain current state or show all? 
+    // If loading, maintain current state or show all?
     // To prevent flicker, we might want to show all initially or hide sensitive ones.
     // But since authentication is required, default to hidden for restricted is safer.
     if (loading) return false;
@@ -28,7 +28,10 @@ export function Sidebar() {
         return hasPermission("settings.manage");
       case "/reports":
         // Cashier cannot access reports (per prompt)
-        return hasPermission("reports.view_daily") || hasPermission("reports.view_all");
+        return (
+          hasPermission("reports.view_daily") ||
+          hasPermission("reports.view_all")
+        );
       case "/inventory":
         return hasPermission("catalog.view");
       case "/sales":
@@ -40,7 +43,8 @@ export function Sidebar() {
     }
   });
 
-  const showAdminConsole = hasPermission("system.config") || hasPermission("users.manage_any"); // Super admin permissions
+  const showAdminConsole =
+    hasPermission("system.manage") || hasPermission("users.manage_all"); // Super admin permissions
 
   return (
     <aside

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Menu, Search, Settings, User } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, Menu, Search, Settings, User, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppLogo } from "@/components/layout/app-logo";
 import { LogoutButton } from "@/components/layout/logout-button";
@@ -16,16 +17,46 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { useUserRole } from "@/lib/hooks/use-user-role";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { business } = useBusiness();
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
+  const supabase = getSupabaseClient();
+
+  const handleLogout = async () => {
+    if (!supabase) {
+      toast.error("Supabase client not available");
+      return;
+    }
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Logged out successfully");
+    router.push("/login");
+    router.refresh();
+  };
 
   const filteredNav = primaryNav.filter((item) => {
     if (loading) return false;
@@ -34,7 +65,10 @@ export function TopNav() {
       case "/settings":
         return hasPermission("settings.manage");
       case "/reports":
-        return hasPermission("reports.view_daily") || hasPermission("reports.view_all");
+        return (
+          hasPermission("reports.view_daily") ||
+          hasPermission("reports.view_all")
+        );
       case "/inventory":
         return hasPermission("catalog.view");
       case "/sales":
@@ -46,7 +80,8 @@ export function TopNav() {
     }
   });
 
-  const showAdminConsole = hasPermission("system.config") || hasPermission("users.manage_any");
+  const showAdminConsole =
+    hasPermission("system.manage") || hasPermission("users.manage_all");
 
   return (
     <header className="h-14 md:h-16 bg-muted border-b border-border flex items-center justify-between px-4 md:px-6 gap-3 min-w-0">
@@ -112,31 +147,35 @@ export function TopNav() {
                     <span className="min-w-0 truncate">Admin Console</span>
                   </Link>
                 )}
-                <button
-                  onClick={() => {
-                    const feedback = (window as any).Sentry?.getFeedback?.();
-                    if (feedback) {
-                      feedback.createWidget();
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
+                <SentryFeedbackButton
+                  asChild
+                  source="navigation"
+                  placeholder="Found a bug? Let us know what happened."
                 >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span className="min-w-0 truncate">Report a Bug</span>
-                </button>
-                <LogoutButton className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border" />
+                  <button className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border">
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span className="min-w-0 truncate">Report a Bug</span>
+                  </button>
+                </SentryFeedbackButton>
+                <div
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border cursor-pointer"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="min-w-0 truncate">Logout</span>
+                </div>
               </div>
             </div>
           </SheetContent>
@@ -144,9 +183,12 @@ export function TopNav() {
       </div>
 
       {/* Logo */}
-      <div className="flex items-center min-w-0">
+      <div className="flex items-center min-w-0 gap-2">
         <div className="max-w-[220px] min-w-0">
           <AppLogo showTagline={false} />
+        </div>
+        <div className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">
+          BETA
         </div>
       </div>
 
@@ -183,9 +225,46 @@ export function TopNav() {
               {role.replace("_", " ")}
             </span>
           )}
-          <Button variant="ghost" size="icon-lg" aria-label="User menu">
-            <User className="w-5 h-5" />
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-lg" aria-label="User menu">
+                <User className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {showAdminConsole && (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/admin"
+                    className="flex items-center cursor-pointer"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Admin Console</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/settings/profile"
+                  className="flex items-center cursor-pointer"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-red-600 focus:text-red-600 cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

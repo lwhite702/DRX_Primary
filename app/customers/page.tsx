@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HelpTooltip } from "@/components/ui/help-tooltip";
 import {
   Dialog,
   DialogContent,
@@ -22,17 +23,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { useRealtimeCustomers } from "@/lib/hooks/use-realtime";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { Plus, Edit, Search } from "lucide-react";
 import { toast } from "sonner";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
+import { formatPhoneNumber } from "@/lib/utils/format-phone";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
-  const [customers, setCustomers] = useState<any[]>([]);
+  const customers = useRealtimeCustomers(business?.id || null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,35 +54,13 @@ export default function CustomersPage() {
     },
   });
 
-  useEffect(() => {
-    if (!business?.id || !supabase) return;
-
-    fetchCustomers();
-  }, [business?.id, supabase]);
-
-  const fetchCustomers = async () => {
-    if (!business?.id || !supabase) return;
-
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("business_id", business.id)
-      .order("first_name");
-
-    if (error) {
-      toast.error("Failed to load customers");
-    } else {
-      setCustomers(data || []);
-    }
-  };
-
   const onSubmit = async (data: Customer) => {
     if (!business?.id || !supabase) {
       toast.error("Business not found");
       return;
     }
 
-    try {
+    const promise = async () => {
       if (editingCustomer?.id) {
         const { error } = await supabase
           .from("customers")
@@ -88,26 +69,29 @@ export default function CustomersPage() {
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingCustomer.id);
-
         if (error) throw error;
-        toast.success("Customer updated successfully");
+        return "Customer updated successfully";
       } else {
         const { error } = await supabase.from("customers").insert({
           ...data,
           business_id: business.id,
         });
-
         if (error) throw error;
-        toast.success("Customer added successfully");
+        return "Customer added successfully";
       }
+    };
 
-      setShowDialog(false);
-      setEditingCustomer(null);
-      reset();
-      fetchCustomers();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save customer");
-    }
+    toast.promise(promise(), {
+      loading: editingCustomer ? "Updating customer..." : "Adding customer...",
+      success: (message) => {
+        setShowDialog(false);
+        setEditingCustomer(null);
+        reset();
+        return message;
+      },
+      error: (error) =>
+        error instanceof Error ? error.message : "Failed to save customer",
+    });
   };
 
   const handleEdit = (customer: any) => {
@@ -150,7 +134,9 @@ export default function CustomersPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Customers</h1>
-          <p className="text-muted-foreground mt-2">Manage customer profiles and data</p>
+          <p className="text-muted-foreground mt-2">
+            Manage customer profiles and data
+          </p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
@@ -176,14 +162,18 @@ export default function CustomersPage() {
                   <Label htmlFor="first_name">First Name *</Label>
                   <Input id="first_name" {...register("first_name")} />
                   {errors.first_name && (
-                    <p className="text-sm text-destructive">{errors.first_name.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.first_name.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Last Name</Label>
                   <Input id="last_name" {...register("last_name")} />
                   {errors.last_name && (
-                    <p className="text-sm text-destructive">{errors.last_name.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.last_name.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -192,27 +182,47 @@ export default function CustomersPage() {
                 <Label htmlFor="alias">Alias (Optional)</Label>
                 <Input id="alias" {...register("alias")} />
                 {errors.alias && (
-                  <p className="text-sm text-destructive">{errors.alias.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.alias.message}
+                  </p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone_number">Phone Number</Label>
-                  <Input id="phone_number" {...register("phone_number")} />
+                  <Label htmlFor="phone_number">
+                    Phone Number
+                    <HelpTooltip content="Primary contact number. Format: (XXX) XXX-XXXX" />
+                  </Label>
+                  <Input
+                    id="phone_number"
+                    {...register("phone_number")}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      e.target.value = formatted;
+                      register("phone_number").onChange(e);
+                    }}
+                  />
                   {errors.phone_number && (
-                    <p className="text-sm text-destructive">{errors.phone_number.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.phone_number.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">
+                    Email
+                    <HelpTooltip content="Used for digital receipts and account notifications." />
+                  </Label>
                   <Input id="email" type="email" {...register("email")} />
                   {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
               </div>
-              
+
               <p className="text-sm text-muted-foreground">
                 * Either phone number or email is required
               </p>
@@ -238,7 +248,10 @@ export default function CustomersPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customer_type">Customer Type</Label>
+                <Label htmlFor="customer_type">
+                  Customer Type
+                  <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
+                </Label>
                 <Input id="customer_type" {...register("customer_type")} />
               </div>
 
@@ -255,7 +268,11 @@ export default function CustomersPage() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : editingCustomer ? "Update" : "Add"}
+                  {isSubmitting
+                    ? "Saving..."
+                    : editingCustomer
+                    ? "Update"
+                    : "Add"}
                 </Button>
               </div>
             </form>
@@ -285,7 +302,9 @@ export default function CustomersPage() {
         </CardHeader>
         <CardContent>
           {filteredCustomers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No customers found</p>
+            <p className="text-muted-foreground text-center py-8">
+              No customers found
+            </p>
           ) : (
             <>
               {/* Mobile cards */}
@@ -302,10 +321,14 @@ export default function CustomersPage() {
                             {customer.first_name} {customer.last_name}
                           </Link>
                           <p className="text-sm text-muted-foreground mt-1 break-words">
-                            {customer.email || customer.phone_number || "No contact info"}
+                            {customer.email ||
+                              customer.phone_number ||
+                              "No contact info"}
                           </p>
                           {customer.alias && (
-                            <p className="text-xs text-muted-foreground mt-1">Alias: {customer.alias}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Alias: {customer.alias}
+                            </p>
                           )}
                         </div>
                         <Button
@@ -320,18 +343,31 @@ export default function CustomersPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                         <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">Total Purchases</p>
-                          <p className="font-medium">${Number(customer.total_purchases || 0).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Total Purchases
+                          </p>
+                          <p className="font-medium">
+                            ${Number(customer.total_purchases || 0).toFixed(2)}
+                          </p>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">Credit Used</p>
-                          <p className="font-medium">${Number(customer.total_credit_used || 0).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Credit Used
+                          </p>
+                          <p className="font-medium">
+                            $
+                            {Number(customer.total_credit_used || 0).toFixed(2)}
+                          </p>
                         </div>
                         <div className="col-span-2">
-                          <p className="text-xs text-muted-foreground">Address</p>
+                          <p className="text-xs text-muted-foreground">
+                            Address
+                          </p>
                           <p className="text-sm text-foreground break-words">
                             {customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                              ? `${customer.address}, ${customer.city || ""} ${
+                                  customer.state || ""
+                                }`
                               : "-"}
                           </p>
                         </div>
@@ -367,7 +403,9 @@ export default function CustomersPage() {
                               {customer.first_name} {customer.last_name}
                             </Link>
                             {customer.alias && (
-                              <p className="text-xs text-muted-foreground">({customer.alias})</p>
+                              <p className="text-xs text-muted-foreground">
+                                ({customer.alias})
+                              </p>
                             )}
                           </div>
                         </TableCell>
@@ -375,11 +413,17 @@ export default function CustomersPage() {
                         <TableCell>{customer.email || "-"}</TableCell>
                         <TableCell>
                           {customer.address
-                            ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                            ? `${customer.address}, ${customer.city || ""} ${
+                                customer.state || ""
+                              }`
                             : "-"}
                         </TableCell>
-                        <TableCell>${Number(customer.total_purchases || 0).toFixed(2)}</TableCell>
-                        <TableCell>${Number(customer.total_credit_used || 0).toFixed(2)}</TableCell>
+                        <TableCell>
+                          ${Number(customer.total_purchases || 0).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          ${Number(customer.total_credit_used || 0).toFixed(2)}
+                        </TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"

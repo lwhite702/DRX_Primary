@@ -19,6 +19,7 @@ import {
   BookOpen,
   Video,
 } from "lucide-react";
+import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
 
 export default function HelpPage() {
   return (
@@ -266,19 +267,16 @@ export default function HelpPage() {
             If you encounter any issues or have questions not covered here:
           </p>
           <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => {
-                const feedback = (window as any).Sentry?.getFeedback?.();
-                if (feedback) {
-                  feedback.createWidget();
-                }
-              }}
+            <SentryFeedbackButton
+              asChild
+              source="help_page"
+              placeholder="What seems to be the issue? Or asks us a question!"
             >
-              <HelpCircle className="h-4 w-4 mr-2" />
-              Report an Issue or Ask a Question
-            </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Report an Issue or Ask a Question
+              </Button>
+            </SentryFeedbackButton>
             <Link href="/dashboard">
               <Button className="w-full bg-accent hover:bg-accent-dark text-black">
                 <BarChart3 className="h-4 w-4 mr-2" />

@@ -35,27 +35,38 @@ export const inventorySchema = z.object({
 export type Inventory = z.infer<typeof inventorySchema>;
 
 // Customer Schemas
-export const customerSchema = z.object({
-  id: z.string().uuid().optional(),
-  business_id: z.string().uuid(),
-  first_name: z.string().min(1).max(100),
-  last_name: z.string().max(100).optional(),
-  alias: z.string().max(100).optional(),
-  phone_number: z.string().max(20).optional(),
-  email: z.string().email().optional(),
-  address: z.string().optional(),
-  city: z.string().max(100).optional(),
-  state: z.string().max(50).optional(),
-  zip_code: z.string().max(20).optional(),
-  customer_type: z.string().max(50).optional(),
-  is_active: z.boolean().default(true),
-}).refine((data) => {
-  // Either phone number OR email is required (at least one must be present)
-  return data.phone_number || data.email;
-}, {
-  message: "Either phone number or email is required",
-  path: ["phone_number"], // Error will appear on phone_number field
-});
+export const customerSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    business_id: z.string().uuid(),
+    first_name: z.string().min(1).max(100),
+    last_name: z.string().max(100).optional(),
+    alias: z.string().max(100).optional(),
+    phone_number: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().max(20).optional()
+    ),
+    email: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().email().optional()
+    ),
+    address: z.string().optional(),
+    city: z.string().max(100).optional(),
+    state: z.string().max(50).optional(),
+    zip_code: z.string().max(20).optional(),
+    customer_type: z.string().max(50).optional(),
+    is_active: z.boolean().default(true),
+  })
+  .refine(
+    (data) => {
+      // Either phone number OR email is required (at least one must be present)
+      return !!data.phone_number || !!data.email;
+    },
+    {
+      message: "Either phone number or email is required",
+      path: ["phone_number"], // Error will appear on phone_number field
+    }
+  );
 
 export type Customer = z.infer<typeof customerSchema>;
 
@@ -99,7 +110,9 @@ export const salesSchema = z.object({
   customer_id: z.string().uuid().optional(),
   order_number: z.string().optional(),
   order_type: z.string().max(50).optional(),
-  order_status: z.enum(["pending", "completed", "cancelled", "refunded"]).default("pending"),
+  order_status: z
+    .enum(["pending", "completed", "cancelled", "refunded"])
+    .default("pending"),
   subtotal: z.number().nonnegative().optional(),
   tax_amount: z.number().nonnegative().default(0),
   total_amount: z.number().nonnegative().optional(),
@@ -132,7 +145,13 @@ export type POSCheckout = z.infer<typeof posCheckoutSchema>;
 export const aiInsightSchema = z.object({
   id: z.string().uuid().optional(),
   business_id: z.string().uuid(),
-  insight_type: z.enum(["pricing", "inventory", "credit", "cashflow", "general"]),
+  insight_type: z.enum([
+    "pricing",
+    "inventory",
+    "credit",
+    "cashflow",
+    "general",
+  ]),
   insight_title: z.string().min(1).max(255),
   insight_content: z.string().min(1),
   priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
@@ -169,7 +188,9 @@ export const aiPricingRecommendationSchema = z.object({
   applied_at: z.string().datetime().optional(),
 });
 
-export type AIPricingRecommendation = z.infer<typeof aiPricingRecommendationSchema>;
+export type AIPricingRecommendation = z.infer<
+  typeof aiPricingRecommendationSchema
+>;
 
 // Inventory Forecast Schemas
 export const inventoryForecastSchema = z.object({
@@ -180,7 +201,9 @@ export const inventoryForecastSchema = z.object({
   velocity_7d: z.number().optional(),
   velocity_30d: z.number().optional(),
   velocity_90d: z.number().optional(),
-  velocity_trend: z.enum(["accelerating", "stable", "declining", "stagnant"]).optional(),
+  velocity_trend: z
+    .enum(["accelerating", "stable", "declining", "stagnant"])
+    .optional(),
   projected_stockout_date: z.string().date().optional(),
   days_until_stockout: z.number().int().optional(),
   recommended_restock_quantity: z.number().int().nonnegative().optional(),
