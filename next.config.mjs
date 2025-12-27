@@ -1,4 +1,13 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true,
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -10,9 +19,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withPWA(nextConfig), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 

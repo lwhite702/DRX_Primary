@@ -42,6 +42,7 @@ import {
   Zap,
   Lock,
   Package,
+  PackageOpen,
   BarChart3,
   User,
   DollarSign,
@@ -57,6 +58,8 @@ import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal"
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
+import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -354,7 +357,7 @@ export default function SalesPage() {
   };
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <SalesSkeleton />;
   }
 
   if (!business) {
@@ -393,9 +396,24 @@ export default function SalesPage() {
             <CardContent>
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {filteredInventory.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    No items found
-                  </p>
+                  <EmptyState
+                    icon={PackageOpen}
+                    title="No items found"
+                    description={
+                      inventory.length === 0
+                        ? "You have no inventory to sell yet."
+                        : "Try adjusting your search terms."
+                    }
+                    actionLabel={
+                      inventory.length === 0 ? "Go to Inventory" : undefined
+                    }
+                    onAction={
+                      inventory.length === 0
+                        ? () => (window.location.href = "/inventory")
+                        : undefined
+                    }
+                    className="py-8"
+                  />
                 ) : (
                   filteredInventory.map((item) => (
                     <div
@@ -563,9 +581,12 @@ export default function SalesPage() {
             {/* Cart Items */}
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {cart.items.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  Cart is empty
-                </p>
+                <EmptyState
+                  icon={ShoppingCart}
+                  title="Cart is empty"
+                  description="Scan items or select from inventory to start a sale."
+                  className="py-4 border-none shadow-none"
+                />
               ) : (
                 cart.items.map((item) => (
                   <div

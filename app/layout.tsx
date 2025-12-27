@@ -7,6 +7,8 @@ import { BusinessSetupProvider } from "@/components/providers/business-setup-pro
 import { AppShell } from "@/components/layout/app-shell";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { OnboardingProvider } from "@/components/providers/onboarding-provider";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -63,9 +65,13 @@ export default function RootLayout({
         <GlobalErrorBoundary>
           <BusinessSetupProvider>
             <OfflineProvider>
-              <AppShell>{children}</AppShell>
-              <OnboardingFlow />
-              <Toaster position="top-right" />
+              <PostHogProvider>
+                <OnboardingProvider>
+                  <AppShell>{children}</AppShell>
+                  <OnboardingFlow />
+                  <Toaster position="top-right" />
+                </OnboardingProvider>
+              </PostHogProvider>
             </OfflineProvider>
           </BusinessSetupProvider>
         </GlobalErrorBoundary>

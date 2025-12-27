@@ -28,6 +28,7 @@ import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PermissionGuard } from "@/components/auth/role-guard";
+import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 
 interface IntakeFormData {
   inventory_id: string;
@@ -158,7 +159,7 @@ export default function InventoryIntakePage() {
   };
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <SalesSkeleton />;
   }
 
   if (!business) {

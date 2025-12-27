@@ -29,14 +29,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: supabase start -x realtime,studio,imgproxy --background
+        env:
+          SUPABASE_DB_PASSWORD: "admin"
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests
         run: pnpm test:e2e
         env:
-          # Add any necessary env vars for E2E tests here
           CI: true
+          NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

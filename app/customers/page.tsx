@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
+import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 import {
   Dialog,
   DialogContent,
@@ -25,13 +26,15 @@ import {
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeCustomers } from "@/lib/hooks/use-realtime";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Plus, Edit, Search } from "lucide-react";
+import { Plus, Edit, Search, User, UserX } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
 import { formatPhoneNumber } from "@/lib/utils/format-phone";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { Tour } from "@/components/ui/tour";
 
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -125,7 +128,19 @@ export default function CustomersPage() {
   );
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return (
+      <div className="p-4 md:p-8 space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Customers</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage customer profiles and data
+            </p>
+          </div>
+        </div>
+        <TableSkeleton />
+      </div>
+    );
   }
 
   if (!business) {
@@ -147,7 +162,7 @@ export default function CustomersPage() {
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
-            <Button onClick={handleNew}>
+            <Button onClick={handleNew} id="tour-customer-add-btn">
               <Plus className="h-4 w-4 mr-2" />
               Add Customer
             </Button>
@@ -309,9 +324,17 @@ export default function CustomersPage() {
         </CardHeader>
         <CardContent>
           {filteredCustomers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No customers found
-            </p>
+            <EmptyState
+              icon={UserX}
+              title="No customers found"
+              description={
+                searchTerm
+                  ? "Try adjusting your search terms."
+                  : "Add your first customer to get started."
+              }
+              actionLabel={!searchTerm ? "Add Customer" : undefined}
+              onAction={!searchTerm ? handleNew : undefined}
+            />
           ) : (
             <>
               {/* Mobile cards */}
@@ -449,6 +472,19 @@ export default function CustomersPage() {
           )}
         </CardContent>
       </Card>
+
+      <Tour
+        tourId="customers_v1"
+        steps={[
+          {
+            targetId: "tour-customer-add-btn",
+            title: "Add your first customer",
+            description:
+              "Create customer profiles to track purchase history, loyalty points, and preferences.",
+          },
+        ]}
+        onComplete={() => {}}
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
+import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
 import {
   Sheet,
   SheetContent,
@@ -108,8 +109,12 @@ export default function CustomerDetailPage() {
             sales_all_time: Number(metricsData.sales_all_time || 0),
             credit_issued_30d: Number(metricsData.credit_issued_30d || 0),
             credit_issued_90d: Number(metricsData.credit_issued_90d || 0),
-            current_credit_balance: Number(metricsData.current_credit_balance || 0),
-            on_time_repayment_ratio: Number(metricsData.on_time_repayment_ratio || 0),
+            current_credit_balance: Number(
+              metricsData.current_credit_balance || 0
+            ),
+            on_time_repayment_ratio: Number(
+              metricsData.on_time_repayment_ratio || 0
+            ),
             late_payment_count: metricsData.late_payment_count || 0,
           });
         }
@@ -125,7 +130,7 @@ export default function CustomerDetailPage() {
   }, [business?.id, customerId, supabase]);
 
   if (businessLoading || loading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <CustomerDetailSkeleton />;
   }
 
   if (!business || !customer) {
@@ -234,13 +239,17 @@ export default function CustomerDetailPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Sales (30 Days)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Sales (30 Days)
+                  </p>
                   <p className="text-xl font-bold">
                     ${(metrics?.sales_30d || 0).toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Sales (90 Days)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Sales (90 Days)
+                  </p>
                   <p className="text-xl font-bold">
                     ${(metrics?.sales_90d || 0).toFixed(2)}
                   </p>
@@ -252,13 +261,17 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Total Credit Used</p>
+                  <p className="text-xs text-muted-foreground">
+                    Total Credit Used
+                  </p>
                   <p className="text-xl font-bold">
                     ${(customer.total_credit_used || 0).toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Current Balance</p>
+                  <p className="text-xs text-muted-foreground">
+                    Current Balance
+                  </p>
                   <p className="text-xl font-bold">
                     ${(metrics?.current_credit_balance || 0).toFixed(2)}
                   </p>
@@ -266,7 +279,8 @@ export default function CustomerDetailPage() {
                 <div className="bg-slate-50 p-4 rounded">
                   <p className="text-xs text-muted-foreground">On-Time Ratio</p>
                   <p className="text-xl font-bold">
-                    {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}%
+                    {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
+                    %
                   </p>
                 </div>
               </div>
@@ -290,7 +304,9 @@ export default function CustomerDetailPage() {
             customer_id={customer.id}
             business_id={business.id}
             current_limit={Number(customer.credit_limit || 0)}
-            ai_recommended_limit={Number(customer.credit_limit_ai_recommended || 0)}
+            ai_recommended_limit={Number(
+              customer.credit_limit_ai_recommended || 0
+            )}
             risk_score={Number(customer.credit_risk_score || 0)}
             last_reviewed_at={customer.credit_limit_last_reviewed_at}
             can_apply={can_apply_changes}

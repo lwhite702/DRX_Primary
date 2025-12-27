@@ -28,13 +28,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeCredit } from "@/lib/hooks/use-realtime";
 import { creditSystem } from "@/lib/utils/credit-system";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { CreditExposureDashboard } from "@/components/credit/CreditExposureDashboard";
-import { Plus, DollarSign, AlertTriangle } from "lucide-react";
+import { Plus, DollarSign, AlertTriangle, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -187,7 +189,29 @@ export default function CreditPage() {
   ).length;
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return (
+      <div className="p-4 md:p-8 space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Credit Management</h1>
+            <p className="text-muted-foreground mt-2">
+              Track credit transactions and fronts
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <TableSkeleton rowCount={5} columnCount={6} />
+      </div>
+    );
   }
 
   if (!business) {
@@ -259,18 +283,23 @@ export default function CreditPage() {
                   <Input {...paymentForm.register("description")} />
                 </div>
                 <div className="flex justify-end gap-2">
-                   <Button
-                     type="button"
-                     variant="outline"
-                     onClick={() => setShowPaymentDialog(false)}
-                     disabled={paymentForm.formState.isSubmitting}
-                   >
-                     Cancel
-                   </Button>
-                   <Button type="submit" disabled={paymentForm.formState.isSubmitting}>
-                     {paymentForm.formState.isSubmitting ? "Processing..." : "Process Payment"}
-                   </Button>
-                 </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPaymentDialog(false)}
+                    disabled={paymentForm.formState.isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={paymentForm.formState.isSubmitting}
+                  >
+                    {paymentForm.formState.isSubmitting
+                      ? "Processing..."
+                      : "Process Payment"}
+                  </Button>
+                </div>
               </form>
             </DialogContent>
           </Dialog>
@@ -308,7 +337,7 @@ export default function CreditPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {customers.map((customer) => {
-                        const limit = creditLimits.get(customer.id);
+                        const limit: any = creditLimits.get(customer.id);
                         return (
                           <SelectItem key={customer.id} value={customer.id}>
                             {customer.first_name} {customer.last_name}
@@ -343,18 +372,23 @@ export default function CreditPage() {
                   <Input {...extensionForm.register("description")} />
                 </div>
                 <div className="flex justify-end gap-2">
-                   <Button
-                     type="button"
-                     variant="outline"
-                     onClick={() => setShowExtensionDialog(false)}
-                     disabled={extensionForm.formState.isSubmitting}
-                   >
-                     Cancel
-                   </Button>
-                   <Button type="submit" disabled={extensionForm.formState.isSubmitting}>
-                     {extensionForm.formState.isSubmitting ? "Processing..." : "Extend Credit"}
-                   </Button>
-                 </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowExtensionDialog(false)}
+                    disabled={extensionForm.formState.isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={extensionForm.formState.isSubmitting}
+                  >
+                    {extensionForm.formState.isSubmitting
+                      ? "Processing..."
+                      : "Extend Credit"}
+                  </Button>
+                </div>
               </form>
             </DialogContent>
           </Dialog>
@@ -405,38 +439,62 @@ export default function CreditPage() {
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
               {agingData.map((aging) => {
-                const hasDelinquent = Number(aging.bucket_31_plus) > 0
+                const hasDelinquent = Number(aging.bucket_31_plus) > 0;
                 return (
                   <Card key={aging.customer_id} className="border-border/80">
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="font-medium break-words">{aging.customer_name}</p>
-                        <p className="font-bold">${Number(aging.total_outstanding).toFixed(2)}</p>
+                        <p className="font-medium break-words">
+                          {aging.customer_name}
+                        </p>
+                        <p className="font-bold">
+                          ${Number(aging.total_outstanding).toFixed(2)}
+                        </p>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-xs text-muted-foreground">1–7 Days</p>
-                          <p className="font-medium">${Number(aging.bucket_1_7).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            1–7 Days
+                          </p>
+                          <p className="font-medium">
+                            ${Number(aging.bucket_1_7).toFixed(2)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">8–14 Days</p>
-                          <p className="font-medium">${Number(aging.bucket_8_14).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            8–14 Days
+                          </p>
+                          <p className="font-medium">
+                            ${Number(aging.bucket_8_14).toFixed(2)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">15–30 Days</p>
-                          <p className="font-medium">${Number(aging.bucket_15_30).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            15–30 Days
+                          </p>
+                          <p className="font-medium">
+                            ${Number(aging.bucket_15_30).toFixed(2)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">31+ Days</p>
-                          <p className={hasDelinquent ? "font-bold text-destructive" : "font-medium"}>
+                          <p className="text-xs text-muted-foreground">
+                            31+ Days
+                          </p>
+                          <p
+                            className={
+                              hasDelinquent
+                                ? "font-bold text-destructive"
+                                : "font-medium"
+                            }
+                          >
                             ${Number(aging.bucket_31_plus).toFixed(2)}
                           </p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
 
@@ -459,9 +517,15 @@ export default function CreditPage() {
                       <TableCell className="font-medium">
                         {aging.customer_name}
                       </TableCell>
-                      <TableCell>${Number(aging.bucket_1_7).toFixed(2)}</TableCell>
-                      <TableCell>${Number(aging.bucket_8_14).toFixed(2)}</TableCell>
-                      <TableCell>${Number(aging.bucket_15_30).toFixed(2)}</TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_1_7).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_8_14).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        ${Number(aging.bucket_15_30).toFixed(2)}
+                      </TableCell>
                       <TableCell
                         className={
                           aging.bucket_31_plus > 0
@@ -490,9 +554,12 @@ export default function CreditPage() {
         </CardHeader>
         <CardContent>
           {creditTransactions.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No transactions yet
-            </p>
+            <EmptyState
+              icon={FileText}
+              title="No transactions yet"
+              description="Extension and payment history will appear here."
+              className="border-none bg-transparent"
+            />
           ) : (
             <>
               {/* Mobile cards */}
@@ -508,12 +575,16 @@ export default function CreditPage() {
                           <p className="text-sm text-muted-foreground mt-1">
                             {new Date(tx.created_at).toLocaleDateString()}
                             {tx.due_date
-                              ? ` • Due ${new Date(tx.due_date).toLocaleDateString()}`
+                              ? ` • Due ${new Date(
+                                  tx.due_date
+                                ).toLocaleDateString()}`
                               : ""}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">${Number(tx.amount).toFixed(2)}</p>
+                          <p className="font-bold">
+                            ${Number(tx.amount).toFixed(2)}
+                          </p>
                           <p
                             className={
                               "text-xs mt-1 capitalize " +

@@ -4,6 +4,18 @@ All notable changes to DRX will be documented in this file.
 
 ## [Unreleased] - Production Hardening Branch
 
+### 2025-12-27 15:52 ET
+
+- [governance] Adopted Wrelik Agent Operating Rules v1.1
+- [governance] Created agents.md, PRD.md, BRAND_VOICE.md, BRAND_GUIDE.md placeholders
+- [docs] Created docs/ directory for internal technical documentation
+- [feat][multi-tenancy] Added BusinessSwitcher and updated useBusiness for multi-context support
+- [feat][flags] Implemented Feature Flags system (DB, Hooks, Admin UI)
+- [ci] Configured Supabase CLI in GitHub Actions for true integration testing
+- [test] Added E2E tests for Multi-Tenancy and Feature Flags
+- [fix][db] Fixed customer schema mismatch: made last_name nullable and added alias column
+- [ui][customers] Improved error handling for customer creation
+
 ### 2025-11-27 02:00 ET
 
 **[feature][onboarding][ux] Added business setup wizard and help tooltips**

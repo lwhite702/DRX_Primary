@@ -44,6 +44,17 @@
   html,
   body {
     @apply bg-background text-foreground overflow-x-hidden;
+    overscroll-behavior-y: none; /* Prevent pull-to-refresh on mobile */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+  }
+
+  /* Prevent iOS zoom on inputs */
+  @media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 
   h1,

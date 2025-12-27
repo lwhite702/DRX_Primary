@@ -18,6 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
+import { BusinessSwitcher } from "@/components/layout/business-switcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -220,6 +221,7 @@ export function TopNav() {
         </Button>
 
         <div className="flex items-center gap-2">
+          <BusinessSwitcher />
           {role && (
             <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">
               {role.replace("_", " ")}

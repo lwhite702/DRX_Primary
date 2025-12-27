@@ -21,6 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PackageOpen } from "lucide-react";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
@@ -31,6 +33,7 @@ import { inventorySchema, type Inventory } from "@/lib/validations/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductCostBreakdown } from "@/components/crm/ProductCostBreakdown";
+import { Tour } from "@/components/ui/tour";
 
 export default function InventoryPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -150,7 +153,11 @@ export default function InventoryPage() {
           </a>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
-              <Button onClick={handleNew} className="w-full sm:w-auto">
+              <Button
+                onClick={handleNew}
+                className="w-full sm:w-auto"
+                id="tour-inventory-add-btn"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
@@ -327,9 +334,13 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           {inventory.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No inventory items yet
-            </p>
+            <EmptyState
+              icon={PackageOpen}
+              title="No inventory items"
+              description="Add your first product to start tracking inventory."
+              actionLabel="Add Item"
+              onAction={handleNew}
+            />
           ) : (
             <>
               {/* Mobile cards */}
@@ -511,6 +522,19 @@ export default function InventoryPage() {
           )}
         </CardContent>
       </Card>
+
+      <Tour
+        tourId="inventory_v1"
+        steps={[
+          {
+            targetId: "tour-inventory-add-btn",
+            title: "Add your first product",
+            description:
+              "Click here to add inventory. You can track quantities, costs, and set reorder alerts.",
+          },
+        ]}
+        onComplete={() => {}}
+      />
     </div>
   );
 }
