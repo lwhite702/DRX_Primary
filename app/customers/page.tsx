@@ -89,8 +89,15 @@ export default function CustomersPage() {
         reset();
         return message;
       },
-      error: (error) =>
-        error instanceof Error ? error.message : "Failed to save customer",
+      error: (error) => {
+        // Handle Supabase errors which differ from standard Error objects
+        if (typeof error === "object" && error !== null && "message" in error) {
+          return (error as any).message;
+        }
+        return error instanceof Error
+          ? error.message
+          : "Failed to save customer";
+      },
     });
   };
 
