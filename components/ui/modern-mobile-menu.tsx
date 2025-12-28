@@ -63,9 +63,16 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
 
     setLineWidth();
 
-    window.addEventListener("resize", setLineWidth);
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(setLineWidth, 100);
+    };
+
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", setLineWidth);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timeoutId);
     };
   }, [activeIndex, finalItems]);
 
