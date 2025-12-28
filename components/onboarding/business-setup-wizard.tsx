@@ -30,7 +30,13 @@ interface BusinessFormData {
   default_tax_rate: number;
 }
 
-export function BusinessSetupWizard({ userId, onComplete }: { userId: string; onComplete?: () => Promise<void> }) {
+export function BusinessSetupWizard({
+  userId,
+  onComplete,
+}: {
+  userId: string;
+  onComplete?: () => Promise<void>;
+}) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<BusinessFormData>({
@@ -140,7 +146,7 @@ export function BusinessSetupWizard({ userId, onComplete }: { userId: string; on
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <Image
-              src="/icon.svg"
+              src="/DeelRx CRM.svg"
               alt="DRX Logo"
               width={48}
               height={48}

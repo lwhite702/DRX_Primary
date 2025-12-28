@@ -148,6 +148,7 @@ export default function InventoryIntakePage() {
       setFormData({
         inventory_id: "",
         product_name: "",
+        unit_of_measure: "g",
         total_cost: "",
         total_weight_grams: "",
         delivery_cost: "0",

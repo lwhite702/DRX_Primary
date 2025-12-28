@@ -336,7 +336,7 @@ export default function CreditPage() {
                       <SelectValue placeholder="Select customer" />
                     </SelectTrigger>
                     <SelectContent>
-                      {customers.map((customer) => {
+                      {customers.map((customer: any) => {
                         const limit: any = creditLimits.get(customer.id);
                         return (
                           <SelectItem key={customer.id} value={customer.id}>

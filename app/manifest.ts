@@ -11,9 +11,10 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0B0B0C",
     icons: [
       {
-        src: "/icon.svg",
+        src: "/DeelRx CRM.svg",
         sizes: "any",
         type: "image/svg+xml",
+        purpose: "maskable",
       },
       {
         src: "/apple-icon.png",
@@ -21,9 +22,10 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
       {
-        src: "/icon-dark-32x32.png",
-        sizes: "32x32",
-        type: "image/png",
+        src: "/DeelRx CRM.svg",
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "maskable",
       },
     ],
   };

@@ -39,7 +39,12 @@ export default function LandingPage() {
       <header className="px-6 py-4 flex justify-between items-center border-b border-border/40 backdrop-blur-sm sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <div className="relative w-8 h-8">
-            <Image src="/icon.svg" alt="Logo" fill className="object-contain" />
+            <Image
+              src="/DeelRx CRM.svg"
+              alt="DeelRx CRM"
+              fill
+              className="object-contain"
+            />
           </div>
           <span className="font-bold text-xl">DRX</span>
           <span className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">

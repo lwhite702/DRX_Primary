@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If approved, process immediately
-    if (status === "approved") {
+    if (!requires_approval) {
       await processIntake(supabase, intake.id, inventory_id, business_id, {
         total_cost,
         total_weight_grams,

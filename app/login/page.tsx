@@ -121,7 +121,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-6">
             <div className="relative w-24 h-24">
               <Image
-                src="/icon.svg"
+                src="/DeelRx CRM.svg"
                 alt="DRX CRM Logo"
                 fill
                 className="object-contain"

@@ -57,6 +57,10 @@
     }
   }
 
+  .text-balance {
+    text-wrap: balance;
+  }
+
   h1,
   h2,
   h3,
@@ -76,5 +80,18 @@
 
   h3 {
     @apply text-xl;
+  }
+}
+
+/* Safe area utilities for PWA */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .safe-bottom {
+    padding-bottom: 0 !important;
   }
 }

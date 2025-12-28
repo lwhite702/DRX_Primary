@@ -67,14 +67,14 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
 
         // Calculate totals
         const totalCost = (events || []).reduce(
-          (sum, e) => sum + (e.cost_value || 0),
+          (sum: number, e: any) => sum + (e.cost_value || 0),
           0
         );
         setTotalCostLoss(totalCost);
 
         // Count by type
         const counts: Record<string, number> = {};
-        (events || []).forEach((e) => {
+        (events || []).forEach((e: any) => {
           counts[e.shrinkage_type] = (counts[e.shrinkage_type] || 0) + 1;
         });
         setEventCounts(counts);
@@ -107,9 +107,7 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{shrinkageEvents.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Last {period} days
-            </p>
+            <p className="text-xs text-muted-foreground">Last {period} days</p>
           </CardContent>
         </Card>
 
@@ -119,10 +117,10 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
             <TrendingDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalCostLoss.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              From shrinkage
-            </p>
+            <div className="text-2xl font-bold">
+              ${totalCostLoss.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">From shrinkage</p>
           </CardContent>
         </Card>
 
@@ -133,11 +131,12 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${shrinkageEvents.length > 0 ? (totalCostLoss / shrinkageEvents.length).toFixed(2) : "0.00"}
+              $
+              {shrinkageEvents.length > 0
+                ? (totalCostLoss / shrinkageEvents.length).toFixed(2)
+                : "0.00"}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Per shrinkage event
-            </p>
+            <p className="text-xs text-muted-foreground">Per shrinkage event</p>
           </CardContent>
         </Card>
       </div>
@@ -207,8 +206,7 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
                   {shrinkageEvents.map((event) => (
                     <TableRow key={event.id}>
                       <TableCell className="text-sm">
-                        {new Date(event.created_at).toLocaleDateString()} 
-                        {" "}
+                        {new Date(event.created_at).toLocaleDateString()}{" "}
                         {new Date(event.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -226,7 +224,8 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
                       </TableCell>
                       <TableCell className="text-sm">
                         <span className="px-2 py-1 rounded text-xs font-medium bg-muted">
-                          {typeLabels[event.shrinkage_type] || event.shrinkage_type}
+                          {typeLabels[event.shrinkage_type] ||
+                            event.shrinkage_type}
                         </span>
                       </TableCell>
                       <TableCell className="text-right text-sm">

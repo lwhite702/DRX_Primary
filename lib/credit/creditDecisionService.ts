@@ -61,7 +61,9 @@ export async function refreshAICreditRecommendation(
       .eq("business_id", business_id)
       .single();
 
-    const current_balance = limitData ? Number(limitData.current_balance || 0) : 0;
+    const current_balance = limitData
+      ? Number(limitData.current_balance || 0)
+      : 0;
 
     // Compute features
     const features = await computeCustomerFeatures(
@@ -98,7 +100,10 @@ export async function refreshAICreditRecommendation(
       .eq("id", customer_id);
 
     if (updateError) {
-      console.error("Error updating customer with AI recommendation:", updateError);
+      console.error(
+        "Error updating customer with AI recommendation:",
+        updateError
+      );
     }
 
     return {
@@ -169,19 +174,17 @@ export async function applyAICreditRecommendation(
     }
 
     // Also update credit_limits table for consistency
-    await supabase
-      .from("credit_limits")
-      .upsert(
-        {
-          business_id,
-          customer_id,
-          max_credit_limit: new_limit,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "business_id,customer_id",
-        }
-      );
+    await supabase.from("credit_limits").upsert(
+      {
+        business_id,
+        customer_id,
+        max_credit_limit: new_limit,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "business_id,customer_id",
+      }
+    );
 
     // Log decision
     await logCreditDecision({
@@ -254,19 +257,17 @@ export async function overrideCreditLimit(
     }
 
     // Also update credit_limits table
-    await supabase
-      .from("credit_limits")
-      .upsert(
-        {
-          business_id,
-          customer_id,
-          max_credit_limit: new_limit,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "business_id,customer_id",
-        }
-      );
+    await supabase.from("credit_limits").upsert(
+      {
+        business_id,
+        customer_id,
+        max_credit_limit: new_limit,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "business_id,customer_id",
+      }
+    );
 
     // Log decision
     await logCreditDecision({
@@ -293,9 +294,7 @@ export async function overrideCreditLimit(
   }
 }
 
-export async function logCreditDecision(
-  decision: CreditDecisionLog
-): Promise<{
+export async function logCreditDecision(decision: CreditDecisionLog): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -306,20 +305,18 @@ export async function logCreditDecision(
   }
 
   try {
-    const { error } = await supabase
-      .from("ai_credit_decisions")
-      .insert({
-        business_id: decision.business_id,
-        customer_id: decision.customer_id,
-        decision_type: decision.decision_type,
-        old_limit: decision.old_limit,
-        new_limit: decision.new_limit,
-        risk_score: decision.risk_score,
-        reason: decision.reason,
-        details_json: decision.details_json || {},
-        decided_by: decision.decided_by || null,
-        created_at: new Date().toISOString(),
-      });
+    const { error } = await supabase.from("ai_credit_decisions").insert({
+      business_id: decision.business_id,
+      customer_id: decision.customer_id,
+      decision_type: decision.decision_type,
+      old_limit: decision.old_limit,
+      new_limit: decision.new_limit,
+      risk_score: decision.risk_score,
+      reason: decision.reason,
+      details_json: decision.details_json || {},
+      decided_by: decision.decided_by || null,
+      created_at: new Date().toISOString(),
+    });
 
     if (error) {
       console.error("Error logging credit decision:", error);
@@ -377,9 +374,7 @@ export async function getCreditDecisionHistory(
   }
 }
 
-export async function getCreditExposureReport(
-  business_id: string
-): Promise<{
+export async function getCreditExposureReport(business_id: string): Promise<{
   total_credit_limits: number;
   total_credit_balance: number;
   utilization_ratio: number;
@@ -421,26 +416,24 @@ export async function getCreditExposureReport(
     }
 
     const total_credit_limits = (limits || []).reduce(
-      (sum, l) => sum + Number(l.max_credit_limit || 0),
+      (sum: number, l: any) => sum + Number(l.max_credit_limit || 0),
       0
     );
     const total_credit_balance = (limits || []).reduce(
-      (sum, l) => sum + Number(l.current_balance || 0),
+      (sum: number, l: any) => sum + Number(l.current_balance || 0),
       0
     );
     const utilization_ratio =
-      total_credit_limits > 0
-        ? total_credit_balance / total_credit_limits
-        : 0;
+      total_credit_limits > 0 ? total_credit_balance / total_credit_limits : 0;
 
     const at_risk_customers = (customers || []).filter(
-      (c) => c.credit_risk_score && c.credit_risk_score > 70
+      (c: any) => c.credit_risk_score && c.credit_risk_score > 70
     ).length;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const customers_reviewed_today = (customers || []).filter((c) => {
+    const customers_reviewed_today = (customers || []).filter((c: any) => {
       const reviewDate = new Date(c.credit_limit_last_reviewed_at || "");
       reviewDate.setHours(0, 0, 0, 0);
       return reviewDate.getTime() === today.getTime();

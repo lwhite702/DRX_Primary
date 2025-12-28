@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
       // Handle legacy/admin_users table if needed, but primarily use user_roles now
       // merging logic
 
-      const formattedUsers = (data || []).map((role) => ({
+      const formattedUsers = (data || []).map((role: any) => ({
         id: role.id, // role entry id
         user_id: role.user_id,
         role: role.role,

@@ -1,0 +1,9 @@
+@@ -39,7 +39,7 @@
+     
+     const recs = inventoryData
+       .filter(item => item.selling_price && item.unit_cost && item.quantity_on_hand > 0)
+-      .map((item) => ({
++      .map((item: any) => ({
+         inventory_id: item.id,
+         business_id: businessId,
+         current_price: item.selling_price,

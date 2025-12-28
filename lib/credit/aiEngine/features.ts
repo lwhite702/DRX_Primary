@@ -164,9 +164,7 @@ async function getInventoryMetrics(
 
   const { data, error } = await supabase
     .from("inventory")
-    .select(
-      "id, quantity_on_hand, unit_cost, selling_price, created_at"
-    )
+    .select("id, quantity_on_hand, unit_cost, selling_price, created_at")
     .eq("business_id", business_id);
 
   if (error || !data || data.length === 0) {
@@ -178,12 +176,14 @@ async function getInventoryMetrics(
   }
 
   const total_inventory_value = data.reduce(
-    (sum, item) => sum + (Number(item.unit_cost || 0) * (item.quantity_on_hand || 0)),
+    (sum: number, item: any) =>
+      sum + Number(item.unit_cost || 0) * (item.quantity_on_hand || 0),
     0
   );
 
   const total_selling_value = data.reduce(
-    (sum, item) => sum + (Number(item.selling_price || 0) * (item.quantity_on_hand || 0)),
+    (sum: number, item: any) =>
+      sum + Number(item.selling_price || 0) * (item.quantity_on_hand || 0),
     0
   );
 
@@ -192,7 +192,7 @@ async function getInventoryMetrics(
 
   // Simple proxy for turnover: count of items with low stock
   const items_needing_restock = data.filter(
-    (item) => item.quantity_on_hand < 10
+    (item: any) => item.quantity_on_hand < 10
   ).length;
   const inventory_turnover = (items_needing_restock / data.length) * 100;
 
@@ -223,17 +223,21 @@ export async function computeCustomerFeatures(
     );
     const inventory = await getInventoryMetrics(supabase, business_id);
 
-    const purchase_frequency_per_week = sales.days_since_first_transaction > 0
-      ? (sales.completed_transactions / (sales.days_since_first_transaction / 7))
-      : 0;
+    const purchase_frequency_per_week =
+      sales.days_since_first_transaction > 0
+        ? sales.completed_transactions /
+          (sales.days_since_first_transaction / 7)
+        : 0;
 
-    const total_extended = sales.completed_transactions > 0
-      ? credit.credit_issued_all_time
-      : 0;
+    const total_extended =
+      sales.completed_transactions > 0 ? credit.credit_issued_all_time : 0;
     const total_repaid = credit.credit_repaid_all_time || 0;
     const on_time_repayment_ratio =
       total_extended > 0
-        ? Math.max(0, (total_extended - credit.late_payment_count * 100) / total_extended)
+        ? Math.max(
+            0,
+            (total_extended - credit.late_payment_count * 100) / total_extended
+          )
         : 1; // New customers are assumed on-time
 
     const credit_utilization_ratio =
@@ -259,7 +263,10 @@ export async function computeCustomerFeatures(
       current_credit_balance: credit.current_credit_balance,
       average_ticket_size: sales.average_ticket_size,
       purchase_frequency_per_week,
-      on_time_repayment_ratio: Math.min(1, Math.max(0, on_time_repayment_ratio)),
+      on_time_repayment_ratio: Math.min(
+        1,
+        Math.max(0, on_time_repayment_ratio)
+      ),
       credit_utilization_ratio,
       total_inventory_value: inventory.total_inventory_value,
       inventory_velocity_7d,
@@ -296,9 +303,13 @@ export function normalizeFeatures(
   );
 
   // Inventory coverage: can business support this customer's credit?
-  const inventory_coverage_ratio = features.total_inventory_value > 0
-    ? Math.min(1, features.total_inventory_value / Math.max(1, features.sales_30d))
-    : 0;
+  const inventory_coverage_ratio =
+    features.total_inventory_value > 0
+      ? Math.min(
+          1,
+          features.total_inventory_value / Math.max(1, features.sales_30d)
+        )
+      : 0;
 
   // Inventory turnover normalized to 0-100
   const inventory_turnover = Math.min(100, features.inventory_velocity_7d * 10);

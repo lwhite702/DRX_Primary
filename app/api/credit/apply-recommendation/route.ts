@@ -1,4 +1,7 @@
-import { applyAICreditRecommendation, overrideCreditLimit } from "@/lib/credit/creditDecisionService";
+import {
+  applyAICreditRecommendation,
+  overrideCreditLimit,
+} from "@/lib/credit/creditDecisionService";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -44,7 +47,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { success: true, new_limit: result.new_limit },
+      {
+        success: true,
+        new_limit: "new_limit" in result ? result.new_limit : undefined,
+      },
       { status: 200 }
     );
   } catch (error) {

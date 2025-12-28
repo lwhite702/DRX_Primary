@@ -1,12 +1,12 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
 export function AppLogo({
   href = "/dashboard",
   showTagline = false,
 }: {
-  href?: string
-  showTagline?: boolean
+  href?: string;
+  showTagline?: boolean;
 }) {
   return (
     <Link
@@ -16,8 +16,8 @@ export function AppLogo({
     >
       <div className="relative h-8 w-8 shrink-0">
         <Image
-          src="/icon.svg"
-          alt="DRX CRM"
+          src="/DeelRx CRM.svg"
+          alt="DeelRx CRM"
           fill
           className="object-contain opacity-90"
           priority
@@ -34,5 +34,5 @@ export function AppLogo({
         )}
       </div>
     </Link>
-  )
+  );
 }

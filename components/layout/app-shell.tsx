@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             key={pathname}
             className={
               "flex-1 overflow-auto min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-300 " +
-              "pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
+              "pb-20 md:pb-0 safe-bottom"
             }
           >
             {children}
