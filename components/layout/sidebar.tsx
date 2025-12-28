@@ -119,6 +119,11 @@ export function Sidebar() {
           Report a Bug
         </button>
         <LogoutButton />
+
+        {/* Version */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center">v0.1.0</p>
+        </div>
       </div>
     </aside>
   );
