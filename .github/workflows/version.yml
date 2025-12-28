@@ -39,7 +39,12 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const output = fs.readFileSync('version_output.txt', 'utf8');
+            let output = '';
+            try {
+              output = fs.readFileSync('version_output.txt', 'utf8');
+            } catch (error) {
+              output = 'No version check output available.';
+            }
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
