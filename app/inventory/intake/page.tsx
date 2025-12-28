@@ -29,10 +29,12 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
+import { getUnitLabel, type UnitOfMeasure } from "@/lib/utils/units";
 
 interface IntakeFormData {
   inventory_id: string;
   product_name: string;
+  unit_of_measure: UnitOfMeasure;
   total_cost: string;
   total_weight_grams: string;
   delivery_cost: string;
@@ -47,6 +49,7 @@ export default function InventoryIntakePage() {
   const [formData, setFormData] = useState<IntakeFormData>({
     inventory_id: "",
     product_name: "",
+    unit_of_measure: "g",
     total_cost: "",
     total_weight_grams: "",
     delivery_cost: "0",
@@ -72,6 +75,7 @@ export default function InventoryIntakePage() {
       ...formData,
       inventory_id: value,
       product_name: selectedItem?.product_name || "",
+      unit_of_measure: (selectedItem?.unit_of_measure as UnitOfMeasure) || "g",
     });
   };
 
@@ -262,7 +266,8 @@ export default function InventoryIntakePage() {
                 {/* Total Weight */}
                 <div className="space-y-2">
                   <Label htmlFor="total_weight">
-                    Total Weight Received (grams) *
+                    Total Weight Received (
+                    {getUnitLabel(formData.unit_of_measure, true)}) *
                   </Label>
                   <Input
                     id="total_weight"
@@ -279,7 +284,8 @@ export default function InventoryIntakePage() {
                     step="0.01"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Total weight of product received in this shipment
+                    Total weight of product received in this shipment (
+                    {formData.unit_of_measure})
                   </p>
                 </div>
 
@@ -301,7 +307,8 @@ export default function InventoryIntakePage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Automatically calculated from total cost ÷ total weight
+                    Automatically calculated from total cost ÷ total weight (per{" "}
+                    {formData.unit_of_measure})
                   </p>
                 </div>
 
@@ -358,7 +365,8 @@ export default function InventoryIntakePage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams || "0"}g
+                    {formData.total_weight_grams || "0"}
+                    {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -383,7 +391,14 @@ export default function InventoryIntakePage() {
                 </div>
                 {costPerGram > 0 && (
                   <div className="flex justify-between border-t pt-3">
-                    <span className="text-muted-foreground">Cost/Gram:</span>
+                    <span className="text-muted-foreground">
+                      Cost/
+                      {getUnitLabel(formData.unit_of_measure)
+                        .charAt(0)
+                        .toUpperCase() +
+                        getUnitLabel(formData.unit_of_measure).slice(1)}
+                      :
+                    </span>
                     <span className="font-mono font-bold text-primary">
                       ${costPerGram.toFixed(6)}
                     </span>
@@ -419,7 +434,8 @@ export default function InventoryIntakePage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams}g
+                    {formData.total_weight_grams}
+                    {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -441,9 +457,16 @@ export default function InventoryIntakePage() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
-                  <span className="font-semibold">Cost Per Gram:</span>
+                  <span className="font-semibold">
+                    Cost Per{" "}
+                    {getUnitLabel(formData.unit_of_measure)
+                      .charAt(0)
+                      .toUpperCase() +
+                      getUnitLabel(formData.unit_of_measure).slice(1)}
+                    :
+                  </span>
                   <span className="font-mono font-bold text-primary">
-                    ${costPerGram.toFixed(6)}/g
+                    ${costPerGram.toFixed(6)}/{formData.unit_of_measure}
                   </span>
                 </div>
               </div>

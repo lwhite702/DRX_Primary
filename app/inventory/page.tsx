@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductCostBreakdown } from "@/components/crm/ProductCostBreakdown";
 import { Tour } from "@/components/ui/tour";
+import { getUnitForCategory } from "@/lib/utils/units";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function InventoryPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -48,6 +56,8 @@ export default function InventoryPage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Inventory>({
     resolver: zodResolver(inventorySchema),
@@ -55,8 +65,20 @@ export default function InventoryPage() {
       business_id: business?.id || "",
       quantity_on_hand: 0,
       reorder_level: 10,
+      unit_of_measure: "g",
     },
   });
+
+  // Watch category changes to auto-set unit
+  const category = watch("category");
+
+  // Auto-set unit based on category
+  React.useEffect(() => {
+    if (category && !editingItem) {
+      const unit = getUnitForCategory(category);
+      setValue("unit_of_measure", unit);
+    }
+  }, [category, editingItem, setValue]);
 
   const onSubmit = async (data: Inventory) => {
     if (!business?.id || !supabase) {
@@ -115,6 +137,7 @@ export default function InventoryPage() {
       sku: randomSku,
       quantity_on_hand: 0,
       reorder_level: 10,
+      unit_of_measure: "g",
     });
     setShowDialog(true);
   };
@@ -205,7 +228,10 @@ export default function InventoryPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="category">
+                      Category
+                      <HelpTooltip content="Determines measurement unit: liquids use oz, solids use g" />
+                    </Label>
                     <Input id="category" {...register("category")} />
                   </div>
                   <div className="space-y-2">
@@ -404,6 +430,7 @@ export default function InventoryPage() {
                               }
                             >
                               {item.quantity_on_hand}
+                              {item.unit_of_measure || "g"}
                             </p>
                           </div>
                           <div>
@@ -477,6 +504,7 @@ export default function InventoryPage() {
                               }
                             >
                               {item.quantity_on_hand}
+                              {item.unit_of_measure || "g"}
                             </span>
                           </TableCell>
                           <TableCell>{item.reorder_level}</TableCell>

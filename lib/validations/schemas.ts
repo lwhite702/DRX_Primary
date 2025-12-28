@@ -25,6 +25,7 @@ export const inventorySchema = z.object({
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
+  unit_of_measure: z.enum(["g", "oz"]).default("g"),
   quantity_on_hand: z.number().int().min(0).default(0),
   reorder_level: z.number().int().min(0).default(10),
   unit_cost: z.number().nonnegative().optional(),
