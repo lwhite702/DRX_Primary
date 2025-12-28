@@ -3,9 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseServiceKey) {
+  throw new Error(
+    "SUPABASE_SERVICE_ROLE_KEY environment variable is required for e2e tests"
+  );
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
