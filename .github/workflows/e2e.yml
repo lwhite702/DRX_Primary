@@ -35,12 +35,9 @@ jobs:
           version: latest
 
       - name: Start Supabase
-        run: supabase start -x realtime,storage,studio,imgproxy --background
+        run: supabase start -x realtime,storage,studio,imgproxy,edge-runtime --background
         env:
           SUPABASE_DB_PASSWORD: "admin"
-
-      - name: Apply Database Migrations
-        run: supabase db reset --db-url postgresql://postgres:admin@localhost:54322/postgres
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -50,7 +47,7 @@ jobs:
         env:
           CI: true
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImiYXQiOjE2NjIzMjgzMjAsImV4cCI6MTk3NzkwMjMyMH0.s_fd0Q-qQV5_Ikh_I_w_w"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
           SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w"
 
       - name: Upload Playwright Report

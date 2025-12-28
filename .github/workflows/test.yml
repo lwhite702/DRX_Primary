@@ -34,12 +34,9 @@ jobs:
           version: latest
 
       - name: Start Supabase
-        run: supabase start -x realtime,storage,studio,imgproxy --background
+        run: supabase start -x realtime,storage,studio,imgproxy,edge-runtime --background
         env:
           SUPABASE_DB_PASSWORD: "admin"
-
-      - name: Apply Database Migrations
-        run: supabase db reset --db-url postgresql://postgres:admin@localhost:54322/postgres
 
       - name: Run Vitest
         run: pnpm test:run
