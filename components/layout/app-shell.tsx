@@ -44,7 +44,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Footer />
       </div>
 
-      <BottomNav />
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
     </div>
   );
 }
