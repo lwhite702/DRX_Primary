@@ -38,6 +38,9 @@ jobs:
         env:
           SUPABASE_DB_PASSWORD: "admin"
 
+      - name: Apply Database Migrations
+        run: supabase db reset --db-url postgresql://postgres:admin@localhost:54322/postgres
+
       - name: Run Vitest
         run: pnpm test:run
         env:
