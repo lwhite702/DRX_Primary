@@ -35,7 +35,11 @@ jobs:
           version: latest
 
       - name: Start Supabase
-        run: supabase start -x realtime,storage,studio,imgproxy,edge-runtime --background
+        run: |
+          supabase start -x realtime,storage,studio,imgproxy,edge-runtime &
+          echo "Waiting for Supabase to be healthy..."
+          timeout 60 bash -c 'until curl -s http://127.0.0.1:54321/rest/v1/ > /dev/null; do sleep 2; done'
+          echo "Supabase is healthy!"
         env:
           SUPABASE_DB_PASSWORD: "admin"
 
