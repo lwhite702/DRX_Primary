@@ -2,9 +2,9 @@ name: End-to-End Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
   pull_request:
-    branches: [main]
+    branches: [main, development]
 
 jobs:
   e2e:
@@ -35,7 +35,25 @@ jobs:
           version: latest
 
       - name: Start Supabase
-        run: supabase start -x realtime,storage,studio,imgproxy,edge-runtime --background
+        run: |
+          # Start Supabase in background
+          supabase start -x realtime,storage,studio,imgproxy,edge-runtime &
+
+          # Wait for the CLI to report healthy (tries ~2 minutes)
+          for i in $(seq 1 60); do
+            if supabase status >/dev/null 2>&1; then
+              echo "Supabase is up"
+              break
+            fi
+            sleep 2
+          done
+
+          # Verify Supabase started successfully
+          if ! supabase status >/dev/null 2>&1; then
+            echo "Supabase failed to start in time" >&2
+            supabase status || true
+            exit 1
+          fi
         env:
           SUPABASE_DB_PASSWORD: "admin"
 

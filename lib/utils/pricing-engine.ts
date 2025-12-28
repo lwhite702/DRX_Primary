@@ -1,4 +1,3 @@
-
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 export interface PricingFactors {
@@ -111,7 +110,7 @@ export class PricingEngine {
     }
 
     const avg30 = velocity30d || 1;
-    const avg90 = velocity90d || avg30;
+    // const avg90 = velocity90d || avg30;
     const acceleration = ((velocity7d - avg30) / avg30) * 100;
 
     let elasticity = "stable";
@@ -135,9 +134,9 @@ export class PricingEngine {
     const absoluteMin = cost * (1 + minMarginRequired);
     const absoluteMax = cost * globalSafetyFactor;
 
-    let finalMin = Math.max(absoluteMin, minPrice || absoluteMin);
-    let finalMax = Math.min(absoluteMax, maxPrice || absoluteMax);
-    let finalPrice = Math.max(finalMin, Math.min(recommendedPrice, finalMax));
+    const finalMin = Math.max(absoluteMin, minPrice || absoluteMin);
+    const finalMax = Math.min(absoluteMax, maxPrice || absoluteMax);
+    const finalPrice = Math.max(finalMin, Math.min(recommendedPrice, finalMax));
 
     return {
       price: Math.round(finalPrice * 100) / 100,
@@ -205,7 +204,7 @@ export class PricingEngine {
 
     // NEW: Analyze delivery cost trends
     const deliveryCostHistory = factors.deliveryCostHistory || [];
-    const avgDeliveryCost = factors.avgDeliveryCostPerUnit || 0;
+    // const avgDeliveryCost = factors.avgDeliveryCostPerUnit || 0;
     if (deliveryCostHistory.length > 0) {
       const recentDeliveryCosts = deliveryCostHistory.slice(-5);
       const avgRecent =

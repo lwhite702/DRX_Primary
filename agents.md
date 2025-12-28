@@ -29,14 +29,30 @@ If an agent cannot follow these rules, the agent should stop and request human g
 
 ### 1.1 Branching conventions
 
-- Feature work should happen in feature branches named like:
-  - `feature/<short-description>`
-  - Example: `feature/mindstorm-recluster-endpoint`
-- Integration or merge work should happen in:
-  - `merge/<source>-into-<target>`
-  - Example: `merge/opus-into-main`
+**Branch Structure:**
 
-**Agents must never push directly to main unless explicitly directed in writing.**
+- `main` - Production-ready code, protected branch
+- `development` - Primary integration branch for all feature work
+- `feature/<short-description>` - Individual feature branches
+
+**Workflow:**
+
+1. All new work MUST branch from `development`
+2. Feature branches merge back to `development` via pull request
+3. `development` merges to `main` only for releases
+
+**Naming Examples:**
+
+- Feature work: `feature/inventory-forecasting`
+- Bug fixes: `feature/fix-mobile-nav`
+- Integration: `merge/feature-x-into-development`
+
+**Critical Rules:**
+
+- Agents MUST NEVER push directly to `main`
+- Agents MUST NEVER push directly to `development` without PR review
+- All work happens in feature branches
+- Only humans can merge `development` → `main` for releases
 
 ### 1.2 Commit discipline
 
@@ -99,6 +115,59 @@ Rules for CHANGELOG.md:
 - Do not group unrelated changes into one bullet. Clarity > aesthetics.
 
 **Agents must never skip the changelog. The changelog is our historical record of intent.**
+
+### 1.4 Version Management
+
+**Semantic Versioning (SemVer) is required: `MAJOR.MINOR.PATCH`**
+
+All version changes MUST follow semantic versioning principles:
+
+- **MAJOR** (x.0.0) - Breaking changes, incompatible API changes
+- **MINOR** (0.x.0) - New features, backwards-compatible additions
+- **PATCH** (0.0.x) - Bug fixes, small improvements
+
+**Automated Version Checking:**
+
+Before proposing any pull request, agents MUST:
+
+1. Run `pnpm version:check` to see suggested version bump
+2. Update CHANGELOG.md under `[Unreleased]` with categorized changes:
+   - **Added** - New features (triggers MINOR bump)
+   - **Changed** - Changes to existing functionality
+   - **Deprecated** - Soon-to-be removed features
+   - **Removed** - Removed features (triggers MAJOR bump)
+   - **Fixed** - Bug fixes (triggers PATCH bump)
+   - **Security** - Security fixes
+
+**When to bump versions:**
+
+Agents MUST NOT manually edit version numbers in:
+
+- `package.json`
+- UI components (`sidebar.tsx`, `bottom-nav.tsx`)
+
+Instead, when ready to release:
+
+1. Ensure all changes are documented in CHANGELOG.md under `[Unreleased]`
+2. Run `pnpm version:bump` to automatically update all version references
+3. Commit with message: `chore: Release vX.Y.Z`
+4. Create git tag: `git tag vX.Y.Z`
+
+**CI Integration:**
+
+The version check workflow runs automatically on:
+
+- All pull requests to main
+- All pushes to main
+
+This ensures version consistency and proper changelog maintenance.
+
+**Documentation:**
+
+For detailed version management workflow, see:
+
+- `docs/VERSION_MANAGEMENT.md` - Complete guide with examples
+- `scripts/version.js` - Automated version management script
 
 ### 1.5 Date Source Verification Checklist (Binding)
 

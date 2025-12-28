@@ -5,6 +5,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "version:check": "node scripts/version.js check",
+    "version:bump": "node scripts/version.js bump",
     "lint": "eslint .",
     "start": "next start",
     "test": "vitest",
