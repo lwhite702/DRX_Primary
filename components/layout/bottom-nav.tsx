@@ -1,25 +1,27 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { MoreHorizontal, Settings } from "lucide-react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MoreHorizontal, Settings } from "lucide-react";
+import { useState } from "react";
 
-import { cn } from "@/lib/utils"
-import { primaryNav } from "@/components/layout/nav-items"
-import { LogoutButton } from "@/components/layout/logout-button"
+import { cn } from "@/lib/utils";
+import { primaryNav } from "@/components/layout/nav-items";
+import { LogoutButton } from "@/components/layout/logout-button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
-const bottomNav = primaryNav.slice(0, 4)
-const moreNav = primaryNav.slice(4)
+const bottomNav = primaryNav.slice(0, 4);
+const moreNav = primaryNav.slice(4);
 
 export function BottomNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   return (
     <nav
@@ -31,8 +33,9 @@ export function BottomNav() {
     >
       <div className="flex items-stretch">
         {bottomNav.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+          const Icon = item.icon;
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
 
           return (
             <Link
@@ -41,6 +44,7 @@ export function BottomNav() {
               className={cn(
                 "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center gap-1 text-xs font-medium",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                "active:scale-95 transition-transform",
                 isActive ? "text-accent" : "text-muted-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
@@ -48,16 +52,17 @@ export function BottomNav() {
               <Icon className="h-5 w-5" />
               <span className="truncate">{item.label}</span>
             </Link>
-          )
+          );
         })}
 
-        <Sheet>
+        <Sheet open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
           <SheetTrigger asChild>
             <button
               type="button"
               className={cn(
                 "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                "active:scale-95 transition-transform"
               )}
               aria-label="More navigation"
             >
@@ -75,26 +80,32 @@ export function BottomNav() {
             <div className="p-2 overflow-y-auto">
               <div className="space-y-1">
                 {moreNav.map((item) => {
-                  const Icon = item.icon
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(item.href + "/");
 
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setMoreMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium",
-                        isActive ? "bg-accent text-background" : "text-foreground hover:bg-border"
+                        isActive
+                          ? "bg-accent text-background"
+                          : "text-foreground hover:bg-border"
                       )}
                     >
                       <Icon className="h-5 w-5" />
                       <span className="min-w-0 truncate">{item.label}</span>
                     </Link>
-                  )
+                  );
                 })}
 
                 <Link
                   href="/admin"
+                  onClick={() => setMoreMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
                 >
                   <Settings className="h-5 w-5" />
@@ -110,5 +121,5 @@ export function BottomNav() {
         </Sheet>
       </div>
     </nav>
-  )
+  );
 }
