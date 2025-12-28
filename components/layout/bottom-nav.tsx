@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreHorizontal, Settings } from "lucide-react";
+import { MoreHorizontal, Settings, DollarSign } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -16,12 +16,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const bottomNav = primaryNav.slice(0, 4);
+// Split nav: first 2, Sales (center FAB), last 2
+const leftNav = primaryNav.slice(0, 2);
+const salesItem = primaryNav.find((item) => item.href === "/sales");
+const rightNav = primaryNav
+  .slice(2, 4)
+  .filter((item) => item.href !== "/sales");
 const moreNav = primaryNav.slice(4);
 
 export function BottomNav() {
   const pathname = usePathname();
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+
+  const isSalesActive = pathname === "/sales" || pathname.startsWith("/sales/");
 
   return (
     <nav
@@ -31,8 +38,9 @@ export function BottomNav() {
       )}
       aria-label="Primary navigation"
     >
-      <div className="flex items-stretch">
-        {bottomNav.map((item) => {
+      <div className="flex items-stretch justify-around relative">
+        {/* Left Nav Items */}
+        {leftNav.map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
@@ -55,6 +63,65 @@ export function BottomNav() {
           );
         })}
 
+        {/* Sales FAB - Prominent Center Button */}
+        {salesItem && (
+          <Link
+            href={salesItem.href}
+            className={cn(
+              "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center relative",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+              "active:scale-95 transition-all"
+            )}
+            aria-current={isSalesActive ? "page" : undefined}
+          >
+            {/* FAB Circle */}
+            <div
+              className={cn(
+                "absolute -top-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all",
+                isSalesActive
+                  ? "bg-accent scale-110"
+                  : "bg-green-600 hover:bg-green-700 hover:scale-105"
+              )}
+            >
+              <DollarSign className="h-7 w-7 text-white" />
+            </div>
+            {/* Label */}
+            <span
+              className={cn(
+                "text-xs font-bold mt-6",
+                isSalesActive ? "text-accent" : "text-green-600"
+              )}
+            >
+              {salesItem.label}
+            </span>
+          </Link>
+        )}
+
+        {/* Right Nav Items */}
+        {rightNav.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center gap-1 text-xs font-medium",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                "active:scale-95 transition-transform",
+                isActive ? "text-accent" : "text-muted-foreground"
+              )}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="truncate">{item.label}</span>
+            </Link>
+          );
+        })}
+
+        {/* More Menu */}
         <Sheet open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
           <SheetTrigger asChild>
             <button
