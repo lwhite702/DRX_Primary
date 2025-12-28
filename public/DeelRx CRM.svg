@@ -1,15 +1,7 @@
-<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="55" fill="#22c55e" opacity="0.15"/>
+  
   <!-- Rx Symbol -->
-  <circle cx="30" cy="30" r="24" fill="#22c55e" opacity="0.1"/>
-  <text x="30" y="40" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#22c55e" text-anchor="middle">Rx</text>
-  
-  <!-- DeelRx Text -->
-  <text x="65" y="28" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1f2937">
-    Deel<tspan fill="#22c55e">Rx</tspan>
-  </text>
-  
-  <!-- CRM Subtitle -->
-  <text x="65" y="45" font-family="Arial, sans-serif" font-size="12" font-weight="normal" fill="#6b7280" letter-spacing="2">
-    CRM
-  </text>
+  <text x="60" y="80" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#22c55e" text-anchor="middle">Rx</text>
 </svg>
