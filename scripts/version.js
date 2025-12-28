@@ -140,20 +140,28 @@ function bumpVersion() {
 }
 
 function updateUIVersions(version) {
-  // Update sidebar
-  const sidebarPath = path.join(__dirname, "../components/layout/sidebar.tsx");
-  let sidebar = fs.readFileSync(sidebarPath, "utf-8");
-  sidebar = sidebar.replace(/v\d+\.\d+\.\d+/, `v${version}`);
-  fs.writeFileSync(sidebarPath, sidebar);
-
-  // Update bottom-nav
-  const bottomNavPath = path.join(
-    __dirname,
+  const filesToUpdate = [
+    "../components/layout/sidebar.tsx",
     "../components/layout/bottom-nav.tsx"
-  );
-  let bottomNav = fs.readFileSync(bottomNavPath, "utf-8");
-  bottomNav = bottomNav.replace(/v\d+\.\d+\.\d+/, `v${version}`);
-  fs.writeFileSync(bottomNavPath, bottomNav);
+  ];
+
+  filesToUpdate.forEach(relativePath => {
+    const filePath = path.join(__dirname, relativePath);
+    
+    if (!fs.existsSync(filePath)) {
+      console.warn(`⚠️ File not found, skipping version update: ${filePath}`);
+      return;
+    }
+
+    let content = fs.readFileSync(filePath, "utf-8");
+    const updatedContent = content.replace(/v\d+\.\d+\.\d+/, `v${version}`);
+    
+    if (content === updatedContent) {
+      console.warn(`⚠️ No version string found to update in: ${filePath}`);
+    } else {
+      fs.writeFileSync(filePath, updatedContent);
+    }
+  });
 }
 
 // Main
