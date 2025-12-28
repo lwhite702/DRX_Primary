@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { Building2, Users, FileText, Brain, AlertTriangle } from "lucide-react";
+import { Building2, Users, FileText, Brain } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -25,7 +25,9 @@ export default function AdminPage() {
     async function fetchStats() {
       try {
         // Check if user is admin
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           setLoading(false);
           return;
@@ -47,7 +49,9 @@ export default function AdminPage() {
           supabase.from("business_profile").select("id", { count: "exact" }),
           supabase.from("user_roles").select("id", { count: "exact" }),
           supabase.from("system_audit_log").select("id", { count: "exact" }),
-          supabase.from("ai_insights_failures").select("id", { count: "exact" }),
+          supabase
+            .from("ai_insights_failures")
+            .select("id", { count: "exact" }),
         ]);
 
         setStats({
@@ -74,7 +78,9 @@ export default function AdminPage() {
     <div className="p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Admin Console</h1>
-        <p className="text-muted-foreground mt-2">Enterprise administration and management</p>
+        <p className="text-muted-foreground mt-2">
+          Enterprise administration and management
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -142,7 +148,9 @@ export default function AdminPage() {
               <Building2 className="h-5 w-5" />
               Businesses
             </h3>
-            <p className="text-muted-foreground mt-2">Manage connected businesses</p>
+            <p className="text-muted-foreground mt-2">
+              Manage connected businesses
+            </p>
           </Card>
         </Link>
 
@@ -152,7 +160,9 @@ export default function AdminPage() {
               <Users className="h-5 w-5" />
               Users
             </h3>
-            <p className="text-muted-foreground mt-2">Manage system users and roles</p>
+            <p className="text-muted-foreground mt-2">
+              Manage system users and roles
+            </p>
           </Card>
         </Link>
 
@@ -162,7 +172,9 @@ export default function AdminPage() {
               <FileText className="h-5 w-5" />
               Audit Logs
             </h3>
-            <p className="text-muted-foreground mt-2">View system audit trails</p>
+            <p className="text-muted-foreground mt-2">
+              View system audit trails
+            </p>
           </Card>
         </Link>
 
@@ -172,7 +184,9 @@ export default function AdminPage() {
               <Brain className="h-5 w-5" />
               AI Management
             </h3>
-            <p className="text-muted-foreground mt-2">Configure AI systems and view failures</p>
+            <p className="text-muted-foreground mt-2">
+              Configure AI systems and view failures
+            </p>
           </Card>
         </Link>
       </div>

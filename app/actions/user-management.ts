@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { Role, ROLES } from "@/lib/auth/permissions";
+import { Role } from "@/lib/auth/permissions";
 import { revalidatePath } from "next/cache";
 
 /**

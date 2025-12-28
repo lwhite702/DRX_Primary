@@ -63,7 +63,10 @@ export default function AdminBusinessesPage() {
     }
   };
 
-  const handleToggleActive = async (businessId: string, currentStatus: boolean) => {
+  const handleToggleActive = async (
+    businessId: string,
+    currentStatus: boolean
+  ) => {
     if (!supabase) return;
 
     try {
@@ -98,8 +101,10 @@ export default function AdminBusinessesPage() {
 
     try {
       // Get the owner user ID from their email
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
-      
+      const {
+        data: { users },
+      } = await supabase.auth.admin.listUsers();
+
       let ownerId: string | null = null;
       if (users) {
         const owner = users.find((u: any) => u.email === ownerEmail);
@@ -107,7 +112,9 @@ export default function AdminBusinessesPage() {
       }
 
       if (!ownerId) {
-        toast.error("User with this email not found. Please ensure the user has signed up.");
+        toast.error(
+          "User with this email not found. Please ensure the user has signed up."
+        );
         setCreateLoading(false);
         return;
       }
@@ -155,7 +162,9 @@ export default function AdminBusinessesPage() {
       setOwnerEmail("");
       fetchBusinesses();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create business");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create business"
+      );
     } finally {
       setCreateLoading(false);
     }
@@ -170,7 +179,9 @@ export default function AdminBusinessesPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Businesses</h1>
-          <p className="text-muted-foreground mt-2">Manage all businesses in the system</p>
+          <p className="text-muted-foreground mt-2">
+            Manage all businesses in the system
+          </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
@@ -244,7 +255,9 @@ export default function AdminBusinessesPage() {
         </CardHeader>
         <CardContent>
           {businesses.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No businesses found</p>
+            <p className="text-muted-foreground text-center py-8">
+              No businesses found
+            </p>
           ) : (
             <>
               {/* Mobile cards */}
@@ -254,7 +267,9 @@ export default function AdminBusinessesPage() {
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-medium break-words">{business.business_name}</p>
+                          <p className="font-medium break-words">
+                            {business.business_name}
+                          </p>
                           <p className="text-sm text-muted-foreground mt-1">
                             {business.business_type || "-"}
                             {business.city && business.state
@@ -276,7 +291,9 @@ export default function AdminBusinessesPage() {
 
                       {(business.phone_number || business.email) && (
                         <div className="mt-3 text-sm">
-                          {business.phone_number && <p>{business.phone_number}</p>}
+                          {business.phone_number && (
+                            <p>{business.phone_number}</p>
+                          )}
                           {business.email && (
                             <p className="text-muted-foreground break-words">
                               {business.email}
@@ -287,12 +304,15 @@ export default function AdminBusinessesPage() {
 
                       <div className="mt-4 flex items-center justify-between gap-2">
                         <p className="text-xs text-muted-foreground">
-                          Created {new Date(business.created_at).toLocaleDateString()}
+                          Created{" "}
+                          {new Date(business.created_at).toLocaleDateString()}
                         </p>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleToggleActive(business.id, business.is_active)}
+                          onClick={() =>
+                            handleToggleActive(business.id, business.is_active)
+                          }
                         >
                           {business.is_active ? "Deactivate" : "Activate"}
                         </Button>
@@ -319,7 +339,9 @@ export default function AdminBusinessesPage() {
                   <TableBody>
                     {businesses.map((business) => (
                       <TableRow key={business.id}>
-                        <TableCell className="font-medium">{business.business_name}</TableCell>
+                        <TableCell className="font-medium">
+                          {business.business_name}
+                        </TableCell>
                         <TableCell>{business.business_type || "-"}</TableCell>
                         <TableCell>
                           {business.city && business.state
@@ -332,7 +354,9 @@ export default function AdminBusinessesPage() {
                               <p className="text-sm">{business.phone_number}</p>
                             )}
                             {business.email && (
-                              <p className="text-sm text-muted-foreground">{business.email}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {business.email}
+                              </p>
                             )}
                           </div>
                         </TableCell>
@@ -354,7 +378,12 @@ export default function AdminBusinessesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleToggleActive(business.id, business.is_active)}
+                            onClick={() =>
+                              handleToggleActive(
+                                business.id,
+                                business.is_active
+                              )
+                            }
                           >
                             {business.is_active ? "Deactivate" : "Activate"}
                           </Button>
