@@ -146,7 +146,7 @@ export function BusinessSetupWizard({
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <Image
-              src="/DeelRx CRM.svg"
+              src="/icon.svg"
               alt="DRX Logo"
               width={48}
               height={48}

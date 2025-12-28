@@ -16,7 +16,7 @@ export function AppLogo({
     >
       <div className="relative h-8 w-8 shrink-0">
         <Image
-          src="/DeelRx CRM.svg"
+          src="/icon.svg"
           alt="DeelRx CRM"
           fill
           className="object-contain opacity-90"

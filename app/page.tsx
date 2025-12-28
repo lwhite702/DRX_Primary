@@ -40,7 +40,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <div className="relative w-8 h-8">
             <Image
-              src="/DeelRx CRM.svg"
+              src="/icon.svg"
               alt="DeelRx CRM"
               fill
               className="object-contain"

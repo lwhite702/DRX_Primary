@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description:
     "Privacy-first POS, CRM, inventory, and credit management system for small businesses",
   icons: {
-    icon: "/DeelRx CRM.svg",
+    icon: "/icon.svg",
   },
   generator: "v0.app",
   openGraph: {

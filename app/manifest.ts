@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0B0B0C",
     icons: [
       {
-        src: "/DeelRx CRM.svg",
+        src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "maskable",
@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
       {
-        src: "/DeelRx CRM.svg",
+        src: "/icon.svg",
         sizes: "512x512",
         type: "image/svg+xml",
         purpose: "maskable",
