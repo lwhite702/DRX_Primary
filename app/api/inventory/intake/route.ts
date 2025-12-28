@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
     // Get historical average cost to check for unusual values
     // For now, skip the historical check to avoid function dependency issues
     // This can be implemented later with proper RPC function
-    const avg_cost = 0;
-    let requires_approval = false;
-    let status = "approved";
+    let avg_cost = 0;
+    const requires_approval = true; // Auto-approve for now
+    const status = "pending_approval";
 
     // TODO: Implement historical cost check when get_avg_cost_per_gram RPC is available
     // Check if cost deviates more than 50% from historical average
@@ -211,7 +211,8 @@ async function processIntake(
     .eq("id", inventory_id)
     .single();
 
-  const newQuantity = (currentInventory?.quantity_on_hand || 0) + total_weight_grams;
+  const newQuantity =
+    (currentInventory?.quantity_on_hand || 0) + total_weight_grams;
 
   // Update inventory quantity and unit cost
   const { error: updateError } = await supabase
