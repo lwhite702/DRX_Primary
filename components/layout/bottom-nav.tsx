@@ -16,12 +16,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-// Sales first, then other items
+// Center Sales with 2 items on each side
+const salesItem = primaryNav.find((item) => item.href === "/sales");
+const otherItems = primaryNav.filter((item) => item.href !== "/sales");
 const navItems = [
-  primaryNav.find((item) => item.href === "/sales"),
-  ...primaryNav.filter((item) => item.href !== "/sales").slice(0, 3),
+  otherItems[0], // Dashboard
+  otherItems[1], // Inventory
+  salesItem, // Sales (CENTER)
+  otherItems[2], // Customers
+  otherItems[3], // Credit
 ].filter(Boolean);
-const moreNav = primaryNav.slice(4);
+const moreNav = primaryNav.slice(5);
 
 export function BottomNav() {
   const pathname = usePathname();
