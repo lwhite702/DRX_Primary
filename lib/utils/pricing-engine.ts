@@ -110,7 +110,7 @@ export class PricingEngine {
     }
 
     const avg30 = velocity30d || 1;
-    const avg90 = velocity90d || avg30;
+    // const avg90 = velocity90d || avg30;
     const acceleration = ((velocity7d - avg30) / avg30) * 100;
 
     let elasticity = "stable";
@@ -204,7 +204,7 @@ export class PricingEngine {
 
     // NEW: Analyze delivery cost trends
     const deliveryCostHistory = factors.deliveryCostHistory || [];
-    const avgDeliveryCost = factors.avgDeliveryCostPerUnit || 0;
+    // const avgDeliveryCost = factors.avgDeliveryCostPerUnit || 0;
     if (deliveryCostHistory.length > 0) {
       const recentDeliveryCosts = deliveryCostHistory.slice(-5);
       const avgRecent =
