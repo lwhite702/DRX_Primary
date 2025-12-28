@@ -36,10 +36,24 @@ jobs:
 
       - name: Start Supabase
         run: |
+          # Start Supabase in background
           supabase start -x realtime,storage,studio,imgproxy,edge-runtime &
-          echo "Waiting for Supabase to be healthy..."
-          timeout 60 bash -c 'until curl -s http://127.0.0.1:54321/rest/v1/ > /dev/null; do sleep 2; done'
-          echo "Supabase is healthy!"
+
+          # Wait for the CLI to report healthy (tries ~2 minutes)
+          for i in $(seq 1 60); do
+            if supabase status >/dev/null 2>&1; then
+              echo "Supabase is up"
+              break
+            fi
+            sleep 2
+          done
+
+          # Verify Supabase started successfully
+          if ! supabase status >/dev/null 2>&1; then
+            echo "Supabase failed to start in time" >&2
+            supabase status || true
+            exit 1
+          fi
         env:
           SUPABASE_DB_PASSWORD: "admin"
 
