@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-env node, commonjs */
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 
 /**
  * Version Management Helper
@@ -142,12 +144,12 @@ function bumpVersion() {
 function updateUIVersions(version) {
   const filesToUpdate = [
     "../components/layout/sidebar.tsx",
-    "../components/layout/bottom-nav.tsx"
+    "../components/layout/bottom-nav.tsx",
   ];
 
-  filesToUpdate.forEach(relativePath => {
+  filesToUpdate.forEach((relativePath) => {
     const filePath = path.join(__dirname, relativePath);
-    
+
     if (!fs.existsSync(filePath)) {
       console.warn(`⚠️ File not found, skipping version update: ${filePath}`);
       return;
@@ -155,7 +157,7 @@ function updateUIVersions(version) {
 
     let content = fs.readFileSync(filePath, "utf-8");
     const updatedContent = content.replace(/v\d+\.\d+\.\d+/, `v${version}`);
-    
+
     if (content === updatedContent) {
       console.warn(`⚠️ No version string found to update in: ${filePath}`);
     } else {

@@ -1,4 +1,3 @@
-
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 export interface PricingFactors {
@@ -135,9 +134,9 @@ export class PricingEngine {
     const absoluteMin = cost * (1 + minMarginRequired);
     const absoluteMax = cost * globalSafetyFactor;
 
-    let finalMin = Math.max(absoluteMin, minPrice || absoluteMin);
-    let finalMax = Math.min(absoluteMax, maxPrice || absoluteMax);
-    let finalPrice = Math.max(finalMin, Math.min(recommendedPrice, finalMax));
+    const finalMin = Math.max(absoluteMin, minPrice || absoluteMin);
+    const finalMax = Math.min(absoluteMax, maxPrice || absoluteMax);
+    const finalPrice = Math.max(finalMin, Math.min(recommendedPrice, finalMax));
 
     return {
       price: Math.round(finalPrice * 100) / 100,

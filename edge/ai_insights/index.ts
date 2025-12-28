@@ -28,7 +28,7 @@ serve(async (req) => {
     let data: any = {};
 
     switch (insight_type) {
-      case "pricing":
+      case "pricing": {
         const { data: inventory } = await supabase
           .from("inventory")
           .select("product_name, selling_price, unit_cost, quantity_on_hand")
@@ -50,8 +50,9 @@ serve(async (req) => {
           inventory || []
         )}. Recent sales: ${JSON.stringify(sales || [])}`;
         break;
+      }
 
-      case "inventory":
+      case "inventory": {
         const { data: inventoryData } = await supabase
           .from("inventory")
           .select(
@@ -75,8 +76,9 @@ serve(async (req) => {
           inventoryData || []
         )}. Recent changes: ${JSON.stringify(inventoryLogs || [])}`;
         break;
+      }
 
-      case "credit":
+      case "credit": {
         const { data: creditTransactions } = await supabase
           .from("credit_transactions")
           .select("transaction_type, amount, due_date, status, created_at")
@@ -94,8 +96,9 @@ serve(async (req) => {
           creditTransactions || []
         )}. Credit limits: ${JSON.stringify(creditLimits || [])}`;
         break;
+      }
 
-      case "cashflow":
+      case "cashflow": {
         const { data: recentSales } = await supabase
           .from("sales")
           .select("total_amount, payment_method, created_at")
@@ -121,6 +124,7 @@ serve(async (req) => {
           recentSales || []
         )}. Credit payments: ${JSON.stringify(creditPayments || [])}`;
         break;
+      }
 
       default:
         context = "General business insights requested";

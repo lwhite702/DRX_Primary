@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     // Get historical average cost to check for unusual values
     // For now, skip the historical check to avoid function dependency issues
     // This can be implemented later with proper RPC function
-    let avg_cost = 0;
+    // const avg_cost = 0; // TODO: enable when get_avg_cost_per_gram RPC implemented
     const requires_approval = true; // Auto-approve for now
     const status = "pending_approval";
 
