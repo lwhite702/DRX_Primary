@@ -20,6 +20,7 @@ CREATE POLICY "Users can view intakes for their businesses"
       SELECT business_id FROM public.user_roles
       WHERE user_id = (SELECT auth.uid())
     )
+    OR is_admin((SELECT auth.uid()))
   );
 
 CREATE POLICY "Users can insert intakes for their businesses"
@@ -29,6 +30,7 @@ CREATE POLICY "Users can insert intakes for their businesses"
       SELECT business_id FROM public.user_roles
       WHERE user_id = (SELECT auth.uid())
     )
+    OR is_admin((SELECT auth.uid()))
   );
 
 -- Consolidate UPDATE policies to fix multiple_permissive_policies warning
@@ -59,6 +61,7 @@ CREATE POLICY "Users can view cost history for their businesses"
       SELECT business_id FROM public.user_roles
       WHERE user_id = (SELECT auth.uid())
     )
+    OR is_admin((SELECT auth.uid()))
   );
 
 CREATE POLICY "Users can insert cost history for their businesses"
@@ -68,6 +71,7 @@ CREATE POLICY "Users can insert cost history for their businesses"
       SELECT business_id FROM public.user_roles
       WHERE user_id = (SELECT auth.uid())
     )
+    OR is_admin((SELECT auth.uid()))
   );
 
 -- ============================================================================
