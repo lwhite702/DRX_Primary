@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Menu, Search, Settings, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import { AppLogo } from "@/components/layout/app-logo";
 import { LogoutButton } from "@/components/layout/logout-button";
@@ -40,6 +41,7 @@ export function TopNav() {
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
   const supabase = getSupabaseClient();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     if (!supabase) {
@@ -95,7 +97,7 @@ export function TopNav() {
 
       {/* Mobile menu */}
       <div className="md:hidden">
-        <Sheet>
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
@@ -123,6 +125,7 @@ export function TopNav() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
                       className={
                         "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors " +
                         (isActive
@@ -142,6 +145,7 @@ export function TopNav() {
                 {showAdminConsole && (
                   <Link
                     href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
                   >
                     <Settings className="h-5 w-5" />
