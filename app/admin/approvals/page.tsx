@@ -396,7 +396,7 @@ export default function ApprovalsPage() {
                   onChange={(e) =>
                     setEditValues({
                       ...editValues,
-                      total_cost: parseFloat(e.target.value),
+                      total_cost: e.target.value === "" ? 0 : parseFloat(e.target.value),
                     })
                   }
                 />
