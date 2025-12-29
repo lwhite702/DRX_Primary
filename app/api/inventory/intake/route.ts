@@ -81,23 +81,39 @@ export async function POST(request: NextRequest) {
     const calculated_cost_per_gram = total_cost / total_weight_grams;
 
     // Get historical average cost to check for unusual values
-    // For now, skip the historical check to avoid function dependency issues
-    // This can be implemented later with proper RPC function
-    // const avg_cost = 0; // TODO: enable when get_avg_cost_per_gram RPC implemented
-    const requires_approval = true; // Auto-approve for now
-    const status = "pending_approval";
+    let avg_cost = 0;
+    try {
+      const { data: avgCostData, error: rpcError } = await supabase.rpc(
+        "get_avg_cost_per_gram",
+        {
+          p_inventory_id: inventory_id,
+          p_days: 90,
+        }
+      );
 
-    // TODO: Implement historical cost check when get_avg_cost_per_gram RPC is available
+      if (!rpcError && avgCostData !== null) {
+        avg_cost = Number(avgCostData);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch historical cost:", err);
+    }
+
+    let requires_approval = false; // Default to auto-approve
+    let status = "approved"; // Default status
+
     // Check if cost deviates more than 50% from historical average
-    // if (avg_cost > 0) {
-    //   const deviation = Math.abs(
-    //     (calculated_cost_per_gram - avg_cost) / avg_cost
-    //   );
-    //   if (deviation > 0.5) {
-    //     requires_approval = true;
-    //     status = "pending";
-    //   }
-    // }
+    // Only check if we have history (avg_cost > 0)
+    if (avg_cost > 0) {
+      const deviation = Math.abs(
+        (calculated_cost_per_gram - avg_cost) / avg_cost
+      );
+
+      // If deviation is > 50%, require approval
+      if (deviation > 0.5) {
+        requires_approval = true;
+        status = "pending";
+      }
+    }
 
     // Start transaction - try to create intake record
     let intake, intakeError;
@@ -141,7 +157,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (intakeError) {
-      console.error("Failed to create intake:", intakeError);
+      console.error(
+        "Failed to create intake - Details:",
+        JSON.stringify(intakeError, null, 2)
+      );
       return NextResponse.json(
         { error: "Failed to create intake record" },
         { status: 500 }

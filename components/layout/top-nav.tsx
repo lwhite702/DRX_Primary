@@ -1,4 +1,4 @@
-"use client";
+import { NotificationsPopover } from "@/components/layout/notifications-popover";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -220,9 +220,7 @@ export function TopNav() {
           <Search className="w-5 h-5" />
         </Button>
 
-        <Button variant="ghost" size="icon-lg" aria-label="Notifications">
-          <Bell className="w-5 h-5" />
-        </Button>
+        <NotificationsPopover />
 
         <div className="flex items-center gap-2">
           <BusinessSwitcher />
