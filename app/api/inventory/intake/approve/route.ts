@@ -5,12 +5,18 @@ interface ApproveIntakeRequest {
   intake_id: string;
   action: "approve" | "reject";
   rejection_reason?: string;
+  override_values?: {
+    total_cost?: number;
+    total_weight_grams?: number;
+    delivery_cost?: number;
+    supplier?: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: ApproveIntakeRequest = await request.json();
-    const { intake_id, action, rejection_reason } = body;
+    const { intake_id, action, rejection_reason, override_values } = body;
 
     if (!intake_id) {
       return NextResponse.json(
@@ -100,6 +106,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Approve and process intake
+
+    // 1. If there are overrides, update the intake record first
+    if (override_values && Object.keys(override_values).length > 0) {
+      // Calculate new cost per gram if cost or weight changed
+      let new_cost_per_gram = intake.calculated_cost_per_gram;
+
+      const final_cost = override_values.total_cost ?? intake.total_cost;
+      const final_weight =
+        override_values.total_weight_grams ?? intake.total_weight_grams;
+
+      if (override_values.total_cost || override_values.total_weight_grams) {
+        new_cost_per_gram = final_cost / final_weight;
+      }
+
+      const { error: overrideError } = await supabase
+        .from("inventory_intakes")
+        .update({
+          ...override_values,
+          calculated_cost_per_gram: new_cost_per_gram,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", intake_id);
+
+      if (overrideError) {
+        return NextResponse.json(
+          { error: "Failed to apply overrides: " + overrideError.message },
+          { status: 500 }
+        );
+      }
+
+      // Refresh intake data to ensure we process the latest values
+      const { data: refreshedIntake } = await supabase
+        .from("inventory_intakes")
+        .select("*")
+        .eq("id", intake_id)
+        .single();
+
+      if (refreshedIntake) {
+        // Update local object to use for processing
+        Object.assign(intake, refreshedIntake);
+      }
+    }
+
+    // 2. Mark as approved
     const { error: updateError } = await supabase
       .from("inventory_intakes")
       .update({
