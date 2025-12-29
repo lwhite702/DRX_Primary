@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
     // Approve and process intake
 
     // 1. If there are overrides, update the intake record first
+    // 1. If there are overrides, update the intake record first
     if (override_values && Object.keys(override_values).length > 0) {
       // Calculate new cost per gram if cost or weight changed
       let new_cost_per_gram = intake.calculated_cost_per_gram;
@@ -117,17 +118,19 @@ export async function POST(request: NextRequest) {
         override_values.total_weight_grams ?? intake.total_weight_grams;
 
       if (override_values.total_cost || override_values.total_weight_grams) {
-        new_cost_per_gram = final_cost / final_weight;
+        new_cost_per_gram = final_weight > 0 ? final_cost / final_weight : 0;
       }
 
-      const { error: overrideError } = await supabase
+      const { data: refreshedIntake, error: overrideError } = await supabase
         .from("inventory_intakes")
         .update({
           ...override_values,
           calculated_cost_per_gram: new_cost_per_gram,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", intake_id);
+        .eq("id", intake_id)
+        .select()
+        .single();
 
       if (overrideError) {
         return NextResponse.json(
@@ -135,13 +138,6 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-
-      // Refresh intake data to ensure we process the latest values
-      const { data: refreshedIntake } = await supabase
-        .from("inventory_intakes")
-        .select("*")
-        .eq("id", intake_id)
-        .single();
 
       if (refreshedIntake) {
         // Update local object to use for processing
