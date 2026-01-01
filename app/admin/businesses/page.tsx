@@ -87,11 +87,6 @@ export default function AdminBusinessesPage() {
   const handleCreateBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!supabase) {
-      toast.error("Supabase not available");
-      return;
-    }
-
     if (!businessName || !ownerEmail) {
       toast.error("Business name and owner email are required");
       return;
@@ -100,60 +95,23 @@ export default function AdminBusinessesPage() {
     setCreateLoading(true);
 
     try {
-      // Get the owner user ID from their email
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-
-      let ownerId: string | null = null;
-      if (users) {
-        const owner = users.find((u: any) => u.email === ownerEmail);
-        ownerId = owner?.id || null;
-      }
-
-      if (!ownerId) {
-        toast.error(
-          "User with this email not found. Please ensure the user has signed up."
-        );
-        setCreateLoading(false);
-        return;
-      }
-
-      // Create business
-      const { data: business, error: businessError } = await supabase
-        .from("business_profile")
-        .insert({
-          business_name: businessName,
-          business_type: businessType || null,
-          owner_id: ownerId,
-          is_active: true,
-        })
-        .select()
-        .single();
-
-      if (businessError) throw businessError;
-
-      // Create user role
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        business_id: business.id,
-        user_id: ownerId,
-        role: "owner",
-        permissions: {},
+      const response = await fetch("/api/admin/businesses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessName,
+          businessType,
+          ownerEmail,
+        }),
       });
 
-      if (roleError) throw roleError;
+      const result = await response.json();
 
-      // Create business settings
-      const { error: settingsError } = await supabase
-        .from("business_settings")
-        .insert({
-          business_id: business.id,
-          default_tax_rate: 0.08,
-          currency: "USD",
-          timezone: "America/New_York",
-        });
-
-      if (settingsError) throw settingsError;
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create business");
+      }
 
       toast.success(`Business "${businessName}" created successfully`);
       setShowCreateDialog(false);

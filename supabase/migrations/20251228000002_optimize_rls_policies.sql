@@ -34,6 +34,7 @@ CREATE POLICY "Users can insert intakes for their businesses"
   );
 
 -- Consolidate UPDATE policies to fix multiple_permissive_policies warning
+DROP POLICY IF EXISTS "Users can update intakes" ON public.inventory_intakes;
 CREATE POLICY "Users can update intakes"
   ON public.inventory_intakes FOR UPDATE
   USING (
