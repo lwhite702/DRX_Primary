@@ -34,6 +34,15 @@
   --color-primary-foreground: #ffffff;
   --color-secondary: #2d2d2d;
   --color-secondary-foreground: #e6e6e6;
+
+  /* Animation & Transitions */
+  --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
 }
 
 @layer base {
@@ -108,7 +117,7 @@
 
 .dark {
   --component-inactive-color: var(--muted-foreground);
- --component-bg: var(--card);
+  --component-bg: var(--card);
   --component-shadow: var(--border);
   --component-active-bg: var(--secondary);
   --component-line-inactive-color: var(--muted-foreground);
@@ -116,7 +125,8 @@
 }
 
 @keyframes iconBounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   20% {
@@ -130,5 +140,33 @@
   }
   80% {
     transform: translateY(0);
+  }
+}
+
+/* Page Transitions */
+.page-transition {
+  animation: fadeIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

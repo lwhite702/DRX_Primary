@@ -13,12 +13,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
 import { ArrowLeft, User, Calendar, CreditCard, Package } from "lucide-react";
+import { useCustomerContext } from "@/components/providers/customer-provider";
 
 export default function SaleDetailPage() {
   const params = useParams();
@@ -31,10 +49,58 @@ export default function SaleDetailPage() {
   const [sale, setSale] = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [customer, setCustomer] = useState<any>(null);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const { customers } = useCustomerContext();
   const [loading, setLoading] = useState(true);
   const [showCustomerSelector, setShowCustomerSelector] = useState(false);
   const [assigning, setAssigning] = useState(false);
+
+  // Payment Editing State
+  const [showPaymentEdit, setShowPaymentEdit] = useState(false);
+  const [newPaymentMethod, setNewPaymentMethod] = useState<string>("");
+  const [newPaymentRef, setNewPaymentRef] = useState<string>("");
+  const [updatingPayment, setUpdatingPayment] = useState(false);
+
+  // Initialize edit state when sale loads
+  useEffect(() => {
+    if (sale) {
+      setNewPaymentMethod(sale.payment_method || "cash");
+      setNewPaymentRef(sale.payment_ref || "");
+    }
+  }, [sale]);
+
+  const handleUpdatePayment = async () => {
+    if (!supabase || !business?.id) return;
+
+    setUpdatingPayment(true);
+    try {
+      const { error } = await supabase
+        .from("sales")
+        .update({
+          payment_method: newPaymentMethod,
+          payment_ref: newPaymentMethod === "zelle" ? newPaymentRef : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", saleId)
+        .eq("business_id", business.id);
+
+      if (error) throw error;
+
+      toast.success("Payment method updated");
+
+      // Update local state
+      setSale({
+        ...sale,
+        payment_method: newPaymentMethod,
+        payment_ref: newPaymentMethod === "zelle" ? newPaymentRef : null,
+      });
+      setShowPaymentEdit(false);
+    } catch (error: any) {
+      console.error("Error updating payment:", error);
+      toast.error(error.message || "Failed to update payment");
+    } finally {
+      setUpdatingPayment(false);
+    }
+  };
 
   useEffect(() => {
     if (!saleId || !business?.id || !supabase) return;
@@ -80,15 +146,8 @@ export default function SaleDetailPage() {
           if (customerData) setCustomer(customerData);
         }
 
-        // Load all customers for assignment
-        const { data: customersData } = await supabase
-          .from("customers")
-          .select("*")
-          .eq("business_id", business.id)
-          .eq("is_active", true)
-          .order("first_name");
-
-        if (customersData) setCustomers(customersData);
+        // Customers are loaded via context
+        // const { data: customersData } = await supabase...
       } catch (error) {
         console.error("Error loading sale details:", error);
         toast.error("Failed to load sale details");
@@ -214,13 +273,44 @@ export default function SaleDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm text-muted-foreground">
                       Payment Method
                     </p>
-                    <p className="font-medium capitalize">
-                      {sale.payment_method}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium capitalize">
+                        {sale.payment_method}
+                      </p>
+                      {isManager && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setShowPaymentEdit(true)}
+                        >
+                          <span className="sr-only">Edit</span>
+                          {/* Edit Icon */}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          </svg>
+                        </Button>
+                      )}
+                    </div>
+                    {sale.payment_ref && (
+                      <p className="text-xs text-muted-foreground">
+                        Ref: {sale.payment_ref}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -255,6 +345,72 @@ export default function SaleDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Payment Edit Dialog */}
+          <Dialog open={showPaymentEdit} onOpenChange={setShowPaymentEdit}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Payment Method</DialogTitle>
+                <DialogDescription>
+                  Change the payment method for this completed sale.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Payment Method</Label>
+                  <Select
+                    value={newPaymentMethod}
+                    onValueChange={setNewPaymentMethod}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="credit">Credit</SelectItem>
+                      <SelectItem value="zelle">Zelle</SelectItem>
+                      <SelectItem value="mixed">Mixed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {newPaymentMethod === "zelle" && (
+                  <div className="space-y-2 anim-slide-in">
+                    <Label>Reference / Note</Label>
+                    <Input
+                      value={newPaymentRef}
+                      onChange={(e) => setNewPaymentRef(e.target.value)}
+                      placeholder="Zelle confirmation phone # or code"
+                    />
+                  </div>
+                )}
+
+                {newPaymentMethod === "credit" &&
+                  sale.payment_method !== "credit" && (
+                    <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
+                      Warning: Switching to Credit will not automatically update
+                      the customer's credit balance. Please ensure you manually
+                      adjust the credit ledger if necessary.
+                    </div>
+                  )}
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPaymentEdit(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUpdatePayment}
+                  disabled={updatingPayment}
+                >
+                  {updatingPayment ? "Updating..." : "Update Payment"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {/* Line Items */}
           <Card>
             <CardHeader>
@@ -272,10 +428,15 @@ export default function SaleDetailPage() {
                             {item.inventory?.product_name || "Unknown Product"}
                           </p>
                           <p className="text-sm text-muted-foreground mt-1">
-                            SKU: <span className="font-mono">{item.inventory?.sku || "N/A"}</span>
+                            SKU:{" "}
+                            <span className="font-mono">
+                              {item.inventory?.sku || "N/A"}
+                            </span>
                           </p>
                         </div>
-                        <p className="font-bold">${Number(item.line_total).toFixed(2)}</p>
+                        <p className="font-bold">
+                          ${Number(item.line_total).toFixed(2)}
+                        </p>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -284,8 +445,12 @@ export default function SaleDetailPage() {
                           <p className="font-medium">{item.quantity}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Unit Price</p>
-                          <p className="font-medium">${Number(item.unit_price).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Unit Price
+                          </p>
+                          <p className="font-medium">
+                            ${Number(item.unit_price).toFixed(2)}
+                          </p>
                           {item.overridden_price && item.original_price && (
                             <p className="text-xs text-muted-foreground line-through">
                               ${Number(item.original_price).toFixed(2)}

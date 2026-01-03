@@ -60,13 +60,14 @@ import { PermissionGuard } from "@/components/auth/role-guard";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useCustomerContext } from "@/components/providers/customer-provider";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
   const inventory = useRealtimeInventory(business?.id || null);
   const [posEngine] = useState(() => new POSEngine());
   const [cart, setCart] = useState<CartState>(posEngine.getCart());
-  const [customers, setCustomers] = useState<any[]>([]);
+  const { customers } = useCustomerContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<
     string | undefined
@@ -104,20 +105,8 @@ export default function SalesPage() {
   const supabase = getSupabaseClient();
 
   useEffect(() => {
-    if (!business?.id || !supabase) return;
-
-    supabase
-      .from("customers")
-      .select(
-        "id, first_name, last_name, phone_number, loyalty_tier, discount_rate, purchase_count"
-      )
-      .eq("business_id", business.id)
-      .eq("is_active", true)
-      .order("first_name")
-      .then(({ data }: { data: any[] | null }) => {
-        if (data) setCustomers(data);
-      });
-  }, [business?.id, supabase]);
+    // Customers are now handled by CustomerContext
+  }, [business?.id]);
 
   // Load customer loyalty info when customer is selected
   useEffect(() => {
@@ -369,7 +358,7 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6 page-transition">
       <div>
         <h1 className="text-3xl font-bold">Point of Sale</h1>
         <p className="text-muted-foreground mt-2">
@@ -880,9 +869,26 @@ export default function SalesPage() {
                   <SelectItem value="cash">Cash</SelectItem>
                   <SelectItem value="card">Card</SelectItem>
                   <SelectItem value="credit">Credit</SelectItem>
+                  <SelectItem value="zelle">Zelle</SelectItem>
                   <SelectItem value="mixed">Mixed</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Payment Reference (Zelle) */}
+              {cart.payment_method === "zelle" && (
+                <div className="pt-2 anim-slide-in">
+                  <Label>Reference / Note</Label>
+                  <Input
+                    placeholder="Enter Zelle confirmation #"
+                    value={cart.payment_ref || ""}
+                    onChange={(e) => {
+                      posEngine.setPaymentRef(e.target.value);
+                      setCart(posEngine.getCart());
+                    }}
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             {/* POS Admin Actions */}

@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { useRealtimeCustomers } from "@/lib/hooks/use-realtime";
+import { useCustomerContext } from "@/components/providers/customer-provider";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { Plus, Edit, Search, User, UserX } from "lucide-react";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ import { Tour } from "@/components/ui/tour";
 
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
-  const customers = useRealtimeCustomers(business?.id || null);
+  const { customers } = useCustomerContext();
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");

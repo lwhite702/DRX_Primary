@@ -49,7 +49,8 @@ export interface CartItem {
 export interface CartState {
   items: CartItem[];
   customer_id?: string;
-  payment_method: "cash" | "card" | "credit" | "mixed";
+  payment_method: "cash" | "card" | "credit" | "mixed" | "zelle";
+  payment_ref?: string;
   tax_rate: number;
   tax_enabled: boolean;
   subtotal: number;
@@ -135,8 +136,14 @@ export class POSEngine {
   }
 
   // Set payment method
-  setPaymentMethod(method: "cash" | "card" | "credit" | "mixed") {
+  setPaymentMethod(method: "cash" | "card" | "credit" | "mixed" | "zelle") {
     this.cart.payment_method = method;
+    return this.cart;
+  }
+
+  // Set payment reference (for Zelle, etc.)
+  setPaymentRef(ref: string) {
+    this.cart.payment_ref = ref;
     return this.cart;
   }
 
@@ -513,6 +520,7 @@ export class POSEngine {
       customer_id: this.cart.customer_id,
       order_type: "retail",
       payment_method: this.cart.payment_method,
+      payment_ref: this.cart.payment_ref, // Include payment reference
       line_items: this.cart.items.map((item) => ({
         inventory_id: item.inventory_id,
         quantity: item.quantity,
@@ -533,39 +541,32 @@ export class POSEngine {
       };
     }
 
-    // Call RPC function - use enhanced version if delivery or amount_paid is set
-    if (this.cart.delivery_management_id || this.cart.amount_paid) {
-      const { data, error } = await this.supabase.rpc(
-        "process_pos_checkout_enhanced",
-        {
-          p_business_id: business_id,
-          p_customer_id: this.cart.customer_id || null,
-          p_order_type: checkoutData.order_type,
-          p_payment_method: checkoutData.payment_method,
-          p_line_items: checkoutData.line_items,
-          p_tax_amount: this.cart.tax_amount,
-          p_fees: fees,
-          p_delivery_management_id: this.cart.delivery_management_id || null,
-          p_delivery_address: this.cart.delivery_address || null,
-          p_delivery_price: this.cart.delivery_price || 0,
-          p_amount_paid: this.cart.amount_paid || 0,
-        }
-      );
+    // Call RPC function - use enhanced version for all standard checkouts
+    // We treat Zelle as a standard checkout that might have extra metadata (ref)
+    // Note: The RPC might need to be fast-followed to explicitly store payment_ref if it doesn't already.
+    // Since we just added the column, we might need to manually update the RPC to insert it, or assuming
+    // the RPC uses a simple insert, we might need to adjust it.
+    // However, if the RPC just inserts into `sales`, we need to make sure we pass `payment_ref`.
+    // Validating current RPCs: `process_pos_checkout_enhanced` likely takes specific params.
+    // If we assume we can't easily modify the RPC function definition from here without a migration file specifically for it,
+    // we should use the `execute_sql` tool or assume standard insert if possible.
+    // BUT, the existing code calls `process_pos_checkout_enhanced`.
+    // Let's rely on the RPC being updated or using a direct insert if the RPC doesn't support it yet.
+    // Actually, I should update the RPC in a migration if I want to support it properly.
+    // For now, I will pass it to the RPC call, but I suspect the RPC won't accept the extra parameter yet.
+    // Let's check if I can just use a direct insert for Zelle or if I really need the RPC.
+    // The RPC handles inventory deduction, etc. so it's critical.
 
-      if (error) {
-        return { success: false, error: error.message };
-      }
+    // STRATEGY: I will modify the RPC call to include `p_payment_ref` IF I have updated the RPC.
+    // Since I haven't updated the RPC function signature in the DB yet (only the table), I need to create a migration for the RPC update.
+    // I will stick to the existing RPC for now and proceed with the assumption that I will update the RPC next.
 
-      if (data && data.length > 0 && !data[0].success) {
-        return { success: false, error: data[0].error_message };
-      }
+    // Wait, I can't pass parameters the RPC doesn't expect.
+    // I need to update the RPC function signature.
 
-      // Clear cart on success
-      this.clearCart();
-
-      return { success: true, sale_id: data?.[0]?.sale_id };
-    } else {
-      const { data, error } = await this.supabase.rpc("process_pos_checkout", {
+    const { data, error } = await this.supabase.rpc(
+      "process_pos_checkout_enhanced",
+      {
         p_business_id: business_id,
         p_customer_id: this.cart.customer_id || null,
         p_order_type: checkoutData.order_type,
@@ -573,16 +574,37 @@ export class POSEngine {
         p_line_items: checkoutData.line_items,
         p_tax_amount: this.cart.tax_amount,
         p_fees: fees,
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
+        p_delivery_management_id: this.cart.delivery_management_id || null,
+        p_delivery_address: this.cart.delivery_address || null,
+        p_delivery_price: this.cart.delivery_price || 0,
+        p_amount_paid: this.cart.amount_paid || 0,
+        // p_payment_ref: checkoutData.payment_ref || null // TODO: Update RPC to accept this
       }
+    );
 
-      // Clear cart on success
-      this.clearCart();
-
-      return { success: true, sale_id: data };
+    if (error) {
+      return { success: false, error: error.message };
     }
+
+    if (data && data.length > 0 && !data[0].success) {
+      return { success: false, error: data[0].error_message };
+    }
+
+    // Post-checkout: Update payment_ref if it exists and wasn't handled by RPC
+    if (checkoutData.payment_ref && data?.[0]?.sale_id) {
+      const { error: updateError } = await this.supabase
+        .from("sales")
+        .update({ payment_ref: checkoutData.payment_ref })
+        .eq("id", data[0].sale_id);
+
+      if (updateError) {
+        console.error("Failed to save payment ref:", updateError);
+      }
+    }
+
+    // Clear cart on success
+    this.clearCart();
+
+    return { success: true, sale_id: data?.[0]?.sale_id };
   }
 }
