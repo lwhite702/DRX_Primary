@@ -34,7 +34,13 @@ import { useRealtimeCredit } from "@/lib/hooks/use-realtime";
 import { creditSystem } from "@/lib/utils/credit-system";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { CreditExposureDashboard } from "@/components/credit/CreditExposureDashboard";
-import { Plus, DollarSign, AlertTriangle, FileText } from "lucide-react";
+import {
+  Plus,
+  DollarSign,
+  AlertTriangle,
+  FileText,
+  Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useForm } from "react-hook-form";
@@ -62,6 +68,7 @@ export default function CreditPage() {
   const [agingData, setAgingData] = useState<any[]>([]);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const supabase = getSupabaseClient();
 
   const extensionForm = useForm({
@@ -181,10 +188,14 @@ export default function CreditPage() {
     }
   };
 
+  const filteredAgingData = agingData.filter((a) =>
+    a.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const pendingTransactions = creditTransactions.filter(
     (tx) => tx.status === "pending"
   );
-  const delinquentCount = agingData.filter(
+  const delinquentCount = filteredAgingData.filter(
     (a) => a.bucket_31_plus > 0 || a.bucket_15_30 > 0
   ).length;
 
@@ -231,7 +242,17 @@ export default function CreditPage() {
             Track credit transactions and fronts
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto items-center">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+              aria-label="Search customers"
+            />
+          </div>
           <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full sm:w-auto">
@@ -430,7 +451,7 @@ export default function CreditPage() {
       </div>
 
       {/* Credit Aging */}
-      {agingData.length > 0 && (
+      {filteredAgingData.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Credit Aging Report</CardTitle>
@@ -438,7 +459,7 @@ export default function CreditPage() {
           <CardContent>
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
-              {agingData.map((aging) => {
+              {filteredAgingData.map((aging) => {
                 const hasDelinquent = Number(aging.bucket_31_plus) > 0;
                 return (
                   <Card key={aging.customer_id} className="border-border/80">
@@ -512,7 +533,7 @@ export default function CreditPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {agingData.map((aging) => (
+                  {filteredAgingData.map((aging) => (
                     <TableRow key={aging.customer_id}>
                       <TableCell className="font-medium">
                         {aging.customer_name}

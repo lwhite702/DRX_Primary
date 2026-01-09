@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   Building2,
   Users,
@@ -27,6 +29,58 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const supabase = getSupabaseClient();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    const checkAdmin = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        const { data: adminUser } = await supabase
+          .from("admin_users")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (adminUser?.role === "super_admin") {
+          setAuthorized(true);
+        } else {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("Admin check failed", error);
+        router.push("/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdmin();
+  }, [supabase, router]);
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!authorized) {
+    return null;
+  }
 
   return (
     <div className="h-full flex flex-col">

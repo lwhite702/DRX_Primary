@@ -7,7 +7,7 @@ import type {
 
 export function useRealtimeInventory(business_id: string | null) {
   const [inventory, setInventory] = useState<any[]>([]);
-  // const supabase = getSupabaseClient();
+  const supabase = getSupabaseClient();
 
   useEffect(() => {
     if (!business_id || !supabase) return;

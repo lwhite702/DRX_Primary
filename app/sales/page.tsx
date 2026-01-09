@@ -624,9 +624,20 @@ export default function SalesPage() {
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-8 text-center text-sm">
-                        {item.quantity}
-                      </span>
+                      <Input
+                        type="number"
+                        className="w-16 h-8 text-center p-1"
+                        value={item.quantity}
+                        step="0.01"
+                        min="0.01"
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val > 0) {
+                            posEngine.updateQuantity(item.inventory_id, val);
+                            setCart(posEngine.getCart());
+                          }
+                        }}
+                      />
                       <Button
                         variant="outline"
                         size="sm"

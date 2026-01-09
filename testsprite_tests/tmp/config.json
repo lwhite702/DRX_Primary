@@ -1,0 +1,16 @@
+{
+  "status": "init",
+  "executionArgs": {
+    "projectName": "drx-v2",
+    "projectPath": "/Users/lee/drx-v2",
+    "testIds": [],
+    "additionalInstruction": "Run all tests, verifying the permission fixes and script updates.",
+    "envs": {
+      "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
+    }
+  },
+  "scope": "codebase",
+  "type": "frontend",
+  "localEndpoint": "http://localhost:3001/",
+  "serverPort": 64483
+}
