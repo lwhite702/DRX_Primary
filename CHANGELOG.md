@@ -5,14 +5,17 @@ All notable changes to DRX CRM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] - 2026-01-11
 
 ### Added
 
 - Version number display in sidebar footer and mobile navigation
 - Comprehensive README with setup instructions, tech stack, and deployment guide
 - Sentry feedback integration for bug reporting
-- Database performance optimizations (RLS policies, foreign key indexes)
+- **Database Security**: RPC function `get_user_permissions` restored (resolving 404s).
+- **Performance**: Index on `notifications(business_id)` and optimized RLS policies.
+- **Frontend**: Search functionality in Credit Management.
+- **Frontend**: Fractional quantity support in POS.
 
 ### Changed
 
@@ -20,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Logo updated to icon.svg with transparent background
 - Mobile navigation auto-closes when links are clicked
 - Bottom navigation hidden on desktop to prevent duplicate navigation
+- **Security**: Strengthened `/admin` route protection.
+- **Security**: Hardened RLS policies for system tables (AI/Audit/Notifications).
+- **Security**: Secured function search paths to `public`.
 
 ### Fixed
 
@@ -28,7 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript errors reduced from 143 to 67
 - ESLint warnings cleaned up
 - PWA manifest icon configuration
-- Mobile menu responsiveness (no longer requires multiple taps)
+- Mobile menu responsiveness
+- **Testing**: Validated/fixed assertions in Login test suite (TC002).
 
 ## [0.1.0] - 2024-12-28
 
