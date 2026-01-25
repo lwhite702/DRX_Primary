@@ -54,7 +54,7 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        toast.success("Login successful!");
+        toast.success("Login successful");
         router.push("/dashboard");
         router.refresh();
       }
@@ -102,7 +102,7 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        toast.success("Account created! Please sign in.");
+        toast.success("Account created. Please sign in.");
         setIsSignUp(false);
         setEmail("");
         setPassword("");

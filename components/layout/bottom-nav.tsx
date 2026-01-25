@@ -36,7 +36,7 @@ export function BottomNav() {
     <nav
       className={cn(
         "md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-border bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/80",
-        "pb-[env(safe-area-inset-bottom)]"
+        "pb-[env(safe-area-inset-bottom)]",
       )}
       aria-label="Primary navigation"
     >
@@ -53,22 +53,35 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center gap-1 font-medium transition-all",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-                "active:scale-95",
-                isSales ? "text-sm" : "text-xs",
-                isActive
-                  ? isSales
-                    ? "text-green-600"
-                    : "text-accent"
-                  : isSales
-                  ? "text-green-600/80"
-                  : "text-muted-foreground"
+                "flex-1 min-w-0 flex flex-col items-center justify-center gap-1 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95",
+                isSales ? "relative -top-5" : "h-14 px-2",
+                !isSales &&
+                  (isActive ? "text-accent" : "text-muted-foreground"),
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className={cn(isSales ? "h-6 w-6" : "h-5 w-5")} />
-              <span className={cn("truncate", isSales && "font-semibold")}>
+              <div
+                className={cn(
+                  "flex items-center justify-center transition-all duration-300",
+                  isSales
+                    ? "h-14 w-14 rounded-full bg-primary shadow-[0_4px_10px_rgba(0,0,0,0.5)] border-4 border-muted"
+                    : "",
+                  isSales && isActive ? "scale-110 shadow-primary/25" : "",
+                )}
+              >
+                <Icon
+                  className={cn(
+                    isSales ? "h-6 w-6 text-primary-foreground" : "h-5 w-5",
+                  )}
+                />
+              </div>
+              <span
+                className={cn(
+                  "truncate text-[10px]",
+                  isSales ? "font-semibold mt-1" : "text-xs",
+                  isSales && isActive ? "text-primary" : "",
+                )}
+              >
                 {item.label}
               </span>
             </Link>
@@ -82,7 +95,7 @@ export function BottomNav() {
               className={cn(
                 "flex-1 min-w-0 h-14 px-2 flex flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-                "active:scale-95 transition-transform"
+                "active:scale-95 transition-transform",
               )}
               aria-label="More navigation"
             >
@@ -114,7 +127,7 @@ export function BottomNav() {
                         "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium",
                         isActive
                           ? "bg-accent text-background"
-                          : "text-foreground hover:bg-border"
+                          : "text-foreground hover:bg-border",
                       )}
                     >
                       <Icon className="h-5 w-5" />
