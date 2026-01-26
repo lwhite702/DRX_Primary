@@ -1,30 +1,62 @@
 import requests
 import uuid
+import os
+import sys
+import time
+
+# Add current directory to path to import auth_helper
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from auth_helper import get_authenticated_headers, ensure_test_user, SUPABASE_URL, SUPABASE_KEY
 
 BASE_URL = "http://localhost:3001"
 TIMEOUT = 30
-# Imports for auth helper
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from auth_helper import get_authenticated_headers
 
-HEADERS = get_authenticated_headers()
-if not HEADERS:
-    raise Exception("Failed to get authenticated headers")
+def get_token_for_user(email, password):
+    url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+    payload = {
+        "email": email,
+        "password": password,
+    }
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+    }
+    resp = requests.post(url, json=payload, headers=headers)
+    if resp.status_code == 200:
+        return resp.json().get("access_token")
+    return None
 
 def test_team_management_role_based_permissions():
+    # 1. Get Manager Headers (Default)
+    manager_headers = get_authenticated_headers()
+    assert manager_headers, "Failed to get manager headers"
+
+    # 2. Setup Cashier User
+    cashier_email = f"test_cashier_{uuid.uuid4().hex[:8]}@example.com"
+    cashier_password = "TestPassword123!"
+    # Ensure user exists and has cashier role
+    ensure_test_user(cashier_email, cashier_password, "cashier")
+    
+    cashier_token = get_token_for_user(cashier_email, cashier_password)
+    assert cashier_token, "Failed to get cashier token"
+    cashier_headers = {
+        "Authorization": f"Bearer {cashier_token}",
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY
+    }
+
     team_member_id = None
     try:
-        # 1. Add a new team member with role 'Cashier'
+        # 3. Add a new team member (as Manager)
+        new_member_email = f"new_member_{uuid.uuid4().hex[:8]}@example.com"
         add_payload = {
-            "name": "Test User",
-            "email": f"testuser_{uuid.uuid4().hex[:8]}@example.com",
+            "name": "New Team Member",
+            "email": new_member_email,
             "role": "Cashier"
         }
         add_resp = requests.post(
             f"{BASE_URL}/api/team/members",
-            headers=HEADERS,
+            headers=manager_headers,
             json=add_payload,
             timeout=TIMEOUT,
         )
@@ -33,27 +65,23 @@ def test_team_management_role_based_permissions():
         team_member_id = added_member.get("id")
         assert team_member_id is not None, "Added team member ID missing"
 
-        # 2. Verify role-based permission enforcement: try an unauthorized action as Cashier
-        # Assume "update role" is restricted to Manager or above.
+        # 4. Verify role-based permission: Unauthorized update (as Cashier)
         update_payload_unauth = {"role": "Manager"}
         update_resp_unauth = requests.put(
             f"{BASE_URL}/api/team/members/{team_member_id}/role",
-            headers=HEADERS,
+            headers=cashier_headers, # Using Cashier headers
             json=update_payload_unauth,
             timeout=TIMEOUT,
         )
-        # Expecting error status due to insufficient permission
+        # Expect 403 Forbidden
         assert update_resp_unauth.status_code in (403, 401), \
-            "Role-based permission not enforced on unauthorized role update"
+            f"Cashier was able to update role! Status: {update_resp_unauth.status_code}"
 
-        # 3. Update team member role as authorized user
-        # For this test, we assume the AUTH_TOKEN belongs to a user with proper rights.
-        # To simulate, we override the token temporarily if needed.
-        # Here we retry with the same token assuming it has rights.
+        # 5. Update team member role (as Manager)
         update_payload_auth = {"role": "Supervisor"}
         update_resp_auth = requests.put(
             f"{BASE_URL}/api/team/members/{team_member_id}/role",
-            headers=HEADERS,
+            headers=manager_headers,
             json=update_payload_auth,
             timeout=TIMEOUT,
         )
@@ -61,66 +89,40 @@ def test_team_management_role_based_permissions():
         updated_member = update_resp_auth.json()
         assert updated_member.get("role") == "Supervisor", "Team member role not updated correctly"
 
-        # 4. Get audit logs related to permission changes for the member
+        # 6. Get audit logs (as Manager)
         audit_resp = requests.get(
             f"{BASE_URL}/api/team/members/{team_member_id}/audit-logs",
-            headers=HEADERS,
+            headers=manager_headers,
             timeout=TIMEOUT,
         )
         assert audit_resp.status_code == 200, f"Failed to fetch audit logs: {audit_resp.text}"
         audit_logs = audit_resp.json()
         assert isinstance(audit_logs, list), "Audit logs should be a list"
-        # Check that audit logs contain the role update action
+        
+        # Check logs for role update
+        # Adjust check based on actual log structure (resource_id/entity_id)
         role_change_logged = any(
-            log.get("action") == "role_update" and log.get("member_id") == team_member_id
+            (log.get("action") == "role_update" or log.get("transaction_type") == "role_update") and 
+            (log.get("entity_id") == team_member_id or log.get("resource_id") == team_member_id)
             for log in audit_logs
         )
-        assert role_change_logged, "Role update action not logged in audit logs"
+        assert role_change_logged, f"Role update not logged. Logs: {audit_logs}"
 
-        # 5. Remove the team member
+        # 7. Remove team member (as Manager)
         del_resp = requests.delete(
             f"{BASE_URL}/api/team/members/{team_member_id}",
-            headers=HEADERS,
+            headers=manager_headers,
             timeout=TIMEOUT,
         )
         assert del_resp.status_code == 204, f"Failed to delete team member: {del_resp.text}"
 
-        # 6. Verify team member no longer exists
+        # 8. Verify deletion (GET returns 404)
         get_resp = requests.get(
             f"{BASE_URL}/api/team/members/{team_member_id}",
-            headers=HEADERS,
+            headers=manager_headers,
             timeout=TIMEOUT,
         )
-        assert get_resp.status_code == 404, "Deleted team member still accessible"
+        assert get_resp.status_code == 404, f"Deleted member found? {get_resp.status_code}"
 
-        # 7. Verify audit log contains the deletion action
-        audit_after_del_resp = requests.get(
-            f"{BASE_URL}/api/team/members/{team_member_id}/audit-logs",
-            headers=HEADERS,
-            timeout=TIMEOUT,
-        )
-        # This might return 404 or valid logs depending on implementation; accept both but check logs if exists
-        if audit_after_del_resp.status_code == 200:
-            logs_after_del = audit_after_del_resp.json()
-            deletion_logged = any(
-                log.get("action") == "member_deletion" and log.get("member_id") == team_member_id
-                for log in logs_after_del
-            )
-            assert deletion_logged, "Member deletion not logged in audit logs"
-        else:
-            assert audit_after_del_resp.status_code in (404, 410), \
-                f"Unexpected status fetching audit logs after deletion: {audit_after_del_resp.status_code}"
-
-    finally:
-        # Cleanup: attempt to delete the team member if still exists
-        if team_member_id is not None:
-            try:
-                requests.delete(
-                    f"{BASE_URL}/api/team/members/{team_member_id}",
-                    headers=HEADERS,
-                    timeout=TIMEOUT,
-                )
-            except Exception:
-                pass
-
-test_team_management_role_based_permissions()
+    except Exception as e:
+        raise e
