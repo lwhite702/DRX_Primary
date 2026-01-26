@@ -1,0 +1,35 @@
+{
+  "tech_stack": ["TypeScript", "Next.js", "Supabase", "TailwindCSS"],
+  "features": [
+    {
+      "name": "Inventory Management",
+      "description": "API for managing product inventory, stock levels, and compliance details.",
+      "files": ["app/api/inventory/route.ts"]
+    },
+    {
+      "name": "Credit System",
+      "description": "API for managing customer credit lines and balances.",
+      "files": ["app/api/credit/route.ts"]
+    },
+    {
+      "name": "AI Insights",
+      "description": "Artificial Intelligence endpoints for generating business insights and analytics.",
+      "files": ["app/api/ai/route.ts"]
+    },
+    {
+      "name": "Admin Management",
+      "description": "Administrative endpoints for system configuration and user management.",
+      "files": ["app/api/admin/route.ts"]
+    },
+    {
+      "name": "Team Management",
+      "description": "API for managing team members and permissions.",
+      "files": ["app/api/team/route.ts"]
+    },
+    {
+      "name": "Notifications",
+      "description": "System for user notifications and alerts.",
+      "files": ["app/api/notifications/route.ts"]
+    }
+  ]
+}

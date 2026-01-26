@@ -1,52 +1,32 @@
 [
   {
     "id": "TC001",
-    "title": "verify_user_authentication_and_route_protection",
-    "description": "Test the user authentication process including login and session management. Verify that route protection correctly restricts access based on authentication status and user roles."
+    "title": "inventory management api should enforce role based access and maintain immutable records",
+    "description": "Test the inventory management API to ensure it enforces role-based permissions server-side, maintains immutable historical inventory records, and logs all changes for auditability."
   },
   {
     "id": "TC002",
-    "title": "validate_pos_sales_transaction_processing",
-    "description": "Test the Point of Sale interface for processing sales transactions, including fractional quantities, price overrides with role validation, and tax calculations. Ensure transactions are completed within two minutes on mobile devices."
+    "title": "credit system api should maintain accurate and auditable customer credit balances",
+    "description": "Verify that the credit system API accurately manages customer credit lines and balances with immutable transaction records and audit logs for all financial changes."
   },
   {
     "id": "TC003",
-    "title": "test_inventory_management_and_traceability",
-    "description": "Verify inventory tracking including quantity, weight, and cost per unit. Ensure immutable historical intake and adjustment records are maintained and audit logs are generated for inventory changes."
+    "title": "ai insights api should generate accurate business analytics and insights",
+    "description": "Test the AI insights API to ensure it generates accurate and reproducible business insights and analytics based on current and historical data."
   },
   {
     "id": "TC004",
-    "title": "check_customer_profile_management_and_soft_disable",
-    "description": "Test customer profile creation, purchase history aggregation, and the soft-disable functionality. Ensure customers are not deleted but only soft-disabled and that data integrity is maintained."
+    "title": "admin management api should enforce full system access control and audit logs",
+    "description": "Verify that the admin management API enforces full system access control for super admins, supports user and permission management, and maintains append-only audit logs for all critical actions."
   },
   {
     "id": "TC005",
-    "title": "validate_role_based_access_control_enforcement",
-    "description": "Verify that role-based permissions for Cashier, Supervisor, Manager, and Super Admin are enforced server-side and at the database level, preventing unauthorized actions regardless of UI controls."
+    "title": "team management api should enforce role based permissions and support team member management",
+    "description": "Test the team management API to ensure it enforces role-based permissions, supports adding, updating, and removing team members, and logs all permission changes."
   },
   {
     "id": "TC006",
-    "title": "test_audit_log_generation_for_sensitive_actions",
-    "description": "Ensure that all sensitive actions such as price overrides, inventory adjustments, voids/refunds, and permission changes generate immutable audit logs that cannot be altered or deleted."
-  },
-  {
-    "id": "TC007",
-    "title": "verify_tax_and_pricing_calculation_accuracy",
-    "description": "Test deterministic pricing and tax logic with configurable tax rules and explicit rounding rules. Validate that calculations are reproducible and transparent across different scenarios."
-  },
-  {
-    "id": "TC008",
-    "title": "validate_mobile_pos_usability_and_performance",
-    "description": "Test the mobile-optimized POS interface for usability with one-hand operation and ensure new staff can complete a sale within two minutes under typical conditions."
-  },
-  {
-    "id": "TC009",
-    "title": "check_immutable_transaction_and_inventory_records",
-    "description": "Verify that all transaction and inventory records are immutable or append-only, preventing silent data mutations and ensuring historical data remains trustworthy."
-  },
-  {
-    "id": "TC010",
-    "title": "test_ai_powered_credit_engine_integration",
-    "description": "Validate the AI-powered credit engine's integration with the core system, including credit limit calculations and credit analysis accuracy."
+    "title": "notifications api should deliver alerts and support user notification management",
+    "description": "Verify that the notifications API delivers alerts correctly, supports user notification preferences, and logs notification events for audit purposes."
   }
 ]

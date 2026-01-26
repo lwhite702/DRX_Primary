@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     "/monitoring",
   ];
   const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (supabaseUrl && supabaseAnonKey) {
@@ -46,6 +46,17 @@ export async function middleware(request: NextRequest) {
 
     // Redirect to login if not authenticated and trying to access protected route
     if (!user && !isPublicRoute) {
+      if (pathname.startsWith("/api/")) {
+        // If API route has Authorization header, let it pass (endpoint validation)
+        if (request.headers.get("authorization")) {
+          return response;
+        }
+        return NextResponse.json(
+          { error: "Middleware Unauthorized" },
+          { status: 401 },
+        );
+      }
+
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
