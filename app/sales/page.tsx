@@ -115,7 +115,7 @@ export default function SalesPage() {
     const loadLoyalty = async () => {
       const loyalty = await posWeightEngine.getLoyaltyInfo(
         business.id,
-        selectedCustomer
+        selectedCustomer,
       );
       setCustomerLoyalty(loyalty);
     };
@@ -129,7 +129,7 @@ export default function SalesPage() {
 
     const checkRandomTrigger = async () => {
       const result = await posWeightEngine.shouldTriggerRandomCheck(
-        business.id
+        business.id,
       );
       if (result.should_check) {
         setShowInventoryCheck(true);
@@ -149,7 +149,7 @@ export default function SalesPage() {
 
     const loadAIPricingRecommendations = async () => {
       const recommendations = await posEngine.getAIPricingRecommendations(
-        business.id
+        business.id,
       );
       setAiRecommendations(recommendations);
     };
@@ -186,7 +186,7 @@ export default function SalesPage() {
   const filteredInventory = inventory.filter(
     (item) =>
       item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      item.sku.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleAddToCart = (item: any) => {
@@ -266,7 +266,7 @@ export default function SalesPage() {
       const result = await posEngine.checkout(business.id, fees);
 
       if (result.success) {
-        toast.success(`Order completed! Order ID: ${result.sale_id}`);
+        toast.success(`Sale completed! Order ID: ${result.sale_id}`);
         posEngine.clearCart();
         setCart(posEngine.getCart());
         setSelectedCustomer(undefined);
@@ -295,27 +295,27 @@ export default function SalesPage() {
   };
 
   const handleApplyAIPricing = async (
-    recommendation: AIPricingRecommendation
+    recommendation: AIPricingRecommendation,
   ) => {
     if (!business?.id) return;
 
     try {
       const result = await posEngine.applyAIPricingRecommendation(
         business.id,
-        recommendation.id
+        recommendation.id,
       );
 
       if (result.success) {
         toast.success(`Price updated to ${result.newPrice?.toFixed(2)}`);
         setAiRecommendations(
-          aiRecommendations.filter((r) => r.id !== recommendation.id)
+          aiRecommendations.filter((r) => r.id !== recommendation.id),
         );
       } else {
         toast.error(result.message || "Failed to apply pricing");
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to apply pricing"
+        error instanceof Error ? error.message : "Failed to apply pricing",
       );
     }
   };
@@ -331,7 +331,7 @@ export default function SalesPage() {
       posEngine.overrideItemPrice(
         selectedItemForOverride.inventory_id,
         newPrice,
-        reason
+        reason,
       );
       setCart(posEngine.getCart());
       toast.success(`Price overridden to $${newPrice.toFixed(2)}`);
@@ -706,7 +706,7 @@ export default function SalesPage() {
                           posEngine.setDelivery(
                             cart.delivery_management_id,
                             e.target.value,
-                            deliveryPrice
+                            deliveryPrice,
                           );
                           setCart(posEngine.getCart());
                         }}

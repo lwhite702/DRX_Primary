@@ -55,7 +55,7 @@ export function BusinessSetupWizard({
 
   const updateField = (
     field: keyof BusinessFormData,
-    value: string | number
+    value: string | number,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -386,7 +386,7 @@ export function BusinessSetupWizard({
                   onChange={(e) =>
                     updateField(
                       "default_tax_rate",
-                      parseFloat(e.target.value) || 0
+                      parseFloat(e.target.value) || 0,
                     )
                   }
                   placeholder="8.0"
@@ -461,7 +461,7 @@ export function BusinessSetupWizard({
               <div className="space-y-2 pt-4">
                 <p className="text-sm font-medium">Next Steps:</p>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>✓ Add your first inventory items</li>
+                  <li>✓ Add your first products</li>
                   <li>✓ Create customer profiles</li>
                   <li>✓ Start making sales</li>
                 </ul>

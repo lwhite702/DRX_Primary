@@ -150,7 +150,7 @@ export default function CreditPage() {
       data.customer_id,
       data.amount,
       data.description || "",
-      data.due_date
+      data.due_date,
     );
 
     if (result.success) {
@@ -174,29 +174,29 @@ export default function CreditPage() {
       business.id,
       data.customer_id,
       data.amount,
-      data.description || ""
+      data.description || "",
     );
 
     if (result.success) {
-      toast.success("Payment processed successfully");
+      toast.success("Payment recorded successfully");
       setShowPaymentDialog(false);
       paymentForm.reset();
       fetchCreditLimits();
       fetchAgingData();
     } else {
-      toast.error(result.error || "Failed to process payment");
+      toast.error(result.error || "Failed to record payment");
     }
   };
 
   const filteredAgingData = agingData.filter((a) =>
-    a.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    a.customer_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const pendingTransactions = creditTransactions.filter(
-    (tx) => tx.status === "pending"
+    (tx) => tx.status === "pending",
   );
   const delinquentCount = filteredAgingData.filter(
-    (a) => a.bucket_31_plus > 0 || a.bucket_15_30 > 0
+    (a) => a.bucket_31_plus > 0 || a.bucket_15_30 > 0,
   ).length;
 
   if (businessLoading) {
@@ -257,12 +257,12 @@ export default function CreditPage() {
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full sm:w-auto">
                 <DollarSign className="h-4 w-4 mr-2" />
-                Process Payment
+                Record Payment
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Process Credit Payment</DialogTitle>
+                <DialogTitle>Record Credit Payment</DialogTitle>
                 <DialogDescription>
                   Record a payment against a credit account
                 </DialogDescription>
@@ -317,8 +317,8 @@ export default function CreditPage() {
                     disabled={paymentForm.formState.isSubmitting}
                   >
                     {paymentForm.formState.isSubmitting
-                      ? "Processing..."
-                      : "Process Payment"}
+                      ? "Recording..."
+                      : "Record Payment"}
                   </Button>
                 </div>
               </form>
@@ -364,9 +364,9 @@ export default function CreditPage() {
                             {customer.first_name} {customer.last_name}
                             {limit &&
                               ` (Balance: $${Number(
-                                limit.current_balance
+                                limit.current_balance,
                               ).toFixed(2)} / $${Number(
-                                limit.max_credit_limit
+                                limit.max_credit_limit,
                               ).toFixed(2)})`}
                           </SelectItem>
                         );
@@ -597,7 +597,7 @@ export default function CreditPage() {
                             {new Date(tx.created_at).toLocaleDateString()}
                             {tx.due_date
                               ? ` • Due ${new Date(
-                                  tx.due_date
+                                  tx.due_date,
                                 ).toLocaleDateString()}`
                               : ""}
                           </p>
@@ -612,8 +612,8 @@ export default function CreditPage() {
                               (tx.status === "completed"
                                 ? "text-green-600"
                                 : tx.status === "pending"
-                                ? "text-yellow-600"
-                                : "text-muted-foreground")
+                                  ? "text-yellow-600"
+                                  : "text-muted-foreground")
                             }
                           >
                             {tx.status}
@@ -658,8 +658,8 @@ export default function CreditPage() {
                               tx.status === "completed"
                                 ? "text-green-600"
                                 : tx.status === "pending"
-                                ? "text-yellow-600"
-                                : "text-gray-600"
+                                  ? "text-yellow-600"
+                                  : "text-gray-600"
                             }
                           >
                             {tx.status}

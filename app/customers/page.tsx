@@ -124,7 +124,7 @@ export default function CustomersPage() {
       customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (businessLoading) {
@@ -277,6 +277,20 @@ export default function CustomersPage() {
                 <Input id="customer_type" {...register("customer_type")} />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="fixed_price_per_gram">
+                  Fixed Price / Gram ($)
+                  <HelpTooltip content="Override base price for weight-based products for this customer." />
+                </Label>
+                <Input
+                  id="fixed_price_per_gram"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register("fixed_price_per_gram")}
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
@@ -293,8 +307,8 @@ export default function CustomersPage() {
                   {isSubmitting
                     ? "Saving..."
                     : editingCustomer
-                    ? "Update"
-                    : "Add"}
+                      ? "Update"
+                      : "Add"}
                 </Button>
               </div>
             </form>

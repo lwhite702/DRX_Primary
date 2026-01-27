@@ -143,7 +143,7 @@ export default function InventoryPage() {
   };
 
   const lowStockItems = inventory.filter(
-    (item) => item.quantity_on_hand <= item.reorder_level
+    (item) => item.quantity_on_hand <= item.reorder_level,
   );
 
   if (businessLoading) {
@@ -192,7 +192,7 @@ export default function InventoryPage() {
                 </DialogTitle>
                 <DialogDescription>
                   {editingItem
-                    ? "Update inventory item details"
+                    ? "Update product details"
                     : "Add a new item to your inventory"}
                 </DialogDescription>
               </DialogHeader>
@@ -309,8 +309,8 @@ export default function InventoryPage() {
                     {isSubmitting
                       ? "Saving..."
                       : editingItem
-                      ? "Update"
-                      : "Add"}
+                        ? "Update"
+                        : "Add"}
                   </Button>
                 </div>
               </form>
@@ -356,13 +356,13 @@ export default function InventoryPage() {
       {/* Inventory Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Inventory Items ({inventory.length})</CardTitle>
+          <CardTitle>Products ({inventory.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {inventory.length === 0 ? (
             <EmptyState
               icon={PackageOpen}
-              title="No inventory items"
+              title="No products"
               description="Add your first product to start tracking inventory."
               actionLabel="Add Item"
               onAction={handleNew}

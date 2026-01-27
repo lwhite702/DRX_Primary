@@ -5,6 +5,16 @@ All notable changes to DRX CRM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-01-27
+
+### Added
+
+- **Mobile**: Create `AddProductScreen` for product intake with unit selection and tiered pricing builder.
+- **Mobile**: Support for AI Pricing Suggestions (Mock/stub implemented pending backend).
+- **Mobile/Web**: Customer-specific "Fixed Price per Gram" setting.
+- **POS**: Cart now applies customer-specific fixed pricing overrides for weight-based products.
+- **Mobile**: Navigation from Inventory screen to Add Product screen.
+
 ## [0.1.1] - 2026-01-11
 
 ### Added
@@ -77,7 +87,6 @@ Initial beta release with core CRM, inventory, and POS functionality.
 When making changes:
 
 1. Add items under `[Unreleased]` in the appropriate category:
-
    - **Added** for new features
    - **Changed** for changes in existing functionality
    - **Deprecated** for soon-to-be removed features

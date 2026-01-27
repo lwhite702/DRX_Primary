@@ -62,7 +62,7 @@ export default function DashboardPage() {
           .eq("order_status", "completed")
           .gte(
             "created_at",
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           ),
         supabase
           .from("customers")
@@ -88,12 +88,12 @@ export default function DashboardPage() {
       const totalSales =
         salesData.data?.reduce(
           (sum: number, sale: any) => sum + (sale.total_amount || 0),
-          0
+          0,
         ) || 0;
       const creditOutstanding =
         creditData.data?.reduce(
           (sum: number, credit: any) => sum + (credit.current_balance || 0),
-          0
+          0,
         ) || 0;
 
       setStats({
@@ -106,7 +106,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
       setError(
-        "Failed to load dashboard data. Please check your connection and try again."
+        "Failed to load dashboard data. Please check your connection and try again.",
       );
     } finally {
       setLoading(false);
@@ -167,7 +167,7 @@ export default function DashboardPage() {
         </Card>
         <Card className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground">
-            Inventory Items
+            Products
           </h3>
           <p className="text-3xl font-bold mt-2">{stats.inventoryItems}</p>
         </Card>
