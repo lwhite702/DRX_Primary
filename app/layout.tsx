@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { OfflineProvider } from "@/components/providers/offline-provider";
@@ -13,6 +15,8 @@ import { CustomerProvider } from "@/components/providers/customer-provider";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const _plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "DRX CRM - DeelRx Point of Sale & Customer Management",
@@ -62,7 +66,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans bg-background text-foreground antialiased">
+      <body className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}>
         <GlobalErrorBoundary>
           <BusinessSetupProvider>
             <OfflineProvider>
