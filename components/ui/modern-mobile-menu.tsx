@@ -1,38 +1,49 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Home, Briefcase, Calendar, Shield, Settings } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Home, Briefcase, Calendar, Settings } from "lucide-react";
 
 type IconComponentType = React.ElementType<{ className?: string }>;
+
 export interface InteractiveMenuItem {
   label: string;
   icon: IconComponentType;
+  href?: string;
+}
+
+export interface CenterAction {
+  icon: IconComponentType;
+  label?: string;
 }
 
 export interface InteractiveMenuProps {
   items?: InteractiveMenuItem[];
+  centerAction?: CenterAction;
+  onCenterClick?: () => void;
+  onItemClick?: (index: number, item: InteractiveMenuItem) => void;
   accentColor?: string;
 }
 
 const defaultItems: InteractiveMenuItem[] = [
-  { label: "home", icon: Home },
-  { label: "strategy", icon: Briefcase },
-  { label: "period", icon: Calendar },
-  { label: "security", icon: Shield },
-  { label: "settings", icon: Settings },
+  { label: "Home", icon: Home },
+  { label: "Search", icon: Briefcase },
+  { label: "Cart", icon: Calendar },
+  { label: "Profile", icon: Settings },
 ];
 
 const defaultAccentColor = "var(--component-active-color-default)";
 
 const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
   items,
+  centerAction,
+  onCenterClick,
+  onItemClick,
   accentColor,
 }) => {
   const finalItems = useMemo(() => {
-    const isValid =
-      items && Array.isArray(items) && items.length >= 2 && items.length <= 5;
+    const isValid = items && Array.isArray(items) && items.length === 4;
     if (!isValid) {
       console.warn(
-        "InteractiveMenu: 'items' prop is invalid or missing. Using default items.",
-        items
+        "InteractiveMenu: 'items' prop must contain exactly 4 items. Using default items.",
+        items,
       );
       return defaultItems;
     }
@@ -47,37 +58,17 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
     }
   }, [finalItems, activeIndex]);
 
-  const textRefs = useRef<(HTMLElement | null)[]>([]);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  useEffect(() => {
-    const setLineWidth = () => {
-      const activeItemElement = itemRefs.current[activeIndex];
-      const activeTextElement = textRefs.current[activeIndex];
-
-      if (activeItemElement && activeTextElement) {
-        const textWidth = activeTextElement.offsetWidth;
-        activeItemElement.style.setProperty("--lineWidth", `${textWidth}px`);
-      }
-    };
-
-    setLineWidth();
-
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const handleResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(setLineWidth, 100);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(timeoutId);
-    };
-  }, [activeIndex, finalItems]);
-
   const handleItemClick = (index: number) => {
     setActiveIndex(index);
+    if (onItemClick) {
+      onItemClick(index, finalItems[index]);
+    }
+  };
+
+  const handleCenterClick = () => {
+    if (onCenterClick) {
+      onCenterClick();
+    }
   };
 
   const navStyle = useMemo(() => {
@@ -85,35 +76,117 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
     return { "--component-active-color": activeColor } as React.CSSProperties;
   }, [accentColor]);
 
+  // Split items into left (0-1) and right (2-3)
+  const leftItems = finalItems.slice(0, 2);
+  const rightItems = finalItems.slice(2, 4);
+
+  const CenterIcon = centerAction?.icon || Home;
+
   return (
-    <nav className="menu" role="navigation" style={navStyle}>
-      {finalItems.map((item, index) => {
-        const isActive = index === activeIndex;
-        const isTextActive = isActive;
+    <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
+      <div className="relative mx-auto max-w-md px-4 pb-6">
+        {/* Center FAB */}
+        <button
+          onClick={handleCenterClick}
+          className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-10
+                     w-16 h-16 rounded-full
+                     bg-gradient-to-br from-[#6366f1] to-[#4f46e5]
+                     shadow-lg shadow-[#6366f1]/50
+                     flex items-center justify-center
+                     transition-all duration-150 ease-out
+                     hover:scale-105 active:scale-95
+                     focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-2 focus:ring-offset-background"
+          aria-label={centerAction?.label || "Main action"}
+        >
+          <CenterIcon className="w-6 h-6 text-white" />
+        </button>
 
-        const IconComponent = item.icon;
+        {/* Navigation Bar */}
+        <nav
+          className="relative rounded-full
+                     bg-black/80 dark:bg-black/90
+                     backdrop-blur-xl
+                     border border-white/10
+                     shadow-xl
+                     px-4 py-3
+                     flex items-center justify-between"
+          style={navStyle}
+          role="navigation"
+        >
+          {/* Left Items */}
+          <div className="flex items-center gap-2 flex-1 justify-around">
+            {leftItems.map((item, index) => {
+              const isActive = index === activeIndex;
+              const IconComponent = item.icon;
 
-        return (
-          <button
-            key={item.label}
-            className={`menu__item ${isActive ? "active" : ""}`}
-            onClick={() => handleItemClick(index)}
-            ref={(el) => (itemRefs.current[index] = el)}
-            style={{ "--lineWidth": "0px" } as React.CSSProperties}
-          >
-            <div className="menu__icon">
-              <IconComponent className="icon" />
-            </div>
-            <strong
-              className={`menu__text ${isTextActive ? "active" : ""}`}
-              ref={(el) => (textRefs.current[index] = el)}
-            >
-              {item.label}
-            </strong>
-          </button>
-        );
-      })}
-    </nav>
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleItemClick(index)}
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg
+                           transition-all duration-150 ease-out
+                           hover:bg-white/5 active:scale-95
+                           focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <IconComponent
+                    className={`w-6 h-6 transition-colors duration-150 ${
+                      isActive ? "text-accent" : "text-muted-foreground"
+                    }`}
+                  />
+                  <span
+                    className={`text-xs font-medium transition-colors duration-150 ${
+                      isActive ? "text-accent" : "text-muted-foreground"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Spacer for center FAB */}
+          <div className="w-16" />
+
+          {/* Right Items */}
+          <div className="flex items-center gap-2 flex-1 justify-around">
+            {rightItems.map((item, index) => {
+              const actualIndex = index + 2; // Offset by 2 for right items
+              const isActive = actualIndex === activeIndex;
+              const IconComponent = item.icon;
+
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleItemClick(actualIndex)}
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg
+                           transition-all duration-150 ease-out
+                           hover:bg-white/5 active:scale-95
+                           focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <IconComponent
+                    className={`w-6 h-6 transition-colors duration-150 ${
+                      isActive ? "text-accent" : "text-muted-foreground"
+                    }`}
+                  />
+                  <span
+                    className={`text-xs font-medium transition-colors duration-150 ${
+                      isActive ? "text-accent" : "text-muted-foreground"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    </div>
   );
 };
 
