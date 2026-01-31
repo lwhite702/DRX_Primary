@@ -369,7 +369,7 @@ const { discount_amount, final_price } = await engine.applyLoyaltyDiscount(
 |------|--------|----------|
 | `20250228000001_pos_weight_shrinkage_loyalty_consolidated.json` | JSON (28 steps) | Dashboard tools, API-based migration |
 | `20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql` | SQL (idempotent) | Direct SQL editor, CLI, scripting |
-| `MIGRATION_GUIDE.md` | Documentation | This file - reference |
+| `<!-- DELETED: MIGRATION_GUIDE.md -->` | Documentation | This file - reference |
 
 ---
 

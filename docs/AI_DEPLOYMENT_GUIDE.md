@@ -321,8 +321,8 @@ If issues occur after deployment:
 - API Response Times
 
 ### Documentation References
-- System Architecture: `/AI_INTELLIGENCE_IMPLEMENTATION.md`
-- This Deployment Guide: `/AI_DEPLOYMENT_GUIDE.md`
+- System Architecture: [Implementation Guide](IMPLEMENTATION.md)
+- Quick Start Guide: [AI Quick Start](AI_QUICK_START.md)
 
 ---
 

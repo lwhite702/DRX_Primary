@@ -412,4 +412,4 @@ WHERE business_id = 'your-business-id';
 
 **Status:** Ready for Production Deployment
 
-For questions or issues, refer to `AI_CREDIT_ENGINE_IMPLEMENTATION.md` for detailed technical documentation.
+For questions or issues, refer to `<!-- DELETED: AI_CREDIT_ENGINE_<!-- DELETED: IMPLEMENTATION.md --> -->` for detailed technical documentation.

@@ -107,7 +107,7 @@ Rules for CHANGELOG.md:
 - [feature] Added /api/mindstorm/recluster endpoint (no auth yet, returns { ok: true })
 - [ui] Added <QuickCaptureBar /> to /app with working submit handler
 - [infra] Added CRON_SECRET check in /api/cron/test
-- [docs] Updated agents.md rules for changelog discipline
+- [docs] Updated <!-- DELETED: agents.md --> rules for changelog discipline
 - [risk] Vault layout currently still using default AppShell; will diverge later
 ```
 
@@ -278,10 +278,10 @@ This ensures all code follows current best practices and API patterns.
 
 **Agents MUST load and reference these documents before generating any output:**
 
-- `agents.md` (this file) - behavioral standards
-- `PRD.md` - product requirements and vision
-- `BRAND_VOICE.md` - communication standards and writing guidelines
-- `BRAND_GUIDE.md` - comprehensive brand identity and visual guidelines
+- `<!-- DELETED: agents.md -->` (this file) - behavioral standards
+- `<!-- DELETED: <!-- DELETED: PRD.md --> -->` - product requirements and vision
+- `<!-- DELETED: BRAND_VOICE.md -->` - communication standards and writing guidelines
+- `<!-- DELETED: BRAND_GUIDE.md -->` - comprehensive brand identity and visual guidelines
 
 If any of these files are missing, the agent MUST create them before proceeding with other work.
 
@@ -545,7 +545,7 @@ When you (the agent) touch this repo, you MUST:
 7. Always put external/user-facing docs in Mintlify format, and put internal technical docs in /docs/.
 8. Always prefer open source libraries for non-differentiating features before attempting to write your own.
 9. Always protect secrets and cron endpoints with CRON_SECRET.
-10. Always load agents.md, PRD.md, and BRAND_VOICE.md before generating any output.
+10. Always load <!-- DELETED: agents.md -->, <!-- DELETED: <!-- DELETED: PRD.md --> -->, and <!-- DELETED: BRAND_VOICE.md --> before generating any output.
 
 Breaking these rules is considered a failed task.
 
@@ -558,4 +558,4 @@ If an agent is missing required context (repo access, MCP tool access, required 
 
 ⸻
 
-End of agents.md.
+End of <!-- DELETED: agents.md -->.

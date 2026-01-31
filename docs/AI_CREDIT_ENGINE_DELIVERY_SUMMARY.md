@@ -166,8 +166,8 @@ app/
 
 ### Documentation
 ```
-AI_CREDIT_LIMIT_ENGINE_COMPLETE.md  # Comprehensive implementation guide
-AI_CREDIT_ENGINE_DELIVERY_SUMMARY.md # This file
+<!-- DELETED: AI_CREDIT_LIMIT_ENGINE_COMPLETE.md -->  # Comprehensive implementation guide
+<!-- DELETED: AI_CREDIT_ENGINE_DELIVERY_SUMMARY.md --> # This file
 ```
 
 ---
@@ -362,7 +362,7 @@ Header: Authorization: Bearer {CRON_SECRET}
 ## Documentation References
 
 ### Comprehensive Guides
-- **AI_CREDIT_LIMIT_ENGINE_COMPLETE.md** - Full implementation details
+- **<!-- DELETED: AI_CREDIT_LIMIT_ENGINE_COMPLETE.md -->** - Full implementation details
   - Architecture overview
   - Component descriptions
   - API route documentation
@@ -406,7 +406,7 @@ Header: Authorization: Bearer {CRON_SECRET}
 - Database: `/home/engine/project/db/`
 
 ### Getting Help
-1. Check AI_CREDIT_LIMIT_ENGINE_COMPLETE.md for detailed documentation
+1. Check <!-- DELETED: AI_CREDIT_LIMIT_ENGINE_COMPLETE.md --> for detailed documentation
 2. Review test scenarios for usage examples
 3. Check git history for implementation details
 4. Review database RPC functions for complex queries

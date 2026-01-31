@@ -201,7 +201,7 @@ All 13 test items verified:
    - New state management
 
 ### Documentation (2 files)
-1. `/POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md` (550+ lines)
+1. `/<!-- DELETED: POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md -->` (550+ lines)
    - Complete technical guide
    - Schema documentation
    - RPC function reference
@@ -210,7 +210,7 @@ All 13 test items verified:
    - Examples
    - Testing checklist
 
-2. `/POS_FEATURE_DELIVERY_SUMMARY.md` (this file)
+2. `/<!-- DELETED: POS_FEATURE_DELIVERY_SUMMARY.md -->` (this file)
    - Executive summary
    - Phase-by-phase breakdown
    - Deliverables list
@@ -364,7 +364,7 @@ loyalty_tier_config: {
 
 ## SUPPORT
 
-See `/POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md` for:
+See `/<!-- DELETED: POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md -->` for:
 - Detailed schema documentation
 - All RPC function signatures
 - Component props and usage
