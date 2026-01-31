@@ -3,10 +3,11 @@
  * Global test configuration and mocks
  */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
 // Mock Next.js router
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter() {
     return {
       push: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock('next/navigation', () => ({
     return new URLSearchParams();
   },
   usePathname() {
-    return '/';
+    return "/";
   },
 }));
 
@@ -42,20 +43,27 @@ const mockSupabaseClient = {
     rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
   })),
   auth: {
-    getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+    getUser: vi.fn(() =>
+      Promise.resolve({ data: { user: null }, error: null }),
+    ),
   },
 };
 
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock("@/lib/supabase/client", () => ({
   getSupabaseClient: vi.fn(() => mockSupabaseClient),
 }));
 
 // Mock use-business hook
-vi.mock('@/lib/hooks/use-business', () => ({
+vi.mock("@/lib/hooks/use-business", () => ({
   useBusiness: vi.fn(() => ({
-    business: { id: 'test-business-id' },
+    business: { id: "test-business-id" },
     loading: false,
   })),
+}));
+
+// Mock Next.js cache
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
 }));
 
 // Mock console methods in test environment

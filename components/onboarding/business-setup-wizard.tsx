@@ -2,96 +2,152 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { CheckCircle2, Settings, Sparkles } from "lucide-react";
-import { HelpTooltip } from "@/components/ui/help-tooltip";
-import Image from "next/image";
+import {
+  Loader2,
+  Building2,
+  User,
+  Scale,
+  Zap,
+  Shield,
+  Users,
+  ClipboardList,
+  Tag,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
 
-interface BusinessFormData {
-  business_name: string;
-  business_type: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  phone_number: string;
-  email: string;
-  default_tax_rate: number;
+interface BusinessSetupWizardProps {
+  userId: string;
+  onComplete?: () => Promise<void>;
 }
+
+const STEPS = [
+  { id: "welcome", title: "Welcome", icon: Building2 },
+  { id: "details", title: "Business Details", icon: Building2 },
+  { id: "owner", title: "Owner Contact", icon: User },
+  { id: "units", title: "Units", icon: Scale },
+  { id: "quantities", title: "Quick Quantities", icon: Zap },
+  { id: "privacy", title: "Privacy Settings", icon: Shield },
+  { id: "roles", title: "Staff Roles", icon: Users },
+  { id: "reasons", title: "Inventory Reasons", icon: ClipboardList },
+  { id: "nicknames", title: "Nicknames", icon: Tag },
+  { id: "review", title: "Review", icon: CheckCircle2 },
+  { id: "complete", title: "Complete", icon: CheckCircle2 },
+];
 
 export function BusinessSetupWizard({
   userId,
   onComplete,
-}: {
-  userId: string;
-  onComplete?: () => Promise<void>;
-}) {
-  const [step, setStep] = useState(1);
+}: BusinessSetupWizardProps) {
+  const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<BusinessFormData>({
-    business_name: "",
-    business_type: "",
-    address: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    phone_number: "",
-    email: "",
-    default_tax_rate: 8.0,
-  });
   const router = useRouter();
   const supabase = getSupabaseClient();
 
-  const updateField = (
-    field: keyof BusinessFormData,
-    value: string | number,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const [formData, setFormData] = useState({
+    // Business Details
+    businessName: "",
+    businessType: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+
+    // Owner Contact
+    ownerName: "",
+    ownerPhone: "",
+
+    // Units
+    defaultUnit: "g", // 'g' or 'oz'
+
+    // Quick Quantities (Default presets)
+    quickQuantities: [
+      { label: "1g", value: 1, unit: "g", enabled: true },
+      { label: "3.5g", value: 3.5, unit: "g", enabled: true },
+      { label: "7g", value: 7, unit: "g", enabled: true },
+      { label: "14g", value: 14, unit: "g", enabled: true },
+      { label: "28g", value: 28, unit: "g", enabled: true },
+    ],
+
+    // Privacy
+    privacyPreset: "balanced", // open, balanced, private, max_secure
+
+    // Staff Roles (active roles to create)
+    enableManager: true,
+    enableBudtender: true,
+    enableInventoryStart: false,
+
+    // Inventory Reasons (presets)
+    inventoryReasons: [
+      { label: "Restock", type: "positive", enabled: true },
+      { label: "Sale", type: "negative", enabled: true },
+      { label: "Waste", type: "negative", enabled: true },
+      { label: "Theft", type: "negative", enabled: true },
+      { label: "Gift", type: "negative", enabled: true },
+      { label: "Correction", type: "neutral", enabled: true },
+    ],
+
+    // Nicknames
+    nicknames: [
+      { slang: "Dime", quantity: 1, unit: "g", enabled: false },
+      { slang: "Dub", quantity: 2, unit: "g", enabled: false },
+      { slang: "Eighth", quantity: 3.5, unit: "g", enabled: true },
+      { slang: "Zip", quantity: 28, unit: "g", enabled: true },
+    ],
+  });
+
+  const handleNext = () => {
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
+    }
+  };
 
+  const handleFinish = async () => {
     if (!supabase) {
-      toast.error("Unable to connect to database");
+      toast.error("Database connection failed");
       return;
     }
-
-    if (loading) {
-      return;
-    }
-
     setLoading(true);
     try {
-      if (!formData.business_name.trim()) {
-        toast.error("Business name is required");
-        setLoading(false);
-        return;
-      }
-
-      // Create business profile
+      // 1. Create Business Profile
       const { data: business, error: businessError } = await supabase
         .from("business_profile")
         .insert({
-          business_name: formData.business_name,
-          business_type: formData.business_type || null,
-          address: formData.address || null,
-          city: formData.city || null,
-          state: formData.state || null,
-          zip_code: formData.zip_code || null,
-          phone_number: formData.phone_number || null,
-          email: formData.email || null,
+          business_name: formData.businessName,
+          business_type: formData.businessType,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zip_code: formData.zipCode,
+          phone_number: formData.ownerPhone,
           owner_id: userId,
           is_active: true,
         })
@@ -100,375 +156,484 @@ export function BusinessSetupWizard({
 
       if (businessError) throw businessError;
 
-      // Create user role
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        business_id: business.id,
-        user_id: userId,
-        role: "owner",
-        permissions: {},
-      });
-
-      if (roleError) throw roleError;
-
-      // Create business settings
+      // 2. Create Business Settings with new attributes in JSONB
       const { error: settingsError } = await supabase
         .from("business_settings")
         .insert({
           business_id: business.id,
-          default_tax_rate: formData.default_tax_rate / 100,
           currency: "USD",
-          timezone: "America/New_York",
+          timezone: "America/New_York", // Default for now
+          default_tax_rate: 0.0,
+          settings_data: {
+            onboarding_completed: true,
+            default_unit: formData.defaultUnit,
+            quick_quantities: formData.quickQuantities.filter((q) => q.enabled),
+            privacy_preset: formData.privacyPreset,
+            inventory_reasons: formData.inventoryReasons.filter(
+              (r) => r.enabled,
+            ),
+            nicknames: formData.nicknames.filter((n) => n.enabled),
+            owner_name: formData.ownerName,
+          },
         });
 
       if (settingsError) throw settingsError;
 
-      setStep(4);
-      toast.success("Business created successfully!");
+      // 3. Assign Owner Role
+      const { error: roleError } = await supabase.from("user_roles").insert({
+        business_id: business.id,
+        user_id: userId,
+        role: "owner",
+        permissions: { all: true },
+      });
 
-      setTimeout(() => {
-        if (onComplete) {
-          onComplete();
-        } else {
-          router.refresh();
-        }
-      }, 2000);
-    } catch (error) {
-      console.error("Error creating business:", error);
-      toast.error("Failed to create business. Please try again.");
+      if (roleError) throw roleError;
+
+      // 4. Create other roles logic can be handled here or later
+      // skipping actual user creation for other roles for now
+
+      toast.success("Business setup complete!");
+
+      if (onComplete) {
+        await onComplete();
+      } else {
+        router.refresh(); // Fallback if no onComplete
+      }
+    } catch (error: any) {
+      console.error("Setup error:", error);
+      toast.error(error.message || "Failed to complete setup.");
+    } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl border-accent/20">
-        <CardHeader>
-          {/* Logo */}
-          <div className="flex justify-center mb-4">
-            <Image
-              src="/icon.svg"
-              alt="DRX Logo"
-              width={48}
-              height={48}
-              className="opacity-90"
-            />
+  const stepContent = () => {
+    switch (STEPS[currentStep].id) {
+      case "welcome":
+        return (
+          <div className="space-y-6 text-center py-10">
+            <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto text-accent mb-6">
+              <Building2 className="w-10 h-10" />
+            </div>
+            <h2 className="text-3xl font-bold">Welcome to DRX.</h2>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto">
+              Let's get your shop running. This setup takes about 2 minutes and
+              helps us configure your privacy, inventory, and checkout settings.
+            </p>
           </div>
+        );
 
-          {/* Progress Bar */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 flex-1">
-              {[1, 2, 3].map((s) => (
-                <div
-                  key={s}
-                  className={`h-2 flex-1 rounded-full transition-all ${
-                    s <= step ? "bg-accent" : "bg-muted"
-                  }`}
+      case "details":
+        return (
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label>Business Name</Label>
+              <Input
+                value={formData.businessName}
+                onChange={(e) =>
+                  setFormData({ ...formData, businessName: e.target.value })
+                }
+                placeholder="e.g. The Green Room"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Business Type</Label>
+              <Select
+                onValueChange={(v) =>
+                  setFormData({ ...formData, businessType: v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dispensary">Dispensary</SelectItem>
+                  <SelectItem value="delivery">Delivery Service</SelectItem>
+                  <SelectItem value="smoke_shop">Smoke Shop</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Address (Optional)</Label>
+              <Input
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                placeholder="123 Main St"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>City</Label>
+                <Input
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label>State</Label>
+                <Input
+                  value={formData.state}
+                  onChange={(e) =>
+                    setFormData({ ...formData, state: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case "owner":
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              This information is used for account recovery and critical alerts
+              only.
+            </p>
+            <div className="grid gap-2">
+              <Label>Owner Name</Label>
+              <Input
+                value={formData.ownerName}
+                onChange={(e) =>
+                  setFormData({ ...formData, ownerName: e.target.value })
+                }
+                placeholder="Your full name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Phone (For Login/Recovery)</Label>
+              <Input
+                value={formData.ownerPhone}
+                onChange={(e) =>
+                  setFormData({ ...formData, ownerPhone: e.target.value })
+                }
+                placeholder="(555) 123-4567"
+              />
+            </div>
+          </div>
+        );
+
+      case "units":
+        return (
+          <div className="space-y-6">
+            <Label className="text-lg">How do you primarily sell?</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div
+                className={`border p-6 rounded-xl cursor-pointer transition-all ${formData.defaultUnit === "g" ? "border-accent bg-accent/5 ring-1 ring-accent" : "hover:border-foreground/50"}`}
+                onClick={() => setFormData({ ...formData, defaultUnit: "g" })}
+              >
+                <div className="font-bold text-xl mb-2">Grams (g)</div>
+                <p className="text-sm text-muted-foreground">
+                  Standard for flower and solids.
+                </p>
+              </div>
+              <div
+                className={`border p-6 rounded-xl cursor-pointer transition-all ${formData.defaultUnit === "oz" ? "border-accent bg-accent/5 ring-1 ring-accent" : "hover:border-foreground/50"}`}
+                onClick={() => setFormData({ ...formData, defaultUnit: "oz" })}
+              >
+                <div className="font-bold text-xl mb-2">Ounces (oz)</div>
+                <p className="text-sm text-muted-foreground">
+                  Standard for liquids or bulk.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "quantities":
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <Label className="text-lg">Quick Quantities</Label>
+              <span className="text-xs text-muted-foreground">
+                Tap to toggle
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              These buttons will appear on your POS for one-tap additions.
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              {formData.quickQuantities.map((q, idx) => (
+                <div
+                  key={idx}
+                  className={`border p-4 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all ${q.enabled ? "border-accent bg-accent/10 text-accent font-bold" : "opacity-50 grayscale"}`}
+                  onClick={() => {
+                    const newQs = [...formData.quickQuantities];
+                    newQs[idx].enabled = !newQs[idx].enabled;
+                    setFormData({ ...formData, quickQuantities: newQs });
+                  }}
+                >
+                  <span className="text-xl">{q.label}</span>
+                </div>
               ))}
             </div>
-            <span className="text-sm text-muted-foreground ml-4">
-              Step {step} of 3
-            </span>
           </div>
+        );
 
-          <CardTitle className="text-2xl text-center">
-            {step === 1 && "Welcome to DRX"}
-            {step === 2 && "Business Information"}
-            {step === 3 && "Business Settings"}
-            {step === 4 && "All Set!"}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {step === 1 && "Let's set up your business to get started"}
-            {step === 2 && "Tell us about your business"}
-            {step === 3 && "Configure your business preferences"}
-            {step === 4 && "Your business is ready to use"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Step 1: Welcome */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="flex justify-center py-8">
-                <div className="relative">
-                  <Sparkles className="h-24 w-24 text-accent" />
-                  <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full" />
-                </div>
-              </div>
-              <div className="space-y-2 text-center">
-                <h3 className="text-lg font-semibold">
-                  Privacy-First POS & CRM
-                </h3>
-                <p className="text-muted-foreground">
-                  DRX helps you manage sales, inventory, customers, and credit
-                  tracking all in one place. Let's create your business profile
-                  to get started.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
-                  <p className="font-medium">Point of Sale</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Fast checkout with inventory tracking
-                  </p>
-                </div>
-                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
-                  <p className="font-medium">Credit Management</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Track customer credit and payments
-                  </p>
-                </div>
-                <div className="text-center p-4 border border-accent/20 rounded-lg bg-accent/5">
-                  <p className="font-medium">Inventory Control</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Real-time stock management
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button
-                  onClick={() => setStep(2)}
-                  size="lg"
-                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
-                >
-                  Get Started
-                </Button>
-              </div>
+      case "privacy":
+        const presets = {
+          open: { label: "OPEN", desc: "Full customer details visible." },
+          balanced: {
+            label: "BALANCED",
+            desc: "Standard limits. Recommended.",
+          },
+          private: {
+            label: "PRIVATE",
+            desc: "Reduced info. No phone exports.",
+          },
+          max_secure: {
+            label: "MAX SECURE",
+            desc: "Minimal retention. Strict access.",
+          },
+        };
+        return (
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <Label className="text-lg">Privacy Level</Label>
+              <p className="text-sm text-muted-foreground">
+                Control how much customer data is stored and who can see it.
+              </p>
             </div>
-          )}
 
-          {/* Step 2: Business Info */}
-          {step === 2 && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setStep(3);
-              }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="business_name">
-                  Business Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="business_name"
-                  value={formData.business_name}
-                  onChange={(e) => updateField("business_name", e.target.value)}
-                  placeholder="e.g., Acme Dispensary"
-                  required
-                  className="border-accent/20 focus:border-accent"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="business_type">
-                  Business Type
-                  <HelpTooltip content="What type of business do you operate? (e.g., Retail, Dispensary, Wholesale)" />
-                </Label>
-                <Input
-                  id="business_type"
-                  value={formData.business_type}
-                  onChange={(e) => updateField("business_type", e.target.value)}
-                  placeholder="e.g., Retail, Dispensary, Wholesale"
-                  className="border-accent/20 focus:border-accent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone_number">Phone Number</Label>
-                  <Input
-                    id="phone_number"
-                    type="tel"
-                    value={formData.phone_number}
-                    onChange={(e) =>
-                      updateField("phone_number", e.target.value)
+            <div className="space-y-6">
+              {(Object.keys(presets) as Array<keyof typeof presets>).map(
+                (key) => (
+                  <div
+                    key={key}
+                    className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all ${formData.privacyPreset === key ? "border-accent bg-accent/5" : ""}`}
+                    onClick={() =>
+                      setFormData({ ...formData, privacyPreset: key })
                     }
-                    placeholder="(555) 123-4567"
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    placeholder="contact@business.com"
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-              </div>
+                  >
+                    <div>
+                      <div className="font-bold">{presets[key].label}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {presets[key].desc}
+                      </div>
+                    </div>
+                    {formData.privacyPreset === key && (
+                      <CheckCircle2 className="text-accent" />
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+        );
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Street Address</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => updateField("address", e.target.value)}
-                  placeholder="123 Main St"
-                  className="border-accent/20 focus:border-accent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                    placeholder="New York"
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => updateField("state", e.target.value)}
-                    placeholder="NY"
-                    maxLength={2}
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip_code">ZIP Code</Label>
-                  <Input
-                    id="zip_code"
-                    value={formData.zip_code}
-                    onChange={(e) => updateField("zip_code", e.target.value)}
-                    placeholder="10001"
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(1)}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={!formData.business_name.trim()}
-                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
-                >
-                  Continue
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 3: Settings */}
-          {step === 3 && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex justify-center py-4">
-                <Settings className="h-16 w-16 text-accent" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="default_tax_rate">
-                  Default Tax Rate (%)
-                  <HelpTooltip content="This tax rate will be automatically applied to sales. You can change this later in settings." />
-                </Label>
-                <Input
-                  id="default_tax_rate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  value={formData.default_tax_rate}
-                  onChange={(e) =>
-                    updateField(
-                      "default_tax_rate",
-                      parseFloat(e.target.value) || 0,
-                    )
+      case "roles":
+        return (
+          <div className="space-y-6">
+            <Label className="text-lg">Staff Roles</Label>
+            <p className="text-sm text-muted-foreground">
+              Which roles do you need right now? You can invite people later.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                <Checkbox
+                  id="manager"
+                  checked={formData.enableManager}
+                  onCheckedChange={(c) =>
+                    setFormData({ ...formData, enableManager: !!c })
                   }
-                  placeholder="8.0"
-                  className="border-accent/20 focus:border-accent"
                 />
-                <p className="text-sm text-muted-foreground">
-                  Example: 8.0 for 8% sales tax
-                </p>
-              </div>
-
-              <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg space-y-2">
-                <h4 className="font-medium">Review Your Information</h4>
-                <div className="text-sm space-y-1">
-                  <p>
-                    <span className="text-muted-foreground">Business:</span>{" "}
-                    {formData.business_name}
-                  </p>
-                  {formData.business_type && (
-                    <p>
-                      <span className="text-muted-foreground">Type:</span>{" "}
-                      {formData.business_type}
-                    </p>
-                  )}
-                  {formData.city && formData.state && (
-                    <p>
-                      <span className="text-muted-foreground">Location:</span>{" "}
-                      {formData.city}, {formData.state}
-                    </p>
-                  )}
-                  <p>
-                    <span className="text-muted-foreground">Tax Rate:</span>{" "}
-                    {formData.default_tax_rate}%
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="manager"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Manager
+                  </label>
+                  <p className="text-sm text-muted-foreground">
+                    Can edit inventory and view reports.
                   </p>
                 </div>
               </div>
-
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
-                >
-                  {loading ? "Creating..." : "Create Business"}
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 4: Success */}
-          {step === 4 && (
-            <div className="space-y-4 text-center py-8">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <CheckCircle2 className="h-24 w-24 text-accent" />
-                  <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full" />
+              <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                <Checkbox
+                  id="budtender"
+                  checked={formData.enableBudtender}
+                  onCheckedChange={(c) =>
+                    setFormData({ ...formData, enableBudtender: !!c })
+                  }
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="budtender"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Budtender
+                  </label>
+                  <p className="text-sm text-muted-foreground">
+                    Can process sales and view limited inventory.
+                  </p>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold">You're All Set!</h3>
-                <p className="text-muted-foreground">
-                  Your business has been created successfully. Redirecting you
-                  to the dashboard...
-                </p>
-              </div>
-              <div className="space-y-2 pt-4">
-                <p className="text-sm font-medium">Next Steps:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>✓ Add your first products</li>
-                  <li>✓ Create customer profiles</li>
-                  <li>✓ Start making sales</li>
-                </ul>
               </div>
             </div>
+          </div>
+        );
+
+      case "reasons":
+        return (
+          <div className="space-y-6">
+            <Label className="text-lg">Inventory Audit Reasons</Label>
+            <p className="text-sm text-muted-foreground">
+              Standard reasons for stock adjustments.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {formData.inventoryReasons.map((r, idx) => (
+                <div
+                  key={idx}
+                  className={`border p-3 rounded-lg flex items-center gap-2 cursor-pointer ${r.enabled ? "bg-secondary/50 border-secondary-foreground/20" : "opacity-50"}`}
+                  onClick={() => {
+                    const newReasons = [...formData.inventoryReasons];
+                    newReasons[idx].enabled = !newReasons[idx].enabled;
+                    setFormData({ ...formData, inventoryReasons: newReasons });
+                  }}
+                >
+                  <Checkbox checked={r.enabled} className="mr-2" />
+                  <span className="text-sm font-medium">{r.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "nicknames":
+        return (
+          <div className="space-y-6">
+            <Label className="text-lg">Product Nicknames (Aliases)</Label>
+            <p className="text-sm text-muted-foreground">
+              Enable common slang terms to map them to real quantities
+              automatically.
+            </p>
+            <div className="space-y-3">
+              {formData.nicknames.map((n, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-center justify-between border p-4 rounded-xl cursor-pointer ${n.enabled ? "border-accent/50 bg-accent/5" : "opacity-60"}`}
+                  onClick={() => {
+                    const newNicks = [...formData.nicknames];
+                    newNicks[idx].enabled = !newNicks[idx].enabled;
+                    setFormData({ ...formData, nicknames: newNicks });
+                  }}
+                >
+                  <div>
+                    <div className="font-bold">"{n.slang}"</div>
+                    <div className="text-xs text-muted-foreground">
+                      Maps to {n.quantity}
+                      {n.unit}
+                    </div>
+                  </div>
+                  <div
+                    className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${n.enabled ? "bg-accent justify-end" : "bg-muted justify-start"}`}
+                  >
+                    <div className="w-4 h-4 rounded-full bg-background" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "review":
+        return (
+          <div className="space-y-6 text-center py-6">
+            <h3 className="text-2xl font-bold">Looks Good?</h3>
+            <div className="space-y-4 text-left max-w-sm mx-auto bg-muted/20 p-6 rounded-xl border">
+              <div className="flex justify-between py-2 border-b">
+                <span className="text-muted-foreground">Business</span>
+                <span className="font-medium">
+                  {formData.businessName || "Untitled"}
+                </span>
+              </div>
+              <div className="flex justify-between py-2 border-b">
+                <span className="text-muted-foreground">Privacy</span>
+                <span className="font-medium uppercase">
+                  {formData.privacyPreset}
+                </span>
+              </div>
+              <div className="flex justify-between py-2 border-b">
+                <span className="text-muted-foreground">Default Unit</span>
+                <span className="font-medium">
+                  {formData.defaultUnit === "g" ? "Grams" : "Ounces"}
+                </span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-muted-foreground">Owner</span>
+                <span className="font-medium">
+                  {formData.ownerName || "Not set"}
+                </span>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              You can change these settings later in the admin panel.
+            </p>
+          </div>
+        );
+
+      case "complete":
+        return null; // Handled by handleFinish
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg border-border/50 shadow-2xl relative overflow-hidden">
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-muted">
+          <div
+            className="h-full bg-accent transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+          />
+        </div>
+
+        <CardHeader className="text-center pt-8">
+          <div className="flex justify-center mb-2">
+            {STEPS[currentStep].icon &&
+              (() => {
+                const Icon = STEPS[currentStep].icon;
+                return <Icon className="w-6 h-6 text-muted-foreground" />;
+              })()}
+          </div>
+          <CardTitle>{STEPS[currentStep].title}</CardTitle>
+          {STEPS[currentStep].id === "details" && (
+            <CardDescription>Basic info about your operation.</CardDescription>
           )}
-        </CardContent>
+        </CardHeader>
+
+        <CardContent className="min-h-[300px]">{stepContent()}</CardContent>
+
+        <CardFooter className="flex justify-between border-t pt-6 bg-muted/10">
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            disabled={currentStep === 0 || loading}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+
+          {currentStep === STEPS.length - 2 ? (
+            <Button onClick={handleFinish} disabled={loading} className="px-8">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+              )}
+              Finish Setup
+            </Button>
+          ) : (
+            <Button onClick={handleNext} disabled={loading} className="px-8">
+              Next
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          )}
+        </CardFooter>
       </Card>
     </div>
   );

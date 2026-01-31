@@ -152,7 +152,7 @@ export function BottomNav() {
                 {/* Version */}
                 <div className="pt-4 pb-2">
                   <p className="text-xs text-muted-foreground text-center">
-                    v0.1.0
+                    v0.3.0
                   </p>
                 </div>
               </div>

@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       action: "create_user",
       user_id: user.id,
       new_values: { username, email, role },
+      business_id: businessId,
     });
 
     return NextResponse.json({ id: newUser.user.id }, { status: 201 });

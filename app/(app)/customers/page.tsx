@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -152,19 +152,26 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
+      <div className="noise-overlay" />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage customer profiles and data
+          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
+            CUSTOMERS
+          </h1>
+          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
+            MANAGEMENT CONSOLE • {filteredCustomers.length} PROFILES
           </p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
-            <Button onClick={handleNew} id="tour-customer-add-btn">
+            <Button
+              onClick={handleNew}
+              id="tour-customer-add-btn"
+              className="laser-button bg-[#FFD700] text-black hover:bg-[#FFD700]/90 shadow-[0_0_15px_rgba(255,215,0,0.4)] border-none font-bold tracking-wider"
+            >
               <Plus className="h-4 w-4 mr-2" />
-              Add Customer
+              ADD CUSTOMER
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -317,26 +324,27 @@ export default function CustomersPage() {
       </div>
 
       {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search customers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative z-10">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#FFD700] h-4 w-4" />
+          <Input
+            placeholder="SEARCH CUSTOMERS..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-[#FFD700]/50 text-foreground rounded-lg tracking-wider"
+          />
+        </div>
+      </div>
 
       {/* Customers Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer List ({filteredCustomers.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
+        <div className="p-6 border-b border-white/5 flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-[#FFD700] shadow-[0_0_10px_#FFD700]" />
+          <h2 className="headline-text text-lg tracking-wider text-[#FFD700]">
+            CUSTOMER LIST
+          </h2>
+        </div>
+        <CardContent className="p-0">
           {filteredCustomers.length === 0 ? (
             <EmptyState
               icon={UserX}
@@ -354,8 +362,11 @@ export default function CustomersPage() {
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
                 {filteredCustomers.map((customer) => (
-                  <Card key={customer.id} className="border-border/80">
-                    <CardContent className="pt-4">
+                  <div
+                    key={customer.id}
+                    className="p-4 border-b border-white/5 last:border-0 hover:bg-[#FFD700]/5 transition-colors"
+                  >
+                    <CardContent className="p-0">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <Link
@@ -417,27 +428,44 @@ export default function CustomersPage() {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
+                  </div>
                 ))}
               </div>
 
               {/* Desktop table */}
               <div className="hidden md:block">
-                <Table>
+                <Table className="w-full">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Address</TableHead>
-                      <TableHead>Total Purchases</TableHead>
-                      <TableHead>Credit Used</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="hover:bg-transparent border-white/10">
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Name
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Phone
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Email
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Address
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Purchases
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Credit
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredCustomers.map((customer) => (
-                      <TableRow key={customer.id}>
+                      <TableRow
+                        key={customer.id}
+                        className="border-white/5 hover:bg-[#FFD700]/5 transition-colors group"
+                      >
                         <TableCell className="font-medium">
                           <div>
                             <Link
@@ -485,7 +513,7 @@ export default function CustomersPage() {
             </>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       <Tour
         tourId="customers_v1"

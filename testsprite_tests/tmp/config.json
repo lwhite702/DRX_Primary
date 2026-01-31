@@ -1,17 +1,15 @@
 {
   "status": "commited",
-  "type": "backend",
+  "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3001",
-  "backendAuthType": "Bearer token",
+  "localEndpoint": "http://localhost:3000",
   "executionArgs": {
-    "projectName": "drx-v2",
-    "projectPath": "/Users/lee/drx-v2",
+    "projectName": "DRX_Primary",
+    "projectPath": "/Users/lee/Projects/DRX_Primary",
     "testIds": [],
-    "additionalInstruction": "",
+    "additionalInstruction": "Focus on validating the existence of key UI elements in the new Neon Velocity design (POS, Inventory, Customers, Intake).",
     "envs": {
       "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
     }
-  },
-  "proxy": "http://a4dd3112-fc77-4c5a-864c-98338e04ebdd:V3mGIM3kurUmeQSrxGB6a8VTzn4EWHyn@tun.testsprite.com:8080"
+  }
 }

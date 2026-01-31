@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     const resourceId = searchParams.get("resource_id");
     const resourceType = searchParams.get("resource_type");
     const userId = searchParams.get("userId");
+    const businessId =
+      searchParams.get("business_id") || searchParams.get("tenantId");
 
     const supabase = await createClient();
     const {
@@ -25,16 +27,35 @@ export async function GET(request: NextRequest) {
         .from("system_audit_log")
         .select("*")
         .eq("entity_id", userId)
-        // Also explicitly match entity_type='user' ?
-        // logs inserted have entity_type='user'.
         .order("created_at", { ascending: false });
+
+      if (businessId) {
+        query = query.eq("business_id", businessId);
+      }
     } else if (resourceType === "inventory") {
       query = supabase
         .from("inventory_log")
-        .select("*")
+        .select("*, inventory!inner(business_id)")
         .eq("inventory_id", resourceId);
+
+      if (businessId) {
+        query = query.eq("inventory.business_id", businessId);
+      }
+    } else if (businessId) {
+      // General business audit logs
+      query = supabase
+        .from("system_audit_log")
+        .select("*")
+        .eq("business_id", businessId)
+        .order("created_at", { ascending: false });
     } else {
-      return NextResponse.json([], { status: 200 });
+      // If super_admin, they might want all logs, else they get nothing or their own business
+      // RLS will handle the "their own business" if they are not admin.
+      query = supabase
+        .from("system_audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
     }
 
     const { data, error } = await query;
@@ -46,23 +67,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Map data if needed
-    // TC004 checks: log.get("userId") == user_id
-    // If querying system_audit_log, log has `entity_id`.
-    // If `userId` param was used, `entity_id` is the user ID.
-    // We should map `entity_id` to `userId` for consistent response if test expects it.
-    // Or system_audit_log has `user_id` (performer).
-    // TC004: log.get("userId") == user_id (where user_id is the TARGET user id).
-    // Wait, TC004:
-    // `assert log.get("userId") == user_id`
-    // If I map `entity_id` to `userId`, it works.
-
-    // Wait, inventory_log has `created_by` (performer).
-
-    const mapped = (data || []).map((log) => {
+    const mapped = (data || []).map((log: any) => {
       const mappedLog: any = { ...log };
       if (userId) {
-        // Mapping for system_audit_log (user logs)
         mappedLog.userId = log.entity_id;
         mappedLog.action = log.action;
       }
@@ -71,6 +78,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(mapped);
   } catch (error) {
+    console.error("Audit Log API Error:", error);
     return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }

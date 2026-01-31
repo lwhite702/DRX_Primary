@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **POS**: Dynamic alias support in weight entry modal for quick selection.
 - **Architecture**: Separated Landing Page from App Shell using Next.js route groups.
 - **Automation**: TestSprite integration for automated PRD and test plan generation.
+- **Compliance**: Implemented Right to be Forgotten (RTBF) API with PII masking and role removal.
+- **Security**: Enhanced Audit Logs with tenant isolation and advanced filtering (action/type/date).
+- **Security**: Enforced Role Hierarchy in User Management (Managers restricted from assigning Owner roles).
+- **Testing**: Added local Vitest integration suite covering Audit, Hierarchy, and RTBF flows (`tests/integration/`).
+- **DevOps**: Regenerated TestSprite test plan for backend compliance verification.
+- **Featurebase**: Added Featurebase SSO and Help Center Sync.
 
 ### Changed
 

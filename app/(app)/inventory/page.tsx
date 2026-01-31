@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,30 +159,36 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
+      <div className="noise-overlay" />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="text-3xl font-bold">Inventory</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage inventory and stock levels
+          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
+            INVENTORY
+          </h1>
+          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
+            MANAGEMENT CONSOLE • {inventory.length} SKUS
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-4">
           <a href="/inventory/intake" className="w-full sm:w-auto">
-            <Button variant="outline" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto border-border bg-background/50 backdrop-blur hover:bg-muted/50"
+            >
               <Plus className="h-4 w-4 mr-2" />
-              Intake Stock
+              INTAKE STOCK
             </Button>
           </a>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
               <Button
                 onClick={handleNew}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto laser-button bg-[#FF0099] text-white hover:bg-[#FF0099]/90 shadow-[0_0_15px_rgba(255,0,153,0.4)] border-none font-bold tracking-wider"
                 id="tour-inventory-add-btn"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Item
+                ADD ITEM
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -321,16 +327,14 @@ export default function InventoryPage() {
 
       {/* Low Stock Alert */}
       {lowStockItems.length > 0 && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              <p className="font-medium">
-                {lowStockItems.length} item(s) below reorder level
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative z-10 p-4 rounded-xl bg-gradient-to-r from-[#FF0099]/10 to-transparent border border-[#FF0099]/30 shadow-lg shadow-[#FF0099]/10">
+          <div className="flex items-center gap-2 text-[#FF0099]">
+            <AlertTriangle className="h-5 w-5" />
+            <p className="font-medium">
+              {lowStockItems.length} item(s) below reorder level
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Cost Breakdown Dialog */}
@@ -354,11 +358,14 @@ export default function InventoryPage() {
       </Dialog>
 
       {/* Inventory Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Products ({inventory.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
+        <div className="p-6 border-b border-white/5 flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
+          <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
+            PRODUCT LIST
+          </h2>
+        </div>
+        <CardContent className="p-0">
           {inventory.length === 0 ? (
             <EmptyState
               icon={PackageOpen}
@@ -375,13 +382,12 @@ export default function InventoryPage() {
                   const isLowStock =
                     item.quantity_on_hand <= item.reorder_level;
                   return (
-                    <Card
+                    <div
                       key={item.id}
-                      className={
-                        isLowStock
-                          ? "border-destructive/50"
-                          : "border-border/80"
-                      }
+                      className={`
+                        p-4 border-b border-white/5 last:border-0 hover:bg-[#FF0099]/5 transition-colors
+                        ${isLowStock ? "bg-red-500/5 border-l-2 border-l-red-500" : ""}
+                      `}
                     >
                       <CardContent className="pt-4">
                         <div className="flex items-start justify-between gap-3">
@@ -461,24 +467,40 @@ export default function InventoryPage() {
                           </div>
                         </div>
                       </CardContent>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
 
               {/* Desktop table */}
               <div className="hidden md:block">
-                <Table>
+                <Table className="w-full">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>Product Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Reorder Level</TableHead>
-                      <TableHead>Unit Cost</TableHead>
-                      <TableHead>Selling Price</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="hover:bg-transparent border-white/10">
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        SKU
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Product Name
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Category
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Stock
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Reorder
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Cost
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Price
+                      </TableHead>
+                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -488,7 +510,10 @@ export default function InventoryPage() {
                       return (
                         <TableRow
                           key={item.id}
-                          className={isLowStock ? "bg-destructive/10" : ""}
+                          className={`
+                            border-white/5 hover:bg-[#FF0099]/5 transition-colors group
+                            ${isLowStock ? "bg-red-500/5" : ""}
+                          `}
                         >
                           <TableCell className="font-mono">
                             {item.sku}
@@ -514,11 +539,13 @@ export default function InventoryPage() {
                               : "-"}
                           </TableCell>
                           <TableCell>
-                            {item.selling_price
-                              ? "$" + Number(item.selling_price).toFixed(2)
-                              : "-"}
+                            <span className="font-mono text-[#FF0099] font-bold">
+                              {item.selling_price
+                                ? "$" + Number(item.selling_price).toFixed(2)
+                                : "-"}
+                            </span>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-right">
                             <div className="flex items-center gap-1">
                               <Button
                                 variant="ghost"
@@ -549,7 +576,7 @@ export default function InventoryPage() {
             </>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       <Tour
         tourId="inventory_v1"
