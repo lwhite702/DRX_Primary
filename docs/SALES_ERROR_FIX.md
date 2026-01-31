@@ -30,7 +30,7 @@
 - `get_ai_pricing_recommendations` - For AI pricing suggestions
 - `apply_ai_pricing_recommendation` - To apply AI pricing
 
-**Status:** These functions exist in your migration file (`/Users/lee/drx-v2/supabase/migrations/20251128000000_init.sql`) but may not be deployed.
+**Status:** These functions exist in the migration file but may not be deployed.
 
 ### 3. ⚠️ **404 Errors on Missing Routes**
 
@@ -91,7 +91,7 @@ This could be related to RLS policies or the query structure.
 
 ## Files Modified
 
-- [app/sales/page.tsx](file:///Users/lee/drx-v2/app/sales/page.tsx)
+- app/sales/page.tsx
   - Fixed Select.Item empty value errors
   - Fixed TypeScript lint error
   - Updated customer and delivery selection logic

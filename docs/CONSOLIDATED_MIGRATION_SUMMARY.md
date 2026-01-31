@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS drawer_events (...)
 - ✅ Ready to paste into Supabase SQL Editor
 
 ### 3. **Migration Guide** (Documentation)
-📄 **File**: `/db/migrations/MIGRATION_GUIDE.md`  
+📄 **File**: `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->`  
 **Size**: 12.7 KB  
 **Purpose**: Step-by-step deployment instructions, verification checklist, troubleshooting
 
@@ -348,8 +348,8 @@ Integrated into `/app/sales/page.tsx`:
 |------|---------|
 | `/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.json` | Dashboard-compatible JSON migration (28 steps) |
 | `/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql` | Direct SQL migration (idempotent, ready to execute) |
-| `/db/migrations/MIGRATION_GUIDE.md` | Detailed deployment guide & reference |
-| `/CONSOLIDATED_MIGRATION_SUMMARY.md` | This file - executive overview |
+| `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` | Detailed deployment guide & reference |
+| `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` | This file - executive overview |
 
 ---
 
@@ -394,7 +394,7 @@ After migration, you should be able to:
    - Option C: Run psql command
 
 2. **Execute Migration**:
-   - Follow deployment method from MIGRATION_GUIDE.md
+   - Follow deployment method from <!-- DELETED: MIGRATION_GUIDE.md -->
    - Monitor execution
    - Verify all tables created
 

@@ -368,8 +368,8 @@ For fastest insights, use "Analyze All Products":
 
 **You're ready to start using AI Intelligence!**
 
-For detailed technical information, see [AI_INTELLIGENCE_IMPLEMENTATION.md](AI_INTELLIGENCE_IMPLEMENTATION.md)
+For detailed technical information, see [Implementation Guide](IMPLEMENTATION.md)
 
-For deployment questions, see [AI_DEPLOYMENT_GUIDE.md](AI_DEPLOYMENT_GUIDE.md)
+For deployment questions, see [AI Deployment Guide](AI_DEPLOYMENT_GUIDE.md)
 
 **Questions?** Contact support or check the documentation.

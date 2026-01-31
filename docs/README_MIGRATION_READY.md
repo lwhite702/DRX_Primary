@@ -60,10 +60,10 @@ psql -f db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.s
 
 | Need | File | Read Time |
 |------|------|-----------|
-| **Just deploy it** | `/MIGRATION_QUICK_REFERENCE.md` | 3 min |
-| **Step-by-step guide** | `/db/migrations/MIGRATION_GUIDE.md` | 10 min |
-| **Understand features** | `/CONSOLIDATED_MIGRATION_SUMMARY.md` | 8 min |
-| **Find something specific** | `/INDEX_POS_MIGRATION.md` | 5 min |
+| **Just deploy it** | `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` | 3 min |
+| **Step-by-step guide** | `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` | 10 min |
+| **Understand features** | `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` | 8 min |
+| **Find something specific** | `/<!-- DELETED: INDEX_POS_MIGRATION.md -->` | 5 min |
 | **Check all contents** | `/POS_MIGRATION_MANIFEST.txt` | 5 min |
 
 ---
@@ -120,14 +120,14 @@ You'll have:
 /db/migrations/
 ├── 20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql ← Use this
 ├── 20250228000001_pos_weight_shrinkage_loyalty_consolidated.json ← Or this
-└── MIGRATION_GUIDE.md                                            ← Detailed instructions
+└── <!-- DELETED: MIGRATION_GUIDE.md -->                                            ← Detailed instructions
 
 /
-├── MIGRATION_QUICK_REFERENCE.md      ← Quick start (3 min read)
-├── CONSOLIDATED_MIGRATION_SUMMARY.md  ← Features overview (8 min read)
-├── INDEX_POS_MIGRATION.md             ← Navigation guide (5 min read)
+├── <!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->      ← Quick start (3 min read)
+├── <!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->  ← Features overview (8 min read)
+├── <!-- DELETED: INDEX_POS_MIGRATION.md -->             ← Navigation guide (5 min read)
 ├── POS_MIGRATION_MANIFEST.txt         ← Checklist & manifest
-└── README_MIGRATION_READY.md          ← This file
+└── <!-- DELETED: README_MIGRATION_READY.md -->          ← This file
 ```
 
 ---
@@ -156,11 +156,11 @@ After deployment:
 
 ## 🆘 Questions?
 
-- **"How do I deploy?"** → `/MIGRATION_QUICK_REFERENCE.md` section "Apply Migration"
-- **"What's being created?"** → `/CONSOLIDATED_MIGRATION_SUMMARY.md` section "What Gets Created"
-- **"Verify deployment worked?"** → `/MIGRATION_QUICK_REFERENCE.md` section "Verify After Migration"
-- **"Got an error?"** → `/MIGRATION_QUICK_REFERENCE.md` section "Troubleshooting"
-- **"Need detailed guide?"** → `/db/migrations/MIGRATION_GUIDE.md`
+- **"How do I deploy?"** → `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "Apply Migration"
+- **"What's being created?"** → `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` section "What Gets Created"
+- **"Verify deployment worked?"** → `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "Verify After Migration"
+- **"Got an error?"** → `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "Troubleshooting"
+- **"Need detailed guide?"** → `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->`
 
 ---
 
@@ -187,7 +187,7 @@ After deployment:
 
 **Read this first (3 minutes):**
 ```
-👉 /MIGRATION_QUICK_REFERENCE.md
+👉 /<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->
 ```
 
 **Then deploy (2 minutes):**

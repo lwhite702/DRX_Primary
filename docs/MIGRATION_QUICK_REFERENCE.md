@@ -32,8 +32,8 @@ psql -f db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.s
 |------|------|--------|----------|
 | `20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql` | 35 KB | SQL | Dashboard, CLI, direct execution |
 | `20250228000001_pos_weight_shrinkage_loyalty_consolidated.json` | 37 KB | JSON | Dashboard tools, API integration |
-| `MIGRATION_GUIDE.md` | 12 KB | Markdown | Step-by-step deployment guide |
-| `CONSOLIDATED_MIGRATION_SUMMARY.md` | 15 KB | Markdown | Executive overview |
+| `<!-- DELETED: MIGRATION_GUIDE.md -->` | 12 KB | Markdown | Step-by-step deployment guide |
+| `<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` | 15 KB | Markdown | Executive overview |
 
 ---
 
@@ -210,8 +210,8 @@ DROP FUNCTION IF EXISTS record_drawer_event(UUID,VARCHAR,TEXT);
 
 ## 📚 More Information
 
-- **Full Guide**: See `MIGRATION_GUIDE.md`
-- **Executive Summary**: See `CONSOLIDATED_MIGRATION_SUMMARY.md`
+- **Full Guide**: See `<!-- DELETED: MIGRATION_GUIDE.md -->`
+- **Executive Summary**: See `<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->`
 - **Implementation**: See `/lib/utils/pos-weight-engine.ts` for TypeScript usage
 
 ---
@@ -250,7 +250,7 @@ You'll know migration worked if:
 
 ## 📞 Support
 
-- **Docs**: MIGRATION_GUIDE.md in /db/migrations/
+- **Docs**: <!-- DELETED: MIGRATION_GUIDE.md --> in /db/migrations/
 - **Status**: ✅ Production Ready
 - **Version**: 1.0.0
 - **Updated**: 2025-02-28

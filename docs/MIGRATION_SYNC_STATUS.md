@@ -128,7 +128,7 @@ After successfully pushing the migration, verify these exist in your Supabase Da
 
 ## Files Modified in This Session
 
-1. [app/sales/page.tsx](file:///Users/lee/drx-v2/app/sales/page.tsx)
+1. app/sales/page.tsx
 
    - Fixed Select.Item empty value errors
    - Fixed TypeScript lint errors

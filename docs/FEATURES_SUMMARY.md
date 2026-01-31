@@ -356,7 +356,7 @@ UI refreshes recommendations list
 
 ## Support Resources
 
-- Implementation Guide: `IMPLEMENTATION_UPDATES.md`
+- Implementation Guide: `<!-- DELETED: IMPLEMENTATION_UPDATES.md -->`
 - Database Schema: `db/schema/10_delivery_management.sql`, `db/schema/11_pos_enhanced_rpc.sql`
 - POS Engine: `lib/utils/pos-engine.ts`
 - Sales Page: `app/sales/page.tsx`

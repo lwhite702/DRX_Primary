@@ -148,9 +148,9 @@ Credit validation during checkout:
 
 ### 11. Documentation
 **Files:**
-- `AI_CREDIT_ENGINE_IMPLEMENTATION.md` - Complete technical specification
-- `CREDIT_ENGINE_SETUP.md` - Setup, deployment, and troubleshooting guide
-- `IMPLEMENTATION_SUMMARY.md` - This file
+- `<!-- DELETED: AI_CREDIT_ENGINE_<!-- DELETED: IMPLEMENTATION.md --> -->` - Complete technical specification
+- `<!-- DELETED: CREDIT_ENGINE_SETUP.md -->` - Setup, deployment, and troubleshooting guide
+- `<!-- DELETED: IMPLEMENTATION_SUMMARY.md -->` - This file
 
 ## Key Features
 
@@ -233,9 +233,9 @@ Credit validation during checkout:
 │   │   └── 20250128000001_add_ai_credit_engine.sql
 │   └── schema/
 │       └── 10_ai_credit_rpcs.sql
-├── AI_CREDIT_ENGINE_IMPLEMENTATION.md
-├── CREDIT_ENGINE_SETUP.md
-└── IMPLEMENTATION_SUMMARY.md
+├── <!-- DELETED: AI_CREDIT_ENGINE_<!-- DELETED: IMPLEMENTATION.md --> -->
+├── <!-- DELETED: CREDIT_ENGINE_SETUP.md -->
+└── <!-- DELETED: IMPLEMENTATION_SUMMARY.md -->
 ```
 
 ## How It Works - User Perspective

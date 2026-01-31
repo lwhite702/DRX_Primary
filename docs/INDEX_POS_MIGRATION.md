@@ -27,25 +27,25 @@
 ### Documentation Files (Reference)
 
 #### 📖 Quick Start Reference
-- **File**: `/MIGRATION_QUICK_REFERENCE.md`
+- **File**: `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->`
 - **Size**: 7.9 KB
 - **Contains**: Quick deployment, verification commands, troubleshooting
 - **Best For**: Getting started fast
 
 #### 📘 Full Deployment Guide
-- **File**: `/db/migrations/MIGRATION_GUIDE.md`
+- **File**: `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->`
 - **Size**: 12 KB
 - **Contains**: 3 deployment methods, complete verification, testing
 - **Best For**: Detailed step-by-step instructions
 
 #### 📊 Executive Summary
-- **File**: `/CONSOLIDATED_MIGRATION_SUMMARY.md`
+- **File**: `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->`
 - **Size**: 14 KB
 - **Contains**: Features overview, performance notes, architecture
 - **Best For**: Understanding what's being deployed
 
 #### 🚀 This Index
-- **File**: `/INDEX_POS_MIGRATION.md`
+- **File**: `/<!-- DELETED: INDEX_POS_MIGRATION.md -->`
 - **This file - quick navigation to all resources**
 
 ---
@@ -53,14 +53,14 @@
 ## 🎯 Quick Start (Choose Your Path)
 
 ### Path 1: "Just Tell Me How to Deploy" ⚡
-1. Read: `/MIGRATION_QUICK_REFERENCE.md` (3 minutes)
+1. Read: `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` (3 minutes)
 2. Deploy: Copy `consolidated.sql` → Paste → Run
 3. Verify: Run verification commands from reference
 4. Done ✓
 
 ### Path 2: "I Want Full Understanding" 📚
-1. Read: `/CONSOLIDATED_MIGRATION_SUMMARY.md` (5 minutes)
-2. Read: `/db/migrations/MIGRATION_GUIDE.md` (10 minutes)
+1. Read: `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` (5 minutes)
+2. Read: `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` (10 minutes)
 3. Deploy: Follow deployment instructions
 4. Test: Run test scripts provided
 5. Done ✓
@@ -114,7 +114,7 @@ increment_transaction_counter()        → Track for random checks
 ## ✅ Deployment Checklist
 
 ### Pre-Deployment
-- [ ] Read `/MIGRATION_QUICK_REFERENCE.md` OR `/db/migrations/MIGRATION_GUIDE.md`
+- [ ] Read `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` OR `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->`
 - [ ] Choose deployment method (Dashboard SQL / JSON Import / CLI)
 - [ ] Have admin/owner access to Supabase project
 - [ ] Ensure base migrations (01-11) are already applied
@@ -207,13 +207,13 @@ SELECT * FROM record_drawer_event(
 
 | Issue | Solution | File |
 |-------|----------|------|
-| "Don't know how to deploy" | Read `/MIGRATION_QUICK_REFERENCE.md` | 7.9 KB |
-| "Need step-by-step instructions" | Read `/db/migrations/MIGRATION_GUIDE.md` | 12 KB |
-| "Want to understand features" | Read `/CONSOLIDATED_MIGRATION_SUMMARY.md` | 14 KB |
-| "Already deployed, need verification" | Run commands in `/MIGRATION_QUICK_REFERENCE.md` | Section: Verify After Migration |
-| "Deployment failed" | See `/db/migrations/MIGRATION_GUIDE.md` → Troubleshooting | Section: Troubleshooting |
-| "Need to rollback" | See `/db/migrations/MIGRATION_GUIDE.md` → Rollback | Section: Rollback Instructions |
-| "Performance issues" | See `/CONSOLIDATED_MIGRATION_SUMMARY.md` → Performance | Section: Performance Characteristics |
+| "Don't know how to deploy" | Read `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` | 7.9 KB |
+| "Need step-by-step instructions" | Read `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` | 12 KB |
+| "Want to understand features" | Read `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` | 14 KB |
+| "Already deployed, need verification" | Run commands in `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` | Section: Verify After Migration |
+| "Deployment failed" | See `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` → Troubleshooting | Section: Troubleshooting |
+| "Need to rollback" | See `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` → Rollback | Section: Rollback Instructions |
+| "Performance issues" | See `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` → Performance | Section: Performance Characteristics |
 
 ---
 
@@ -222,22 +222,22 @@ SELECT * FROM record_drawer_event(
 ### If You're Stuck On...
 
 **"How do I deploy?"**
-→ Go to `/MIGRATION_QUICK_REFERENCE.md` section "🚀 Apply Migration in 3 Steps"
+→ Go to `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "🚀 Apply Migration in 3 Steps"
 
 **"What tables get created?"**
-→ Go to `/CONSOLIDATED_MIGRATION_SUMMARY.md` section "📊 What Gets Created"
+→ Go to `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` section "📊 What Gets Created"
 
 **"How do I verify it worked?"**
-→ Go to `/MIGRATION_QUICK_REFERENCE.md` section "🔍 Verify After Migration"
+→ Go to `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "🔍 Verify After Migration"
 
 **"I got an error"**
-→ Go to `/MIGRATION_QUICK_REFERENCE.md` section "🐛 Troubleshooting"
+→ Go to `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` section "🐛 Troubleshooting"
 
 **"I need detailed instructions"**
-→ Go to `/db/migrations/MIGRATION_GUIDE.md` and follow the 3 deployment methods
+→ Go to `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` and follow the 3 deployment methods
 
 **"I need to understand the features"**
-→ Go to `/CONSOLIDATED_MIGRATION_SUMMARY.md` section "✨ Features Enabled"
+→ Go to `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` section "✨ Features Enabled"
 
 ---
 
@@ -245,12 +245,12 @@ SELECT * FROM record_drawer_event(
 
 | File | Size | Read Time | Best For | Format |
 |------|------|-----------|----------|--------|
-| `/MIGRATION_QUICK_REFERENCE.md` | 7.9 KB | 3 min | Getting started fast | Markdown |
-| `/db/migrations/MIGRATION_GUIDE.md` | 12 KB | 10 min | Detailed instructions | Markdown |
-| `/CONSOLIDATED_MIGRATION_SUMMARY.md` | 14 KB | 8 min | Understanding features | Markdown |
+| `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` | 7.9 KB | 3 min | Getting started fast | Markdown |
+| `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` | 12 KB | 10 min | Detailed instructions | Markdown |
+| `/<!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md -->` | 14 KB | 8 min | Understanding features | Markdown |
 | `/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql` | 35 KB | N/A | Dashboard SQL Editor | SQL |
 | `/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.json` | 37 KB | N/A | Migration tools/API | JSON |
-| `/INDEX_POS_MIGRATION.md` | This | 5 min | Navigation | Markdown |
+| `/<!-- DELETED: INDEX_POS_MIGRATION.md -->` | This | 5 min | Navigation | Markdown |
 
 ---
 
@@ -309,14 +309,14 @@ psql -f db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.s
 
 ```
 Root Directory
-├── INDEX_POS_MIGRATION.md (← you are here)
-├── MIGRATION_QUICK_REFERENCE.md (quick start)
-├── CONSOLIDATED_MIGRATION_SUMMARY.md (features & architecture)
+├── <!-- DELETED: INDEX_POS_MIGRATION.md --> (← you are here)
+├── <!-- DELETED: MIGRATION_QUICK_REFERENCE.md --> (quick start)
+├── <!-- DELETED: CONSOLIDATED_MIGRATION_SUMMARY.md --> (features & architecture)
 └── db/
     └── migrations/
         ├── 20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql (deploy this)
         ├── 20250228000001_pos_weight_shrinkage_loyalty_consolidated.json (or this)
-        └── MIGRATION_GUIDE.md (detailed guide)
+        └── <!-- DELETED: MIGRATION_GUIDE.md --> (detailed guide)
 ```
 
 ---
@@ -362,4 +362,4 @@ Root Directory
 
 ---
 
-📌 **Start Here**: Read `/MIGRATION_QUICK_REFERENCE.md` (3 minutes) or `/db/migrations/MIGRATION_GUIDE.md` (10 minutes)
+📌 **Start Here**: Read `/<!-- DELETED: MIGRATION_QUICK_REFERENCE.md -->` (3 minutes) or `/db/migrations/<!-- DELETED: MIGRATION_GUIDE.md -->` (10 minutes)
