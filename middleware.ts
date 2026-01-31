@@ -12,6 +12,29 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const pathname = request.nextUrl.pathname;
+  const host = request.headers.get("host") || "";
+  const isMarketingDomain = host.includes("deelrxcrm.com");
+  const isAppDomain = host.includes("deelrxcrm.app");
+
+  // Domain routing logic
+  if (
+    isMarketingDomain &&
+    pathname !== "/" &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/login")
+  ) {
+    // Redirect app routes on marketing domain to app domain
+    const url = request.nextUrl.clone();
+    url.host = "deelrxcrm.app";
+    return NextResponse.redirect(url);
+  }
+
+  if (isAppDomain && pathname === "/") {
+    // Redirect home page on app domain to marketing domain
+    const url = request.nextUrl.clone();
+    url.host = "deelrxcrm.com";
+    return NextResponse.redirect(url);
+  }
 
   // Public routes that don't require authentication
   const publicRoutes = [

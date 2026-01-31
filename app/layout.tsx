@@ -68,19 +68,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}>
         <GlobalErrorBoundary>
-          <BusinessSetupProvider>
-            <OfflineProvider>
-              <PostHogProvider>
-                <OnboardingProvider>
-                  <CustomerProvider>
-                    <AppShell>{children}</AppShell>
-                    <OnboardingFlow />
-                    <Toaster position="top-right" />
-                  </CustomerProvider>
-                </OnboardingProvider>
-              </PostHogProvider>
-            </OfflineProvider>
-          </BusinessSetupProvider>
+          <PostHogProvider>
+            {children}
+            <Toaster position="top-right" />
+          </PostHogProvider>
         </GlobalErrorBoundary>
       </body>
     </html>
