@@ -5,6 +5,20 @@ All notable changes to DRX CRM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-31
+
+### Added
+
+- **Inventory**: Product Unit Aliases (nicknames) for custom weights and quantities.
+- **Settings**: Management UI for adding, enabling, and resetting product aliases.
+- **POS**: Dynamic alias support in weight entry modal for quick selection.
+- **Architecture**: Separated Landing Page from App Shell using Next.js route groups.
+- **Automation**: TestSprite integration for automated PRD and test plan generation.
+
+### Changed
+
+- Updated middleware to support custom domain routing for landing page vs app shell.
+
 ## [0.2.0] - 2026-01-30
 
 ### Added

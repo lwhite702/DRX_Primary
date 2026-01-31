@@ -98,11 +98,24 @@ export default function SalesPage() {
   const [selectedItemForOverride, setSelectedItemForOverride] =
     useState<any>(null);
   const [showCustomerSelector, setShowCustomerSelector] = useState(false);
+  const [aliases, setAliases] = useState<any[]>([]);
   const { canOverridePrice } = useUserRole(business?.id);
   const [taxEnabled, setTaxEnabled] = useState(true);
   const [managerPin, setManagerPin] = useState("1234"); // Default, will be overwritten by settings
 
   const supabase = getSupabaseClient();
+
+  // Load aliases for search matching
+  useEffect(() => {
+    if (business?.id && supabase) {
+      supabase
+        .from("product_unit_aliases")
+        .select("*")
+        .eq("business_id", business.id)
+        .eq("is_enabled", true)
+        .then(({ data }) => setAliases(data || []));
+    }
+  }, [business?.id, supabase]);
 
   useEffect(() => {
     // Customers are now handled by CustomerContext

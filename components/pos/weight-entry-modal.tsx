@@ -12,7 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface WeightEntryModalProps {
   open: boolean;
@@ -48,8 +50,11 @@ export function WeightEntryModal({
   const [pricePerGram, setPricePerGram] = useState<number | null>(null);
   const [tierName, setTierName] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [aliases, setAliases] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAliases, setLoadingAliases] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const supabase = getSupabaseClient();
 
   useEffect(() => {
     if (weightGrams && product && businessId) {
@@ -59,7 +64,7 @@ export function WeightEntryModal({
           const pricing = await posWeightEngine.getBulkPricing(
             businessId,
             product.id,
-            weight
+            weight,
           );
 
           setPricePerGram(pricing.price_per_gram);
@@ -71,6 +76,31 @@ export function WeightEntryModal({
       calculatePrice();
     }
   }, [weightGrams, product, businessId]);
+
+  useEffect(() => {
+    if (open && businessId && supabase) {
+      const fetchAliases = async () => {
+        setLoadingAliases(true);
+        try {
+          const { data, error } = await supabase
+            .from("product_unit_aliases")
+            .select("*")
+            .eq("business_id", businessId)
+            .eq("is_enabled", true)
+            .order("quantity", { ascending: true });
+
+          if (error) throw error;
+          setAliases(data || []);
+        } catch (error) {
+          console.error("Error fetching aliases:", error);
+        } finally {
+          setLoadingAliases(false);
+        }
+      };
+
+      fetchAliases();
+    }
+  }, [open, businessId, supabase]);
 
   const handleAddToCart = () => {
     if (!product) {
@@ -88,9 +118,12 @@ export function WeightEntryModal({
       return;
     }
 
-    if (product.inventory_in_grams && parseFloat(weightGrams) > product.inventory_in_grams) {
+    if (
+      product.inventory_in_grams &&
+      parseFloat(weightGrams) > product.inventory_in_grams
+    ) {
       toast.error(
-        `Insufficient weight. Available: ${product.inventory_in_grams.toFixed(2)}g`
+        `Insufficient weight. Available: ${product.inventory_in_grams.toFixed(2)}g`,
       );
       return;
     }
@@ -140,7 +173,9 @@ export function WeightEntryModal({
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Product</p>
               <p className="font-medium">{product?.product_name}</p>
-              <p className="text-xs text-muted-foreground">SKU: {product?.sku}</p>
+              <p className="text-xs text-muted-foreground">
+                SKU: {product?.sku}
+              </p>
             </div>
             {product?.inventory_in_grams && (
               <div className="mt-2 pt-2 border-t">
@@ -155,9 +190,7 @@ export function WeightEntryModal({
 
           {/* Weight Input */}
           <div>
-            <Label htmlFor="weight">
-              Weight ({product?.base_unit || "g"})
-            </Label>
+            <Label htmlFor="weight">Weight ({product?.base_unit || "g"})</Label>
             <Input
               id="weight"
               type="number"
@@ -169,16 +202,46 @@ export function WeightEntryModal({
               disabled={processing}
               autoFocus
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Minimum: 0.01g
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Minimum: 0.01g</p>
           </div>
+
+          {/* Quick Aliases */}
+          {aliases.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-muted-foreground font-semibold">
+                Quick Select
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {aliases.map((alias) => (
+                  <Button
+                    key={alias.id}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs bg-accent/5 hover:bg-accent/20 border-accent/20"
+                    onClick={() => setWeightGrams(alias.quantity.toString())}
+                  >
+                    {alias.alias_name} ({alias.quantity}
+                    {alias.standard_unit})
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {loadingAliases && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Loading quick terms...
+            </div>
+          )}
 
           {/* Price Breakdown */}
           {weight && weight > 0 && (
             <div className="space-y-2 p-3 bg-blue-50 border border-blue-200 rounded">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-blue-900">Price per {product?.base_unit || "g"}</span>
+                <span className="text-blue-900">
+                  Price per {product?.base_unit || "g"}
+                </span>
                 <span className="font-medium text-blue-900">
                   ${pricePerGram?.toFixed(4)}
                 </span>
@@ -195,7 +258,9 @@ export function WeightEntryModal({
 
               <div className="border-t border-blue-200 pt-2 flex justify-between items-center font-semibold">
                 <span className="text-blue-900">Total Price</span>
-                <span className="text-lg text-blue-900">${totalPrice.toFixed(2)}</span>
+                <span className="text-lg text-blue-900">
+                  ${totalPrice.toFixed(2)}
+                </span>
               </div>
             </div>
           )}
@@ -205,7 +270,10 @@ export function WeightEntryModal({
             <Button variant="outline" onClick={onClose} disabled={processing}>
               Cancel
             </Button>
-            <Button onClick={handleAddToCart} disabled={processing || !weightGrams}>
+            <Button
+              onClick={handleAddToCart}
+              disabled={processing || !weightGrams}
+            >
               {processing ? "Adding..." : "Add to Cart"}
             </Button>
           </div>

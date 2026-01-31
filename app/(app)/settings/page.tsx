@@ -121,7 +121,7 @@ export default function SettingsPage() {
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error(
-        error?.message || "Failed to save settings. Please try again."
+        error?.message || "Failed to save settings. Please try again.",
       );
     } finally {
       setSaving(false);
@@ -149,14 +149,24 @@ export default function SettingsPage() {
             Configure your business settings
           </p>
         </div>
-        {hasPermission("users.manage") && (
-          <Link href="/settings/team">
-            <Button variant="outline" className="gap-2">
-              <Users className="w-4 h-4" />
-              Manage Team
-            </Button>
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {hasPermission("inventory.manage") && (
+            <Link href="/settings/inventory/aliases">
+              <Button variant="outline" className="gap-2">
+                <Users className="w-4 h-4" />
+                Manage Aliases
+              </Button>
+            </Link>
+          )}
+          {hasPermission("users.manage") && (
+            <Link href="/settings/team">
+              <Button variant="outline" className="gap-2">
+                <Users className="w-4 h-4" />
+                Manage Team
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
