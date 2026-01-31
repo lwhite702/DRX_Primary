@@ -58,13 +58,20 @@ export async function updateUserRole(targetUserId: string, newRole: Role) {
     return { error: "Failed to update role" };
   }
 
-  // 4. Audit Log (Optional but recommended)
+  // 4. Audit Log (Updated with business_id)
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("business_id")
+    .eq("user_id", user.id)
+    .single();
+
   await supabase.from("system_audit_log").insert({
     action: "update_user_role",
     entity_type: "user",
     entity_id: targetUserId,
     user_id: user.id,
     new_values: { role: newRole },
+    business_id: roleData?.business_id,
   });
 
   revalidatePath("/admin/users");

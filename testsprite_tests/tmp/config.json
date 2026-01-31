@@ -2,16 +2,21 @@
   "status": "commited",
   "type": "backend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3001",
+  "localEndpoint": "http://localhost:3000",
   "backendAuthType": "Bearer token",
   "executionArgs": {
-    "projectName": "drx-v2",
-    "projectPath": "/Users/lee/drx-v2",
-    "testIds": [],
-    "additionalInstruction": "",
+    "projectName": "DRX_Primary",
+    "projectPath": "/Users/lee/Projects/DRX_Primary",
+    "testIds": [
+      "TC001",
+      "TC002",
+      "TC003",
+      "TC004"
+    ],
+    "additionalInstruction": "Implement tests that verify role checks and tenant isolation. For RTBF, ensure the record is updated (masked) but NOT deleted.",
     "envs": {
       "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
     }
   },
-  "proxy": "http://a4dd3112-fc77-4c5a-864c-98338e04ebdd:V3mGIM3kurUmeQSrxGB6a8VTzn4EWHyn@tun.testsprite.com:8080"
+  "proxy": "http://50dd309f-717b-4bd2-b9dd-cb9795f5a0a4:TIaC0gRIYGUtiMxyd9JlkFHH5UqWONAY@tun.testsprite.com:8080"
 }

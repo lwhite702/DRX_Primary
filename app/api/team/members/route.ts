@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
     error: authError,
@@ -69,20 +69,43 @@ export async function POST(request: NextRequest) {
   let businessId = businessData?.id;
 
   if (!businessId) {
-    // Fallback or error? For test, maybe we just pick one?
-    // The test user is Manager of a business.
-    // Let's search user_roles for current user.
     const { data: roleData } = await adminSupabase
       .from("user_roles")
       .select("business_id, role")
       .eq("user_id", user.id)
       .single();
+
     if (roleData) {
       businessId = roleData.business_id;
-      // Also verify caller is Manager/Owner?
-      if (!["manager", "owner", "admin"].includes(roleData.role)) {
-        // return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+      // Enforce Role Hierarchy
+      const callerRole = roleData.role;
+      const targetRole = role || "cashier";
+
+      // Hierarchy check: Manager cannot assign owner or super_admin
+      if (
+        callerRole === "manager" &&
+        ["owner", "super_admin"].includes(targetRole.toLowerCase())
+      ) {
+        return NextResponse.json(
+          { error: "Managers cannot assign Owner or Super Admin roles" },
+          { status: 403 },
+        );
       }
+
+      if (
+        !["manager", "owner", "super_admin"].includes(callerRole.toLowerCase())
+      ) {
+        return NextResponse.json(
+          { error: "Insufficient permissions to manage team members" },
+          { status: 403 },
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: "User business context not found" },
+        { status: 403 },
+      );
     }
   }
 
@@ -94,19 +117,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (roleError) {
-      // Cleanup user?
       console.error("Role assignment failed:", roleError);
     }
   }
 
-  // 3. Audit Log
+  // 3. Audit Log (Updated with business_id for isolation)
   await adminSupabase.from("system_audit_log").insert({
     action: "create_member",
     entity_id: newUserId,
-    actor_id: user.id,
-    details: { email, role, name },
-    resource_type: "team_member",
-    resource_id: newUserId,
+    user_id: user.id, // mapped to user_id (actor)
+    new_values: { email, role, name },
+    entity_type: "team_member",
+    business_id: businessId,
   });
 
   return NextResponse.json({ id: newUserId, email, role }, { status: 201 });

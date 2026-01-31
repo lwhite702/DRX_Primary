@@ -1,88 +1,233 @@
 {
   "meta": {
     "project": "DeelRxCRM",
-    "date": "2026-01-21",
+    "date": "2026-01-29",
     "prepared_by": "Software Development Manager"
   },
-  "product_overview": "DeelRxCRM is a mobile-first CRM, POS, and inventory management system tailored for regulated, inventory-driven small businesses, emphasizing financial accuracy, inventory traceability, role-based accountability, and operational speed on mobile devices with strong auditability.",
+  "product_overview": "DeelRxCRM is a mobile-first CRM, POS, and inventory management system designed for regulated, inventory-driven small businesses, focusing on financial accuracy, inventory traceability, role-based accountability, operational speed on mobile devices, and auditability.",
   "core_goals": [
-    "Ensure financial accuracy with immutable transaction records and audit logs.",
-    "Maintain strict inventory traceability and compliance with immutable historical records.",
-    "Enforce role-based permissions server-side to ensure accountability.",
-    "Optimize POS workflows for mobile, enabling fast, one-handed operation.",
-    "Support real-world business workflows with compliance and auditability as priorities."
+    "Ensure financial correctness with immutable transaction records and strict audit logging.",
+    "Maintain inventory traceability with immutable historical data and accurate cost accounting.",
+    "Enforce role-based access controls server-side to avoid unauthorized actions.",
+    "Enable efficient, one-handed mobile POS operations.",
+    "Support privacy compliance with right-to-be-forgotten (RTBF) data removal and masking."
   ],
   "key_features": [
-    "Fast mobile-optimized POS supporting fractional quantity sales, price overrides, and tax configurations.",
-    "Comprehensive inventory management tracking quantity, weight, and cost per unit, with immutable historical data.",
-    "Configurable pricing and tax logic with deterministic and reproducible rules and explicit rounding.",
-    "CRM features allowing flexible customer profile creation with purchase history and status flags; no deletion, only soft-disable.",
-    "Detailed reporting and audit logs for sales, inventory, tax, user actions, and sensitive financial changes.",
-    "Role-based access control across roles including Cashier, Supervisor, Manager, and Super Admin with server-side enforcement."
+    "Fast and mobile-optimized POS supporting fractional sales, price overrides with role validation, and tax inclusivity/exclusivity.",
+    "Comprehensive inventory management with intake recording, derived cost per unit, and audit-logged adjustments.",
+    "Robust pricing and tax logic with deterministic rules, configurable tax per business, and explicit rounding.",
+    "CRM functionalities including customer profiles with purchase history, notes, and status flags, with soft-disabling instead of deletion.",
+    "Detailed reporting and audit logs capturing sensitive actions such as price overrides, inventory changes, voids, refunds, and permissions modifications.",
+    "Team management API enforcing strict role hierarchies to control user permissions and role assignment.",
+    "Audit logs API providing tenant-isolated, filterable audit trail access for user actions and business events.",
+    "RTBF Deletion API for permanent PII masking and tenant role removals to ensure privacy compliance."
   ],
   "user_flow_summary": [
-    "Cashier executes sales with product and customer views, restricted from modifying pricing and tax settings.",
-    "Supervisor performs cashier functions with added ability to override prices within limits, void transactions, and adjust inventory with audit logging.",
-    "Manager manages products, pricing rules, tax settings, customers, and views reports and analytics.",
-    "Super Admin oversees full system access including user and permission management, global settings, and audit logs.",
-    "All cross-role actions producing financial or inventory changes generate append-only audit logs for traceability."
+    "User logs into the system and accesses the POS interface optimized for mobile touch inputs.",
+    "Cashier completes sales with possible fractional quantities and role-validated price overrides.",
+    "Supervisor and Manager roles perform overrides, void transactions, and inventory adjustments with audit logging.",
+    "Managers manage product catalogs, pricing, taxes, customers, and suppliers through dedicated interfaces.",
+    "Super Admin manages users, roles, permissions, business configurations, and audit log access.",
+    "Users request audit logs filtered by tenant, action, type, and date through the Audit Logs API.",
+    "Team administrators add or update team members while hierarchy enforcement prevents improper role assignments.",
+    "Users initiate RTBF deletion requests via API to mask PII and remove tenant roles for privacy."
   ],
   "validation_criteria": [
-    "No silent or unlogged data mutations, especially on financial and inventory records.",
-    "All financial changes such as price overrides, voids, and refunds must be fully auditable and immutable.",
-    "Mobile POS interface must support one-handed operation with efficient workflows allowing new staff to complete sales under 2 minutes.",
-    "Historical data, including inventory and transactions, must remain trustworthy and immutable.",
-    "Role enforcement verified at both database and API levels ensuring no unauthorized access or operations."
+    "All sales transactions are immutable and generate immutable audit trails.",
+    "Inventory adjustments are logged with timestamps and user context; historical data remains unchanged.",
+    "Role enforcement is validated at the database level, preventing unauthorized permission changes.",
+    "Audit logs are append-only, accessible only by authorized roles, and support complex filtering.",
+    "RTBF deletion correctly masks all PII fields and removes tenant roles without residual data.",
+    "Mobile POS workflows tested for usability, enabling sale completion in under two minutes by new staff.",
+    "System rejects unauthorized role assignments and invalid team membership actions.",
+    "No unlogged financial changes occur; all sensitive changes are verifiably logged."
   ],
   "code_summary": {
     "tech_stack": [
       "TypeScript",
       "Next.js",
       "Supabase",
-      "TailwindCSS"
+      "PostgreSQL",
+      "Tailwind CSS",
+      "Radix UI",
+      "Lucide React",
+      "Sonner"
     ],
     "features": [
       {
-        "name": "Inventory Management",
-        "description": "API for managing product inventory, stock levels, and compliance details.",
+        "name": "Audit Logs API",
+        "description": "Retrieve audit logs with business_id (tenant) isolation and advanced filtering (action, type, date range).",
         "files": [
-          "app/api/inventory/route.ts"
-        ]
+          "app/api/admin/audit-logs/route.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Audit Logs API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/api/admin/audit-logs": {
+              "get": {
+                "description": "Fetch audit logs filtered by tenant.",
+                "parameters": [
+                  {
+                    "name": "business_id",
+                    "in": "query",
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  {
+                    "name": "action",
+                    "in": "query",
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "name": "type",
+                    "in": "query",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "List of audit logs for the specified tenant."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       {
-        "name": "Credit System",
-        "description": "API for managing customer credit lines and balances.",
+        "name": "Team Management API",
+        "description": "Manage team members with strict role hierarchy enforcement (e.g., Managers cannot assign Owner roles).",
         "files": [
-          "app/api/credit/route.ts"
-        ]
+          "app/api/team/members/route.ts",
+          "app/api/team/members/[id]/role/route.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Team Management API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/api/team/members": {
+              "post": {
+                "summary": "Create team member",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "email": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "business_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Member created with hierarchy validation."
+                  }
+                }
+              }
+            },
+            "/api/team/members/{id}/role": {
+              "put": {
+                "summary": "Update member role",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "role": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Role updated with hierarchy validation."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       {
-        "name": "AI Insights",
-        "description": "Artificial Intelligence endpoints for generating business insights and analytics.",
+        "name": "RTBF Deletion API",
+        "description": "Right to be Forgotten - Permanent masking of PII and tenant removal for privacy compliance.",
         "files": [
-          "app/api/ai/route.ts"
-        ]
-      },
-      {
-        "name": "Admin Management",
-        "description": "Administrative endpoints for system configuration and user management.",
-        "files": [
-          "app/api/admin/route.ts"
-        ]
-      },
-      {
-        "name": "Team Management",
-        "description": "API for managing team members and permissions.",
-        "files": [
-          "app/api/team/route.ts"
-        ]
-      },
-      {
-        "name": "Notifications",
-        "description": "System for user notifications and alerts.",
-        "files": [
-          "app/api/notifications/route.ts"
-        ]
+          "app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "RTBF API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/api/v1/tenant/{tenantId}/user/{userId}/delete": {
+              "post": {
+                "parameters": [
+                  {
+                    "name": "tenantId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "User PII successfully masked and tenant roles removed."
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     ]
   }

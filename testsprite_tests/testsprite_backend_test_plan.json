@@ -1,32 +1,22 @@
 [
   {
     "id": "TC001",
-    "title": "inventory management api should enforce role based access and maintain immutable records",
-    "description": "Test the inventory management API to ensure it enforces role-based permissions server-side, maintains immutable historical inventory records, and logs all changes for auditability."
+    "title": "audit logs api tenant isolation and filtering",
+    "description": "Verify that the Audit Logs API correctly retrieves audit logs filtered by business_id (tenant) and supports filtering by action, type, and date range, ensuring tenant data isolation."
   },
   {
     "id": "TC002",
-    "title": "credit system api should maintain accurate and auditable customer credit balances",
-    "description": "Verify that the credit system API accurately manages customer credit lines and balances with immutable transaction records and audit logs for all financial changes."
+    "title": "team management api create member with role hierarchy enforcement",
+    "description": "Test the creation of a team member via the Team Management API ensuring that role hierarchy enforcement prevents unauthorized role assignments such as Managers assigning Owner roles."
   },
   {
     "id": "TC003",
-    "title": "ai insights api should generate accurate business analytics and insights",
-    "description": "Test the AI insights API to ensure it generates accurate and reproducible business insights and analytics based on current and historical data."
+    "title": "team management api update member role with hierarchy validation",
+    "description": "Validate that updating a team member's role through the Team Management API enforces strict role hierarchy rules, preventing unauthorized role escalations."
   },
   {
     "id": "TC004",
-    "title": "admin management api should enforce full system access control and audit logs",
-    "description": "Verify that the admin management API enforces full system access control for super admins, supports user and permission management, and maintains append-only audit logs for all critical actions."
-  },
-  {
-    "id": "TC005",
-    "title": "team management api should enforce role based permissions and support team member management",
-    "description": "Test the team management API to ensure it enforces role-based permissions, supports adding, updating, and removing team members, and logs all permission changes."
-  },
-  {
-    "id": "TC006",
-    "title": "notifications api should deliver alerts and support user notification management",
-    "description": "Verify that the notifications API delivers alerts correctly, supports user notification preferences, and logs notification events for audit purposes."
+    "title": "rtbf deletion api pii masking and tenant role removal",
+    "description": "Ensure the RTBF Deletion API permanently masks all personally identifiable information (PII) of the specified user and removes tenant roles to comply with privacy regulations."
   }
 ]

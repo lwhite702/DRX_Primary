@@ -5,6 +5,18 @@ All notable changes to DRX CRM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.3.0] - 2026-01-31
+
+### Added
+
+- **Compliance**: Implemented Right to be Forgotten (RTBF) API with PII masking and role removal.
+- **Security**: Enhanced Audit Logs with tenant isolation and advanced filtering (action/type/date).
+- **Security**: Enforced Role Hierarchy in User Management (Managers restricted from assigning Owner roles).
+- **Testing**: Added local Vitest integration suite covering Audit, Hierarchy, and RTBF flows (`tests/integration/`).
+- **DevOps**: Regenerated TestSprite test plan for backend compliance verification.
+
 ## [0.2.0] - 2026-01-30
 
 ### Added

@@ -42,6 +42,13 @@ export async function PUT(
       console.error("Role update failed:", updateError);
     }
 
+    // Sync business_id for log
+    const { data: roleData } = await adminSupabase
+      .from("user_roles")
+      .select("business_id")
+      .eq("user_id", user.id)
+      .single();
+
     // Log
     await adminSupabase.from("system_audit_log").insert({
       entity_id: id,
@@ -49,6 +56,7 @@ export async function PUT(
       action: "update_user_role",
       user_id: user.id,
       new_values: { role },
+      business_id: roleData?.business_id,
     });
 
     return NextResponse.json({ role }, { status: 200 });
@@ -86,6 +94,21 @@ export async function DELETE(
         },
       },
     );
+
+    // Audit Log before deletion
+    const { data: roleData } = await adminSupabase
+      .from("user_roles")
+      .select("business_id")
+      .eq("user_id", user.id)
+      .single();
+
+    await adminSupabase.from("system_audit_log").insert({
+      entity_id: id,
+      entity_type: "user",
+      action: "delete_user",
+      user_id: user.id,
+      business_id: roleData?.business_id,
+    });
 
     // Delete User
     const { error: deleteError } =

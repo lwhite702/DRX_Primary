@@ -17,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -30,15 +29,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, Trash2, ShieldAlert } from "lucide-react";
 import { updateUserRole } from "@/app/actions/user-management";
+import { initiateRTBF } from "@/app/actions/rtbf";
 import { Role, ROLES } from "@/lib/auth/permissions";
 
 // Helper for badge colors
 const getRoleBadgeColor = (role: string) => {
-  switch (role) {
+  switch (role?.toLowerCase()) {
     case "super_admin":
       return "bg-purple-600 hover:bg-purple-700";
+    case "owner":
+      return "bg-red-600 hover:bg-red-700";
     case "manager":
       return "bg-blue-600 hover:bg-blue-700";
     case "supervisor":
@@ -52,11 +54,13 @@ const getRoleBadgeColor = (role: string) => {
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<Role | "">("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRTBFOpen, setIsRTBFOpen] = useState(false);
 
   const supabase = getSupabaseClient();
 
@@ -66,34 +70,49 @@ export default function AdminUsersPage() {
       return;
     }
 
-    fetchUsers();
+    const init = async () => {
+      await fetchUserContext();
+      await fetchUsers();
+      setLoading(false);
+    };
+    init();
   }, [supabase]);
+
+  const fetchUserContext = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      setCurrentUserRole(roleData?.role || "");
+    }
+  };
 
   const fetchUsers = async () => {
     if (!supabase) return;
 
     try {
-      // Fetch user roles with business info
       const { data, error } = await supabase
         .from("user_roles")
         .select(
           `
           *,
-          business_profile:business_id(business_name, id)
-        `
+          business_profile:business_id(name, id)
+        `,
         )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Handle legacy/admin_users table if needed, but primarily use user_roles now
-      // merging logic
-
       const formattedUsers = (data || []).map((role: any) => ({
-        id: role.id, // role entry id
+        id: role.id,
         user_id: role.user_id,
         role: role.role,
-        business_name: role.business_profile?.business_name || "N/A",
+        business_name: role.business_profile?.name || "N/A",
         business_id: role.business_profile?.id || null,
         created_at: role.created_at,
       }));
@@ -102,8 +121,6 @@ export default function AdminUsersPage() {
     } catch (error) {
       toast.error("Failed to load users");
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -113,6 +130,11 @@ export default function AdminUsersPage() {
     setIsDialogOpen(true);
   };
 
+  const handleRTBFClick = (user: any) => {
+    setSelectedUser(user);
+    setIsRTBFOpen(true);
+  };
+
   const handleRoleUpdate = async () => {
     if (!selectedUser || !newRole) return;
 
@@ -120,7 +142,7 @@ export default function AdminUsersPage() {
     try {
       const result = await updateUserRole(
         selectedUser.user_id,
-        newRole as Role
+        newRole as Role,
       );
 
       if (result.error) {
@@ -128,11 +150,33 @@ export default function AdminUsersPage() {
       } else {
         toast.success("User role updated successfully");
         setIsDialogOpen(false);
-        fetchUsers(); // Refresh list
+        fetchUsers();
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
       console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleRTBFPermanentDelete = async () => {
+    if (!selectedUser) return;
+    setIsUpdating(true);
+    try {
+      const result = await initiateRTBF(
+        selectedUser.business_id,
+        selectedUser.user_id,
+      );
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("User data removal initiated (RTBF)");
+        setIsRTBFOpen(false);
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error("Failed to process RTBF");
     } finally {
       setIsUpdating(false);
     }
@@ -148,151 +192,206 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage staff roles and access levels.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage staff roles, access levels, and privacy compliance (RTBF).
+          </p>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Users ({users.length})</CardTitle>
+          <CardTitle>Business Users ({users.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              No users found
+              No users found in this context
             </p>
           ) : (
-            <>
-              {/* Desktop table */}
-              <div className="hidden md:block overflow-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User ID</TableHead>
-                      <TableHead>Business</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {user.user_id}
-                        </TableCell>
-                        <TableCell>{user.business_name}</TableCell>
-                        <TableCell>
-                          <Badge className={getRoleBadgeColor(user.role)}>
-                            {user.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User Identification</TableHead>
+                    <TableHead>Business/Tenant</TableHead>
+                    <TableHead>Current Role</TableHead>
+                    <TableHead>Access Granted</TableHead>
+                    <TableHead className="text-right">Administration</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.id} className="group">
+                      <TableCell className="font-mono text-xs">
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-medium">
+                            {user.user_id.substring(0, 8)}...
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">
+                            {user.user_id}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.business_name}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase px-2 py-0.5`}
+                        >
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            onClick={() => handleEditClick(user)}
+                          >
+                            <Pencil className="w-3.5 h-3.5 mr-1" /> Edit
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEditClick(user)}
+                            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleRTBFClick(user)}
                           >
-                            <Pencil className="w-4 h-4 mr-1" /> Edit
+                            <Trash2 className="w-3.5 h-3.5 mr-1" /> RTBF
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Mobile cards equivalent (simplified for brevity) */}
-              <div className="md:hidden space-y-4">
-                {users.map((u) => (
-                  <div key={u.id} className="border p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-sm truncate w-1/2">
-                        {u.user_id}
-                      </span>
-                      <Badge className={getRoleBadgeColor(u.role)}>
-                        {u.role}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-4">
-                      {u.business_name}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => handleEditClick(u)}
-                    >
-                      Edit Role
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Edit Role Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit User Role</DialogTitle>
+            <DialogTitle>Update Role Assignment</DialogTitle>
             <DialogDescription>
-              Assign a new role to this user. This determines their permissions
-              across the system.
+              Assign a new role level. Note: You cannot assign roles higher than
+              your own.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Role</label>
+              <label className="text-sm font-semibold">Hierarchy Level</label>
               <Select
                 value={newRole}
                 onValueChange={(val) => setNewRole(val as Role)}
                 disabled={isUpdating}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Identify Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ROLES.CASHIER}>Cashier</SelectItem>
-                  <SelectItem value={ROLES.SUPERVISOR}>Supervisor</SelectItem>
-                  <SelectItem value={ROLES.MANAGER}>Manager</SelectItem>
-                  <SelectItem value={ROLES.SUPER_ADMIN}>Super Admin</SelectItem>
+                  <SelectItem value={ROLES.CASHIER}>
+                    Cashier (Tier 1)
+                  </SelectItem>
+                  <SelectItem value={ROLES.SUPERVISOR}>
+                    Supervisor (Tier 2)
+                  </SelectItem>
+                  <SelectItem value={ROLES.MANAGER}>
+                    Manager (Tier 3)
+                  </SelectItem>
+                  {/* Only super_admin can assign super_admin */}
+                  {currentUserRole === "super_admin" && (
+                    <SelectItem value={ROLES.SUPER_ADMIN}>
+                      Super Admin (Tier 4)
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                {newRole === "cashier" && "Sales, payments, shift view only."}
-                {newRole === "supervisor" &&
-                  "Cashier + Voids, Discounts, Reports."}
-                {newRole === "manager" &&
-                  "Supervisor + Inventory, Pricing, Staff Management."}
-                {newRole === "super_admin" && "Full System Access."}
-              </p>
+              <div className="bg-muted p-3 rounded-md mt-4">
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <span className="font-bold text-foreground">
+                    Hierarchy Rule:
+                  </span>
+                  {currentUserRole === "manager"
+                    ? " As a Manager, you can assign levels up to Tier 3."
+                    : " You have administrative override permissions."}
+                </p>
+              </div>
             </div>
           </div>
 
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setIsDialogOpen(false)}
               disabled={isUpdating}
             >
-              Cancel
+              Discard
             </Button>
             <Button
               onClick={handleRoleUpdate}
               disabled={isUpdating || !newRole}
             >
               {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save Changes
+              Apply Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* RTBF Confirmation Dialog */}
+      <Dialog open={isRTBFOpen} onOpenChange={setIsRTBFOpen}>
+        <DialogContent className="sm:max-w-[425px] border-destructive/30">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="w-5 h-5" /> Right to be Forgotten
+            </DialogTitle>
+            <DialogDescription>
+              This is a permanent compliance action. The user's PII will be
+              masked and all tenant associations revoked. This action is logged
+              for audit trails.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="bg-destructive/5 border border-destructive/20 p-4 rounded-md space-y-2 my-2">
+            <p className="text-xs font-bold text-destructive underline">
+              IRREVERSIBLE ACTION
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              User ID:{" "}
+              <span className="font-mono">{selectedUser?.user_id}</span>
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Tenant:{" "}
+              <span className="font-semibold">
+                {selectedUser?.business_name}
+              </span>
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setIsRTBFOpen(false)}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRTBFPermanentDelete}
+              disabled={isUpdating}
+            >
+              {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Confirm Shredding
             </Button>
           </DialogFooter>
         </DialogContent>
