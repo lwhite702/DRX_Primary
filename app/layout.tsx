@@ -12,10 +12,14 @@ import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { OnboardingProvider } from "@/components/providers/onboarding-provider";
 import { CustomerProvider } from "@/components/providers/customer-provider";
+import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
-const _plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+const _plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
@@ -66,13 +70,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}>
+      <body
+        className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
+      >
         <GlobalErrorBoundary>
           <BusinessSetupProvider>
             <OfflineProvider>
               <PostHogProvider>
                 <OnboardingProvider>
                   <CustomerProvider>
+                    <FeaturebaseProvider />
                     <AppShell>{children}</AppShell>
                     <OnboardingFlow />
                     <Toaster position="top-right" />

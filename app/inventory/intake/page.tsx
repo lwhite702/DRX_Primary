@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,7 +156,7 @@ export default function InventoryIntakePage() {
       });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to process intake"
+        error instanceof Error ? error.message : "Failed to process intake",
       );
     } finally {
       setProcessing(false);
@@ -179,31 +179,38 @@ export default function InventoryIntakePage() {
     <PermissionGuard
       requiredPermission="inventory.manage"
       fallback={
-        <div className="p-8 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">
+        <div className="p-8 text-center bg-destructive/10 border border-destructive/20 rounded-xl m-8">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-destructive mb-2 tracking-widest uppercase">
             Access Denied
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground font-mono">
             You do not have permission to access Inventory Intake.
           </p>
         </div>
       }
     >
-      <div className="p-4 md:p-8 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Inventory Intake</h1>
-          <p className="text-muted-foreground mt-2">
-            Add inventory with complete cost tracking
+      <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
+        <div className="noise-overlay" />
+        <div className="relative z-10">
+          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
+            INVENTORY INTAKE
+          </h1>
+          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
+            COST TRACKING & STOCK ENTRY
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
           {/* Intake Form */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Intake Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="lg:col-span-2 luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
+            <div className="p-6 border-b border-white/5 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
+              <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
+                INTAKE DETAILS
+              </h2>
+            </div>
+            <CardContent className="space-y-4 p-6">
               {/* Product Selection */}
               <div className="space-y-2">
                 <Label htmlFor="product">Product *</Label>
@@ -340,22 +347,25 @@ export default function InventoryIntakePage() {
 
               <Button
                 onClick={handleOpenConfirmModal}
-                className="w-full"
+                className="w-full h-12 text-lg laser-button bg-[#FF0099] text-white hover:bg-[#FF0099]/90 shadow-[0_0_20px_rgba(255,0,153,0.3)] border-none font-bold tracking-wider uppercase"
                 disabled={processing}
                 size="lg"
               >
-                <Package className="h-4 w-4 mr-2" />
+                <Package className="h-5 w-5 mr-3" />
                 Review & Process Intake
               </Button>
             </CardContent>
-          </Card>
+          </div>
 
           {/* Intake Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Intake Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border h-fit">
+            <div className="p-6 border-b border-white/5 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
+              <h2 className="headline-text text-lg tracking-wider text-[#00F0FF]">
+                SUMMARY
+              </h2>
+            </div>
+            <CardContent className="space-y-4 p-6">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Product:</span>
@@ -407,7 +417,7 @@ export default function InventoryIntakePage() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </div>
         </div>
 
         {/* Confirmation Modal */}

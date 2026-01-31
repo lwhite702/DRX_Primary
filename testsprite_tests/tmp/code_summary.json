@@ -2,153 +2,55 @@
   "tech_stack": [
     "TypeScript",
     "Next.js",
-    "Supabase",
-    "PostgreSQL",
     "Tailwind CSS",
-    "Radix UI",
-    "Lucide React",
-    "Sonner"
+    "Supabase",
+    "React Hook Form",
+    "Shadcn/UI",
+    "Lucide React"
   ],
   "features": [
     {
-      "name": "Audit Logs API",
-      "description": "Retrieve audit logs with business_id (tenant) isolation and advanced filtering (action, type, date range).",
-      "files": ["app/api/admin/audit-logs/route.ts"],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "info": { "title": "Audit Logs API", "version": "1.0.0" },
-        "paths": {
-          "/api/admin/audit-logs": {
-            "get": {
-              "description": "Fetch audit logs filtered by tenant.",
-              "parameters": [
-                {
-                  "name": "business_id",
-                  "in": "query",
-                  "schema": { "type": "string", "format": "uuid" }
-                },
-                {
-                  "name": "action",
-                  "in": "query",
-                  "schema": { "type": "string" }
-                },
-                {
-                  "name": "type",
-                  "in": "query",
-                  "schema": { "type": "string" }
-                }
-              ],
-              "responses": {
-                "200": {
-                  "description": "List of audit logs for the specified tenant."
-                }
-              }
-            }
-          }
-        }
-      }
+      "name": "Point of Sale (POS)",
+      "description": "Full-width checkout experience with cart management, product grid, and review modal.",
+      "files": ["app/sales/page.tsx", "components/pos/pos-review-modal.tsx"]
     },
     {
-      "name": "Team Management API",
-      "description": "Manage team members with strict role hierarchy enforcement (e.g., Managers cannot assign Owner roles).",
+      "name": "Inventory Management",
+      "description": "Inventory list view with real-time stock updates, low stock alerts, and filtering.",
+      "files": ["app/inventory/page.tsx", "lib/hooks/use-realtime.ts"]
+    },
+    {
+      "name": "Customer Management",
+      "description": "CRM features including customer list, detail views, and creating/editing profiles.",
+      "files": ["app/customers/page.tsx"]
+    },
+    {
+      "name": "Inventory Intake",
+      "description": "Stock intake form with cost tracking, supplier info, and summary calculations.",
+      "files": ["app/inventory/intake/page.tsx"]
+    },
+    {
+      "name": "Operator Dashboard",
+      "description": "Simplified dashboard for daily operations showing key metrics and quick actions.",
       "files": [
-        "app/api/team/members/route.ts",
-        "app/api/team/members/[id]/role/route.ts"
-      ],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "info": { "title": "Team Management API", "version": "1.0.0" },
-        "paths": {
-          "/api/team/members": {
-            "post": {
-              "summary": "Create team member",
-              "requestBody": {
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "email": { "type": "string" },
-                        "role": { "type": "string" },
-                        "business_id": { "type": "string", "format": "uuid" }
-                      }
-                    }
-                  }
-                }
-              },
-              "responses": {
-                "200": {
-                  "description": "Member created with hierarchy validation."
-                }
-              }
-            }
-          },
-          "/api/team/members/{id}/role": {
-            "put": {
-              "summary": "Update member role",
-              "parameters": [
-                {
-                  "name": "id",
-                  "in": "path",
-                  "required": true,
-                  "schema": { "type": "string" }
-                }
-              ],
-              "requestBody": {
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "role": { "type": "string" }
-                      }
-                    }
-                  }
-                }
-              },
-              "responses": {
-                "200": {
-                  "description": "Role updated with hierarchy validation."
-                }
-              }
-            }
-          }
-        }
-      }
+        "app/dashboard/operator/page.tsx",
+        "components/dashboard/operator/moving-today.tsx",
+        "components/dashboard/operator/snapshot.tsx",
+        "components/dashboard/operator/quick-actions.tsx"
+      ]
     },
     {
-      "name": "RTBF Deletion API",
-      "description": "Right to be Forgotten - Permanent masking of PII and tenant removal for privacy compliance.",
-      "files": ["app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts"],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "info": { "title": "RTBF API", "version": "1.0.0" },
-        "paths": {
-          "/api/v1/tenant/{tenantId}/user/{userId}/delete": {
-            "post": {
-              "parameters": [
-                {
-                  "name": "tenantId",
-                  "in": "path",
-                  "required": true,
-                  "schema": { "type": "string" }
-                },
-                {
-                  "name": "userId",
-                  "in": "path",
-                  "required": true,
-                  "schema": { "type": "string" }
-                }
-              ],
-              "responses": {
-                "200": {
-                  "description": "User PII successfully masked and tenant roles removed."
-                }
-              }
-            }
-          }
-        }
-      }
+      "name": "Product Search",
+      "description": "Dedicated product search interface with filters and visual search capabilities.",
+      "files": [
+        "app/inventory/search/page.tsx",
+        "components/inventory/search-view.tsx"
+      ]
+    },
+    {
+      "name": "Authentication & Permissions",
+      "description": "Role-based access control guards.",
+      "files": ["components/auth/role-guard.tsx"]
     }
   ]
 }

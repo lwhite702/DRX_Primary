@@ -61,6 +61,7 @@ import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCustomerContext } from "@/components/providers/customer-provider";
+import { POSReviewModal } from "@/components/pos/pos-review-modal";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -101,6 +102,7 @@ export default function SalesPage() {
   const { canOverridePrice } = useUserRole(business?.id);
   const [taxEnabled, setTaxEnabled] = useState(true);
   const [managerPin, setManagerPin] = useState("1234"); // Default, will be overwritten by settings
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const supabase = getSupabaseClient();
 
@@ -358,70 +360,93 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6 page-transition">
-      <div>
-        <h1 className="text-3xl font-bold">Point of Sale</h1>
-        <p className="text-muted-foreground mt-2">
-          Process sales and manage transactions
-        </p>
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-6 space-y-6 page-transition">
+      <div className="noise-overlay" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+        <div>
+          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
+            POINT OF SALE
+          </h1>
+          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
+            TERMINAL: {business?.name?.toUpperCase() || "MAIN"} •{" "}
+            {new Date().toLocaleDateString()}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
         {/* Inventory Selection and AI Pricing */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory</CardTitle>
-              <div className="relative mt-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        <div className="lg:col-span-8 space-y-6">
+          <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="headline-text text-xl">INVENTORY</h2>
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="SEARCH ITEM OR SKU..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-12 bg-muted/50 border-white/10 focus:border-accent/50 text-lg uppercase tracking-wide rounded-lg"
+                  />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                 {filteredInventory.length === 0 ? (
                   <EmptyState
                     icon={PackageOpen}
-                    title="No items found"
+                    title="NO ITEMS FOUND"
                     description={
                       inventory.length === 0
-                        ? "You have no inventory to sell yet."
-                        : "Try adjusting your search terms."
+                        ? "Inventory is empty."
+                        : "No matching items found."
                     }
-                    actionLabel={
-                      inventory.length === 0 ? "Go to Inventory" : undefined
-                    }
-                    onAction={
-                      inventory.length === 0
-                        ? () => (window.location.href = "/inventory")
-                        : undefined
-                    }
-                    className="py-8"
+                    className="py-12 border-dashed border-white/10 bg-transparent"
                   />
                 ) : (
                   filteredInventory.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      className="group flex items-center justify-between p-4 border border-white/5 rounded-xl bg-card/30 hover:bg-accent/5 hover:border-accent/30 transition-all duration-300"
                     >
                       <div className="flex-1">
-                        <p className="font-medium">{item.product_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          SKU: {item.sku} • Stock:{" "}
-                          {item.base_unit === "g"
-                            ? `${(
-                                item.inventory_in_grams || item.quantity_on_hand
-                              ).toFixed(2)}g`
-                            : item.quantity_on_hand}{" "}
-                          • ${Number(item.selling_price || 0).toFixed(2)}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-bold text-lg tracking-tight">
+                            {item.product_name}
+                          </h3>
+                          {item.quantity_on_hand <= item.reorder_level && (
+                            <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/20 uppercase font-bold tracking-wider">
+                              Low Stock
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <span className="font-mono text-xs opacity-70">
+                            {item.sku}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <span
+                            className={
+                              item.quantity_on_hand > 0
+                                ? "text-accent"
+                                : "text-destructive"
+                            }
+                          >
+                            {item.base_unit === "g"
+                              ? `${(
+                                  item.inventory_in_grams ||
+                                  item.quantity_on_hand
+                                ).toFixed(2)}g`
+                              : `${item.quantity_on_hand} units`}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <span className="font-mono text-foreground font-bold text-base">
+                            ${Number(item.selling_price || 0).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         {item.base_unit === "g" &&
                           item.inventory_in_grams > 0 && (
                             <Button
@@ -431,18 +456,18 @@ export default function SalesPage() {
                               }}
                               disabled={item.inventory_in_grams <= 0}
                               size="sm"
-                              variant="outline"
-                              title="Weight-based sale"
+                              variant="secondary"
+                              className="h-9 px-4 uppercase font-bold text-xs tracking-wider"
                             >
-                              <Package className="h-4 w-4" />
+                              Scale
                             </Button>
                           )}
                         <Button
                           onClick={() => handleAddToCart(item)}
                           disabled={item.quantity_on_hand <= 0}
                           size="sm"
+                          className="h-9 px-6 bg-accent text-accent-foreground hover:bg-accent/90 uppercase font-bold text-xs tracking-wider shadow-[0_0_15px_rgba(191,255,0,0.3)]"
                         >
-                          <Plus className="h-4 w-4 mr-1" />
                           Add
                         </Button>
                       </div>
@@ -450,8 +475,8 @@ export default function SalesPage() {
                   ))
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* AI Pricing Recommendations */}
           {aiRecommendations.length > 0 && (
@@ -524,432 +549,451 @@ export default function SalesPage() {
         </div>
 
         {/* Cart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
-              Cart
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Customer Selection */}
-            <div className="space-y-2">
-              <Label>
-                Customer (Optional)
-                <HelpTooltip content="Select a customer to track their purchase history and credit. Leave as 'Walk-in' for anonymous sales." />
-              </Label>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowCustomerSelector(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {selectedCustomer
-                  ? customers.find((c) => c.id === selectedCustomer)
-                    ? `${
-                        customers.find((c) => c.id === selectedCustomer)
-                          ?.first_name
-                      } ${
-                        customers.find((c) => c.id === selectedCustomer)
-                          ?.last_name
-                      }`
-                    : "Select Customer"
-                  : "Walk-in Customer"}
-              </Button>
-              {customerLoyalty && customerLoyalty.loyalty_tier !== "none" && (
-                <div className="mt-2">
-                  <LoyaltyBadge
-                    tier={customerLoyalty.loyalty_tier}
-                    discount_rate={customerLoyalty.discount_rate}
-                    purchase_count={customerLoyalty.purchase_count}
-                  />
-                </div>
-              )}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="luminosity-card rounded-xl bg-card border-border h-full flex flex-col shadow-2xl shadow-black/50">
+            <div className="p-4 border-b border-white/10 bg-white/5">
+              <div className="flex items-center gap-2 text-accent">
+                <ShoppingCart className="h-5 w-5" />
+                <h2 className="headline-text text-lg tracking-wider">
+                  CURRENT CART
+                </h2>
+              </div>
             </div>
-
-            {/* Cart Items */}
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {cart.items.length === 0 ? (
-                <EmptyState
-                  icon={ShoppingCart}
-                  title="Cart is empty"
-                  description="Scan items or select from inventory to start a sale."
-                  className="py-4 border-none shadow-none"
-                />
-              ) : (
-                cart.items.map((item) => (
-                  <div
-                    key={item.inventory_id}
-                    className="flex items-start gap-2 p-2 border rounded"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">
-                          {item.product_name}
-                        </p>
-                        {item.overridden_price && (
-                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
-                            ⚠️ Override
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        ${item.unit_price.toFixed(2)} × {item.quantity}
-                        {item.overridden_price && item.original_price && (
-                          <span className="ml-2 line-through text-muted-foreground">
-                            (was ${item.original_price.toFixed(2)})
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {canOverridePrice && (
-                        <PermissionGuard requiredPermission="pricing.manage">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePriceOverride(item)}
-                            title="Override Price"
-                          >
-                            <DollarSign className="h-4 w-4" />
-                          </Button>
-                        </PermissionGuard>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleUpdateQuantity(item.inventory_id, -1)
-                        }
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <Input
-                        type="number"
-                        className="w-16 h-8 text-center p-1"
-                        value={item.quantity}
-                        step="0.01"
-                        min="0.01"
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val) && val > 0) {
-                            posEngine.updateQuantity(item.inventory_id, val);
-                            setCart(posEngine.getCart());
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleUpdateQuantity(item.inventory_id, 1)
-                        }
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveItem(item.inventory_id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+            <div className="p-4 flex-1 flex flex-col space-y-4">
+              {/* Customer Selection */}
+              <div className="space-y-2">
+                <Label>
+                  Customer (Optional)
+                  <HelpTooltip content="Select a customer to track their purchase history and credit. Leave as 'Walk-in' for anonymous sales." />
+                </Label>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowCustomerSelector(true)}
+                >
+                  {selectedCustomer
+                    ? customers.find((c) => c.id === selectedCustomer)
+                      ? `${
+                          customers.find((c) => c.id === selectedCustomer)
+                            ?.first_name
+                        } ${
+                          customers.find((c) => c.id === selectedCustomer)
+                            ?.last_name
+                        }`
+                      : "Select Customer"
+                    : "Walk-in Customer"}
+                </Button>
+                {customerLoyalty && customerLoyalty.loyalty_tier !== "none" && (
+                  <div className="mt-2">
+                    <LoyaltyBadge
+                      tier={customerLoyalty.loyalty_tier}
+                      discount_rate={customerLoyalty.discount_rate}
+                      purchase_count={customerLoyalty.purchase_count}
+                    />
                   </div>
-                ))
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* Delivery Management Section */}
-            <div className="space-y-2 pt-4 border-t">
-              <Label>
-                <Truck className="h-4 w-4 inline mr-2" />
-                Delivery Management
-                <HelpTooltip content="Select delivery option and address for this order." />
-              </Label>
-              {deliveryOptions.length > 0 ? (
-                <>
-                  <Select
-                    value={cart.delivery_management_id || "no-delivery"}
-                    onValueChange={(value) => {
-                      if (value === "no-delivery") {
-                        posEngine.setDelivery(undefined, "", 0);
-                        setDeliveryPrice(0);
-                        setDeliveryAddress("");
-                        setCart(posEngine.getCart());
-                      } else {
-                        handleDeliveryChange(value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select delivery option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-delivery">No Delivery</SelectItem>
-                      {deliveryOptions.map((option) => (
-                        <SelectItem key={option.id} value={option.id}>
-                          {option.name}{" "}
-                          {option.provider && `(${option.provider})`} - $
-                          {option.base_price.toFixed(2)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {cart.delivery_management_id && (
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="Delivery Address"
-                        value={deliveryAddress}
-                        onChange={(e) => {
-                          setDeliveryAddress(e.target.value);
-                          posEngine.setDelivery(
-                            cart.delivery_management_id,
-                            e.target.value,
-                            deliveryPrice,
-                          );
-                          setCart(posEngine.getCart());
-                        }}
-                        className="h-8 text-sm"
-                      />
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          Price:
-                        </span>
-                        <span className="text-sm font-medium">
-                          ${deliveryPrice.toFixed(2)}
-                        </span>
+              {/* Cart Items */}
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {cart.items.length === 0 ? (
+                  <EmptyState
+                    icon={ShoppingCart}
+                    title="Cart is empty"
+                    description="Scan items or select from inventory to start a sale."
+                    className="py-4 border-none shadow-none"
+                  />
+                ) : (
+                  cart.items.map((item) => (
+                    <div
+                      key={item.inventory_id}
+                      className="flex items-start gap-2 p-2 border rounded"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">
+                            {item.product_name}
+                          </p>
+                          {item.overridden_price && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                              ⚠️ Override
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          ${item.unit_price.toFixed(2)} × {item.quantity}
+                          {item.overridden_price && item.original_price && (
+                            <span className="ml-2 line-through text-muted-foreground">
+                              (was ${item.original_price.toFixed(2)})
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {canOverridePrice && (
+                          <PermissionGuard requiredPermission="pricing.manage">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePriceOverride(item)}
+                              title="Override Price"
+                            >
+                              <DollarSign className="h-4 w-4" />
+                            </Button>
+                          </PermissionGuard>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateQuantity(item.inventory_id, -1)
+                          }
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          className="w-16 h-8 text-center p-1"
+                          value={item.quantity}
+                          step="0.01"
+                          min="0.01"
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val > 0) {
+                              posEngine.updateQuantity(item.inventory_id, val);
+                              setCart(posEngine.getCart());
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateQuantity(item.inventory_id, 1)
+                          }
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveItem(item.inventory_id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No delivery options configured
-                </p>
-              )}
-            </div>
+                  ))
+                )}
+              </div>
 
-            {/* Misc Fees Section */}
-            <div className="space-y-2 pt-4 border-t">
-              <Label>
-                Additional Fees
-                <HelpTooltip content="Add processing fees, delivery charges, or other misc costs to this sale." />
-              </Label>
-              {fees.map((fee, idx) => (
-                <div key={idx} className="flex items-center gap-2 mb-2">
-                  <Input
-                    placeholder="Type"
-                    value={fee.type}
-                    onChange={(e) => {
-                      const newFees = [...fees];
-                      newFees[idx].type = e.target.value;
-                      setFees(newFees);
-                    }}
-                    className="flex-1 h-8 text-sm"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Amount"
-                    value={fee.amount}
-                    onChange={(e) => {
-                      const newFees = [...fees];
-                      newFees[idx].amount = parseFloat(e.target.value) || 0;
-                      setFees(newFees);
-                    }}
-                    className="w-20 h-8 text-sm"
-                    min="0"
-                    step="0.01"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const newFees = fees.filter((_, i) => i !== idx);
-                      setFees(newFees);
-                    }}
-                    className="h-8 w-8 p-0 text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              {/* Delivery Management Section */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label>
+                  <Truck className="h-4 w-4 inline mr-2" />
+                  Delivery Management
+                  <HelpTooltip content="Select delivery option and address for this order." />
+                </Label>
+                {deliveryOptions.length > 0 ? (
+                  <>
+                    <Select
+                      value={cart.delivery_management_id || "no-delivery"}
+                      onValueChange={(value) => {
+                        if (value === "no-delivery") {
+                          posEngine.setDelivery(undefined, "", 0);
+                          setDeliveryPrice(0);
+                          setDeliveryAddress("");
+                          setCart(posEngine.getCart());
+                        } else {
+                          handleDeliveryChange(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select delivery option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no-delivery">No Delivery</SelectItem>
+                        {deliveryOptions.map((option) => (
+                          <SelectItem key={option.id} value={option.id}>
+                            {option.name}{" "}
+                            {option.provider && `(${option.provider})`} - $
+                            {option.base_price.toFixed(2)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {cart.delivery_management_id && (
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Delivery Address"
+                          value={deliveryAddress}
+                          onChange={(e) => {
+                            setDeliveryAddress(e.target.value);
+                            posEngine.setDelivery(
+                              cart.delivery_management_id,
+                              e.target.value,
+                              deliveryPrice,
+                            );
+                            setCart(posEngine.getCart());
+                          }}
+                          className="h-8 text-sm"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            Price:
+                          </span>
+                          <span className="text-sm font-medium">
+                            ${deliveryPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No delivery options configured
+                  </p>
+                )}
+              </div>
+
+              {/* Misc Fees Section */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label>
+                  Additional Fees
+                  <HelpTooltip content="Add processing fees, delivery charges, or other misc costs to this sale." />
+                </Label>
+                {fees.map((fee, idx) => (
+                  <div key={idx} className="flex items-center gap-2 mb-2">
+                    <Input
+                      placeholder="Type"
+                      value={fee.type}
+                      onChange={(e) => {
+                        const newFees = [...fees];
+                        newFees[idx].type = e.target.value;
+                        setFees(newFees);
+                      }}
+                      className="flex-1 h-8 text-sm"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      value={fee.amount}
+                      onChange={(e) => {
+                        const newFees = [...fees];
+                        newFees[idx].amount = parseFloat(e.target.value) || 0;
+                        setFees(newFees);
+                      }}
+                      className="w-20 h-8 text-sm"
+                      min="0"
+                      step="0.01"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newFees = fees.filter((_, i) => i !== idx);
+                        setFees(newFees);
+                      }}
+                      className="h-8 w-8 p-0 text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFees([...fees, { type: "", amount: 0 }])}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Add Fee
+                </Button>
+              </div>
+
+              {/* Totals */}
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal:</span>
+                  <span>${cart.subtotal.toFixed(2)}</span>
                 </div>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFees([...fees, { type: "", amount: 0 }])}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Add Fee
-              </Button>
-            </div>
-
-            {/* Totals */}
-            <div className="space-y-2 pt-4 border-t">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal:</span>
-                <span>${cart.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Tax:</span>
-                <span>
-                  ${cart.tax_amount.toFixed(2)}
-                  {!taxEnabled && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      (Disabled)
-                    </span>
-                  )}
-                </span>
-              </div>
-              {fees.length > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Fees:</span>
+                <div className="flex justify-between text-sm">
+                  <span>Tax:</span>
                   <span>
-                    ${fees.reduce((sum, f) => sum + f.amount, 0).toFixed(2)}
+                    ${cart.tax_amount.toFixed(2)}
+                    {!taxEnabled && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (Disabled)
+                      </span>
+                    )}
                   </span>
                 </div>
-              )}
-              {cart.delivery_price > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Delivery:</span>
-                  <span>${cart.delivery_price.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Total:</span>
-                <span>${cart.total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Amount Paid Section */}
-            <div className="space-y-2 pt-4 border-t">
-              <Label>
-                Amount Paid
-                <HelpTooltip content="Enter the amount customer paid. System will calculate change." />
-              </Label>
-              <Input
-                type="number"
-                placeholder="Enter amount paid"
-                value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
-                className="text-sm"
-                min="0"
-                step="0.01"
-              />
-              {amountPaid && cart.total > 0 && (
-                <div className="space-y-1 p-2 bg-muted rounded-sm text-sm">
-                  <div className="flex justify-between">
-                    <span>Amount Paid:</span>
-                    <span className="font-medium">
-                      ${parseFloat(amountPaid).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total:</span>
-                    <span className="font-medium">
-                      ${cart.total.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-green-600 font-bold border-t pt-1">
-                    <span>Change:</span>
+                {fees.length > 0 && (
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Fees:</span>
                     <span>
-                      ${(parseFloat(amountPaid) - cart.total).toFixed(2)}
+                      ${fees.reduce((sum, f) => sum + f.amount, 0).toFixed(2)}
                     </span>
+                  </div>
+                )}
+                {cart.delivery_price > 0 && (
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Delivery:</span>
+                    <span>${cart.delivery_price.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span>Tax:</span>
+                  <span>
+                    ${cart.tax_amount.toFixed(2)}
+                    {!taxEnabled && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (Disabled)
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                  <span>Total:</span>
+                  <span>${cart.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Amount Paid - Optional */}
+              {showAmountPaidMode && (
+                <div className="space-y-2 pt-4 border-t">
+                  <Label>Amount Tendered</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      value={amountPaid}
+                      onChange={(e) => setAmountPaid(e.target.value)}
+                      placeholder="Enter amount"
+                      className="flex-1"
+                    />
+                    {amountPaid && parseFloat(amountPaid) >= cart.total && (
+                      <div className="flex-1 flex items-center justify-center bg-green-100 text-green-800 rounded px-2 font-medium">
+                        Change: $
+                        {(parseFloat(amountPaid) - cart.total).toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Payment Method */}
-            <div className="space-y-2">
-              <Label>
-                Payment Method
-                <HelpTooltip content="Choose how the customer is paying. 'Credit' will add to their account balance for later payment." />
-              </Label>
-              <Select
-                value={cart.payment_method}
-                onValueChange={(value: any) => {
-                  posEngine.setPaymentMethod(value);
-                  setCart(posEngine.getCart());
+              <Button
+                size="lg"
+                className="w-full font-bold text-lg"
+                onClick={() => {
+                  if (cart.items.length === 0) {
+                    toast.error("Cart is empty");
+                    return;
+                  }
+                  setReviewModalOpen(true);
                 }}
+                disabled={cart.items.length === 0 || processing}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="card">Card</SelectItem>
-                  <SelectItem value="credit">Credit</SelectItem>
-                  <SelectItem value="zelle">Zelle</SelectItem>
-                  <SelectItem value="mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
+                {processing
+                  ? "Processing..."
+                  : `Checkout $${cart.total.toFixed(2)}`}
+              </Button>
 
-              {/* Payment Reference (Zelle) */}
-              {cart.payment_method === "zelle" && (
-                <div className="pt-2 anim-slide-in">
-                  <Label>Reference / Note</Label>
-                  <Input
-                    placeholder="Enter Zelle confirmation #"
-                    value={cart.payment_ref || ""}
-                    onChange={(e) => {
-                      posEngine.setPaymentRef(e.target.value);
-                      setCart(posEngine.getCart());
-                    }}
-                    className="mt-1"
-                  />
-                </div>
-              )}
-            </div>
+              {/* Payment Method */}
+              <div className="space-y-2">
+                <Label>
+                  Payment Method
+                  <HelpTooltip content="Choose how the customer is paying. 'Credit' will add to their account balance for later payment." />
+                </Label>
+                <Select
+                  value={cart.payment_method}
+                  onValueChange={(value: any) => {
+                    posEngine.setPaymentMethod(value);
+                    setCart(posEngine.getCart());
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="credit">Credit</SelectItem>
+                    <SelectItem value="zelle">Zelle</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            {/* POS Admin Actions */}
-            <div className="space-y-2 pt-4 border-t">
-              <Label className="text-xs font-semibold">Admin Functions</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <NoSaleButton businessId={business.id} />
-                <Button
-                  onClick={() => setShowShrinkageForm(true)}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1"
-                >
-                  <Lock className="h-4 w-4" />
-                  Shrinkage
-                </Button>
-                <Button
-                  onClick={() => setShowInventoryCheck(true)}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1"
-                >
-                  <Package className="h-4 w-4" />
-                  Inv. Check
-                </Button>
-                <Button
-                  onClick={() => (window.location.href = "/reports")}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  Reports
-                </Button>
+                {/* Payment Reference (Zelle) */}
+                {cart.payment_method === "zelle" && (
+                  <div className="pt-2 anim-slide-in">
+                    <Label>Reference / Note</Label>
+                    <Input
+                      placeholder="Enter Zelle confirmation #"
+                      value={cart.payment_ref || ""}
+                      onChange={(e) => {
+                        posEngine.setPaymentRef(e.target.value);
+                        setCart(posEngine.getCart());
+                      }}
+                      className="mt-1"
+                    />
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Checkout Button */}
-            <Button
-              onClick={handleCheckout}
-              disabled={cart.items.length === 0 || processing}
-              className="w-full"
-              size="lg"
-            >
-              {processing
-                ? "Processing..."
-                : `Checkout - ${cart.total.toFixed(2)}`}
-            </Button>
-          </CardContent>
-        </Card>
+              {/* POS Admin Actions */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label className="text-xs font-semibold">Admin Functions</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <NoSaleButton businessId={business.id} />
+                  <Button
+                    onClick={() => setShowShrinkageForm(true)}
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                  >
+                    <Lock className="h-4 w-4" />
+                    Shrinkage
+                  </Button>
+                  <Button
+                    onClick={() => setShowInventoryCheck(true)}
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                  >
+                    <Package className="h-4 w-4" />
+                    Inv. Check
+                  </Button>
+                  <Button
+                    onClick={() => (window.location.href = "/reports")}
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Reports
+                  </Button>
+                </div>
+              </div>
+
+              {/* Checkout Button */}
+              <Button
+                onClick={() => {
+                  if (cart.items.length === 0) {
+                    toast.error("Cart is empty");
+                    return;
+                  }
+                  setReviewModalOpen(true);
+                }}
+                disabled={cart.items.length === 0 || processing}
+                className="w-full laser-button bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl h-16 tracking-widest uppercase shadow-[0_0_20px_rgba(191,255,0,0.4)]"
+              >
+                {processing
+                  ? "PROCESSING..."
+                  : `CHECKOUT $${cart.total.toFixed(2)}`}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modals */}
@@ -992,6 +1036,40 @@ export default function SalesPage() {
         customers={customers}
         onSelect={handleCustomerSelect}
         selectedCustomerId={selectedCustomer}
+      />
+
+      <POSReviewModal
+        open={reviewModalOpen}
+        onOpenChange={setReviewModalOpen}
+        items={cart.items.map((item) => {
+          const invItem = inventory.find((i) => i.id === item.inventory_id);
+          return {
+            id: item.inventory_id,
+            name: item.product_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+            unit: invItem?.base_unit || "ea",
+            weightGrams: invItem?.base_unit === "g" ? item.quantity : undefined,
+          };
+        })}
+        subtotal={cart.subtotal}
+        tax={cart.tax_amount}
+        total={cart.total}
+        customer={
+          selectedCustomer
+            ? {
+                name:
+                  customers.find((c) => c.id === selectedCustomer)?.first_name +
+                  " " +
+                  customers.find((c) => c.id === selectedCustomer)?.last_name,
+                id: selectedCustomer,
+              }
+            : undefined
+        }
+        onConfirm={async () => {
+          await handleCheckout();
+          setReviewModalOpen(false);
+        }}
       />
     </div>
   );

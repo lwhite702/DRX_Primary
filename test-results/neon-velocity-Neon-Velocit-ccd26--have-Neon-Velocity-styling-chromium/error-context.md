@@ -1,0 +1,162 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - complementary:
+            - generic:
+              - link:
+                - /url: /dashboard
+                - generic:
+                  - img
+                - generic:
+                  - generic: DRX CRM
+                  - generic: DeelRx Point of Sale
+            - navigation:
+              - link:
+                - /url: /dashboard
+                - img
+                - generic: Dashboard
+              - link:
+                - /url: /credit
+                - img
+                - generic: Credit
+              - link:
+                - /url: /insights
+                - img
+                - generic: Event Desk Board
+              - link:
+                - /url: /help
+                - img
+                - generic: Help
+            - generic:
+              - button:
+                - img
+                - text: Report a Bug
+              - button:
+                - img
+                - text: Logout
+              - generic:
+                - paragraph: v0.1.0
+        - main:
+          - generic:
+            - link:
+              - /url: "#main-content"
+              - text: Skip to main content
+            - generic:
+              - generic:
+                - link:
+                  - /url: /dashboard
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: DRX CRM
+              - generic: BETA
+            - generic:
+              - generic:
+                - img
+                - textbox:
+                  - /placeholder: Search...
+            - generic:
+              - button:
+                - img
+              - generic:
+                - button:
+                  - img
+          - generic:
+            - generic: No business found. Please set up your business first.
+      - generic:
+        - contentinfo:
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=3]: DRX CRM
+                - paragraph: Privacy-first point of sale and customer management system for modern businesses.
+              - generic:
+                - heading [level=4]: Product
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /dashboard
+                      - text: Dashboard
+                  - listitem:
+                    - link:
+                      - /url: /features
+                      - text: Features
+                  - listitem:
+                    - link:
+                      - /url: /pricing
+                      - text: Pricing
+              - generic:
+                - heading [level=4]: Support
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /help
+                      - text: Help Center
+                  - listitem:
+                    - link:
+                      - /url: /contact
+                      - text: Contact Us
+                  - listitem:
+                    - link:
+                      - /url: mailto:support@deelrx.com
+                      - text: Email Support
+              - generic:
+                - heading [level=4]: Legal
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /privacy
+                      - text: Privacy Policy
+                  - listitem:
+                    - link:
+                      - /url: /terms
+                      - text: Terms of Service
+                  - listitem:
+                    - link:
+                      - /url: /accessibility
+                      - text: Accessibility
+            - generic:
+              - generic:
+                - paragraph: © 2026 Wrelik Brands LLC. All rights reserved.
+                - paragraph: DeelRx and DRX are trademarks of Wrelik Brands LLC.
+    - generic:
+      - img
+      - generic: Online
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - alert
+  - dialog "Welcome to DRX" [ref=e11]:
+    - generic [ref=e12]:
+      - img [ref=e14]
+      - heading "Welcome to DRX" [level=2] [ref=e16]
+      - paragraph [ref=e17]: Your privacy-first POS, CRM, and inventory management system
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - img [ref=e27]
+        - generic [ref=e30]: Complete point-of-sale system
+      - generic [ref=e31]:
+        - img [ref=e32]
+        - generic [ref=e35]: Customer relationship management
+      - generic [ref=e36]:
+        - img [ref=e37]
+        - generic [ref=e40]: Real-time inventory tracking
+      - generic [ref=e41]:
+        - img [ref=e42]
+        - generic [ref=e45]: Credit and payment management
+    - generic [ref=e46]:
+      - button "Skip Tour" [active] [ref=e47]
+      - generic [ref=e48]:
+        - generic [ref=e49]: 1 of 5
+        - button "Next" [ref=e50]:
+          - text: Next
+          - img
+    - button "Close" [ref=e51]:
+      - img
+      - generic [ref=e52]: Close
+```
