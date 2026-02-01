@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-02-01
+
+### Changed
+
+- **Branding**: Complete site rebranding to DRX / DeelRx.
+- **UI**: Replaced all logos and icons with new transparent neon-lime assets (`drx-mark`, `favicon`).
+- **Assets**: Purged legacy placeholder images and SVGs.
+- **Metadata**: Updated OpenGraph images and PWA manifest icons.
+
 ## [0.3.1] - 2026-02-01
 
 ### Changed

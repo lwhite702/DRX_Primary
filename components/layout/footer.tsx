@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -10,7 +11,17 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-foreground mb-4">DRX CRM</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="relative h-6 w-10">
+                <Image
+                  src="/brand/drx-mark-primary.png"
+                  alt="DRX"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <h3 className="font-bold text-foreground">DeelRx</h3>
+            </div>
             <p className="text-sm text-muted-foreground">
               Privacy-first point of sale and customer management system for
               modern businesses.

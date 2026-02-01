@@ -4,28 +4,20 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { joinWaitlist } from "@/app/actions/beta";
 import { toast } from "sonner";
 import {
-  Loader2,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  BarChart,
-  Users,
-  Lock,
-  Database,
-  WifiOff,
-  History,
-  Tag,
-  CheckCircle2,
   Menu,
   X,
+  CheckCircle2,
+  XCircle,
+  BarChart,
+  Users,
+  ShieldCheck,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Rotating Status Chip Component
+// Rotating Status Chip Component - Kept for "Neon Velocity" vibe
 function StatusChip() {
   const statuses = [
     "PRIVACY CONTROLS: ON",
@@ -50,28 +42,7 @@ function StatusChip() {
 }
 
 export default function LandingPage() {
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [joined, setJoined] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("email", email);
-
-    // Simulate waitlist join for now or use actual action
-    // const result = await joinWaitlist(formData);
-    // For V1 Speed:
-    setTimeout(() => {
-      setLoading(false);
-      setJoined(true);
-      toast.success("Welcome to the waitlist!");
-    }, 800);
-  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -89,25 +60,28 @@ export default function LandingPage() {
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="flex items-center gap-2">
-          <div className="relative w-8 h-8">
-            <Image src="/icon.svg" alt="DRX" fill className="object-contain" />
+          <div className="relative w-[60px] h-8">
+            <Image
+              src="/brand/drx-mark-primary.png"
+              alt="DeelRx"
+              fill
+              className="object-contain"
+            />
           </div>
-          <span className="font-bold text-xl tracking-tight">DRX</span>
+          <span className="font-bold text-xl tracking-tight">DeelRx</span>
         </div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          {["PRODUCT", "PRIVACY", "POS", "INVENTORY", "PRICING", "FAQ"].map(
-            (item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                className="technical-label hover:text-accent transition-colors text-xs tracking-widest"
-              >
-                {item}
-              </button>
-            ),
-          )}
+          {["WHY", "FEATURES", "WHO", "PROOF"].map((item) => (
+            <button
+              key={item}
+              onClick={() => scrollToSection(item.toLowerCase())}
+              className="technical-label hover:text-accent transition-colors text-xs tracking-widest"
+            >
+              {item}
+            </button>
+          ))}
           <Link
             href="/login"
             className="technical-label hover:text-accent transition-colors text-xs tracking-widest"
@@ -120,12 +94,12 @@ export default function LandingPage() {
           <div className="hidden md:block">
             <StatusChip />
           </div>
-          <Link href="#start">
+          <Link href="/signup">
             <Button
               size="sm"
               className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
             >
-              START FREE
+              START
             </Button>
           </Link>
           <button
@@ -141,17 +115,15 @@ export default function LandingPage() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm pt-24 px-6 md:hidden">
           <nav className="flex flex-col gap-6 text-center">
-            {["PRODUCT", "PRIVACY", "POS", "INVENTORY", "PRICING", "FAQ"].map(
-              (item) => (
-                <button
-                  key={item}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-2xl font-bold tracking-tight hover:text-accent"
-                >
-                  {item}
-                </button>
-              ),
-            )}
+            {["WHY", "FEATURES", "WHO", "PROOF"].map((item) => (
+              <button
+                key={item}
+                onClick={() => scrollToSection(item.toLowerCase())}
+                className="text-2xl font-bold tracking-tight hover:text-accent"
+              >
+                {item}
+              </button>
+            ))}
             <Link
               href="/login"
               className="text-2xl font-bold tracking-tight hover:text-accent"
@@ -165,527 +137,283 @@ export default function LandingPage() {
       <main className="flex-1 relative z-10">
         {/* HERO SECTION */}
         <section className="py-24 md:py-32 px-6 flex flex-col items-center text-center max-w-5xl mx-auto space-y-10">
+          <div className="relative w-24 h-12 mb-4">
+            <Image
+              src="/brand/drx-mark-primary.png"
+              alt="DRX"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[1.1]">
-            RUN YOUR SHOP.
+            Run real transactions.
             <br />
-            <span className="text-accent">KEEP YOUR NUMBERS STRAIGHT.</span>
+            <span className="text-accent">Without the mess.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl leading-relaxed">
-            DRX is a fast, privacy-respecting POS and inventory system for
-            independent operators.
-            <br className="hidden md:block" />
-            Sell quicker. Track stock accurately. Only collect what you actually
-            need.
+            DeelRx is a privacy-first CRM and POS built for cash-heavy,
+            inventory-sensitive businesses that don’t operate on neat timelines.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              "MOBILE POS",
-              "OWNER-CONTROLLED PRIVACY",
-              "REAL-TIME INVENTORY",
-              "ROLE-BASED ACCESS",
-            ].map((chip) => (
-              <span
-                key={chip}
-                className="px-3 py-1 rounded-full border border-border/50 bg-secondary/30 text-xs font-mono text-secondary-foreground"
-              >
-                {chip}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-8">
             <Button
               size="lg"
               className="text-lg px-8 py-6 rounded-full bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto"
             >
-              START FREE
+              Get Set Up Quietly
             </Button>
             <Button
               variant="outline"
               size="lg"
               className="text-lg px-8 py-6 rounded-full w-full sm:w-auto"
-              onClick={() => scrollToSection("product")}
+              onClick={() => scrollToSection("proof")}
             >
-              SEE HOW IT WORKS
+              See How It Works
             </Button>
-          </div>
-
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent my-8" />
-
-          <div className="flex justify-center gap-8 text-xs md:text-sm font-mono text-muted-foreground tracking-widest uppercase">
-            <span>FAST CHECKOUT</span>
-            <span>ACCURATE COUNTS</span>
-            <span>NO EXTRA DATA</span>
           </div>
         </section>
 
-        {/* THE PROBLEM */}
-        <section className="py-20 px-6 bg-muted/30">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
+        {/* TRUST SIGNAL STRIP */}
+        <section className="py-8 border-y border-border/40 bg-muted/20">
+          <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm font-mono tracking-widest uppercase text-muted-foreground">
+            <span>No unnecessary data collection</span>
+            <span>Built for fast-moving inventory</span>
+            <span>Credit tracking included</span>
+            <span>Designed for discretion</span>
+          </div>
+        </section>
+
+        {/* WHY DEELRX */}
+        <section id="why" className="py-24 px-6">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
             <span className="text-accent text-sm font-bold tracking-widest uppercase">
-              THE REAL PROBLEM
+              WHY DEELRX
             </span>
-            <h2 className="text-3xl md:text-5xl font-bold">
-              MESSY SYSTEMS CAUSE REAL PROBLEMS.
+            <h2 className="text-4xl md:text-6xl font-bold leading-tight">
+              Most software assumes perfect paperwork.
+              <br />
+              <span className="text-muted-foreground">
+                Real businesses don’t.
+              </span>
             </h2>
-            <div className="space-y-2 text-lg text-muted-foreground">
-              <p>Slow checkout costs money.</p>
-              <p>Bad inventory causes arguments.</p>
-              <p>Oversharing customer data causes headaches.</p>
-              <p className="pt-4 font-semibold text-foreground">
-                Most tools make all three worse.
+            <div className="space-y-6 text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+              <p>
+                DeelRx was built for operators who manage inventory that moves
+                fast, customers who don’t always pay immediately, and workflows
+                that don’t fit neatly into enterprise accounting tools.
+              </p>
+              <div className="pt-4 font-bold text-foreground grid gap-2">
+                <p>No bloat.</p>
+                <p>No moralizing.</p>
+                <p>No noise.</p>
+              </div>
+              <p className="pt-4 text-accent">
+                Just tools that reflect reality.
               </p>
             </div>
           </div>
         </section>
 
-        {/* WHAT DRX IS */}
-        <section id="product" className="py-24 px-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-8">
-                <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                  WHAT THIS IS
-                </span>
-                <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-                  BUILT FOR PEOPLE WHO RUN SHOPS, NOT DESKS.
-                </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  DRX helps independent businesses sell faster, track inventory
-                  correctly, and stay organized without collecting more
-                  information than necessary.
-                </p>
+        {/* WHAT IT HANDLES */}
+        <section id="features" className="py-24 px-6 bg-muted/30">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-accent text-sm font-bold tracking-widest uppercase">
+                WHAT IT HANDLES
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Inventory that actually moves",
+                  desc: "Track stock changes in real time without guessing or reconciliation nightmares.",
+                  icon: <BarChart className="w-8 h-8 text-accent" />,
+                },
+                {
+                  title: "Credit that doesn’t disappear",
+                  desc: "Record pay-later balances clearly and privately so nothing slips through the cracks.",
+                  icon: <Users className="w-8 h-8 text-accent" />,
+                },
+                {
+                  title: "Cash without chaos",
+                  desc: "Log transactions without overcomplicating operations or drawing attention.",
+                  icon: <Zap className="w-8 h-8 text-accent" />,
+                },
+              ].map((feature, i) => (
+                <div
+                  key={i}
+                  className="bg-background border border-border/50 p-8 rounded-2xl md:min-h-[200px] flex flex-col gap-4 hover:border-accent/50 transition-colors"
+                >
+                  <div className="mb-2">{feature.icon}</div>
+                  <h3 className="text-xl font-bold">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* WHO IT'S FOR */}
+        <section id="who" className="py-24 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-accent text-sm font-bold tracking-widest uppercase">
+                WHO IT'S FOR
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12">
+              {/* BUILT FOR */}
+              <div className="space-y-8 bg-muted/20 p-8 rounded-2xl border border-border/50">
+                <h3 className="text-3xl font-bold">Built for</h3>
                 <ul className="space-y-4">
                   {[
-                    "Mobile-first checkout",
-                    "Inventory with real units and conversions",
-                    "Optional customer information",
-                    "Owner-controlled settings",
-                    "Clear records when you need them",
+                    "Independent retail operators",
+                    "Cash-heavy businesses",
+                    "Sellers who extend informal credit",
+                    "Teams managing fast-moving inventory",
+                    "Operators who value discretion",
                   ].map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-accent" />
+                    <li key={item} className="flex items-center gap-3 text-lg">
+                      <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
-                {/* Placeholder for App Screenshot */}
-                <div className="aspect-[9/16] bg-muted/50 rounded-lg flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-x-4 top-4 bottom-20 bg-background rounded border border-border shadow-sm p-4 space-y-4">
-                    <div className="h-2 w-1/3 bg-muted rounded"></div>
-                    <div className="space-y-2">
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="flex justify-between items-center"
-                        >
-                          <div className="h-8 w-8 bg-muted rounded-full"></div>
-                          <div className="h-2 w-24 bg-muted rounded"></div>
-                          <div className="h-6 w-12 bg-muted rounded"></div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="absolute bottom-4 left-4 right-4 h-12 bg-accent rounded flex items-center justify-center text-background font-bold">
-                      CHECKOUT
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* CORE SYSTEMS GRID */}
-        <section className="py-24 px-6 bg-background space-y-32">
-          <div className="text-center mb-16">
-            <span className="text-accent text-sm font-bold tracking-widest uppercase">
-              CORE SYSTEMS
-            </span>
-          </div>
-
-          {[
-            {
-              id: "privacy",
-              label: "PRIVACY CONTROLS",
-              title: "YOU DECIDE WHAT GETS STORED.",
-              copy: [
-                "Some shops need names and numbers.",
-                "Some don't.",
-                "DRX lets owners choose what information is collected, what staff can see, and what can be exported.",
-              ],
-              proof: "PRESETS ENFORCED ACROSS THE SYSTEM",
-              icon: <Lock className="w-8 h-8 text-accent" />,
-            },
-            {
-              id: "pos",
-              label: "POINT OF SALE",
-              title: "SELL FAST. MOVE ON.",
-              copy: [
-                "Search products by name or nickname.",
-                "Tap quantities.",
-                "Finish the sale without slowing the line.",
-              ],
-              proof: "DESIGNED FOR MOBILE USE",
-              icon: <Zap className="w-8 h-8 text-accent" />,
-            },
-            {
-              id: "inventory",
-              label: "INVENTORY",
-              title: "KNOW WHAT YOU ACTUALLY HAVE.",
-              copy: [
-                "Track inventory using real units.",
-                "Every intake and adjustment requires a reason.",
-                "Everything stays recorded.",
-              ],
-              proof: "AUDIT HISTORY INCLUDED",
-              icon: <BarChart className="w-8 h-8 text-accent" />,
-            },
-            {
-              id: "aliases",
-              label: "ALIASES / NICKNAMES",
-              title: "CALL IT WHAT YOU CALL IT.",
-              copy: [
-                "Nicknames map to real products and quantities.",
-                "Staff works faster. Fewer mistakes happen.",
-              ],
-              proof: "ALIASES LINKED TO INVENTORY",
-              icon: <Tag className="w-8 h-8 text-accent" />,
-            },
-            {
-              id: "credit",
-              label: "CREDIT",
-              title: "KEEP TRACK OF WHO OWES WHAT.",
-              copy: [
-                "Set limits.",
-                "Record payments.",
-                "See what's outstanding without guessing.",
-              ],
-              proof: "OWNER-CONTROLLED POLICIES",
-              icon: <Users className="w-8 h-8 text-accent" />,
-            },
-            {
-              id: "offline",
-              label: "OFFLINE MODE",
-              title: "WORKS EVEN WHEN SIGNALS DON'T.",
-              copy: [
-                "Continue selling during outages.",
-                "Changes sync safely when connection returns.",
-              ],
-              proof: "NO SILENT FAILURES",
-              icon: <WifiOff className="w-8 h-8 text-accent" />,
-            },
-          ].map((feature, idx) => (
-            <div
-              key={feature.id}
-              id={feature.id}
-              className={cn(
-                "max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center",
-                idx % 2 === 1 && "md:flex-row-reverse",
-              )}
-            >
-              <div className={cn(idx % 2 === 1 && "md:order-2")}>
-                <div className="bg-muted/30 p-8 rounded-2xl aspect-square flex items-center justify-center border border-border/50">
-                  {feature.icon}
-                </div>
-              </div>
-              <div className="space-y-6">
-                <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                  {feature.label}
-                </span>
-                <h3 className="text-3xl md:text-4xl font-bold">
-                  {feature.title}
-                </h3>
-                <div className="space-y-2 text-lg text-muted-foreground">
-                  {feature.copy.map((line, i) => (
-                    <p key={i}>{line}</p>
+              {/* NOT BUILT FOR */}
+              <div className="space-y-8 bg-red-500/5 p-8 rounded-2xl border border-red-500/20">
+                <h3 className="text-3xl font-bold">Not built for</h3>
+                <ul className="space-y-4">
+                  {[
+                    "Enterprise chains",
+                    "Net-30-only businesses",
+                    "Compliance-heavy accounting departments",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-3 text-lg text-muted-foreground"
+                    >
+                      <XCircle className="w-6 h-6 text-red-500 shrink-0" />
+                      <span>{item}</span>
+                    </li>
                   ))}
-                </div>
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground">
-                    {feature.proof}
-                  </p>
+                </ul>
+                <div className="pt-8 text-center text-sm font-mono uppercase tracking-widest text-muted-foreground">
+                  This product chooses a side.
                 </div>
               </div>
-            </div>
-          ))}
-        </section>
-
-        {/* PRIVACY EXPLAINED */}
-        <section className="py-24 px-6 bg-muted/30">
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div className="text-center space-y-6">
-              <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                PRIVACY CONTROLS
-              </span>
-              <h2 className="text-3xl md:text-5xl font-bold">
-                YOU PICK THE MODE. THE SYSTEM OBEYS.
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Every business runs differently. DRX gives owners control over
-                how much information is collected, shown, and shared.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                {
-                  title: "OPEN",
-                  desc: "Full customer details available to authorized roles.",
-                },
-                {
-                  title: "BALANCED",
-                  desc: "Standard operations with sensible limits and controls.",
-                },
-                {
-                  title: "PRIVATE",
-                  desc: "Reduced customer information by default. Tighter export restrictions.",
-                },
-                {
-                  title: "MAX SECURE",
-                  desc: "Minimal customer information. Strict access and export controls.",
-                },
-              ].map((mode) => (
-                <div
-                  key={mode.title}
-                  className="bg-background border border-border/50 p-6 rounded-xl flex flex-col justify-between hover:border-accent/50 transition-colors"
-                >
-                  <h4 className="font-bold text-lg mb-2">{mode.title}</h4>
-                  <p className="text-sm text-muted-foreground">{mode.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm font-mono tracking-widest text-muted-foreground uppercase">
-                Privacy rules apply everywhere: screens, reports, and exports.
-              </p>
             </div>
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto space-y-16">
+        {/* VISUAL PROOF */}
+        <section id="proof" className="py-24 px-6 bg-muted/30">
+          <div className="max-w-6xl mx-auto space-y-16">
             <div className="text-center">
               <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                HOW IT WORKS
+                VISUAL PROOF
               </span>
+              <h2 className="text-3xl md:text-5xl font-bold mt-4">
+                Dark UI. Neon accents. <br />
+                Operational clarity.
+              </h2>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8">
-              {[
-                {
-                  step: "1",
-                  title: "SET UP YOUR SHOP",
-                  desc: "Add your business details, choose units, and set privacy preferences.",
-                },
-                {
-                  step: "2",
-                  title: "LOAD PRODUCTS",
-                  desc: "Add inventory and optional nicknames for faster sales.",
-                },
-                {
-                  step: "3",
-                  title: "SELL",
-                  desc: "Use mobile checkout with quick quantities and clean receipts.",
-                },
-                {
-                  step: "4",
-                  title: "STAY ORGANIZED",
-                  desc: "Inventory, payments, and adjustments stay recorded automatically.",
-                },
-              ].map((item) => (
-                <div key={item.step} className="space-y-4 relative">
-                  <div className="text-6xl font-bold text-muted/20 absolute -top-8 -left-4 z-0">
-                    {item.step}
+            {/* Simulated UI Screens */}
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Inventory Screen Simulation */}
+              <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden aspect-[4/3] relative group">
+                <div className="absolute inset-0 bg-background flex flex-col group-hover:scale-[1.01] transition-transform duration-500">
+                  {/* Mock Header */}
+                  <div className="h-12 border-b border-border flex items-center px-4 justify-between bg-muted/10">
+                    <div className="text-xs font-bold font-mono">
+                      INVENTORY // LIVE
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
-                  <h3 className="font-bold text-lg relative z-10">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground relative z-10">
-                    {item.desc}
-                  </p>
+                  {/* Mock Table */}
+                  <div className="p-4 space-y-3 font-mono text-xs">
+                    <div className="grid grid-cols-4 text-muted-foreground mb-2">
+                      <span>ITEM</span>
+                      <span>STOCK</span>
+                      <span>VALUE</span>
+                      <span>STATUS</span>
+                    </div>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="grid grid-cols-4 items-center py-2 border-b border-border/30"
+                      >
+                        <div className="h-2 w-16 bg-muted rounded"></div>
+                        <div className="h-2 w-8 bg-muted rounded"></div>
+                        <div className="h-2 w-12 bg-muted rounded"></div>
+                        <div className="h-2 w-10 bg-accent/50 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* SOCIAL PROOF */}
-        <section className="py-20 px-6 bg-muted/30 border-y border-border/50">
-          <div className="max-w-4xl mx-auto text-center space-y-12">
-            <div>
-              <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                USED BY INDEPENDENT OPERATORS
-              </span>
-              <h2 className="text-3xl font-bold mt-4">
-                BUILT FOR REAL SHOPS WITH REAL VOLUME.
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 text-left">
-              {[
-                {
-                  quote:
-                    "Checkout is fast and inventory finally matches what's on the shelf.",
-                  role: "Retail Owner",
-                },
-                {
-                  quote:
-                    "Privacy settings let us run the shop without oversharing.",
-                  role: "Manager",
-                },
-                {
-                  quote: "Training new staff takes less than an hour.",
-                  role: "Store Supervisor",
-                },
-              ].map((t, i) => (
-                <div key={i} className="space-y-4">
-                  <p className="text-lg italic text-muted-foreground">
-                    "{t.quote}"
-                  </p>
-                  <p className="font-bold text-sm">— {t.role}</p>
+                <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur border border-border px-3 py-1 text-xs font-bold rounded">
+                  INVENTORY TABLES
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* PRICING */}
-        <section id="pricing" className="py-24 px-6">
-          <div className="max-w-5xl mx-auto space-y-12">
-            <div className="text-center space-y-4">
-              <span className="text-accent text-sm font-bold tracking-widest uppercase">
-                PRICING
-              </span>
-              <p className="text-xl">Simple plans based on how you operate.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Starter */}
-              <div className="border border-border p-8 rounded-2xl space-y-6 flex flex-col">
-                <h3 className="text-2xl font-bold">STARTER</h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Mobile POS
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Inventory
-                    tracking
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Basic
-                    privacy controls
-                  </li>
-                </ul>
-                <Button className="w-full rounded-full" variant="outline">
-                  START FREE
-                </Button>
               </div>
 
-              {/* Pro */}
-              <div className="border border-accent p-8 rounded-2xl space-y-6 flex flex-col bg-accent/5 relative">
-                <div className="absolute top-0 right-0 bg-accent text-background text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">
-                  POPULAR
+              {/* Credit Screen Simulation */}
+              <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden aspect-[4/3] relative group">
+                <div className="absolute inset-0 bg-background flex flex-col group-hover:scale-[1.01] transition-transform duration-500">
+                  {/* Mock Header */}
+                  <div className="h-12 border-b border-border flex items-center px-4 justify-between bg-muted/10">
+                    <div className="text-xs font-bold font-mono">
+                      CREDIT // OUTSTANDING
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    </div>
+                  </div>
+                  {/* Mock List */}
+                  <div className="p-4 space-y-4 font-mono text-xs">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 border border-border/50 rounded bg-muted/5"
+                      >
+                        <div className="flex gap-3 items-center">
+                          <div className="w-8 h-8 rounded-full bg-muted"></div>
+                          <div className="space-y-1">
+                            <div className="h-2 w-20 bg-muted rounded"></div>
+                            <div className="h-1.5 w-12 bg-muted/50 rounded"></div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="h-3 w-16 bg-red-500/20 rounded mb-1"></div>
+                          <div className="h-1.5 w-10 bg-muted/50 rounded ml-auto"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold">PRO</h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Everything
-                    in Starter
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Advanced
-                    inventory
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Credit
-                    tracking
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Role-based
-                    access
-                  </li>
-                </ul>
-                <Button className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90">
-                  UPGRADE
-                </Button>
-              </div>
-
-              {/* Max Secure */}
-              <div className="border border-border p-8 rounded-2xl space-y-6 flex flex-col">
-                <h3 className="text-2xl font-bold">MAX SECURE</h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Full
-                    privacy controls
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Export
-                    restrictions
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent" /> Advanced
-                    audit access
-                  </li>
-                </ul>
-                <Button className="w-full rounded-full" variant="ghost">
-                  CONTACT SALES
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section id="faq" className="py-24 px-6 bg-muted/30">
-          <div className="max-w-3xl mx-auto space-y-12">
-            <h2 className="text-3xl font-bold text-center">FAQ</h2>
-            <div className="space-y-8">
-              {[
-                {
-                  q: "Does DRX work offline?",
-                  a: "Yes. Sales and inventory changes sync when connection returns.",
-                },
-                {
-                  q: "Do I have to collect customer information?",
-                  a: "No. Owners decide what information is collected.",
-                },
-                {
-                  q: "Is inventory tracked in real units?",
-                  a: "Yes. DRX supports multiple units and conversions.",
-                },
-                {
-                  q: "Is every adjustment recorded?",
-                  a: "Yes. All changes require a reason and appear in audit history.",
-                },
-              ].map((item, i) => (
-                <div key={i} className="space-y-2">
-                  <h3 className="font-bold text-lg">{item.q}</h3>
-                  <p className="text-muted-foreground">{item.a}</p>
+                <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur border border-border px-3 py-1 text-xs font-bold rounded">
+                  CREDIT BALANCES
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* FINAL CTA */}
         <section className="py-32 px-6 text-center space-y-8">
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">
-            GET YOUR NUMBERS STRAIGHT.
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter max-w-4xl mx-auto">
+            Software that understands how business actually works.
           </h2>
-          <p className="text-xl text-muted-foreground">
-            Fast checkout. Accurate inventory. Owner-controlled privacy.
-          </p>
           <Button
             size="lg"
-            className="text-lg px-12 py-8 rounded-full bg-foreground text-background hover:bg-foreground/90"
+            className="text-lg px-12 py-8 rounded-full bg-foreground text-background hover:bg-foreground/90 mt-8"
           >
-            START FREE
+            Start With DeelRx
           </Button>
         </section>
       </main>
@@ -694,12 +422,22 @@ export default function LandingPage() {
       <footer className="py-12 px-6 border-t border-border/40">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col gap-2">
-            <div className="flex gap-4 text-xs font-mono tracking-widest text-muted-foreground">
-              <span>TENANT ISOLATION: ENABLED</span>
-              <span>AUDIT LOGGING: ENABLED</span>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="relative w-8 h-5">
+                <Image
+                  src="/brand/drx-mark-primary.png"
+                  alt="DRX"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <span className="font-bold text-lg">DeelRx</span>
             </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              © {new Date().getFullYear()} Wrelik Brands LLC.
+            <div className="flex gap-4 text-xs font-mono tracking-widest text-muted-foreground">
+              <span>OPERATIONAL STATUS: ACTIVE</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              DeelRx is a business operations platform.
             </p>
           </div>
           <div className="flex gap-8 text-sm font-bold tracking-widest">
@@ -710,7 +448,7 @@ export default function LandingPage() {
               TERMS
             </Link>
             <Link href="#" className="hover:text-accent">
-              SUPPORT
+              CONTACT
             </Link>
           </div>
         </div>

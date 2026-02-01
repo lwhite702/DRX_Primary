@@ -1,7 +1,0 @@
-<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="60" cy="60" r="55" fill="#22c55e" opacity="0.15"/>
-  
-  <!-- Rx Symbol -->
-  <text x="60" y="80" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#22c55e" text-anchor="middle">Rx</text>
-</svg>

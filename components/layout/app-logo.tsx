@@ -14,12 +14,12 @@ export function AppLogo({
       className="flex items-center gap-3 min-w-0"
       aria-label="DRX CRM Home"
     >
-      <div className="relative h-8 w-8 shrink-0">
+      <div className="relative h-8 w-[60px] shrink-0">
         <Image
-          src="/icon.svg"
+          src="/brand/drx-mark-primary.png"
           alt="DeelRx CRM"
           fill
-          className="object-contain opacity-90"
+          className="object-contain"
           priority
         />
       </div>
