@@ -21,10 +21,10 @@ const __dirname = path.dirname(__filename);
 
 const PACKAGE_JSON_PATH = path.join(__dirname, "../package.json");
 const CHANGELOG_PATH = path.join(__dirname, "../CHANGELOG.md");
+const VERSION_FILE_PATH = path.join(__dirname, "../VERSION");
 
-// Read package.json dynamically to avoid JSON import issues if not enabled
-const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf-8"));
-const CURRENT_VERSION = packageJson.version;
+// Read VERSION file as source of truth per Wrelik Brands Versioning Protocol
+const CURRENT_VERSION = fs.readFileSync(VERSION_FILE_PATH, "utf-8").trim();
 
 interface VersionParts {
   major: number;
@@ -150,6 +150,9 @@ function bumpVersion() {
   const newVersion = incrementVersion(CURRENT_VERSION, analysis.bumpType);
   const today = new Date().toISOString().split("T")[0];
 
+  // Update VERSION file (single source of truth)
+  fs.writeFileSync(VERSION_FILE_PATH, newVersion + "\n");
+
   // Update package.json
   const pj = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf-8"));
   pj.version = newVersion;
@@ -167,13 +170,16 @@ function bumpVersion() {
   updateUIVersions(newVersion);
 
   console.log(`\n✅ Version bumped to v${newVersion}`);
-  console.log(`   Updated: package.json, CHANGELOG.md, UI components\n`);
+  console.log(`   Updated: VERSION, package.json, CHANGELOG.md, UI components\n`);
 }
 
 function updateUIVersions(version: string) {
   const filesToUpdate = [
     "../components/layout/sidebar.tsx",
     "../components/layout/bottom-nav.tsx",
+    "../app/(app)/admin/page.tsx",
+    "../components/layout/footer.tsx",
+    "../app/(app)/settings/page.tsx",
   ];
 
   filesToUpdate.forEach((relativePath) => {

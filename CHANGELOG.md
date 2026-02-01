@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2025-02-28
+
+### Fixed
+
+- **Versioning**: Created VERSION file at repo root as single source of truth
+- **Versioning**: Fixed inconsistent version display across UI components (sidebar, bottom-nav, admin)
+- **Versioning**: Added version display to admin console header
+- **Versioning**: Added version display to application footer
+
 ## [0.3.2] - 2026-02-01
 
 ### Changed
