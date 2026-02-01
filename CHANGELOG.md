@@ -5,6 +5,15 @@ All notable changes to DRX CRM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Refactor**: Modernized `SalesPage` by decomposing it into smaller sub-components (`ProductSearch`, `CartItems`, etc.) and extracting logic to `useSalesCart` hook.
+- **Refactor**: Modularized `BusinessSetupWizard` into distinct step components for better maintainability.
+- **Scripts**: Converted build and utility scripts (`scripts/*.js`) to TypeScript to improve type safety and fix lint errors.
+- **Cleanup**: Removed unused variables and imports across the codebase.
+
 ## [0.3.0] - 2026-01-31
 
 ### Added

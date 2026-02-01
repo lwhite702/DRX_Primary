@@ -1,7 +1,8 @@
-const fetch = require("node-fetch");
-const path = require("path");
-const { Agent } = require("https");
-require("dotenv").config({ path: path.resolve(process.cwd(), ".env.local") });
+import path from "path";
+import { Agent } from "https";
+import dotenv from "dotenv";
+
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const API_KEY = process.env.FEATUREBASE_API_KEY;
 const API_BASE = "https://do.featurebase.app/v2";
@@ -11,11 +12,17 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-async function performRequest(method, endpoint, body) {
+async function performRequest(method: string, endpoint: string, body?: any) {
   const url = `${API_BASE}${endpoint}`;
   try {
-    const opts = { method, headers, agent };
+    const opts: RequestInit & { agent?: Agent } = {
+      method,
+      headers,
+      agent,
+    };
     if (body) opts.body = JSON.stringify(body);
+
+    // Use global fetch
     const res = await fetch(url, opts);
     const text = await res.text();
     console.log(`[${method}] ${endpoint} -> ${res.status}`);
@@ -29,22 +36,23 @@ async function performRequest(method, endpoint, body) {
 
 async function main() {
   console.log("Getting collections...");
-  const collections = await performRequest("GET", "/help_center/collections");
-  let collectionId;
+  const collections: any = await performRequest(
+    "GET",
+    "/help_center/collections",
+  );
+  let collectionId: string | undefined;
 
-  if (
-    collections &&
-    (collections.data || collections.results || []).length > 0
-  ) {
-    const list = collections.data || collections.results;
+  const list = collections?.data || collections?.results || [];
+
+  if (list.length > 0) {
     collectionId = list[0].id;
     console.log("Using collection ID:", collectionId);
   } else {
     console.log("No collections found. Creating one...");
-    const col = await performRequest("POST", "/help_center/collections", {
+    const col: any = await performRequest("POST", "/help_center/collections", {
       name: "Test Col",
     });
-    collectionId = col.id;
+    collectionId = col?.id;
   }
 
   if (!collectionId) return;

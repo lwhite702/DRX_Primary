@@ -1,0 +1,647 @@
+
+> my-v0-project@0.3.0 lint /Users/lee/Projects/DRX_Primary
+> eslint .
+
+(node:14576) ESLintEnvWarning: /* eslint-env */ comments are no longer recognized when linting with flat config and will be reported as errors as of v10.0.0. Replace them with /* global */ comments or define globals in your config file. See https://eslint.org/docs/latest/use/configure/migration-guide#eslint-env-configuration-comments for details. Found in /Users/lee/Projects/DRX_Primary/scripts/version.js at line 2.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+/Users/lee/Projects/DRX_Primary/app/(app)/admin/ai/page.tsx
+  18:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/admin/approvals/page.tsx
+   27:3   warning  'DialogTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   29:10  warning  'AlertCircle' is defined but never used    @typescript-eslint/no-unused-vars
+   29:43  warning  'XCircle' is defined but never used        @typescript-eslint/no-unused-vars
+  106:32  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  133:22  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  160:21  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  187:21  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/admin/audit/page.tsx
+   28:46  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   29:48  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  290:49  warning  'e' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/(app)/admin/businesses/page.tsx
+  29:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/admin/users/page.tsx
+   56:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/(app)/ai-intelligence/page.tsx
+   3:20  warning  'useEffect' is defined but never used             @typescript-eslint/no-unused-vars
+   7:10  warning  'Label' is defined but never used                 @typescript-eslint/no-unused-vars
+  22:21  warning  'AlertTriangle' is defined but never used         @typescript-eslint/no-unused-vars
+  34:10  warning  'selectedSku' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  40:9   warning  'supabase' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  48:54  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/credit/page.tsx
+   40:3   warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+   66:46  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   67:64  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   68:46  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  142:40  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  167:38  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  360:49  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  361:38  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/customers/page.tsx
+   29:30  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+   98:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/dashboard/page.tsx
+  19:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  95:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/demo/mobile-menu/page.tsx
+   8:10  warning  'activeTab' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   8:21  warning  'setActiveTab' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  27:49  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/help/page.tsx
+  20:3  warning  'Video' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/(app)/insights/page.tsx
+   16:18  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   17:18  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  109:13  warning  'totalRevenue' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/(app)/inventory/page.tsx
+   39:3   warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+   40:3   warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+   41:3   warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+   42:3   warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   43:3   warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+   51:58  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  125:29  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/[id]/page.tsx
+   48:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   50:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/_components/CartCustomer.tsx
+  8:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/_components/CartItems.tsx
+  14:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/_components/PaymentSection.tsx
+  14:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/_components/ProductSearch.tsx
+   9:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/_hooks/useSalesCart.ts
+  23:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/sales/page.tsx
+   90:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   91:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  238:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/settings/inventory/aliases/page.tsx
+   67:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/settings/page.tsx
+   54:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/settings/profile/page.tsx
+  22:36  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  26:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  68:21  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(app)/settings/team/page.tsx
+  100:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/(marketing)/page.tsx
+   7:10  warning  'Input' is defined but never used                  @typescript-eslint/no-unused-vars
+   8:10  warning  'joinWaitlist' is defined but never used           @typescript-eslint/no-unused-vars
+  11:3   warning  'Loader2' is defined but never used                @typescript-eslint/no-unused-vars
+  12:3   warning  'ArrowRight' is defined but never used             @typescript-eslint/no-unused-vars
+  13:3   warning  'ShieldCheck' is defined but never used            @typescript-eslint/no-unused-vars
+  18:3   warning  'Database' is defined but never used               @typescript-eslint/no-unused-vars
+  20:3   warning  'History' is defined but never used                @typescript-eslint/no-unused-vars
+  53:10  warning  'loading' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  54:17  warning  'setEmail' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  55:10  warning  'joined' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  58:9   warning  'handleSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/actions/beta.ts
+  39:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/actions/rtbf.ts
+   57:11  warning  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  113:17  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/api/admin/audit-logs/[id]/route.ts
+   4:3  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   5:5  warning  'params' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  11:3  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  12:5  warning  'params' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  18:3  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  19:5  warning  'params' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  25:3  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  26:5  warning  'params' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/admin/audit-logs/route.ts
+  70:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/api/admin/user/route.ts
+  79:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/admin/users/[id]/route.ts
+   63:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  122:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/ai/alerts/route.ts
+   8:7   warning  'business_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  46:11  warning  'severity' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/ai/analyze/route.ts
+   9:7   warning  'analysis_type' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:14  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/api/ai/product-intelligence/route.ts
+  3:10  warning  'getSupabaseClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/audit-logs/route.ts
+  84:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/customers/[id]/route.ts
+  35:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/customers/route.ts
+  78:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/refresh-customer/route.ts
+  2:10  warning  'getSupabaseClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/refresh-limits/route.ts
+  41:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/transactions/[id]/route.ts
+   5:3   warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   6:5   warning  'params' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  40:12  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/credit/transactions/route.ts
+   82:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  146:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/featurebase/auth/route.ts
+  6:7   warning  'FEATUREBASE_API_KEY' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  9:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/inventory/[id]/route.ts
+  31:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  75:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/inventory/intake/approve/route.ts
+  186:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/api/inventory/intake/route.ts
+  204:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/app/api/notifications/auditlogs/route.ts
+  5:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/notifications/route.ts
+   4:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  33:12  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/team/members/[id]/audit-logs/route.ts
+  10:9  warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/team/members/[id]/route.ts
+  10:9  warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/team/route.ts
+  87:11  warning  'userDetailsMap' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  91:35  warning  'uError' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts
+  78:20  warning  'roleDeleteError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/dashboard/operator/page.tsx
+  1:10  warning  'Suspense' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/app/layout.tsx
+  17:7  warning  '_geistSans' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  18:7  warning  '_geistMono' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/ai/ai-intelligence-dashboard.tsx
+  85:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/ai/inventory-forecast-card.tsx
+  29:3  warning  'inventoryId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  30:3  warning  'businessId' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  31:3  warning  'forecastId' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  32:3  warning  'onRestock' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/ai/pricing-recommendation-card.tsx
+  6:10  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/credit/CreditExposureDashboard.tsx
+  6:23  warning  'TrendingDown' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/crm/ProductCostBreakdown.tsx
+  28:3  warning  'productName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/dashboard/operator/moving-today.tsx
+  4:10  warning  'Badge' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/dashboard/operator/quick-actions.tsx
+  67:9  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/dashboard/operator/snapshot.tsx
+  19:9  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/inventory/search-view.tsx
+  90:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/layout/bottom-nav.tsx
+  44:30  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/layout/sidebar.tsx
+  99:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/layout/top-nav.tsx
+   5:10  warning  'Bell' is defined but never used          @typescript-eslint/no-unused-vars
+  10:10  warning  'LogoutButton' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/onboarding/business-setup-wizard.tsx
+   53:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/onboarding/onboarding-flow.tsx
+   7:3  warning  'Card' is defined but never used             @typescript-eslint/no-unused-vars
+   8:3  warning  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+   9:3  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  10:3  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  11:3  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  25:3  warning  'CreditCard' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/pos/customer-selector-modal.tsx
+  13:10  warning  'Label' is defined but never used     @typescript-eslint/no-unused-vars
+  14:10  warning  'Textarea' is defined but never used  @typescript-eslint/no-unused-vars
+  15:36  warning  'Award' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/pos/inventory-check-modal.tsx
+  39:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/pos/loyalty-badge.tsx
+   3:10  warning  'Crown' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   3:17  warning  'Gift' is defined but never used                                                  @typescript-eslint/no-unused-vars
+  14:3   warning  'purchase_count' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/pos/pos-review-modal.tsx
+   7:3   warning  'DialogHeader' is defined but never used  @typescript-eslint/no-unused-vars
+   8:3   warning  'DialogTitle' is defined but never used   @typescript-eslint/no-unused-vars
+   9:3   warning  'DialogFooter' is defined but never used  @typescript-eslint/no-unused-vars
+  16:3   warning  'Truck' is defined but never used         @typescript-eslint/no-unused-vars
+  19:3   warning  'Smartphone' is defined but never used    @typescript-eslint/no-unused-vars
+  23:10  warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/pos/shrinkage-form.tsx
+  41:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/pos/weight-entry-modal.tsx
+  53:42  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  54:10  warning  'loading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  54:19  warning  'setLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/providers/customer-provider.tsx
+  8:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/providers/featurebase-provider.tsx
+  99:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/reports/shrinkage-report.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/sentry-feedback-button.tsx
+  23:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/components/skeletons/dashboard-skeleton.tsx
+  1:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  1:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/components/ui/tour.tsx
+   13:3   warning  'Popover' is defined but never used               @typescript-eslint/no-unused-vars
+   14:3   warning  'PopoverContent' is defined but never used        @typescript-eslint/no-unused-vars
+   15:3   warning  'PopoverTrigger' is defined but never used        @typescript-eslint/no-unused-vars
+   17:10  warning  'cn' is defined but never used                    @typescript-eslint/no-unused-vars
+  123:7   error    'style' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/lee/Projects/DRX_Primary/edge/ai_insights/index.ts
+   28:15  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  122:9   warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/edge/ai_pricing_inventory/index.ts
+   15:11  warning  'VelocityData' is defined but never used                      @typescript-eslint/no-unused-vars
+   30:89  warning  'supplier_lead_time_days' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   57:20  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+   87:63  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+   88:65  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+   89:65  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  101:17  warning  'currentPrice' is assigned a value but never used             @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/edge/credit_risk/index.ts
+  53:19  warning  'creditLimits' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/lib/credit/aiEngine/features.ts
+   39:13  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   98:13  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  100:3   warning  'credit_limit' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  150:13  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  179:25  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  185:25  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  195:12  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  234:11  warning  'total_repaid' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  286:9   warning  'recency_days' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/lib/credit/creditDecisionService.ts
+   14:33  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   57:37  warning  'limitError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  358:30  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  419:24  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  423:24  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  430:11  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  436:67  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/credit/creditScheduler.ts
+  172:3  warning  'result' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/lib/hooks/use-business.ts
+  5:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/hooks/use-permission.ts
+  58:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/hooks/use-realtime.ts
+    4:3   warning  'RealtimeChannel' is defined but never used  @typescript-eslint/no-unused-vars
+    9:46  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   21:39  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   21:60  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   36:50  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   63:38  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   76:39  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   76:60  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   91:50  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  117:64  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  135:42  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  135:63  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  152:50  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  175:46  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  187:39  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  187:60  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  202:50  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/utils/ai-engine.ts
+   48:7   warning  'sku' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  330:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  331:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/utils/credit-system.ts
+    3:15  warning  'CreditTransaction' is defined but never used  @typescript-eslint/no-unused-vars
+  222:45  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/utils/inventory-engine.ts
+   23:27  warning  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   35:5   warning  'businessId' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+  211:5   warning  'supplierLeadTimeDays' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  256:42  warning  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+  409:27  warning  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/lib/utils/offline-sync.ts
+    2:15  warning  'POSCheckout' is defined but never used    @typescript-eslint/no-unused-vars
+   16:9   warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   63:11  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  218:21  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  235:21  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  250:21  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/lib/utils/pos-engine.ts
+    1:10  warning  'z' is defined but never used                      @typescript-eslint/no-unused-vars
+    5:8   warning  'SalesLineItem' is defined but never used          @typescript-eslint/no-unused-vars
+  423:41  warning  'balanceError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/lib/utils/pricing-engine.ts
+   29:27  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   72:5   warning  'minReorderLevel' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  198:42  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  444:15  warning  'data' is assigned a value but never used                                          @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/scripts/force-password-reset.ts
+  19:12  warning  'listError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/scripts/help-center-data.js
+  1:1  error  'module' is not defined  no-undef
+
+/Users/lee/Projects/DRX_Primary/scripts/probe-api.js
+   1:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   1:15  error  'require' is not defined                 no-undef
+   2:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   2:16  error  'require' is not defined                 no-undef
+   3:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   3:14  error  'require' is not defined                 no-undef
+   4:19  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   4:19  error  'require' is not defined                 no-undef
+   6:36  error  'process' is not defined                 no-undef
+   8:17  error  'process' is not defined                 no-undef
+  19:5   error  'console' is not defined                 no-undef
+  21:5   error  'console' is not defined                 no-undef
+  25:7   error  'console' is not defined                 no-undef
+  31:5   error  'console' is not defined                 no-undef
+  36:3   error  'console' is not defined                 no-undef
+
+/Users/lee/Projects/DRX_Primary/scripts/sync-help-center.js
+    1:7   warning  'fs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    1:12  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    1:12  error    'require' is not defined                 no-undef
+    2:14  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    2:14  error    'require' is not defined                 no-undef
+    3:15  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    3:15  error    'require' is not defined                 no-undef
+    4:19  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    4:19  error    'require' is not defined                 no-undef
+    5:1   error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    5:1   error    'require' is not defined                 no-undef
+    5:47  error    'process' is not defined                 no-undef
+    7:17  error    'process' is not defined                 no-undef
+   24:22  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   24:22  error    'require' is not defined                 no-undef
+   28:3   error    Unnecessary try/catch wrapper            no-useless-catch
+   35:7   error    'console' is not defined                 no-undef
+   38:7   error    'console' is not defined                 no-undef
+   58:3   error    'console' is not defined                 no-undef
+   83:7   error    'console' is not defined                 no-undef
+   90:7   error    'console' is not defined                 no-undef
+   94:5   error    'console' is not defined                 no-undef
+   99:3   error    'console' is not defined                 no-undef
+  103:3   error    'console' is not defined                 no-undef
+  129:7   error    'console' is not defined                 no-undef
+  133:7   error    'console' is not defined                 no-undef
+  139:3   error    'console' is not defined                 no-undef
+  151:9   error    'console' is not defined                 no-undef
+  161:7   error    'console' is not defined                 no-undef
+  165:3   error    'console' is not defined                 no-undef
+  170:14  error    'console' is not defined                 no-undef
+
+/Users/lee/Projects/DRX_Primary/scripts/test-create-article.js
+   1:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   1:15  error  'require' is not defined                 no-undef
+   2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   2:14  error  'require' is not defined                 no-undef
+   3:19  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   3:19  error  'require' is not defined                 no-undef
+   4:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   4:1   error  'require' is not defined                 no-undef
+   4:47  error  'process' is not defined                 no-undef
+   6:17  error  'process' is not defined                 no-undef
+  21:5   error  'console' is not defined                 no-undef
+  22:5   error  'console' is not defined                 no-undef
+  25:5   error  'console' is not defined                 no-undef
+  31:3   error  'console' is not defined                 no-undef
+  41:5   error  'console' is not defined                 no-undef
+  43:5   error  'console' is not defined                 no-undef
+  57:3   error  'console' is not defined                 no-undef
+
+/Users/lee/Projects/DRX_Primary/scripts/verify-alignment.ts
+  2:13  warning  'fs' is defined but never used    @typescript-eslint/no-unused-vars
+  3:13  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/supabase/functions/ai_insights/index.ts
+   28:15  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  122:9   warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/supabase/functions/credit_risk/index.ts
+  53:19  warning  'creditLimits' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/tests/auth/permissions.test.ts
+  2:34  warning  'Prediction' is defined but never used    @typescript-eslint/no-unused-vars
+  7:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/tests/customer-validation.unit.test.ts
+  7:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/tests/dashboard-data-processing.unit.test.ts
+   10:15  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   13:16  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   14:17  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  259:64  warning  'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  263:64  warning  'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/tests/data-processing-logic.test.ts
+   10:31   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   17:41   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:33   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:29   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:51   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:70   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:141  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:32   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:35   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:101  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:121  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:67   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  328:72   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/tests/data-processing-vitest.test.ts
+   10:31   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   17:41   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   22:33   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   27:29   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   27:51   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   27:70   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   27:141  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   48:32   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   53:35   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   53:101  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+   53:121  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  147:71   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  170:28   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  453:67   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  456:72   warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  502:64   warning  'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  506:64   warning  'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/tests/event-desk-data-fetching.unit.test.ts
+    7:8   warning  'React' is defined but never used               @typescript-eslint/no-unused-vars
+   11:18  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   20:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   59:35  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   89:51  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   89:62  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  123:58  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  123:71  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  173:38  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  181:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  198:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  220:38  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  228:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  245:38  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  249:39  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  263:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  277:30  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  277:43  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  283:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  352:68  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  356:13  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  358:13  warning  'endTime' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/Users/lee/Projects/DRX_Primary/tests/event-desk-data-processing.unit.test.ts
+   7:8   warning  'React' is defined but never used         @typescript-eslint/no-unused-vars
+  23:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/tests/integration/audit.test.ts
+  13:9   warning  'mockUserId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  36:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  65:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/tests/integration/hierarchy.test.ts
+  33:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/lee/Projects/DRX_Primary/tests/integration/rtbf.test.ts
+  62:22  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  65:11  warning  'mockAdminSupabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  65:53  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  97:22  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+✖ 412 problems (64 errors, 348 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+
+ ELIFECYCLE  Command failed with exit code 1.

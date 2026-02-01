@@ -4,15 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -21,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -36,25 +26,73 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
+  LucideIcon,
 } from "lucide-react";
+
+import { WelcomeStep } from "./steps/WelcomeStep";
+import { BusinessDetailsStep } from "./steps/BusinessDetailsStep";
+import { OwnerContactStep } from "./steps/OwnerContactStep";
+import { UnitsStep } from "./steps/UnitsStep";
+import { QuickQuantitiesStep } from "./steps/QuickQuantitiesStep";
+import { PrivacyStep } from "./steps/PrivacyStep";
+import { RolesStep } from "./steps/RolesStep";
+import { ReasonsStep } from "./steps/ReasonsStep";
+import { NicknamesStep } from "./steps/NicknamesStep";
+import { ReviewStep } from "./steps/ReviewStep";
+import { BusinessSetupFormData } from "./types";
 
 interface BusinessSetupWizardProps {
   userId: string;
   onComplete?: () => Promise<void>;
 }
 
-const STEPS = [
-  { id: "welcome", title: "Welcome", icon: Building2 },
-  { id: "details", title: "Business Details", icon: Building2 },
-  { id: "owner", title: "Owner Contact", icon: User },
-  { id: "units", title: "Units", icon: Scale },
-  { id: "quantities", title: "Quick Quantities", icon: Zap },
-  { id: "privacy", title: "Privacy Settings", icon: Shield },
-  { id: "roles", title: "Staff Roles", icon: Users },
-  { id: "reasons", title: "Inventory Reasons", icon: ClipboardList },
-  { id: "nicknames", title: "Nicknames", icon: Tag },
-  { id: "review", title: "Review", icon: CheckCircle2 },
-  { id: "complete", title: "Complete", icon: CheckCircle2 },
+const STEPS: {
+  id: string;
+  title: string;
+  icon: LucideIcon;
+  component: React.ComponentType<any>;
+}[] = [
+  { id: "welcome", title: "Welcome", icon: Building2, component: WelcomeStep },
+  {
+    id: "details",
+    title: "Business Details",
+    icon: Building2,
+    component: BusinessDetailsStep,
+  },
+  {
+    id: "owner",
+    title: "Owner Contact",
+    icon: User,
+    component: OwnerContactStep,
+  },
+  { id: "units", title: "Units", icon: Scale, component: UnitsStep },
+  {
+    id: "quantities",
+    title: "Quick Quantities",
+    icon: Zap,
+    component: QuickQuantitiesStep,
+  },
+  {
+    id: "privacy",
+    title: "Privacy Settings",
+    icon: Shield,
+    component: PrivacyStep,
+  },
+  { id: "roles", title: "Staff Roles", icon: Users, component: RolesStep },
+  {
+    id: "reasons",
+    title: "Inventory Reasons",
+    icon: ClipboardList,
+    component: ReasonsStep,
+  },
+  { id: "nicknames", title: "Nicknames", icon: Tag, component: NicknamesStep },
+  { id: "review", title: "Review", icon: CheckCircle2, component: ReviewStep },
+  {
+    id: "complete",
+    title: "Complete",
+    icon: CheckCircle2,
+    component: () => null,
+  },
 ];
 
 export function BusinessSetupWizard({
@@ -66,7 +104,7 @@ export function BusinessSetupWizard({
   const router = useRouter();
   const supabase = getSupabaseClient();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BusinessSetupFormData>({
     // Business Details
     businessName: "",
     businessType: "",
@@ -189,9 +227,6 @@ export function BusinessSetupWizard({
 
       if (roleError) throw roleError;
 
-      // 4. Create other roles logic can be handled here or later
-      // skipping actual user creation for other roles for now
-
       toast.success("Business setup complete!");
 
       if (onComplete) {
@@ -207,379 +242,7 @@ export function BusinessSetupWizard({
     }
   };
 
-  const stepContent = () => {
-    switch (STEPS[currentStep].id) {
-      case "welcome":
-        return (
-          <div className="space-y-6 text-center py-10">
-            <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto text-accent mb-6">
-              <Building2 className="w-10 h-10" />
-            </div>
-            <h2 className="text-3xl font-bold">Welcome to DRX.</h2>
-            <p className="text-muted-foreground text-lg max-w-md mx-auto">
-              Let's get your shop running. This setup takes about 2 minutes and
-              helps us configure your privacy, inventory, and checkout settings.
-            </p>
-          </div>
-        );
-
-      case "details":
-        return (
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label>Business Name</Label>
-              <Input
-                value={formData.businessName}
-                onChange={(e) =>
-                  setFormData({ ...formData, businessName: e.target.value })
-                }
-                placeholder="e.g. The Green Room"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Business Type</Label>
-              <Select
-                onValueChange={(v) =>
-                  setFormData({ ...formData, businessType: v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dispensary">Dispensary</SelectItem>
-                  <SelectItem value="delivery">Delivery Service</SelectItem>
-                  <SelectItem value="smoke_shop">Smoke Shop</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>Address (Optional)</Label>
-              <Input
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                placeholder="123 Main St"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>City</Label>
-                <Input
-                  value={formData.city}
-                  onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>State</Label>
-                <Input
-                  value={formData.state}
-                  onChange={(e) =>
-                    setFormData({ ...formData, state: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case "owner":
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              This information is used for account recovery and critical alerts
-              only.
-            </p>
-            <div className="grid gap-2">
-              <Label>Owner Name</Label>
-              <Input
-                value={formData.ownerName}
-                onChange={(e) =>
-                  setFormData({ ...formData, ownerName: e.target.value })
-                }
-                placeholder="Your full name"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Phone (For Login/Recovery)</Label>
-              <Input
-                value={formData.ownerPhone}
-                onChange={(e) =>
-                  setFormData({ ...formData, ownerPhone: e.target.value })
-                }
-                placeholder="(555) 123-4567"
-              />
-            </div>
-          </div>
-        );
-
-      case "units":
-        return (
-          <div className="space-y-6">
-            <Label className="text-lg">How do you primarily sell?</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div
-                className={`border p-6 rounded-xl cursor-pointer transition-all ${formData.defaultUnit === "g" ? "border-accent bg-accent/5 ring-1 ring-accent" : "hover:border-foreground/50"}`}
-                onClick={() => setFormData({ ...formData, defaultUnit: "g" })}
-              >
-                <div className="font-bold text-xl mb-2">Grams (g)</div>
-                <p className="text-sm text-muted-foreground">
-                  Standard for flower and solids.
-                </p>
-              </div>
-              <div
-                className={`border p-6 rounded-xl cursor-pointer transition-all ${formData.defaultUnit === "oz" ? "border-accent bg-accent/5 ring-1 ring-accent" : "hover:border-foreground/50"}`}
-                onClick={() => setFormData({ ...formData, defaultUnit: "oz" })}
-              >
-                <div className="font-bold text-xl mb-2">Ounces (oz)</div>
-                <p className="text-sm text-muted-foreground">
-                  Standard for liquids or bulk.
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "quantities":
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <Label className="text-lg">Quick Quantities</Label>
-              <span className="text-xs text-muted-foreground">
-                Tap to toggle
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              These buttons will appear on your POS for one-tap additions.
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              {formData.quickQuantities.map((q, idx) => (
-                <div
-                  key={idx}
-                  className={`border p-4 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all ${q.enabled ? "border-accent bg-accent/10 text-accent font-bold" : "opacity-50 grayscale"}`}
-                  onClick={() => {
-                    const newQs = [...formData.quickQuantities];
-                    newQs[idx].enabled = !newQs[idx].enabled;
-                    setFormData({ ...formData, quickQuantities: newQs });
-                  }}
-                >
-                  <span className="text-xl">{q.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "privacy":
-        const presets = {
-          open: { label: "OPEN", desc: "Full customer details visible." },
-          balanced: {
-            label: "BALANCED",
-            desc: "Standard limits. Recommended.",
-          },
-          private: {
-            label: "PRIVATE",
-            desc: "Reduced info. No phone exports.",
-          },
-          max_secure: {
-            label: "MAX SECURE",
-            desc: "Minimal retention. Strict access.",
-          },
-        };
-        return (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <Label className="text-lg">Privacy Level</Label>
-              <p className="text-sm text-muted-foreground">
-                Control how much customer data is stored and who can see it.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {(Object.keys(presets) as Array<keyof typeof presets>).map(
-                (key) => (
-                  <div
-                    key={key}
-                    className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all ${formData.privacyPreset === key ? "border-accent bg-accent/5" : ""}`}
-                    onClick={() =>
-                      setFormData({ ...formData, privacyPreset: key })
-                    }
-                  >
-                    <div>
-                      <div className="font-bold">{presets[key].label}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {presets[key].desc}
-                      </div>
-                    </div>
-                    {formData.privacyPreset === key && (
-                      <CheckCircle2 className="text-accent" />
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-        );
-
-      case "roles":
-        return (
-          <div className="space-y-6">
-            <Label className="text-lg">Staff Roles</Label>
-            <p className="text-sm text-muted-foreground">
-              Which roles do you need right now? You can invite people later.
-            </p>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 border p-4 rounded-lg">
-                <Checkbox
-                  id="manager"
-                  checked={formData.enableManager}
-                  onCheckedChange={(c) =>
-                    setFormData({ ...formData, enableManager: !!c })
-                  }
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor="manager"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Manager
-                  </label>
-                  <p className="text-sm text-muted-foreground">
-                    Can edit inventory and view reports.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 border p-4 rounded-lg">
-                <Checkbox
-                  id="budtender"
-                  checked={formData.enableBudtender}
-                  onCheckedChange={(c) =>
-                    setFormData({ ...formData, enableBudtender: !!c })
-                  }
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor="budtender"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Budtender
-                  </label>
-                  <p className="text-sm text-muted-foreground">
-                    Can process sales and view limited inventory.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "reasons":
-        return (
-          <div className="space-y-6">
-            <Label className="text-lg">Inventory Audit Reasons</Label>
-            <p className="text-sm text-muted-foreground">
-              Standard reasons for stock adjustments.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {formData.inventoryReasons.map((r, idx) => (
-                <div
-                  key={idx}
-                  className={`border p-3 rounded-lg flex items-center gap-2 cursor-pointer ${r.enabled ? "bg-secondary/50 border-secondary-foreground/20" : "opacity-50"}`}
-                  onClick={() => {
-                    const newReasons = [...formData.inventoryReasons];
-                    newReasons[idx].enabled = !newReasons[idx].enabled;
-                    setFormData({ ...formData, inventoryReasons: newReasons });
-                  }}
-                >
-                  <Checkbox checked={r.enabled} className="mr-2" />
-                  <span className="text-sm font-medium">{r.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "nicknames":
-        return (
-          <div className="space-y-6">
-            <Label className="text-lg">Product Nicknames (Aliases)</Label>
-            <p className="text-sm text-muted-foreground">
-              Enable common slang terms to map them to real quantities
-              automatically.
-            </p>
-            <div className="space-y-3">
-              {formData.nicknames.map((n, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center justify-between border p-4 rounded-xl cursor-pointer ${n.enabled ? "border-accent/50 bg-accent/5" : "opacity-60"}`}
-                  onClick={() => {
-                    const newNicks = [...formData.nicknames];
-                    newNicks[idx].enabled = !newNicks[idx].enabled;
-                    setFormData({ ...formData, nicknames: newNicks });
-                  }}
-                >
-                  <div>
-                    <div className="font-bold">"{n.slang}"</div>
-                    <div className="text-xs text-muted-foreground">
-                      Maps to {n.quantity}
-                      {n.unit}
-                    </div>
-                  </div>
-                  <div
-                    className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${n.enabled ? "bg-accent justify-end" : "bg-muted justify-start"}`}
-                  >
-                    <div className="w-4 h-4 rounded-full bg-background" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "review":
-        return (
-          <div className="space-y-6 text-center py-6">
-            <h3 className="text-2xl font-bold">Looks Good?</h3>
-            <div className="space-y-4 text-left max-w-sm mx-auto bg-muted/20 p-6 rounded-xl border">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Business</span>
-                <span className="font-medium">
-                  {formData.businessName || "Untitled"}
-                </span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Privacy</span>
-                <span className="font-medium uppercase">
-                  {formData.privacyPreset}
-                </span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Default Unit</span>
-                <span className="font-medium">
-                  {formData.defaultUnit === "g" ? "Grams" : "Ounces"}
-                </span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-muted-foreground">Owner</span>
-                <span className="font-medium">
-                  {formData.ownerName || "Not set"}
-                </span>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              You can change these settings later in the admin panel.
-            </p>
-          </div>
-        );
-
-      case "complete":
-        return null; // Handled by handleFinish
-    }
-  };
+  const StepComponent = STEPS[currentStep].component;
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
@@ -606,7 +269,9 @@ export function BusinessSetupWizard({
           )}
         </CardHeader>
 
-        <CardContent className="min-h-[300px]">{stepContent()}</CardContent>
+        <CardContent className="min-h-[300px]">
+          <StepComponent formData={formData} setFormData={setFormData} />
+        </CardContent>
 
         <CardFooter className="flex justify-between border-t pt-6 bg-muted/10">
           <Button

@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* eslint-env node, commonjs */
-/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 
 /**
  * Version Management Helper
@@ -9,22 +7,49 @@
  * changes in the CHANGELOG.md [Unreleased] section.
  *
  * Usage:
- *   node scripts/version.js check    - Suggest next version
- *   node scripts/version.js bump     - Update version and CHANGELOG
+ *   npx tsx scripts/version.ts check    - Suggest next version
+ *   npx tsx scripts/version.ts bump     - Update version and CHANGELOG
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const CURRENT_VERSION = require("../package.json").version;
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PACKAGE_JSON_PATH = path.join(__dirname, "../package.json");
 const CHANGELOG_PATH = path.join(__dirname, "../CHANGELOG.md");
 
-function parseVersion(version) {
+// Read package.json dynamically to avoid JSON import issues if not enabled
+const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf-8"));
+const CURRENT_VERSION = packageJson.version;
+
+interface VersionParts {
+  major: number;
+  minor: number;
+  patch: number;
+}
+
+interface AnalysisResult {
+  hasChanges: boolean;
+  bumpType: "major" | "minor" | "patch";
+  hasBreaking: boolean;
+  hasAdded: boolean;
+  hasFixed: boolean;
+  content: string;
+}
+
+function parseVersion(version: string): VersionParts {
   const [major, minor, patch] = version.split(".").map(Number);
   return { major, minor, patch };
 }
 
-function incrementVersion(current, type) {
+function incrementVersion(
+  current: string,
+  type: "major" | "minor" | "patch",
+): string {
   const v = parseVersion(current);
 
   switch (type) {
@@ -39,29 +64,36 @@ function incrementVersion(current, type) {
   }
 }
 
-function analyzeChangelog() {
+function analyzeChangelog(): AnalysisResult {
   const changelog = fs.readFileSync(CHANGELOG_PATH, "utf-8");
 
   // Extract [Unreleased] section
   const unreleasedMatch = changelog.match(
-    /## \[Unreleased\]([\s\S]*?)(?=## \[|$)/
+    /## \[Unreleased\]([\s\S]*?)(?=## \[|$)/,
   );
 
   if (!unreleasedMatch) {
-    return { hasChanges: false };
+    return {
+      hasChanges: false,
+      bumpType: "patch",
+      hasBreaking: false,
+      hasAdded: false,
+      hasFixed: false,
+      content: "",
+    };
   }
 
   const unreleased = unreleasedMatch[1];
 
   // Check for breaking changes or major features
   const hasBreaking = /### Removed|### Changed.*breaking|BREAKING/i.test(
-    unreleased
+    unreleased,
   );
   const hasAdded = /### Added/i.test(unreleased);
   const hasFixed = /### Fixed/i.test(unreleased);
 
   // Determine version bump type
-  let bumpType = "patch"; // default
+  let bumpType: "major" | "minor" | "patch" = "patch"; // default
 
   if (hasBreaking) {
     bumpType = "major";
@@ -100,7 +132,7 @@ function suggestVersion() {
   console.log(`   (${analysis.bumpType.toUpperCase()} bump)\n`);
 
   console.log("To release:");
-  console.log(`  1. Run: node scripts/version.js bump`);
+  console.log(`  1. Run: npx tsx scripts/version.ts bump`);
   console.log(`  2. Review changes in package.json and CHANGELOG.md`);
   console.log(`  3. Commit: git commit -m "chore: Release v${suggested}"`);
   console.log(`  4. Tag: git tag v${suggested}`);
@@ -119,18 +151,15 @@ function bumpVersion() {
   const today = new Date().toISOString().split("T")[0];
 
   // Update package.json
-  const packageJson = require("../package.json");
-  packageJson.version = newVersion;
-  fs.writeFileSync(
-    path.join(__dirname, "../package.json"),
-    JSON.stringify(packageJson, null, 2) + "\n"
-  );
+  const pj = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf-8"));
+  pj.version = newVersion;
+  fs.writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pj, null, 2) + "\n");
 
   // Update CHANGELOG.md
   let changelog = fs.readFileSync(CHANGELOG_PATH, "utf-8");
   changelog = changelog.replace(
     /## \[Unreleased\]/,
-    `## [Unreleased]\n\n## [${newVersion}] - ${today}`
+    `## [Unreleased]\n\n## [${newVersion}] - ${today}`,
   );
   fs.writeFileSync(CHANGELOG_PATH, changelog);
 
@@ -141,7 +170,7 @@ function bumpVersion() {
   console.log(`   Updated: package.json, CHANGELOG.md, UI components\n`);
 }
 
-function updateUIVersions(version) {
+function updateUIVersions(version: string) {
   const filesToUpdate = [
     "../components/layout/sidebar.tsx",
     "../components/layout/bottom-nav.tsx",
@@ -155,7 +184,7 @@ function updateUIVersions(version) {
       return;
     }
 
-    let content = fs.readFileSync(filePath, "utf-8");
+    const content = fs.readFileSync(filePath, "utf-8");
     const updatedContent = content.replace(/v\d+\.\d+\.\d+/, `v${version}`);
 
     if (content === updatedContent) {
@@ -178,8 +207,8 @@ switch (command) {
     break;
   default:
     console.log("Usage:");
-    console.log("  node scripts/version.js check  - Suggest next version");
+    console.log("  npx tsx scripts/version.ts check  - Suggest next version");
     console.log(
-      "  node scripts/version.js bump   - Update version and CHANGELOG"
+      "  npx tsx scripts/version.ts bump   - Update version and CHANGELOG",
     );
 }

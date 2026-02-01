@@ -1,7 +1,6 @@
-const fetch = require("node-fetch");
-const dotenv = require("dotenv");
-const path = require("path");
-const { Agent } = require("https");
+import dotenv from "dotenv";
+import path from "path";
+import { Agent } from "https";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
@@ -14,9 +13,10 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-async function probe(url) {
+async function probe(url: string) {
   try {
     console.log(`Checking ${url}...`);
+    // @ts-expect-error - node-fetch agent
     const res = await fetch(url, { headers, agent });
     console.log(`Status: ${res.status} ${res.statusText}`);
     if (res.ok) {
@@ -27,7 +27,7 @@ async function probe(url) {
         str.substring(0, 300) + (str.length > 300 ? "..." : ""),
       );
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error(e.message);
   }
 }

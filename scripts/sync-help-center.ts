@@ -1,18 +1,24 @@
-const fs = require("fs");
-const path = require("path");
-const fetch = require("node-fetch");
-const { Agent } = require("https");
-require("dotenv").config({ path: path.resolve(process.cwd(), ".env.local") });
+import path from "path";
+import { Agent } from "https";
+import dotenv from "dotenv";
+import { helpCenterData } from "./help-center-data";
+
+// Load environment variables
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const API_KEY = process.env.FEATUREBASE_API_KEY;
 const API_BASE = "https://do.featurebase.app/v2";
 const agent = new Agent({ keepAlive: true });
-const headers = {
+const headers: Record<string, string> = {
   Authorization: `Bearer ${API_KEY}`,
   "Content-Type": "application/json",
 };
 
-const CATEGORY_MAP = {
+interface CollectionMap {
+  [key: string]: string;
+}
+
+const CATEGORY_MAP: Record<string, string> = {
   "getting-started": "Getting Started",
   pos: "POS & Sales",
   inventory: "Inventory",
@@ -21,40 +27,39 @@ const CATEGORY_MAP = {
   privacy: "Privacy & Security",
 };
 
-const articlesData = require("./help-center-data");
-
-async function performRequest(method, endpoint, body) {
+async function performRequest(method: string, endpoint: string, body?: any) {
   const url = `${API_BASE}${endpoint}`;
-  try {
-    const opts = { method, headers, agent };
-    if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(url, opts);
+  const opts: RequestInit & { agent?: Agent } = {
+    method,
+    headers,
+    agent,
+  };
+  if (body) opts.body = JSON.stringify(body);
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(
-        `Request to ${endpoint} failed: ${res.status} ${res.statusText}`,
-      );
-      console.error("Response:", text);
-      throw new Error(`API Error: ${text}`);
-    }
+  // Using global fetch (Node 18+)
+  const res = await fetch(url, opts);
 
-    // Handle 204 No Content
-    if (res.status === 204) return null;
-
-    const json = await res.json();
-    return json;
-  } catch (err) {
-    throw err;
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(
+      `Request to ${endpoint} failed: ${res.status} ${res.statusText}`,
+    );
+    console.error("Response:", text);
+    throw new Error(`API Error: ${text}`);
   }
+
+  // Handle 204 No Content
+  if (res.status === 204) return null;
+
+  return await res.json();
 }
 
 async function getCollections() {
-  const res = await performRequest("GET", "/help_center/collections");
+  const res: any = await performRequest("GET", "/help_center/collections");
   return res.data || res.results || res || [];
 }
 
-async function createCollection(name) {
+async function createCollection(name: string) {
   console.log(`Creating collection: ${name}`);
   const payload = {
     name: name,
@@ -64,17 +69,24 @@ async function createCollection(name) {
 }
 
 async function getArticles() {
-  const res = await performRequest("GET", "/help_center/articles?limit=100");
+  const res: any = await performRequest(
+    "GET",
+    "/help_center/articles?limit=100",
+  );
   return res.data || res.results || res || [];
 }
 
-async function upsertArticle(article, collectionId, existingId) {
+async function upsertArticle(
+  article: any,
+  collectionId: string,
+  existingId?: string,
+) {
   const payload = {
     title: article.title,
     body: article.content,
     description: article.summary,
     parentId: collectionId,
-    state: "live", // Corrected from 'published'
+    state: "live",
     // locale removed
   };
 
@@ -90,7 +102,7 @@ async function upsertArticle(article, collectionId, existingId) {
       console.log(`Creating article: ${article.title}`);
       return await performRequest("POST", "/help_center/articles", payload);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Failed to upsert "${article.title}"`, err.message);
   }
 }
@@ -99,17 +111,17 @@ async function main() {
   console.log("Starting Help Center migration...");
 
   // 1. Manage Collections
-  let existingCollections = await getCollections();
+  const existingCollections: any[] = await getCollections();
   console.log(`Found ${existingCollections.length} existing collections.`);
 
-  const collectionIds = {};
+  const collectionIds: CollectionMap = {};
 
   const distinctCategories = [
     ...new Set(
-      articlesData.flatMap((a) =>
+      helpCenterData.flatMap((a) =>
         a.tags
-          .filter((t) => t.startsWith("category:"))
-          .map((t) => t.split(":")[1]),
+          .filter((t: string) => t.startsWith("category:"))
+          .map((t: string) => t.split(":")[1]),
       ),
     ),
   ];
@@ -118,10 +130,13 @@ async function main() {
     const displayName =
       CATEGORY_MAP[catKey] || catKey.charAt(0).toUpperCase() + catKey.slice(1);
 
-    let collection = existingCollections.find((c) => c.name === displayName);
+    let collection = existingCollections.find(
+      (c: any) => c.name === displayName,
+    );
     if (!collection) {
-      collection = await createCollection(displayName);
-      if (!collection.id && collection.data) collection = collection.data;
+      const created = await createCollection(displayName);
+      // Handle various response shapes
+      collection = created.id ? created : created.data;
     }
 
     if (collection && collection.id) {
@@ -135,16 +150,18 @@ async function main() {
   }
 
   // 2. Manage Articles
-  const existingArticles = await getArticles();
+  const existingArticles: any[] = await getArticles();
   console.log(
     `Found ${existingArticles.length} existing articles on Featurebase.`,
   );
 
   let successCount = 0;
 
-  for (const article of articlesData) {
+  for (const article of helpCenterData) {
     try {
-      const catTag = article.tags.find((t) => t.startsWith("category:"));
+      const catTag = article.tags.find((t: string) =>
+        t.startsWith("category:"),
+      );
       const catKey = catTag ? catTag.split(":")[1] : null;
 
       if (!catKey || !collectionIds[catKey]) {
@@ -154,7 +171,9 @@ async function main() {
         continue;
       }
 
-      const existing = existingArticles.find((a) => a.title === article.title);
+      const existing = existingArticles.find(
+        (a: any) => a.title === article.title,
+      );
       await upsertArticle(article, collectionIds[catKey], existing?.id);
       successCount++;
     } catch (err) {
@@ -163,7 +182,7 @@ async function main() {
   }
 
   console.log(
-    `Migration complete. Successfully processed ${successCount}/${articlesData.length} articles.`,
+    `Migration complete. Successfully processed ${successCount}/${helpCenterData.length} articles.`,
   );
 }
 

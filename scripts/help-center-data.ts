@@ -1,4 +1,11 @@
-module.exports = [
+export interface HelpArticle {
+  title: string;
+  summary: string;
+  tags: string[];
+  content: string;
+}
+
+export const helpCenterData: HelpArticle[] = [
   // Getting Started (8)
   {
     title: "What DRX Is and How It Works",
@@ -776,7 +783,7 @@ module.exports = [
     `,
   },
   {
-    title: "Alias Auto-Fill: Quantity + Unit Behavior",
+    title: "Alias Auto-Fill: Quantity + Unit behavior",
     summary: "How aliases speed up cart entry.",
     tags: [
       "help",
