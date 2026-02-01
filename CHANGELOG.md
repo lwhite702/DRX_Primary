@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-02-01
+
 ### Changed
 
 - **Refactor**: Modernized `SalesPage` by decomposing it into smaller sub-components (`ProductSearch`, `CartItems`, etc.) and extracting logic to `useSalesCart` hook.
