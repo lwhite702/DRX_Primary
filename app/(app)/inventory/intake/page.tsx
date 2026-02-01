@@ -59,7 +59,7 @@ export default function InventoryIntakePage() {
   const supabase = getSupabaseClient();
 
   // Calculate cost per gram
-  const costPerGram =
+  const costPerUnit =
     parseFloat(formData.total_cost) && parseFloat(formData.total_weight_grams)
       ? parseFloat(formData.total_cost) /
         parseFloat(formData.total_weight_grams)
@@ -156,7 +156,7 @@ export default function InventoryIntakePage() {
       });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to process intake"
+        error instanceof Error ? error.message : "Failed to process intake",
       );
     } finally {
       setProcessing(false);
@@ -290,20 +290,23 @@ export default function InventoryIntakePage() {
                   </p>
                 </div>
 
-                {/* Calculated Cost Per Gram */}
+                {/* Calculated Cost Per Unit */}
                 <div className="space-y-2">
-                  <Label>Cost Per Gram (calculated)</Label>
+                  <Label>
+                    Cost Per {getUnitLabel(formData.unit_of_measure)}{" "}
+                    (calculated)
+                  </Label>
                   <div className="flex items-center gap-2">
                     <Input
                       value={
-                        costPerGram > 0
-                          ? `$${costPerGram.toFixed(6)}/g`
-                          : "$0.000000/g"
+                        costPerUnit > 0
+                          ? `$${costPerUnit.toFixed(6)}/${formData.unit_of_measure}`
+                          : `$0.000000/${formData.unit_of_measure}`
                       }
                       readOnly
                       className="bg-muted"
                     />
-                    {costPerGram > 0 && (
+                    {costPerUnit > 0 && (
                       <Badge variant="secondary">Auto-calculated</Badge>
                     )}
                   </div>
@@ -390,7 +393,7 @@ export default function InventoryIntakePage() {
                     ${totalIntakeCost.toFixed(2)}
                   </span>
                 </div>
-                {costPerGram > 0 && (
+                {costPerUnit > 0 && (
                   <div className="flex justify-between border-t pt-3">
                     <span className="text-muted-foreground">
                       Cost/
@@ -401,7 +404,7 @@ export default function InventoryIntakePage() {
                       :
                     </span>
                     <span className="font-mono font-bold text-primary">
-                      ${costPerGram.toFixed(6)}
+                      ${costPerUnit.toFixed(6)}
                     </span>
                   </div>
                 )}
@@ -467,7 +470,7 @@ export default function InventoryIntakePage() {
                     :
                   </span>
                   <span className="font-mono font-bold text-primary">
-                    ${costPerGram.toFixed(6)}/{formData.unit_of_measure}
+                    ${costPerUnit.toFixed(6)}/{formData.unit_of_measure}
                   </span>
                 </div>
               </div>

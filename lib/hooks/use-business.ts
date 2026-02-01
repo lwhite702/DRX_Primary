@@ -1,9 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { BusinessProfile, BusinessSettings } from "../validations/schemas";
 
 export function useBusiness() {
-  const [business, setBusiness] = useState<any | null>(null);
-  const [availableBusinesses, setAvailableBusinesses] = useState<any[]>([]);
+  const [business, setBusiness] = useState<BusinessProfile | null>(null);
+  const [settings, setSettings] = useState<BusinessSettings | null>(null);
+  const [availableBusinesses, setAvailableBusinesses] = useState<
+    BusinessProfile[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
 
@@ -28,7 +32,10 @@ export function useBusiness() {
         .select("business_id, role")
         .eq("user_id", user.id);
 
-      const businessIds = roles?.map((r) => r.business_id) || [];
+      const businessIds =
+        (roles as { business_id: string; role: string }[])?.map(
+          (r) => r.business_id,
+        ) || [];
 
       // 2. Fetch all businesses where user is owner
       const { data: ownedBusinesses } = await supabase
@@ -37,7 +44,7 @@ export function useBusiness() {
         .eq("owner_id", user.id);
 
       if (ownedBusinesses) {
-        ownedBusinesses.forEach((b) => {
+        (ownedBusinesses as { id: string }[]).forEach((b) => {
           if (!businessIds.includes(b.id)) {
             businessIds.push(b.id);
           }
@@ -56,18 +63,35 @@ export function useBusiness() {
         .in("id", businessIds);
 
       if (businesses && businesses.length > 0) {
-        setAvailableBusinesses(businesses);
+        setAvailableBusinesses(businesses as BusinessProfile[]);
 
         // 4. Determine selected business
         const storedBusinessId = localStorage.getItem("selectedBusinessId");
-        let selected = businesses.find((b) => b.id === storedBusinessId);
+        let selected = (businesses as BusinessProfile[]).find(
+          (b) => b.id === storedBusinessId,
+        );
 
-        if (!selected) {
-          selected = businesses[0];
-          localStorage.setItem("selectedBusinessId", selected.id);
+        if (!selected && businesses.length > 0) {
+          selected = businesses[0] as BusinessProfile;
+          localStorage.setItem("selectedBusinessId", selected.id as string);
         }
 
-        setBusiness(selected);
+        if (selected) {
+          setBusiness(selected as BusinessProfile);
+
+          // 5. Fetch settings for selected business
+          if (selected.id) {
+            const { data: bSettings } = await supabase
+              .from("business_settings")
+              .select("*")
+              .eq("business_id", selected.id)
+              .single();
+
+            if (bSettings) {
+              setSettings(bSettings as BusinessSettings);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching business:", error);
@@ -81,10 +105,13 @@ export function useBusiness() {
   }, [fetchBusiness]);
 
   const switchBusiness = (businessId: string) => {
-    const selected = availableBusinesses.find((b) => b.id === businessId);
-    if (selected) {
-      setBusiness(selected);
-      localStorage.setItem("selectedBusinessId", selected.id);
+    const activeBusiness = availableBusinesses.find(
+      (b: BusinessProfile) => b.id === businessId,
+    );
+    if (activeBusiness) {
+      setBusiness(activeBusiness);
+      // Store current business ID in cookie for server-side access if needed
+      document.cookie = `businessId=${activeBusiness.id}; path=/; max-age=31536000`;
       // Force reload to ensure all components/hooks re-fetch with new context
       window.location.reload();
     }
@@ -92,9 +119,15 @@ export function useBusiness() {
 
   return {
     business,
+    settings,
     availableBusinesses,
     loading,
-    needsSetup: !loading && availableBusinesses.length === 0,
+    needsSetup:
+      !loading &&
+      (availableBusinesses.length === 0 ||
+        availableBusinesses.some(
+          (b: BusinessProfile) => !b.onboarding_completed,
+        )),
     refreshBusiness: fetchBusiness,
     switchBusiness,
   };

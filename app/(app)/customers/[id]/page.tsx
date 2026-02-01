@@ -6,10 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Sparkles, User } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
 import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
+import {
+  maskPII,
+  getCustomerDisplayName,
+  type PrivacyPreset,
+} from "@/lib/utils/privacy";
 import {
   Sheet,
   SheetContent,
@@ -56,7 +61,7 @@ export default function CustomerDetailPage() {
   const router = useRouter();
   const customerId = params.id as string;
 
-  const { business, loading: businessLoading } = useBusiness();
+  const { business, settings, loading: businessLoading } = useBusiness();
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,7 +102,7 @@ export default function CustomerDetailPage() {
         const { data: metricsData, error: metricsError } = await supabase
           .from("v_credit_analytics")
           .select(
-            "sales_30d, sales_90d, sales_all_time, credit_issued_30d, credit_issued_90d, current_credit_balance, on_time_repayment_ratio, late_payment_count"
+            "sales_30d, sales_90d, sales_all_time, credit_issued_30d, credit_issued_90d, current_credit_balance, on_time_repayment_ratio, late_payment_count",
           )
           .eq("customer_id", customerId)
           .single();
@@ -110,10 +115,10 @@ export default function CustomerDetailPage() {
             credit_issued_30d: Number(metricsData.credit_issued_30d || 0),
             credit_issued_90d: Number(metricsData.credit_issued_90d || 0),
             current_credit_balance: Number(
-              metricsData.current_credit_balance || 0
+              metricsData.current_credit_balance || 0,
             ),
             on_time_repayment_ratio: Number(
-              metricsData.on_time_repayment_ratio || 0
+              metricsData.on_time_repayment_ratio || 0,
             ),
             late_payment_count: metricsData.late_payment_count || 0,
           });
@@ -152,7 +157,10 @@ export default function CustomerDetailPage() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold break-words">
-              {customer.first_name} {customer.last_name}
+              {getCustomerDisplayName(
+                customer,
+                settings?.privacy_preset as PrivacyPreset,
+              )}
             </h1>
             <p className="text-muted-foreground mt-1 text-xs break-all">
               Customer ID: {customer.id}
@@ -175,10 +183,10 @@ export default function CustomerDetailPage() {
               <div className="p-4 overflow-y-auto">
                 <AICreditPanel
                   customer_id={customer.id}
-                  business_id={business.id}
+                  business_id={business.id as string}
                   current_limit={Number(customer.credit_limit || 0)}
                   ai_recommended_limit={Number(
-                    customer.credit_limit_ai_recommended || 0
+                    customer.credit_limit_ai_recommended || 0,
                   )}
                   risk_score={Number(customer.credit_risk_score || 0)}
                   last_reviewed_at={customer.credit_limit_last_reviewed_at}
@@ -205,14 +213,26 @@ export default function CustomerDetailPage() {
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="text-sm">{customer.email || "N/A"}</p>
+                    <p className="text-sm">
+                      {maskPII(
+                        customer.email,
+                        "email",
+                        settings?.privacy_preset as PrivacyPreset,
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Phone</p>
-                    <p className="text-sm">{customer.phone_number || "N/A"}</p>
+                    <p className="text-sm">
+                      {maskPII(
+                        customer.phone_number,
+                        "phone",
+                        settings?.privacy_preset as PrivacyPreset,
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -302,10 +322,10 @@ export default function CustomerDetailPage() {
         <div className="hidden lg:block">
           <AICreditPanel
             customer_id={customer.id}
-            business_id={business.id}
+            business_id={business.id as string}
             current_limit={Number(customer.credit_limit || 0)}
             ai_recommended_limit={Number(
-              customer.credit_limit_ai_recommended || 0
+              customer.credit_limit_ai_recommended || 0,
             )}
             risk_score={Number(customer.credit_risk_score || 0)}
             last_reviewed_at={customer.credit_limit_last_reviewed_at}

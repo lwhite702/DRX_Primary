@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, Settings, Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles, Shield, Scale, Layers } from "lucide-react";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
 import Image from "next/image";
 
@@ -27,7 +27,10 @@ interface BusinessFormData {
   zip_code: string;
   phone_number: string;
   email: string;
+  recovery_email: string;
   default_tax_rate: number;
+  privacy_preset: "open" | "balanced" | "private" | "max_secure";
+  supported_units: string[];
 }
 
 export function BusinessSetupWizard({
@@ -48,14 +51,17 @@ export function BusinessSetupWizard({
     zip_code: "",
     phone_number: "",
     email: "",
+    recovery_email: "",
     default_tax_rate: 8.0,
+    privacy_preset: "balanced",
+    supported_units: ["g", "oz", "lb", "L", "ml"],
   });
   const router = useRouter();
   const supabase = getSupabaseClient();
 
   const updateField = (
     field: keyof BusinessFormData,
-    value: string | number,
+    value: string | number | string[],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -118,11 +124,29 @@ export function BusinessSetupWizard({
           default_tax_rate: formData.default_tax_rate / 100,
           currency: "USD",
           timezone: "America/New_York",
+          privacy_preset: formData.privacy_preset,
+          supported_units: formData.supported_units,
+          settings_data: {
+            audit_retention_days: 365,
+            allowed_export_types: ["csv", "pdf"],
+            gdpr_mode: formData.privacy_preset === "max_secure",
+            intake_reasons: ["Restock", "Sample Return", "Correction"],
+            adjustment_reasons: ["Theft", "Damage", "Recount", "Gift"],
+          },
         });
 
       if (settingsError) throw settingsError;
 
-      setStep(4);
+      // Mark onboarding as completed
+      await supabase
+        .from("business_profile")
+        .update({
+          onboarding_completed: true,
+          recovery_email: formData.recovery_email,
+        })
+        .eq("id", business.id);
+
+      setStep(6);
       toast.success("Business created successfully!");
 
       setTimeout(() => {
@@ -157,7 +181,7 @@ export function BusinessSetupWizard({
           {/* Progress Bar */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 flex-1">
-              {[1, 2, 3].map((s) => (
+              {[1, 2, 3, 4, 5].map((s) => (
                 <div
                   key={s}
                   className={`h-2 flex-1 rounded-full transition-all ${
@@ -167,21 +191,25 @@ export function BusinessSetupWizard({
               ))}
             </div>
             <span className="text-sm text-muted-foreground ml-4">
-              Step {step} of 3
+              Step {step > 5 ? 5 : step} of 5
             </span>
           </div>
 
           <CardTitle className="text-2xl text-center">
             {step === 1 && "Welcome to DRX"}
             {step === 2 && "Business Information"}
-            {step === 3 && "Business Settings"}
-            {step === 4 && "All Set!"}
+            {step === 3 && "Supported Units"}
+            {step === 4 && "Privacy Presets"}
+            {step === 5 && "Business Settings & Review"}
+            {step === 6 && "All Set!"}
           </CardTitle>
           <CardDescription className="text-center">
             {step === 1 && "Let's set up your business to get started"}
             {step === 2 && "Tell us about your business"}
-            {step === 3 && "Configure your business preferences"}
-            {step === 4 && "Your business is ready to use"}
+            {step === 3 && "Select units your business supports"}
+            {step === 4 && "Choose your privacy and security level"}
+            {step === 5 && "Configure your business preferences"}
+            {step === 6 && "Your business is ready to use"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -345,6 +373,27 @@ export function BusinessSetupWizard({
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="recovery_email">
+                  Recovery Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="recovery_email"
+                  type="email"
+                  value={formData.recovery_email}
+                  onChange={(e) =>
+                    updateField("recovery_email", e.target.value)
+                  }
+                  placeholder="recovery@email.com"
+                  required
+                  className="border-accent/20 focus:border-accent"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Secondary email for account recovery and critical security
+                  alerts.
+                </p>
+              </div>
+
               <div className="flex justify-between pt-4">
                 <Button
                   type="button"
@@ -364,11 +413,170 @@ export function BusinessSetupWizard({
             </form>
           )}
 
-          {/* Step 3: Settings */}
+          {/* Step 3: Units */}
           {step === 3 && (
+            <div className="space-y-6">
+              <div className="flex justify-center py-4">
+                <Scale className="h-16 w-16 text-accent" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { id: "g", label: "Grams", desc: "Solid mass" },
+                  { id: "oz", label: "Ounces", desc: "Mass/Liquid" },
+                  { id: "lb", label: "Pounds", desc: "Bulk mass" },
+                  { id: "L", label: "Liters", desc: "Liquid volume" },
+                  { id: "ml", label: "Milliliters", desc: "Small liquid" },
+                ].map((unit) => (
+                  <button
+                    key={unit.id}
+                    onClick={() => {
+                      const units = [...formData.supported_units];
+                      if (units.includes(unit.id)) {
+                        if (units.length > 1) {
+                          updateField(
+                            "supported_units",
+                            units.filter((u) => u !== unit.id),
+                          );
+                        } else {
+                          toast.error("At least one unit must be enabled");
+                        }
+                      } else {
+                        updateField("supported_units", [...units, unit.id]);
+                      }
+                    }}
+                    className={`p-4 border rounded-lg text-left transition-all ${
+                      formData.supported_units.includes(unit.id)
+                        ? "border-accent bg-accent/10"
+                        : "border-muted hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">{unit.label}</p>
+                      {formData.supported_units.includes(unit.id) && (
+                        <CheckCircle2 className="h-4 w-4 text-accent" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {unit.desc}
+                    </p>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => setStep(2)}>
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setStep(4)}
+                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Privacy Presets */}
+          {step === 4 && (
+            <div className="space-y-6">
+              <div className="flex justify-center py-4">
+                <Shield className="h-16 w-16 text-accent" />
+              </div>
+              <div className="space-y-3">
+                {[
+                  {
+                    id: "open",
+                    label: "Open CRM",
+                    desc: "Standard retail. Customers fully transparent.",
+                    features: [
+                      "Full names visible",
+                      "Standard audit logs",
+                      "No PII masking",
+                    ],
+                  },
+                  {
+                    id: "balanced",
+                    label: "Balanced (Recommended)",
+                    desc: "Ideal mix of audit trails and customer privacy.",
+                    features: [
+                      "Phone/Email visible to staff",
+                      "Audit logs tracked",
+                      "Strict role access",
+                    ],
+                  },
+                  {
+                    id: "private",
+                    label: "Private / Secure",
+                    desc: "Limited staff access to identifiable information.",
+                    features: [
+                      "Last names masked",
+                      "Admin-only PII access",
+                      "365-day log retention",
+                    ],
+                  },
+                  {
+                    id: "max_secure",
+                    label: "Maximum Secure / Alias-Only",
+                    desc: "No PII stored on device. Everything is aliased.",
+                    features: [
+                      "Zero PII on-disk",
+                      "All customers aliased",
+                      "Burn-mode enabled",
+                    ],
+                  },
+                ].map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() =>
+                      updateField("privacy_preset", preset.id as any)
+                    }
+                    className={`w-full p-4 border rounded-lg text-left transition-all ${
+                      formData.privacy_preset === preset.id
+                        ? "border-accent bg-accent/10"
+                        : "border-muted hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-semibold uppercase text-xs tracking-wider">
+                        {preset.label}
+                      </p>
+                      {formData.privacy_preset === preset.id && (
+                        <CheckCircle2 className="h-4 w-4 text-accent" />
+                      )}
+                    </div>
+                    <p className="text-sm font-medium mb-2">{preset.desc}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {preset.features.map((f, i) => (
+                        <span
+                          key={i}
+                          className="text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => setStep(3)}>
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setStep(5)}
+                  className="bg-accent hover:bg-accent-dark text-black font-semibold"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Review & Final Settings */}
+          {step === 5 && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex justify-center py-4">
-                <Settings className="h-16 w-16 text-accent" />
+                <Layers className="h-16 w-16 text-accent" />
               </div>
 
               <div className="space-y-2">
@@ -410,15 +618,21 @@ export function BusinessSetupWizard({
                       {formData.business_type}
                     </p>
                   )}
-                  {formData.city && formData.state && (
-                    <p>
-                      <span className="text-muted-foreground">Location:</span>{" "}
-                      {formData.city}, {formData.state}
-                    </p>
-                  )}
                   <p>
-                    <span className="text-muted-foreground">Tax Rate:</span>{" "}
-                    {formData.default_tax_rate}%
+                    <span className="text-muted-foreground">Location:</span>{" "}
+                    {formData.city}, {formData.state}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Privacy Mode:</span>{" "}
+                    <span className="uppercase font-bold text-accent">
+                      {formData.privacy_preset}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">
+                      Enabled Units:
+                    </span>{" "}
+                    {formData.supported_units.join(", ")}
                   </p>
                 </div>
               </div>
@@ -427,7 +641,7 @@ export function BusinessSetupWizard({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(4)}
                 >
                   Back
                 </Button>
@@ -442,8 +656,8 @@ export function BusinessSetupWizard({
             </form>
           )}
 
-          {/* Step 4: Success */}
-          {step === 4 && (
+          {/* Step 6: Success */}
+          {step === 6 && (
             <div className="space-y-4 text-center py-8">
               <div className="flex justify-center">
                 <div className="relative">

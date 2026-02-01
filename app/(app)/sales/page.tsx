@@ -12,14 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 
 import {
   POSEngine,
@@ -61,9 +54,11 @@ import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCustomerContext } from "@/components/providers/customer-provider";
+import { getCustomerDisplayName, maskPII } from "@/lib/utils/privacy";
+import { PrivacyPreset } from "@/lib/utils/privacy";
 
 export default function SalesPage() {
-  const { business, loading: businessLoading } = useBusiness();
+  const { business, settings, loading: businessLoading } = useBusiness();
   const inventory = useRealtimeInventory(business?.id || null);
   const [posEngine] = useState(() => new POSEngine());
   const [cart, setCart] = useState<CartState>(posEngine.getCart());
@@ -109,11 +104,8 @@ export default function SalesPage() {
   useEffect(() => {
     if (business?.id && supabase) {
       supabase
-        .from("product_unit_aliases")
-        .select("*")
-        .eq("business_id", business.id)
         .eq("is_enabled", true)
-        .then(({ data }) => setAliases(data || []));
+        .then(({ data }: { data: any[] | null }) => setAliases(data || []));
     }
   }, [business?.id, supabase]);
 
@@ -142,7 +134,7 @@ export default function SalesPage() {
 
     const checkRandomTrigger = async () => {
       const result = await posWeightEngine.shouldTriggerRandomCheck(
-        business.id,
+        business.id as string,
       );
       if (result.should_check) {
         setShowInventoryCheck(true);
@@ -156,13 +148,13 @@ export default function SalesPage() {
     if (!business?.id) return;
 
     const loadDeliveryOptions = async () => {
-      const options = await posEngine.getDeliveryOptions(business.id);
+      const options = await posEngine.getDeliveryOptions(business.id as string);
       setDeliveryOptions(options);
     };
 
     const loadAIPricingRecommendations = async () => {
       const recommendations = await posEngine.getAIPricingRecommendations(
-        business.id,
+        business.id as string,
       );
       setAiRecommendations(recommendations);
     };
@@ -196,11 +188,22 @@ export default function SalesPage() {
     loadTaxSettings();
   }, [business?.id, supabase, posEngine]);
 
-  const filteredInventory = inventory.filter(
-    (item) =>
-      item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Filter and match inventory based on search and aliases
+  const filteredInventory = inventory.filter((item) => {
+    const searchLower = searchTerm.toLowerCase().trim();
+    if (!searchLower) return true;
+
+    const matchesName = item.product_name.toLowerCase().includes(searchLower);
+    const matchesSku = item.sku.toLowerCase().includes(searchLower);
+
+    // Check for alias matches
+    const matchesAlias = aliases.some(
+      (alias) =>
+        alias.alias_name.toLowerCase() === searchLower && alias.is_enabled,
+    );
+
+    return matchesName || matchesSku || matchesAlias;
+  });
 
   const handleAddToCart = (item: any) => {
     if (item.quantity_on_hand <= 0) {
@@ -208,16 +211,26 @@ export default function SalesPage() {
       return;
     }
 
+    const searchLower = searchTerm.toLowerCase().trim();
+    const matchingAlias = aliases.find(
+      (a) => a.alias_name.toLowerCase() === searchLower && a.is_enabled,
+    );
+
+    const quantity = matchingAlias ? parseFloat(matchingAlias.unit_value) : 1;
+
     posEngine.addItem({
       inventory_id: item.id,
       product_name: item.product_name,
       sku: item.sku,
-      quantity: 1,
+      quantity,
       unit_price: Number(item.selling_price || 0),
       unit_cost: Number(item.unit_cost || 0),
     });
     setCart(posEngine.getCart());
-    toast.success(`${item.product_name} added to cart`);
+    setSearchTerm("");
+    toast.success(
+      `${item.product_name} added to cart${matchingAlias ? ` (${matchingAlias.alias_name})` : ""}`,
+    );
   };
 
   const handleUpdateQuantity = (inventory_id: string, delta: number) => {
@@ -559,13 +572,10 @@ export default function SalesPage() {
                 <User className="h-4 w-4 mr-2" />
                 {selectedCustomer
                   ? customers.find((c) => c.id === selectedCustomer)
-                    ? `${
-                        customers.find((c) => c.id === selectedCustomer)
-                          ?.first_name
-                      } ${
-                        customers.find((c) => c.id === selectedCustomer)
-                          ?.last_name
-                      }`
+                    ? getCustomerDisplayName(
+                        customers.find((c) => c.id === selectedCustomer)!,
+                        settings?.privacy_preset as PrivacyPreset,
+                      )
                     : "Select Customer"
                   : "Walk-in Customer"}
               </Button>
@@ -919,7 +929,7 @@ export default function SalesPage() {
             <div className="space-y-2 pt-4 border-t">
               <Label className="text-xs font-semibold">Admin Functions</Label>
               <div className="grid grid-cols-2 gap-2">
-                <NoSaleButton businessId={business.id} />
+                <NoSaleButton businessId={business.id as string} />
                 <Button
                   onClick={() => setShowShrinkageForm(true)}
                   size="sm"

@@ -10,10 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Search, User, CreditCard, Award } from "lucide-react";
+import { Search, User, CreditCard } from "lucide-react";
 import { LoyaltyBadge } from "./loyalty-badge";
+import {
+  getCustomerDisplayName,
+  maskPII,
+  PrivacyPreset,
+} from "@/lib/utils/privacy";
 
 interface Customer {
   id: string;
@@ -34,6 +37,7 @@ interface CustomerSelectorModalProps {
   customers: Customer[];
   onSelect: (customerId: string) => void;
   selectedCustomerId?: string;
+  privacyPreset?: PrivacyPreset;
 }
 
 export function CustomerSelectorModal({
@@ -42,6 +46,7 @@ export function CustomerSelectorModal({
   customers,
   onSelect,
   selectedCustomerId,
+  privacyPreset = "balanced",
 }: CustomerSelectorModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -116,16 +121,30 @@ export function CustomerSelectorModal({
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <p className="font-medium">
-                          {customer.first_name} {customer.last_name}
+                          {getCustomerDisplayName(
+                            customer as any,
+                            privacyPreset,
+                          )}
                         </p>
                       </div>
 
                       {/* Contact Info */}
                       <div className="text-sm text-muted-foreground space-y-1">
                         {customer.phone_number && (
-                          <p>📱 {customer.phone_number}</p>
+                          <p>
+                            📱{" "}
+                            {maskPII(
+                              customer.phone_number,
+                              "phone",
+                              privacyPreset,
+                            )}
+                          </p>
                         )}
-                        {customer.email && <p>✉️ {customer.email}</p>}
+                        {customer.email && (
+                          <p>
+                            ✉️ {maskPII(customer.email, "email", privacyPreset)}
+                          </p>
+                        )}
                       </div>
 
                       {/* Loyalty Badge */}

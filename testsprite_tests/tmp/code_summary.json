@@ -1,35 +1,62 @@
 {
-  "tech_stack": ["TypeScript", "Next.js", "Supabase", "TailwindCSS"],
+  "tech_stack": [
+    "TypeScript",
+    "Next.js",
+    "Tailwind CSS",
+    "Supabase",
+    "PostgreSQL",
+    "Radix UI",
+    "Framer Motion",
+    "Sentry",
+    "Vitest",
+    "Playwright"
+  ],
   "features": [
     {
-      "name": "Inventory Management",
-      "description": "API for managing product inventory, stock levels, and compliance details.",
-      "files": ["app/api/inventory/route.ts"]
+      "name": "Credit Management API",
+      "description": "Handles credit limit refreshes, exposure reports, transactions, and customer credit status.",
+      "files": ["app/api/credit"],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Credit Management API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/credit/refresh-limits": {
+            "post": {
+              "summary": "Refresh credit limits",
+              "responses": { "200": { "description": "OK" } }
+            }
+          },
+          "/api/credit/exposure-report": {
+            "get": {
+              "summary": "Get exposure report",
+              "responses": { "200": { "description": "OK" } }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Credit System",
-      "description": "API for managing customer credit lines and balances.",
-      "files": ["app/api/credit/route.ts"]
-    },
-    {
-      "name": "AI Insights",
-      "description": "Artificial Intelligence endpoints for generating business insights and analytics.",
-      "files": ["app/api/ai/route.ts"]
-    },
-    {
-      "name": "Admin Management",
-      "description": "Administrative endpoints for system configuration and user management.",
-      "files": ["app/api/admin/route.ts"]
-    },
-    {
-      "name": "Team Management",
-      "description": "API for managing team members and permissions.",
-      "files": ["app/api/team/route.ts"]
-    },
-    {
-      "name": "Notifications",
-      "description": "System for user notifications and alerts.",
-      "files": ["app/api/notifications/route.ts"]
+      "name": "Inventory API",
+      "description": "Manages product inventory and intake processes.",
+      "files": ["app/api/inventory"],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Inventory API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/inventory": {
+            "get": {
+              "summary": "List inventory",
+              "responses": { "200": { "description": "OK" } }
+            }
+          }
+        }
+      }
     }
   ]
 }

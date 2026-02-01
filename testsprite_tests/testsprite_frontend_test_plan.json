@@ -1,462 +1,332 @@
 [
   {
     "id": "TC001",
-    "title": "Login success with valid credentials",
-    "description": "Verify that users can log in successfully with correct username and password and are routed to appropriate dashboards based on their role.",
+    "title": "Tenant Onboarding with Complete Required Fields",
+    "description": "Verify onboarding fails if any required business, privacy preset, unit selection, or user role field is missing, and succeeds only when all are completed.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page"
+        "description": "Start onboarding process for a new tenant"
       },
       {
         "type": "action",
-        "description": "Input valid username and password"
+        "description": "Attempt to complete onboarding with missing required business information"
+      },
+      {
+        "type": "assertion",
+        "description": "Check onboarding is rejected and appropriate error messages are shown"
       },
       {
         "type": "action",
-        "description": "Click the login button"
+        "description": "Complete all required onboarding fields including business details, privacy presets, unit selections, and initial user roles"
       },
       {
         "type": "assertion",
-        "description": "Verify the user is authenticated and redirected to the dashboard matching their role (Cashier, Supervisor, Manager, Super Admin)"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that route protection prevents access to unauthorized pages"
+        "description": "Verify onboarding completes successfully and tenant is activated"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Login failure with invalid credentials",
-    "description": "Verify that login fails when incorrect username or password is entered and appropriate error message is displayed.",
-    "category": "error handling",
+    "title": "Multi-Tenant Data Isolation Enforcement",
+    "description": "Ensure tenant data is strictly isolated; users of one tenant cannot access or retrieve data from other tenants.",
+    "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page"
-      },
-      {
-        "type": "action",
-        "description": "Input invalid username or password"
-      },
-      {
-        "type": "action",
-        "description": "Click the login button"
+        "description": "Login as User A from Tenant 1 and attempt to access Tenant 2’s inventory data"
       },
       {
         "type": "assertion",
-        "description": "Verify login is denied with an error message indicating invalid credentials"
+        "description": "Verify access is denied with no data leakage"
+      },
+      {
+        "type": "action",
+        "description": "Login as User B from Tenant 2 and attempt to access Tenant 1’s credit exposure reports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and no data is returned"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Role-based permission enforcement on POS actions",
-    "description": "Verify that role-based permissions are enforced server-side and at the database level, restricting or allowing actions like sales, price overrides, voids, and inventory adjustments.",
-    "category": "security",
+    "title": "Inventory Intake Via Barcode and Text Search",
+    "description": "Validate inventory intake flow using both barcode scanning and product text search to add products with multiple units and input correct quantities.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Cashier"
+        "description": "Navigate to inventory intake screen"
       },
       {
         "type": "action",
-        "description": "Attempt to perform a price override"
+        "description": "Search for a product by text and select it"
+      },
+      {
+        "type": "action",
+        "description": "Input quantity using supported multi-unit measurement"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid reason for intake"
       },
       {
         "type": "assertion",
-        "description": "Verify the server denies the price override and an error response is returned"
+        "description": "Confirm intake is successful and audit log entry is created with correct user, timestamp, previous and new quantities, reason, and device source"
       },
       {
         "type": "action",
-        "description": "Log in as Supervisor"
-      },
-      {
-        "type": "action",
-        "description": "Perform a price override within allowed limits on POS"
+        "description": "Repeat intake process using barcode scan to select product"
       },
       {
         "type": "assertion",
-        "description": "Verify the price override is accepted and logged with an immutable audit record"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to void a transaction"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the void operation succeeds and creates an immutable audit log"
-      },
-      {
-        "type": "action",
-        "description": "Log in as Cashier and attempt to void a transaction"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify void operation is denied by server and database permission level"
+        "description": "Verify intake succeeds with audit logging as above"
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "POS transaction with fractional quantities and tax calculation",
-    "description": "Verify that the POS interface supports fractional quantities and applies configured tax rules with proper deterministic rounding.",
+    "title": "Inventory Adjustment with Increments, Decrements, and Absolute Setting",
+    "description": "Test inventory adjustment workflow for increment, decrement, and setting absolute quantities with enforced permission and mandatory reason.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Cashier"
-      },
-      {
-        "type": "action",
-        "description": "Go to the POS interface"
-      },
-      {
-        "type": "action",
-        "description": "Add product to cart with fractional quantity (e.g. 1.75 units)"
-      },
-      {
-        "type": "action",
-        "description": "Verify the price and tax are calculated with configured tax rules and rounding"
+        "description": "Attempt to adjust inventory without required permission"
       },
       {
         "type": "assertion",
-        "description": "Confirm that calculated totals, taxes, and rounding match expected deterministic logic"
+        "description": "Verify action is denied"
       },
       {
         "type": "action",
-        "description": "Complete the sale transaction"
+        "description": "Adjust inventory by incrementing quantity with valid reason and permission"
       },
       {
         "type": "assertion",
-        "description": "Verify the transaction is immutable and stored correctly with full audit logs"
+        "description": "Verify quantity is correctly updated and audit log captures all details"
+      },
+      {
+        "type": "action",
+        "description": "Adjust inventory by decrementing quantity similarly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify correctness and audit log entry"
+      },
+      {
+        "type": "action",
+        "description": "Set inventory item quantity to an absolute value"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm quantity update and audit log recorded"
+      },
+      {
+        "type": "action",
+        "description": "Try adjusting inventory without providing a reason"
+      },
+      {
+        "type": "assertion",
+        "description": "Assert adjustment is rejected with error"
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Inventory management with immutable historical intake and adjustments",
-    "description": "Verify inventory management tracks quantities, weights, costs, and records immutable historical intake and adjustment records with audit logs.",
+    "title": "Batch CSV Inventory Upload with Error Handling and Audit Logging",
+    "description": "Verify batch upload of multiple inventory rows via CSV handles valid and invalid entries properly, logs all transactions, and reports errors.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Supervisor"
-      },
-      {
-        "type": "action",
-        "description": "Add new inventory intake record with product quantity, weight, and cost per unit"
+        "description": "Upload a CSV file with valid inventory intake rows"
       },
       {
         "type": "assertion",
-        "description": "Verify the intake record is saved immutably and cannot be silently modified"
+        "description": "Confirm batch import completes successfully and audit logs created for each row"
       },
       {
         "type": "action",
-        "description": "Adjust inventory quantity via adjustment record"
+        "description": "Upload a CSV file with some invalid rows (e.g., missing required fields, invalid quantities)"
       },
       {
         "type": "assertion",
-        "description": "Verify adjustment record is append-only, logged with user details, timestamp, and cannot be altered"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to modify a historical inventory intake record"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify system rejects silent mutations or modifications; all changes must be logged as new audit entries"
+        "description": "Verify errors reported clearly and only valid rows processed with proper audit logs"
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Soft-disable customer account instead of deletion",
-    "description": "Verify that customers can be soft-disabled, preventing further transactions, but preserving purchase history and notes.",
+    "title": "Credit Limit Refresh and Exposure Reporting via API",
+    "description": "Validate Credit Management API endpoints for refreshing credit limits and retrieving exposure reports, ensuring accuracy and proper authorization.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Manager"
-      },
-      {
-        "type": "action",
-        "description": "Search for an existing customer profile"
-      },
-      {
-        "type": "action",
-        "description": "Soft-disable the customer account"
+        "description": "Send POST request to /api/credit/refresh-limits to refresh credit limits for a tenant"
       },
       {
         "type": "assertion",
-        "description": "Verify the customer entry is marked disabled but still accessible for viewing purchase history and notes"
+        "description": "Verify HTTP 200 response and updated credit limits"
       },
       {
         "type": "action",
-        "description": "Attempt to create a new sale or transaction for the soft-disabled customer"
+        "description": "Send GET request to /api/credit/exposure-report for tenant's credit exposure"
       },
       {
         "type": "assertion",
-        "description": "Verify the system prevents transactions involving soft-disabled customers"
+        "description": "Confirm response includes accurate exposure data"
       },
       {
         "type": "action",
-        "description": "Search for the disabled customer and verify data integrity is maintained"
+        "description": "Attempt API calls without required permissions or invalid authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with appropriate error code"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Audit log generation for sensitive actions",
-    "description": "Verify that all sensitive actions including price overrides, inventory adjustments, voids, refunds, and permission changes generate immutable, append-only audit logs.",
-    "category": "functional",
+    "title": "POS Operation Speed and Privacy Mode Enforcement",
+    "description": "Test POS transaction workflows ensuring sub-second response times, offline mode handling, alias auto-fill, and enforcement of configured privacy presets.",
+    "category": "performance",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Supervisor"
-      },
-      {
-        "type": "action",
-        "description": "Perform a price override on a sales transaction"
-      },
-      {
-        "type": "action",
-        "description": "Adjust inventory quantities"
-      },
-      {
-        "type": "action",
-        "description": "Void a sales transaction"
+        "description": "Perform POS sale using barcode scan and alias auto-fill with privacy preset set to alias-only mode"
       },
       {
         "type": "assertion",
-        "description": "Verify each action generates a new immutable audit log entry including timestamp, user ID, action type, and details"
+        "description": "Validate response time is under 1 second and privacy constraints are respected (e.g., customer PII obscured)"
       },
       {
         "type": "action",
-        "description": "Log in as Super Admin"
-      },
-      {
-        "type": "action",
-        "description": "Change user permissions"
+        "description": "Simulate offline POS transaction"
       },
       {
         "type": "assertion",
-        "description": "Verify permission changes are recorded in immutable audit logs"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to modify an audit log entry"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that modification of audit log entries is prohibited"
+        "description": "Verify transaction persists locally and syncs correctly when online without duplicates or data loss"
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Mobile POS usability and performance",
-    "description": "Verify that the mobile POS interface supports one-handed operation and allows new staff to complete a sale within two minutes.",
-    "category": "usability",
+    "title": "Role-Based Access Control for Sensitive Settings and Data",
+    "description": "Ensure strict enforcement of role permissions to limit access to credit policies, inventory adjustments, audit logs, and privacy configurations.",
+    "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Access POS interface on a mobile device"
+        "description": "Attempt to access audit logs, credit management, or privacy settings with a user role lacking permissions"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access is denied and no data is returned"
       },
       {
         "type": "action",
-        "description": "Simulate new staff user completing sale process from product selection to checkout"
+        "description": "Access above resources with authorized role"
       },
       {
         "type": "assertion",
-        "description": "Measure and verify that the entire sale process completes under two minutes"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify interface elements are reachable and operable with one hand (e.g., large buttons, optimized layout)"
-      },
-      {
-        "type": "assertion",
-        "description": "Confirm system responsiveness and no performance lag on mobile network"
+        "description": "Verify full access and ability to modify configurations where permitted"
       }
     ]
   },
   {
     "id": "TC009",
-    "title": "Deterministic and reproducible tax and pricing calculations",
-    "description": "Verify that tax and pricing calculations conform to configured business tax rules and explicit rounding standards yielding deterministic and reproducible results.",
-    "category": "functional",
+    "title": "Audit Log Accuracy, Completeness, and Tamper-Proofing",
+    "description": "Verify all inventory transactions, credit changes, and sensitive actions are logged with user identity, timestamp, previous and new values, reason, and device source within 30 seconds, and logs cannot be altered.",
+    "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Configure various tax rates and settings for a test business profile"
-      },
-      {
-        "type": "action",
-        "description": "Perform multiple sales transactions with diverse products and quantities"
+        "description": "Perform inventory intake, adjustment, and credit refresh actions"
       },
       {
         "type": "assertion",
-        "description": "Verify calculated taxes and prices match expected outcomes based on configured rules and rounding policies"
-      },
-      {
-        "type": "assertion",
-        "description": "Repeat transactions and check that results are identical and reproducible"
+        "description": "Check audit logs for completeness and timing compliance"
       },
       {
         "type": "action",
-        "description": "Change rounding configurations and verify calculations adjust accordingly, preserving determinism"
+        "description": "Attempt to edit or delete audit log entries as a regular user"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm modification is forbidden"
       }
     ]
   },
   {
     "id": "TC010",
-    "title": "Credit Engine integration and credit limit enforcement",
-    "description": "Verify that the AI-powered Credit Engine integrates seamlessly, analyzes credit limits, and enforces credit restrictions during sales and customer credit queries.",
-    "category": "functional",
-    "priority": "Medium",
+    "title": "Privacy Preset Enforcement Including Data Burn and Export Restrictions",
+    "description": "Validate that system applies privacy presets correctly including open CRM, max secure alias-only modes, and that data burn actions and export restrictions operate as intended.",
+    "category": "security",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Sales or Manager user"
-      },
-      {
-        "type": "action",
-        "description": "Access customer credit information via integrated Credit Engine"
+        "description": "Set privacy preset to open CRM and verify customer data is visible and exportable"
       },
       {
         "type": "assertion",
-        "description": "Verify credit limit and analysis data is retrieved and displayed correctly"
+        "description": "Confirm full customer details accessible and export allowed"
       },
       {
         "type": "action",
-        "description": "Attempt to execute a sale exceeding the customer's credit limit"
+        "description": "Change privacy preset to max secure alias-only mode"
       },
       {
         "type": "assertion",
-        "description": "Verify the system denies the sale or requires override approval according to policy"
+        "description": "Verify customer personal data is replaced by aliases and exports are blocked"
       },
       {
         "type": "action",
-        "description": "Verify audit log records approval or denial of transactions involving credit engine enforcement"
+        "description": "Execute a data burn action"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm irreversible deletion of PII and audit log entry of this action"
       }
     ]
   },
   {
     "id": "TC011",
-    "title": "Reporting and audit log completeness and accuracy",
-    "description": "Verify that all reports (sales, inventory movement, tax summaries, user actions) are complete, accurate, and reflect immutable, append-only data.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Log in as Manager"
-      },
-      {
-        "type": "action",
-        "description": "Generate sales report for defined date range"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify sales report matches transaction records from database exactly"
-      },
-      {
-        "type": "action",
-        "description": "Generate inventory movement report"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify inventory movements match immutable intake and adjustment records"
-      },
-      {
-        "type": "action",
-        "description": "Generate tax summary report"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify tax totals are consistent with individual transactions and tax rules"
-      },
-      {
-        "type": "action",
-        "description": "Access user action audit logs"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify audit logs show append-only entries for sensitive actions without gaps or tampering"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Server-side enforced route protection and permission validation",
-    "description": "Verify that all permissions and route protections are enforced strictly server-side, independent of UI controls, preventing unauthorized data access or mutations.",
+    "title": "Audit Log Retention and GDPR Compliance Including Right to be Forgotten",
+    "description": "Test compliance with GDPR including retention policies, irreversible PII deletion, and honoring user data deletion requests.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Attempt to access restricted API endpoints or database operations directly with insufficient permissions"
+        "description": "Perform data deletion request for a customer’s personal data"
       },
       {
         "type": "assertion",
-        "description": "Verify server denies access with proper error codes consistently"
+        "description": "Verify PII is irreversibly deleted from all tenant data stores"
       },
       {
         "type": "action",
-        "description": "Login as lower role user (i.e. Cashier) and try to modify resources only permitted for higher roles (Manager, Super Admin)"
+        "description": "Check audit logs for required retention periods"
       },
       {
         "type": "assertion",
-        "description": "Verify no unauthorized data changes are allowed, and access is blocked at the API/database level"
-      },
-      {
-        "type": "action",
-        "description": "Manipulate UI or client-side requests to simulate privilege escalation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify server rejects any unauthorized elevated requests"
-      }
-    ]
-  },
-  {
-    "id": "TC013",
-    "title": "Prevention of use of mock data in production environment",
-    "description": "Verify that the production environment rejects or does not contain any mock or placeholder data and all data conforms to live production requirements.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Deploy system to production environment"
-      },
-      {
-        "type": "action",
-        "description": "Access different modules including POS, inventory, customers, and reports"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify no sample, mock, or test data is present or used in any live queries or reports"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to inject test/mock data using any API or UI input"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify system rejects non-production data inputs or flags inappropriate data"
+        "description": "Confirm audit logs retain necessary info but exclude PII beyond retention term"
       }
     ]
   }
