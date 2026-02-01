@@ -142,32 +142,35 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-2">
-            Configure your business settings
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {hasPermission("inventory.manage") && (
-            <Link href="/settings/inventory/aliases">
-              <Button variant="outline" className="gap-2">
-                <Users className="w-4 h-4" />
-                Manage Aliases
-              </Button>
-            </Link>
-          )}
-          {hasPermission("users.manage") && (
-            <Link href="/settings/team">
-              <Button variant="outline" className="gap-2">
-                <Users className="w-4 h-4" />
-                Manage Team
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+       <div>
+         <h1 className="text-3xl font-bold">Settings</h1>
+         <p className="text-muted-foreground mt-2">
+           Configure your business settings
+         </p>
+       </div>
+       <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+         <p className="text-xs text-muted-foreground">v0.3.3</p>
+         <div className="flex gap-2">
+           {hasPermission("inventory.manage") && (
+             <Link href="/settings/inventory/aliases">
+               <Button variant="outline" className="gap-2">
+                 <Users className="w-4 h-4" />
+                 Manage Aliases
+               </Button>
+             </Link>
+           )}
+           {hasPermission("users.manage") && (
+             <Link href="/settings/team">
+               <Button variant="outline" className="gap-2">
+                 <Users className="w-4 h-4" />
+                 Manage Team
+               </Button>
+             </Link>
+           )}
+         </div>
+       </div>
+     </div>
 
       <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
         {/* Mobile progress */}
