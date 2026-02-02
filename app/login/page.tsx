@@ -119,17 +119,17 @@ export default function LoginPage() {
       <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center mb-6">
-            <div className="relative w-24 h-24">
+            <div className="relative w-[80px] h-12">
               <Image
-                src="/icon.svg"
-                alt="DRX CRM Logo"
+                src="/brand/drx-mark-primary.png"
+                alt="DRX CRM"
                 fill
                 className="object-contain"
                 priority
               />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">DRX CRM</CardTitle>
+          <CardTitle className="text-3xl font-bold">DeelRx CRM</CardTitle>
           <CardDescription className="text-base">
             {isSignUp
               ? "Create your account"

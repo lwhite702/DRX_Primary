@@ -25,7 +25,7 @@ export function AppLogo({
       </div>
       <div className="min-w-0">
         <div className="text-base font-bold text-accent leading-none truncate">
-          DRX CRM
+          DeelRx CRM
         </div>
         {showTagline && (
           <div className="text-[11px] text-muted-foreground truncate mt-1">

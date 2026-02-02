@@ -94,7 +94,7 @@ export default function LandingPage() {
           <div className="hidden md:block">
             <StatusChip />
           </div>
-          <Link href="/signup">
+          <Link href="/login">
             <Button
               size="sm"
               className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
@@ -409,12 +409,14 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-6xl font-bold tracking-tighter max-w-4xl mx-auto">
             Software that understands how business actually works.
           </h2>
-          <Button
-            size="lg"
-            className="text-lg px-12 py-8 rounded-full bg-foreground text-background hover:bg-foreground/90 mt-8"
-          >
-            Start With DeelRx
-          </Button>
+          <Link href="/login">
+            <Button
+              size="lg"
+              className="text-lg px-12 py-8 rounded-full bg-foreground text-background hover:bg-foreground/90 mt-8"
+            >
+              Start With DeelRx
+            </Button>
+          </Link>
         </section>
       </main>
 

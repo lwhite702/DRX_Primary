@@ -4,14 +4,8 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { OfflineProvider } from "@/components/providers/offline-provider";
-import { BusinessSetupProvider } from "@/components/providers/business-setup-provider";
-import { AppShell } from "@/components/layout/app-shell";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
-import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
-import { OnboardingProvider } from "@/components/providers/onboarding-provider";
-import { CustomerProvider } from "@/components/providers/customer-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
 
 const _geistSans = Geist({ subsets: ["latin"] });
@@ -77,20 +71,11 @@ export default function RootLayout({
         className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
       >
         <GlobalErrorBoundary>
-          <BusinessSetupProvider>
-            <OfflineProvider>
-              <PostHogProvider>
-                <OnboardingProvider>
-                  <CustomerProvider>
-                    <FeaturebaseProvider />
-                    <AppShell>{children}</AppShell>
-                    <OnboardingFlow />
-                    <Toaster position="top-right" />
-                  </CustomerProvider>
-                </OnboardingProvider>
-              </PostHogProvider>
-            </OfflineProvider>
-          </BusinessSetupProvider>
+          <PostHogProvider>
+            <FeaturebaseProvider />
+            {children}
+            <Toaster position="top-right" />
+          </PostHogProvider>
         </GlobalErrorBoundary>
       </body>
     </html>
