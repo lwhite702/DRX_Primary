@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const _geistSans = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -66,18 +67,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
-      >
-        <GlobalErrorBoundary>
-          <PostHogProvider>
-            <FeaturebaseProvider />
-            {children}
-            <Toaster position="top-right" />
-          </PostHogProvider>
-        </GlobalErrorBoundary>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
+        >
+          <GlobalErrorBoundary>
+            <PostHogProvider>
+              <FeaturebaseProvider />
+              {children}
+              <Toaster position="top-right" />
+            </PostHogProvider>
+          </GlobalErrorBoundary>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -1,82 +1,87 @@
-import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const { userId: actorId } = await auth();
 
-  if (!user || authError) {
+  if (!actorId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Use Service Role for Admin actions
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  try {
+    // Get Caller Role
+    const callerRoleRec = await db.userRole.findFirst({
+      where: { userId: actorId },
+    });
 
-  // Get Caller Role and Business Context
-  const { data: roleData } = await adminSupabase
-    .from("user_roles")
-    .select("role, business_id")
-    .eq("user_id", user.id)
-    .single();
+    if (
+      !callerRoleRec ||
+      !["manager", "owner", "super_admin"].includes(callerRoleRec.role || "")
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 },
+      );
+    }
 
-  if (
-    !roleData ||
-    !["manager", "owner", "super_admin"].includes(roleData.role.toLowerCase())
-  ) {
-    return NextResponse.json(
-      { error: "Forbidden: Insufficient permissions" },
-      { status: 403 },
-    );
-  }
+    const businessId = callerRoleRec.businessId;
+    const body = await request.json();
+    const { role } = body;
+    const callerRole = callerRoleRec.role?.toLowerCase() || "";
+    const targetRole = role.toLowerCase();
 
-  const businessId = roleData.business_id;
-  const body = await request.json();
-  const { role } = body;
+    // Enforce Role Hierarchy
+    if (
+      callerRole === "manager" &&
+      ["owner", "super_admin"].includes(targetRole)
+    ) {
+      return NextResponse.json(
+        { error: "Managers cannot assign Owner or Super Admin roles" },
+        { status: 403 },
+      );
+    }
 
-  // Enforce Role Hierarchy
-  const callerRole = roleData.role.toLowerCase();
-  const targetRole = role.toLowerCase();
+    // Update Role
+    // Scope to businessId to prevent cross-tenant modification if needed, though 'id' is user_id globally?
+    // Since `user_roles` has `{userId, businessId}` and user might have multiple roles...
+    // We should update the role for THIS business context.
 
-  if (
-    callerRole === "manager" &&
-    ["owner", "super_admin"].includes(targetRole)
-  ) {
-    return NextResponse.json(
-      { error: "Managers cannot assign Owner or Super Admin roles" },
-      { status: 403 },
-    );
-  }
+    const updateResult = await db.userRole.updateMany({
+      where: {
+        userId: id,
+        businessId: businessId, // Ensure we only update role in the actor's business
+      },
+      data: { role: role },
+    });
 
-  const { error } = await adminSupabase
-    .from("user_roles")
-    .update({ role: role })
-    .eq("user_id", id)
-    .eq("business_id", businessId); // Ensure scoped update
+    if (updateResult.count === 0) {
+      // If no role found, maybe we should create it? Or user not in business.
+      return NextResponse.json(
+        { error: "User not found in this business" },
+        { status: 404 },
+      );
+    }
 
-  if (error) {
+    // Audit Log
+    await db.systemAuditLog.create({
+      data: {
+        action: "role_update",
+        entityId: id,
+        userId: actorId,
+        newValues: { new_role: role },
+        entityType: "team_member",
+        businessId: businessId,
+      },
+    });
+
+    return NextResponse.json({ id, role }, { status: 200 });
+  } catch (error: any) {
+    console.error("Update role error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  // Audit Log (Updated for isolation and consistency)
-  await adminSupabase.from("system_audit_log").insert({
-    action: "role_update",
-    entity_id: id,
-    user_id: user.id,
-    new_values: { new_role: role },
-    entity_type: "team_member",
-    business_id: businessId,
-  });
-
-  return NextResponse.json({ id, role }, { status: 200 });
 }

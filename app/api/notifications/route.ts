@@ -1,77 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { userId } = await auth();
 
-    if (userError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: notifications, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("is_read", false)
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    if (error) {
-      console.error("Fetch notifications error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch notifications" },
-        { status: 500 }
-      );
-    }
+    const notifications = await db.notification.findMany({
+      where: {
+        userId: userId,
+        isRead: false,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 100,
+    });
 
     return NextResponse.json({ notifications });
   } catch (error) {
+    console.error("Fetch notifications error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { id, mark_all_read } = body;
+    const { userId } = await auth();
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const body = await request.json();
+    const { id, mark_all_read } = body;
+
     if (mark_all_read) {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
+      await db.notification.updateMany({
+        where: { userId: userId, isRead: false },
+        data: { isRead: true },
+      });
     } else if (id) {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("id", id)
-        .eq("user_id", user.id); // Security check
-
-      if (error) throw error;
+      await db.notification.updateMany({
+        where: { id: id, userId: userId }, // Security check: ensure user owns notification
+        data: { isRead: true },
+      });
     } else {
       return NextResponse.json(
         { error: "Missing id or mark_all_read" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -80,7 +64,7 @@ export async function PUT(request: NextRequest) {
     console.error("Update notification error:", error);
     return NextResponse.json(
       { error: "Failed to update notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

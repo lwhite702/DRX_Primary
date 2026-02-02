@@ -18,8 +18,8 @@ interface Notification {
   message: string;
   type: "approval" | "system" | "alert";
   link?: string;
-  is_read: boolean;
-  created_at: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 export function NotificationsPopover() {
@@ -105,7 +105,7 @@ export function NotificationsPopover() {
                   key={notification.id}
                   className={cn(
                     "flex flex-col gap-1 p-4 hover:bg-muted/50 transition-colors cursor-pointer border-b last:border-0",
-                    !notification.is_read && "bg-muted/20"
+                    !notification.isRead && "bg-muted/20",
                   )}
                   onClick={() => {
                     // If it has a link, we might want to navigate
@@ -122,7 +122,7 @@ export function NotificationsPopover() {
                       {notification.title}
                     </span>
                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {new Date(notification.created_at).toLocaleDateString()}
+                      {new Date(notification.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-2">

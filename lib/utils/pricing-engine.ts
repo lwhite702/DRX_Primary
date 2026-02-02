@@ -1,4 +1,5 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 export interface PricingFactors {
   cost: number;
@@ -30,14 +31,12 @@ export interface PricingRecommendation {
 }
 
 export class PricingEngine {
-  private supabase = getSupabaseClient();
-
   /**
    * Calculate baseline deterministic price
    */
   private calculateBaselinePrice(
     cost: number,
-    marginRequirement: number
+    marginRequirement: number,
   ): number {
     if (cost <= 0) return 0;
     return cost * (1 + marginRequirement);
@@ -69,7 +68,7 @@ export class PricingEngine {
     currentStock: number,
     velocity7d: number,
     velocity30d: number,
-    minReorderLevel?: number
+    minReorderLevel?: number,
   ): { position: string; daysSupply: number; urgency: string } {
     const avgVelocity = (velocity7d + velocity30d) / 2;
     if (avgVelocity === 0) {
@@ -103,7 +102,7 @@ export class PricingEngine {
   private calculateDemandImpact(
     velocity7d: number,
     velocity30d: number,
-    velocity90d: number
+    velocity90d: number,
   ): { elasticity: string; acceleration: number } {
     if (velocity7d === 0 && velocity30d === 0 && velocity90d === 0) {
       return { elasticity: "unknown", acceleration: 0 };
@@ -129,7 +128,7 @@ export class PricingEngine {
     minMarginRequired: number = 0.1,
     globalSafetyFactor: number = 2.0,
     minPrice?: number,
-    maxPrice?: number
+    maxPrice?: number,
   ): { price: number; rangeMin: number; rangeMax: number } {
     const absoluteMin = cost * (1 + minMarginRequired);
     const absoluteMax = cost * globalSafetyFactor;
@@ -149,7 +148,7 @@ export class PricingEngine {
    * Generate AI pricing recommendation
    */
   async generateRecommendation(
-    factors: PricingFactors
+    factors: PricingFactors,
   ): Promise<PricingRecommendation> {
     const {
       cost,
@@ -183,12 +182,12 @@ export class PricingEngine {
     const inventoryAnalysis = this.analyzeInventoryPosition(
       currentStock,
       salesVelocity7d,
-      salesVelocity30d
+      salesVelocity30d,
     );
     const demandAnalysis = this.calculateDemandImpact(
       salesVelocity7d,
       salesVelocity30d,
-      salesVelocity90d
+      salesVelocity90d,
     );
 
     // Initialize price adjustment factors
@@ -228,11 +227,11 @@ export class PricingEngine {
       if (deliveryCostChange > 15) {
         priceAdjustment *= 1.03;
         reasoning += `Delivery costs rising ${deliveryCostChange.toFixed(
-          1
+          1,
         )}% - slight price increase to maintain margin. `;
       } else if (deliveryCostChange < -15) {
         reasoning += `Delivery costs declining ${Math.abs(
-          deliveryCostChange
+          deliveryCostChange,
         ).toFixed(1)}% - opportunity for competitive pricing. `;
       }
     }
@@ -241,12 +240,12 @@ export class PricingEngine {
     if (costTrend.change > 5) {
       priceAdjustment *= 1.05;
       reasoning += `Cost rising ${costTrend.change.toFixed(
-        1
+        1,
       )}% - slight increase. `;
     } else if (costTrend.change < -5) {
       priceAdjustment *= 0.95;
       reasoning += `Cost declining ${Math.abs(costTrend.change).toFixed(
-        1
+        1,
       )}% - consider price reduction. `;
     }
 
@@ -255,7 +254,7 @@ export class PricingEngine {
       priceAdjustment *= 0.92;
       confidenceScore = Math.max(60, confidenceScore - 10);
       reasoning += `Overstock detected (${inventoryAnalysis.daysSupply.toFixed(
-        0
+        0,
       )}d supply) - recommend discount to clear inventory. `;
     } else if (inventoryAnalysis.position === "critical") {
       priceAdjustment *= 1.08;
@@ -271,13 +270,13 @@ export class PricingEngine {
       priceAdjustment *= 1.06;
       confidenceScore = Math.max(70, confidenceScore - 5);
       reasoning += `Strong demand acceleration detected (${demandAnalysis.acceleration.toFixed(
-        1
+        1,
       )}%) - can support higher prices. `;
     } else if (demandAnalysis.elasticity === "declining") {
       priceAdjustment *= 0.97;
       confidenceScore = Math.max(65, confidenceScore - 10);
       reasoning += `Demand decline detected (${demandAnalysis.acceleration.toFixed(
-        1
+        1,
       )}%) - consider competitive pricing. `;
     }
 
@@ -296,7 +295,7 @@ export class PricingEngine {
       0.1,
       2.0,
       minPrice,
-      maxPrice
+      maxPrice,
     );
 
     // Build final reasoning
@@ -322,37 +321,29 @@ export class PricingEngine {
     businessId: string,
     inventoryId: string,
     recommendation: PricingRecommendation,
-    currentPrice: number
+    currentPrice: number,
   ): Promise<string | null> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return null;
-    }
-
     try {
-      const { data, error } = await this.supabase
-        .from("ai_pricing_recommendations")
-        .insert({
-          business_id: businessId,
-          inventory_id: inventoryId,
-          current_price: currentPrice,
-          recommended_price: recommendation.recommendedPrice,
-          recommended_range_min: recommendation.recommendedRangeMin,
-          recommended_range_max: recommendation.recommendedRangeMax,
-          confidence_score: recommendation.confidenceScore,
+      const result = await db.aiPricingRecommendation.create({
+        data: {
+          businessId,
+          inventoryId,
+          currentPrice: new Prisma.Decimal(currentPrice),
+          recommendedPrice: new Prisma.Decimal(recommendation.recommendedPrice),
+          recommendedRangeMin: new Prisma.Decimal(
+            recommendation.recommendedRangeMin,
+          ),
+          recommendedRangeMax: new Prisma.Decimal(
+            recommendation.recommendedRangeMax,
+          ),
+          confidenceScore: new Prisma.Decimal(recommendation.confidenceScore),
           reasoning: recommendation.reasoning,
           factors: recommendation.factors,
           status: "pending",
-        })
-        .select()
-        .single();
+        },
+      });
 
-      if (error) {
-        console.error("Failed to save pricing recommendation:", error);
-        return null;
-      }
-
-      return data?.id;
+      return result.id;
     } catch (error) {
       console.error("Error saving pricing recommendation:", error);
       return null;
@@ -367,20 +358,14 @@ export class PricingEngine {
     inventoryId: string,
     recommendationId: string,
     newPrice: number,
-    userId?: string
+    userId?: string,
   ): Promise<boolean> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return false;
-    }
-
     try {
       // Get current price
-      const { data: inventory } = await this.supabase
-        .from("inventory")
-        .select("selling_price")
-        .eq("id", inventoryId)
-        .single();
+      const inventory = await db.inventory.findUnique({
+        where: { id: inventoryId },
+        select: { sellingPrice: true },
+      });
 
       if (!inventory) {
         console.error("Inventory item not found");
@@ -388,38 +373,34 @@ export class PricingEngine {
       }
 
       // Update inventory price
-      const { error: updateError } = await this.supabase
-        .from("inventory")
-        .update({
-          selling_price: newPrice,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", inventoryId);
-
-      if (updateError) {
-        console.error("Failed to update inventory price:", updateError);
-        return false;
-      }
+      await db.inventory.update({
+        where: { id: inventoryId },
+        data: {
+          sellingPrice: new Prisma.Decimal(newPrice),
+        },
+      });
 
       // Update recommendation status
-      await this.supabase
-        .from("ai_pricing_recommendations")
-        .update({
+      await db.aiPricingRecommendation.update({
+        where: { id: recommendationId },
+        data: {
           status: "applied",
-          applied_at: new Date().toISOString(),
-        })
-        .eq("id", recommendationId);
+          appliedAt: new Date(),
+        },
+      });
 
       // Log decision
-      await this.supabase.from("ai_decision_log").insert({
-        business_id: businessId,
-        product_id: inventoryId,
-        decision_type: "pricing",
-        old_value: { selling_price: inventory.selling_price },
-        new_value: { selling_price: newPrice },
-        ai_recommendation: { recommended_price: newPrice },
-        decided_by: userId ? "user" : "system",
-        decided_by_user_id: userId,
+      await db.aiDecisionLog.create({
+        data: {
+          businessId,
+          productId: inventoryId,
+          decisionType: "pricing",
+          oldValue: { selling_price: inventory.sellingPrice },
+          newValue: { selling_price: newPrice },
+          aiRecommendation: { recommended_price: newPrice },
+          decidedBy: userId ? "user" : "system",
+          decidedByUserId: userId,
+        },
       });
 
       return true;
@@ -434,22 +415,27 @@ export class PricingEngine {
    */
   async getCostHistory(
     inventoryId: string,
-    days: number = 90
+    days: number = 90,
   ): Promise<number[]> {
-    if (!this.supabase) {
-      return [];
-    }
-
     try {
-      const { data } = await this.supabase
-        .from("inventory_log")
-        .select("quantity_change, created_at")
-        .eq("inventory_id", inventoryId)
-        .gte(
-          "created_at",
-          new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-        )
-        .order("created_at", { ascending: true });
+      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+      const logs = await db.inventoryLog.findMany({
+        where: {
+          inventoryId,
+          createdAt: { gte: startDate },
+        },
+        select: {
+          // Note: Schema for InventoryLog needs to be checked if it has cost info.
+          // SQL schema showed `quantity_change`, `reason`.
+          // It did NOT show `unit_cost`.
+          // So calculating cost history from logs might be impossible without cost in logs.
+          // The original implementation returned [] anyway.
+          quantityChange: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      });
 
       // For now, return empty array as we need cost change tracking
       // In a real implementation, this would track cost changes from supplier updates

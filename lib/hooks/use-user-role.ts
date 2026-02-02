@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { useUser } from "@clerk/nextjs";
+import { getUserRoleAction } from "@/app/actions/user-role";
+import { Permission } from "@/lib/auth/permissions";
 
 export type UserRole =
   | "owner"
@@ -11,81 +13,65 @@ export type UserRole =
   | "super_admin"
   | null;
 
-export function useUserRole(businessId: string | undefined) {
+export function useUserRole(businessId?: string) {
+  const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = getSupabaseClient();
 
   const fetchRole = useCallback(async () => {
-    if (!businessId || !supabase) {
+    if (!isLoaded) return;
+
+    if (!user) {
+      setRole(null);
       setLoading(false);
       return;
     }
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { role: fetchedRole, error: fetchError } =
+        await getUserRoleAction(businessId);
 
-      if (!user) {
-        setRole(null);
-        setLoading(false);
-        return;
-      }
-
-      // Check if user is owner of the business
-      const { data: businessData } = await supabase
-        .from("business_profile")
-        .select("owner_id")
-        .eq("id", businessId)
-        .single();
-
-      if (businessData?.owner_id === user.id) {
-        setRole("owner");
-        setLoading(false);
-        return;
-      }
-
-      // Get user role from user_roles table
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("business_id", businessId)
-        .single();
-
-      if (roleError) {
-        console.error("Error fetching user role:", roleError);
-        setError(roleError.message);
-        setRole(null);
+      if (fetchError) {
+        setError(fetchError);
       } else {
-        setRole((roleData?.role as UserRole) || null);
+        setRole(fetchedRole as UserRole);
       }
     } catch (err) {
       console.error("Error in useUserRole:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
-      setRole(null);
+      setError("Unknown error");
     } finally {
       setLoading(false);
     }
-  }, [businessId, supabase]);
+  }, [user, isLoaded, businessId]);
 
   useEffect(() => {
     fetchRole();
   }, [fetchRole]);
 
-  const isAdmin = role === "owner" || role === "admin";
-  const isManager = role === "owner" || role === "manager" || role === "admin";
+  const isAdmin =
+    role === "owner" || role === "admin" || role === "super_admin";
+  const isManager =
+    role === "owner" ||
+    role === "manager" ||
+    role === "admin" ||
+    role === "super_admin";
   const canOverridePrice = isManager;
+
+  const hasPermission = (permission: Permission) => {
+    if (role === "super_admin") return true;
+    // TODO: Fetch actual permissions from server action if needed
+    return true;
+  };
 
   return {
     role,
-    loading,
+    loading: loading || !isLoaded,
     error,
     isAdmin,
     isManager,
     canOverridePrice,
     refreshRole: fetchRole,
+    hasPermission,
   };
 }

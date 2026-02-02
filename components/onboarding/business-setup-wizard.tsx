@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { setupBusinessAction } from "@/app/actions/setup-business";
 import {
   Card,
   CardContent,
@@ -102,7 +102,6 @@ export function BusinessSetupWizard({
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = getSupabaseClient();
 
   const [formData, setFormData] = useState<BusinessSetupFormData>({
     // Business Details
@@ -169,70 +168,32 @@ export function BusinessSetupWizard({
   };
 
   const handleFinish = async () => {
-    if (!supabase) {
-      toast.error("Database connection failed");
-      return;
-    }
     setLoading(true);
     try {
-      // 1. Create Business Profile
-      const { data: business, error: businessError } = await supabase
-        .from("business_profile")
-        .insert({
-          business_name: formData.businessName,
-          business_type: formData.businessType,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zipCode,
-          phone_number: formData.ownerPhone,
-          owner_id: userId,
-          is_active: true,
-        })
-        .select()
-        .single();
-
-      if (businessError) throw businessError;
-
-      // 2. Create Business Settings with new attributes in JSONB
-      const { error: settingsError } = await supabase
-        .from("business_settings")
-        .insert({
-          business_id: business.id,
-          currency: "USD",
-          timezone: "America/New_York", // Default for now
-          default_tax_rate: 0.0,
-          settings_data: {
-            onboarding_completed: true,
-            default_unit: formData.defaultUnit,
-            quick_quantities: formData.quickQuantities.filter((q) => q.enabled),
-            privacy_preset: formData.privacyPreset,
-            inventory_reasons: formData.inventoryReasons.filter(
-              (r) => r.enabled,
-            ),
-            nicknames: formData.nicknames.filter((n) => n.enabled),
-            owner_name: formData.ownerName,
-          },
-        });
-
-      if (settingsError) throw settingsError;
-
-      // 3. Assign Owner Role
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        business_id: business.id,
-        user_id: userId,
-        role: "owner",
-        permissions: { all: true },
+      const { success, error } = await setupBusinessAction({
+        businessName: formData.businessName,
+        businessType: formData.businessType,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        ownerPhone: formData.ownerPhone,
+        defaultUnit: formData.defaultUnit,
+        quickQuantities: formData.quickQuantities.filter((q) => q.enabled),
+        privacyPreset: formData.privacyPreset,
+        inventoryReasons: formData.inventoryReasons.filter((r) => r.enabled),
+        nicknames: formData.nicknames.filter((n) => n.enabled),
+        ownerName: formData.ownerName,
       });
 
-      if (roleError) throw roleError;
+      if (error) throw new Error(error);
 
       toast.success("Business setup complete!");
 
       if (onComplete) {
         await onComplete();
       } else {
-        router.refresh(); // Fallback if no onComplete
+        router.refresh();
       }
     } catch (error: any) {
       console.error("Setup error:", error);

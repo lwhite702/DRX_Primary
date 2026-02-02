@@ -1,47 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { userId: actorId } = await auth();
 
-    if (userError || !user) {
+    if (!actorId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { username, email, role } = body;
 
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      },
-    );
+    // 1. Create User in Clerk
+    const client = await clerkClient();
+    const newUser = await client.users.createUser({
+      emailAddress: [email],
+      password: "TempPassword123!",
+      username: username,
+      firstName: username, // approximate
+      skipPasswordChecks: true,
+      skipPasswordRequirement: true,
+    });
 
-    // Create User
-    const { data: newUser, error: createError } =
-      await adminSupabase.auth.admin.createUser({
-        email,
-        password: "TempPassword123!",
-        email_confirm: true,
-        user_metadata: { username, full_name: username },
-      });
-
-    if (createError) {
-      return NextResponse.json({ error: createError.message }, { status: 400 });
-    }
-
-    if (!newUser.user) {
+    if (!newUser) {
       return NextResponse.json(
         { error: "Creation failed (no user returned)" },
         { status: 500 },
@@ -49,34 +32,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Assign Role (via user_roles)
-    const { data: businesses } = await adminSupabase
-      .from("business_profile")
-      .select("id")
-      .eq("owner_id", user.id)
-      .limit(1);
+    // Find business owner's business? The legacy code fetched via 'owner_id = user.id' (actor).
+    // So if the actor is an owner, we use their business.
+    const business = await db.businessProfile.findFirst({
+      where: { ownerId: actorId },
+      select: { id: true },
+    });
 
-    const businessId = businesses?.[0]?.id;
+    const businessId = business?.id;
 
     if (businessId) {
-      await adminSupabase.from("user_roles").insert({
-        user_id: newUser.user.id,
-        business_id: businessId,
-        role: role || "employee",
+      await db.userRole.create({
+        data: {
+          userId: newUser.id,
+          businessId: businessId,
+          role: role || "employee",
+          permissions: { all: false },
+        },
       });
     }
 
     // Log to system_audit_log
-    await adminSupabase.from("system_audit_log").insert({
-      entity_id: newUser.user.id,
-      entity_type: "user",
-      action: "create_user",
-      user_id: user.id,
-      new_values: { username, email, role },
-      business_id: businessId,
+    await db.systemAuditLog.create({
+      data: {
+        entityId: newUser.id,
+        entityType: "user",
+        action: "create_user",
+        userId: actorId,
+        newValues: { username, email, role },
+        // businessId: businessId
+      },
     });
 
-    return NextResponse.json({ id: newUser.user.id }, { status: 201 });
+    return NextResponse.json({ id: newUser.id }, { status: 201 });
   } catch (error) {
+    console.error("Create admin user error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

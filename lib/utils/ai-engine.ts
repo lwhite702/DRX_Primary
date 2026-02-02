@@ -1,6 +1,15 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { pricingEngine, type PricingFactors, type PricingRecommendation } from "./pricing-engine";
-import { inventoryEngine, type InventoryFactors, type InventoryForecastResult } from "./inventory-engine";
+import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
+import {
+  pricingEngine,
+  type PricingFactors,
+  type PricingRecommendation,
+} from "./pricing-engine";
+import {
+  inventoryEngine,
+  type InventoryFactors,
+  type InventoryForecastResult,
+} from "./inventory-engine";
 
 export interface ProductAnalysisRequest {
   businessId: string;
@@ -35,12 +44,12 @@ export interface ProductIntelligence {
 }
 
 export class AIEngine {
-  private supabase = getSupabaseClient();
-
   /**
    * Comprehensive product intelligence analysis
    */
-  async analyzeProduct(request: ProductAnalysisRequest): Promise<ProductIntelligence> {
+  async analyzeProduct(
+    request: ProductAnalysisRequest,
+  ): Promise<ProductIntelligence> {
     const {
       businessId,
       inventoryId,
@@ -67,7 +76,10 @@ export class AIEngine {
     };
 
     // Calculate velocity
-    const velocity = await inventoryEngine.calculateVelocity(inventoryId, businessId);
+    const velocity = await inventoryEngine.calculateVelocity(
+      inventoryId,
+      businessId,
+    );
 
     // Generate pricing recommendation
     const pricingFactors: PricingFactors = {
@@ -83,14 +95,16 @@ export class AIEngine {
     };
 
     try {
-      result.pricing = await pricingEngine.generateRecommendation(pricingFactors);
+      result.pricing =
+        await pricingEngine.generateRecommendation(pricingFactors);
       if (result.pricing) {
-        result.pricingRecommendationId = await pricingEngine.saveRecommendation(
+        const id = await pricingEngine.saveRecommendation(
           businessId,
           inventoryId,
           result.pricing,
-          currentPrice
-        ) || undefined;
+          currentPrice,
+        );
+        if (id) result.pricingRecommendationId = id;
       }
     } catch (error) {
       console.error("Error generating pricing recommendation:", error);
@@ -112,22 +126,23 @@ export class AIEngine {
       result.forecast = await inventoryEngine.generateForecast(
         inventoryId,
         businessId,
-        inventoryFactors
+        inventoryFactors,
       );
 
       if (result.forecast) {
-        result.forecastId = await inventoryEngine.saveForecast(
+        const id = await inventoryEngine.saveForecast(
           businessId,
           inventoryId,
-          result.forecast
-        ) || undefined;
+          result.forecast,
+        );
+        if (id) result.forecastId = id;
 
         // Process forecast and create alerts
         await inventoryEngine.processForecastAndAlerts(
           businessId,
           inventoryId,
           result.forecast,
-          productName
+          productName,
         );
       }
 
@@ -137,35 +152,40 @@ export class AIEngine {
         inventoryId,
         velocity.velocity7d,
         velocity.velocity30d,
-        velocity.velocity90d
+        velocity.velocity90d,
       );
     } catch (error) {
       console.error("Error generating inventory forecast:", error);
     }
 
     // Fetch recent alerts
-    if (this.supabase) {
-      try {
-        const { data: alerts } = await this.supabase
-          .from("inventory_alerts")
-          .select("id, alert_type, severity, message")
-          .eq("business_id", businessId)
-          .eq("inventory_id", inventoryId)
-          .eq("acknowledged", false)
-          .order("created_at", { ascending: false })
-          .limit(5);
+    try {
+      const alerts = await db.inventoryAlert.findMany({
+        where: {
+          businessId,
+          inventoryId,
+          isRead: false,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          alertType: true,
+          severity: true,
+          message: true,
+        },
+      });
 
-        if (alerts) {
-          result.alerts = alerts.map((alert) => ({
-            id: alert.id,
-            type: alert.alert_type,
-            severity: alert.severity,
-            message: alert.message,
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
+      if (alerts) {
+        result.alerts = alerts.map((alert) => ({
+          id: alert.id,
+          type: alert.alertType,
+          severity: alert.severity,
+          message: alert.message,
+        }));
       }
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
     }
 
     // Generate composite insights
@@ -173,7 +193,7 @@ export class AIEngine {
       productName,
       result.pricing,
       result.forecast,
-      result.alerts
+      result.alerts,
     );
 
     return result;
@@ -186,7 +206,7 @@ export class AIEngine {
     productName: string,
     pricing: PricingRecommendation | null,
     forecast: InventoryForecastResult | null,
-    alerts: Array<{ type: string; severity: string }>
+    alerts: Array<{ type: string; severity: string }>,
   ): string {
     const insights: string[] = [];
 
@@ -195,46 +215,52 @@ export class AIEngine {
     }
 
     if (pricing) {
-      const pricingAction = pricing.recommendedPrice > pricing.recommendedRangeMin
-        ? `increase to $${pricing.recommendedPrice.toFixed(2)}`
-        : `consider reducing to $${pricing.recommendedPrice.toFixed(2)}`;
+      const pricingAction =
+        pricing.recommendedPrice > pricing.recommendedRangeMin
+          ? `increase to $${pricing.recommendedPrice.toFixed(2)}`
+          : `consider reducing to $${pricing.recommendedPrice.toFixed(2)}`;
 
       insights.push(
-        `PRICING: ${productName} confidence ${pricing.confidenceScore.toFixed(0)}% - ${pricingAction} (range: $${pricing.recommendedRangeMin.toFixed(2)} - $${pricing.recommendedRangeMax.toFixed(2)})`
+        `PRICING: ${productName} confidence ${pricing.confidenceScore.toFixed(0)}% - ${pricingAction} (range: $${pricing.recommendedRangeMin.toFixed(2)} - $${pricing.recommendedRangeMax.toFixed(2)})`,
       );
     }
 
     if (forecast) {
       if (forecast.restockUrgency === "critical") {
         insights.push(
-          `URGENT: ${productName} stockout projected in ${forecast.daysUntilStockout} days. Restock ${forecast.recommendedRestockQuantity} units immediately.`
+          `URGENT: ${productName} stockout projected in ${forecast.daysUntilStockout} days. Restock ${forecast.recommendedRestockQuantity} units immediately.`,
         );
-      } else if (forecast.daysUntilStockout && forecast.daysUntilStockout < 30) {
+      } else if (
+        forecast.daysUntilStockout &&
+        forecast.daysUntilStockout < 30
+      ) {
         insights.push(
-          `INVENTORY: ${productName} will need restocking in ~${forecast.daysUntilStockout} days (recommend ${forecast.recommendedRestockQuantity} units)`
+          `INVENTORY: ${productName} will need restocking in ~${forecast.daysUntilStockout} days (recommend ${forecast.recommendedRestockQuantity} units)`,
         );
       }
 
       if (forecast.velocityTrend === "accelerating") {
         insights.push(
-          `OPPORTUNITY: ${productName} showing strong demand acceleration. Consider price increase.`
+          `OPPORTUNITY: ${productName} showing strong demand acceleration. Consider price increase.`,
         );
       } else if (forecast.velocityTrend === "stagnant") {
         insights.push(
-          `CONCERN: ${productName} has stagnant sales. Consider promotional pricing or discontinuation.`
+          `CONCERN: ${productName} has stagnant sales. Consider promotional pricing or discontinuation.`,
         );
       }
 
       if (forecast.inventoryRiskLevel === "high") {
         insights.push(
-          `RISK: ${productName} has elevated inventory risk. Current stock: ${forecast.factors.current_stock} units.`
+          `RISK: ${productName} has elevated inventory risk. Current stock: ${forecast.factors.current_stock} units.`,
         );
       }
     }
 
     const criticalAlerts = alerts.filter((a) => a.severity === "critical");
     if (criticalAlerts.length > 0) {
-      insights.push(`⚠️ ${criticalAlerts.length} critical alert(s) require immediate attention`);
+      insights.push(
+        `⚠️ ${criticalAlerts.length} critical alert(s) require immediate attention`,
+      );
     }
 
     return insights.join(" | ");
@@ -244,7 +270,7 @@ export class AIEngine {
    * Batch analyze multiple products
    */
   async analyzeBatch(
-    requests: ProductAnalysisRequest[]
+    requests: ProductAnalysisRequest[],
   ): Promise<Map<string, ProductIntelligence>> {
     const results = new Map<string, ProductIntelligence>();
 
@@ -271,44 +297,39 @@ export class AIEngine {
    * Get all AI recommendations for a business
    */
   async getBusinessIntelligence(businessId: string) {
-    if (!this.supabase) {
-      return {
-        pricingRecommendations: [],
-        forecasts: [],
-        alerts: [],
-      };
-    }
-
     try {
       const [pricingData, forecastData, alertData] = await Promise.all([
-        this.supabase
-          .from("ai_pricing_recommendations")
-          .select("*")
-          .eq("business_id", businessId)
-          .eq("status", "pending")
-          .order("confidence_score", { ascending: false })
-          .limit(20),
-        this.supabase
-          .from("inventory_forecasts")
-          .select("*")
-          .eq("business_id", businessId)
-          .in("restock_urgency", ["high", "critical"])
-          .order("updated_at", { ascending: false })
-          .limit(20),
-        this.supabase
-          .from("inventory_alerts")
-          .select("*")
-          .eq("business_id", businessId)
-          .eq("acknowledged", false)
-          .in("severity", ["high", "critical"])
-          .order("created_at", { ascending: false })
-          .limit(30),
+        db.aiPricingRecommendation.findMany({
+          where: {
+            businessId,
+            status: "pending",
+          },
+          orderBy: { confidenceScore: "desc" },
+          take: 20,
+        }),
+        db.inventoryForecast.findMany({
+          where: {
+            businessId,
+            restockUrgency: { in: ["high", "critical"] },
+          },
+          orderBy: { createdAt: "desc" }, // schema has createdAt for InventoryForecast
+          take: 20,
+        }),
+        db.inventoryAlert.findMany({
+          where: {
+            businessId,
+            isRead: false,
+            severity: { in: ["high", "critical"] },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 30,
+        }),
       ]);
 
       return {
-        pricingRecommendations: pricingData.data || [],
-        forecasts: forecastData.data || [],
-        alerts: alertData.data || [],
+        pricingRecommendations: pricingData || [],
+        forecasts: forecastData || [],
+        alerts: alertData || [],
       };
     } catch (error) {
       console.error("Error fetching business intelligence:", error);
@@ -333,25 +354,22 @@ export class AIEngine {
     reasoning: string,
     decidedBy: "system" | "user",
     decidedByUserId?: string,
-    overrideReason?: string
+    overrideReason?: string,
   ): Promise<boolean> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return false;
-    }
-
     try {
-      await this.supabase.from("ai_decision_log").insert({
-        business_id: businessId,
-        product_id: productId,
-        decision_type: decisionType,
-        old_value: oldValue,
-        new_value: newValue,
-        ai_recommendation: aiRecommendation,
-        reasoning,
-        decided_by: decidedBy,
-        decided_by_user_id: decidedByUserId,
-        override_reason: overrideReason,
+      await db.aiDecisionLog.create({
+        data: {
+          businessId,
+          productId,
+          decisionType,
+          oldValue: oldValue || Prisma.JsonNull,
+          newValue: newValue || Prisma.JsonNull,
+          aiRecommendation: aiRecommendation || Prisma.JsonNull,
+          reasoning,
+          decidedBy,
+          decidedByUserId,
+          overrideReason,
+        },
       });
 
       return true;
@@ -364,19 +382,20 @@ export class AIEngine {
   /**
    * Get decision history for a product
    */
-  async getDecisionHistory(businessId: string, productId: string, limit: number = 50) {
-    if (!this.supabase) {
-      return [];
-    }
-
+  async getDecisionHistory(
+    businessId: string,
+    productId: string,
+    limit: number = 50,
+  ) {
     try {
-      const { data } = await this.supabase
-        .from("ai_decision_log")
-        .select("*")
-        .eq("business_id", businessId)
-        .eq("product_id", productId)
-        .order("created_at", { ascending: false })
-        .limit(limit);
+      const data = await db.aiDecisionLog.findMany({
+        where: {
+          businessId,
+          productId,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      });
 
       return data || [];
     } catch (error) {
@@ -388,24 +407,16 @@ export class AIEngine {
   /**
    * Acknowledge alert
    */
-  async acknowledgeAlert(
-    alertId: string,
-    userId?: string
-  ): Promise<boolean> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return false;
-    }
-
+  async acknowledgeAlert(alertId: string, userId?: string): Promise<boolean> {
     try {
-      await this.supabase
-        .from("inventory_alerts")
-        .update({
-          acknowledged: true,
-          acknowledged_by: userId,
-          acknowledged_at: new Date().toISOString(),
-        })
-        .eq("id", alertId);
+      await db.inventoryAlert.update({
+        where: { id: alertId },
+        data: {
+          isRead: true, // Renamed from acknowledged to isRead in schema
+          // acknowledgedBy: userId, // These fields are MISSING in schema
+          // acknowledgedAt: new Date(),
+        },
+      });
 
       return true;
     } catch (error) {

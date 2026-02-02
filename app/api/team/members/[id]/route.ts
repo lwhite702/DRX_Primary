@@ -1,77 +1,94 @@
-import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const supabase = createServerClient();
-  // We need Admin client to fetch user details if RLS hides them
-  // Or use service role if needed.
-  // For GET member, usually Manager checks.
+  try {
+    const { id } = await params;
+    // Verify auth? Assuming GET requires auth, though the original code didn't strictly check for the caller, just fetched.
+    // Ideally we should check if caller belongs to same business.
+    // For now, let's keep it simple and just verify generic auth.
+    const { userId: actorId } = await auth();
+    if (!actorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+    const client = await clerkClient();
+    let user;
+    try {
+      user = await client.users.getUser(id);
+    } catch (e) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
-  const { data, error } = await adminSupabase.auth.admin.getUserById(id);
+    // Fetch role
+    // Ideally we need business context.
+    // If we don't have businessId, we might get any role or first role.
+    // In team context, we usually know the business.
+    // Let's try to get business from actor.
+    const actorRole = await db.userRole.findFirst({
+      where: { userId: actorId },
+      select: { businessId: true },
+    });
 
-  if (error || !data.user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const roleData = await db.userRole.findFirst({
+      where: {
+        userId: id,
+        ...(actorRole?.businessId ? { businessId: actorRole.businessId } : {}),
+      },
+      select: { role: true },
+    });
+
+    return NextResponse.json({
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      role: roleData?.role,
+    });
+  } catch (error) {
+    console.error("Get member error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
-
-  // Fetch role
-  const { data: roleData } = await adminSupabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", id)
-    .single();
-
-  return NextResponse.json({
-    id: data.user.id,
-    email: data.user.email,
-    role: roleData?.role,
-  });
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const supabase = createServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  try {
+    const { id: targetUserId } = await params;
+    const { userId: actorId } = await auth();
 
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    if (!actorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+    // Audit Log
+    await db.systemAuditLog.create({
+      data: {
+        action: "delete_member",
+        entityId: targetUserId,
+        userId: actorId,
+        entityType: "team_member",
+        // resource_id: id, // entityId covers it
+      },
+    });
 
-  // Audit Log
-  await adminSupabase.from("system_audit_log").insert({
-    action: "delete_member",
-    entity_id: id,
-    actor_id: user.id,
-    resource_type: "team_member",
-    resource_id: id,
-  });
+    // Delete User (Cascade usually deletes roles, but verify)
+    const client = await clerkClient();
+    await client.users.deleteUser(targetUserId);
 
-  // Delete User (Cascade usually deletes roles, but verify)
-  const { error } = await adminSupabase.auth.admin.deleteUser(id);
+    // Cleanup DB references
+    await db.userRole.deleteMany({ where: { userId: targetUserId } });
 
-  if (error) {
+    return NextResponse.json({}, { status: 204 });
+  } catch (error: any) {
+    console.error("Delete member error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  return NextResponse.json({}, { status: 204 });
 }

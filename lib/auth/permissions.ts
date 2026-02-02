@@ -1,4 +1,11 @@
-export type Role = "cashier" | "supervisor" | "manager" | "super_admin";
+export type Role =
+  | "cashier"
+  | "supervisor"
+  | "manager"
+  | "super_admin"
+  | "owner"
+  | "admin"
+  | "staff";
 
 export type Permission =
   // Sales

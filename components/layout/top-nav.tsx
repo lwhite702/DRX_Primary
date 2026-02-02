@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Bell, Menu, Search, Settings, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { SignOutButton, UserButton } from "@clerk/nextjs";
 
 import { AppLogo } from "@/components/layout/app-logo";
 import { LogoutButton } from "@/components/layout/logout-button";
@@ -32,7 +33,6 @@ import {
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { useUserRole } from "@/lib/hooks/use-user-role";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export function TopNav() {
   const pathname = usePathname();
@@ -40,26 +40,7 @@ export function TopNav() {
   const { business } = useBusiness();
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
-  const supabase = getSupabaseClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleLogout = async () => {
-    if (!supabase) {
-      toast.error("Supabase client not available");
-      return;
-    }
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    toast.success("Logged out successfully");
-    router.push("/login");
-    router.refresh();
-  };
 
   const filteredNav = primaryNav.filter((item) => {
     if (loading) return false;
@@ -174,12 +155,8 @@ export function TopNav() {
                     <span className="min-w-0 truncate">Report a Bug</span>
                   </button>
                 </SentryFeedbackButton>
-                <div
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border cursor-pointer"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="min-w-0 truncate">Logout</span>
+                <div className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border cursor-pointer">
+                  <LogoutButton className="p-0 flex items-center gap-3" />
                 </div>
               </div>
             </div>
@@ -230,45 +207,24 @@ export function TopNav() {
             </span>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-lg" aria-label="User menu">
-                <User className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {showAdminConsole && (
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/admin"
-                    className="flex items-center cursor-pointer"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Admin Console</span>
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/settings/profile"
-                  className="flex items-center cursor-pointer"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="text-red-600 focus:text-red-600 cursor-pointer"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserButton
+            afterSignOutUrl="/sign-in"
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "w-9 h-9",
+              },
+            }}
+          >
+            {showAdminConsole && (
+              <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Admin Console"
+                  labelIcon={<Settings className="w-4 h-4" />}
+                  onClick={() => router.push("/admin")}
+                />
+              </UserButton.MenuItems>
+            )}
+          </UserButton>
         </div>
       </div>
     </header>

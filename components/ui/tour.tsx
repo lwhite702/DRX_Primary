@@ -71,7 +71,7 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
         targetElement.classList.remove(
           "ring-4",
           "ring-primary/50",
-          "transition-all"
+          "transition-all",
         );
       }
     };
@@ -92,7 +92,7 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
       targetElement.classList.remove(
         "ring-4",
         "ring-primary/50",
-        "transition-all"
+        "transition-all",
       );
     }
     onComplete();
@@ -120,7 +120,7 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
   // Let's try to find rect and position absolute.
   const rect = targetElement?.getBoundingClientRect();
 
-  let style: React.CSSProperties = {
+  const style: React.CSSProperties = {
     position: "fixed",
     zIndex: 50,
     maxWidth: 300,

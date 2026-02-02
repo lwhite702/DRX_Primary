@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function POST(
   request: NextRequest,
@@ -8,32 +8,24 @@ export async function POST(
 ) {
   try {
     const { tenantId, userId } = await params;
-    const supabase = await createServerClient();
-    const {
-      data: { user: actor },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { userId: actorId } = await auth();
 
-    if (!actor || authError) {
+    if (!actorId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Role check: Only Owner/Super Admin can trigger RTBF / Permanent Deletion
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    );
-
-    const { data: roleData } = await adminSupabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", actor.id)
-      .eq("business_id", tenantId)
-      .single();
+    const roleData = await db.userRole.findFirst({
+      where: {
+        userId: actorId,
+        businessId: tenantId,
+      },
+      select: { role: true },
+    });
 
     if (
       !roleData ||
-      !["owner", "super_admin"].includes(roleData.role.toLowerCase())
+      !["owner", "super_admin"].includes(roleData.role?.toLowerCase() || "")
     ) {
       return NextResponse.json(
         {
@@ -44,50 +36,51 @@ export async function POST(
       );
     }
 
-    // 1. Log the initiation of RTBF (Privacy Layer Requirement)
-    await adminSupabase.from("system_audit_log").insert({
-      action: "rtbf_initiated",
-      entity_id: userId,
-      entity_type: "user",
-      user_id: actor.id,
-      new_values: { tenant_id: tenantId, status: "removal_initiated" },
-      business_id: tenantId,
+    // 1. Log the initiation
+    await db.systemAuditLog.create({
+      data: {
+        action: "rtbf_initiated",
+        entityId: userId,
+        entityType: "user",
+        userId: actorId,
+        newValues: { tenant_id: tenantId, status: "removal_initiated" },
+        businessId: tenantId,
+      },
     });
 
-    // 2. Data Shredding / Masking Logic
-    // In a real HIPAA/GDPR app, we might mask records in other tables.
-    // Here we will:
-    // a. Update Auth Metadata to mask PII
-    const { error: maskError } = await adminSupabase.auth.admin.updateUserById(
-      userId,
-      {
-        user_metadata: {
-          full_name: "DELETED_USER_RTBF",
-          shredded_at: new Date().toISOString(),
-        },
-        email: `deleted_${userId.substring(0, 8)}@deleted.deelrx.com`, // Avoid email reuse/leaks
-      },
-    );
-
-    if (maskError) {
-      console.error("PII Masking Failed:", maskError);
-      // Continue anyway or return error? We'll log it and try to proceed with role removal.
+    // 2. Data Shredding / Deletion
+    // We will perform a Hard Delete in Clerk which is the most compliant RTBF action.
+    const client = await clerkClient();
+    try {
+      await client.users.deleteUser(userId);
+    } catch (clerkError: any) {
+      console.error("Clerk Delete User Failed:", clerkError);
+      // Proceed? If user not found, maybe already deleted.
+      if (clerkError.status !== 404) {
+        return NextResponse.json(
+          { error: "Failed to delete user in identity provider" },
+          { status: 500 },
+        );
+      }
     }
 
-    // b. Remove from user_roles
-    const { error: roleDeleteError } = await adminSupabase
-      .from("user_roles")
-      .delete()
-      .eq("user_id", userId)
-      .eq("business_id", tenantId);
+    // 3. Remove from user_roles (Prisma)
+    await db.userRole.deleteMany({
+      where: {
+        userId: userId,
+        businessId: tenantId,
+      },
+    });
 
-    // c. Log completion
-    await adminSupabase.from("system_audit_log").insert({
-      action: "rtbf_completed",
-      entity_id: userId,
-      entity_type: "user",
-      user_id: actor.id,
-      business_id: tenantId,
+    // 4. Log completion
+    await db.systemAuditLog.create({
+      data: {
+        action: "rtbf_completed",
+        entityId: userId,
+        entityType: "user",
+        userId: actorId,
+        businessId: tenantId,
+      },
     });
 
     return NextResponse.json(

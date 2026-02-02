@@ -1,28 +1,35 @@
-import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const supabase = createServerClient();
-
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
-  const { data, error } = await adminSupabase
-    .from("system_audit_log")
-    .select("*")
-    .or(`entity_id.eq.${id},resource_id.eq.${id}`)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json(data);
+  const { id } = await params;
+
+  try {
+    // Fetch logs for this user (entityId = id)
+    // Legacy had OR condition resource_id.eq.id.
+    // In Prisma SystemAuditLog, we use entityId for the primary target.
+
+    const logs = await db.systemAuditLog.findMany({
+      where: {
+        entityId: id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json(logs);
+  } catch (error: any) {
+    console.error("Fetch member audit logs error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

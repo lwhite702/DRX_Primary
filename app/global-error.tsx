@@ -1,6 +1,5 @@
 "use client";
 
-import { errorTracker } from "@wrelik/errors";
 import NextError from "next/error";
 import { useEffect } from "react";
 
@@ -10,7 +9,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
 }) {
   useEffect(() => {
-    errorTracker.captureException(error);
+    console.error(error);
   }, [error]);
 
   return (

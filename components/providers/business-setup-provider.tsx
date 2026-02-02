@@ -1,39 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { useUserRole } from "@/hooks/use-user-role";
+import { useUserRole } from "@/lib/hooks/use-user-role";
 import { BusinessSetupWizard } from "@/components/onboarding/business-setup-wizard";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export function BusinessSetupProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, isLoaded } = useUser();
   const {
     needsSetup,
     loading: businessLoading,
     refreshBusiness,
+    business,
   } = useBusiness();
-  const { role, loading: roleLoading } = useUserRole();
-  const [userId, setUserId] = useState<string | null>(null);
-  const supabase = getSupabaseClient();
+  const { role, loading: roleLoading } = useUserRole(business?.id);
 
-  useEffect(() => {
-    async function getUser() {
-      if (!supabase) return;
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      }
-    }
-    getUser();
-  }, [supabase]);
-
-  if (businessLoading || roleLoading) {
+  if (!isLoaded || businessLoading || roleLoading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -42,8 +28,10 @@ export function BusinessSetupProvider({
   }
 
   // Super admins bypass setup requirement
-  if (needsSetup && userId && role !== "super_admin") {
-    return <BusinessSetupWizard userId={userId} onComplete={refreshBusiness} />;
+  if (needsSetup && user && role !== "super_admin") {
+    return (
+      <BusinessSetupWizard userId={user.id} onComplete={refreshBusiness} />
+    );
   }
 
   return <>{children}</>;

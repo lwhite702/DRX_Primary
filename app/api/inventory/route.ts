@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { userId } = await auth();
 
-    if (userError || !user) {
+    if (!userId) {
       return NextResponse.json(
         { error: "Endpoint GET Unauthorized" },
         { status: 401 },
@@ -18,22 +16,20 @@ export async function GET(request: NextRequest) {
 
     // Determine business_id
     // 1. Check if user is an owner
-    const { data: ownedBusiness } = await supabase
-      .from("business_profile")
-      .select("id")
-      .eq("owner_id", user.id)
-      .single();
+    const ownedBusiness = await db.businessProfile.findFirst({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
 
     let businessId = ownedBusiness?.id;
 
     // 2. If not owner, check roles
     if (!businessId) {
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("business_id")
-        .eq("user_id", user.id)
-        .single();
-      businessId = userRole?.business_id;
+      const userRole = await db.userRole.findFirst({
+        where: { userId: userId },
+        select: { businessId: true },
+      });
+      businessId = userRole?.businessId;
     }
 
     if (!businessId) {
@@ -48,26 +44,23 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
     const search = searchParams.get("search");
 
-    let query = supabase
-      .from("inventory")
-      .select("*")
-      .eq("business_id", businessId)
-      .range(offset, offset + limit - 1)
-      .order("created_at", { ascending: false });
+    const where: Prisma.InventoryWhereInput = {
+      businessId: businessId,
+    };
 
     if (search) {
-      query = query.or(`product_name.ilike.%${search}%,sku.ilike.%${search}%`);
+      where.OR = [
+        { productName: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+      ];
     }
 
-    const { data: inventory, error } = await query;
-
-    if (error) {
-      console.error("Error fetching inventory:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch inventory" },
-        { status: 500 },
-      );
-    }
+    const inventory = await db.inventory.findMany({
+      where,
+      skip: offset,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
 
     return NextResponse.json({ data: inventory });
   } catch (error) {
@@ -81,38 +74,31 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { userId } = await auth();
 
-    if (userError || !user) {
-      console.error("Endpoint POST Auth Error:", userError, user);
+    if (!userId) {
       return NextResponse.json(
-        { error: "Endpoint POST Unauthorized", details: userError, user: user },
+        { error: "Endpoint POST Unauthorized" },
         { status: 401 },
       );
     }
 
     // Determine business_id
     // 1. Check if user is an owner
-    const { data: ownedBusiness } = await supabase
-      .from("business_profile")
-      .select("id")
-      .eq("owner_id", user.id)
-      .single();
+    const ownedBusiness = await db.businessProfile.findFirst({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
 
     let businessId = ownedBusiness?.id;
 
     // 2. If not owner, check roles
     if (!businessId) {
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("business_id")
-        .eq("user_id", user.id)
-        .single();
-      businessId = userRole?.business_id;
+      const userRole = await db.userRole.findFirst({
+        where: { userId: userId },
+        select: { businessId: true },
+      });
+      businessId = userRole?.businessId;
     }
 
     if (!businessId) {
@@ -121,17 +107,6 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
-
-    // DEBUG RLS check
-    console.log("Debug Create Inventory:", { userId: user.id, businessId });
-    const { data: accessCheck, error: rpcError } = await supabase.rpc(
-      "has_business_access",
-      {
-        user_id: user.id,
-        business_id: businessId,
-      },
-    );
-    console.log("RPC Check:", { accessCheck, rpcError });
 
     const body = await request.json();
     const {
@@ -154,43 +129,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: newItem, error } = await supabase
-      .from("inventory")
-      .insert({
-        business_id: businessId,
-        sku,
-        product_name,
-        description,
-        category,
-        quantity_on_hand: quantity_on_hand || 0,
-        reorder_level: reorder_level || 10,
-        unit_cost,
-        selling_price,
-        supplier_id,
-      })
-      .select()
-      .single();
+    try {
+      const newItem = await db.inventory.create({
+        data: {
+          businessId,
+          sku,
+          productName: product_name,
+          description,
+          category,
+          quantityOnHand: quantity_on_hand || 0,
+          reorderLevel: reorder_level || 10,
+          unitCost: unit_cost,
+          sellingPrice: selling_price,
+          supplierId: supplier_id,
+        },
+      });
 
-    if (error) {
-      console.error("Error creating inventory item:", error);
-      if (error.code === "23505") {
-        // Unique violation
+      return NextResponse.json(newItem, { status: 201 });
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        // Unique constraint violation (likely SKU)
         return NextResponse.json(
           { error: "SKU already exists for this business" },
           { status: 409 },
         );
       }
-      return NextResponse.json(
-        {
-          error: "Failed to create inventory item",
-          details: error,
-          rpcCheck: { accessCheck, rpcError },
-        },
-        { status: 500 },
-      );
+      throw error;
     }
-
-    return NextResponse.json(newItem, { status: 201 });
   } catch (error) {
     console.error("Inventory API Error:", error);
     return NextResponse.json(

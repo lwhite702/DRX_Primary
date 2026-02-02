@@ -1,15 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const { userId: actorId } = await auth();
 
-  if (authError || !user) {
+  if (!actorId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -21,115 +17,106 @@ export async function POST(request: NextRequest) {
 
   const tempPassword = password || "TempPass123!";
 
-  // Use Service Role for Admin actions
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    },
-  );
+  try {
+    const client = await clerkClient();
 
-  // 1. Create User in Auth
-  const { data: createdUser, error: createError } =
-    await adminSupabase.auth.admin.createUser({
-      email,
+    // 1. Create User in Clerk
+    const createdUser = await client.users.createUser({
+      emailAddress: [email],
       password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name: name },
+      firstName: name?.split(" ")[0],
+      lastName: name?.split(" ").slice(1).join(" "),
+      skipPasswordChecks: true,
+      skipPasswordRequirement: true,
     });
 
-  if (createError) {
-    return NextResponse.json({ error: createError.message }, { status: 400 });
-  }
+    const newUserId = createdUser.id;
 
-  if (!createdUser.user) {
-    return NextResponse.json(
-      { error: "Failed to create user" },
-      { status: 500 },
-    );
-  }
+    // 2. Assign Role (Needs Business ID usually. We'll find one or default?)
+    // Using the current user's business?
+    // We need to know which business to add the member to.
 
-  const newUserId = createdUser.user.id;
+    // We'll try to find the business owned by the current user or where they are a manager.
+    // Fetch actor's role/business
+    const actorRole = await db.userRole.findFirst({
+      where: { userId: actorId },
+      select: { businessId: true, role: true },
+    });
 
-  // 2. Assign Role (Needs Business ID usually. We'll find one or default?)
-  // Using the current user's business?
-  // We need to know which business to add the member to.
-  // We'll try to find the business owned by the current user.
+    // Also check if actor is owner of a business
+    const ownedBusiness = await db.businessProfile.findFirst({
+      where: { ownerId: actorId },
+      select: { id: true },
+    });
 
-  const { data: businessData } = await adminSupabase
-    .from("business_profile")
-    .select("id")
-    .eq("owner_id", user.id)
-    .single();
+    const businessId = ownedBusiness?.id || actorRole?.businessId;
 
-  let businessId = businessData?.id;
-
-  if (!businessId) {
-    const { data: roleData } = await adminSupabase
-      .from("user_roles")
-      .select("business_id, role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (roleData) {
-      businessId = roleData.business_id;
-
-      // Enforce Role Hierarchy
-      const callerRole = roleData.role;
-      const targetRole = role || "cashier";
-
-      // Hierarchy check: Manager cannot assign owner or super_admin
-      if (
-        callerRole === "manager" &&
-        ["owner", "super_admin"].includes(targetRole.toLowerCase())
-      ) {
-        return NextResponse.json(
-          { error: "Managers cannot assign Owner or Super Admin roles" },
-          { status: 403 },
-        );
-      }
-
-      if (
-        !["manager", "owner", "super_admin"].includes(callerRole.toLowerCase())
-      ) {
-        return NextResponse.json(
-          { error: "Insufficient permissions to manage team members" },
-          { status: 403 },
-        );
-      }
-    } else {
+    if (!businessId) {
       return NextResponse.json(
         { error: "User business context not found" },
         { status: 403 },
       );
     }
-  }
 
-  if (businessId) {
-    const { error: roleError } = await adminSupabase.from("user_roles").insert({
-      user_id: newUserId,
-      business_id: businessId,
-      role: role || "cashier",
+    // Enforce permissions if not owner
+    if (!ownedBusiness) {
+      if (actorRole) {
+        const callerRole = actorRole.role || "";
+        const targetRole = role || "cashier";
+
+        // Hierarchy check: Manager cannot assign owner or super_admin
+        if (
+          callerRole === "manager" &&
+          ["owner", "super_admin"].includes(targetRole.toLowerCase())
+        ) {
+          return NextResponse.json(
+            { error: "Managers cannot assign Owner or Super Admin roles" },
+            { status: 403 },
+          );
+        }
+
+        if (
+          !["manager", "owner", "super_admin"].includes(
+            callerRole.toLowerCase(),
+          )
+        ) {
+          return NextResponse.json(
+            { error: "Insufficient permissions to manage team members" },
+            { status: 403 },
+          );
+        }
+      }
+    }
+
+    if (businessId) {
+      await db.userRole.create({
+        data: {
+          userId: newUserId,
+          businessId: businessId,
+          role: role || "cashier",
+          permissions: { all: false }, // Default permissions
+        },
+      });
+    }
+
+    // 3. Audit Log
+    await db.systemAuditLog.create({
+      data: {
+        action: "create_member",
+        entityId: newUserId,
+        userId: actorId, // Acted by
+        newValues: { email, role, name },
+        entityType: "team_member",
+      },
     });
 
-    if (roleError) {
-      console.error("Role assignment failed:", roleError);
-    }
+    return NextResponse.json({ id: newUserId, email, role }, { status: 201 });
+  } catch (error: any) {
+    console.error("Create member error:", error);
+    // Map Clerk errors if needed
+    return NextResponse.json(
+      { error: error.message || "Failed to create user" },
+      { status: 500 },
+    );
   }
-
-  // 3. Audit Log (Updated with business_id for isolation)
-  await adminSupabase.from("system_audit_log").insert({
-    action: "create_member",
-    entity_id: newUserId,
-    user_id: user.id, // mapped to user_id (actor)
-    new_values: { email, role, name },
-    entity_type: "team_member",
-    business_id: businessId,
-  });
-
-  return NextResponse.json({ id: newUserId, email, role }, { status: 201 });
 }

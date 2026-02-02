@@ -1,7 +1,7 @@
 "use client";
 
-import { AnalyticsProvider as WrelikAnalyticsProvider } from "@wrelik/analytics";
+import React from "react";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  return <WrelikAnalyticsProvider>{children}</WrelikAnalyticsProvider>;
+  return <>{children}</>;
 }

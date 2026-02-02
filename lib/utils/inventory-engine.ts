@@ -1,4 +1,5 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 export interface InventoryFactors {
   currentStock: number;
@@ -25,47 +26,46 @@ export interface InventoryForecastResult {
 }
 
 export class InventoryEngine {
-  private supabase = getSupabaseClient();
-
   /**
    * Calculate sales velocity (units per day) from different time periods
    */
   async calculateVelocity(
     inventoryId: string,
-    businessId: string
+    businessId: string,
   ): Promise<{ velocity7d: number; velocity30d: number; velocity90d: number }> {
-    if (!this.supabase) {
-      return { velocity7d: 0, velocity30d: 0, velocity90d: 0 };
-    }
-
     try {
       const now = new Date();
       const days7Ago = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const days30Ago = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const days90Ago = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
-      // Get sales for different periods
-      const { data: sales7d } = await this.supabase
-        .from("sales_line_items")
-        .select("quantity")
-        .eq("inventory_id", inventoryId)
-        .gte("created_at", days7Ago.toISOString());
+      const [sales7d, sales30d, sales90d] = await Promise.all([
+        db.salesLineItem.findMany({
+          where: {
+            inventoryId,
+            createdAt: { gte: days7Ago },
+          },
+          select: { quantity: true },
+        }),
+        db.salesLineItem.findMany({
+          where: {
+            inventoryId,
+            createdAt: { gte: days30Ago },
+          },
+          select: { quantity: true },
+        }),
+        db.salesLineItem.findMany({
+          where: {
+            inventoryId,
+            createdAt: { gte: days90Ago },
+          },
+          select: { quantity: true },
+        }),
+      ]);
 
-      const { data: sales30d } = await this.supabase
-        .from("sales_line_items")
-        .select("quantity")
-        .eq("inventory_id", inventoryId)
-        .gte("created_at", days30Ago.toISOString());
-
-      const { data: sales90d } = await this.supabase
-        .from("sales_line_items")
-        .select("quantity")
-        .eq("inventory_id", inventoryId)
-        .gte("created_at", days90Ago.toISOString());
-
-      const total7d = sales7d?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-      const total30d = sales30d?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-      const total90d = sales90d?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+      const total7d = sales7d.reduce((sum, item) => sum + item.quantity, 0);
+      const total30d = sales30d.reduce((sum, item) => sum + item.quantity, 0);
+      const total90d = sales90d.reduce((sum, item) => sum + item.quantity, 0);
 
       return {
         velocity7d: total7d / 7,
@@ -84,7 +84,7 @@ export class InventoryEngine {
   private detectVelocityTrend(
     velocity7d: number,
     velocity30d: number,
-    velocity90d: number
+    velocity90d: number,
   ): "accelerating" | "stable" | "declining" | "stagnant" {
     if (velocity7d === 0 && velocity30d === 0 && velocity90d === 0) {
       return "stagnant";
@@ -108,7 +108,7 @@ export class InventoryEngine {
    */
   private calculateStockoutProjection(
     currentStock: number,
-    velocity: number
+    velocity: number,
   ): { date: string | null; daysRemaining: number | null } {
     if (velocity <= 0) {
       return { date: null, daysRemaining: null };
@@ -136,7 +136,7 @@ export class InventoryEngine {
     daysUntilStockout: number | null,
     currentStock: number,
     reorderLevel: number,
-    supplierLeadTimeDays: number = 7
+    supplierLeadTimeDays: number = 7,
   ): "low" | "medium" | "high" | "critical" {
     if (daysUntilStockout === null || daysUntilStockout === Infinity) {
       return "low";
@@ -171,7 +171,7 @@ export class InventoryEngine {
     daysUntilStockout: number | null,
     currentStock: number,
     velocity: number,
-    reorderLevel: number
+    reorderLevel: number,
   ): "low" | "medium" | "high" {
     // Critical low stock
     if (currentStock < reorderLevel / 2) {
@@ -192,7 +192,11 @@ export class InventoryEngine {
     }
 
     // Normal range
-    if (currentStock > reorderLevel && daysUntilStockout && daysUntilStockout > 30) {
+    if (
+      currentStock > reorderLevel &&
+      daysUntilStockout &&
+      daysUntilStockout > 30
+    ) {
       return "low";
     }
 
@@ -209,7 +213,7 @@ export class InventoryEngine {
     currentStock: number,
     reorderLevel: number,
     supplierLeadTimeDays: number = 7,
-    hasSeasonality: boolean = false
+    hasSeasonality: boolean = false,
   ): number {
     const avgVelocity = (velocity7d + velocity30d + velocity90d) / 3;
 
@@ -239,7 +243,7 @@ export class InventoryEngine {
   async generateForecast(
     inventoryId: string,
     businessId: string,
-    factors: Partial<InventoryFactors>
+    factors: Partial<InventoryFactors>,
   ): Promise<InventoryForecastResult> {
     const {
       currentStock = 0,
@@ -262,27 +266,35 @@ export class InventoryEngine {
     };
 
     // Detect velocity trend
-    const velocityTrend = this.detectVelocityTrend(velocity7d, velocity30d, velocity90d);
+    const velocityTrend = this.detectVelocityTrend(
+      velocity7d,
+      velocity30d,
+      velocity90d,
+    );
 
     // Use most recent velocity for projections
-    const activeVelocity = velocity7d > 0 ? velocity7d : velocity30d > 0 ? velocity30d : 0;
+    const activeVelocity =
+      velocity7d > 0 ? velocity7d : velocity30d > 0 ? velocity30d : 0;
 
     // Calculate stockout projection
-    const stockoutProjection = this.calculateStockoutProjection(currentStock, activeVelocity);
+    const stockoutProjection = this.calculateStockoutProjection(
+      currentStock,
+      activeVelocity,
+    );
 
     // Determine urgency and risk
     const restockUrgency = this.determineRestockUrgency(
       stockoutProjection.daysRemaining,
       currentStock,
       reorderLevel,
-      supplierLeadTimeDays
+      supplierLeadTimeDays,
     );
 
     const inventoryRiskLevel = this.determineRiskLevel(
       stockoutProjection.daysRemaining,
       currentStock,
       activeVelocity,
-      reorderLevel
+      reorderLevel,
     );
 
     // Calculate recommended restock quantity
@@ -293,12 +305,13 @@ export class InventoryEngine {
       currentStock,
       reorderLevel,
       supplierLeadTimeDays,
-      hasSeasonality
+      hasSeasonality,
     );
 
     // Build reasoning
     if (velocityTrend === "stagnant") {
-      reasoning = "No sales detected for this product. Limited recommendation due to lack of sales history. ";
+      reasoning =
+        "No sales detected for this product. Limited recommendation due to lack of sales history. ";
     } else if (velocityTrend === "accelerating") {
       reasoning = `Strong demand acceleration detected. Recommend increasing restock quantity by 20-30% to prevent stockouts. `;
     } else if (velocityTrend === "declining") {
@@ -333,7 +346,8 @@ export class InventoryEngine {
           : 50;
 
     if (reasoning === "") {
-      reasoning = "Normal inventory levels. Current forecast suggests stable operations.";
+      reasoning =
+        "Normal inventory levels. Current forecast suggests stable operations.";
     }
 
     return {
@@ -355,42 +369,32 @@ export class InventoryEngine {
   async saveForecast(
     businessId: string,
     inventoryId: string,
-    forecast: InventoryForecastResult
+    forecast: InventoryForecastResult,
   ): Promise<string | null> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return null;
-    }
-
     try {
-      const { data, error } = await this.supabase
-        .from("inventory_forecasts")
-        .insert({
-          business_id: businessId,
-          inventory_id: inventoryId,
-          current_stock: forecast.factors.current_stock,
-          velocity_7d: forecast.factors.velocity_7d,
-          velocity_30d: forecast.factors.velocity_30d,
-          velocity_90d: forecast.factors.velocity_90d,
-          velocity_trend: forecast.velocityTrend,
-          projected_stockout_date: forecast.projectedStockoutDate,
-          days_until_stockout: forecast.daysUntilStockout,
-          recommended_restock_quantity: forecast.recommendedRestockQuantity,
-          restock_urgency: forecast.restockUrgency,
-          inventory_risk_level: forecast.inventoryRiskLevel,
+      const result = await db.inventoryForecast.create({
+        data: {
+          businessId,
+          inventoryId,
+          currentStock: forecast.factors.current_stock,
+          velocity7d: new Prisma.Decimal(forecast.factors.velocity_7d),
+          velocity30d: new Prisma.Decimal(forecast.factors.velocity_30d),
+          velocity90d: new Prisma.Decimal(forecast.factors.velocity_90d),
+          velocityTrend: forecast.velocityTrend,
+          projectedStockoutDate: forecast.projectedStockoutDate
+            ? new Date(forecast.projectedStockoutDate)
+            : null,
+          daysUntilStockout: forecast.daysUntilStockout,
+          recommendedRestockQuantity: forecast.recommendedRestockQuantity,
+          restockUrgency: forecast.restockUrgency,
+          inventoryRiskLevel: forecast.inventoryRiskLevel,
           reasoning: forecast.reasoning,
-          confidence_score: forecast.confidenceScore,
-          forecast_factors: forecast.factors,
-        })
-        .select()
-        .single();
+          confidenceScore: new Prisma.Decimal(forecast.confidenceScore),
+          forecastFactors: forecast.factors,
+        },
+      });
 
-      if (error) {
-        console.error("Failed to save inventory forecast:", error);
-        return null;
-      }
-
-      return data?.id;
+      return result.id;
     } catch (error) {
       console.error("Error saving inventory forecast:", error);
       return null;
@@ -406,33 +410,21 @@ export class InventoryEngine {
     alertType: string,
     severity: "low" | "medium" | "high" | "critical",
     message: string,
-    data?: Record<string, any>
+    data?: Record<string, any>,
   ): Promise<string | null> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return null;
-    }
-
     try {
-      const { data: result, error } = await this.supabase
-        .from("inventory_alerts")
-        .insert({
-          business_id: businessId,
-          inventory_id: inventoryId,
-          alert_type: alertType,
+      const result = await db.inventoryAlert.create({
+        data: {
+          businessId,
+          inventoryId,
+          alertType,
           severity,
           message,
-          data,
-        })
-        .select()
-        .single();
+          data: data || Prisma.JsonNull,
+        },
+      });
 
-      if (error) {
-        console.error("Failed to create inventory alert:", error);
-        return null;
-      }
-
-      return result?.id;
+      return result.id;
     } catch (error) {
       console.error("Error creating inventory alert:", error);
       return null;
@@ -446,7 +438,7 @@ export class InventoryEngine {
     businessId: string,
     inventoryId: string,
     forecast: InventoryForecastResult,
-    productName: string
+    productName: string,
   ): Promise<void> {
     // High stock + low velocity alert
     if (
@@ -459,7 +451,7 @@ export class InventoryEngine {
         "overstock_risk",
         "high",
         `Overstock risk: ${productName} has high inventory but no sales velocity. Consider price adjustment or promotions.`,
-        { stock: forecast.factors.current_stock, velocity: 0 }
+        { stock: forecast.factors.current_stock, velocity: 0 },
       );
     }
 
@@ -477,7 +469,7 @@ export class InventoryEngine {
         {
           days_until_stockout: forecast.daysUntilStockout,
           projected_date: forecast.projectedStockoutDate,
-        }
+        },
       );
     }
 
@@ -489,7 +481,7 @@ export class InventoryEngine {
         "demand_spike",
         "medium",
         `Demand acceleration detected for ${productName}. Sales velocity increasing. Monitor stock levels closely.`,
-        { velocity_7d: forecast.factors.velocity_7d }
+        { velocity_7d: forecast.factors.velocity_7d },
       );
     }
   }
@@ -502,53 +494,41 @@ export class InventoryEngine {
     inventoryId: string,
     velocity7d: number,
     velocity30d: number,
-    velocity90d: number
+    velocity90d: number,
   ): Promise<boolean> {
-    if (!this.supabase) {
-      console.error("Supabase client not available");
-      return false;
-    }
-
     try {
       // Calculate units sold
       const units7d = Math.round(velocity7d * 7);
       const units30d = Math.round(velocity30d * 30);
       const units90d = Math.round(velocity90d * 90);
 
-      // Check if cache exists
-      const { data: existing } = await this.supabase
-        .from("sales_velocity_cache")
-        .select("id")
-        .eq("business_id", businessId)
-        .eq("inventory_id", inventoryId)
-        .single();
-
-      if (existing) {
-        await this.supabase
-          .from("sales_velocity_cache")
-          .update({
-            velocity_7d: velocity7d,
-            velocity_30d: velocity30d,
-            velocity_90d: velocity90d,
-            last_7d_units: units7d,
-            last_30d_units: units30d,
-            last_90d_units: units90d,
-            cache_updated_at: new Date().toISOString(),
-          })
-          .eq("business_id", businessId)
-          .eq("inventory_id", inventoryId);
-      } else {
-        await this.supabase.from("sales_velocity_cache").insert({
-          business_id: businessId,
-          inventory_id: inventoryId,
-          velocity_7d: velocity7d,
-          velocity_30d: velocity30d,
-          velocity_90d: velocity90d,
-          last_7d_units: units7d,
-          last_30d_units: units30d,
-          last_90d_units: units90d,
-        });
-      }
+      await db.salesVelocityCache.upsert({
+        where: {
+          businessId_inventoryId: {
+            businessId,
+            inventoryId,
+          },
+        },
+        update: {
+          velocity7d: new Prisma.Decimal(velocity7d),
+          velocity30d: new Prisma.Decimal(velocity30d),
+          velocity90d: new Prisma.Decimal(velocity90d),
+          last7dUnits: units7d,
+          last30dUnits: units30d,
+          last90dUnits: units90d,
+          cacheUpdatedAt: new Date(),
+        },
+        create: {
+          businessId,
+          inventoryId,
+          velocity7d: new Prisma.Decimal(velocity7d),
+          velocity30d: new Prisma.Decimal(velocity30d),
+          velocity90d: new Prisma.Decimal(velocity90d),
+          last7dUnits: units7d,
+          last30dUnits: units30d,
+          last90dUnits: units90d,
+        },
+      });
 
       return true;
     } catch (error) {
