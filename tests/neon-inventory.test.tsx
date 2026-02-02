@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import InventoryPage from "@/app/inventory/page";
+import InventoryPage from "@/app/inventory/menu/page";
 
 // Mock hooks
 vi.mock("@/lib/hooks/use-business", () => ({
@@ -27,15 +27,16 @@ describe("InventoryPage Neon Velocity", () => {
   it("renders with Neon Velocity header styling", () => {
     render(<InventoryPage />);
 
-    // Check for "INVENTORY" header which uses "headline-text" class (verified in code)
+    // Check for "INVENTORY" menu item which uses neon styling
     expect(screen.getByText("INVENTORY")).toBeInTheDocument();
 
-    // Check for "MANAGEMENT CONSOLE" label
-    expect(
-      screen.getByText((content) => content.includes("MANAGEMENT CONSOLE")),
-    ).toBeInTheDocument();
-
     // Check for Intake button text
-    expect(screen.getByText("INTAKE STOCK")).toBeInTheDocument();
+    expect(screen.getByText("INTAKE")).toBeInTheDocument();
+
+    // Check for POS menu item
+    expect(screen.getByText("POS")).toBeInTheDocument();
+
+    // Check for Credit menu item
+    expect(screen.getByText("CREDIT")).toBeInTheDocument();
   });
 });
