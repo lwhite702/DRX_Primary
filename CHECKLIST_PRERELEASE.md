@@ -2,7 +2,8 @@
 
 Before merging to `main` or deploying:
 
-- [ ] **Changelog**: `CHANGELOG.md` updated with complying entry.
+- [ ] **Versioning**: bumped `package.json` and updated `VERSION` file.
+- [ ] **Changelog**: `CHANGELOG.md` updated with complying entry (Keep A Changelog format).
 - [ ] **Env Matrix**: `docs/ENV_MATRIX.md` matches `env.example` and production secrets.
 - [ ] **Migrations**: DB migrations applied successfully to staging/prod.
 - [ ] **Tenant Isolation**: Verified that user A cannot access user B's data.
