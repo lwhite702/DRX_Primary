@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "doppler run -- next dev",
+    "dev:ci": "next dev",
     "version:check": "node scripts/version.js check",
     "version:bump": "node scripts/version.js bump",
     "lint": "eslint .",

@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:54322/postgres"
+
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
@@ -57,6 +62,22 @@ jobs:
         env:
           SUPABASE_DB_PASSWORD: "admin"
 
+      - name: Setup Supabase project config
+        run: |
+          # Create minimal supabase config for local development
+          mkdir -p supabase
+          echo '[api]
+          enabled = true
+          port = 54321
+          [db]
+          port = 54322
+          [studio]
+          enabled = true
+          port = 54323' > supabase/config.toml
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
@@ -64,6 +85,7 @@ jobs:
         run: pnpm test:e2e
         env:
           CI: true
+          NODE_ENV: development
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
           SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w"
