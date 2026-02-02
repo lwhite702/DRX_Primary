@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
-  Menu,
-  X,
   CheckCircle2,
   XCircle,
   BarChart,
@@ -17,122 +14,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Rotating Status Chip Component - Kept for "Neon Velocity" vibe
-function StatusChip() {
-  const statuses = [
-    "PRIVACY CONTROLS: ON",
-    "AUDIT LOGGING: ON",
-    "OFFLINE MODE: AVAILABLE",
-  ];
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % statuses.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="technical-label flex items-center gap-2 border border-border/50 px-3 py-1.5 rounded-full bg-background/50 backdrop-blur-md transition-all duration-500 min-w-[200px] justify-center">
-      <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-      <span className="fade-in-out key={index}">{statuses[index]}</span>
-    </div>
-  );
-}
-
 export default function LandingPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
-      setMobileMenuOpen(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-x-hidden font-sans">
+    <div className="bg-background text-foreground relative overflow-x-hidden font-sans">
       {/* Noise Overlay */}
       <div className="noise-overlay pointer-events-none fixed inset-0 z-0 opacity-[0.03]"></div>
-
-      {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="flex items-center gap-2">
-          <div className="relative w-[60px] h-8">
-            <Image
-              src="/brand/drx-mark-primary.png"
-              alt="DeelRx"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <span className="font-bold text-xl tracking-tight">DeelRx</span>
-        </div>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {["WHY", "FEATURES", "WHO", "PROOF"].map((item) => (
-            <button
-              key={item}
-              onClick={() => scrollToSection(item.toLowerCase())}
-              className="technical-label hover:text-accent transition-colors text-xs tracking-widest"
-            >
-              {item}
-            </button>
-          ))}
-          <Link
-            href="/login"
-            className="technical-label hover:text-accent transition-colors text-xs tracking-widest"
-          >
-            LOGIN
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <div className="hidden md:block">
-            <StatusChip />
-          </div>
-          <Link href="/login">
-            <Button
-              size="sm"
-              className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
-            >
-              START
-            </Button>
-          </Link>
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm pt-24 px-6 md:hidden">
-          <nav className="flex flex-col gap-6 text-center">
-            {["WHY", "FEATURES", "WHO", "PROOF"].map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                className="text-2xl font-bold tracking-tight hover:text-accent"
-              >
-                {item}
-              </button>
-            ))}
-            <Link
-              href="/login"
-              className="text-2xl font-bold tracking-tight hover:text-accent"
-            >
-              LOGIN
-            </Link>
-          </nav>
-        </div>
-      )}
 
       <main className="flex-1 relative z-10">
         {/* HERO SECTION */}
@@ -412,7 +305,7 @@ export default function LandingPage() {
           <Link href="/login">
             <Button
               size="lg"
-              className="text-lg px-12 py-8 rounded-full bg-foreground text-background hover:bg-foreground/90 mt-8"
+              className="text-lg px-12 py-8 rounded-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-black hover:shadow-[0_0_30px_#BFFF00] transition-all duration-300 font-bold tracking-widest mt-8"
             >
               Start With DeelRx
             </Button>
@@ -443,13 +336,16 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex gap-8 text-sm font-bold tracking-widest">
-            <Link href="#" className="hover:text-accent">
+            <Link href="/privacy" className="hover:text-accent">
               PRIVACY POLICY
             </Link>
-            <Link href="#" className="hover:text-accent">
+            <Link href="/terms" className="hover:text-accent">
               TERMS
             </Link>
-            <Link href="#" className="hover:text-accent">
+            <Link
+              href="mailto:support@deelrx.com"
+              className="hover:text-accent"
+            >
               CONTACT
             </Link>
           </div>
