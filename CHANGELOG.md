@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
 
+## [0.4.1] - 2026-02-02
+
+### Changed
+
+- **Cleanup**: Removed legacy debug scripts and large artifact files.
+- **Infrastructure**: Added `pre-push` hook to enforce versioning policy.
+- **Docs**: Updated checklists to reflect strict versioning requirements.
+
 ## [0.4.0] - 2026-02-02
 
 ### Changed
