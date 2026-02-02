@@ -15,6 +15,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
 
+## [0.4.0] - 2026-02-02
+
+### Changed
+
+- **Authentication**: Migrated from Supabase Auth to Clerk.
+  - Implemented `ClerkProvider` and `clerkMiddleware`.
+  - Replaced custom login forms with Clerk components.
+  - Updated server-side auth guards to use `auth()`.
+- **Database**: Migrated from Supabase (Postgres) to Prisma ORM.
+  - Added `prisma/schema.prisma` configured for PostgreSQL (Neon/Doppler).
+  - Implemented `lib/db.ts` singleton client.
+  - Refactored all API routes to use Prisma for data access.
+  - Added `businessId` checks for multi-tenancy.
+- **API**: Refactored core Admin, Inventory, and Team API routes.
+  - Removed dependency on `supabase-js` client in API handlers.
+  - Implemented transactional logic using Prisma.
+- **Storage**: Scaffolded migration to Cloudflare R2 / AWS S3 SDK.
+  - Created `lib/storage.ts` interface.
+  - Removed legacy Supabase Storage dependencies.
+
+### Added
+
+- **Scripts**: Added `scripts/verify-db.ts` for connection testing.
+- **Docs**: Added `migration_guide.md` for manual database provisioning.
+
 ## [0.3.3] - 2025-02-28
 
 ### Fixed
