@@ -1,13 +1,9 @@
-import * as Sentry from "@sentry/nextjs";
+import { errorTracker } from "@wrelik/errors";
 
 export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("./sentry.server.config");
-  }
-
-  if (process.env.NEXT_RUNTIME === "edge") {
-    await import("./sentry.edge.config");
-  }
+  errorTracker.init();
 }
 
-export const onRequestError = Sentry.captureRequestError;
+export const onRequestError = (err: any, request: Request, context: any) => {
+  errorTracker.captureException(err, { request, context });
+};
