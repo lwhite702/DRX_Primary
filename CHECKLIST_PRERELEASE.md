@@ -1,0 +1,10 @@
+# Pre-Release Checklist
+
+Before merging to `main` or deploying:
+
+- [ ] **Changelog**: `CHANGELOG.md` updated with complying entry.
+- [ ] **Env Matrix**: `docs/ENV_MATRIX.md` matches `env.example` and production secrets.
+- [ ] **Migrations**: DB migrations applied successfully to staging/prod.
+- [ ] **Tenant Isolation**: Verified that user A cannot access user B's data.
+- [ ] **Smoke Test**: Critical paths (Login, Checkout, Inventory) verify working.
+- [ ] **Compliance**: `docs/COMPLIANCE_AUDIT.md` review shows no regressions.

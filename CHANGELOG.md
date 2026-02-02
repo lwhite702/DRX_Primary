@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Compliance**: Phase 1 Stack Policy Audit. Added `docs/COMPLIANCE_AUDIT.md` with full stack inventory and violation list.
+- **Governance**: Added `STACK.md` defining the authoritative Wrelik Modular Stack.
+- **Governance**: Added `docs/decisions/0000-vendor-policy.md` banning direct vendor SDK imports.
+- **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
+- **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
+
 ## [0.3.3] - 2025-02-28
 
 ### Fixed
