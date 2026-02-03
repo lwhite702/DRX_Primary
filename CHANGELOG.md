@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
 
+## [0.4.3] - 2026-02-02
+
+### Fixed
+
+- **Build**: Synced `pnpm-lock.yaml` with `package.json` to resolve Vercel CI "frozen-lockfile" error.
+
 ## [0.4.2] - 2026-02-02
 
 ### Changed
