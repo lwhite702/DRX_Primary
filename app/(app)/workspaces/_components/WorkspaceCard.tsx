@@ -1,6 +1,6 @@
 import React from "react";
-import { Monitor, cn } from "@/lib/utils";
-import { Smartphone, Tablet, Laptop } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Monitor, Smartphone, Tablet, Laptop } from "lucide-react";
 
 export type PrivacyStatus = "MAX SECURE" | "BALANCED" | "ACTIVE" | "PRIVATE";
 export type DeviceType =
