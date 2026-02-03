@@ -1,111 +1,100 @@
 import { useEffect, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import type {
-  RealtimeChannel,
-  RealtimePostgresChangesPayload,
-} from "@supabase/supabase-js";
+import { db } from "@wrelik/db";
+import { realtime } from "@wrelik/db";
 
 export function useRealtimeInventory(business_id: string | null) {
   const [inventory, setInventory] = useState<any[]>([]);
-  const supabase = getSupabaseClient();
 
   useEffect(() => {
-    if (!business_id || !supabase) return;
+    if (!business_id) return;
 
     // Initial fetch
-    supabase
-      .from("inventory")
-      .select("*")
-      .eq("business_id", business_id)
-      .order("product_name")
-      .then(({ data, error }: { data: any[] | null; error: any }) => {
-        if (!error && data) setInventory(data);
+    // Initial fetch
+    fetch(`/api/inventory?business_id=${business_id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) setInventory(data);
       });
 
-    // Subscribe to changes
-    const channel = supabase
-      .channel(`inventory:${business_id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "inventory",
-          filter: `business_id=eq.${business_id}`,
-        },
-        (payload: RealtimePostgresChangesPayload<any>) => {
-          if (payload.eventType === "INSERT") {
-            setInventory((prev) => [...prev, payload.new]);
-          } else if (payload.eventType === "UPDATE") {
-            setInventory((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id ? payload.new : item
-              )
-            );
-          } else if (payload.eventType === "DELETE") {
-            setInventory((prev) =>
-              prev.filter((item) => item.id !== payload.old.id)
-            );
-          }
+    // Subscribe to changes via @wrelik/db realtime
+    const channel = realtime.channel(`inventory:${business_id}`);
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "inventory",
+        filter: `business_id=eq.${business_id}`,
+      },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          setInventory((prev) => [...prev, payload.new]);
+        } else if (payload.eventType === "UPDATE") {
+          setInventory((prev) =>
+            prev.map((item) =>
+              item.id === payload.new.id ? payload.new : item
+            )
+          );
+        } else if (payload.eventType === "DELETE") {
+          setInventory((prev) =>
+            prev.filter((item) => item.id !== payload.old.id)
+          );
         }
-      )
-      .subscribe();
+      }
+    ).subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
-  }, [business_id, supabase]);
+  }, [business_id]);
 
   return inventory;
 }
 
 export function useRealtimeSales(business_id: string | null) {
   const [sales, setSales] = useState<any[]>([]);
-  const supabase = getSupabaseClient();
 
   useEffect(() => {
-    if (!business_id || !supabase) return;
+    if (!business_id) return;
 
     // Initial fetch
-    supabase
-      .from("sales")
-      .select("*")
-      .eq("business_id", business_id)
-      .order("created_at", { ascending: false })
-      .limit(50)
-      .then(({ data, error }: { data: any[] | null; error: any }) => {
-        if (!error && data) setSales(data);
+    db.sales
+      .findMany({
+        where: { business_id },
+        orderBy: { created_at: "desc" },
+        take: 50,
+      })
+      .then((data) => {
+        if (data) setSales(data);
       });
 
     // Subscribe to changes
-    const channel = supabase
-      .channel(`sales:${business_id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "sales",
-          filter: `business_id=eq.${business_id}`,
-        },
-        (payload: RealtimePostgresChangesPayload<any>) => {
-          if (payload.eventType === "INSERT") {
-            setSales((prev) => [payload.new, ...prev].slice(0, 50));
-          } else if (payload.eventType === "UPDATE") {
-            setSales((prev) =>
-              prev.map((sale) =>
-                sale.id === payload.new.id ? payload.new : sale
-              )
-            );
-          }
+    const channel = realtime.channel(`sales:${business_id}`);
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sales",
+        filter: `business_id=eq.${business_id}`,
+      },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          setSales((prev) => [payload.new, ...prev].slice(0, 50));
+        } else if (payload.eventType === "UPDATE") {
+          setSales((prev) =>
+            prev.map((sale) =>
+              sale.id === payload.new.id ? payload.new : sale
+            )
+          );
         }
-      )
-      .subscribe();
+      }
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
-  }, [business_id, supabase]);
+  }, [business_id]);
 
   return sales;
 }
@@ -115,116 +104,113 @@ export function useRealtimeCredit(
   customer_id?: string | null
 ) {
   const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
-  const supabase = getSupabaseClient();
 
   useEffect(() => {
-    if (!business_id || !supabase) return;
+    if (!business_id) return;
 
-    let query = supabase
-      .from("credit_transactions")
-      .select("*")
-      .eq("business_id", business_id)
-      .order("created_at", { ascending: false })
-      .limit(100);
+    let where: any = { business_id };
 
     if (customer_id) {
-      query = query.eq("customer_id", customer_id);
+      where = { ...where, customer_id };
     }
 
     // Initial fetch
-    query.then(({ data, error }: { data: any[] | null; error: any }) => {
-      if (!error && data) setCreditTransactions(data);
-    });
+    db.creditTransaction
+      .findMany({
+        where,
+        orderBy: { created_at: "desc" },
+        take: 100,
+      })
+      .then((data) => {
+        if (data) setCreditTransactions(data);
+      });
 
     // Subscribe to changes
-    const channel = supabase
-      .channel(`credit:${business_id}${customer_id ? `:${customer_id}` : ""}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "credit_transactions",
-          filter: customer_id
-            ? `business_id=eq.${business_id},customer_id=eq.${customer_id}`
-            : `business_id=eq.${business_id}`,
-        },
-        (payload: RealtimePostgresChangesPayload<any>) => {
-          if (payload.eventType === "INSERT") {
-            setCreditTransactions((prev) =>
-              [payload.new, ...prev].slice(0, 100)
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setCreditTransactions((prev) =>
-              prev.map((tx) => (tx.id === payload.new.id ? payload.new : tx))
-            );
-          }
+    const channel = realtime.channel(
+      `credit:${business_id}${customer_id ? `:${customer_id}` : ""}`
+    );
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "credit_transactions",
+        filter: customer_id
+          ? `business_id=eq.${business_id},customer_id=eq.${customer_id}`
+          : `business_id=eq.${business_id}`,
+      },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          setCreditTransactions((prev) =>
+            [payload.new, ...prev].slice(0, 100)
+          );
+        } else if (payload.eventType === "UPDATE") {
+          setCreditTransactions((prev) =>
+            prev.map((tx) => (tx.id === payload.new.id ? payload.new : tx))
+          );
         }
-      )
-      .subscribe();
+      }
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
-  }, [business_id, customer_id, supabase]);
+  }, [business_id, customer_id]);
 
   return creditTransactions;
 }
 
 export function useRealtimeCustomers(business_id: string | null) {
   const [customers, setCustomers] = useState<any[]>([]);
-  const supabase = getSupabaseClient();
 
   useEffect(() => {
-    if (!business_id || !supabase) return;
+    if (!business_id) return;
 
     // Initial fetch
-    supabase
-      .from("customers")
-      .select("*")
-      .eq("business_id", business_id)
-      .order("first_name")
-      .then(({ data, error }: { data: any[] | null; error: any }) => {
-        if (!error && data) setCustomers(data);
+    db.customer
+      .findMany({
+        where: { business_id },
+        orderBy: { first_name: "asc" },
+      })
+      .then((data) => {
+        if (data) setCustomers(data);
       });
 
     // Subscribe to changes
-    const channel = supabase
-      .channel(`customers:${business_id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "customers",
-          filter: `business_id=eq.${business_id}`,
-        },
-        (payload: RealtimePostgresChangesPayload<any>) => {
-          if (payload.eventType === "INSERT") {
-            setCustomers((prev) =>
-              [payload.new, ...prev].sort((a, b) =>
-                a.first_name.localeCompare(b.first_name)
-              )
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setCustomers((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id ? payload.new : item
-              )
-            );
-          } else if (payload.eventType === "DELETE") {
-            setCustomers((prev) =>
-              prev.filter((item) => item.id !== payload.old.id)
-            );
-          }
+    const channel = realtime.channel(`customers:${business_id}`);
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "customers",
+        filter: `business_id=eq.${business_id}`,
+      },
+      (payload) => {
+        if (payload.eventType === "INSERT") {
+          setCustomers((prev) =>
+            [payload.new, ...prev].sort((a, b) =>
+              a.first_name.localeCompare(b.first_name)
+            )
+          );
+        } else if (payload.eventType === "UPDATE") {
+          setCustomers((prev) =>
+            prev.map((item) =>
+              item.id === payload.new.id ? payload.new : item
+            )
+          );
+        } else if (payload.eventType === "DELETE") {
+          setCustomers((prev) =>
+            prev.filter((item) => item.id !== payload.old.id)
+          );
         }
-      )
-      .subscribe();
+      }
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
-  }, [business_id, supabase]);
+  }, [business_id]);
 
   return customers;
 }

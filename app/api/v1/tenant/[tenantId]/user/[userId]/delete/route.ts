@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
 import { db } from "@/lib/db";
 
 export async function POST(
@@ -50,7 +50,7 @@ export async function POST(
 
     // 2. Data Shredding / Deletion
     // We will perform a Hard Delete in Clerk which is the most compliant RTBF action.
-    const client = await clerkClient();
+    const client = await @wrelik.auth.clerkClient();
     try {
       await client.users.deleteUser(userId);
     } catch (clerkError: any) {

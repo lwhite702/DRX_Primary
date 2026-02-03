@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@wrelik/auth/next";
 import { getUserRoleAction } from "@/app/actions/user-role";
 import { Permission } from "@/lib/auth/permissions";
 

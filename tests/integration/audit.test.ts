@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/admin/audit-logs/route";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@wrelik/auth/next";
 
-// Mock Clerk auth
-vi.mock("@clerk/nextjs/server", () => ({
+// Mock Wrelik auth
+vi.mock("@wrelik/auth/next", () => ({
   auth: vi.fn(),
-  clerkClient: vi.fn(),
 }));
 
 // Mock Prisma
@@ -49,13 +48,16 @@ describe("Audit Logs API Integration", () => {
         take: 100,
       }),
     );
+
     expect(data).toHaveLength(1);
     expect(res.status).toBe(200);
   });
 
   it("should filter logs by business_id", async () => {
+    // Mock Auth
     (auth as any).mockResolvedValue({ userId: "manager-1" });
 
+    // Mock DB Data
     (db.systemAuditLog.findMany as any).mockResolvedValue([
       { id: "scoped-log", businessId: mockBusinessId },
     ]);

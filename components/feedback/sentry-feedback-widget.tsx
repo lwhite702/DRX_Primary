@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { errorTracker } from "@wrelik/errors";
 
 /**
- * Sentry Feedback Widget
+ * Feedback Widget
  *
  * Provides a user-friendly bug reporting interface that integrates
- * with Sentry's feedback system. Can be triggered programmatically
- * or from error boundaries.
+ * with error tracking via @wrelik/errors
  */
 export function SentryFeedbackWidget() {
   useEffect(() => {
-    // Initialize Sentry Feedback widget
-    const feedback = Sentry.getFeedback();
+    // Initialize feedback widget
+    const feedback = errorTracker.getFeedback();
 
     if (feedback) {
-      // Widget is available and configured
-      console.log("✅ Sentry Feedback widget initialized");
+      console.log("✅ Feedback widget initialized");
     }
   }, []);
 
@@ -25,15 +23,15 @@ export function SentryFeedbackWidget() {
 }
 
 /**
- * Hook to trigger the Sentry feedback dialog
+ * Hook to trigger the feedback dialog
  */
 export function useSentryFeedback() {
   const openFeedback = () => {
-    const feedback = Sentry.getFeedback();
+    const feedback = errorTracker.getFeedback();
     if (feedback) {
       feedback.createWidget();
     } else {
-      console.warn("Sentry Feedback not available");
+      console.warn("Feedback widget not available");
     }
   };
 

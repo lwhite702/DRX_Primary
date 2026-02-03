@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
 import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const { username, email, role } = body;
 
     // 1. Create User in Clerk
-    const client = await clerkClient();
+    const client = await @wrelik.auth.clerkClient();
     const newUser = await client.users.createUser({
       emailAddress: [email],
       password: "TempPassword123!",

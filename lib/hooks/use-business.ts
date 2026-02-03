@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@wrelik/auth/next";
 import { getUserBusinessesAction } from "@/app/actions/business";
 
 export function useBusiness() {

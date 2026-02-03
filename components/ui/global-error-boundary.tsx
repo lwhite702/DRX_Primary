@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import * as Sentry from "@sentry/nextjs";
+import { errorTracker } from "@wrelik/errors";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -17,10 +17,10 @@ interface State {
 /**
  * Global Error Boundary
  *
- * Catches unhandled errors in the component tree and:
- * 1. Reports them to Sentry
+ * Catches unhandled errors in component tree and:
+ * 1. Reports them to error tracking
  * 2. Shows a user-friendly error UI
- * 3. Offers bug reporting via Sentry Feedback
+ * 3. Offers bug reporting via feedback
  */
 export class GlobalErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -33,8 +33,8 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log to Sentry
-    Sentry.captureException(error, {
+    // Log to error tracker
+    errorTracker.capture(error, {
       contexts: {
         react: {
           componentStack: errorInfo.componentStack,
@@ -46,7 +46,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
   }
 
   handleReportBug = () => {
-    const feedback = Sentry.getFeedback();
+    const feedback = errorTracker.getFeedback();
     if (feedback) {
       feedback.createWidget();
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
 import { db } from "@/lib/db";
 
 export async function PUT(
@@ -78,7 +78,7 @@ export async function DELETE(
     });
 
     // Delete User from Clerk
-    const client = await clerkClient();
+    const client = await @wrelik.auth.clerkClient();
     await client.users.deleteUser(targetUserId);
 
     // Also should delete from DB?
