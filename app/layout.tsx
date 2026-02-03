@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     "DeelRx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don’t operate on neat timelines.",
   icons: {
     icon: "/brand/favicon-32.png",
+
     apple: "/brand/apple-touch-icon-180.png",
   },
-  generator: "v0.app",
   openGraph: {
     title: "DeelRx - Run real transactions. Without the mess.",
     description:

@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
 
+## [0.4.4] - 2026-02-02
+
+### Changed
+
+- **Meta**: Removed "v0.app" generator tag and updated project name in `package.json` to `deelrx-crm` to fully alias the application.
+
 ## [0.4.3] - 2026-02-02
 
 ### Fixed
