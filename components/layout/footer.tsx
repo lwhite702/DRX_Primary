@@ -12,15 +12,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="relative h-6 w-10">
+              <div className="relative h-8 w-[120px]">
                 <Image
-                  src="/brand/drx-mark-primary.png"
+                  src="/brand/DRX Wordmark Color.svg"
                   alt="DRX"
                   fill
-                  className="object-contain"
+                  className="object-contain object-left"
                 />
               </div>
-              <h3 className="font-bold text-foreground">DeelRx</h3>
             </div>
             <p className="text-sm text-muted-foreground">
               Privacy-first point of sale and customer management system for

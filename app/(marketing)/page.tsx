@@ -30,9 +30,9 @@ export default function LandingPage() {
       <main className="flex-1 relative z-10">
         {/* HERO SECTION */}
         <section className="py-24 md:py-32 px-6 flex flex-col items-center text-center max-w-5xl mx-auto space-y-10">
-          <div className="relative w-24 h-12 mb-4">
+          <div className="relative w-[180px] h-16 mb-4">
             <Image
-              src="/brand/drx-mark-primary.png"
+              src="/brand/DRX Wordmark Color.svg"
               alt="DRX"
               fill
               className="object-contain"
@@ -318,15 +318,14 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 mb-2">
-              <div className="relative w-8 h-5">
+              <div className="relative w-[120px] h-8">
                 <Image
-                  src="/brand/drx-mark-primary.png"
+                  src="/brand/DRX Wordmark Color.svg"
                   alt="DRX"
                   fill
-                  className="object-contain"
+                  className="object-contain object-left"
                 />
               </div>
-              <span className="font-bold text-lg">DeelRx</span>
             </div>
             <div className="flex gap-4 text-xs font-mono tracking-widest text-muted-foreground">
               <span>OPERATIONAL STATUS: ACTIVE</span>

@@ -51,15 +51,14 @@ export function MarketHeader() {
   return (
     <header className="px-6 py-4 flex justify-between items-center border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
       <Link href="/" className="flex items-center gap-2">
-        <div className="relative w-[60px] h-8">
+        <div className="relative w-[120px] h-8">
           <Image
-            src="/brand/drx-mark-primary.png"
+            src="/brand/DRX Wordmark Color.svg"
             alt="DeelRx"
             fill
             className="object-contain"
           />
         </div>
-        <span className="font-bold text-xl tracking-tight">DeelRx</span>
       </Link>
 
       {/* Desktop Nav */}
