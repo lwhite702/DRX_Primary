@@ -41,7 +41,7 @@ export function useRealtimeInventory(business_id: string | null) {
           );
         }
       }
-    );
+    ).subscribe();
 
     return () => {
       channel.unsubscribe();
