@@ -3,7 +3,7 @@
   "version": "0.4.4",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "prisma generate && next build",
     "dev": "doppler run -- next dev",
     "dev:ci": "next dev",
     "version:check": "node scripts/version.js check",
