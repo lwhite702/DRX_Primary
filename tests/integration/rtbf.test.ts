@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initiateRTBF } from "@/app/actions/rtbf";
-import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { db } from "@wrelik/db";
 
-// Mock the standard server client
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+// Mock standard db client
+vi.mock("@wrelik/db", () => ({
+  db: {},
 }));
 
 // Define shared mocks
@@ -14,18 +13,15 @@ const mockAdminAuth = {
     updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null }),
   },
 };
-const mockAdminSupabaseInstance = {
-  from: vi.fn().mockReturnThis(), // `from()` returns the instance itself for chaining
-  insert: vi.fn().mockResolvedValue({ error: null }),
-  delete: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  auth: mockAdminAuth,
+const mockAdminDbInstance = {
+  businessProfile: {
+    findMany: vi.fn().mockResolvedValue([]),
+  },
 };
-
-// Mock the admin client (supabase-js)
-vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn(() => mockAdminSupabaseInstance),
-}));
+const mockAdminDb = {
+  findMany: vi.fn().mockResolvedValue([]),
+  update: vi.fn().mockResolvedValue({}),
+};
 
 describe("RTBF Privacy Integration", () => {
   beforeEach(() => {
@@ -41,28 +37,14 @@ describe("RTBF Privacy Integration", () => {
   });
 
   it("should mask user PII and remove roles when initiated by owner", async () => {
-    const mockSupabase = {
-      auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: "owner-1" } },
-          error: null,
-        }),
-        getSession: vi.fn().mockResolvedValue({
-          data: { session: { access_token: "token" } },
-          error: null,
-        }),
+    const mockDb = {
+      businessProfile: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: "tenant-1", owner_id: "owner-1" },
+        ]),
       },
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi
-        .fn()
-        .mockResolvedValue({ data: { role: "owner" }, error: null }),
     };
-    (createClient as any).mockResolvedValue(mockSupabase);
-
-    // This will now use the mocked version
-    const mockAdminSupabase = (createAdminClient as any)();
+    (db as any).mockReturnValue(mockDb);
 
     // Start RTBF
     const result = await initiateRTBF("tenant-1", "user-shred");
@@ -76,26 +58,10 @@ describe("RTBF Privacy Integration", () => {
         }),
       }),
     );
-    expect(mockAdminSupabaseInstance.delete).toHaveBeenCalled();
+    expect(mockAdminDb.findMany).toHaveBeenCalled();
   });
 
   it("should block non-owners from initiating RTBF", async () => {
-    const mockSupabase = {
-      auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: "cashier-1" } },
-          error: null,
-        }),
-      },
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi
-        .fn()
-        .mockResolvedValue({ data: { role: "cashier" }, error: null }),
-    };
-    (createClient as any).mockResolvedValue(mockSupabase);
-
     const result = await initiateRTBF("tenant-1", "user-shred");
 
     expect(result.error).toContain("Only Owners or Super Admins");

@@ -1,22 +1,21 @@
-import { createBrowserClient } from "@supabase/ssr"
+/**
+ * Database Client Adapter
+ *
+ * This module provides database access through @wrelik/db
+ * Legacy Supabase client interface maintained for backward compatibility during migration
+ */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+import { db } from "@wrelik/db";
 
-let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
+let dbClient: typeof db | null = null;
 
 export function getSupabaseClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Supabase environment variables not configured")
-    return null
+  if (!dbClient) {
+    dbClient = db;
   }
 
-  if (!supabaseClient) {
-    supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey)
-  }
-
-  return supabaseClient
+  return dbClient;
 }
 
 // Keep for backwards compatibility
-export const supabase = getSupabaseClient()
+export const supabase = getSupabaseClient();

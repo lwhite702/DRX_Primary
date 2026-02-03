@@ -1,14 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+/**
+ * Database Admin Client Adapter
+ *
+ * This module provides admin database access through @wrelik/db
+ * Legacy Supabase admin client interface maintained for backward compatibility
+ */
 
-// Note: SUPABASE_SERVICE_ROLE_KEY should only be used in server contexts (API routes, Server Actions)
-// Never expose this in client-side code.
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+import { db } from "@wrelik/db";
+
+export const supabaseAdmin = db;
+
+export const supabaseAdminClient = db;

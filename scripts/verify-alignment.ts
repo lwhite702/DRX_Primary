@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@wrelik.db";
 import * as fs from "fs";
 import * as path from "path";
 

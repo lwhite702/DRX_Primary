@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Bell, Menu, Search, Settings, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
-import { SignOutButton, UserButton } from "@clerk/nextjs";
+import { SignOutButton, UserButton } from "@wrelik/auth/next";
 
 import { AppLogo } from "@/components/layout/app-logo";
 import { LogoutButton } from "@/components/layout/logout-button";

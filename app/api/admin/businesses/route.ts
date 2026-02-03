@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
 import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Client init
-    const client = await clerkClient();
+    const client = await @wrelik.auth.clerkClient();
 
     // 3. Find Owner by Email
     const userList = await client.users.getUserList({

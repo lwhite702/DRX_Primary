@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { auth, clerkMiddleware, createRouteMatcher } from "@wrelik/auth/next";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -11,9 +11,9 @@ const isPublicRoute = createRouteMatcher([
   "/monitoring",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+export default clerkMiddleware(async (authObject, request) => {
   if (!isPublicRoute(request)) {
-    await auth.protect();
+    await authObject.protect();
   }
 });
 

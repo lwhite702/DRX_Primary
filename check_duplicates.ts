@@ -1,24 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { db } from "@wrelik/db";
 
 async function checkDuplicates() {
   // Get all business profiles
-  const { data: businesses, error } = await supabase
-    .from("business_profile")
-    .select("*");
-
-  if (error) {
-    console.error("Error fetching businesses:", error);
-    return;
-  }
+  const businesses = await db.businessProfile.findMany({
+    select: { id: true, business_name: true, owner_id: true, is_active: true },
+  });
 
   console.log(`Found ${businesses.length} businesses.`);
 
   // Group by owner_id
-  const byOwner = {};
+  const byOwner: Record<string, any[]> = {};
   businesses.forEach((b) => {
     if (!byOwner[b.owner_id]) byOwner[b.owner_id] = [];
     byOwner[b.owner_id].push(b);

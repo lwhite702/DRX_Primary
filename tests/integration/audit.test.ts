@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/admin/audit-logs/route";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@wrelik/auth/next";
 
 // Mock Clerk auth
-vi.mock("@clerk/nextjs/server", () => ({
+vi.mock("@wrelik/auth/next", () => ({
   auth: vi.fn(),
   clerkClient: vi.fn(),
 }));
