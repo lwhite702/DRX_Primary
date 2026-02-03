@@ -17,6 +17,7 @@ export interface AgingData {
   bucket_15_30: number | string;
   bucket_31_plus: number | string;
   total_outstanding: number | string;
+  last_payment_date?: string | null;
 }
 
 interface CreditAgingTableProps {

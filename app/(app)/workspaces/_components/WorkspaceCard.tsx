@@ -1,15 +1,6 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Laptop,
-  Check,
-} from "lucide-react";
+import { Monitor, cn } from "@/lib/utils";
+import { Smartphone, Tablet, Laptop } from "lucide-react";
 
 export type PrivacyStatus = "MAX SECURE" | "BALANCED" | "ACTIVE" | "PRIVATE";
 export type DeviceType =

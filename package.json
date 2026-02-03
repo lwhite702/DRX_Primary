@@ -30,14 +30,14 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
     "@clerk/nextjs": "^6.37.1",
-    "@wrelik/auth": "file:./packages/wrelik-auth-0.1.1.tgz",
-    "@wrelik/db": "file:./packages/wrelik-db-0.1.1.tgz",
-    "@wrelik/storage": "file:./packages/wrelik-storage-0.1.1.tgz",
-    "@wrelik/analytics": "file:./packages/wrelik-analytics-0.1.1.tgz",
-    "@wrelik/errors": "file:./packages/wrelik-errors-0.1.1.tgz",
-    "@wrelik/email": "file:./packages/wrelik-email-0.1.1.tgz",
-    "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.1.tgz",
-    "@wrelik/config": "file:./packages/wrelik-config-0.1.1.tgz",
+    "@wrelik/auth": "file:./packages/wrelik-auth-0.2.0.tgz",
+    "@wrelik/db": "file:./packages/wrelik-db-0.1.2.tgz",
+    "@wrelik/storage": "file:./packages/wrelik-storage-0.2.0.tgz",
+    "@wrelik/analytics": "file:./packages/wrelik-analytics-0.2.0.tgz",
+    "@wrelik/errors": "file:./packages/wrelik-errors-0.2.0.tgz",
+    "@wrelik/email": "file:./packages/wrelik-email-0.1.2.tgz",
+    "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.2.tgz",
+    "@wrelik/config": "file:./packages/wrelik-config-0.2.0.tgz",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",
@@ -138,14 +138,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "file:./packages/wrelik-auth-0.1.1.tgz",
-      "@wrelik/db": "file:./packages/wrelik-db-0.1.1.tgz",
-      "@wrelik/storage": "file:./packages/wrelik-storage-0.1.1.tgz",
-      "@wrelik/analytics": "file:./packages/wrelik-analytics-0.1.1.tgz",
-      "@wrelik/errors": "file:./packages/wrelik-errors-0.1.1.tgz",
-      "@wrelik/email": "file:./packages/wrelik-email-0.1.1.tgz",
-      "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.1.tgz",
-      "@wrelik/config": "file:./packages/wrelik-config-0.1.1.tgz"
+      "@wrelik/auth": "file:./packages/wrelik-auth-0.2.0.tgz",
+      "@wrelik/db": "file:./packages/wrelik-db-0.1.2.tgz",
+      "@wrelik/storage": "file:./packages/wrelik-storage-0.2.0.tgz",
+      "@wrelik/analytics": "file:./packages/wrelik-analytics-0.2.0.tgz",
+      "@wrelik/errors": "file:./packages/wrelik-errors-0.2.0.tgz",
+      "@wrelik/email": "file:./packages/wrelik-email-0.1.2.tgz",
+      "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.2.tgz",
+      "@wrelik/config": "file:./packages/wrelik-config-0.2.0.tgz"
     }
   }
 }

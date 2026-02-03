@@ -17,37 +17,32 @@ export function CreditHeader({
   onOpenExtension,
 }: CreditHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h1 className="text-3xl font-bold">Credit Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Track credit transactions and fronts
-        </p>
+    <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto items-center pointer-events-auto">
+      <div className="relative w-full sm:w-64">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-8 bg-[#1a1a1a] border-white/5 focus-visible:ring-[#4ADE80]"
+          aria-label="Search customers"
+        />
       </div>
-      <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto items-center">
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search customers..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8"
-            aria-label="Search customers"
-          />
-        </div>
-        <Button
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={onOpenPayment}
-        >
-          <DollarSign className="h-4 w-4 mr-2" />
-          Record Payment
-        </Button>
-        <Button className="w-full sm:w-auto" onClick={onOpenExtension}>
-          <Plus className="h-4 w-4 mr-2" />
-          Extend Credit
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        className="w-full sm:w-auto border-white/10 hover:bg-white/5 hover:text-white"
+        onClick={onOpenPayment}
+      >
+        <DollarSign className="h-4 w-4 mr-2" />
+        Record Payment
+      </Button>
+      <Button
+        className="w-full sm:w-auto bg-[#4ADE80] text-black hover:bg-[#4ADE80]/90"
+        onClick={onOpenExtension}
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Extend Credit
+      </Button>
     </div>
   );
 }

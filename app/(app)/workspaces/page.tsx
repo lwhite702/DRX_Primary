@@ -14,12 +14,11 @@ import {
   History,
   Search,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function WorkspacesPage() {
   const { availableBusinesses, business, switchBusiness, loading } =
     useBusiness();
-  const router = useRouter();
 
   if (loading) {
     return (
@@ -102,22 +101,17 @@ export default function WorkspacesPage() {
         </div>
 
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
+        <PageHeader
+          title="Choose Your Workspace"
+          description="You have access to multiple business tenants. Select the business you want to operate within. Only tenants you have explicit membership to are shown."
+        >
+          <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#4ADE80] animate-pulse" />
             <span className="text-[10px] font-bold tracking-widest text-[#4ADE80] uppercase">
               Select Business Tenant
             </span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
-            CHOOSE YOUR WORKSPACE
-          </h1>
-          <p className="text-muted-foreground text-sm max-w-2xl">
-            You have access to multiple business tenants. Select the business
-            you want to operate within. Only tenants you have explicit
-            membership to are shown.
-          </p>
-        </div>
+        </PageHeader>
 
         {/* Business List */}
         <div className="space-y-4">

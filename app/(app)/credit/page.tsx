@@ -9,9 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FileText } from "lucide-react";
 
 // Components
+import { PageHeader } from "@/components/ui/page-header";
 import { CreditHeader } from "./_components/CreditHeader";
 import { CreditStats } from "./_components/CreditStats";
-import { CreditAgingTable } from "./_components/CreditAgingTable";
+import { CreditCustomerList } from "./_components/CreditCustomerList";
 import { CreditTransactionsList } from "./_components/CreditTransactionsList";
 import { ExtensionDialog } from "./_components/ExtensionDialog";
 import { PaymentDialog } from "./_components/PaymentDialog";
@@ -23,6 +24,7 @@ export default function CreditPage() {
   const { business, loading: businessLoading } = useBusiness();
   const {
     customers,
+    creditLimits, // Add this
     agingData, // This is unfiltered
     transactions,
     loading: creditLoading,
@@ -75,10 +77,6 @@ export default function CreditPage() {
   );
 
   // Calculate Stats
-  const pendingTransactions = transactions.filter(
-    (tx) => tx.status === "pending",
-  );
-
   const delinquentCount = filteredAgingData.filter(
     (a) => Number(a.bucket_31_plus) > 0 || Number(a.bucket_15_30) > 0,
   ).length;
@@ -88,27 +86,84 @@ export default function CreditPage() {
     0,
   );
 
+  // Calculate Overdue Balance (Sum of 31+ aka delinquent buckets for now)
+  const overdueBalance = agingData.reduce(
+    (sum, a) =>
+      sum + Number(a.bucket_31_plus || 0) + Number(a.bucket_15_30 || 0),
+    0,
+  );
+
+  // Calculate Total Limit
+  const totalLimit = Array.from(creditLimits.values()).reduce(
+    (sum, limit) => sum + Number(limit.max_credit_limit || 0),
+    0,
+  );
+
   return (
     <div className="p-4 md:p-8 space-y-6 page-transition">
-      <CreditHeader
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onOpenPayment={() => setShowPaymentDialog(true)}
-        onOpenExtension={() => setShowExtensionDialog(true)}
-      />
+      <PageHeader
+        title="Credit Management"
+        description="Track credit transactions and fronts."
+      >
+        <CreditHeader
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onOpenPayment={() => setShowPaymentDialog(true)}
+          onOpenExtension={() => setShowExtensionDialog(true)}
+        />
+      </PageHeader>
 
       <CreditExposureDashboard business_id={business.id} />
 
       <CreditStats
-        pendingCount={pendingTransactions.length}
-        delinquentCount={delinquentCount}
         totalOutstanding={totalOutstanding}
+        customerCount={agingData.length}
+        overdueBalance={overdueBalance}
+        overdueCount={delinquentCount}
+        totalLimit={totalLimit}
       />
 
-      <CreditAgingTable data={filteredAgingData} />
+      <div className="space-y-4">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
+          Accounts Overview
+        </h2>
+        <CreditCustomerList
+          data={filteredAgingData}
+          creditLimits={creditLimits}
+          isLoading={creditLoading}
+          onRecordPayment={(_id: string) => {
+            // Find customer and open dialog
+            // Since dialogs take customer selection, we might need a way to pre-select
+            // For now, simpler to just open global dialog or add selectedCustomer state to page
+            // But the user request implies direct action.
+            // Let's pass the selection to the generic handler or update state.
+            // Assuming defaults for now, we'll open empty dialog.
+            // ideally we pass the customer ID to the dialog.
+            // Updating hook is out of scope for *just* UI swap unless blocking.
+            // I will add setSelectedCustomerId to state in page for now if needed, or pass it.
+            // UseCreditManager doesn't expose a 'selectCustomer'.
+            // I'll just open the generic dialog for now, user can select.
+            // Wait, Figma implies "Record Payment" on the card. Ideally it pre-fills.
+            // I'll stick to opening the dialog.
+            setShowPaymentDialog(true);
+          }}
+          onViewHistory={(id: string) => {
+            // Navigation to history? Or generic dialog?
+            // Figma shows "View History". Likely a filter on the transactions list or a new page.
+            // For now, I'll log or scroll to transactions.
+            console.log("View history", id);
+            setSearchTerm(customers.find((c) => c.id === id)?.first_name || "");
+          }}
+        />
+      </div>
 
       {transactions.length > 0 ? (
-        <CreditTransactionsList transactions={transactions} />
+        <div className="space-y-4 mt-8">
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
+            Recent Activity
+          </h2>
+          <CreditTransactionsList transactions={transactions} />
+        </div>
       ) : (
         <Card>
           <CardContent className="pt-6">

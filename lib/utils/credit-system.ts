@@ -32,7 +32,7 @@ export class CreditSystem {
     customer_id: string,
     amount: number,
     description: string,
-    due_date: string
+    due_date: string,
   ): Promise<{ success: boolean; transaction_id?: string; error?: string }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
@@ -40,13 +40,16 @@ export class CreditSystem {
 
     // If offline, store for sync
     if (!offlineSyncManager.isOnline()) {
-      const transactionId = await offlineSyncManager.storeTransaction("credit_extension", {
-        business_id,
-        customer_id,
-        amount,
-        description,
-        due_date,
-      });
+      const transactionId = await offlineSyncManager.storeTransaction(
+        "credit_extension",
+        {
+          business_id,
+          customer_id,
+          amount,
+          description,
+          due_date,
+        },
+      );
       return { success: true, transaction_id: transactionId };
     }
 
@@ -77,7 +80,7 @@ export class CreditSystem {
     business_id: string,
     customer_id: string,
     amount: number,
-    description: string
+    description: string,
   ): Promise<{ success: boolean; transaction_id?: string; error?: string }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
@@ -85,22 +88,28 @@ export class CreditSystem {
 
     // If offline, store for sync
     if (!offlineSyncManager.isOnline()) {
-      const transactionId = await offlineSyncManager.storeTransaction("credit_payment", {
-        business_id,
-        customer_id,
-        amount,
-        description,
-      });
+      const transactionId = await offlineSyncManager.storeTransaction(
+        "credit_payment",
+        {
+          business_id,
+          customer_id,
+          amount,
+          description,
+        },
+      );
       return { success: true, transaction_id: transactionId };
     }
 
     try {
-      const { data, error } = await this.supabase.rpc("process_credit_payment", {
-        p_business_id: business_id,
-        p_customer_id: customer_id,
-        p_amount: amount,
-        p_description: description,
-      });
+      const { data, error } = await this.supabase.rpc(
+        "process_credit_payment",
+        {
+          p_business_id: business_id,
+          p_customer_id: customer_id,
+          p_amount: amount,
+          p_description: description,
+        },
+      );
 
       if (error) {
         return { success: false, error: error.message };
@@ -118,23 +127,63 @@ export class CreditSystem {
   // Get credit aging buckets
   async getCreditAging(
     business_id: string,
-    customer_id?: string
+    customer_id?: string,
   ): Promise<{ success: boolean; data?: CreditAgingBucket[]; error?: string }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
     }
 
     try {
-      const { data, error } = await this.supabase.rpc("get_credit_aging", {
-        p_business_id: business_id,
-        p_customer_id: customer_id || null,
-      });
+      // 1. Get base aging data
+      const { data: agingData, error } = await this.supabase.rpc(
+        "get_credit_aging",
+        {
+          p_business_id: business_id,
+          p_customer_id: customer_id || null,
+        },
+      );
 
       if (error) {
         return { success: false, error: error.message };
       }
 
-      return { success: true, data: data || [] };
+      // 2. Fetch last payment date for each customer
+      // We'll do this by querying recent payment transactions
+      const customerIds = agingData?.map((d: any) => d.customer_id) || [];
+
+      if (customerIds.length === 0) {
+        return { success: true, data: [] };
+      }
+
+      // Fetch the latest payment transaction for these customers
+      const { data: payments } = await this.supabase
+        .from("credit_transactions")
+        .select("customer_id, created_at")
+        .eq("business_id", business_id)
+        .eq("transaction_type", "payment")
+        .in("customer_id", customerIds)
+        .order("created_at", { ascending: false });
+
+      const typedPayments = payments as unknown as Array<{
+        customer_id: string;
+        created_at: string;
+      }>;
+
+      // Create a map of customer_id -> last_payment_date
+      const lastPaymentMap = new Map<string, string>();
+      typedPayments?.forEach((p) => {
+        if (!lastPaymentMap.has(p.customer_id)) {
+          lastPaymentMap.set(p.customer_id, p.created_at);
+        }
+      });
+
+      // Merge data
+      const enrichedData = agingData?.map((item: any) => ({
+        ...item,
+        last_payment_date: lastPaymentMap.get(item.customer_id) || null,
+      }));
+
+      return { success: true, data: enrichedData || [] };
     } catch (error) {
       return {
         success: false,
@@ -146,8 +195,13 @@ export class CreditSystem {
   // Get credit limit for customer
   async getCreditLimit(
     business_id: string,
-    customer_id: string
-  ): Promise<{ success: boolean; limit?: number; balance?: number; error?: string }> {
+    customer_id: string,
+  ): Promise<{
+    success: boolean;
+    limit?: number;
+    balance?: number;
+    error?: string;
+  }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
     }
@@ -181,26 +235,24 @@ export class CreditSystem {
   async setCreditLimit(
     business_id: string,
     customer_id: string,
-    max_limit: number
+    max_limit: number,
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
     }
 
     try {
-      const { error } = await this.supabase
-        .from("credit_limits")
-        .upsert(
-          {
-            business_id,
-            customer_id,
-            max_credit_limit: max_limit,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "business_id,customer_id",
-          }
-        );
+      const { error } = await this.supabase.from("credit_limits").upsert(
+        {
+          business_id,
+          customer_id,
+          max_credit_limit: max_limit,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "business_id,customer_id",
+        },
+      );
 
       if (error) {
         return { success: false, error: error.message };
@@ -218,7 +270,7 @@ export class CreditSystem {
   // Get delinquent accounts
   async getDelinquentAccounts(
     business_id: string,
-    days_overdue: number = 0
+    days_overdue: number = 0,
   ): Promise<{ success: boolean; accounts?: any[]; error?: string }> {
     if (!this.supabase) {
       return { success: false, error: "Supabase client not available" };
@@ -238,7 +290,7 @@ export class CreditSystem {
           due_date,
           status,
           customers!inner(id, first_name, last_name)
-        `
+        `,
         )
         .eq("business_id", business_id)
         .eq("transaction_type", "extension")
@@ -262,7 +314,7 @@ export class CreditSystem {
   // Freeze credit account (set limit to 0)
   async freezeAccount(
     business_id: string,
-    customer_id: string
+    customer_id: string,
   ): Promise<{ success: boolean; error?: string }> {
     return this.setCreditLimit(business_id, customer_id, 0);
   }
@@ -271,7 +323,7 @@ export class CreditSystem {
   async unfreezeAccount(
     business_id: string,
     customer_id: string,
-    previous_limit?: number
+    previous_limit?: number,
   ): Promise<{ success: boolean; error?: string }> {
     const limit = previous_limit || 1000; // Default $1000
     return this.setCreditLimit(business_id, customer_id, limit);
@@ -279,4 +331,3 @@ export class CreditSystem {
 }
 
 export const creditSystem = new CreditSystem();
-

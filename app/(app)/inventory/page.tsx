@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useInventoryActions } from "./_hooks/useInventoryActions";
+import { PageHeader } from "@/components/ui/page-header";
 import { InventoryHeader } from "./_components/InventoryHeader";
 import { InventoryList } from "./_components/InventoryList";
 import { InventoryForm } from "./_components/InventoryForm";
@@ -38,6 +39,11 @@ export default function InventoryPage() {
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 page-transition">
+      <PageHeader
+        title="Inventory"
+        description="Manage your stock levels, perform intakes, and adjust quantities."
+      />
+
       <InventoryHeader
         onIntake={() => console.log("Navigate to Intake")} // In real app, router.push
         onAdjustment={() => console.log("Navigate to Adjustment")}
