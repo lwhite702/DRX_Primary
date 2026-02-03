@@ -13,7 +13,7 @@ The packages are assumed to be available in the configured registry (or globally
 The following packages are required and installed:
 
 - `@wrelik/auth`
-- `@wrelik/auth-next`
+- `@wrelik/auth/next`
 - `@wrelik/db`
 - `@wrelik/storage`
 - `@wrelik/analytics`

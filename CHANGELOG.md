@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `docs/decisions/0000-vendor-policy.md` banning direct vendor SDK imports.
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
+- **Documentation**: Added comprehensive `docs/POST_PHASE2_REVIEW.md` revealing Phase 2 non-completion
+- **Governance**: Added `docs/PHASE3_READINESS.md` with FAIL status blocking Phase 3 migrations
+- **Documentation**: Added `docs/REVIEW_CORRECTIONS_SUMMARY.md` with validation results
+
+### Changed
+
+- **Review**: Updated CHANGELOG with Post-Phase 2 review findings (2026-02-28)
+- **Config**: Fixed R2 environment variable naming from `R2_AccountId` to `R2_ACCOUNT_ID` for consistency
+- **Docs**: Corrected wrelik package naming from `@wrelik/auth-next` to `@wrelik/auth/next`
+- **Security**: Removed `.env.local` from git tracking to prevent secret exposure
+- **Governance**: Added ESLint enforcement rules for banned vendor imports
+- **Scripts**: Added compliance checking scripts for imports, secrets, and package manager consistency
+- **Repo Hygiene**: Enforced single package manager (pnpm) by removing package-lock.json
+- **Checklists**: Updated CHECKLIST_PRECOMMIT.md and CHECKLIST_PRERELEASE.md with compliance verification steps
 
 ## [0.4.1] - 2026-02-02
 
