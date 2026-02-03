@@ -9,7 +9,8 @@ This document defines the required environment variables for the application to 
 | `CLERK_SECRET_KEY`                  | Clerk Secret Key                  | Yes      | Clerk      |
 | `R2_ACCESS_KEY_ID`                  | Cloudflare R2 Access Key          | Yes      | Cloudflare |
 | `R2_SECRET_ACCESS_KEY`              | Cloudflare R2 Secret Key          | Yes      | Cloudflare |
-| `R2_BUCKET_NAME`                    | Cloudflare R2 Bucket Name         | Yes      | Cloudflare |
+| `R2_ACCOUNT_ID`                    | Cloudflare R2 Account ID          | Yes      | Cloudflare |
+| `R2_BUCKET_NAME`                   | Cloudflare R2 Bucket Name         | Yes      | Cloudflare |
 | `NEXT_PUBLIC_POSTHOG_KEY`           | PostHog API Key                   | Yes      | PostHog    |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog Host URL                  | Yes      | PostHog    |
 | `SENTRY_DSN`                        | Sentry Data Source Name           | Yes      | Sentry     |
