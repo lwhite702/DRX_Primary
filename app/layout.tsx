@@ -18,7 +18,7 @@ const _plusJakartaSans = Plus_Jakarta_Sans({
 const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  title: "DeelRx - Run real transactions. Without, mess.",
+  title: "DeelRx - Run real transactions. Without the mess.",
   description:
     "DeelRx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
   icons: {
