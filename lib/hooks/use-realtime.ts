@@ -9,11 +9,9 @@ export function useRealtimeInventory(business_id: string | null) {
     if (!business_id) return;
 
     // Initial fetch
-    db.inventory
-      .findMany({
-        where: { business_id },
-        orderBy: { product_name: "asc" },
-      })
+    // Initial fetch
+    fetch(`/api/inventory?business_id=${business_id}`)
+      .then((res) => res.json())
       .then((data) => {
         if (data) setInventory(data);
       });
