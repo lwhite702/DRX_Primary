@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function PUT(

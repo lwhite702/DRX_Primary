@@ -1,45 +1,61 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link"; // Changed from <a> to Link for better Next.js routing
+import { ArrowUp, PenLine } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 interface InventoryHeaderProps {
-  itemCount: number;
-  onAddItem: () => void;
+  onIntake: () => void;
+  onAdjustment: () => void;
 }
 
-export function InventoryHeader({
-  itemCount,
-  onAddItem,
-}: InventoryHeaderProps) {
+export function InventoryHeader({ onAdjustment }: InventoryHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
-      <div>
-        <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-          INVENTORY
-        </h1>
-        <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-          MANAGEMENT CONSOLE • {itemCount} SKUS
-        </p>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Link href="/inventory/intake" className="w-full sm:w-auto">
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto border-border bg-background/50 backdrop-blur hover:bg-muted/50"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            INTAKE STOCK
-          </Button>
+    <div className="space-y-4">
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
+        Select Operation Type
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Intake Card */}
+        <Link href="/inventory/intake" className="block group">
+          <Card className="bg-[#1a1a1a] border-white/5 hover:border-[#4ADE80]/50 transition-all duration-300 relative overflow-hidden group-hover:bg-[#4ADE80]/5">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <div className="h-8 w-8 rounded-full bg-[#4ADE80]/20 flex items-center justify-center mb-3 text-[#4ADE80] group-hover:scale-110 transition-transform">
+                  <ArrowUp className="w-5 h-5" />
+                </div>
+                <h3 className="text-[#4ADE80] font-bold tracking-wide text-sm">
+                  INTAKE
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Add inventory stock
+                </p>
+              </div>
+            </CardContent>
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#4ADE80]/0 to-[#4ADE80]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          </Card>
         </Link>
-        <Button
-          onClick={onAddItem}
-          className="w-full sm:w-auto laser-button bg-[#FF0099] text-white hover:bg-[#FF0099]/90 shadow-[0_0_15px_rgba(255,0,153,0.4)] border-none font-bold tracking-wider"
-          id="tour-inventory-add-btn"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          ADD ITEM
-        </Button>
+
+        {/* Adjustment Card */}
+        <button onClick={onAdjustment} className="block w-full text-left group">
+          <Card className="bg-[#1a1a1a] border-white/5 hover:border-[#3B82F6]/50 transition-all duration-300 relative overflow-hidden group-hover:bg-[#3B82F6]/5">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <div className="h-8 w-8 rounded-full bg-[#3B82F6]/20 flex items-center justify-center mb-3 text-[#3B82F6] group-hover:scale-110 transition-transform">
+                  <PenLine className="w-5 h-5" />
+                </div>
+                <h3 className="text-white font-bold tracking-wide text-sm">
+                  ADJUSTMENT
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Manual correction
+                </p>
+              </div>
+            </CardContent>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6]/0 to-[#3B82F6]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          </Card>
+        </button>
       </div>
     </div>
   );

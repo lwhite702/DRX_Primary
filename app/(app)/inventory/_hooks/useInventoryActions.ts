@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { type Inventory } from "@/lib/validations/schemas";
 import { toast } from "sonner";
@@ -14,20 +14,30 @@ export function useInventoryActions(businessId: string | undefined) {
     (Inventory & { id?: string }) | null
   >(null);
 
+  const [inventory, setInventory] = useState<Inventory[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const supabase = getSupabaseClient();
 
-  const handleNew = () => {
-    setEditingItem(null);
-    // Note: Random SKU generation is now handled in the Form default values or we can pass it here.
-    // In the original, it reset the form with a random SKU.
-    // To keep it simple, we'll construct a "partial" initial data here if needed,
-    // but the Form component handles defaults.
-    // However, the Form uses `defaultValues` at mount.
-    // We can pass a "fresh" object for new items to ensure unique SKU if we want to pre-fill it.
-    // For now, let's just open the dialog. The Form component can handle generating SKU if passed,
-    // or we can generate it here and pass as `initialData`.
+  // Fetch inventory
+  React.useEffect(() => {
+    if (!businessId || !supabase) return;
+    const fetchInventory = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("inventory")
+        .select("*")
+        .eq("business_id", businessId)
+        .order("product_name");
 
-    // Generating SKU here to match original behavior of pre-filling logic
+      if (data) setInventory(data);
+      setLoading(false);
+    };
+    fetchInventory();
+  }, [businessId, supabase]);
+
+  const handleAdd = () => {
+    setEditingItem(null);
     const randomSku = `PROD-${Math.floor(100000 + Math.random() * 900000)}`;
     setEditingItem({
       business_id: businessId || "",
@@ -51,16 +61,6 @@ export function useInventoryActions(businessId: string | undefined) {
     }
 
     const promise = async () => {
-      // Check if we are updating an existing item
-      // The `editingItem` state holds the original item being edited
-      // But for "New" item, `editingItem` might be the "template" we created in handleNew.
-      // We need a reliable way to know if it's an update (has ID) or insert.
-      // The `data` submitted from form might not have `id` if it wasn't in the schema/form inputs.
-      // `editingItem` has the ID.
-
-      // CAREFUL: In handleNew I set a template object. It DOES NOT have an ID.
-      // So if editingItem.id exists, it's an update.
-
       if (editingItem && "id" in editingItem && editingItem.id) {
         const { error } = await supabase
           .from("inventory")
@@ -71,14 +71,25 @@ export function useInventoryActions(businessId: string | undefined) {
           .eq("id", editingItem.id);
 
         if (error) throw error;
+        // Optimistic update or refetch
+        setInventory((prev) =>
+          prev.map((item) =>
+            item.id === editingItem.id ? { ...item, ...data } : item,
+          ),
+        );
         return "Item updated successfully";
       } else {
-        const { error } = await supabase.from("inventory").insert({
-          ...data,
-          business_id: businessId,
-        });
+        const { data: newItem, error } = await supabase
+          .from("inventory")
+          .insert({
+            ...data,
+            business_id: businessId,
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+        if (newItem) setInventory((prev) => [...prev, newItem]);
         return "Item added successfully";
       }
     };
@@ -96,6 +107,8 @@ export function useInventoryActions(businessId: string | undefined) {
   };
 
   return {
+    inventory,
+    loading,
     showDialog,
     setShowDialog,
     editingItem,
@@ -104,7 +117,7 @@ export function useInventoryActions(businessId: string | undefined) {
     setShowCostBreakdown,
     selectedProduct,
     setSelectedProduct,
-    handleNew,
+    handleAdd,
     handleEdit,
     handleSave,
   };

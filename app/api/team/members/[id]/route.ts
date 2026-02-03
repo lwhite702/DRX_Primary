@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, @wrelik.auth.clerkClient } from "@wrelik/auth/next";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function GET(
@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const client = await @wrelik.auth.clerkClient();
+    const client = await clerkClient();
     let user;
     try {
       user = await client.users.getUser(id);
@@ -80,7 +80,7 @@ export async function DELETE(
     });
 
     // Delete User (Cascade usually deletes roles, but verify)
-    const client = await @wrelik.auth.clerkClient();
+    const client = await clerkClient();
     await client.users.deleteUser(targetUserId);
 
     // Cleanup DB references

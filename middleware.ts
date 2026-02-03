@@ -1,4 +1,4 @@
-import { auth, clerkMiddleware, createRouteMatcher } from "@wrelik/auth/next";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",

@@ -9,9 +9,16 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  transpilePackages: [
+    "@wrelik/auth",
+    "@wrelik/db",
+    "@wrelik/storage",
+    "@wrelik/analytics",
+    "@wrelik/errors",
+    "@wrelik/email",
+    "@wrelik/jobs",
+    "@wrelik/config",
+  ],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -19,7 +26,21 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  turbopack: {},
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       fs: false,
+  //       net: false,
+  //       tls: false,
+  //       child_process: false,
+  //       async_hooks: false,
+  //       inspector: false,
+  //     };
+  //   }
+  //   return config;
+  // },
+  // turbopack: {},
 };
 
 export default withPWA(nextConfig);

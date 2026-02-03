@@ -1,0 +1,635 @@
+
+> deelrx-crm@0.4.4 build /Users/lee/Projects/DRX_Primary
+> prisma generate && next build
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+warn Preview feature "driverAdapters" is deprecated. The functionality can be used without specifying it as a preview feature.
+
+✔ Generated Prisma Client (v7.3.0) to ./node_modules/.pnpm/@prisma+client@7.3.0_prisma@7.3.0_@types+react@19.2.10_magicast@0.3.5_react-dom@19.2.1__92f7a1d69c7de81b5dd3784c8c0f4eaf/node_modules/@prisma/client in 182ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env
+
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+> Build error occurred
+Error: Turbopack build failed with 10 errors:
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js:3:1
+Module not found: Can't resolve 'async_hooks'
+[0m [90m 1 |[39m [36mimport[39m { _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+ [90m 2 |[39m [36mimport[39m { setAsyncContextStrategy[33m,[39m ensureHubOnCarrier[33m,[39m getHubFromCarrier } [36mfrom[39m [32m'@sentry/core'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m async_hooks [36mfrom[39m [32m'async_hooks'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 4 |[39m
+ [90m 5 |[39m [90m// eslint-disable-next-line deprecation/deprecation[39m
+ [90m 6 |[39m [36mlet[39m asyncStorage[33m;[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/sdk.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/sdk.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/sdk.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/sdk.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/hooks.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/async/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/sdk.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js:2:1
+Module not found: Can't resolve 'child_process'
+[0m [90m 1 |[39m [36mimport[39m { _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { execFile } [36mfrom[39m [32m'child_process'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m { readFile[33m,[39m readdir } [36mfrom[39m [32m'fs'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m os [36mfrom[39m [32m'os'[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { join } [36mfrom[39m [32m'path'[39m[33m;[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js:3:1
+Module not found: Can't resolve 'fs'
+[0m [90m 1 |[39m [36mimport[39m { _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+ [90m 2 |[39m [36mimport[39m { execFile } [36mfrom[39m [32m'child_process'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { readFile[33m,[39m readdir } [36mfrom[39m [32m'fs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m os [36mfrom[39m [32m'os'[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { join } [36mfrom[39m [32m'path'[39m[33m;[39m
+ [90m 6 |[39m [36mimport[39m { promisify } [36mfrom[39m [32m'util'[39m[33m;[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/context.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js:2:1
+Module not found: Can't resolve 'fs'
+[0m [90m 1 |[39m [36mimport[39m { _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { readFile } [36mfrom[39m [32m'fs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m { defineIntegration[33m,[39m convertIntegrationFnToClass } [36mfrom[39m [32m'@sentry/core'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mLRUMap[39m[33m,[39m addContextToFrame } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+ [90m 5 |[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/contextlines.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js:1:1
+Module not found: Can't resolve 'fs'
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { existsSync[33m,[39m readFileSync } [36mfrom[39m [32m'fs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { dirname[33m,[39m join } [36mfrom[39m [32m'path'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { defineIntegration[33m,[39m convertIntegrationFnToClass } [36mfrom[39m [32m'@sentry/core'[39m[33m;[39m
+ [90m 4 |[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/modules.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js:1:1
+Module not found: Can't resolve 'fs'
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33m*[39m [36mas[39m fs [36mfrom[39m [32m'fs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m [33m*[39m [36mas[39m path [36mfrom[39m [32m'path'[39m[33m;[39m
+ [90m 3 |[39m
+ [90m 4 |[39m [90m/**[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/utils.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js:164:23
+Module not found: Can't resolve 'inspector'
+[0m [90m 162 |[39m   [36mif[39m (options[33m.[39mcaptureStackTrace) {
+ [90m 163 |[39m     [90m// eslint-disable-next-line @typescript-eslint/no-var-requires[39m
+[31m[1m>[22m[39m[90m 164 |[39m     [36mconst[39m inspector [33m=[39m require([32m'inspector'[39m)[33m;[39m
+ [90m     |[39m                       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 165 |[39m     [36mif[39m ([33m![39minspector[33m.[39murl()) {
+ [90m 166 |[39m       inspector[33m.[39mopen([35m0[39m)[33m;[39m
+ [90m 167 |[39m     }[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/anr/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js:73:25
+Module not found: Can't resolve 'inspector'
+[0m [90m 71 |[39m     [90m// Node can be built without inspector support so this can throw[39m
+ [90m 72 |[39m     [90m// eslint-disable-next-line @typescript-eslint/no-var-requires[39m
+[31m[1m>[22m[39m[90m 73 |[39m     [36mconst[39m { [33mSession[39m } [33m=[39m require([32m'inspector'[39m)[33m;[39m
+ [90m    |[39m                         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 74 |[39m     [36mthis[39m[33m.[39m_session [33m=[39m [36mnew[39m [33mSession[39m()[33m;[39m
+ [90m 75 |[39m   }
+ [90m 76 |[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/local-variables-sync.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/integrations/local-variables/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js:2:1
+Module not found: Can't resolve 'net'
+[0m [90m 1 |[39m [36mimport[39m { _nullishCoalesce[33m,[39m _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m [33m*[39m [36mas[39m net [36mfrom[39m [32m'net'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m tls [36mfrom[39m [32m'tls'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mURL[39m } [36mfrom[39m [32m'url'[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { logger } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js:3:1
+Module not found: Can't resolve 'tls'
+[0m [90m 1 |[39m [36mimport[39m { _nullishCoalesce[33m,[39m _optionalChain } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+ [90m 2 |[39m [36mimport[39m [33m*[39m [36mas[39m net [36mfrom[39m [32m'net'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m tls [36mfrom[39m [32m'tls'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 4 |[39m [36mimport[39m { [33mURL[39m } [36mfrom[39m [32m'url'[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { logger } [36mfrom[39m [32m'@sentry/utils'[39m[33m;[39m
+ [90m 6 |[39m [36mimport[39m { [33mAgent[39m } [36mfrom[39m [32m'./base.js'[39m[33m;[39m[0m
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/admin.ts
+    ./app/api/team/route.ts
+
+  Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/next-turbopack.js
+
+  Client Component Browser:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./instrumentation-client.ts
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/lib/require-instrumentation-client.js
+    ./node_modules/.pnpm/next@16.0.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_@playwright+test@1.57.0_react-d_6ea4100e7f60946aab102b48afa27170/node_modules/next/dist/client/app-next-turbopack.js
+
+  Server Component:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js
+    ./node_modules/.pnpm/@wrelik+db@file+packages+wrelik-db-0.1.1.tgz_react-native@0.83.1_@babel+core@7.28.5_@ty_cf46a2174fcb9c46b9c39b2695e888a9/node_modules/@wrelik/db/dist/index.js
+    ./lib/supabase/server.ts
+    ./app/actions/rtbf.ts
+
+  Client Component SSR:
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/proxy/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/transports/http.js [Client Component SSR]
+    ./node_modules/.pnpm/@sentry+node@7.120.4/node_modules/@sentry/node/esm/index.js [Client Component SSR]
+    ./node_modules/.pnpm/@wrelik+errors@file+packages+wrelik-errors-0.1.1.tgz_react-native@0.83.1_@babel+core@7._6e12f7c36dd2b4c4dddf4a73eae74485/node_modules/@wrelik/errors/dist/index.js [Client Component SSR]
+    ./components/sentry-feedback-button.tsx [Client Component SSR]
+    ./components/layout/top-nav.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Client Component SSR]
+    ./components/layout/app-shell.tsx [Server Component]
+    ./app/(app)/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+ ELIFECYCLE  Command failed with exit code 1.

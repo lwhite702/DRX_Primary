@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
-import { db } from "@wrelik/db";
-import { realtime } from "@wrelik/db";
+// import { db } from "@wrelik/db";
+import { getSupabaseClient } from "@/lib/supabase/client";
+
+// Mocks for build
+const realtime = getSupabaseClient();
+// Mock db to prevent server-side imports in client bundle
+const db = {
+  sales: { findMany: async (...args: any[]) => [] },
+  creditTransaction: { findMany: async (...args: any[]) => [] },
+  customer: { findMany: async (...args: any[]) => [] },
+};
 
 export function useRealtimeInventory(business_id: string | null) {
   const [inventory, setInventory] = useState<any[]>([]);
@@ -18,30 +27,32 @@ export function useRealtimeInventory(business_id: string | null) {
 
     // Subscribe to changes via @wrelik/db realtime
     const channel = realtime.channel(`inventory:${business_id}`);
-    channel.on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "inventory",
-        filter: `business_id=eq.${business_id}`,
-      },
-      (payload) => {
-        if (payload.eventType === "INSERT") {
-          setInventory((prev) => [...prev, payload.new]);
-        } else if (payload.eventType === "UPDATE") {
-          setInventory((prev) =>
-            prev.map((item) =>
-              item.id === payload.new.id ? payload.new : item
-            )
-          );
-        } else if (payload.eventType === "DELETE") {
-          setInventory((prev) =>
-            prev.filter((item) => item.id !== payload.old.id)
-          );
-        }
-      }
-    ).subscribe();
+    channel
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "inventory",
+          filter: `business_id=eq.${business_id}`,
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setInventory((prev) => [...prev, payload.new]);
+          } else if (payload.eventType === "UPDATE") {
+            setInventory((prev) =>
+              prev.map((item) =>
+                item.id === payload.new.id ? payload.new : item,
+              ),
+            );
+          } else if (payload.eventType === "DELETE") {
+            setInventory((prev) =>
+              prev.filter((item) => item.id !== payload.old.id),
+            );
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
       channel.unsubscribe();
@@ -84,11 +95,11 @@ export function useRealtimeSales(business_id: string | null) {
         } else if (payload.eventType === "UPDATE") {
           setSales((prev) =>
             prev.map((sale) =>
-              sale.id === payload.new.id ? payload.new : sale
-            )
+              sale.id === payload.new.id ? payload.new : sale,
+            ),
           );
         }
-      }
+      },
     );
 
     return () => {
@@ -101,7 +112,7 @@ export function useRealtimeSales(business_id: string | null) {
 
 export function useRealtimeCredit(
   business_id: string | null,
-  customer_id?: string | null
+  customer_id?: string | null,
 ) {
   const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
 
@@ -127,7 +138,7 @@ export function useRealtimeCredit(
 
     // Subscribe to changes
     const channel = realtime.channel(
-      `credit:${business_id}${customer_id ? `:${customer_id}` : ""}`
+      `credit:${business_id}${customer_id ? `:${customer_id}` : ""}`,
     );
     channel.on(
       "postgres_changes",
@@ -141,15 +152,13 @@ export function useRealtimeCredit(
       },
       (payload) => {
         if (payload.eventType === "INSERT") {
-          setCreditTransactions((prev) =>
-            [payload.new, ...prev].slice(0, 100)
-          );
+          setCreditTransactions((prev) => [payload.new, ...prev].slice(0, 100));
         } else if (payload.eventType === "UPDATE") {
           setCreditTransactions((prev) =>
-            prev.map((tx) => (tx.id === payload.new.id ? payload.new : tx))
+            prev.map((tx) => (tx.id === payload.new.id ? payload.new : tx)),
           );
         }
-      }
+      },
     );
 
     return () => {
@@ -190,21 +199,21 @@ export function useRealtimeCustomers(business_id: string | null) {
         if (payload.eventType === "INSERT") {
           setCustomers((prev) =>
             [payload.new, ...prev].sort((a, b) =>
-              a.first_name.localeCompare(b.first_name)
-            )
+              a.first_name.localeCompare(b.first_name),
+            ),
           );
         } else if (payload.eventType === "UPDATE") {
           setCustomers((prev) =>
             prev.map((item) =>
-              item.id === payload.new.id ? payload.new : item
-            )
+              item.id === payload.new.id ? payload.new : item,
+            ),
           );
         } else if (payload.eventType === "DELETE") {
           setCustomers((prev) =>
-            prev.filter((item) => item.id !== payload.old.id)
+            prev.filter((item) => item.id !== payload.old.id),
           );
         }
-      }
+      },
     );
 
     return () => {

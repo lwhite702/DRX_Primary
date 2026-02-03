@@ -1,246 +1,132 @@
 import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PackageOpen, DollarSign, Edit } from "lucide-react";
-import { type Inventory } from "@/lib/validations/schemas"; // Assuming this type exists as per original code
+import {
+  PackageOpen,
+  Search,
+  ChevronRight,
+  Flower,
+  Droplets,
+  Zap,
+  Box,
+} from "lucide-react";
+import { type Inventory } from "@/lib/validations/schemas";
+import { Input } from "@/components/ui/input";
 
 interface InventoryListProps {
-  inventory: Inventory[]; // Use strict type if possible, or any if schemas not available yet
+  inventory: Inventory[];
   onEdit: (item: Inventory) => void;
-  onViewCost: (item: Inventory) => void;
+  // onViewCost removed as unused for now
   onAddItem: () => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
 }
+
+const getProductIcon = (category?: string) => {
+  const cat = category?.toLowerCase() || "";
+  if (cat.includes("flower"))
+    return <Flower className="w-5 h-5 text-purple-400" />;
+  if (cat.includes("concentrate") || cat.includes("wax"))
+    return <Droplets className="w-5 h-5 text-yellow-400" />;
+  if (cat.includes("cartridge") || cat.includes("vape"))
+    return <Zap className="w-5 h-5 text-orange-400" />;
+  return <Box className="w-5 h-5 text-blue-400" />;
+};
+
+const getCategoryColor = (category?: string) => {
+  const cat = category?.toLowerCase() || "";
+  if (cat.includes("flower")) return "bg-purple-500/10 text-purple-400";
+  if (cat.includes("concentrate")) return "bg-yellow-500/10 text-yellow-400";
+  if (cat.includes("cartridge")) return "bg-orange-500/10 text-orange-400";
+  return "bg-blue-500/10 text-blue-400";
+};
 
 export function InventoryList({
   inventory,
   onEdit,
-  onViewCost,
   onAddItem,
+  searchTerm,
+  onSearchChange,
 }: InventoryListProps) {
-  if (inventory.length === 0) {
-    return (
-      <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
-        <div className="p-6 border-b border-white/5 flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
-          <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
-            PRODUCT LIST
-          </h2>
-        </div>
-        <CardContent className="p-0">
-          <EmptyState
-            icon={PackageOpen}
-            title="No products"
-            description="Add your first product to start tracking inventory."
-            actionLabel="Add Item"
-            onAction={onAddItem}
-          />
-        </CardContent>
-      </div>
-    );
-  }
+  const filteredInventory = inventory.filter(
+    (item) =>
+      item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.sku.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
-    <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
-      <div className="p-6 border-b border-white/5 flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
-        <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
-          PRODUCT LIST
-        </h2>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
+          Select Product
+        </p>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or alias..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="bg-[#1a1a1a] border-white/5 pl-9 h-12 rounded-lg focus:bg-[#1a1a1a] focus:ring-1 focus:ring-white/10"
+          />
+        </div>
       </div>
-      <CardContent className="p-0">
-        {/* Mobile cards */}
-        <div className="md:hidden space-y-3">
-          {inventory.map((item) => {
-            const isLowStock = item.quantity_on_hand <= item.reorder_level;
-            return (
-              <div
-                key={item.id}
-                className={`
-                  p-4 border-b border-white/5 last:border-0 hover:bg-[#FF0099]/5 transition-colors
-                  ${isLowStock ? "bg-red-500/5 border-l-2 border-l-red-500" : ""}
-                `}
-              >
-                <CardContent className="pt-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium break-words">
-                        {item.product_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        <span className="font-mono">{item.sku}</span>
-                        {item.category ? ` • ${item.category}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onViewCost(item)}
-                        aria-label="View cost breakdown"
-                      >
-                        <DollarSign className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEdit(item)}
-                        aria-label="Edit item"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
 
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Stock</p>
-                      <p
-                        className={
-                          isLowStock
-                            ? "font-bold text-destructive"
-                            : "font-medium"
-                        }
-                      >
-                        {item.quantity_on_hand}
-                        {item.unit_of_measure || "g"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Reorder Level
-                      </p>
-                      <p className="font-medium">{item.reorder_level}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Unit Cost</p>
-                      <p className="font-medium">
-                        {item.unit_cost
-                          ? "$" + Number(item.unit_cost).toFixed(2)
-                          : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Selling Price
-                      </p>
-                      <p className="font-medium">
-                        {item.selling_price
-                          ? "$" + Number(item.selling_price).toFixed(2)
-                          : "-"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </div>
-            );
-          })}
+      {filteredInventory.length === 0 ? (
+        <div className="py-12">
+          <EmptyState
+            icon={PackageOpen}
+            title="No products found"
+            description="Try a different search term or add a new item."
+            actionLabel="Add Item"
+            onAction={onAddItem}
+            className="bg-transparent border-none"
+          />
         </div>
-
-        {/* Desktop table */}
-        <div className="hidden md:block">
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-white/10">
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  SKU
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Product Name
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Category
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Stock
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Reorder
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Cost
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Price
-                </TableHead>
-                <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inventory.map((item) => {
-                const isLowStock = item.quantity_on_hand <= item.reorder_level;
-                return (
-                  <TableRow
-                    key={item.id}
-                    className={`
-                      border-white/5 hover:bg-[#FF0099]/5 transition-colors group
-                      ${isLowStock ? "bg-red-500/5" : ""}
-                    `}
-                  >
-                    <TableCell className="font-mono">{item.sku}</TableCell>
-                    <TableCell className="font-medium">
-                      {item.product_name}
-                    </TableCell>
-                    <TableCell>{item.category || "-"}</TableCell>
-                    <TableCell>
-                      <span
-                        className={
-                          isLowStock ? "text-destructive font-bold" : ""
-                        }
+      ) : (
+        <div className="space-y-2">
+          {/* Mobile/Card List (Default for this new UI) */}
+          <div className="space-y-2">
+            {filteredInventory.map((item) => {
+              const isLowStock = item.quantity_on_hand <= item.reorder_level;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onEdit(item)}
+                  className="w-full text-left group"
+                >
+                  <div className="bg-[#1a1a1a] border border-white/5 rounded-lg p-4 flex items-center justify-between hover:border-white/10 hover:bg-white/[0.02] transition-colors relative overflow-hidden">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`h-10 w-10 rounded-lg ${getCategoryColor(item.category)} flex items-center justify-center`}
                       >
-                        {item.quantity_on_hand}
-                        {item.unit_of_measure || "g"}
-                      </span>
-                    </TableCell>
-                    <TableCell>{item.reorder_level}</TableCell>
-                    <TableCell>
-                      {item.unit_cost
-                        ? "$" + Number(item.unit_cost).toFixed(2)
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-[#FF0099] font-bold">
-                        {item.selling_price
-                          ? "$" + Number(item.selling_price).toFixed(2)
-                          : "-"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onViewCost(item)}
-                          title="View cost breakdown"
-                        >
-                          <DollarSign className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit(item)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        {getProductIcon(item.category)}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      <div>
+                        <h4 className="font-semibold text-sm text-foreground">
+                          {item.product_name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                            {item.category || "UNCATEGORIZED"}
+                          </span>
+                          {isLowStock && (
+                            <span className="text-[10px] font-bold tracking-wider text-red-500 uppercase flex items-center gap-1">
+                              • LOW STOCK
+                            </span>
+                          )}
+                          <span className="text-[10px] font-mono text-muted-foreground/60">
+                            {item.sku}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </CardContent>
+      )}
     </div>
   );
 }

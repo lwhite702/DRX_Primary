@@ -27,12 +27,17 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Pencil, Trash2, ShieldAlert } from "lucide-react";
 import { updateUserRole } from "@/app/actions/user-management";
 import { initiateRTBF } from "@/app/actions/rtbf";
 import { Role, ROLES } from "@/lib/auth/permissions";
+import {
+  fetchAdminUsers,
+  fetchMyRole,
+  type AdminUserItem,
+} from "@/app/actions/admin-users";
+import { useUser } from "@clerk/nextjs";
 
 // Helper for badge colors
 const getRoleBadgeColor = (role: string) => {
@@ -53,84 +58,55 @@ const getRoleBadgeColor = (role: string) => {
 };
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUserItem | null>(null);
   const [newRole, setNewRole] = useState<Role | "">("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRTBFOpen, setIsRTBFOpen] = useState(false);
 
-  const supabase = getSupabaseClient();
+  const { isLoaded, isSignedIn } = useUser();
 
   useEffect(() => {
-    if (!supabase) {
+    if (isLoaded && !isSignedIn) {
+      // Redirect handled by middleware mostly, but just safe guard
       setLoading(false);
       return;
     }
-
-    const init = async () => {
-      await fetchUserContext();
-      await fetchUsers();
-      setLoading(false);
-    };
-    init();
-  }, [supabase]);
-
-  const fetchUserContext = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .single();
-      setCurrentUserRole(roleData?.role || "");
+    if (isLoaded && isSignedIn) {
+      const init = async () => {
+        await loadData();
+      };
+      init();
     }
+  }, [isLoaded, isSignedIn]);
+
+  const loadData = async () => {
+    setLoading(true);
+    const [usersRes, roleRes] = await Promise.all([
+      fetchAdminUsers(),
+      fetchMyRole(),
+    ]);
+
+    if (usersRes.error) {
+      toast.error(usersRes.error);
+    } else {
+      setUsers(usersRes.data);
+    }
+
+    setCurrentUserRole(roleRes || "");
+    setLoading(false);
   };
 
-  const fetchUsers = async () => {
-    if (!supabase) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select(
-          `
-          *,
-          business_profile:business_id(name, id)
-        `,
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      const formattedUsers = (data || []).map((role: any) => ({
-        id: role.id,
-        user_id: role.user_id,
-        role: role.role,
-        business_name: role.business_profile?.name || "N/A",
-        business_id: role.business_profile?.id || null,
-        created_at: role.created_at,
-      }));
-
-      setUsers(formattedUsers);
-    } catch (error) {
-      toast.error("Failed to load users");
-      console.error(error);
-    }
-  };
-
-  const handleEditClick = (user: any) => {
+  const handleEditClick = (user: AdminUserItem) => {
     setSelectedUser(user);
     setNewRole((user.role as Role) || "cashier");
     setIsDialogOpen(true);
   };
 
-  const handleRTBFClick = (user: any) => {
+  const handleRTBFClick = (user: AdminUserItem) => {
     setSelectedUser(user);
     setIsRTBFOpen(true);
   };
@@ -150,7 +126,7 @@ export default function AdminUsersPage() {
       } else {
         toast.success("User role updated successfully");
         setIsDialogOpen(false);
-        fetchUsers();
+        loadData();
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
@@ -161,7 +137,7 @@ export default function AdminUsersPage() {
   };
 
   const handleRTBFPermanentDelete = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !selectedUser.business_id) return;
     setIsUpdating(true);
     try {
       const result = await initiateRTBF(
@@ -173,7 +149,7 @@ export default function AdminUsersPage() {
       } else {
         toast.success("User data removal initiated (RTBF)");
         setIsRTBFOpen(false);
-        fetchUsers();
+        loadData();
       }
     } catch (error) {
       toast.error("Failed to process RTBF");
@@ -238,7 +214,7 @@ export default function AdminUsersPage() {
                       <TableCell>{user.business_name}</TableCell>
                       <TableCell>
                         <Badge
-                          className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase px-2 py-0.5`}
+                          className={`${getRoleBadgeColor(user.role || "")} text-[10px] uppercase px-2 py-0.5`}
                         >
                           {user.role}
                         </Badge>
