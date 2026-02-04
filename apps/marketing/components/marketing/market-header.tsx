@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-// Rotating Status Chip Component
+import { Button } from "@deelrx/ui";
+
+const APP_URL = "https://deelrxcrm.app";
+
 function StatusChip() {
   const statuses = [
     "PRIVACY CONTROLS: ON",
@@ -35,7 +36,6 @@ export function MarketHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
-    // Check if we are on the home page
     if (window.location.pathname !== "/") {
       window.location.href = `/#${id}`;
       return;
@@ -61,7 +61,6 @@ export function MarketHeader() {
         </div>
       </Link>
 
-      {/* Desktop Nav */}
       <nav className="hidden md:flex items-center gap-8">
         {["WHY", "FEATURES", "WHO", "PROOF"].map((item) => (
           <button
@@ -73,7 +72,7 @@ export function MarketHeader() {
           </button>
         ))}
         <Link
-          href="/login"
+          href={APP_URL}
           className="text-sm font-bold tracking-widest hover:text-accent transition-all hover:drop-shadow-[0_0_8px_rgba(191,255,0,0.8)]"
         >
           LOGIN
@@ -84,14 +83,13 @@ export function MarketHeader() {
         <div className="hidden md:block">
           <StatusChip />
         </div>
-        <Link href="/login">
-          <Button
-            size="sm"
-            className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
-          >
-            START
-          </Button>
-        </Link>
+        <Button
+          asChild
+          size="sm"
+          className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
+        >
+          <Link href={APP_URL}>START</Link>
+        </Button>
         <button
           className="md:hidden p-2"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -100,7 +98,6 @@ export function MarketHeader() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm pt-24 px-6 md:hidden">
           <nav className="flex flex-col gap-6 text-center">
@@ -114,7 +111,7 @@ export function MarketHeader() {
               </button>
             ))}
             <Link
-              href="/login"
+              href={APP_URL}
               className="text-2xl font-bold tracking-tight hover:text-accent"
             >
               LOGIN
