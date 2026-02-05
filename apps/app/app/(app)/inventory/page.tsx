@@ -15,7 +15,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import { useRouter } from "next/navigation";
+
 export default function InventoryPage() {
+  const router = useRouter();
   const { business } = useBusiness();
   const {
     inventory,
@@ -45,8 +48,9 @@ export default function InventoryPage() {
       />
 
       <InventoryHeader
-        onIntake={() => console.log("Navigate to Intake")} // In real app, router.push
-        onAdjustment={() => console.log("Navigate to Adjustment")}
+        onIntake={() => router.push("/inventory/intake")}
+        onAdjustment={() => router.push("/inventory/adjust")}
+        onAudit={() => router.push("/inventory/audit")}
       />
 
       <InventoryList

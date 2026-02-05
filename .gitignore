@@ -2,7 +2,6 @@
 node_modules/
 /.pnp
 .pnp.js
-pnpm-lock.yaml
 
 # Testing
 /coverage
@@ -22,6 +21,9 @@ pnpm-lock.yaml
 .cache/
 *.tsbuildinfo
 *.vercel
+android/
+ios/
+android_backup/
 
 # Misc
 .DS_Store
