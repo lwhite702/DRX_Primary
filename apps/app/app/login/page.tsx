@@ -2,11 +2,7 @@ import { SignIn } from "@clerk/nextjs";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-  ShieldCheck,
-  Clock,
-  Database,
-  Smartphone,
-} from "lucide-react";
+import { ShieldCheck, Clock, Database, Smartphone } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Login | Deelrx CRM",

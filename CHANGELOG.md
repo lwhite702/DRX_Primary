@@ -40,6 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repo Hygiene**: Enforced single package manager (pnpm) by removing package-lock.json
 - **Checklists**: Updated CHECKLIST_PRECOMMIT.md and CHECKLIST_PRERELEASE.md with compliance verification steps
 
+## [0.4.5] - 2026-02-05
+
+### Changed
+
+- **Branding**: Enforced strict "Deelrx CRM" naming convention across all apps.
+- **Copy**: Rewrote Homepage with "Operator" voice and added Mental Load Relief section.
+- **Microcopy**: Established strict microcopy guidelines in `docs/MICROCOPY.md`.
+- **License**: Updated entity name to "Wrelik Brands LLC".
+
 ## [0.4.4] - 2026-02-02
 
 ### Changed
