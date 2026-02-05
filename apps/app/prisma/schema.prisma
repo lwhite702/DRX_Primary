@@ -12,6 +12,7 @@ datasource db {
 // 01: Business Profile
 model BusinessProfile {
   id           String   @id @default(uuid())
+  clerkOrgId   String?  @unique @map("clerk_org_id") // Link to Clerk Organization
   businessName String   @map("business_name") @db.VarChar(255)
   businessType String?  @map("business_type") @db.VarChar(100)
   address      String?
@@ -25,6 +26,8 @@ model BusinessProfile {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
+  users            User[]
+  invites          Invite[]
   settings         BusinessSettings[]
   inventory        Inventory[]
   customers        Customers[]
@@ -38,6 +41,51 @@ model BusinessProfile {
   aiDecisions      AiDecisionLog[]
   
   @@map("business_profile")
+}
+
+// 00: Authentication & Multi-Tenancy
+model User {
+  id           String    @id @default(uuid())
+  clerkUserId  String?   @unique @map("clerk_user_id") // Link to Clerk User
+  email        String    @unique @db.VarChar(255)
+  // passwordHash removed - handled by Clerk
+  name         String?   @db.VarChar(100)
+  role         String    @default("MEMBER") @db.VarChar(50) // OWNER, ADMIN, MEMBER
+  status       String    @default("ACTIVE") @db.VarChar(50) // ACTIVE, INVITED, SUSPENDED, ARCHIVED
+  tenantId     String    @map("tenant_id")
+  tenant       BusinessProfile @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // sessions removed - handled by Clerk
+  
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+
+// Session model removed
+
+model Invite {
+  id        String   @id @default(uuid())
+  email     String   @db.VarChar(255)
+  token     String   @unique
+  tenantId  String   @map("tenant_id")
+  tenant    BusinessProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role      String   @default("MEMBER") @db.VarChar(50)
+  status    String   @default("PENDING") @db.VarChar(50) // PENDING, ACCEPTED, EXPIRED
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  invitedBy String?  @map("invited_by")
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([token])
+  @@map("invites")
 }
 
 model BusinessSettings {

@@ -69,3 +69,6 @@ Thumbs.db
 .env.sentry-build-plugin
 
 /lib/generated/prisma
+
+# clerk configuration (can include secrets)
+/.clerk/

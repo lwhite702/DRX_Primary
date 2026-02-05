@@ -99,6 +99,7 @@
     "recharts": "2.15.4",
     "require-in-the-middle": "^8.0.1",
     "sonner": "^1.7.4",
+    "svix": "^1.21.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",

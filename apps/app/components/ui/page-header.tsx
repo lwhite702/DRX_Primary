@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 
 interface PageHeaderProps {
   title: string;
@@ -59,11 +60,23 @@ export function PageHeader({
           )}
         </div>
       </div>
-      {children && (
-        <div className="flex items-center gap-3 pl-12 md:pl-0 mt-2 md:mt-0">
-          {children}
-        </div>
-      )}
+      <div className="flex items-center gap-4 pl-12 md:pl-0 mt-2 md:mt-0">
+        <OrganizationSwitcher
+          hidePersonal
+          afterCreateOrganizationUrl="/onboarding"
+          afterLeaveOrganizationUrl="/dashboard"
+          afterSelectOrganizationUrl="/dashboard"
+          appearance={{
+            elements: {
+              organizationSwitcherTrigger:
+                "border border-white/10 px-4 py-2 rounded-md hover:bg-white/5 text-white transition-colors",
+              organizationPreviewTextContainer: "text-white",
+            },
+          }}
+        />
+        <UserButton afterSignOutUrl="/login" />
+        {children}
+      </div>
     </div>
   );
 }
