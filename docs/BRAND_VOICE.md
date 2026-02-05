@@ -1,83 +1,54 @@
-# DeelRxCRM – Brand Voice
+# Deelrx CRM – Brand Strategy & Voice
 
-## 1. Voice Principles
+## 1. Positioning
 
-DeelRxCRM speaks like a calm, competent operator who knows the floor.
+Deelrx CRM is for business that happens in person, not on a spreadsheet. It tracks your money and your stock so you always know where you stand. We keep the back end quiet so you can handle the front. No noise, just a clear view of what you own and what you are owed.
 
-The voice is:
+## 2. Internal Mantra
 
-- Clear
-- Direct
-- Practical
-- Non-theatrical
+"Keep the count right and the line moving."
 
-We do not hype. We do not moralize. We do not joke about money or compliance.
+## 3. Vocabulary Guide
 
----
+### Preferred Words (Use These)
 
-## 2. Tone Characteristics
+- track
+- know
+- see
+- move
+- handle
+- keep
+- front
+- owe
+- paid
+- missing
+- covered
+- clean
+- quiet
+- clear
+- accounted for
 
-### What We Are
+### Forbidden Words (Never Use)
 
-- Confident without bravado
-- Helpful without being chatty
-- Precise without being cold
-- Supportive without hand-holding
+- authenticate
+- immutable
+- methodology
+- optimize
+- leverage
+- synergy
+- infrastructure
+- robust
+- enterprise
+- compliance
 
-### What We Are Not
+## 4. Language Rules
 
-- Casual slang-heavy software
-- Corporate buzzword soup
-- Playful with financial data
-- Vague or inspirational
+- **Style**: Plain words. Short sentences. Human tone. Sounds natural out loud.
+- **Audience**: Operators, street-level businesses, trust-based commerce. Not corporate. Not academic.
+- **Archetype**: The Operator (Calm, Confident, Discreet, Grounded).
 
----
+## 5. Naming Discipline
 
-## 3. Writing Rules
-
-- Short sentences beat clever sentences
-- Verbs over adjectives
-- Concrete instructions over abstract guidance
-- Name the action, name the consequence
-
-Example:
-Correct: “This action will void the transaction and require manager approval.”
-Incorrect: “Are you sure you want to continue?”
-
----
-
-## 4. UI Copy Guidelines
-
-- Buttons use verbs
-  - Complete Sale
-  - Void Transaction
-  - Adjust Inventory
-- Errors explain what failed and what to do next
-- Warnings explain impact before confirmation
-
-No dramatic language. No jokes. No emojis.
-
----
-
-## 5. System Messages
-
-System messages should feel like a reliable coworker.
-
-Example:
-“Inventory updated. This change is recorded in audit logs.”
-
-Not:
-“Success! Everything went great.”
-
----
-
-## 6. AI and Automation Language
-
-When AI features are present:
-
-- Be explicit about what is automated
-- Never imply certainty where none exists
-- Never override human authority silently
-
-Example:
-“Suggested price adjustment based on recent sales. Review before applying.”
+- **First Mention**: Deelrx CRM
+- **Subsequent**: DRX (allowed), Deelrx (allowed)
+- **Forbidden**: DRX CRM (Never)

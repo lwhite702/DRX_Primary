@@ -228,7 +228,7 @@ async def run_test():
         await expect(frame.locator('text=You can track quantities, costs, and set reorder alerts.').first).to_be_visible(timeout=30000)
         await expect(frame.locator('text=Privacy-first point of sale and customer management system for modern businesses.').first).to_be_visible(timeout=30000)
         await expect(frame.locator('text=© 2026 Wrelik Brands LLC. All rights reserved.').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=DeelRx and DRX are trademarks of Wrelik Brands LLC.').first).to_be_visible(timeout=30000)
+        await expect(frame.locator('text=Deelrx and DRX are trademarks of Wrelik Brands LLC.').first).to_be_visible(timeout=30000)
         await asyncio.sleep(5)
     
     finally:

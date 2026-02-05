@@ -1,8 +1,8 @@
-# DeelRxCRM – Brand Guide
+# Deelrx CRM – Brand Guide
 
 ## 1. Brand Positioning
 
-DeelRxCRM is an operational tool, not a lifestyle product.
+Deelrx CRM is an operational tool, not a lifestyle product.
 
 It exists to:
 

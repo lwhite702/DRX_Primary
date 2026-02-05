@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to DRX CRM will be documented in this file.
+All notable changes to Deelrx CRM will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -175,7 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Core**: Initial DRX CRM application with core features
+- **Core**: Initial Deelrx CRM application with core features
 - **Admin**: Business creation API and refactored admin page (`24fd609`)
 - **UI**: Modern mobile menu component (`d74a1c9`)
 - **UI**: Version number display (`ad7d8f6`)

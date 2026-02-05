@@ -27,15 +27,15 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">1. Introduction</h2>
             <p>
-              DeelRx CRM ("Company," "we," "us," or "our") operates the DRX CRM
-              platform ("Service"). This Privacy Policy explains how we collect,
-              use, disclose, and otherwise process personal information in
-              connection with our Service.
+              Deelrx CRM ("Company," "we," "us," or "our") operates the Deelrx
+              CRMeelrx CRM platform ("Service"). This Privacy Policy explains
+              how we collect, use, disclose, and otherwise process personal
+              information in connection with our Service.
             </p>
             <p>
               We are committed to protecting your privacy and ensuring you have
               a positive experience on our platform. This policy applies to all
-              users of DRX CRM, including business owners, employees, and
+              users of Deelrx CRM, including business owners, employees, and
               customers whose data is processed through the system.
             </p>
           </section>
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
               3. How We Use Your Information
             </h2>
             <ul className="list-disc list-inside space-y-2">
-              <li>Providing and improving the DRX CRM platform</li>
+              <li>Providing and improving the Deelrx CRM platform</li>
               <li>Processing transactions and managing accounts</li>
               <li>Communicating with you about service updates and changes</li>
               <li>Responding to support requests</li>
@@ -204,8 +204,8 @@ export default function PrivacyPage() {
               Your information may be transferred to, stored in, and processed
               in countries other than your country of residence. These countries
               may have data protection laws that differ from your home country.
-              By using DRX CRM, you consent to the transfer of your information
-              to countries outside your country of residence.
+              By using Deelrx CRM, you consent to the transfer of your
+              information to countries outside your country of residence.
             </p>
           </section>
 
@@ -214,10 +214,10 @@ export default function PrivacyPage() {
               9. Children's Privacy
             </h2>
             <p>
-              DRX CRM is not directed to children under the age of 13. We do not
-              knowingly collect personal information from children under 13. If
-              we learn we have collected personal information from a child under
-              13, we will delete such information promptly.
+              Deelrx CRM is not directed to children under the age of 13. We do
+              not not knowingly collect personal information from children under
+              13. If we learn we have collected personal information from a
+              child under 13, we will delete such information promptly.
             </p>
           </section>
 
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
                 <strong>Mailing Address:</strong>
               </p>
               <p className="ml-4">
-                DeelRx Corporation
+                Wrelik Brands LLC
                 <br />
                 Privacy Team
                 <br />

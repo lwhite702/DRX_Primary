@@ -126,7 +126,7 @@ export function Footer() {
             <div className="flex items-center gap-4">
               <p className="text-xs text-muted-foreground">v0.3.3</p>
               <p className="text-xs text-muted-foreground">
-                DeelRx and DRX are trademarks of Wrelik Brands LLC.
+                Deelrx and DRX are trademarks of Wrelik Brands LLC.
               </p>
             </div>
           </div>

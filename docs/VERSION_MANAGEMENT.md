@@ -2,7 +2,7 @@
 
 ## How Version Numbers Work
 
-DRX CRM follows **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
+Deelrx CRM follows **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 
 ### When to Bump Each Number:
 

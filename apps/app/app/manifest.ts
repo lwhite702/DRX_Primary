@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "DRX CRM",
+    name: "Deelrx CRM",
     short_name: "DRX",
     description: "Privacy-first POS & CRM for small businesses",
     start_url: "/",

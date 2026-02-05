@@ -27,7 +27,7 @@
 ## 1. Overview & Objectives
 
 **Vision:**
-DeelRx is a unified, multi-tenant platform providing regulated, inventory-driven retail with:
+Deelrx is a unified, multi-tenant platform providing regulated, inventory-driven retail with:
 
 - Blazing-fast, accurate, privacy-first POS (Mobile + Web)
 - Granular, owner-configurable privacy and security

@@ -1,36 +1,40 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
-import { MarketHeader } from "@/components/marketing/market-header";
 
-const _plusJakartaSans = Plus_Jakarta_Sans({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-space-grotesk",
+  weight: ["300", "400", "500", "600", "700"],
 });
-const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+});
 
 export const metadata: Metadata = {
-  title: "DeelRxCRM - Run real transactions. Without the mess.",
+  title: "Deelrx CRM - Run real transactions. Without the mess.",
   description:
-    "DeelRxCRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+    "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
   icons: {
     icon: "/brand/favicon-32.png",
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "DeelRxCRM - Run real transactions. Without the mess.",
+    title: "Deelrx CRM - Run real transactions. Without the mess.",
     description:
-      "DeelRxCRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DeelRxCRM - Run real transactions. Without the mess.",
+    title: "Deelrx CRM - Run real transactions. Without the mess.",
     description:
-      "DeelRxCRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {
@@ -61,10 +65,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
+        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-black text-white antialiased`}
       >
         <div className="min-h-screen flex flex-col">
-          <MarketHeader />
           <div className="flex-1">{children}</div>
         </div>
       </body>

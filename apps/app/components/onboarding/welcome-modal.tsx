@@ -45,7 +45,7 @@ export function WelcomeModal() {
             <PartyPopper className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center text-xl">
-            Welcome to DRX CRM! 🚀
+            Welcome to Deelrx CRM! 🚀
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
             We're excited to help you manage your medical retail business. Here

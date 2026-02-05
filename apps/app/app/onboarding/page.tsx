@@ -2,7 +2,7 @@ import { CreateOrganization } from "@clerk/nextjs";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Create Organization | DeelRx",
+  title: "Create Organization | Deelrx CRM",
   description: "Set up your workspace.",
 };
 

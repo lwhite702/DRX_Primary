@@ -5,7 +5,7 @@ import { QuickActions } from "@/components/dashboard/operator/quick-actions";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Operator Dashboard | DeelRx",
+  title: "Operator Dashboard | Deelrx CRM",
   description: "Operational overview for daily tasks and monitoring.",
 };
 

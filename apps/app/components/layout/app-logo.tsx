@@ -12,12 +12,12 @@ export function AppLogo({
     <Link
       href={href}
       className="flex items-center gap-3 min-w-0"
-      aria-label="DRX CRM Home"
+      aria-label="Deelrx CRM Home"
     >
       <div className="relative h-8 w-[120px] shrink-0">
         <Image
           src="/brand/DRX Wordmark Color.svg"
-          alt="DeelRx CRM"
+          alt="Deelrx CRM"
           fill
           className="object-contain"
           priority
@@ -25,11 +25,11 @@ export function AppLogo({
       </div>
       <div className="min-w-0 sr-only">
         <div className="text-base font-bold text-accent leading-none truncate">
-          DeelRx CRM
+          Deelrx CRM
         </div>
         {showTagline && (
           <div className="text-[11px] text-muted-foreground truncate mt-1">
-            DeelRx Point of Sale
+            Deelrx Point of Sale
           </div>
         )}
       </div>

@@ -29,9 +29,9 @@ export default function TermsPage() {
               1. Agreement to Terms
             </h2>
             <p>
-              By accessing and using DRX CRM ("Service"), you agree to be bound
-              by these Terms of Service. If you do not agree to abide by the
-              foregoing, please do not use this service.
+              By accessing and using Deelrx CRM ("Service"), you agree to be
+              bound by these Terms of Service. If you do not agree to abide by
+              the foregoing, please do not use this service.
             </p>
           </section>
 
@@ -39,7 +39,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold mt-8 mb-4">2. Use License</h2>
             <p>
               Permission is granted to temporarily download one copy of the
-              materials (information or software) on DRX CRM for personal,
+              materials (information or software) on Deelrx CRM for personal,
               non-commercial transitory viewing only. This is the grant of a
               license, not a transfer of title, and under this license you may
               not:
@@ -74,24 +74,24 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">3. Disclaimer</h2>
             <p>
-              The materials on DRX CRM are provided on an "as is" basis. DeelRx
-              makes no warranties, expressed or implied, and hereby disclaims
-              and negates all other warranties including, without limitation,
-              implied warranties or conditions of merchantability, fitness for a
-              particular purpose, or non-infringement of intellectual property
-              or other violation of rights.
+              The materials on Deelrx CRM are provided on an "as is" basis.
+              Deelrx makes no warranties, expressed or implied, and hereby
+              disclaims and negates all other warranties including, without
+              limitation, implied warranties or conditions of merchantability,
+              fitness for a particular purpose, or non-infringement of
+              intellectual property or other violation of rights.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">4. Limitations</h2>
             <p>
-              In no event shall DeelRx or its suppliers be liable for any
+              In no event shall Deelrx or its suppliers be liable for any
               damages (including, without limitation, damages for loss of data
               or profit, or due to business interruption) arising out of the use
-              or inability to use the materials on DRX CRM, even if DeelRx or an
-              authorized representative has been notified orally or in writing
-              of the possibility of such damage.
+              or inability to use the materials on Deelrx CRM, even if Deelrx or
+              an authorized representative has been notified orally or in
+              writing of the possibility of such damage.
             </p>
           </section>
 
@@ -100,10 +100,10 @@ export default function TermsPage() {
               5. Accuracy of Materials
             </h2>
             <p>
-              The materials appearing on DRX CRM could include technical,
-              typographical, or photographic errors. DeelRx does not warrant
+              The materials appearing on Deelrx CRM could include technical,
+              typographical, or photographic errors. Deelrx does not warrant
               that any of the materials on the Service are accurate, complete,
-              or current. DeelRx may make changes to the materials contained on
+              or current. Deelrx may make changes to the materials contained on
               the Service at any time without notice.
             </p>
           </section>
@@ -113,7 +113,7 @@ export default function TermsPage() {
               6. Materials and Content
             </h2>
             <p>
-              The materials contained on DRX CRM are protected by applicable
+              The materials contained on Deelrx CRM are protected by applicable
               copyright and trademark law. You are granted a limited,
               non-exclusive, non-transferable license to view and use the
               materials for personal business purposes only.
@@ -125,12 +125,12 @@ export default function TermsPage() {
               7. Limitations of Liability
             </h2>
             <p>
-              In no case shall DeelRx, its suppliers, or any related parties be
+              In no case shall Deelrx, its suppliers, or any related parties be
               liable to you or any third party for any decision made or action
               taken in reliance on information in the Service, or for any
               consequential, incidental, indirect, special, or punitive damages
               arising out of or relating to your use of the Service, even if
-              DeelRx has been advised of the possibility of such damages.
+              Deelrx has been advised of the possibility of such damages.
             </p>
           </section>
 
@@ -140,9 +140,10 @@ export default function TermsPage() {
             </h2>
             <p>
               You are responsible for maintaining the accuracy and completeness
-              of all information you provide to DRX CRM. This includes business
-              information, customer data, and transaction records. DeelRx is not
-              liable for any inaccuracies in data you enter into the system.
+              of all information you provide to Deelrx CRM. This includes
+              business information, customer data, and transaction records.
+              Deelrx is not liable for any inaccuracies in data you enter into
+              the system.
             </p>
           </section>
 
@@ -151,10 +152,10 @@ export default function TermsPage() {
               9. Revisions and Errata
             </h2>
             <p>
-              The materials appearing on DRX CRM may include technical,
-              typographical, or photographic errors. DeelRx will not be held
+              The materials appearing on Deelrx CRM may include technical,
+              typographical, or photographic errors. Deelrx will not be held
               responsible for these errors and will make corrections as
-              warranted at its sole discretion. DeelRx does not make any
+              warranted at its sole discretion. Deelrx does not make any
               commitment to update the materials on the Service.
             </p>
           </section>
@@ -162,9 +163,9 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">10. Links</h2>
             <p>
-              DeelRx has not reviewed all of the sites linked to its website and
+              Deelrx has not reviewed all of the sites linked to its website and
               is not responsible for the contents of any such linked site. The
-              inclusion of any link does not imply endorsement by DeelRx of the
+              inclusion of any link does not imply endorsement by Deelrx of the
               site. Use of any such linked website is at the user's own risk.
             </p>
           </section>
@@ -172,7 +173,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">11. Modifications</h2>
             <p>
-              DeelRx may revise these Terms of Service for the Service at any
+              Deelrx may revise these Terms of Service for the Service at any
               time without notice. By using this Service, you are agreeing to be
               bound by the then current version of these Terms of Service. We
               will notify users of material changes by updating the "Last
@@ -183,8 +184,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">12. Governing Law</h2>
             <p>
-              The materials appearing on DRX CRM and this Terms of Service are
-              governed by and construed in accordance with the laws of the
+              The materials appearing on Deelrx CRM and this Terms of Service
+              are governed by and construed in accordance with the laws of the
               United States, and you irrevocably submit to the exclusive
               jurisdiction of the courts in that location.
             </p>
@@ -217,10 +218,10 @@ export default function TermsPage() {
               14. Account Termination
             </h2>
             <p>
-              DeelRx reserves the right to suspend or terminate your account at
+              Deelrx reserves the right to suspend or terminate your account at
               any time for violation of these Terms of Service or for any reason
               at its sole discretion. Upon termination, you may lose access to
-              your data stored in the Service. DeelRx is not liable for any loss
+              your data stored in the Service. Deelrx is not liable for any loss
               of data resulting from account termination.
             </p>
           </section>
@@ -230,9 +231,9 @@ export default function TermsPage() {
               15. Service Availability
             </h2>
             <p>
-              DeelRx strives to maintain 99% uptime but does not guarantee
+              Deelrx strives to maintain 99% uptime but does not guarantee
               uninterrupted service availability. The Service may be subject to
-              maintenance, updates, or be temporarily unavailable. DeelRx is not
+              maintenance, updates, or be temporarily unavailable. Deelrx is not
               liable for any downtime or loss of access to the Service.
             </p>
           </section>
@@ -240,8 +241,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">16. Data Backup</h2>
             <p>
-              While DeelRx implements backup procedures, you are responsible for
-              maintaining your own backups of critical data. DeelRx is not
+              While Deelrx implements backup procedures, you are responsible for
+              maintaining your own backups of critical data. Deelrx is not
               responsible for data loss due to system failures, user error, or
               other causes beyond our reasonable control.
             </p>
@@ -263,9 +264,9 @@ export default function TermsPage() {
             </h2>
             <p>
               The Service, including all content and functionality, is the
-              exclusive property of DeelRx or its licensors. You retain
+              exclusive property of Deelrx or its licensors. You retain
               ownership of data you provide to the Service. By submitting
-              content to the Service, you grant DeelRx a license to use such
+              content to the Service, you grant Deelrx a license to use such
               content as necessary to provide the Service.
             </p>
           </section>
@@ -276,7 +277,7 @@ export default function TermsPage() {
             </h2>
             <p>
               These Terms of Service and our Privacy Policy constitute the
-              entire agreement between you and DeelRx regarding the Service and
+              entire agreement between you and Deelrx regarding the Service and
               supersede all prior and contemporaneous agreements, whether
               written or oral.
             </p>
@@ -298,7 +299,7 @@ export default function TermsPage() {
                 <strong>Mailing Address:</strong>
               </p>
               <p className="ml-4">
-                DeelRx Corporation
+                Deelrx Corporation
                 <br />
                 Legal Department
                 <br />

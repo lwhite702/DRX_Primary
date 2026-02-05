@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Login | DeelRx",
+  title: "Login | Deelrx CRM",
   description: "Access your secure workspace.",
 };
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
           <div className="relative h-12 w-[160px]">
             <Image
               src="/brand/DRX Wordmark Color.svg"
-              alt="DeelRx"
+              alt="Deelrx CRM"
               fill
               className="object-contain"
               priority
@@ -37,7 +37,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center space-y-1">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-mono">
-              DeelRx Operator Console
+              Deelrx CRM Operator Console
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white uppercase">
               Sign In
@@ -231,7 +231,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">
-            © 2026 DeelRx CRM
+            © 2026 Deelrx CRM
           </div>
 
           <div className="flex justify-center gap-2">

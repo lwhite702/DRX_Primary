@@ -1,4 +1,4 @@
--- DRX CRM Database Migrations
+-- Deelrx CRM Database Migrations
 -- Consolidated Migration: 20251128000000_init.sql
 -- Replaces previous fragmented migrations.
 

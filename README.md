@@ -1,4 +1,4 @@
-# DRX CRM
+# Deelrx CRM
 
 **Privacy-first POS, CRM, inventory, and credit management system for small businesses**
 

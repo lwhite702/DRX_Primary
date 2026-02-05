@@ -1,7 +1,9 @@
 # POS Enhancements Implementation Guide
 
 ## Overview
-This document outlines the new features added to the DRX CRM Point of Sale (POS) system:
+
+This document outlines the new features added to the Deelrx CRM Point of Sale (POS) system:
+
 1. **AI Price Recommendations** - Intelligent pricing suggestions based on market analysis
 2. **Delivery Management** - Complete delivery option configuration with address and pricing
 3. **Amount Paid Calculation** - Smart calculation of product quantity based on amount paid
@@ -9,6 +11,7 @@ This document outlines the new features added to the DRX CRM Point of Sale (POS)
 ## New Database Tables
 
 ### 1. Delivery Management Table
+
 ```sql
 CREATE TABLE delivery_management (
   id UUID PRIMARY KEY,
@@ -24,12 +27,14 @@ CREATE TABLE delivery_management (
 ```
 
 **Purpose**: Stores delivery service configurations for each business
+
 - `name`: Name of the delivery service (e.g., "Local Pickup", "Standard Delivery")
 - `provider`: Delivery provider name (e.g., "UPS", "DHL", "Custom")
 - `base_price`: Default delivery price
 - `allow_price_override`: Allows changing price on per-order basis
 
 ### 2. AI Pricing Recommendations Table
+
 ```sql
 CREATE TABLE ai_pricing_recommendations (
   id UUID PRIMARY KEY,
@@ -48,12 +53,15 @@ CREATE TABLE ai_pricing_recommendations (
 ```
 
 **Purpose**: Stores AI-generated price recommendations
+
 - `confidence_score`: 0-100 indicating how confident the AI is about this recommendation
 - `status`: pending | accepted | rejected | applied
 - `recommendation_reason`: Explanation for why this price was recommended
 
 ### 3. Sales Table Extensions
+
 Added columns to track delivery and payment information:
+
 - `delivery_management_id`: Links to delivery option
 - `delivery_address`: Customer's delivery address
 - `delivery_price`: Price charged for delivery
@@ -61,7 +69,9 @@ Added columns to track delivery and payment information:
 - `change_amount`: Change to give back to customer
 
 ### 4. Inventory Table Extensions
+
 Added fields to support product quantity calculations:
+
 - `ai_pricing_enabled`: Boolean to enable/disable AI pricing for this product
 - `quantity_unit`: Unit of measurement (unit, gram, ml, etc.)
 - `unit_to_serving_ratio`: Conversion ratio for calculating servings
@@ -69,7 +79,9 @@ Added fields to support product quantity calculations:
 ## New RPC Functions
 
 ### 1. process_pos_checkout_enhanced()
+
 Enhanced checkout function that handles delivery and amount paid:
+
 ```sql
 CREATE OR REPLACE FUNCTION process_pos_checkout_enhanced(
   p_business_id UUID,
@@ -89,7 +101,9 @@ CREATE OR REPLACE FUNCTION process_pos_checkout_enhanced(
 **Returns**: Table with sale_id, order_number, total_amount, change_amount, success, error_message
 
 ### 2. calculate_quantity_from_amount()
+
 Calculates product quantity based on amount paid:
+
 ```sql
 CREATE OR REPLACE FUNCTION calculate_quantity_from_amount(
   p_inventory_id UUID,
@@ -100,7 +114,9 @@ CREATE OR REPLACE FUNCTION calculate_quantity_from_amount(
 **Returns**: quantity, amount_used, change_amount, unit_price
 
 ### 3. get_ai_pricing_recommendations()
+
 Retrieves active AI pricing recommendations for a business:
+
 ```sql
 CREATE OR REPLACE FUNCTION get_ai_pricing_recommendations(
   p_business_id UUID,
@@ -111,7 +127,9 @@ CREATE OR REPLACE FUNCTION get_ai_pricing_recommendations(
 **Returns**: Recommendations sorted by confidence score
 
 ### 4. apply_ai_pricing_recommendation()
+
 Applies an AI pricing recommendation to an inventory item:
+
 ```sql
 CREATE OR REPLACE FUNCTION apply_ai_pricing_recommendation(
   p_business_id UUID,
@@ -123,6 +141,7 @@ CREATE OR REPLACE FUNCTION apply_ai_pricing_recommendation(
 ## Updated POSEngine Class
 
 ### New Types
+
 ```typescript
 export type DeliveryOption = {
   id: string;
@@ -147,6 +166,7 @@ export type AIPricingRecommendation = {
 ### New Methods
 
 #### setDelivery()
+
 ```typescript
 setDelivery(
   delivery_id: string | undefined,
@@ -154,15 +174,19 @@ setDelivery(
   delivery_price?: number
 ): CartState
 ```
+
 Sets delivery information on the cart.
 
 #### setAmountPaid()
+
 ```typescript
 setAmountPaid(amount: number): CartState
 ```
+
 Records the amount paid by customer and automatically calculates change.
 
 #### calculateQuantityFromAmount()
+
 ```typescript
 calculateQuantityFromAmount(unitPrice: number, amountPaid: number): {
   quantity: number;
@@ -170,27 +194,34 @@ calculateQuantityFromAmount(unitPrice: number, amountPaid: number): {
   changeAmount: number;
 }
 ```
+
 Calculates how many units can be purchased with the given amount.
 
 #### getDeliveryOptions()
+
 ```typescript
 async getDeliveryOptions(business_id: string): Promise<DeliveryOption[]>
 ```
+
 Retrieves all active delivery options for a business.
 
 #### getAIPricingRecommendations()
+
 ```typescript
 async getAIPricingRecommendations(business_id: string): Promise<AIPricingRecommendation[]>
 ```
+
 Retrieves active AI pricing recommendations.
 
 #### applyAIPricingRecommendation()
+
 ```typescript
 async applyAIPricingRecommendation(
   business_id: string,
   recommendationId: string
 ): Promise<{ success: boolean; message?: string; newPrice?: number; }>
 ```
+
 Applies an AI pricing recommendation to update product price.
 
 ## Updated Sales Page UI
@@ -198,12 +229,14 @@ Applies an AI pricing recommendation to update product price.
 ### New Components
 
 #### Delivery Management Section
+
 - Dropdown to select delivery option
 - Address input field
 - Display of delivery price
 - Automatically included in total calculation
 
 #### AI Pricing Recommendations Card
+
 - Shows active recommendations with confidence scores
 - Displays current vs. recommended prices
 - Shows percentage change
@@ -211,6 +244,7 @@ Applies an AI pricing recommendation to update product price.
 - Displays recommendation reason
 
 #### Amount Paid Input
+
 - Input field for amount paid
 - Real-time calculation of change amount
 - Visual summary showing breakdown:
@@ -219,6 +253,7 @@ Applies an AI pricing recommendation to update product price.
   - Change (highlighted in green)
 
 ### Modified Totals Section
+
 - Added delivery price to totals
 - Updated total calculation to include delivery
 - Cart state now tracks change_amount
@@ -232,7 +267,7 @@ Applies an AI pricing recommendation to update product price.
 const options = await posEngine.getDeliveryOptions(businessId);
 
 // Set delivery
-posEngine.setDelivery(deliveryId, "123 Main St", 10.00);
+posEngine.setDelivery(deliveryId, "123 Main St", 10.0);
 
 // Checkout includes delivery
 await posEngine.checkout(businessId, fees);
@@ -259,19 +294,21 @@ const recs = await posEngine.getAIPricingRecommendations(businessId);
 // Apply recommended price
 const result = await posEngine.applyAIPricingRecommendation(
   businessId,
-  recs[0].id
+  recs[0].id,
 );
 ```
 
 ## Migration Instructions
 
 1. **Apply Database Schema**
+
    ```bash
    # Run in Supabase SQL Editor:
    # Copy and execute: db/migrations_combined.sql
    ```
 
 2. **Deploy Updated Code**
+
    ```bash
    git push origin feat/pos-enable-ai-pricing-delivery-management-amount-paid-calc
    ```
@@ -286,6 +323,7 @@ const result = await posEngine.applyAIPricingRecommendation(
 ## Database Migration Scripts
 
 ### To Add Delivery Options (Admin Panel)
+
 ```sql
 INSERT INTO delivery_management (business_id, name, provider, base_price, allow_price_override)
 VALUES (
@@ -298,6 +336,7 @@ VALUES (
 ```
 
 ### To Create AI Pricing Recommendation
+
 ```sql
 INSERT INTO ai_pricing_recommendations (
   business_id,
@@ -323,16 +362,19 @@ INSERT INTO ai_pricing_recommendations (
 ## Configuration Requirements
 
 ### For AI Pricing to Work
+
 - Business needs to have inventory items set up
 - AI system needs to generate recommendations (separate AI service)
 - Recommendations status must be 'pending' to show in UI
 
 ### For Delivery to Work
+
 - Business admin must configure at least one delivery option
 - Delivery options must have `is_active = true`
 - Each order can use any active delivery option
 
 ### For Amount Paid to Work
+
 - No special configuration needed
 - Automatically calculates change on any order
 - Records in sales table for reconciliation
@@ -399,6 +441,7 @@ INSERT INTO ai_pricing_recommendations (
 ## Support & Questions
 
 For issues or questions about these features, refer to:
+
 - Database schema files in `db/schema/`
 - POSEngine implementation in `lib/utils/pos-engine.ts`
 - POS UI implementation in `app/sales/page.tsx`

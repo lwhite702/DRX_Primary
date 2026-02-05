@@ -1,50 +1,33 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  --font-body: "Inter", "Geist", "Geist Fallback";
+  --font-sans: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
 
-  /* Neon Velocity - DRX Street Cut Color System */
-  --color-background: #050505;
-  --color-foreground: #FFFFFF;
-  --color-accent: #BFFF00;
-  --color-accent-dark: #8FBF00;
-  --color-accent-light: #DFFF00;
+  /* DRX - Industrial Control System Theme */
+  --color-obsidian: #000000;
+  --color-surface: #0c0c0c;
+  --color-surface-elevated: #0f0f0f;
 
-  /* Text colors */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: rgba(255, 255, 255, 0.45);
-  --color-text-meta: rgba(255, 255, 255, 0.3);
+  --color-neon-lime: #ccff00;
+  --color-neon-lime-dim: rgba(204, 255, 0, 0.1);
+  --color-emerald-glow: #10b981;
 
-  /* Borders */
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.2);
+  --color-text-primary: #ebebeb;
+  --color-text-secondary: rgba(255, 255, 255, 0.85); /* Increased from 0.6 */
+  --color-text-muted: rgba(255, 255, 255, 0.55); /* Increased from 0.3 */
 
-  /* Neutral grays */
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #a0a0a0;
-  --color-input: #1a1a1a;
-  --color-ring: #BFFF00;
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --color-glass-bg: rgba(255, 255, 255, 0.03);
 
-  /* Semantic colors */
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  /* Semantic Mappings */
+  --color-background: var(--color-obsidian);
+  --color-foreground: var(--color-text-primary);
+  --color-border: var(--color-glass-border);
+  --color-input: var(--color-glass-border);
+  --color-ring: var(--color-neon-lime);
 
-  /* Shadcn standard colors */
-  --color-popover: #050505;
-  --color-popover-foreground: #e6e6e6;
-  --color-card: #050505;
-  --color-card-foreground: #e6e6e6;
-  --color-primary: #BFFF00;
-  --color-primary-foreground: #050505;
-  --color-secondary: #1a1a1a;
-  --color-secondary-foreground: #e6e6e6;
-
-  /* Animation & Transitions - Neon Velocity Motion */
+  /* Animation & Transitions */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
   --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -118,44 +101,6 @@
   }
 }
 
-/* Modern Mobile Menu Component Styles */
-:root {
-  --component-inactive-color: var(--muted-foreground);
-  --component-bg: var(--card);
-  --component-shadow: var(--border);
-  --component-active-bg: var(--secondary);
-  --component-line-inactive-color: var(--border);
-  --component-active-color-default: var(--accent-foreground);
-}
-
-.dark {
-  --component-inactive-color: var(--muted-foreground);
-  --component-bg: var(--card);
-  --component-shadow: var(--border);
-  --component-active-bg: var(--secondary);
-  --component-line-inactive-color: var(--muted-foreground);
-  --component-active-color-default: var(--accent-foreground);
-}
-
-@keyframes iconBounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  20% {
-    transform: translateY(-0.3em);
-  }
-  40% {
-    transform: translateY(0);
-  }
-  60% {
-    transform: translateY(-0.1em);
-  }
-  80% {
-    transform: translateY(0);
-  }
-}
-
 /* Page Transitions */
 .page-transition {
   animation: fadeIn var(--duration-normal) var(--ease-out) forwards;
@@ -195,25 +140,26 @@
   bottom: 0;
   pointer-events: none;
   z-index: 100;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=');
-  opacity: 0.03;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=");
+  opacity: 0.15; /* Increased to 15% per spec */
+  mix-blend-mode: overlay;
 }
 
 /* Ambient Glow - Accent green for activity */
 .ambient-glow {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(40px);
+  filter: blur(120px); /* Increased blur per spec */
   opacity: 0.1;
-  background: var(--color-accent);
+  background: var(--color-neon-lime);
   pointer-events: none;
 }
 
 /* Glass Effects - Protection and separation */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px); /* 16px minimum per spec */
+  border: 1px solid var(--color-glass-border);
 }
 
 /* Laser Button - Confident CTA */
@@ -224,13 +170,18 @@
 }
 
 .laser-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(191, 255, 0, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(204, 255, 0, 0.4),
+    /* neon-lime */ transparent
+  );
   transition: left 0.5s ease-in-out;
 }
 
@@ -243,62 +194,63 @@
   position: relative;
   overflow: hidden;
   transition: all var(--duration-normal) var(--ease-out);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-glass-border);
 }
 
 .luminosity-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 20px rgba(191, 255, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px var(--color-neon-lime-dim);
 }
 
 .luminosity-card::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--color-neon-lime);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--ease-out);
   pointer-events: none;
 }
 
 .luminosity-card:hover::after {
-  opacity: 0.1;
+  opacity: 0.4;
 }
 
 /* Typography - Neon Velocity */
 .headline-text {
   font-family: var(--font-sans);
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.06em; /* Tracking -0.06em per spec */
+  line-height: 0.85; /* Line height 0.85 per spec */
 }
 
 .technical-label {
   font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.2em; /* 0.2em per spec */
   font-size: 0.75rem;
 }
 
 .body-copy {
-  font-family: var(--font-body);
+  font-family: var(--font-sans); /* Body is Space Grotesk now */
+  font-weight: 400;
   line-height: 1.6;
 }
 
 /* Border Box - Sharp corners for statements */
 .border-box {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-glass-border);
   padding: 2rem;
   display: inline-block;
 }
 
 .border-box-highlight {
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--color-neon-lime);
   padding: 2rem;
   display: inline-block;
 }

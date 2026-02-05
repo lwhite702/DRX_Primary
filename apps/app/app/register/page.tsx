@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ShieldCheck, Clock, Database } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Register | DeelRx",
+  title: "Register | Deelrx CRM",
   description: "Create your secure workspace.",
 };
 
@@ -23,7 +23,7 @@ export default function RegisterPage() {
           <div className="relative h-12 w-[160px]">
             <Image
               src="/brand/DRX Wordmark Color.svg"
-              alt="DeelRx"
+              alt="Deelrx CRM"
               fill
               className="object-contain"
               priority
@@ -31,7 +31,7 @@ export default function RegisterPage() {
           </div>
           <div className="text-center space-y-1">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-mono">
-              DeelRx Operator Console
+              Deelrx CRM Operator Console
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white uppercase">
               Initialize Session
@@ -178,7 +178,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">
-            © 2026 DeelRx CRM
+            © 2026 Deelrx CRM
           </div>
 
           <div className="flex justify-center gap-2">

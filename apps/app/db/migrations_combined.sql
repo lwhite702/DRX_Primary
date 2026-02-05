@@ -1,4 +1,4 @@
--- DRX CRM Database Migrations
+-- Deelrx CRM Database Migrations
 -- Run this file in Supabase Dashboard SQL Editor
 -- https://supabase.com/dashboard/project/ljndzcilgplckhdjddry/sql/new
 
@@ -227,7 +227,7 @@ CREATE TABLE IF NOT EXISTS system_audit_log (
 -- ============================================
 -- 08: RLS Policies
 -- ============================================
--- Row-Level Security Policies for DRX CRM
+-- Row-Level Security Policies for Deelrx CRM
 -- Ensures strict per-business isolation and role-based access
 
 -- Enable RLS on all tables

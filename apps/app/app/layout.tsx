@@ -18,27 +18,27 @@ const _plusJakartaSans = Plus_Jakarta_Sans({
 const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  title: "DeelRx - Run real transactions. Without the mess.",
+  title: "Deelrx - Run real transactions. Without the mess.",
   description:
-    "DeelRx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+    "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
   icons: {
     icon: "/brand/favicon-32.png",
 
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "DeelRx - Run real transactions. Without, mess.",
+    title: "Deelrx - Run real transactions. Without, mess.",
     description:
-      "DeelRx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DeelRx - Run real transactions. Without, mess.",
+    title: "Deelrx - Run real transactions. Without, mess.",
     description:
-      "DeelRx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {

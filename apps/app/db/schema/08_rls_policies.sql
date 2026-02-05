@@ -1,4 +1,4 @@
--- Row-Level Security Policies for DRX CRM
+-- Row-Level Security Policies for Deelrx CRM
 -- Ensures strict per-business isolation and role-based access
 
 -- Enable RLS on all tables

@@ -181,7 +181,7 @@ export function TopNav() {
           <Input
             type="text"
             placeholder="Search..."
-            aria-label="Search DRX CRM"
+            aria-label="Search Deelrx CRM"
             className="pl-10"
           />
         </div>

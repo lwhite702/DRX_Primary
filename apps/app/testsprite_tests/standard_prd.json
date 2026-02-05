@@ -1,10 +1,10 @@
 {
   "meta": {
-    "project": "DeelRxCRM",
+    "project": "Deelrx CRM",
     "date": "2026-01-29",
     "prepared_by": "Software Development Manager"
   },
-  "product_overview": "DeelRxCRM is a mobile-first CRM, POS, and inventory management system designed for regulated, inventory-driven small businesses, focusing on financial accuracy, inventory traceability, role-based accountability, operational speed on mobile devices, and auditability.",
+  "product_overview": "Deelrx CRM is a mobile-first CRM, POS, and inventory management system designed for regulated, inventory-driven small businesses, focusing on financial accuracy, inventory traceability, role-based accountability, operational speed on mobile devices, and auditability.",
   "core_goals": [
     "Ensure financial correctness with immutable transaction records and strict audit logging.",
     "Maintain inventory traceability with immutable historical data and accurate cost accounting.",
