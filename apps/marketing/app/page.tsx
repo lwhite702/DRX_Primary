@@ -2,17 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import {
-  CheckCircle2,
-  XCircle,
-  BarChart,
-  Users,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BarChart, CheckCircle2, Users, XCircle, Zap } from "lucide-react";
+
+import { Button } from "@deelrx/ui";
+
+const APP_URL = "https://deelrxcrm.app";
 
 export default function LandingPage() {
   const scrollToSection = (id: string) => {
@@ -24,11 +18,9 @@ export default function LandingPage() {
 
   return (
     <div className="bg-background text-foreground relative overflow-x-hidden font-sans">
-      {/* Noise Overlay */}
       <div className="noise-overlay pointer-events-none fixed inset-0 z-0 opacity-[0.03]"></div>
 
       <main className="flex-1 relative z-10">
-        {/* HERO SECTION */}
         <section className="py-24 md:py-32 px-6 flex flex-col items-center text-center max-w-5xl mx-auto space-y-10">
           <div className="relative w-[180px] h-16 mb-4">
             <Image
@@ -52,10 +44,11 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-8">
             <Button
+              asChild
               size="lg"
               className="text-lg px-8 py-6 rounded-full bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto"
             >
-              Get Set Up Quietly
+              <Link href={APP_URL}>Get Set Up Quietly</Link>
             </Button>
             <Button
               variant="outline"
@@ -68,7 +61,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* TRUST SIGNAL STRIP */}
         <section className="py-8 border-y border-border/40 bg-muted/20">
           <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm font-mono tracking-widest uppercase text-muted-foreground">
             <span>No unnecessary data collection</span>
@@ -78,7 +70,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* WHY DEELRX */}
         <section id="why" className="py-24 px-6">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <span className="text-accent text-sm font-bold tracking-widest uppercase">
@@ -102,14 +93,11 @@ export default function LandingPage() {
                 <p>No moralizing.</p>
                 <p>No noise.</p>
               </div>
-              <p className="pt-4 text-accent">
-                Just tools that reflect reality.
-              </p>
+              <p className="pt-4 text-accent">Just tools that reflect reality.</p>
             </div>
           </div>
         </section>
 
-        {/* WHAT IT HANDLES */}
         <section id="features" className="py-24 px-6 bg-muted/30">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
@@ -149,7 +137,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* WHO IT'S FOR */}
         <section id="who" className="py-24 px-6">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
@@ -159,7 +146,6 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-12">
-              {/* BUILT FOR */}
               <div className="space-y-8 bg-muted/20 p-8 rounded-2xl border border-border/50">
                 <h3 className="text-3xl font-bold">Built for</h3>
                 <ul className="space-y-4">
@@ -178,7 +164,6 @@ export default function LandingPage() {
                 </ul>
               </div>
 
-              {/* NOT BUILT FOR */}
               <div className="space-y-8 bg-red-500/5 p-8 rounded-2xl border border-red-500/20">
                 <h3 className="text-3xl font-bold">Not built for</h3>
                 <ul className="space-y-4">
@@ -204,7 +189,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* VISUAL PROOF */}
         <section id="proof" className="py-24 px-6 bg-muted/30">
           <div className="max-w-6xl mx-auto space-y-16">
             <div className="text-center">
@@ -217,19 +201,15 @@ export default function LandingPage() {
               </h2>
             </div>
 
-            {/* Simulated UI Screens */}
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Inventory Screen Simulation */}
               <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden aspect-[4/3] relative group">
                 <div className="absolute inset-0 bg-background flex flex-col group-hover:scale-[1.01] transition-transform duration-500">
-                  {/* Mock Header */}
                   <div className="h-12 border-b border-border flex items-center px-4 justify-between bg-muted/10">
                     <div className="text-xs font-bold font-mono">
                       INVENTORY // LIVE
                     </div>
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
-                  {/* Mock Table */}
                   <div className="p-4 space-y-3 font-mono text-xs">
                     <div className="grid grid-cols-4 text-muted-foreground mb-2">
                       <span>ITEM</span>
@@ -255,10 +235,8 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Credit Screen Simulation */}
               <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden aspect-[4/3] relative group">
                 <div className="absolute inset-0 bg-background flex flex-col group-hover:scale-[1.01] transition-transform duration-500">
-                  {/* Mock Header */}
                   <div className="h-12 border-b border-border flex items-center px-4 justify-between bg-muted/10">
                     <div className="text-xs font-bold font-mono">
                       CREDIT // OUTSTANDING
@@ -267,7 +245,6 @@ export default function LandingPage() {
                       <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     </div>
                   </div>
-                  {/* Mock List */}
                   <div className="p-4 space-y-4 font-mono text-xs">
                     {[1, 2, 3].map((i) => (
                       <div
@@ -297,23 +274,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FINAL CTA */}
         <section className="py-32 px-6 text-center space-y-8">
           <h2 className="text-4xl md:text-6xl font-bold tracking-tighter max-w-4xl mx-auto">
             Software that understands how business actually works.
           </h2>
-          <Link href="/login">
-            <Button
-              size="lg"
-              className="text-lg px-12 py-8 rounded-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-black hover:shadow-[0_0_30px_#BFFF00] transition-all duration-300 font-bold tracking-widest mt-8"
-            >
-              Start With DeelRx
-            </Button>
-          </Link>
+          <Button
+            asChild
+            size="lg"
+            className="text-lg px-12 py-8 rounded-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-black hover:shadow-[0_0_30px_#BFFF00] transition-all duration-300 font-bold tracking-widest mt-8"
+          >
+            <Link href={APP_URL}>Start With DeelRx</Link>
+          </Button>
         </section>
       </main>
 
-      {/* FOOTER */}
       <footer className="py-12 px-6 border-t border-border/40">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col gap-2">

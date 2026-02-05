@@ -34,9 +34,6 @@ export default [
       ],
       "@typescript-eslint/no-explicit-any": "warn",
 
-      "@typescript-eslint/no-explicit-any": "warn",
-      
-      // Vendor policy enforcement - ban direct SDK imports
       "no-restricted-imports": [
         "error",
         {
@@ -46,28 +43,28 @@ export default [
             "posthog-js",
             "@aws-sdk/*",
             "resend",
-            "inngest"
+            "inngest",
           ],
           paths: [
             {
               name: "@supabase/supabase-js",
-              message: "Use @wrelik/db instead of direct Supabase SDK"
+              message: "Use @wrelik/db instead of direct Supabase SDK",
             },
             {
-              name: "@supabase/ssr", 
-              message: "Use @wrelik/db instead of direct Supabase SDK"
+              name: "@supabase/ssr",
+              message: "Use @wrelik/db instead of direct Supabase SDK",
             },
             {
               name: "@sentry/nextjs",
-              message: "Use @wrelik/errors instead of direct Sentry SDK"
+              message: "Use @wrelik/errors instead of direct Sentry SDK",
             },
             {
               name: "posthog-js",
-              message: "Use @wrelik/analytics instead of direct PostHog SDK"
-            }
-          ]
-        }
-      ]
+              message: "Use @wrelik/analytics instead of direct PostHog SDK",
+            },
+          ],
+        },
+      ],
     },
   },
   {
