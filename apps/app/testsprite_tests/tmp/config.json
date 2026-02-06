@@ -1,15 +1,15 @@
 {
-  "status": "commited",
-  "type": "frontend",
-  "scope": "codebase",
-  "localEndpoint": "http://localhost:3000",
+  "status": "init",
   "executionArgs": {
-    "projectName": "DRX_Primary",
-    "projectPath": "/Users/lee/Projects/DRX_Primary",
+    "projectName": "app",
+    "projectPath": "/Users/lee/Projects/DRX_Primary/apps/app",
     "testIds": [],
-    "additionalInstruction": "Focus on validating the existence of key UI elements in the new Neon Velocity design (POS, Inventory, Customers, Intake).",
+    "additionalInstruction": "CRITICAL:\n1. Generate **Frontend End-to-End tests** using **Playwright** and **TypeScript**.\n2. DO NOT generate Python or Backend API tests.\n3. Use the `setupClerkTestingToken` helper for authentication as documented in `TESTING.md`.\n   - Import: `import { setupClerkTestingToken } from \"@clerk/testing/playwright\";`\n   - Usage: `await setupClerkTestingToken({ page });`\n4. Do NOT attempt to fill the login form.\n5. The Cloudflare blocker has been disabled, so the app should be reachable at localhost:3000.\n6. If testing specifically for admin/backend logic, assume the user is authenticated via the token.\n7. Ensure all tests files end in `.spec.ts`.",
     "envs": {
-      "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
+      "API_KEY": "sk-user-MYyNhoIJvTsx6IhZqSR3_E47KU4HxioUcQzz8kQlO6g0MlFzNqErjWBuzV671QBBvjiI1EC-MuxPAPqWfWaRiJVHFRbgjX34NU2Hq8q5MtxAKsFE54Zl2CgxWmH1V1ywH6U"
     }
-  }
+  },
+  "scope": "codebase",
+  "type": "frontend",
+  "localEndpoint": "http://localhost:3000/"
 }

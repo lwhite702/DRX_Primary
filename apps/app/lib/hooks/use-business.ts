@@ -1,69 +1,66 @@
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
-import { getUserBusinessesAction } from "@/app/actions/business";
+import { useOrganization, useOrganizationList, useUser } from "@clerk/nextjs";
+import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export function useBusiness() {
-  const { user, isLoaded } = useUser();
+  const { isLoaded: isUserLoaded } = useUser();
+  const { organization: activeOrg, isLoaded: isOrgLoaded } = useOrganization();
+  const {
+    userMemberships,
+    setActive,
+    isLoaded: isListLoaded,
+  } = useOrganizationList({
+    userMemberships: { infinite: true },
+  });
+
   const [business, setBusiness] = useState<any | null>(null);
-  const [availableBusinesses, setAvailableBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchBusiness = useCallback(async () => {
-    if (!isLoaded) return;
-
-    if (!user) {
+  const fetchBusinessProfile = useCallback(async () => {
+    if (!activeOrg) {
       setBusiness(null);
-      setAvailableBusinesses([]);
       setLoading(false);
       return;
     }
 
     try {
-      const { businesses, error } = await getUserBusinessesAction();
-
-      if (businesses && businesses.length > 0) {
-        setAvailableBusinesses(businesses);
-
-        // Determine selected business
-        const storedBusinessId = localStorage.getItem("selectedBusinessId");
-        let selected = businesses.find((b) => b.id === storedBusinessId);
-
-        if (!selected) {
-          selected = businesses[0];
-          localStorage.setItem("selectedBusinessId", selected.id);
-        }
-
-        setBusiness(selected);
-      } else {
-        setBusiness(null);
-        setAvailableBusinesses([]);
-      }
+      const profile = await getCurrentBusinessProfile();
+      setBusiness(profile);
     } catch (error) {
-      console.error("Error fetching business:", error);
+      console.error("Error fetching business profile:", error);
+      setBusiness(null);
     } finally {
       setLoading(false);
     }
-  }, [user, isLoaded]);
+  }, [activeOrg]);
 
   useEffect(() => {
-    fetchBusiness();
-  }, [fetchBusiness]);
-
-  const switchBusiness = (businessId: string) => {
-    const selected = availableBusinesses.find((b) => b.id === businessId);
-    if (selected) {
-      setBusiness(selected);
-      localStorage.setItem("selectedBusinessId", selected.id);
-      window.location.reload();
+    if (isOrgLoaded) {
+      setLoading(true);
+      fetchBusinessProfile();
     }
-  };
+  }, [fetchBusinessProfile, isOrgLoaded]);
+
+  // Sync available businesses from Clerk membershps
+  const availableBusinesses =
+    userMemberships?.data?.map((mem) => ({
+      id: mem.organization.id, // This is the Clerk Org ID
+      business_name: mem.organization.name,
+      // Add other mapped fields if necessary for UI compatibility
+    })) || [];
+
+  const isLoaded = isUserLoaded && isOrgLoaded && isListLoaded;
 
   return {
-    business,
-    availableBusinesses,
+    business, // Local DB BusinessProfile (with UUID)
+    availableBusinesses, // Clerk Organizations (with Clerk IDs)
     loading: loading || !isLoaded,
-    needsSetup: !loading && isLoaded && availableBusinesses.length === 0,
-    refreshBusiness: fetchBusiness,
-    switchBusiness,
+    needsSetup:
+      isLoaded && availableBusinesses.length === 0 && !loading && !activeOrg,
+    refreshBusiness: fetchBusinessProfile,
+    switchBusiness: (organizationId: string) => {
+      // Expects Clerk Organization ID
+      setActive?.({ organization: organizationId });
+    },
   };
 }

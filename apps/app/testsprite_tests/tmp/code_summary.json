@@ -2,55 +2,42 @@
   "tech_stack": [
     "TypeScript",
     "Next.js",
-    "Tailwind CSS",
-    "Supabase",
-    "React Hook Form",
-    "Shadcn/UI",
-    "Lucide React"
+    "Clerk",
+    "Prisma",
+    "TailwindCSS",
+    "Playwright",
+    "Vitest"
   ],
   "features": [
     {
-      "name": "Point of Sale (POS)",
-      "description": "Full-width checkout experience with cart management, product grid, and review modal.",
-      "files": ["app/sales/page.tsx", "components/pos/pos-review-modal.tsx"]
+      "name": "Authentication",
+      "description": "User authentication and session management using Clerk.",
+      "files": [
+        "app/middleware.ts",
+        "app/app/login/page.tsx",
+        "app/app/register/page.tsx",
+        "server/middleware.ts"
+      ]
+    },
+    {
+      "name": "Business Management",
+      "description": "Managing business profiles and context switching between organizations.",
+      "files": [
+        "lib/hooks/use-business.ts",
+        "app/actions/get-current-business.ts",
+        "components/layout/business-switcher.tsx",
+        "app/actions/business.ts"
+      ]
     },
     {
       "name": "Inventory Management",
-      "description": "Inventory list view with real-time stock updates, low stock alerts, and filtering.",
-      "files": ["app/inventory/page.tsx", "lib/hooks/use-realtime.ts"]
-    },
-    {
-      "name": "Customer Management",
-      "description": "CRM features including customer list, detail views, and creating/editing profiles.",
-      "files": ["app/customers/page.tsx"]
-    },
-    {
-      "name": "Inventory Intake",
-      "description": "Stock intake form with cost tracking, supplier info, and summary calculations.",
-      "files": ["app/inventory/intake/page.tsx"]
-    },
-    {
-      "name": "Operator Dashboard",
-      "description": "Simplified dashboard for daily operations showing key metrics and quick actions.",
+      "description": "Inventory tracking, intake, adjustments, and search.",
       "files": [
-        "app/dashboard/operator/page.tsx",
-        "components/dashboard/operator/moving-today.tsx",
-        "components/dashboard/operator/snapshot.tsx",
-        "components/dashboard/operator/quick-actions.tsx"
+        "app/app/(app)/inventory/page.tsx",
+        "app/app/inventory/menu/page.tsx",
+        "app/app/inventory/search/page.tsx",
+        "app/app/(app)/inventory/intake/page.tsx"
       ]
-    },
-    {
-      "name": "Product Search",
-      "description": "Dedicated product search interface with filters and visual search capabilities.",
-      "files": [
-        "app/inventory/search/page.tsx",
-        "components/inventory/search-view.tsx"
-      ]
-    },
-    {
-      "name": "Authentication & Permissions",
-      "description": "Role-based access control guards.",
-      "files": ["components/auth/role-guard.tsx"]
     }
   ]
 }

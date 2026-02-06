@@ -1,396 +1,319 @@
 [
   {
     "id": "TC001",
-    "title": "POS sale transaction with fractional quantities",
-    "description": "Verify that the POS interface correctly processes sales with fractional quantities and logs the transaction immutably.",
+    "title": "POS fractional sales with price overrides",
+    "description": "Validate that sales can be completed with fractional quantities, price overrides are allowed with appropriate role validation, and tax is correctly applied inclusive/exclusive per business settings.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the mobile-optimized POS interface"
+        "description": "Login as cashier role"
       },
       {
         "type": "action",
-        "description": "Input a sale with fractional quantity of a product (e.g., 1.5 units)"
+        "description": "Navigate to POS interface"
       },
       {
         "type": "action",
-        "description": "Complete the sale with a cashier role"
+        "description": "Add item with fractional quantity (e.g. 1.75 units) to cart"
+      },
+      {
+        "type": "action",
+        "description": "Apply a price override on the item"
       },
       {
         "type": "assertion",
-        "description": "Verify the sale completes successfully within 2 minutes"
+        "description": "System checks that user has permission to override price; allow if valid role, reject if not"
+      },
+      {
+        "type": "action",
+        "description": "Select applicable tax setting (tax inclusive or tax exclusive) and complete sale"
       },
       {
         "type": "assertion",
-        "description": "Verify sale transaction is immutable and logged in the audit trail with correct quantity and user context"
+        "description": "Verify final price and tax calculation are correct following deterministic rules"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm immutable sale transaction record created with audit log capturing price override and user info"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Price override in POS with role validation",
-    "description": "Verify that price overrides in the POS require appropriate user role and the override is logged in audit logs.",
+    "title": "Inventory management intake and adjustments with audit logging",
+    "description": "Verify inventory intake recording creates accurate cost per unit, and inventory adjustments are audit logged with timestamp and user context without altering historical data.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as a user without override permissions"
+        "description": "Login as Supervisor or Manager"
       },
       {
         "type": "action",
-        "description": "Attempt to apply a price override in POS"
+        "description": "Record inventory intake of a product with quantity and cost"
       },
       {
         "type": "assertion",
-        "description": "Verify override is rejected due to insufficient permissions"
+        "description": "Verify cost per unit is calculated correctly and intake is recorded immutably"
       },
       {
         "type": "action",
-        "description": "Login as a Supervisor or Manager with override permissions"
-      },
-      {
-        "type": "action",
-        "description": "Apply a price override in POS"
+        "description": "Make an inventory adjustment (increase/decrease) for the product"
       },
       {
         "type": "assertion",
-        "description": "Verify override is accepted and properly logged with user ID and timestamp in audit logs"
+        "description": "Verify adjustment is saved with timestamp, user info, and does not alter prior historical intake data"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm adjustment action is recorded in audit logs with all context"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Inventory intake recording and audit logging",
-    "description": "Validate that inventory intake operations are recorded with derived cost per unit, and all changes are audit logged immutably.",
-    "category": "functional",
+    "title": "Role-based authorization enforcement on APIs",
+    "description": "Ensure role enforcement is validated server-side preventing unauthorized actions such as improper role assignment, price override, voids, and inventory changes.",
+    "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to inventory intake interface"
+        "description": "Attempt to perform price override and inventory adjustment as a low privilege user"
+      },
+      {
+        "type": "assertion",
+        "description": "System rejects unauthorized operations with appropriate error"
       },
       {
         "type": "action",
-        "description": "Record intake of new inventory items with quantity and cost"
+        "description": "Attempt to assign a higher role (e.g. Manager assigning Owner) via Team Management API"
       },
       {
         "type": "assertion",
-        "description": "Verify calculated derived cost per unit is correct"
+        "description": "Role assignment request is rejected with hierarchy enforcement error"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to void a transaction without sufficient role"
       },
       {
         "type": "assertion",
-        "description": "Verify inventory intake change is logged in audit trail with user context and timestamps"
+        "description": "Operation is rejected and logged"
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Inventory adjustment audit logging",
-    "description": "Test that inventory adjustments are logged with immutable historical data and user context.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login with Manager role"
-      },
-      {
-        "type": "action",
-        "description": "Adjust inventory quantity for a product"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify original inventory data remains unchanged and adjustment creates new immutable record"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify adjustment is logged with user ID, timestamp, and adjustment reason in audit logs"
-      }
-    ]
-  },
-  {
-    "id": "TC005",
-    "title": "Tax configuration and rounding correctness",
-    "description": "Verify the system applies configurable taxes per business and uses deterministic rounding rules for price calculations.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Configure business-specific tax rates (inclusive and exclusive)"
-      },
-      {
-        "type": "action",
-        "description": "Perform sale transaction in POS with tax applied"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify tax amount calculation matches expected deterministic rule"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify rounding of final price follows configured rounding rules"
-      }
-    ]
-  },
-  {
-    "id": "TC006",
-    "title": "Customer profile creation, notes, and soft-disabling",
-    "description": "Validate CRM customer profiles enable addition of purchase history, notes, status flags, and support soft-disabling instead of deletion.",
+    "title": "Audit logs retrieval with multi-faceted filtering",
+    "description": "Validate that audit logs API returns append-only logs filtered accurately by business_id, action type, date range, and user.",
     "category": "functional",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Create a new customer profile with required details"
+        "description": "Login as Super Admin"
       },
       {
         "type": "action",
-        "description": "Add purchase history and notes to the customer profile"
-      },
-      {
-        "type": "action",
-        "description": "Apply status flags to the profile"
-      },
-      {
-        "type": "action",
-        "description": "Soft-disable the customer profile"
+        "description": "Request audit logs filtered by business_id"
       },
       {
         "type": "assertion",
-        "description": "Verify profile data remains in the system and is marked as disabled but not deleted"
+        "description": "Returned logs match only the specified tenant"
+      },
+      {
+        "type": "action",
+        "description": "Apply additional filters by action type and date range"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the logs returned satisfy all filter conditions accurately"
+      },
+      {
+        "type": "action",
+        "description": "Confirm audit logs are append-only (verify no log entries can be deleted or altered)"
+      },
+      {
+        "type": "assertion",
+        "description": "Validate only authorized roles can retrieve audit logs"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "RTBF deletion API masking PII and removing tenant roles",
+    "description": "Test that RTBF deletion API permanently masks all PII fields and removes tenant roles for a user, ensuring privacy compliance.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as authorized user with permission to initiate RTBF deletion"
+      },
+      {
+        "type": "action",
+        "description": "Call RTBF deletion API for a specific tenantId and userId"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API response confirms successful masking and role removal"
+      },
+      {
+        "type": "action",
+        "description": "Query user data from database post deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm all personal identifiable information fields are masked or erased"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm tenant roles are removed with no residual access"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Mobile POS usability: sale completion within two minutes",
+    "description": "Ensure that a new staff user can complete a sale from login to final payment within two minutes using the mobile-optimized POS interface.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as new cashier user on mobile device"
+      },
+      {
+        "type": "action",
+        "description": "Start timer"
+      },
+      {
+        "type": "action",
+        "description": "Complete sale with adding fractional quantities, applying valid price overrides if needed, selecting tax options, and processing payment"
+      },
+      {
+        "type": "action",
+        "description": "Stop timer after sale completion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sale completion time is less than or equal to two minutes"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Audit logs access with tenant isolation and filtering",
-    "description": "Verify Audit Logs API returns only the logs for the requested tenant and supports filtering by action, type, and date range.",
+    "title": "Soft-disable customers and validating purchase history and notes visibility",
+    "description": "Verify that customer profiles are soft-disabled (not deleted), purchase history and notes remain accessible but customer cannot be selected for new sales.",
     "category": "functional",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Request audit logs via API specifying business_id (tenant)"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify returned logs belong only to the specified tenant"
+        "description": "Login as Manager"
       },
       {
         "type": "action",
-        "description": "Apply filters for action, type, and date range in API request"
+        "description": "Soft-disable a customer profile"
       },
       {
         "type": "assertion",
-        "description": "Verify returned logs are correctly filtered according to specified parameters"
+        "description": "Customer is hidden or marked as disabled in customer list for new sales"
+      },
+      {
+        "type": "action",
+        "description": "Access disabled customer’s profile"
       },
       {
         "type": "assertion",
-        "description": "Verify audit logs are append-only and cannot be altered or deleted"
+        "description": "Verify purchase history, notes, and status flags are visible and unaltered"
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Team member creation with role hierarchy enforcement",
-    "description": "Verify that team creation API enforces role hierarchy preventing improper role assignments such as assigning Owner by Manager.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Attempt to create a team member with a higher role than allowed by creator (Manager assigns Owner)"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the creation request is rejected with proper error message"
-      },
-      {
-        "type": "action",
-        "description": "Create a team member with allowed role assignment"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify member is created successfully"
-      }
-    ]
-  },
-  {
-    "id": "TC009",
-    "title": "Team member role update with hierarchy enforcement",
-    "description": "Verify that role update API prevents unauthorized elevation or improper role changes according to strict role hierarchy.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Attempt to update a team member role to a higher role than permitted by the updater"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the update is rejected and audit logs record the attempt"
-      },
-      {
-        "type": "action",
-        "description": "Perform a valid role update within allowed hierarchy"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify role update succeeds and audit logs record the change"
-      }
-    ]
-  },
-  {
-    "id": "TC010",
-    "title": "RTBF deletion masks PII and removes tenant roles",
-    "description": "Validate RTBF Deletion API permanently masks PII fields and removes tenant roles for the specified user, ensuring privacy compliance.",
+    "title": "Audit log verification for sensitive actions",
+    "description": "Validate audit logs capture all sensitive actions including price overrides, inventory changes, voids, refunds, and permission modifications with correct user and timestamp details.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Submit RTBF deletion request via API for a tenant user"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify all PII fields are permanently masked and no longer retrievable"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the user's roles associated with the tenant are removed"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify audit logs capture the RTBF deletion action"
-      }
-    ]
-  },
-  {
-    "id": "TC011",
-    "title": "Role-based access control enforcement at database level",
-    "description": "Verify that role-based access control is strictly enforced at the database level to prevent unauthorized actions or permission changes.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Attempt to perform restricted actions (e.g., price override) using a user role without permission, bypassing UI"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify database denies unauthorized action"
+        "description": "Perform a price override on a sale"
       },
       {
         "type": "action",
-        "description": "Attempt to change roles or permissions directly at database"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify database rejects unauthorized role/permission modifications and logs the attempt"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Audit logs capture all sensitive financial changes",
-    "description": "Ensure that every sensitive financial change such as price overrides, voids, refunds, and inventory adjustments is recorded in append-only audit logs with full context.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Perform price override in POS by authorized user"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify audit log records price override with user, timestamp, old and new price"
+        "description": "Make an inventory adjustment"
       },
       {
         "type": "action",
         "description": "Void a transaction"
       },
       {
-        "type": "assertion",
-        "description": "Verify audit log captures the void action"
+        "type": "action",
+        "description": "Issue a refund"
       },
       {
         "type": "action",
-        "description": "Process a refund"
+        "description": "Modify user permissions"
       },
       {
         "type": "assertion",
-        "description": "Verify refund is logged in audit trail"
-      },
-      {
-        "type": "action",
-        "description": "Adjust inventory quantity"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify audit log contains full adjustment details and user context"
+        "description": "Verify audit logs contain entries for each action with immutable records including user performing action, timestamp, and action details"
       }
     ]
   },
   {
-    "id": "TC013",
-    "title": "Mobile POS usability and performance under 2 minutes for new staff",
-    "description": "Verify that new staff can complete a sales transaction end-to-end on mobile POS within 2 minutes, testing operational speed and usability.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login as a new cashier user"
-      },
-      {
-        "type": "action",
-        "description": "Using only one hand, complete a sale with fractional quantity and price override (if allowed)"
-      },
-      {
-        "type": "assertion",
-        "description": "Measure and verify total time taken is under 2 minutes"
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Reject unauthorized team membership modifications",
-    "description": "Verify system rejects unauthorized team membership actions such as adding members without proper permissions or invalid roles.",
+    "id": "TC009",
+    "title": "Team management API enforces strict role hierarchy",
+    "description": "Verify that team administrators cannot assign roles higher than their own or in violation of hierarchy rules using member create and role update APIs.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Attempt to add a team member with invalid role or without permissions via API"
+        "description": "Login as Manager-level team administrator"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to add a new team member with Owner role"
       },
       {
         "type": "assertion",
-        "description": "Verify request is denied and audit logs record the failed attempt"
+        "description": "Request is rejected due to hierarchy violation"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to update existing team member's role to Owner role"
+      },
+      {
+        "type": "assertion",
+        "description": "Update request is rejected enforcing role hierarchy"
       }
     ]
   },
   {
-    "id": "TC015",
-    "title": "No unlogged financial changes occur",
-    "description": "Ensure that no financial changes or sensitive business modifications can occur without generating verifiable audit log entries.",
+    "id": "TC010",
+    "title": "Validation of no unlogged financial or inventory changes",
+    "description": "Ensure that all financial transactions and inventory changes generate corresponding audit logs with no gaps where changes occur but are not logged.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Try to modify prices, inventory, or transactions using unconventional or direct requests bypassing UI"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify system rejects changes if not properly logged"
+        "description": "Perform a series of transactions with sales, refunds, inventory adjustments, and role changes"
       },
       {
         "type": "action",
-        "description": "Verify audit logs contain entries for all successful financial changes with complete details"
+        "description": "Query audit logs for these specific actions"
+      },
+      {
+        "type": "assertion",
+        "description": "Audit logs contain entries covering every single change made with correct details; no missing logs"
       }
     ]
   }

@@ -44,11 +44,15 @@ export function BusinessSwitcher() {
           {availableBusinesses.map((b) => (
             <DropdownMenuItem
               key={b.id}
-              onSelect={() => switchBusiness(b.id)}
+              onSelect={() => switchBusiness(b.id)} // b.id is Clerk Org ID
               className="flex items-center justify-between"
             >
               <span className="truncate">{b.business_name}</span>
-              {business.id === b.id && <Check className="ml-auto h-4 w-4" />}
+              {/* Check if current business matches the dropdown item. 
+                  business.clerk_org_id should match b.id (Clerk ID) */}
+              {(business.clerkOrgId === b.id || business.id === b.id) && (
+                <Check className="ml-auto h-4 w-4" />
+              )}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
@@ -62,7 +66,7 @@ export function BusinessSwitcher() {
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
           <BusinessSetupWizard
-            userId={business.owner_id} // Assuming owner_id is available on current business or we need to refetch user
+            userId={business.owner_id || ""} // Fallback if owner_id missing
             onComplete={async () => {
               await refreshBusiness();
               setShowWizard(false);
