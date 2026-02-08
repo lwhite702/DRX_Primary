@@ -6,43 +6,43 @@
   --font-body: "Inter", "Geist", "Geist Fallback";
 
   /* Neon Velocity - DRX Street Cut Color System */
-  --color-background: #050505;
-  --color-foreground: #FFFFFF;
-  --color-accent: #BFFF00;
-  --color-accent-dark: #8FBF00;
-  --color-accent-light: #DFFF00;
+  --color-background: #0a0a0a;
+  --color-foreground: #f5f5f5;
+  --color-accent: #ccff00;
+  --color-accent-dark: #a3cc00;
+  --color-accent-light: #d9ff4d;
 
   /* Text colors */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: rgba(255, 255, 255, 0.45);
-  --color-text-meta: rgba(255, 255, 255, 0.3);
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-meta: #9ca3af;
 
   /* Borders */
   --color-border: rgba(255, 255, 255, 0.1);
   --color-border-hover: rgba(255, 255, 255, 0.2);
 
   /* Neutral grays */
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #a0a0a0;
+  --color-muted: #0c0c0c;
+  --color-muted-foreground: #9ca3af;
   --color-input: #1a1a1a;
-  --color-ring: #BFFF00;
+  --color-ring: #ccff00;
 
   /* Semantic colors */
   --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-success: #22c55e;
+  --color-destructive-foreground: #f5f5f5;
+  --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-info: #3b82f6;
 
   /* Shadcn standard colors */
-  --color-popover: #050505;
-  --color-popover-foreground: #e6e6e6;
-  --color-card: #050505;
-  --color-card-foreground: #e6e6e6;
-  --color-primary: #BFFF00;
-  --color-primary-foreground: #050505;
+  --color-popover: #0a0a0a;
+  --color-popover-foreground: #f5f5f5;
+  --color-card: #0c0c0c;
+  --color-card-foreground: #f5f5f5;
+  --color-primary: #ccff00;
+  --color-primary-foreground: #0a0a0a;
   --color-secondary: #1a1a1a;
-  --color-secondary-foreground: #e6e6e6;
+  --color-secondary-foreground: #f5f5f5;
 
   /* Animation & Transitions - Neon Velocity Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -195,7 +195,7 @@
   bottom: 0;
   pointer-events: none;
   z-index: 100;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=');
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=");
   opacity: 0.03;
 }
 
@@ -224,13 +224,18 @@
 }
 
 .laser-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(191, 255, 0, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(191, 255, 0, 0.2),
+    transparent
+  );
   transition: left 0.5s ease-in-out;
 }
 
@@ -252,7 +257,7 @@
 }
 
 .luminosity-card::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
