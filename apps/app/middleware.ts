@@ -14,6 +14,9 @@ const isMarketingRoute = createRouteMatcher([
 const isPublicAppRoute = createRouteMatcher([
   "/login(.*)",
   "/register(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/sso-callback(.*)",
   "/api/webhooks(.*)",
   "/api/uploadthing(.*)", // If using uploadthing
   "/brand(.*)",
@@ -34,6 +37,9 @@ export default clerkMiddleware(async (auth, req) => {
     hostname === "deelrxcrm.app" ||
     hostname.endsWith(".deelrxcrm.app") ||
     hostname.includes("localhost");
+  const isAuthDomain =
+    hostname === "accounts.deelrxcrm.app" ||
+    hostname.endsWith(".accounts.deelrxcrm.app");
 
   // 1. Marketing Domain Logic
   if (isMarketingDomain) {
@@ -49,7 +55,12 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // 2. App Domain Logic
+  // 2. Authentication Domain Logic - Don't protect routes on auth domain to avoid redirect loops
+  if (isAuthDomain) {
+    return NextResponse.next();
+  }
+
+  // 3. App Domain Logic
   if (isAppDomain) {
     // Redirect root "/" to "/dashboard" (unless it's the login page, which is handled by isPublicAppRoute)
     if (url.pathname === "/") {
