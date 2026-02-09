@@ -44,7 +44,10 @@ export function useDashboardData(businessId: string | undefined) {
   const supabase = getSupabaseClient();
 
   const fetchDashboardData = useCallback(async () => {
-    if (!businessId || !supabase) return;
+    if (!businessId || !supabase) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
