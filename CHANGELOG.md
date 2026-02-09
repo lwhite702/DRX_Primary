@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repo Hygiene**: Enforced single package manager (pnpm) by removing package-lock.json
 - **Checklists**: Updated CHECKLIST_PRECOMMIT.md and CHECKLIST_PRERELEASE.md with compliance verification steps
 
+## [0.4.9] - 2026-02-09
+
+### Fixed
+
+- **Dashboard**: Fixed infinite loading screen on dashboard by correctly handling missing business ID in `useDashboardData`.
+
 ## [0.4.5] - 2026-02-05
 
 ### Changed
