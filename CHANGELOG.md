@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repo Hygiene**: Enforced single package manager (pnpm) by removing package-lock.json
 - **Checklists**: Updated CHECKLIST_PRECOMMIT.md and CHECKLIST_PRERELEASE.md with compliance verification steps
 
+## [0.4.10] - 2026-02-09
+
+### Fixed
+
+- **404 Handling**: Added custom `not-found.tsx` page to handle missing routes and improve debugging.
+- **PWA**: Temporarily disabled PWA configuration to investigate 404/caching issues.
+
 ## [0.4.9] - 2026-02-09
 
 ### Fixed
