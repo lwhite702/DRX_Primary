@@ -6,11 +6,15 @@ import { NextResponse } from "next/server";
 vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: any) => handler,
   createRouteMatcher: (patterns: string[]) => {
-    const regexes = patterns.map(pattern => {
-      const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.').replace(/\+\+/g, '+').replace(/\.\.\.\*/g, '.*');
-      return new RegExp(`^${regexPattern}$`);
-    });
-    return (pathname: string) => regexes.some(regex => regex.test(pathname));
+    return (req: any) => {
+      const pathname = typeof req === "string" ? req : req.nextUrl.pathname;
+      return patterns.some(pattern => {
+        if (pattern.endsWith("(.*)")) {
+          return pathname.startsWith(pattern.replace("(.*)", ""));
+        }
+        return pathname === pattern;
+      });
+    };
   }
 }));
 
