@@ -56,8 +56,15 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // 2. Authentication Domain Logic - Don't protect routes on auth domain to avoid redirect loops
+  // 2. Authentication Domain Logic - Don't protect routes on auth domain to avoid redirect loops
   if (isAuthDomain) {
-    return NextResponse.next();
+    if (isPublicAppRoute(req)) {
+      return NextResponse.next();
+    }
+    
+    // Redirect non-public routes back to the main app domain
+    const appUrl = new URL(url.pathname, "https://deelrxcrm.app");
+    return NextResponse.redirect(appUrl);
   }
 
   // 3. App Domain Logic
