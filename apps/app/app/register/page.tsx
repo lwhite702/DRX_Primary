@@ -1,4 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +11,13 @@ export const metadata: Metadata = {
   description: "Create your secure workspace.",
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const { userId } = await auth();
+
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-gray-400">
       {/* Background Noise/Grid */}

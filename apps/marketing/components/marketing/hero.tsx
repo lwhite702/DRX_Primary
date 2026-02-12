@@ -5,6 +5,8 @@ import { NeonButton } from "./neon-button";
 import { SystemStatus } from "./system-status";
 import { GlassCard } from "./glass-card";
 
+const appLoginUrl = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app"}/login`;
+
 export function Hero() {
   return (
     <section className="relative px-6 py-20 md:py-32 w-full max-w-7xl mx-auto">
@@ -30,7 +32,7 @@ export function Hero() {
           </p>
 
           <div className="pt-8">
-            <Link href="/login">
+            <Link href={appLoginUrl}>
               <NeonButton>Start Now</NeonButton>
             </Link>
           </div>
