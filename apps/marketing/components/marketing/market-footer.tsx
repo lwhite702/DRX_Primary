@@ -5,6 +5,8 @@ import Image from "next/image";
 import { NeonButton } from "./neon-button";
 import { SystemStatus } from "./system-status";
 
+const appLoginUrl = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app"}/login`;
+
 export function MarketFooter() {
   return (
     <footer className="relative bg-black pt-32 pb-12 overflow-hidden">
@@ -26,7 +28,7 @@ export function MarketFooter() {
             SYSTEM READY FOR DEPLOYMENT.
           </h2>
           <div className="flex justify-center">
-            <Link href="/login">
+            <Link href={appLoginUrl}>
               <NeonButton className="px-12 py-6 text-xl">
                 Start Secure Session
               </NeonButton>

@@ -1,16 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isMarketingRoute = createRouteMatcher([
-  "/",
-  "/pricing",
-  "/about",
-  "/contact",
-  "/features(.*)",
-  "/blog(.*)",
-  "/docs(.*)",
-]);
-
 const isPublicAppRoute = createRouteMatcher([
   "/login(.*)",
   "/register(.*)",
@@ -18,19 +8,40 @@ const isPublicAppRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/sso-callback(.*)",
   "/api/webhooks(.*)",
-  "/api/uploadthing(.*)", // If using uploadthing
+  "/api/uploadthing(.*)",
   "/brand(.*)",
   "/privacy",
   "/terms",
 ]);
 
+const isAuthEntryRoute = createRouteMatcher([
+  "/login(.*)",
+  "/register(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/sso-callback(.*)",
+]);
+
+function getAppOrigin(req: Request) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL;
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  const host = req.headers.get("host") ?? "deelrxcrm.app";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  return `${protocol}://${host}`;
+}
+
+function redirectToApp(req: Request, pathname: string) {
+  return NextResponse.redirect(new URL(pathname, getAppOrigin(req)));
+}
+
 export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
+  const pathname = url.pathname;
   const hostname = req.headers.get("host") || "";
 
-  // -------------------------------------------------------------------------
-  // Domain Separation Logic
-  // -------------------------------------------------------------------------
   const isMarketingDomain =
     hostname === "deelrxcrm.com" || hostname.endsWith(".deelrxcrm.com");
   const isAppDomain =
@@ -41,43 +52,47 @@ export default clerkMiddleware(async (auth, req) => {
     hostname === "accounts.deelrxcrm.app" ||
     hostname.endsWith(".accounts.deelrxcrm.app");
 
-  // 1. Marketing Domain Logic
   if (isMarketingDomain) {
-    // If trying to access app routes (dashboard, etc) from marketing domain, redirect to app domain
     if (
-      url.pathname.startsWith("/dashboard") ||
-      url.pathname.startsWith("/inventory")
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/inventory") ||
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/register")
     ) {
-      const appUrl = new URL(url.pathname, "https://deelrxcrm.app");
-      return NextResponse.redirect(appUrl);
+      return redirectToApp(req, pathname);
     }
-    // Otherwise allow access
+
     return NextResponse.next();
   }
 
-  // 2. Authentication Domain Logic - Don't protect routes on auth domain to avoid redirect loops
-  // 2. Authentication Domain Logic - Don't protect routes on auth domain to avoid redirect loops
   if (isAuthDomain) {
     if (isPublicAppRoute(req)) {
       return NextResponse.next();
     }
-    
-    // Redirect non-public routes back to the main app domain
-    const appUrl = new URL(url.pathname, "https://deelrxcrm.app");
-    return NextResponse.redirect(appUrl);
+
+    return redirectToApp(req, pathname);
   }
 
-  // 3. App Domain Logic
-  if (isAppDomain) {
-    // Redirect root "/" to "/dashboard" (unless it's the login page, which is handled by isPublicAppRoute)
-    if (url.pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+  if (!isAppDomain) {
+    return NextResponse.next();
+  }
 
-    // Protect routes
-    if (!isPublicAppRoute(req)) {
-      await auth.protect();
+  const { userId } = await auth();
+
+  if (pathname === "/") {
+    return redirectToApp(req, userId ? "/dashboard" : "/login");
+  }
+
+  if (userId && isAuthEntryRoute(req)) {
+    return redirectToApp(req, "/dashboard");
+  }
+
+  if (!userId && !isPublicAppRoute(req)) {
+    const loginUrl = new URL("/login", getAppOrigin(req));
+    if (!pathname.startsWith("/api")) {
+      loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
     }
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
@@ -85,9 +100,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

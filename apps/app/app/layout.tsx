@@ -67,7 +67,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/login"
+      signUpUrl="/register"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/onboarding"
+      afterSignOutUrl="/login"
+    >
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
