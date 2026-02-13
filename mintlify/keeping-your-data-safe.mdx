@@ -1,0 +1,42 @@
+# Keeping your data safe
+
+Deelrx CRM protects operational data with role-based access, tenant scoping, and controlled update flows.
+
+## What this does
+
+- Restricts sensitive actions by role and permission
+- Segments records by business context
+- Limits settings and team changes to authorized users
+
+## Why this matters
+
+Most data incidents in store software are permission mistakes, not hacks.
+
+## Step-by-step
+
+1. Keep role assignments current in **Team Management**.
+2. Limit who can access **Settings**, **Inventory Adjustment**, and credit actions.
+3. Require clear reasons for stock changes.
+4. Review logs and issue reports weekly.
+
+## Common mistakes
+
+- Shared operator accounts across staff
+- Leaving elevated role access active after staffing changes
+- Treating audit/history pages as optional
+
+## Edge cases
+
+- Users can see page shells but still be blocked on action by permission checks.
+- Some advanced actions rely on both role and feature-specific guard logic.
+
+## Current limitations
+
+- Security analytics and policy dashboards are not exposed as dedicated DRX pages.
+
+## Related docs
+
+- [Team access](/team-access)
+- [Staying compliant](/staying-compliant)
+- [Failsafe and self-destruct](/failsafe-and-self-destruct)
+- [Fixing issues](/fixing-issues)
