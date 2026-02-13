@@ -79,7 +79,7 @@ export default function AdminClient() {
       <div>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin Console</h1>
-          <p className="text-sm text-muted-foreground">v0.3.3</p>
+          <p className="text-sm text-muted-foreground">v0.4.12</p>
         </div>
         <p className="text-muted-foreground mt-2">
           Enterprise administration and management

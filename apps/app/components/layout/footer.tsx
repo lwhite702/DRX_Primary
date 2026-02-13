@@ -124,7 +124,7 @@ export function Footer() {
               © {currentYear} Wrelik Brands LLC. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <p className="text-xs text-muted-foreground">v0.3.3</p>
+              <p className="text-xs text-muted-foreground">v0.4.12</p>
               <p className="text-xs text-muted-foreground">
                 Deelrx and DRX are trademarks of Wrelik Brands LLC.
               </p>

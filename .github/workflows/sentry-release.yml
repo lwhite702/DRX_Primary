@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     # Only run if Sentry auth token is configured
-    if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
+    if: secrets.SENTRY_AUTH_TOKEN != ''
     steps:
       - uses: actions/checkout@v4
         with:
