@@ -66,7 +66,7 @@ export function useUserRole(businessId?: string) {
 
   return {
     role,
-    loading: loading || !isLoaded,
+    loading: !isLoaded || loading,
     error,
     isAdmin,
     isManager,
