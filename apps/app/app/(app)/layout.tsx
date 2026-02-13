@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { AppShell } from "@/components/layout/app-shell";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { OnboardingProvider } from "@/components/providers/onboarding-provider";

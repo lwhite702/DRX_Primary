@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.11] - 2026-02-12
+
 ### Added
 
 - **Compliance**: Phase 1 Stack Policy Audit. Added `docs/COMPLIANCE_AUDIT.md` with full stack inventory and violation list.
@@ -14,31 +16,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Governance**: Added `docs/decisions/0000-vendor-policy.md` banning direct vendor SDK imports.
 - **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
 - **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
-- **Documentation**: Added comprehensive `docs/POST_PHASE2_REVIEW.md` revealing Phase 2 non-completion
-- **Governance**: Added `docs/PHASE3_READINESS.md` with FAIL status blocking Phase 3 migrations
-- **Documentation**: Added `docs/REVIEW_CORRECTIONS_SUMMARY.md` with validation results
+- **Documentation**: Added comprehensive `docs/POST_PHASE2_REVIEW.md` revealing Phase 2 non-completion.
+- **Governance**: Added `docs/PHASE3_READINESS.md` with FAIL status blocking Phase 3 migrations.
+- **Documentation**: Added `docs/REVIEW_CORRECTIONS_SUMMARY.md` with validation results.
 
 ### Changed
 
-- **Compliance**: Phase 1 Stack Policy Audit. Added `docs/COMPLIANCE_AUDIT.md` with full stack inventory and violation list.
-- **Governance**: Added `STACK.md` defining the authoritative Wrelik Modular Stack.
-- **Governance**: Added `docs/decisions/0000-vendor-policy.md` banning direct vendor SDK imports.
-- **Governance**: Added `CHECKLIST_PRECOMMIT.md` and `CHECKLIST_PRERELEASE.md`.
-- **Config**: Added `.env.example` and `docs/ENV_MATRIX.md` for environment variable standardization.
-- **Documentation**: Added comprehensive `docs/POST_PHASE2_REVIEW.md` revealing Phase 2 non-completion
-- **Governance**: Added `docs/PHASE3_READINESS.md` with FAIL status blocking Phase 3 migrations
-- **Documentation**: Added `docs/REVIEW_CORRECTIONS_SUMMARY.md` with validation results
+- **Review**: Updated CHANGELOG with Post-Phase 2 review findings (2026-02-28).
+- **Config**: Fixed R2 environment variable naming from `R2_AccountId` to `R2_ACCOUNT_ID`.
+- **Docs**: Corrected wrelik package naming from `@wrelik/auth-next` to `@wrelik/auth/next`.
+- **Security**: Removed `.env.local` from git tracking.
+- **Governance**: Added ESLint enforcement rules for banned vendor imports.
+- **Scripts**: Added compliance checking scripts for imports, secrets, and package manager consistency.
+- **Repo Hygiene**: Enforced single package manager (pnpm).
 
-### Changed
+### Fixed
 
-- **Review**: Updated CHANGELOG with Post-Phase 2 review findings (2026-02-28)
-- **Config**: Fixed R2 environment variable naming from `R2_AccountId` to `R2_ACCOUNT_ID` for consistency
-- **Docs**: Corrected wrelik package naming from `@wrelik/auth-next` to `@wrelik/auth/next`
-- **Security**: Removed `.env.local` from git tracking to prevent secret exposure
-- **Governance**: Added ESLint enforcement rules for banned vendor imports
-- **Scripts**: Added compliance checking scripts for imports, secrets, and package manager consistency
-- **Repo Hygiene**: Enforced single package manager (pnpm) by removing package-lock.json
-- **Checklists**: Updated CHECKLIST_PRECOMMIT.md and CHECKLIST_PRERELEASE.md with compliance verification steps
+- **Build/Prerender**: Resolved major build failure caused by Clerk authentication dependencies during static generation.
+  - Implemented global `force-dynamic` rendering at the root layout level for the app.
+  - Refactored `/admin`, `/settings/team`, and `/workspaces` to use dynamic server component wrappers.
+  - Fixed property access lint errors in `WorkspacesClient`.
+- **Cleanup**: Purged unused Geist/Geist_Mono font variables and imports from root layout.
 
 ## [0.4.10] - 2026-02-09
 

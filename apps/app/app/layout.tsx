@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -9,8 +10,6 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 
-const _geistSans = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
 const _plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
