@@ -40,6 +40,8 @@ export default [
   {
     ignores: [
       ".next/**",
+      ".prisma/**",
+      "**/.prisma/**",
       "node_modules/**",
       "out/**",
       "dist/**",

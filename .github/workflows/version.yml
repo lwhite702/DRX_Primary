@@ -3,6 +3,7 @@ name: Version Check
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -31,13 +32,73 @@ jobs:
         with:
           version: 8
 
-      - name: Check version suggestion
+      - name: Check version consistency
         id: version_check
         run: |
-          pnpm version:check > version_output.txt 2>&1 || true
+          node <<'EOF' > version_output.txt
+          const fs = require("fs");
+          const path = require("path");
+
+          function readVersion(filePath) {
+            const raw = fs.readFileSync(filePath, "utf8");
+            return JSON.parse(raw).version;
+          }
+
+          const rootPkgPath = path.join(process.cwd(), "package.json");
+          const versionFilePath = path.join(process.cwd(), "VERSION");
+
+          const rootVersion = readVersion(rootPkgPath);
+          const versionFile = fs.existsSync(versionFilePath)
+            ? fs.readFileSync(versionFilePath, "utf8").trim()
+            : null;
+
+          const comparablePackages = [
+            { label: "root package.json", path: rootPkgPath, version: rootVersion },
+          ];
+
+          for (const relativePath of ["app/package.json", "apps/app/package.json"]) {
+            const pkgPath = path.join(process.cwd(), relativePath);
+            if (fs.existsSync(pkgPath)) {
+              comparablePackages.push({
+                label: relativePath,
+                path: pkgPath,
+                version: readVersion(pkgPath),
+              });
+            }
+          }
+
+          const mismatches = [];
+          for (const pkg of comparablePackages.slice(1)) {
+            if (pkg.version !== rootVersion) {
+              mismatches.push(`${pkg.label} (${pkg.version}) != root package.json (${rootVersion})`);
+            }
+          }
+          if (versionFile && versionFile !== rootVersion) {
+            mismatches.push(`VERSION (${versionFile}) != root package.json (${rootVersion})`);
+          }
+
+          console.log(`root package.json version: ${rootVersion}`);
+          for (const pkg of comparablePackages.slice(1)) {
+            console.log(`${pkg.label} version: ${pkg.version}`);
+          }
+          console.log(`VERSION file: ${versionFile ?? "(missing)"}`);
+
+          if (mismatches.length > 0) {
+            console.log("");
+            console.log("Version mismatch detected:");
+            for (const mismatch of mismatches) {
+              console.log(`- ${mismatch}`);
+            }
+            process.exit(1);
+          }
+
+          console.log("");
+          console.log("Version consistency check passed.");
+          EOF
           cat version_output.txt
 
       - name: Comment on PR (if applicable)
+        continue-on-error: true
         if: >
           github.event_name == 'pull_request' &&
           github.event.pull_request.head.repo.full_name == github.repository

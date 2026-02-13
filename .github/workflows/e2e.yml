@@ -39,32 +39,8 @@ jobs:
         with:
           version: latest
 
-      - name: Start Supabase
-        run: |
-          # Start Supabase in background
-          supabase start -x realtime,storage,studio,imgproxy,edge-runtime &
-
-          # Wait for the CLI to report healthy (tries ~2 minutes)
-          for i in $(seq 1 60); do
-            if supabase status >/dev/null 2>&1; then
-              echo "Supabase is up"
-              break
-            fi
-            sleep 2
-          done
-
-          # Verify Supabase started successfully
-          if ! supabase status >/dev/null 2>&1; then
-            echo "Supabase failed to start in time" >&2
-            supabase status || true
-            exit 1
-          fi
-        env:
-          SUPABASE_DB_PASSWORD: "admin"
-
       - name: Setup Supabase project config
         run: |
-          # Create minimal supabase config for local development
           mkdir -p supabase
           echo '[api]
           enabled = true
@@ -77,6 +53,30 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Start Supabase
+        run: |
+          set -euo pipefail
+
+          # Start required local services and wait until the stack is healthy.
+          supabase start -x realtime,storage-api,studio,imgproxy,edge-runtime
+          supabase status
+
+          # Ensure API/Auth endpoint is reachable before launching tests.
+          for i in $(seq 1 30); do
+            if curl --silent --show-error --fail "http://127.0.0.1:54321/auth/v1/health" >/dev/null; then
+              echo "Supabase auth endpoint is healthy"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Supabase auth endpoint did not become healthy in time" >&2
+              supabase status || true
+              exit 1
+            fi
+            sleep 2
+          done
+        env:
+          SUPABASE_DB_PASSWORD: "admin"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
