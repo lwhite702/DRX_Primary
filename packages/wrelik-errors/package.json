@@ -24,8 +24,8 @@
     "@types/node": "^25.2.0",
     "tsup": "^8.0.1",
     "vitest": "^1.2.2",
-    "@wrelik/eslint-config": "0.1.1",
-    "@wrelik/tsconfig": "0.1.1"
+    "@wrelik/eslint-config": "workspace:*",
+    "@wrelik/tsconfig": "workspace:*"
   },
   "scripts": {
     "build": "tsup src/node.ts src/browser.ts src/react-native.ts --format cjs,esm --dts --clean",

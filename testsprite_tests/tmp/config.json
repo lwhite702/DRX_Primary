@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "test@deelrxcrm.com",
+  "loginPassword": "Q20PdE0qY9Dr&!n5h5Fd",
+  "executionArgs": {
+    "projectName": "DRX_Primary",
+    "projectPath": "/Users/lee/Projects/DRX_Primary",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
+    }
+  },
+  "serverPort": 58636,
+  "proxy": "http://fa21b11d-75e1-4643-a725-9c36f0607aa1:218za84T9hEi6D6rBkvE7OoNeuSIV3Ex@tun.testsprite.com:8080"
+}

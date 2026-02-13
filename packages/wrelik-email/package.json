@@ -9,13 +9,13 @@
   "react-native": "./dist/unsupported.js",
   "dependencies": {
     "resend": "^3.2.0",
-    "@wrelik/errors": "0.2.0"
+    "@wrelik/errors": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
     "vitest": "^1.2.2",
-    "@wrelik/tsconfig": "0.1.1",
-    "@wrelik/eslint-config": "0.1.1"
+    "@wrelik/tsconfig": "workspace:*",
+    "@wrelik/eslint-config": "workspace:*"
   },
   "scripts": {
     "build": "tsup src/index.ts src/unsupported.ts --format cjs,esm --dts --clean",
