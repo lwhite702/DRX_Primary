@@ -1,0 +1,8 @@
+{
+  "extends": "@wrelik/tsconfig/node.json",
+  "compilerOptions": {
+    "outDir": "dist", "skipLibCheck": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

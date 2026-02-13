@@ -1,0 +1,7 @@
+import { SignedInAuthObject, SignedOutAuthObject } from '@clerk/backend';
+import { W as WorkflowSession } from './shared-Z5LN5APr.mjs';
+export { h as hasRole, r as requireRole, a as requireTenant, b as requireUser } from './shared-Z5LN5APr.mjs';
+
+declare function fromClerkAuth(auth: SignedInAuthObject | SignedOutAuthObject | null): WorkflowSession;
+
+export { WorkflowSession, fromClerkAuth };

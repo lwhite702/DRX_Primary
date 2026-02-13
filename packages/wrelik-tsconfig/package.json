@@ -1,0 +1,12 @@
+{
+  "name": "@wrelik/tsconfig",
+  "version": "0.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "base.json",
+    "next.json",
+    "node.json"
+  ]
+}
