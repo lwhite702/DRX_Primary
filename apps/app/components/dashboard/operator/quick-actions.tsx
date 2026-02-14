@@ -7,7 +7,7 @@ import {
   Package,
   CreditCard,
   MoreHorizontal,
-  FileText,
+  ScanLine,
   Settings,
   UserPlus,
 } from "lucide-react";
@@ -31,9 +31,9 @@ export function QuickActions({ className }: QuickActionsProps) {
         <ActionButton label="Inventory" icon={Package} href="/inventory" />
         <ActionButton label="Credit" icon={CreditCard} href="/credit" />
         <ActionButton
-          label="New Sale"
-          icon={FileText} // Placeholder for sales/pos
-          href="/sales"
+          label="Quick POS"
+          icon={ScanLine}
+          href="/pos/sale"
         />
         <ActionButton
           label="Add Customer"

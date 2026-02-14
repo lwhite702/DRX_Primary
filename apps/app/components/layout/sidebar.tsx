@@ -36,6 +36,8 @@ export function Sidebar() {
         return hasPermission("catalog.view");
       case "/sales":
         return hasPermission("sales.create") || hasPermission("sales.view_all");
+      case "/pos/sale":
+        return hasPermission("sales.create");
       case "/customers":
         return hasPermission("customers.view");
       default:

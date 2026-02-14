@@ -8,6 +8,7 @@ import {
   FileText,
   Settings,
   HelpCircle,
+  ScanLine,
   type LucideIcon,
 } from "lucide-react";
 
@@ -20,6 +21,7 @@ export type NavItem = {
 export const primaryNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/sales", label: "Sales", icon: ShoppingCart },
+  { href: "/pos/sale", label: "Quick POS", icon: ScanLine },
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/credit", label: "Credit", icon: CreditCard },
