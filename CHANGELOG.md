@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 
+## [0.4.13] - 2026-02-14
+
+### Added
+
+- **Quick POS**: Added isolated Quick POS mini-app under `/pos` with dedicated layout and fixed flow (`/pos/sale`, `/pos/payment`, `/pos/complete`).
+- **Quick POS API**: Added `/api/pos/*` endpoints for bootstrap, product search, customer phone lookup/quick create, checkout, and exit PIN verification.
+- **Quick POS UI**: Added POS-specific component set and local state model to prevent main-app UI leakage.
+- **Quick POS Launch**: Added `Quick POS` entry in sidebar and dashboard quick actions.
+- **Testing**: Added unit tests for Quick POS selectors/store/route guards and a Playwright Quick POS flow spec.
+
 ## [0.4.11] - 2026-02-12
 
 ### Added
