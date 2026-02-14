@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 
-## [0.4.13] - 2026-02-14
+## [0.5.0] - 2026-02-14
 
 ### Added
 
