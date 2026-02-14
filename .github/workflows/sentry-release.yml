@@ -8,28 +8,43 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Only run if Sentry auth token is configured
-    if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
     steps:
+      - name: Check Sentry token
+        id: sentry_token
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          if [ -z "${SENTRY_AUTH_TOKEN}" ]; then
+            echo "SENTRY_AUTH_TOKEN is not set; skipping Sentry release workflow."
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.sentry_token.outputs.has_token == 'true'
         with:
           fetch-depth: 0
 
       - name: Install pnpm
+        if: steps.sentry_token.outputs.has_token == 'true'
         uses: pnpm/action-setup@v2
         with:
           version: 8
 
       - name: Setup Node
+        if: steps.sentry_token.outputs.has_token == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
+        if: steps.sentry_token.outputs.has_token == 'true'
         run: pnpm install
 
       - name: Build (Upload Source Maps)
+        if: steps.sentry_token.outputs.has_token == 'true'
         run: pnpm build
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -39,6 +54,7 @@ jobs:
           # NEXT_PUBLIC_...
 
       - name: Create Sentry Release
+        if: steps.sentry_token.outputs.has_token == 'true'
         uses: getsentry/action-release@v1
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
