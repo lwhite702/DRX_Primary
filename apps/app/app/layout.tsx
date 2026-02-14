@@ -69,6 +69,7 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/login"
       signUpUrl="/register"
+      waitlistUrl="/waitlist"
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/onboarding"
       afterSignOutUrl="/login"

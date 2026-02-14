@@ -1,21 +1,27 @@
-"use client";
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
+
 import { ShellLayout } from "@/components/marketing/shell-layout";
 import { Hero } from "@/components/marketing/hero";
 import { BentoGrid, BentoGridItem } from "@/components/marketing/bento-grid";
-
 import { MarketFooter } from "@/components/marketing/market-footer";
 import { SystemStatus } from "@/components/marketing/system-status";
 import { Zap, ShieldCheck, BarChart4, Layers } from "lucide-react";
+import { appWaitlistUrl } from "@/lib/app-links";
+
+export const metadata: Metadata = {
+  title: "Deelrx CRM | Run your floor. Know your numbers. Keep control.",
+  description:
+    "Deelrx CRM is built for owner/operators who need clear checkout, inventory, customer, and credit workflows.",
+};
 
 export default function LandingPage() {
   return (
     <main className="bg-black min-h-screen">
-      {/* Noise Overlay */}
       <div className="noise-overlay" />
 
       <ShellLayout>
-        {/* Navigation / Command Bar */}
         <nav className="absolute top-0 left-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Image
@@ -30,15 +36,18 @@ export default function LandingPage() {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 bg-glass-bg border border-glass-border rounded-full px-8 py-3 backdrop-blur-md">
-            <span className="text-white/70 hover:text-neon-lime transition-colors cursor-pointer text-sm font-medium">
-              Features
-            </span>
-            <span className="text-white/70 hover:text-neon-lime transition-colors cursor-pointer text-sm font-medium">
-              System
-            </span>
-            <span className="text-white/70 hover:text-neon-lime transition-colors cursor-pointer text-sm font-medium">
-              Access
-            </span>
+            <Link href="/product" className="text-white/70 hover:text-neon-lime transition-colors text-sm font-medium">
+              Product
+            </Link>
+            <Link href="/use-cases" className="text-white/70 hover:text-neon-lime transition-colors text-sm font-medium">
+              Use Cases
+            </Link>
+            <Link href="/resources" className="text-white/70 hover:text-neon-lime transition-colors text-sm font-medium">
+              Resources
+            </Link>
+            <Link href="/beta" className="text-neon-lime transition-colors text-sm font-semibold">
+              Beta
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <SystemStatus className="hidden md:flex" />
@@ -46,10 +55,8 @@ export default function LandingPage() {
           </div>
         </nav>
 
-        {/* Hero Section */}
         <Hero />
 
-        {/* Why Deelrx CRM */}
         <section className="px-6 py-24 max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
@@ -62,28 +69,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Mental Load Relief */}
-        <section className="px-6 py-24 bg-white/5 border-y border-white/5 mb-32">
+        <section className="px-6 py-24 bg-white/5 border-y border-white/5 mb-24">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
               Leave the remembering to us.
             </h2>
             <p className="text-xl md:text-2xl text-text-secondary leading-relaxed max-w-2xl mx-auto">
-              You shouldn’t have to remember everything. If it happened, it’s
-              tracked. No guessing. No surprises.
+              You should not have to remember everything. If it happened, it is
+              tracked.
             </p>
           </div>
         </section>
 
-        {/* Features Grid */}
-        <section className="px-6 pb-32 relative z-10">
+        <section className="px-6 pb-24 relative z-10">
           <div className="max-w-7xl mx-auto mb-12">
             <h3 className="text-sm font-mono text-neon-lime uppercase tracking-widest mb-4">
               Features
             </h3>
           </div>
           <BentoGrid>
-            {/* 1. Selling and POS */}
             <BentoGridItem
               span={2}
               title="Selling and POS"
@@ -96,11 +100,10 @@ export default function LandingPage() {
               icon={<Zap className="w-6 h-6" />}
             />
 
-            {/* 2. Inventory */}
             <BentoGridItem
               span={1}
               title="Inventory"
-              description="Know what you have. Know what you need."
+              description="Intake, adjustments, and audit context."
               header={
                 <div className="h-32 w-full bg-surface-elevated rounded-xl mb-4 border border-white/5 flex items-end justify-between px-4 pb-4">
                   <div className="w-2 h-12 bg-white/10 rounded-t"></div>
@@ -111,11 +114,10 @@ export default function LandingPage() {
               icon={<Layers className="w-6 h-6" />}
             />
 
-            {/* 3. Credit and fronts */}
             <BentoGridItem
               span={1}
-              title="Credit and Fronts"
-              description="Track who owes you. Track who you owe."
+              title="Credit"
+              description="Track balances and payments clearly."
               header={
                 <div className="h-32 w-full bg-surface-elevated rounded-xl mb-4 border border-white/5 flex items-center justify-center">
                   <span className="font-mono text-neon-lime text-2xl font-bold">
@@ -126,53 +128,34 @@ export default function LandingPage() {
               icon={<BarChart4 className="w-6 h-6" />}
             />
 
-            {/* 4. Customers */}
             <BentoGridItem
               span={2}
               title="Customers"
-              description="Know your people. Keep them happy."
+              description="Keep records clean and connected to sales."
               className="md:col-span-2"
               icon={<Zap className="w-6 h-6" />}
-              header={
-                <div className="h-24 w-full bg-white/5 rounded-xl border border-white/5" />
-              }
+              header={<div className="h-24 w-full bg-white/5 rounded-xl border border-white/5" />}
             />
 
-            {/* 5. Pricing */}
             <BentoGridItem
               span={2}
-              title="Pricing"
-              description="Set the right price. Make your margin."
+              title="Operations Visibility"
+              description="Dashboard and Event Desk Board for daily control."
               className="md:col-span-2"
               icon={<BarChart4 className="w-6 h-6" />}
-              header={
-                <div className="h-24 w-full bg-white/5 rounded-xl border border-white/5" />
-              }
+              header={<div className="h-24 w-full bg-white/5 rounded-xl border border-white/5" />}
             />
 
-            {/* 6. Anywhere access */}
             <BentoGridItem
               span={2}
-              title="Anywhere Access"
-              description="See your numbers from anywhere."
-              className="md:col-span-2"
-              icon={<Layers className="w-6 h-6" />}
-              header={
-                <div className="h-24 w-full bg-white/5 rounded-xl border border-white/5" />
-              }
-            />
-
-            {/* 7. Privacy */}
-            <BentoGridItem
-              span={2}
-              title="Privacy"
-              description="Your data stays with you. No leaks."
+              title="Team Access and Safety"
+              description="Role-based access with audit context."
               className="md:col-span-2 bg-surface-elevated/50"
               icon={<ShieldCheck className="w-6 h-6" />}
               header={
                 <div className="h-24 w-full flex items-center gap-4 opacity-50 overflow-hidden">
                   <span className="font-mono text-xs text-neon-lime whitespace-nowrap">
-                    ENCRYPTION_KEY_GENERATED // SESSION_SECURE
+                    ROLE_GUARDS // AUDIT_CONTEXT // OFFLINE_SYNC_QUEUE
                   </span>
                 </div>
               }
@@ -180,62 +163,35 @@ export default function LandingPage() {
           </BentoGrid>
         </section>
 
-        {/* Who it's for */}
-        <section className="py-24 bg-[#111]">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-6">
-                Who is this for?
-              </h2>
-              <p className="text-xl text-text-secondary">
-                Operators. Street-level businesses. People who value trust and
-                privacy.
-                <br />
-                <br />
-                If you learn by doing, this is for you.
-              </p>
-            </div>
-            <div className="border-l border-white/10 pl-8 md:pl-12">
-              <h3 className="text-sm font-mono text-neon-lime uppercase mb-4">
-                NOT FOR
-              </h3>
-              <ul className="space-y-2 text-text-muted">
-                <li>Corporate chains</li>
-                <li>People who like paperwork</li>
-                <li>Those who sell data</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* Comparison */}
-        <section className="py-24 px-6 max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">
-            Us vs Them
-          </h2>
-          <div className="grid grid-cols-2 gap-4 md:gap-8">
-            <div className="bg-surface-elevated p-8 rounded-2xl border border-neon-lime/20">
-              <h3 className="text-neon-lime font-bold mb-6 text-xl">
-                Deelrx CRM
-              </h3>
-              <ul className="space-y-4 text-white font-medium">
-                <li className="flex items-center gap-2">✔ Quiet</li>
-                <li className="flex items-center gap-2">✔ Private</li>
-                <li className="flex items-center gap-2">✔ Fast</li>
-              </ul>
-            </div>
-            <div className="bg-white/5 p-8 rounded-2xl border border-white/5 opacity-50">
-              <h3 className="text-white font-bold mb-6 text-xl">The Others</h3>
-              <ul className="space-y-4 text-text-muted">
-                <li>Loud</li>
-                <li>Public</li>
-                <li>Slow</li>
-              </ul>
+        <section className="px-6 pb-24">
+          <div className="max-w-5xl mx-auto rounded-2xl border border-neon-lime/30 bg-neon-lime/5 p-8 md:p-12">
+            <p className="text-xs font-mono uppercase tracking-widest text-neon-lime mb-4">
+              Beta Access
+            </p>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              DRX is in beta. Get full access details and request rollout.
+            </h2>
+            <p className="text-text-secondary text-lg max-w-3xl mb-8">
+              Read the full beta section for expectations, current limitations,
+              and support flow. Then join the signup list for staged access.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/beta"
+                className="rounded-full border border-neon-lime/40 px-6 py-3 text-sm font-semibold text-neon-lime hover:bg-neon-lime/10"
+              >
+                See full beta page
+              </Link>
+              <Link
+                href={appWaitlistUrl}
+                className="rounded-full bg-neon-lime px-6 py-3 text-sm font-bold uppercase tracking-wide text-black hover:brightness-95"
+              >
+                Join beta waitlist
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* Footer */}
         <MarketFooter />
       </ShellLayout>
     </main>

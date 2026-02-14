@@ -4,8 +4,7 @@ import Link from "next/link";
 import { NeonButton } from "./neon-button";
 import { SystemStatus } from "./system-status";
 import { GlassCard } from "./glass-card";
-
-const appLoginUrl = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app"}/login`;
+import { appWaitlistUrl } from "@/lib/app-links";
 
 export function Hero() {
   return (
@@ -32,8 +31,8 @@ export function Hero() {
           </p>
 
           <div className="pt-8">
-            <Link href={appLoginUrl}>
-              <NeonButton>Start Now</NeonButton>
+            <Link href={appWaitlistUrl}>
+              <NeonButton>Join Beta Waitlist</NeonButton>
             </Link>
           </div>
         </div>

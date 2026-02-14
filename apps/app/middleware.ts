@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isPublicAppRoute = createRouteMatcher([
+  "/waitlist(.*)",
   "/login(.*)",
   "/register(.*)",
   "/sign-in(.*)",
@@ -21,6 +22,7 @@ const isAuthEntryRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/sso-callback(.*)",
 ]);
+const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
 
 function getAppOrigin(req: Request) {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
@@ -41,6 +43,18 @@ export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
   const pathname = url.pathname;
   const hostname = req.headers.get("host") || "";
+
+  // Always allow webhook ingestion without redirect logic.
+  if (pathname.startsWith("/api/webhooks")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[middleware:webhook-bypass]", {
+        pathname,
+        method: req.method,
+        host: hostname,
+      });
+    }
+    return NextResponse.next();
+  }
 
   const isMarketingDomain =
     hostname === "deelrxcrm.com" || hostname.endsWith(".deelrxcrm.com");
@@ -77,14 +91,37 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const claims = sessionClaims as {
+    metadata?: { onboardingComplete?: boolean };
+    publicMetadata?: { onboardingComplete?: boolean };
+    public_metadata?: { onboardingComplete?: boolean };
+  };
+  const onboardingComplete =
+    claims?.metadata?.onboardingComplete === true ||
+    claims?.publicMetadata?.onboardingComplete === true ||
+    claims?.public_metadata?.onboardingComplete === true;
 
   if (pathname === "/") {
-    return redirectToApp(req, userId ? "/dashboard" : "/login");
+    if (!userId) {
+      return redirectToApp(req, "/login");
+    }
+
+    return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding");
   }
 
   if (userId && isAuthEntryRoute(req)) {
-    return redirectToApp(req, "/dashboard");
+    return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding");
+  }
+
+  if (userId && !pathname.startsWith("/api")) {
+    if (!onboardingComplete && !isOnboardingRoute(req)) {
+      return redirectToApp(req, "/onboarding");
+    }
+
+    if (onboardingComplete && isOnboardingRoute(req)) {
+      return redirectToApp(req, "/dashboard");
+    }
   }
 
   if (!userId && !isPublicAppRoute(req)) {

@@ -6,6 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Clock, Database, Smartphone } from "lucide-react";
 
+const marketingUrl =
+  process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
+  "https://deelrxcrm.com";
+
 export const metadata: Metadata = {
   title: "Login | Deelrx CRM",
   description: "Access your secure workspace.",
@@ -45,8 +49,7 @@ export default async function LoginPage() {
               Sign In
             </h1>
             <p className="text-xs text-muted-foreground">
-              Enter your credentials to access the operator console. All
-              sessions are logged and monitored.
+              Enter your credentials to access the operator console.
             </p>
           </div>
         </div>
@@ -99,9 +102,9 @@ export default async function LoginPage() {
 
         <div className="text-center text-xs font-mono text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <span className="text-primary cursor-pointer hover:underline">
-            Request Access from Administrator
-          </span>
+          <Link href="/waitlist" className="text-primary cursor-pointer hover:underline">
+            Join beta waitlist
+          </Link>
         </div>
 
         {/* Security Info Card */}
@@ -136,13 +139,15 @@ export default async function LoginPage() {
               </div>
               <div className="flex-1 space-y-0.5">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-medium text-white">Encryption</h3>
+                  <h3 className="text-xs font-medium text-white">
+                    Session Guards
+                  </h3>
                   <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-accent font-mono uppercase">
-                    AES-256
+                    ACTIVE
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  End-to-end zero knowledge
+                  Role checks and session controls are enforced on sign-in.
                 </p>
               </div>
             </div>
@@ -162,7 +167,7 @@ export default async function LoginPage() {
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  No server-side activity tracking
+                  Audit context available in operator workflows
                 </p>
               </div>
             </div>
@@ -219,16 +224,25 @@ export default async function LoginPage() {
         {/* Footer Build Info */}
         <div className="pt-8 pb-4 text-center space-y-4">
           <div className="flex justify-center gap-4 text-[10px] text-muted-foreground/60 font-mono">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href={`${marketingUrl}/legal/privacy`}
+              className="hover:text-white transition-colors"
+            >
               Privacy Policy
             </Link>
             <span>•</span>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href={`${marketingUrl}/legal/terms`}
+              className="hover:text-white transition-colors"
+            >
               Terms of Service
             </Link>
             <span>•</span>
-            <Link href="#" className="hover:text-white transition-colors">
-              Security
+            <Link
+              href={`${marketingUrl}/beta`}
+              className="hover:text-white transition-colors"
+            >
+              Beta details
             </Link>
           </div>
 
@@ -240,13 +254,13 @@ export default async function LoginPage() {
             <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded border border-white/5">
               <div className="w-1 h-1 bg-primary rounded-full" />
               <span className="text-[9px] font-mono text-primary font-bold">
-                UPTIME 99.99%
+                WAITLIST ACTIVE
               </span>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded border border-white/5">
               <div className="w-1 h-1 bg-white/50 rounded-full" />
               <span className="text-[9px] font-mono text-white/50">
-                AES-256
+                BETA ACCESS
               </span>
             </div>
           </div>

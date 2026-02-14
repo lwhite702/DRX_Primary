@@ -5,12 +5,12 @@
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
 
   /* DRX - Industrial Control System Theme */
-  --color-obsidian: #0a0a0a;
+  --color-obsidian: #050505;
   --color-surface: #0c0c0c;
   --color-surface-elevated: #0f0f0f;
 
-  --color-neon-lime: #ccff00;
-  --color-neon-lime-dim: rgba(204, 255, 0, 0.1);
+  --color-neon-lime: #bfff00;
+  --color-neon-lime-dim: rgba(191, 255, 0, 0.1);
   --color-emerald-glow: #10b981;
 
   --color-text-primary: #ebebeb;
@@ -179,7 +179,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(204, 255, 0, 0.4),
+    rgba(191, 255, 0, 0.4),
     /* neon-lime */ transparent
   );
   transition: left 0.5s ease-in-out;
