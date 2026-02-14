@@ -54,22 +54,22 @@ export function MarketFooter() {
             </div>
             <div className="flex flex-col md:flex-row gap-6 md:justify-center font-mono text-base uppercase text-text-secondary">
               <Link
-                href="/privacy"
+                href="/legal/privacy"
                 className="hover:text-neon-lime transition-colors"
               >
                 Privacy
               </Link>
               <Link
-                href="/terms"
+                href="/legal/terms"
                 className="hover:text-neon-lime transition-colors"
               >
                 Terms of Service
               </Link>
               <Link
-                href="/security"
+                href="/legal/regulatory-disclaimer"
                 className="hover:text-neon-lime transition-colors"
               >
-                Security Audit
+                Regulatory Disclaimer
               </Link>
             </div>
           </div>

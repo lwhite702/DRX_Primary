@@ -1,0 +1,47 @@
+{
+  "topLevelNav": [
+    "/",
+    "/product",
+    "/use-cases",
+    "/resources",
+    "/beta",
+    "/legal",
+    "/waitlist"
+  ],
+  "secondaryNav": [
+    "/login"
+  ],
+  "routes": [
+    "/",
+    "/product",
+    "/product/sales-checkout",
+    "/product/inventory-control",
+    "/product/customers-credit",
+    "/product/operations-visibility",
+    "/product/team-access-security",
+    "/use-cases",
+    "/use-cases/owner-operator",
+    "/use-cases/store-manager",
+    "/use-cases/multi-role-teams",
+    "/resources",
+    "/resources/guides",
+    "/resources/guides/inventory-intake-and-adjustments",
+    "/resources/guides/credit-and-payments",
+    "/resources/guides/privacy-presets-and-team-roles",
+    "/resources/changelog",
+    "/beta",
+    "/legal",
+    "/legal/privacy",
+    "/legal/terms",
+    "/legal/lawful-use",
+    "/legal/regulatory-disclaimer",
+    "/waitlist"
+  ],
+  "footer": [
+    "/legal/privacy",
+    "/legal/terms",
+    "/legal/lawful-use",
+    "/legal/regulatory-disclaimer",
+    "/resources/changelog"
+  ]
+}

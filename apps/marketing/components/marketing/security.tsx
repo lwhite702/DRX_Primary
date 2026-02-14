@@ -25,8 +25,8 @@ export function Security() {
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              All data is encrypted in transit and at rest. Even we can't see
-              your transactions.
+              Transport encryption and controlled data access are part of the
+              current platform safeguards.
             </p>
           </div>
 
@@ -85,7 +85,7 @@ export function Security() {
           <div>
             <p className="text-3xl font-bold text-white font-mono">100%</p>
             <p className="text-[10px] uppercase tracking-widest text-[#BFFF00] mt-1">
-              Uptime
+              Role Scoped Access
             </p>
           </div>
         </div>

@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 
+### Added
+
+- **Marketing IA**: Added full marketing route map for product, use-cases, resources, beta, and legal sections.
+- **Marketing Content Model**: Added `marketing.content-map.json` and shared site rendering primitives for page framing and tracked links.
+
+### Changed
+
+- **Marketing Routing**: Updated legacy `/privacy` and `/terms` paths to align with legal hub routes.
+- **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
+
 ## [0.5.1] - 2026-02-14
 
 ### Added
