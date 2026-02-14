@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 
+## [0.5.1] - 2026-02-14
+
+### Added
+
+- **Auth/Waitlist**: Added app-hosted Clerk waitlist route at `/waitlist` with branded DRX styling for seamless marketing-to-app handoff.
+- **Onboarding**: Added onboarding action + layout gate and persisted onboarding completion metadata for post-auth access control.
+
+### Changed
+
+- **Middleware**: Enforced onboarding gating for authenticated users and added explicit webhook bypass handling for `/api/webhooks/*`.
+- **Marketing Conversion**: Repointed primary marketing waitlist CTAs to app waitlist endpoint (`${NEXT_PUBLIC_APP_URL}/waitlist?source=marketing`).
+- **Visual Continuity**: Aligned app and marketing neon token values (`#050505` base, `#BFFF00` accent) and updated auth legal/beta links.
+
 ## [0.5.0] - 2026-02-14
 
 ### Added
