@@ -360,10 +360,10 @@ importers:
   apps/marketing:
     dependencies:
       '@deelrx/brand':
-        specifier: workspace:*
+        specifier: link:../../packages/brand
         version: link:../../packages/brand
       '@deelrx/ui':
-        specifier: workspace:*
+        specifier: link:../../packages/ui
         version: link:../../packages/ui
       lucide-react:
         specifier: ^0.454.0

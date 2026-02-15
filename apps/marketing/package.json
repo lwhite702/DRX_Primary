@@ -10,8 +10,8 @@
     "test": "echo \"No tests for marketing app\""
   },
   "dependencies": {
-    "@deelrx/brand": "workspace:*",
-    "@deelrx/ui": "workspace:*",
+    "@deelrx/brand": "link:../../packages/brand",
+    "@deelrx/ui": "link:../../packages/ui",
     "lucide-react": "^0.454.0",
     "next": "16.1.5",
     "react": "19.2.1",
