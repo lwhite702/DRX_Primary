@@ -1,5 +1,5 @@
-import { W as WorkflowSession } from './shared-Z5LN5APr.mjs';
-export { h as hasRole, r as requireRole, a as requireTenant, b as requireUser } from './shared-Z5LN5APr.mjs';
+import { W as WorkflowSession } from './shared-BYrhBbPS.mjs';
+export { h as hasRole, b as requireRole, a as requireTenant, r as requireUser } from './shared-BYrhBbPS.mjs';
 
 declare function mapClerkToSession(auth: {
     userId?: string | null;

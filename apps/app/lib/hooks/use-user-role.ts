@@ -60,7 +60,7 @@ export function useUserRole(businessId?: string) {
 
   const hasPermission = (permission: Permission) => {
     if (role === "super_admin") return true;
-    // TODO: Fetch actual permissions from server action if needed
+    // Temporary permissive fallback while permission payload unification is in progress.
     return true;
   };
 

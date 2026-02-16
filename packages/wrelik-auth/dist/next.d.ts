@@ -1,4 +1,4 @@
-import { W as WorkflowSession } from './shared-Z5LN5APr.js';
+import { W as WorkflowSession } from './shared-BYrhBbPS.js';
 
 declare function getSession(): WorkflowSession;
 

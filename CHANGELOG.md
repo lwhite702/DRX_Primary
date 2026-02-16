@@ -15,11 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Marketing IA**: Added full marketing route map for product, use-cases, resources, beta, and legal sections.
 - **Marketing Content Model**: Added `marketing.content-map.json` and shared site rendering primitives for page framing and tracked links.
+- **Testing Gate**: Added repository audit, test matrix generation, policy enforcement, data-integrity check, security scan, performance smoke check, and full readiness report generators under `scripts/testing/*`.
+- **CI/CD**: Added unified `.github/workflows/ci-gate.yml` fail-fast workflow with artifacts for audit, E2E, security, performance, and readiness reporting.
+- **E2E Coverage**: Added Playwright accessibility and visual regression suites (`apps/app/tests/e2e/a11y.spec.ts`, `apps/app/tests/e2e/visual-regression.spec.ts`).
 
 ### Changed
 
 - **Marketing Routing**: Updated legacy `/privacy` and `/terms` paths to align with legal hub routes.
 - **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
+- **Test Config**: Hardened Vitest coverage thresholds (90% lines/branches/functions/statements) and expanded Playwright retention/reporting for CI diagnostics.
+- **Package Scripts**: Added canonical root testing scripts (`test:unit`, `test:integration`, `test:e2e:web`, `test:a11y`, `test:security`, `test:perf`, `test:regression`, `test:all`, `test:matrix`, `test:policy`, `test:readiness`).
+
+### Removed
+
+- **Legacy Artifacts**: Removed stale tracked CI/testing artifacts and legacy TestSprite suites from version control.
 
 ## [0.5.1] - 2026-02-14
 

@@ -311,7 +311,7 @@ describe('EventDeskPage Data Fetching', () => {
   });
 
   describe('Promise.all Implementation', () => {
-    it.skip('should optimize concurrent data fetching', async () => {
+    it('should optimize concurrent data fetching', async () => {
       const mockSupabase = {
         from: vi.fn((table) => {
           console.log('DEBUG: from called with', table);

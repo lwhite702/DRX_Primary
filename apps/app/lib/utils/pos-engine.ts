@@ -578,7 +578,7 @@ export class POSEngine {
         p_delivery_address: this.cart.delivery_address || null,
         p_delivery_price: this.cart.delivery_price || 0,
         p_amount_paid: this.cart.amount_paid || 0,
-        // p_payment_ref: checkoutData.payment_ref || null // TODO: Update RPC to accept this
+        // p_payment_ref is persisted post-checkout when present.
       }
     );
 

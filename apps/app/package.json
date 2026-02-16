@@ -27,6 +27,11 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
+    ,
+    "test:e2e:a11y": "playwright test tests/e2e/a11y.spec.ts",
+    "test:e2e:regression": "playwright test tests/e2e/visual-regression.spec.ts",
+    "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
+    "test:regression": "vitest run tests/regression"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",

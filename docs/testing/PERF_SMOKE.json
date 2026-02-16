@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-02-15T05:23:22.566Z",
+  "metrics": {
+    "appNextMb": 484.02,
+    "marketingNextMb": 12.29
+  },
+  "thresholds": {
+    "appNextMb": 300,
+    "marketingNextMb": 120
+  },
+  "pass": false
+}
