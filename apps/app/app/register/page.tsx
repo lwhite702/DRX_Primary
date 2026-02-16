@@ -74,7 +74,7 @@ export default async function RegisterPage() {
               elements: {
                 rootBox: "w-full",
                 cardBox:
-                  "w-full shadow-none border-none bg-transparent backdrop-blur-none p-6 pt-2 pb-8",
+                  "w-full shadow-none border-none bg-transparent p-6 pt-2 pb-8",
                 card: "bg-transparent shadow-none border-none p-0",
                 header: "hidden",
                 formButtonPrimary:
@@ -84,10 +84,6 @@ export default async function RegisterPage() {
                 dividerLine: "bg-white/5",
                 dividerText:
                   "text-muted-foreground text-[10px] uppercase tracking-widest font-mono",
-                formFieldLabel:
-                  "text-muted-foreground text-[10px] uppercase tracking-wider font-mono mb-1.5",
-                formFieldInput:
-                  "bg-black/50 border-white/10 text-white rounded-md focus:ring-primary/50 focus:border-primary/50 h-10 font-mono text-sm placeholder:text-white/20",
                 footerActionLink:
                   "text-primary hover:text-primary/90 font-mono text-xs",
                 footer: "hidden",
