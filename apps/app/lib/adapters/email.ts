@@ -1,25 +1,22 @@
 /**
  * Email Adapter
  *
- * Wraps @wrelik/email for email sending with Resend
+ * Wraps @wrelik/email utilities.
  */
 
-import { email } from "@wrelik/email";
-
-export { email };
+import {
+  sendEmail as sendEmailRaw,
+  sendTemplate,
+  type SendEmailOptions,
+} from "@wrelik/email";
 
 /**
  * Send an email
  */
-export async function sendEmail(params: {
-  to: string | string[];
-  subject: string;
-  html?: string;
-  text?: string;
-  from?: string;
-  tenantId?: string;
-}) {
-  return email.send(params);
+export async function sendEmail(params: SendEmailOptions & { tenantId?: string }) {
+  const { tenantId, ...emailParams } = params;
+  void tenantId;
+  return sendEmailRaw(emailParams);
 }
 
 /**
@@ -32,5 +29,6 @@ export async function sendTemplatedEmail(params: {
   from?: string;
   tenantId?: string;
 }) {
-  return email.sendTemplated(params);
+  const { to, templateId, variables = {}, from } = params;
+  return sendTemplate(templateId, to, variables, { from });
 }

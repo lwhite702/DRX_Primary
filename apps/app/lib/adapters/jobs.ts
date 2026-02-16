@@ -1,12 +1,16 @@
 /**
  * Jobs Adapter
  *
- * Wraps @wrelik/jobs for background task execution with Inngest
+ * Wraps @wrelik/jobs for background task execution.
  */
 
-import { jobs } from "@wrelik/jobs";
+import {
+  emit,
+  createFunction as createJobFunction,
+  inngest,
+} from "@wrelik/jobs";
 
-export { jobs };
+export { inngest as jobs };
 
 /**
  * Send an event to trigger a job
@@ -16,17 +20,14 @@ export async function sendEvent(
   data: Record<string, any>,
   options?: { tenantId?: string }
 ) {
-  return jobs.send(eventName, data, options);
+  return emit(eventName, { ...data, tenantId: options?.tenantId });
 }
 
 /**
  * Create a job definition
  */
-export function createJob(
-  name: string,
-  handler: (event: any) => Promise<any>
-) {
-  return jobs.create(name, handler);
+export function createJob(name: string, handler: (event: any) => Promise<any>) {
+  return createJobFunction(name, { event: name }, handler);
 }
 
 /**
@@ -38,5 +39,5 @@ export async function scheduleJob(
   delay: number,
   options?: { tenantId?: string }
 ) {
-  return jobs.schedule(eventName, data, delay, options);
+  return emit(eventName, { ...data, tenantId: options?.tenantId, delay });
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { errorTracker } from "@wrelik/errors";
 import { useEffect, useState } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { toast } from "sonner";
@@ -13,6 +12,25 @@ interface FeedbackButtonProps {
   placeholder?: string;
 }
 
+type SentryFeedback = {
+  createForm: (options: {
+    messagePlaceholder?: string;
+    tags?: Record<string, string>;
+  }) => Promise<{ appendToDom: () => void; open: () => void }>;
+};
+
+type SentryBrowserClient = {
+  getFeedback?: () => SentryFeedback | null;
+};
+
+function getSentryFeedback(): SentryFeedback | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const sentry = (window as Window & { Sentry?: SentryBrowserClient }).Sentry;
+  return sentry?.getFeedback?.() ?? null;
+}
+
 export function SentryFeedbackButton({
   children,
   asChild = false,
@@ -20,10 +38,10 @@ export function SentryFeedbackButton({
   source = "unknown",
   placeholder = "How can we improve your experience?",
 }: FeedbackButtonProps) {
-  const [feedback, setFeedback] = useState<any>(null);
+  const [feedback, setFeedback] = useState<SentryFeedback | null>(null);
 
   useEffect(() => {
-    const fb = errorTracker.getFeedback();
+    const fb = getSentryFeedback();
     setFeedback(fb);
   }, []);
 
@@ -31,7 +49,7 @@ export function SentryFeedbackButton({
     try {
       if (!feedback) {
         console.warn("Feedback integration not found");
-        const fb = errorTracker.getFeedback();
+        const fb = getSentryFeedback();
         if (fb) {
           const form = await fb.createForm({
             messagePlaceholder: placeholder,

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         .select("id")
         .eq("customer_id", credit.customer_id);
       if (transactions) {
-        transactionIds = transactions.map((t) => t.id);
+        transactionIds = transactions.map((t: { id: string }) => t.id);
       }
     }
 
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Map response
-    const mapped = logs.map((log) => ({
+    const mapped = logs.map((log: any) => ({
       ...log,
       transaction_id:
         log.entity_type === "credit_transactions" ? log.entity_id : null,

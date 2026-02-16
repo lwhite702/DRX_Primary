@@ -1,12 +1,17 @@
 /**
  * Analytics Adapter
  *
- * Wraps @wrelik/analytics for event tracking with PostHog
+ * Wraps @wrelik/analytics helpers for event tracking.
  */
 
-import { analytics } from "@wrelik/analytics";
+import {
+  capture as captureAnalytics,
+  identify as identifyAnalytics,
+  initAnalytics,
+  shutdown as shutdownAnalytics,
+} from "@wrelik/analytics";
 
-export { analytics };
+export { initAnalytics, shutdownAnalytics };
 
 /**
  * Track a custom event
@@ -14,27 +19,21 @@ export { analytics };
 export function trackEvent(
   eventName: string,
   properties?: Record<string, any>,
-  options?: { tenantId?: string }
+  options?: { userId?: string }
 ) {
-  return analytics.track(eventName, properties, options);
+  return captureAnalytics(eventName, properties, options);
 }
 
 /**
  * Identify a user
  */
-export function identifyUser(
-  userId: string,
-  traits?: Record<string, any>
-) {
-  return analytics.identify(userId, traits);
+export function identifyUser(userId: string, traits: Record<string, any> = {}) {
+  return identifyAnalytics(userId, traits);
 }
 
 /**
  * Track a page view
  */
-export function trackPageView(
-  page: string,
-  properties?: Record<string, any>
-) {
-  return analytics.page(page, properties);
+export function trackPageView(page: string, properties?: Record<string, any>) {
+  return captureAnalytics("app.view.page", { page, ...properties });
 }

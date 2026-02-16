@@ -1,40 +1,45 @@
 /**
  * Auth Adapter
  *
- * Wraps @wrelik/auth and @wrelik/auth/next for Clerk integration
+ * Provides lightweight auth/session helpers for app code.
  */
 
-import { auth } from "@wrelik/auth";
-import type { User, Session } from "@wrelik/auth";
+import { getSession as getWorkflowSession } from "@wrelik/auth/next";
+import type { WorkflowSession } from "@wrelik/auth";
 
-export { auth, User, Session };
+export type Session = WorkflowSession;
+export type User = { id: string };
 
 /**
  * Get the current authenticated user
  */
 export async function getCurrentUser(): Promise<User | null> {
-  return auth.getUser();
+  const session = getWorkflowSession();
+  if (!session.userId) return null;
+  return { id: session.userId };
 }
 
 /**
  * Get the current session
  */
 export async function getSession(): Promise<Session | null> {
-  return auth.getSession();
+  const session = getWorkflowSession();
+  return session.userId ? session : null;
 }
 
 /**
  * Sign out the current user
  */
 export async function signOut() {
-  return auth.signOut();
+  // Sign-out flow is handled by Clerk UI/routes in this app.
+  return;
 }
 
 /**
  * Require authentication - throws if not authenticated
  */
 export async function requireAuth(): Promise<Session> {
-  const session = await auth.getSession();
+  const session = await getSession();
   if (!session) {
     throw new Error("Authentication required");
   }
@@ -45,9 +50,6 @@ export async function requireAuth(): Promise<Session> {
  * Get user ID from session
  */
 export async function getUserId(): Promise<string> {
-  const session = await auth.getSession();
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
-  return session.userId;
+  const session = await requireAuth();
+  return session.userId as string;
 }

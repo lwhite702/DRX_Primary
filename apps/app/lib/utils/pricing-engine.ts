@@ -330,15 +330,13 @@ export class PricingEngine {
           inventoryId,
           currentPrice: new Prisma.Decimal(currentPrice),
           recommendedPrice: new Prisma.Decimal(recommendation.recommendedPrice),
-          recommendedRangeMin: new Prisma.Decimal(
-            recommendation.recommendedRangeMin,
-          ),
-          recommendedRangeMax: new Prisma.Decimal(
-            recommendation.recommendedRangeMax,
+          priceChangePercentage: new Prisma.Decimal(
+            ((recommendation.recommendedPrice - currentPrice) /
+              (currentPrice || 1)) *
+              100,
           ),
           confidenceScore: new Prisma.Decimal(recommendation.confidenceScore),
-          reasoning: recommendation.reasoning,
-          factors: recommendation.factors,
+          recommendationReason: recommendation.reasoning,
           status: "pending",
         },
       });
@@ -385,7 +383,7 @@ export class PricingEngine {
         where: { id: recommendationId },
         data: {
           status: "applied",
-          appliedAt: new Date(),
+          isActive: false,
         },
       });
 

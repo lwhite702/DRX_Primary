@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Fetch User Details (Emails) from Auth via Admin Client
-    const userIds = teamRoles.map((r) => r.user_id);
+    const userIds = teamRoles.map((r: { user_id: string }) => r.user_id);
 
     // Unfortunately listUsers usually doesn't take a filter by ID list efficiently in all versions,
     // but we can iterate or fetch page by page.
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     const userDetailsMap = new Map();
 
     // Batch fetch (naive)
-    const promises = userIds.map(async (uid) => {
+    const promises = userIds.map(async (uid: string) => {
       const { data: uData, error: uError } =
         await supabaseAdmin.auth.admin.getUserById(uid);
       if (uData && uData.user) {
@@ -99,8 +99,8 @@ export async function GET(request: NextRequest) {
     const userDetails = await Promise.all(promises);
 
     // 6. Merge Data
-    const enrichedTeam = teamRoles.map((member) => {
-      const details = userDetails.find((u) => u && u.id === member.user_id);
+    const enrichedTeam = teamRoles.map((member: { user_id: string }) => {
+      const details = userDetails.find((u: { id: string } | null) => u && u.id === member.user_id);
       return {
         ...member,
         email: details?.email || "Unknown",

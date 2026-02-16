@@ -1,21 +1,16 @@
 /**
  * Error Tracking Adapter
  *
- * Wraps @wrelik/errors for Sentry integration
+ * Wraps @wrelik/errors helpers.
  */
 
-import { errorTracker } from "@wrelik/errors";
-
-export { errorTracker };
+import { captureError as capture, setUserContext } from "@wrelik/errors";
 
 /**
  * Capture an error
  */
-export function captureError(
-  error: Error,
-  context?: Record<string, any>
-) {
-  return errorTracker.capture(error, context);
+export function captureError(error: Error, context?: Record<string, any>) {
+  return capture(error, context);
 }
 
 /**
@@ -23,9 +18,10 @@ export function captureError(
  */
 export function captureMessage(
   message: string,
-  level?: "info" | "warning" | "error"
+  level: "info" | "warning" | "error" = "error"
 ) {
-  return errorTracker.captureMessage(message, level);
+  const tagged = new Error(message);
+  return capture(tagged, { level });
 }
 
 /**
@@ -36,7 +32,8 @@ export function addBreadcrumb(
   category?: string,
   data?: Record<string, any>
 ) {
-  return errorTracker.breadcrumb(message, category, data);
+  // @wrelik/errors has no breadcrumb API; capture as lightweight context.
+  return capture(new Error(message), { category, ...data });
 }
 
 /**
@@ -47,5 +44,5 @@ export function setUser(
   email?: string,
   attributes?: Record<string, any>
 ) {
-  return errorTracker.setUser(id, email, attributes);
+  return setUserContext({ id, email, ...(attributes || {}) });
 }

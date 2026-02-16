@@ -341,8 +341,8 @@ describe('Data Processing Logic - Vitest Tests', () => {
     it('should default to zero for missing counts', () => {
       const result = DashboardProcessor.combineDashboardData(
         [],
-        undefined, // customerCount
-        undefined, // inventoryCount
+        0, // customerCount
+        0, // inventoryCount
         [],
         []
       );

@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> },
 ) {
   const { userId } = await params;
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   // Auth check
   const {
     data: { user },

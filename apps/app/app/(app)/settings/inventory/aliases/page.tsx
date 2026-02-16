@@ -45,9 +45,13 @@ export default function AliasesSettingsPage() {
   const [aliases, setAliases] = useState<Alias[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [newAlias, setNewAlias] = useState({
+  const [newAlias, setNewAlias] = useState<{
+    alias_name: string;
+    standard_unit: "g" | "oz";
+    quantity: string;
+  }>({
     alias_name: "",
-    standard_unit: "g" as const,
+    standard_unit: "g",
     quantity: "",
   });
   const supabase = getSupabaseClient();

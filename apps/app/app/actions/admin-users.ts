@@ -27,8 +27,8 @@ export async function fetchAdminUsers(): Promise<{
 
     const roles = await db.userRole.findMany({
       include: {
-        businessProfile: {
-          select: { name: true, id: true },
+        business: {
+          select: { businessName: true, id: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -38,8 +38,8 @@ export async function fetchAdminUsers(): Promise<{
       id: r.id,
       user_id: r.userId,
       role: r.role,
-      business_name: r.businessProfile?.name || "N/A",
-      business_id: r.businessProfile?.id || null, // Ensure string | null fits
+      business_name: r.business?.businessName || "N/A",
+      business_id: r.business?.id || null, // Ensure string | null fits
       created_at: r.createdAt,
     }));
 

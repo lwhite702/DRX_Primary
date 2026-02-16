@@ -1,7 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
-import { errorTracker } from "@wrelik/errors";
+
+type SentryFeedback = {
+  createWidget: () => void;
+};
+
+type SentryBrowserClient = {
+  getFeedback?: () => SentryFeedback | null;
+};
+
+function getSentryFeedback(): SentryFeedback | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const sentry = (window as Window & { Sentry?: SentryBrowserClient }).Sentry;
+  return sentry?.getFeedback?.() ?? null;
+}
 
 /**
  * Feedback Widget
@@ -12,7 +27,7 @@ import { errorTracker } from "@wrelik/errors";
 export function SentryFeedbackWidget() {
   useEffect(() => {
     // Initialize feedback widget
-    const feedback = errorTracker.getFeedback();
+    const feedback = getSentryFeedback();
 
     if (feedback) {
       console.log("✅ Feedback widget initialized");
@@ -27,7 +42,7 @@ export function SentryFeedbackWidget() {
  */
 export function useSentryFeedback() {
   const openFeedback = () => {
-    const feedback = errorTracker.getFeedback();
+    const feedback = getSentryFeedback();
     if (feedback) {
       feedback.createWidget();
     } else {

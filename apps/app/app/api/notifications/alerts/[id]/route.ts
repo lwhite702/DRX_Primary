@@ -7,7 +7,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
     error: authError,

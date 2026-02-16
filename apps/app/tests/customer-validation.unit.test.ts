@@ -8,6 +8,16 @@ import { z } from "zod";
 
 import { customerSchema } from "@/lib/validations/schemas";
 
+function expectParseSuccess(
+  result: ReturnType<typeof customerSchema.safeParse>
+) {
+  expect(result.success).toBe(true);
+  if (!result.success) {
+    throw new Error("Expected customer schema parse to succeed");
+  }
+  return result.data;
+}
+
 describe("Customer Creation Validation Rules", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,8 +32,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.last_name).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.last_name).toBeUndefined();
     });
 
     it("should allow customer creation with last name", () => {
@@ -35,8 +45,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.last_name).toBe("Doe");
+      const data = expectParseSuccess(result);
+      expect(data.last_name).toBe("Doe");
     });
 
     it("should handle empty string last name as undefined", () => {
@@ -48,8 +58,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.last_name).toBe("");
+      const data = expectParseSuccess(result);
+      expect(data.last_name).toBe("");
     });
 
     it("should reject last name that is too long", () => {
@@ -81,8 +91,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.alias).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.alias).toBeUndefined();
     });
 
     it("should allow customer creation with alias", () => {
@@ -94,8 +104,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.alias).toBe("Johnny");
+      const data = expectParseSuccess(result);
+      expect(data.alias).toBe("Johnny");
     });
 
     it("should handle empty string alias", () => {
@@ -107,8 +117,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.alias).toBe("");
+      const data = expectParseSuccess(result);
+      expect(data.alias).toBe("");
     });
 
     it("should reject alias that is too long", () => {
@@ -139,9 +149,9 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.phone_number).toBe("555-0123");
-      expect(result.data.email).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.phone_number).toBe("555-0123");
+      expect(data.email).toBeUndefined();
     });
 
     it("should allow customer with email only", () => {
@@ -152,9 +162,9 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.email).toBe("john@example.com");
-      expect(result.data.phone_number).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.email).toBe("john@example.com");
+      expect(data.phone_number).toBeUndefined();
     });
 
     it("should allow customer with both phone and email", () => {
@@ -166,9 +176,9 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.phone_number).toBe("555-0123");
-      expect(result.data.email).toBe("john@example.com");
+      const data = expectParseSuccess(result);
+      expect(data.phone_number).toBe("555-0123");
+      expect(data.email).toBe("john@example.com");
     });
 
     it("should reject customer with neither phone nor email", () => {
@@ -232,10 +242,7 @@ describe("Customer Creation Validation Rules", () => {
         };
 
         const result = customerSchema.safeParse(customerData);
-        expect(result.success).toBe(
-          true,
-          `Phone number "${phone}" should be valid`
-        );
+        expect(result.success).toBe(true);
       });
     });
 
@@ -274,7 +281,7 @@ describe("Customer Creation Validation Rules", () => {
         };
 
         const result = customerSchema.safeParse(customerData);
-        expect(result.success).toBe(true, `Email "${email}" should be valid`);
+        expect(result.success).toBe(true);
       });
     });
 
@@ -295,10 +302,7 @@ describe("Customer Creation Validation Rules", () => {
         };
 
         const result = customerSchema.safeParse(customerData);
-        expect(result.success).toBe(
-          false,
-          `Email "${email}" should be invalid`
-        );
+        expect(result.success).toBe(false);
       });
     });
   });
@@ -321,8 +325,8 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(customerData);
+      const data = expectParseSuccess(result);
+      expect(data).toEqual(customerData);
     });
 
     it("should validate minimal customer record", () => {
@@ -333,11 +337,11 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.first_name).toBe("John");
-      expect(result.data.phone_number).toBe("555-0123");
-      expect(result.data.last_name).toBeUndefined();
-      expect(result.data.alias).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.first_name).toBe("John");
+      expect(data.phone_number).toBe("555-0123");
+      expect(data.last_name).toBeUndefined();
+      expect(data.alias).toBeUndefined();
     });
 
     it("should validate customer with email only", () => {
@@ -350,9 +354,9 @@ describe("Customer Creation Validation Rules", () => {
       };
 
       const result = customerSchema.safeParse(customerData);
-      expect(result.success).toBe(true);
-      expect(result.data.email).toBe("jane.smith@example.com");
-      expect(result.data.phone_number).toBeUndefined();
+      const data = expectParseSuccess(result);
+      expect(data.email).toBe("jane.smith@example.com");
+      expect(data.phone_number).toBeUndefined();
     });
   });
 

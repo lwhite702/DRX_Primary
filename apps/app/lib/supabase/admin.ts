@@ -1,12 +1,12 @@
 /**
  * Database Admin Client Adapter
  *
- * This module provides admin database access through @wrelik/db
- * Legacy Supabase admin client interface maintained for backward compatibility
+ * This module provides admin database access through local Prisma.
+ * It is intentionally typed as a supabase-compat shim during migration.
  */
 
-import { db } from "@wrelik/db";
+import { db } from "@/lib/db";
 
-export const supabaseAdmin = db;
+export const supabaseAdmin = db as any;
 
-export const supabaseAdminClient = db;
+export const supabaseAdminClient = db as any;

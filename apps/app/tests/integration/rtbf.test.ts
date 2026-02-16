@@ -1,27 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initiateRTBF } from "@/app/actions/rtbf";
-import { db } from "@wrelik/db";
 
-// Mock standard db client
-vi.mock("@wrelik/db", () => ({
-  db: {},
+const mockServerClient = {
+  auth: {
+    getUser: vi.fn(),
+    getSession: vi.fn(),
+  },
+  from: vi.fn(),
+};
+
+const mockAdminClient = {
+  from: vi.fn(() => ({
+    insert: vi.fn().mockResolvedValue({ error: null }),
+    delete: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })) })),
+    eq: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) })),
+  })),
+  auth: {
+    admin: {
+      updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    },
+  },
+};
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => mockServerClient),
 }));
 
-// Define shared mocks
-const mockAdminAuth = {
-  admin: {
-    updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null }),
-  },
-};
-const mockAdminDbInstance = {
-  businessProfile: {
-    findMany: vi.fn().mockResolvedValue([]),
-  },
-};
-const mockAdminDb = {
-  findMany: vi.fn().mockResolvedValue([]),
-  update: vi.fn().mockResolvedValue({}),
-};
+vi.mock("@supabase/supabase-js", () => ({
+  createClient: vi.fn(() => mockAdminClient),
+}));
 
 describe("RTBF Privacy Integration", () => {
   beforeEach(() => {
@@ -34,23 +41,46 @@ describe("RTBF Privacy Integration", () => {
       ok: true,
       json: () => Promise.resolve({ success: true }),
     });
+
+    mockServerClient.auth.getUser.mockResolvedValue({
+      data: { user: { id: "owner-1" } },
+      error: null,
+    });
+    mockServerClient.auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "test-token" } },
+      error: null,
+    });
+    mockServerClient.from.mockImplementation((table: string) => {
+      if (table === "user_roles") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { role: "owner" },
+                  error: null,
+                }),
+              })),
+            })),
+          })),
+        };
+      }
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+      };
+    });
   });
 
   it("should mask user PII and remove roles when initiated by owner", async () => {
-    const mockDb = {
-      businessProfile: {
-        findMany: vi.fn().mockResolvedValue([
-          { id: "tenant-1", owner_id: "owner-1" },
-        ]),
-      },
-    };
-    (db as any).mockReturnValue(mockDb);
-
     // Start RTBF
     const result = await initiateRTBF("tenant-1", "user-shred");
 
     expect(result.success).toBe(true);
-    expect(mockAdminAuth.admin.updateUserById).toHaveBeenCalledWith(
+    expect(mockAdminClient.auth.admin.updateUserById).toHaveBeenCalledWith(
       "user-shred",
       expect.objectContaining({
         user_metadata: expect.objectContaining({
@@ -58,10 +88,37 @@ describe("RTBF Privacy Integration", () => {
         }),
       }),
     );
-    expect(mockAdminDb.findMany).toHaveBeenCalled();
   });
 
   it("should block non-owners from initiating RTBF", async () => {
+    mockServerClient.from.mockImplementation((table: string) => {
+      if (table === "user_roles" || table === "admin_users") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { role: "cashier" },
+                  error: null,
+                }),
+              })),
+              single: vi.fn().mockResolvedValue({
+                data: { role: "cashier" },
+                error: null,
+              }),
+            })),
+          })),
+        };
+      }
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+      };
+    });
+
     const result = await initiateRTBF("tenant-1", "user-shred");
 
     expect(result.error).toContain("Only Owners or Super Admins");

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { errorTracker } from "@wrelik/errors";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -12,6 +11,22 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+}
+
+type SentryFeedback = {
+  createWidget: () => void;
+};
+
+type SentryBrowserClient = {
+  captureException?: (error: unknown, context?: Record<string, unknown>) => void;
+  getFeedback?: () => SentryFeedback | null;
+};
+
+function getSentryClient(): SentryBrowserClient | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return (window as Window & { Sentry?: SentryBrowserClient }).Sentry ?? null;
 }
 
 /**
@@ -34,7 +49,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log to error tracker
-    errorTracker.capture(error, {
+    getSentryClient()?.captureException?.(error, {
       contexts: {
         react: {
           componentStack: errorInfo.componentStack,
@@ -46,7 +61,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
   }
 
   handleReportBug = () => {
-    const feedback = errorTracker.getFeedback();
+    const feedback = getSentryClient()?.getFeedback?.();
     if (feedback) {
       feedback.createWidget();
     }

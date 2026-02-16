@@ -1,12 +1,10 @@
 /**
  * Client Instrumentation
- *
- * This file configures initialization of error tracking via @wrelik/errors
  */
 
-import { errorTracker } from "@wrelik/errors";
+import * as Sentry from "@sentry/nextjs";
 
-errorTracker.init({
+Sentry.init({
   environment: process.env.NODE_ENV || "development",
   tracesSampleRate: 1,
   enableLogs: true,
@@ -15,4 +13,4 @@ errorTracker.init({
   sendDefaultPii: true,
 });
 
-export const onRouterTransitionStart = errorTracker.captureRouteStart;
+export const onRouterTransitionStart = () => {};

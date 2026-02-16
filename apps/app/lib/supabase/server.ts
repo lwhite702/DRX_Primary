@@ -1,13 +1,12 @@
 /**
  * Database Server Client Adapter
  *
- * This module provides server-side database access through @wrelik/db
- * Legacy Supabase server client interface maintained for backward compatibility
+ * This module provides server-side database access through local Prisma.
+ * It is intentionally typed as a supabase-compat shim during migration.
  */
 
-import { db } from "@wrelik/db";
+import { db } from "@/lib/db";
 
 export async function createClient() {
-  // @wrelik/db handles server-side database access automatically
-  return db;
+  return db as any;
 }

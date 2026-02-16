@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ROLE_PERMISSIONS, Role, Prediction } from "../../lib/auth/permissions";
+import { ROLE_PERMISSIONS, Role } from "../../lib/auth/permissions";
 
 // Helper to simulate hasPermission logic
 const hasPermission = (role: Role, permission: string) => {

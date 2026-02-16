@@ -311,7 +311,14 @@ export default function AIIntelligencePage() {
               <div key={inventoryId} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {recs.pricing && (
                   <PricingRecommendationCard
-                    recommendation={recs.pricing}
+                    recommendation={{
+                      recommendedPrice: recs.pricing.recommended_price,
+                      recommendedRangeMin: recs.pricing.recommended_range_min,
+                      recommendedRangeMax: recs.pricing.recommended_range_max,
+                      confidenceScore: recs.pricing.confidence_score ?? 0,
+                      reasoning: recs.pricing.reasoning,
+                      factors: recs.pricing.factors || {},
+                    }}
                     currentPrice={Number(item.selling_price || 0)}
                     productName={item.product_name}
                     sku={item.sku}
@@ -321,7 +328,22 @@ export default function AIIntelligencePage() {
                 )}
                 {recs.forecast && (
                   <InventoryForecastCard
-                    forecast={recs.forecast}
+                    forecast={{
+                      projectedStockoutDate:
+                        recs.forecast.projected_stockout_date || null,
+                      daysUntilStockout:
+                        recs.forecast.days_until_stockout ?? null,
+                      recommendedRestockQuantity:
+                        recs.forecast.recommended_restock_quantity ?? 0,
+                      restockUrgency: recs.forecast.restock_urgency || "low",
+                      inventoryRiskLevel:
+                        recs.forecast.inventory_risk_level || "low",
+                      reasoning:
+                        recs.forecast.reasoning || "No forecast reasoning provided.",
+                      confidenceScore: recs.forecast.confidence_score ?? 0,
+                      factors: recs.forecast.forecast_factors || {},
+                      velocityTrend: recs.forecast.velocity_trend || "stable",
+                    }}
                     currentStock={item.quantity_on_hand}
                     reorderLevel={item.reorder_level}
                     productName={item.product_name}

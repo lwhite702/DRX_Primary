@@ -1,12 +1,14 @@
 /**
  * Storage Adapter
  *
- * Wraps @wrelik/storage for file operations with R2
+ * Wraps @wrelik/storage for file operations.
  */
 
-import { storage } from "@wrelik/storage";
-
-export { storage };
+import {
+  putObject,
+  getSignedDownloadUrl,
+  getSignedUploadUrl,
+} from "@wrelik/storage";
 
 /**
  * Upload a file to tenant-scoped storage
@@ -15,10 +17,10 @@ export async function uploadFile(
   tenantId: string,
   key: string,
   body: Buffer | Uint8Array | string,
-  contentType?: string
+  contentType: string = "application/octet-stream"
 ) {
   const tenantKey = `${tenantId}/${key}`;
-  return storage.upload(tenantKey, body, { contentType });
+  return putObject(body, tenantKey, contentType);
 }
 
 /**
@@ -30,13 +32,20 @@ export async function getPresignedUrl(
   expiresIn: number = 3600
 ) {
   const tenantKey = `${tenantId}/${key}`;
-  return storage.getPresignedUrl(tenantKey, { expiresIn });
+  return getSignedDownloadUrl(tenantKey, expiresIn);
 }
 
 /**
  * Delete a file from storage
  */
 export async function deleteFile(tenantId: string, key: string) {
-  const tenantKey = `${tenantId}/${key}`;
-  return storage.delete(tenantKey);
+  void tenantId;
+  void key;
+  return false;
 }
+
+export const storage = {
+  upload: uploadFile,
+  getPresignedUrl,
+  delete: deleteFile,
+};

@@ -345,7 +345,7 @@ describe('EventDesk Data Processing Logic', () => {
       expect(originalIntakes).toEqual([{ id: 'intake-1' }]);
 
       // Result should be independent
-      expect(result.todaySales).toBeUndefined();
+      expect((result as any).todaySales).toBeUndefined();
       expect(result.recentIntakes).not.toBe(originalIntakes);
     });
   });

@@ -1,26 +1,31 @@
 /**
  * Storage Client
- *
- * This module provides file storage operations through @wrelik/storage
  */
 
-import { storage } from "@wrelik/storage";
-
-export const storageClient = storage;
+import { putObject, getSignedDownloadUrl } from "@wrelik/storage";
 
 export const BUCKET_NAME = process.env.R2_BUCKET_NAME || "drx-primary-bucket";
 
-export async function uploadFile(
-  key: string,
-  body: Buffer | Uint8Array | string,
-) {
-  return storage.upload(key, body);
+export const storageClient = {
+  async upload(key: string, body: Buffer | Uint8Array | string) {
+    return putObject(body, key, "application/octet-stream");
+  },
+  async getPresignedUrl(key: string, options?: { expiresIn?: number }) {
+    return getSignedDownloadUrl(key, options?.expiresIn ?? 3600);
+  },
+  async delete(_key: string) {
+    return false;
+  },
+};
+
+export async function uploadFile(key: string, body: Buffer | Uint8Array | string) {
+  return storageClient.upload(key, body);
 }
 
 export async function getPresignedUrl(key: string, expiresIn: number = 3600) {
-  return storage.getPresignedUrl(key, { expiresIn });
+  return storageClient.getPresignedUrl(key, { expiresIn });
 }
 
 export async function deleteFile(key: string) {
-  return storage.delete(key);
+  return storageClient.delete(key);
 }

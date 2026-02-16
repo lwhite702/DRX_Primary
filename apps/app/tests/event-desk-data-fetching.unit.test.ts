@@ -233,7 +233,7 @@ describe('EventDeskPage Data Fetching', () => {
       // Verify inventory alerts
       expect(component.metrics.inventoryAlerts).toBe(2);
       expect(component.metrics.lowStockItems).toHaveLength(2);
-      expect(component.metrics.lowStockItems[0].product_name).toBe('Low Stock Product');
+      expect((component.metrics.lowStockItems[0] as any).product_name).toBe('Low Stock Product');
     });
 
     it('should fetch customer and credit data correctly', async () => {
@@ -300,6 +300,10 @@ describe('EventDeskPage Data Fetching', () => {
       vi.mocked(useBusiness).mockReturnValue({
         business: null, // No business context
         loading: false,
+        availableBusinesses: [],
+        needsSetup: false,
+        refreshBusiness: async () => {},
+        switchBusiness: () => {},
       });
 
       const component = MockEventDeskPage();
@@ -312,9 +316,14 @@ describe('EventDeskPage Data Fetching', () => {
 
   describe('Promise.all Implementation', () => {
     it('should optimize concurrent data fetching', async () => {
+      const { useBusiness } = await import('@/lib/hooks/use-business');
+      vi.mocked(useBusiness).mockReturnValue({
+        business: { id: 'test-business-id' },
+        loading: false,
+      } as any);
+
       const mockSupabase = {
         from: vi.fn((table) => {
-          console.log('DEBUG: from called with', table);
           const builder = createQueryBuilder();
 
           if (table === 'sales') {

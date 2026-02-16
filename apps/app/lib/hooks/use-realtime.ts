@@ -36,7 +36,7 @@ export function useRealtimeInventory(business_id: string | null) {
           table: "inventory",
           filter: `business_id=eq.${business_id}`,
         },
-        (payload) => {
+        (payload: any) => {
           if (payload.eventType === "INSERT") {
             setInventory((prev) => [...prev, payload.new]);
           } else if (payload.eventType === "UPDATE") {
@@ -89,7 +89,7 @@ export function useRealtimeSales(business_id: string | null) {
         table: "sales",
         filter: `business_id=eq.${business_id}`,
       },
-      (payload) => {
+      (payload: any) => {
         if (payload.eventType === "INSERT") {
           setSales((prev) => [payload.new, ...prev].slice(0, 50));
         } else if (payload.eventType === "UPDATE") {
@@ -150,7 +150,7 @@ export function useRealtimeCredit(
           ? `business_id=eq.${business_id},customer_id=eq.${customer_id}`
           : `business_id=eq.${business_id}`,
       },
-      (payload) => {
+      (payload: any) => {
         if (payload.eventType === "INSERT") {
           setCreditTransactions((prev) => [payload.new, ...prev].slice(0, 100));
         } else if (payload.eventType === "UPDATE") {
@@ -195,7 +195,7 @@ export function useRealtimeCustomers(business_id: string | null) {
         table: "customers",
         filter: `business_id=eq.${business_id}`,
       },
-      (payload) => {
+      (payload: any) => {
         if (payload.eventType === "INSERT") {
           setCustomers((prev) =>
             [payload.new, ...prev].sort((a, b) =>
