@@ -15,26 +15,30 @@ export function Hero() {
           <div className="flex items-center gap-4">
             <div className="h-px w-8 bg-neon-lime/50"></div>
             <span className="font-mono uppercase text-sm tracking-[0.2em] text-neon-lime">
-              System / DRX_Primary
+              Built for Dispensaries
             </span>
           </div>
 
           <h1 className="headline-text text-6xl sm:text-7xl md:text-[7.5rem] leading-[0.85] tracking-[-0.06em] text-white">
-            RUN YOUR <br />
-            <span className="text-neon-lime">BUSINESS.</span> <br />
-            <span className="opacity-50">OWN YOUR DATA.</span>
+            Built for <br />
+            <span className="text-neon-lime">Dispensaries.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-text-secondary max-w-xl font-light leading-relaxed">
-            Deelrx CRM tracks your money and your stock. No noise. Just a clear
-            view of your business.
+            Manage customer accounts, track balances, monitor inventory, and see how your store is performing — all in one system designed for dispensary operators.
           </p>
 
-          <div className="pt-8">
+          <div className="pt-8 flex flex-wrap gap-4">
             <Link href={appWaitlistUrl}>
-              <NeonButton>Join Beta Waitlist</NeonButton>
+              <NeonButton>Start Free Trial</NeonButton>
+            </Link>
+            <Link href="/beta" className="rounded-full border border-neon-lime/40 px-6 py-3 text-sm font-semibold text-neon-lime hover:bg-neon-lime/10 transition-colors">
+              Book a Demo
             </Link>
           </div>
+          <p className="text-sm text-text-secondary pt-2">
+            Not a generic POS. Not a generic CRM. Built for how dispensaries actually work.
+          </p>
         </div>
 
         {/* Right: Floating Interface (5 cols) */}
