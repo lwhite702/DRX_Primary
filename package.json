@@ -8,6 +8,7 @@
     "tooling/*"
   ],
   "scripts": {
+    "testsprite:localize": "node scripts/testing/convert-testsprite-plan-to-local.mjs",
     "test:audit": "tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "tsx scripts/testing/policy-check.ts",

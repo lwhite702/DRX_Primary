@@ -26,6 +26,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:testsprite": "NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true playwright test -c playwright.testsprite.local.config.ts --timeout=20000",
     "test:e2e:ui": "playwright test --ui"
     ,
     "test:e2e:a11y": "playwright test tests/e2e/a11y.spec.ts",

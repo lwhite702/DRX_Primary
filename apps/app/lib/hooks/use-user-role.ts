@@ -14,6 +14,20 @@ export type UserRole =
   | null;
 
 export function useUserRole(businessId?: string) {
+  if (process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true") {
+    const hasPermission = (_permission: Permission) => true;
+    return {
+      role: "owner" as UserRole,
+      loading: false,
+      error: null,
+      isAdmin: true,
+      isManager: true,
+      canOverridePrice: true,
+      refreshRole: async () => {},
+      hasPermission,
+    };
+  }
+
   const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
