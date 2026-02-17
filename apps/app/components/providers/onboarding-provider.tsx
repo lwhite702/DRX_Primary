@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export type OnboardingStep = "profile" | "product" | "customer" | "sale";
 
@@ -26,7 +26,7 @@ const OnboardingContext = createContext<OnboardingState | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { business } = useBusiness();
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const [steps, setSteps] = useState<Record<OnboardingStep, boolean>>({
     profile: true, // Assuming if they are here, profile exists partially

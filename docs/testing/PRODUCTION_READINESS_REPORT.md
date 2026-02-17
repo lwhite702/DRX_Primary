@@ -1,63 +1,60 @@
 # PRODUCTION_READINESS_REPORT
 
-Generated: 2026-02-15T05:23:25.424Z
+Generated: 2026-02-16T11:07:13.960Z
 Recommendation: **NO-GO**
 
 ## Command Results
 | Command | Exit | Duration (s) |
 |---|---:|---:|
-| `pnpm test:matrix` | 0 | 3.31 |
-| `pnpm test:policy` | 1 | 1.84 |
-| `pnpm lint` | 2 | 5.2 |
-| `pnpm typecheck` | 1 | 8.11 |
-| `pnpm build` | 0 | 89.45 |
-| `pnpm test:unit` | 1 | 17.75 |
-| `pnpm test:integration` | 1 | 13.47 |
-| `pnpm test:e2e:web` | 1 | 3.35 |
-| `pnpm test:a11y` | 1 | 2.61 |
-| `pnpm test:security` | 1 | 2.34 |
-| `pnpm test:perf` | 1 | 1.93 |
-| `pnpm test:regression` | 1 | 2.74 |
+| `pnpm test:matrix` | 0 | 4.5 |
+| `pnpm test:matrix:validate` | 0 | 1.73 |
+| `pnpm test:policy` | 1 | 1.86 |
+| `pnpm lint` | 0 | 21.68 |
+| `pnpm typecheck` | 0 | 30.1 |
+| `pnpm build` | 0 | 73.58 |
+| `pnpm test:unit` | 0 | 41.91 |
+| `pnpm test:integration` | 0 | 22.1 |
+| `pnpm test:e2e:web:smoke` | 0 | 21.98 |
+| `pnpm test:a11y` | 0 | 13.77 |
+| `pnpm test:security` | 0 | 1.77 |
+| `pnpm test:perf` | 0 | 1.53 |
+| `pnpm test:regression` | 0 | 32.7 |
+| `pnpm test:data-integrity` | 0 | 1.34 |
 
-## Coverage Percentages
-- Matrix covered rows: 2415
-- Matrix partial rows: 0
-- Matrix none rows: 231
+## Coverage / Risk
+- Matrix covered rows: 84
+- Matrix partial rows: 168
+- Matrix none rows: 2688
 - Matrix blocked rows: 0
+- Matrix none delta: 0
+- Matrix blocked delta: 0
 
-## Failing Tests / Gates
-- `pnpm test:policy` failed (exit 1)
-- `pnpm lint` failed (exit 2)
-- `pnpm typecheck` failed (exit 1)
-- `pnpm test:unit` failed (exit 1)
-- `pnpm test:integration` failed (exit 1)
-- `pnpm test:e2e:web` failed (exit 1)
-- `pnpm test:a11y` failed (exit 1)
-- `pnpm test:security` failed (exit 1)
-- `pnpm test:perf` failed (exit 1)
-- `pnpm test:regression` failed (exit 1)
-
-## Risk Areas
-- Runtime mock compatibility surfaces
-- Mixed Clerk/Prisma/Supabase integration paths
-- Any matrix rows with `blocked` or `none` coverage
-
-## Uncovered Modules
-- Rows with no coverage: 231
-
-## Performance Metrics
-- App .next size (MB): 484.02
-- Marketing .next size (MB): 12.29
-
-## Security Risk Findings
-- High severity: 44
+## Security
+- High severity: 0
 - Medium severity: 0
+- Dynamic failed: 0
+
+## Performance
+- App .next size (MB): 1422.88
+- Marketing .next size (MB): 209.11
+
+## Data Integrity
+- Migration files: 34
+- Tenant guard signals: true
+- Rollback playbook present: true
+
+## Failing Gates
+- `pnpm test:policy` failed (exit 1)
 
 ## Artifacts
+- docs/testing/REPO_AUDIT.json
 - docs/testing/TEST_MATRIX.md
 - docs/testing/TEST_MATRIX.json
 - docs/testing/SECURITY_SCAN.json
+- docs/testing/SECURITY_SCAN.junit.xml
 - docs/testing/PERF_SMOKE.json
+- docs/testing/DATA_INTEGRITY.json
+- docs/testing/FULL_GATE_RESULTS.json
 
-## Recommendation Rationale
-One or more required gates failed; release should not proceed until failures are remediated.
+## GO/NO-GO Rationale
+One or more required gates failed; release must not proceed until all blocking failures are remediated.

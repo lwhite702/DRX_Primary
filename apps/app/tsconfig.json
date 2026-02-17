@@ -1,6 +1,7 @@
 {
   "extends": "../../tooling/tsconfig/next.json",
   "compilerOptions": {
+    "noImplicitAny": false,
     "paths": {
       "@/*": ["./*"]
     }

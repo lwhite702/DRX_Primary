@@ -46,10 +46,11 @@ export async function POST(request: NextRequest) {
         const stockById = new Map(stock.map((row) => [row.id, row.quantityOnHand]));
 
         for (const item of inventoryItems) {
-          const available = stockById.get(item.inventoryId!);
-          if (available === undefined) {
+          const availableRaw = stockById.get(item.inventoryId!);
+          if (availableRaw === undefined || availableRaw === null) {
             throw new Error("Inventory item not found");
           }
+          const available = toNumber(availableRaw);
           if (available < item.qty) {
             throw new Error(`Insufficient stock for ${item.name}`);
           }

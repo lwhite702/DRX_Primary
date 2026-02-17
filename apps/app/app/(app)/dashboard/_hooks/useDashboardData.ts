@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export interface DashboardStats {
   salesToday: number;
@@ -41,7 +41,7 @@ export function useDashboardData(businessId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const fetchDashboardData = useCallback(async () => {
     if (!businessId || !supabase) {

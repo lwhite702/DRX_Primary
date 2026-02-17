@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
@@ -43,7 +43,7 @@ export default function SaleDetailPage() {
   const saleId = params.id as string;
   const { business } = useBusiness();
   const { isManager } = useUserRole(business?.id);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const [sale, setSale] = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);

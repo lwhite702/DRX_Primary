@@ -1,202 +1,205 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
+
+type RouteKind = "page" | "api" | "loading" | "error" | "global-error" | "not-found";
+type AppSurface = "app" | "marketing" | "mobile" | "mintlify";
+type BoundaryType = "auth" | "db" | "tenant" | "feature_flag" | "observability";
+
+interface RouteRecord {
+  file: string;
+  app: AppSurface;
+  kind: RouteKind;
+  owner: string;
+}
+
+interface BoundaryRecord {
+  file: string;
+  type: BoundaryType;
+  evidence: string;
+}
+
+interface VendorRecord {
+  vendor: string;
+  dependency: string;
+  source: string;
+}
+
+interface DeprecatedArtifact {
+  file: string;
+  rule: string;
+}
 
 const root = process.cwd();
 const docsDir = path.join(root, "docs/testing");
 const outputPath = path.join(docsDir, "REPO_AUDIT.json");
 
-const IGNORE_DIRS = new Set([
-  ".git",
-  "node_modules",
-  ".next",
-  "dist",
-  "coverage",
-  ".turbo",
-  ".expo",
-  "playwright-report",
-  "test-results",
-]);
+const stalePatternRules: Array<{ rule: string; pattern: RegExp }> = [
+  { rule: "stale-orig", pattern: /\.orig$/i },
+  { rule: "stale-rej", pattern: /\.rej$/i },
+  { rule: "stale-build-log", pattern: /build_error.*\.log$/i },
+  { rule: "stale-playwright-report", pattern: /^apps\/app\/playwright-report\// },
+  { rule: "stale-test-results", pattern: /^apps\/app\/test-results\// },
+  { rule: "stale-testsprite", pattern: /^testsprite_tests\// },
+  { rule: "stale-testsprite-app", pattern: /^apps\/app\/testsprite_tests\// },
+];
 
-const stalePatterns = [/\.orig$/i, /\.rej$/i, /build_error.*\.log$/i, /playwright-report\//i, /test-results\//i, /testsprite_tests\//i];
+const boundaryRules: Array<{ type: BoundaryType; regex: RegExp; evidence: string }> = [
+  { type: "auth", regex: /@clerk\//i, evidence: "Clerk auth boundary" },
+  { type: "auth", regex: /\bauth\(/, evidence: "Auth context call" },
+  { type: "db", regex: /@prisma|PrismaClient|\bdb\./i, evidence: "Prisma/DB access" },
+  { type: "db", regex: /@supabase|createClient\(/i, evidence: "Supabase data access" },
+  { type: "tenant", regex: /tenant|business_id|organization|org_id/i, evidence: "Tenant/business boundary" },
+  { type: "feature_flag", regex: /feature[_-]?flag|feature gate|use-feature-flag/i, evidence: "Feature flag boundary" },
+  { type: "observability", regex: /sentry|posthog|audit[_-]?log|instrumentation|trace id/i, evidence: "Observability boundary" },
+];
 
-function walk(dir: string, files: string[] = []): string[] {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const absolute = path.join(dir, entry.name);
-    const relative = path.relative(root, absolute).replace(/\\/g, "/");
-    if (entry.isDirectory()) {
-      if (IGNORE_DIRS.has(entry.name)) continue;
-      walk(absolute, files);
-      continue;
-    }
-    files.push(relative);
+const mandatoryRisks = [
+  "Mixed auth/data model: Clerk + Prisma + Supabase compatibility surfaces",
+  "Runtime mock client compatibility path must not exist in production",
+  "Deprecated/stale tracked artifacts: .orig/.rej/build logs/playwright-report/testsprite suites",
+];
+
+function trackedFiles(): string[] {
+  const out = execSync("git ls-files", { cwd: root, encoding: "utf8" });
+  return out
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter((f) => fs.existsSync(path.join(root, f)));
+}
+
+function read(file: string): string {
+  return fs.readFileSync(path.join(root, file), "utf8");
+}
+
+function detectRouteKind(file: string): RouteKind | null {
+  if (/\/page\.(ts|tsx)$/.test(file) || /\.mdx$/.test(file)) return "page";
+  if (/\/route\.(ts|tsx)$/.test(file)) return "api";
+  if (/\/loading\.(ts|tsx)$/.test(file)) return "loading";
+  if (/\/global-error\.(ts|tsx)$/.test(file)) return "global-error";
+  if (/\/error\.(ts|tsx)$/.test(file)) return "error";
+  if (/\/not-found\.(ts|tsx)$/.test(file)) return "not-found";
+  return null;
+}
+
+function collectRoutes(files: string[]): RouteRecord[] {
+  const records: RouteRecord[] = [];
+  for (const file of files) {
+    let app: AppSurface | null = null;
+    if (file.startsWith("apps/app/app/")) app = "app";
+    else if (file.startsWith("apps/marketing/app/")) app = "marketing";
+    else if (file.startsWith("apps/mobile/app/")) app = "mobile";
+    else if (file.startsWith("mintlify/") && file.endsWith(".mdx")) app = "mintlify";
+    if (!app) continue;
+
+    const kind = detectRouteKind(file);
+    if (!kind) continue;
+
+    records.push({ file, app, kind, owner: file });
   }
-  return files;
+  return records.sort((a, b) => a.file.localeCompare(b.file));
 }
 
-function listDirs(base: string): string[] {
-  const full = path.join(root, base);
-  if (!fs.existsSync(full)) return [];
-  return fs
-    .readdirSync(full, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => `${base}/${d.name}`)
-    .sort();
+function collectBoundaries(files: string[]): BoundaryRecord[] {
+  const out: BoundaryRecord[] = [];
+  for (const file of files) {
+    if (!/\.(ts|tsx|js|jsx|sql|prisma|md|mdx)$/.test(file)) continue;
+    const text = read(file);
+    for (const rule of boundaryRules) {
+      if (rule.regex.test(text)) {
+        out.push({ file, type: rule.type, evidence: rule.evidence });
+      }
+    }
+  }
+  const uniq = new Map<string, BoundaryRecord>();
+  for (const item of out) {
+    uniq.set(`${item.file}:${item.type}:${item.evidence}`, item);
+  }
+  return [...uniq.values()].sort((a, b) => a.file.localeCompare(b.file));
 }
 
-function collectRoutes(base: string): string[] {
-  const full = path.join(root, base);
-  if (!fs.existsSync(full)) return [];
-  const files = walk(full);
-  return files
-    .filter((f) => /\/(page|route|loading|error|global-error|not-found)\.tsx?$/.test(f))
-    .sort();
-}
-
-function parseRoles(): string[] {
-  const roleFile = path.join(root, "apps/app/lib/auth/permissions.ts");
-  if (!fs.existsSync(roleFile)) return [];
-  const text = fs.readFileSync(roleFile, "utf8");
-  const m = text.match(/export type Role\s*=([\s\S]*?);/);
-  if (!m) return [];
-  return [...new Set(Array.from(m[1].matchAll(/"([a-z_]+)"/g)).map((x) => x[1]))].sort();
-}
-
-function detectIntegrations(): string[] {
-  const packageFiles = [
-    "package.json",
-    ...listDirs("apps").map((d) => `${d}/package.json`),
-    ...listDirs("packages").map((d) => `${d}/package.json`),
-  ].filter((f) => fs.existsSync(path.join(root, f)));
-
-  const vendorMap: Array<{ id: string; needle: RegExp }> = [
-    { id: "clerk", needle: /@clerk\//i },
-    { id: "supabase", needle: /@supabase\//i },
-    { id: "prisma", needle: /@prisma\//i },
-    { id: "sentry", needle: /@sentry\//i },
-    { id: "posthog", needle: /posthog/i },
-    { id: "aws", needle: /@aws-sdk\//i },
-    { id: "resend", needle: /resend/i },
-    { id: "upstash", needle: /@upstash\//i },
-    { id: "svix", needle: /svix/i },
-    { id: "stripe", needle: /stripe/i },
-    { id: "inngest", needle: /inngest/i },
+function collectVendors(files: string[]): VendorRecord[] {
+  const vendorNeedles: Array<{ vendor: string; regex: RegExp }> = [
+    { vendor: "clerk", regex: /^@clerk\//i },
+    { vendor: "supabase", regex: /^@supabase\//i },
+    { vendor: "prisma", regex: /^@prisma\//i },
+    { vendor: "sentry", regex: /^@sentry\//i },
+    { vendor: "posthog", regex: /posthog/i },
+    { vendor: "stripe", regex: /^stripe$/i },
+    { vendor: "upstash", regex: /^@upstash\//i },
+    { vendor: "svix", regex: /^svix$/i },
+    { vendor: "inngest", regex: /^inngest$/i },
+    { vendor: "resend", regex: /^resend$/i },
   ];
 
-  const found = new Set<string>();
-  for (const pkgPath of packageFiles) {
-    const json = JSON.parse(fs.readFileSync(path.join(root, pkgPath), "utf8")) as {
+  const packageFiles = files.filter((f) => /package\.json$/.test(f));
+  const out: VendorRecord[] = [];
+
+  for (const file of packageFiles) {
+    const json = JSON.parse(read(file)) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
     const deps = Object.keys({ ...(json.dependencies ?? {}), ...(json.devDependencies ?? {}) });
     for (const dep of deps) {
-      for (const vendor of vendorMap) {
-        if (vendor.needle.test(dep)) found.add(vendor.id);
+      for (const needle of vendorNeedles) {
+        if (needle.regex.test(dep)) {
+          out.push({ vendor: needle.vendor, dependency: dep, source: file });
+        }
       }
     }
   }
-  return [...found].sort();
+
+  const uniq = new Map<string, VendorRecord>();
+  for (const item of out) {
+    uniq.set(`${item.vendor}:${item.dependency}:${item.source}`, item);
+  }
+  return [...uniq.values()].sort((a, b) => `${a.vendor}:${a.source}`.localeCompare(`${b.vendor}:${b.source}`));
 }
 
-function collectFeatureFlags(files: string[]): string[] {
-  const hits = files.filter((f) => {
-    if (!/\.(ts|tsx|sql)$/.test(f)) return false;
-    const absolute = path.join(root, f);
-    try {
-      const text = fs.readFileSync(absolute, "utf8");
-      return /feature_flags|use-feature-flag|feature gate|feature flag/i.test(text);
-    } catch {
-      return false;
-    }
-  });
-  return hits.sort();
-}
-
-function collectAuthBoundaries(files: string[]): string[] {
-  const hits = files.filter((f) => {
-    if (!/\.(ts|tsx)$/.test(f)) return false;
-    if (!f.startsWith("apps/app/")) return false;
-    const text = fs.readFileSync(path.join(root, f), "utf8");
-    return /auth\(|clerkMiddleware|@clerk\/|protectRoute|hasPermission|resolveAuthContext/i.test(text);
-  });
-  return hits.sort();
-}
-
-function collectDbAccess(files: string[]): string[] {
-  const hits = files.filter((f) => {
-    if (!/\.(ts|tsx|sql|prisma)$/.test(f)) return false;
-    if (!f.startsWith("apps/app/") && !f.startsWith("packages/")) return false;
-    const text = fs.readFileSync(path.join(root, f), "utf8");
-    return /@prisma|PrismaClient|db\.|supabase|createClient\(|migration|schema\.prisma/i.test(text);
-  });
-  return hits.sort();
-}
-
-function collectObservability(files: string[]): string[] {
-  const hits = files.filter((f) => {
-    if (!/\.(ts|tsx)$/.test(f)) return false;
-    const text = fs.readFileSync(path.join(root, f), "utf8");
-    return /sentry|posthog|audit_log|system_audit_log|instrumentation|errorTracker/i.test(text);
-  });
-  return hits.sort();
-}
-
-function collectDeprecated(files: string[]): string[] {
-  const stale = files.filter((f) => stalePatterns.some((p) => p.test(f)));
-  const deprecatedMentions = files.filter((f) => {
-    if (!/\.(ts|tsx|md|sql|prisma)$/.test(f)) return false;
-    try {
-      const text = fs.readFileSync(path.join(root, f), "utf8");
-      return /deprecated|preview feature|legacy supabase|mock client/i.test(text);
-    } catch {
-      return false;
-    }
-  });
-  return [...new Set([...stale, ...deprecatedMentions])].sort();
-}
-
-function collectExperimental(files: string[]): string[] {
-  return files
-    .filter((f) => {
-      if (!/\.(ts|tsx|md)$/.test(f)) return false;
-      try {
-        const text = fs.readFileSync(path.join(root, f), "utf8");
-        return /experimental|demo\//i.test(text) || /\/(demo)\//.test(f);
-      } catch {
-        return false;
+function collectDeprecatedArtifacts(files: string[]): DeprecatedArtifact[] {
+  const out: DeprecatedArtifact[] = [];
+  for (const file of files) {
+    for (const rule of stalePatternRules) {
+      if (rule.pattern.test(file)) {
+        out.push({ file, rule: rule.rule });
       }
-    })
-    .sort();
+    }
+  }
+  return out.sort((a, b) => a.file.localeCompare(b.file));
+}
+
+function parseRoles(files: string[]): string[] {
+  const roleFile = files.find((f) => f === "apps/app/lib/auth/permissions.ts");
+  if (!roleFile) return ["cashier", "supervisor", "manager", "super_admin", "owner", "admin", "staff"];
+  const text = read(roleFile);
+  const match = text.match(/export type Role\s*=([\s\S]*?);/);
+  if (!match) return ["cashier", "supervisor", "manager", "super_admin", "owner", "admin", "staff"];
+  const roles = [...new Set(Array.from(match[1].matchAll(/"([a-z_]+)"/g)).map((m) => m[1]))];
+  return [...new Set([...roles, "owner", "admin", "staff"])].sort();
 }
 
 function main() {
   fs.mkdirSync(docsDir, { recursive: true });
-  const files = walk(root);
+  const files = trackedFiles();
+
+  const routes = collectRoutes(files);
+  const boundaries = collectBoundaries(files);
+  const vendors = collectVendors(files);
+  const deprecatedArtifacts = collectDeprecatedArtifacts(files);
 
   const audit = {
+    schemaVersion: "2.0.0",
     generatedAt: new Date().toISOString(),
-    apps: listDirs("apps"),
-    packages: listDirs("packages"),
-    docs: ["docs", "mintlify"].filter((d) => fs.existsSync(path.join(root, d))),
-    routes: {
-      app: collectRoutes("apps/app/app"),
-      marketing: collectRoutes("apps/marketing/app"),
-      mobile: collectRoutes("apps/mobile/app"),
-    },
-    roles: parseRoles(),
-    integrations: detectIntegrations(),
-    authBoundaries: collectAuthBoundaries(files),
-    dbAccess: collectDbAccess(files),
-    featureFlags: collectFeatureFlags(files),
-    observability: collectObservability(files),
-    experimental: collectExperimental(files),
-    deprecatedOrStale: collectDeprecated(files),
-    mandatoryRisks: [
-      "Mixed auth/data model: Clerk + Prisma + Supabase compatibility surfaces",
-      "Runtime mock client present in apps/app/lib/supabase/client.ts",
-      "Deprecated/stale tracked artifacts: .orig/.rej/build logs/playwright-report/testsprite suites",
-    ],
+    apps: ["apps/app", "apps/marketing", "apps/mobile"],
+    packages: files.filter((f) => /^packages\/[^/]+\/package\.json$/.test(f)).map((f) => f.replace(/\/package\.json$/, "")),
+    roles: parseRoles(files),
+    routes,
+    boundaries,
+    vendors,
+    deprecatedArtifacts,
+    mandatoryRisks,
   };
 
   fs.writeFileSync(outputPath, JSON.stringify(audit, null, 2));

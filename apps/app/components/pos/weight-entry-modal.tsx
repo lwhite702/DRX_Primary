@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -54,7 +54,7 @@ export function WeightEntryModal({
   const [loading, setLoading] = useState(false);
   const [loadingAliases, setLoadingAliases] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (weightGrams && product && businessId) {

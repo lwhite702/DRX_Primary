@@ -10,7 +10,7 @@ import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 // Utils
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
@@ -44,7 +44,7 @@ export default function SalesPage() {
   const inventory = useRealtimeInventory(business?.id || null);
   const { customers } = useCustomerContext();
   const { canOverridePrice } = useUserRole(business?.id);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   // Custom hook for cart logic
   const {

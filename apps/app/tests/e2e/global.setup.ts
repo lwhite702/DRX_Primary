@@ -1,5 +1,4 @@
 import { clerkSetup } from "@clerk/testing/playwright";
-import { test as setup } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -7,6 +6,10 @@ import path from "path";
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-setup("global setup", async ({}) => {
+export default async function globalSetup() {
+  if (!process.env.CLERK_PUBLISHABLE_KEY) {
+    console.warn("CLERK_PUBLISHABLE_KEY not set; skipping Clerk Playwright setup.");
+    return;
+  }
   await clerkSetup();
-});
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,7 +41,7 @@ export function FeaturesClient() {
   const [loading, setLoading] = useState(true);
   const [newFeature, setNewFeature] = useState({ id: "", description: "" });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const fetchFeatures = async () => {
     if (!supabase) return;

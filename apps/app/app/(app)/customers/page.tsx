@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Plus, Edit, Search, User, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -42,7 +42,7 @@ export default function CustomersPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const {
     register,

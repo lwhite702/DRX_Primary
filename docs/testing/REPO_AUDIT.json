@@ -1,5 +1,6 @@
 {
-  "generatedAt": "2026-02-15T05:20:55.161Z",
+  "schemaVersion": "2.0.0",
+  "generatedAt": "2026-02-16T11:02:46.037Z",
   "apps": [
     "apps/app",
     "apps/marketing",
@@ -19,132 +20,6 @@
     "packages/wrelik-storage",
     "packages/wrelik-tsconfig"
   ],
-  "docs": [
-    "docs",
-    "mintlify"
-  ],
-  "routes": {
-    "app": [
-      "apps/app/app/(app)/admin/ai/page.tsx",
-      "apps/app/app/(app)/admin/approvals/page.tsx",
-      "apps/app/app/(app)/admin/audit/page.tsx",
-      "apps/app/app/(app)/admin/businesses/page.tsx",
-      "apps/app/app/(app)/admin/features/page.tsx",
-      "apps/app/app/(app)/admin/page.tsx",
-      "apps/app/app/(app)/admin/users/page.tsx",
-      "apps/app/app/(app)/ai-intelligence/page.tsx",
-      "apps/app/app/(app)/credit/page.tsx",
-      "apps/app/app/(app)/customers/[id]/page.tsx",
-      "apps/app/app/(app)/customers/page.tsx",
-      "apps/app/app/(app)/dashboard/page.tsx",
-      "apps/app/app/(app)/demo/mobile-menu/page.tsx",
-      "apps/app/app/(app)/help/page.tsx",
-      "apps/app/app/(app)/insights/page.tsx",
-      "apps/app/app/(app)/inventory/adjust/page.tsx",
-      "apps/app/app/(app)/inventory/audit/page.tsx",
-      "apps/app/app/(app)/inventory/intake/page.tsx",
-      "apps/app/app/(app)/inventory/page.tsx",
-      "apps/app/app/(app)/reports/page.tsx",
-      "apps/app/app/(app)/sales/[id]/page.tsx",
-      "apps/app/app/(app)/sales/page.tsx",
-      "apps/app/app/(app)/settings/inventory/aliases/page.tsx",
-      "apps/app/app/(app)/settings/page.tsx",
-      "apps/app/app/(app)/settings/profile/page.tsx",
-      "apps/app/app/(app)/settings/team/page.tsx",
-      "apps/app/app/(app)/workspaces/page.tsx",
-      "apps/app/app/api/admin/audit-logs/[id]/route.ts",
-      "apps/app/app/api/admin/audit-logs/route.ts",
-      "apps/app/app/api/admin/businesses/route.ts",
-      "apps/app/app/api/admin/user/route.ts",
-      "apps/app/app/api/admin/users/[id]/route.ts",
-      "apps/app/app/api/ai/alerts/route.ts",
-      "apps/app/app/api/ai/analyze/route.ts",
-      "apps/app/app/api/ai/product-intelligence/route.ts",
-      "apps/app/app/api/credit/apply-recommendation/route.ts",
-      "apps/app/app/api/credit/audit-logs/route.ts",
-      "apps/app/app/api/credit/customers/[id]/route.ts",
-      "apps/app/app/api/credit/customers/route.ts",
-      "apps/app/app/api/credit/exposure-report/route.ts",
-      "apps/app/app/api/credit/refresh-customer/route.ts",
-      "apps/app/app/api/credit/refresh-limits/route.ts",
-      "apps/app/app/api/credit/transactions/[id]/route.ts",
-      "apps/app/app/api/credit/transactions/route.ts",
-      "apps/app/app/api/customers/[id]/route.ts",
-      "apps/app/app/api/customers/route.ts",
-      "apps/app/app/api/debug-env/route.ts",
-      "apps/app/app/api/featurebase/auth/route.ts",
-      "apps/app/app/api/inventory/[id]/route.ts",
-      "apps/app/app/api/inventory/adjust/route.ts",
-      "apps/app/app/api/inventory/intake/approve/route.ts",
-      "apps/app/app/api/inventory/intake/route.ts",
-      "apps/app/app/api/inventory/route.ts",
-      "apps/app/app/api/notifications/alerts/[id]/route.ts",
-      "apps/app/app/api/notifications/alerts/route.ts",
-      "apps/app/app/api/notifications/auditlogs/route.ts",
-      "apps/app/app/api/notifications/preferences/[userId]/route.ts",
-      "apps/app/app/api/notifications/preferences/route.ts",
-      "apps/app/app/api/notifications/route.ts",
-      "apps/app/app/api/pos/bootstrap/route.ts",
-      "apps/app/app/api/pos/checkout/route.ts",
-      "apps/app/app/api/pos/customers/quick-create/route.ts",
-      "apps/app/app/api/pos/customers/route.ts",
-      "apps/app/app/api/pos/exit/verify/route.ts",
-      "apps/app/app/api/pos/products/route.ts",
-      "apps/app/app/api/sales/route.ts",
-      "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
-      "apps/app/app/api/team/members/[id]/role/route.ts",
-      "apps/app/app/api/team/members/[id]/route.ts",
-      "apps/app/app/api/team/members/route.ts",
-      "apps/app/app/api/team/route.ts",
-      "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
-      "apps/app/app/api/webhooks/clerk/route.ts",
-      "apps/app/app/dashboard/operator/loading.tsx",
-      "apps/app/app/dashboard/operator/page.tsx",
-      "apps/app/app/feedback/[[...slug]]/page.tsx",
-      "apps/app/app/global-error.tsx",
-      "apps/app/app/inventory/menu/page.tsx",
-      "apps/app/app/inventory/search/page.tsx",
-      "apps/app/app/login/page.tsx",
-      "apps/app/app/not-found.tsx",
-      "apps/app/app/onboarding/page.tsx",
-      "apps/app/app/pos/complete/page.tsx",
-      "apps/app/app/pos/page.tsx",
-      "apps/app/app/pos/payment/page.tsx",
-      "apps/app/app/pos/sale/page.tsx",
-      "apps/app/app/register/page.tsx",
-      "apps/app/app/waitlist/page.tsx"
-    ],
-    "marketing": [
-      "apps/marketing/app/beta/page.tsx",
-      "apps/marketing/app/legal/lawful-use/page.tsx",
-      "apps/marketing/app/legal/page.tsx",
-      "apps/marketing/app/legal/privacy/page.tsx",
-      "apps/marketing/app/legal/regulatory-disclaimer/page.tsx",
-      "apps/marketing/app/legal/terms/page.tsx",
-      "apps/marketing/app/login/page.tsx",
-      "apps/marketing/app/page.tsx",
-      "apps/marketing/app/privacy/page.tsx",
-      "apps/marketing/app/product/customers-credit/page.tsx",
-      "apps/marketing/app/product/inventory-control/page.tsx",
-      "apps/marketing/app/product/operations-visibility/page.tsx",
-      "apps/marketing/app/product/page.tsx",
-      "apps/marketing/app/product/sales-checkout/page.tsx",
-      "apps/marketing/app/product/team-access-security/page.tsx",
-      "apps/marketing/app/resources/changelog/page.tsx",
-      "apps/marketing/app/resources/guides/credit-and-payments/page.tsx",
-      "apps/marketing/app/resources/guides/inventory-intake-and-adjustments/page.tsx",
-      "apps/marketing/app/resources/guides/page.tsx",
-      "apps/marketing/app/resources/guides/privacy-presets-and-team-roles/page.tsx",
-      "apps/marketing/app/resources/page.tsx",
-      "apps/marketing/app/terms/page.tsx",
-      "apps/marketing/app/use-cases/multi-role-teams/page.tsx",
-      "apps/marketing/app/use-cases/owner-operator/page.tsx",
-      "apps/marketing/app/use-cases/page.tsx",
-      "apps/marketing/app/use-cases/store-manager/page.tsx",
-      "apps/marketing/app/waitlist/page.tsx"
-    ],
-    "mobile": []
-  },
   "roles": [
     "admin",
     "cashier",
@@ -154,302 +29,3440 @@
     "super_admin",
     "supervisor"
   ],
-  "integrations": [
-    "aws",
-    "clerk",
-    "inngest",
-    "posthog",
-    "prisma",
-    "resend",
-    "sentry",
-    "supabase",
-    "svix",
-    "upstash"
+  "routes": [
+    {
+      "file": "apps/app/app/(app)/admin/ai/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/ai/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/approvals/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/approvals/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/audit/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/audit/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/businesses/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/businesses/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/features/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/features/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/users/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/admin/users/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/ai-intelligence/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/ai-intelligence/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/credit/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/credit/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/customers/[id]/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/customers/[id]/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/customers/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/customers/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/dashboard/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/dashboard/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/demo/mobile-menu/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/demo/mobile-menu/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/help/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/help/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/insights/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/insights/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/adjust/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/inventory/adjust/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/audit/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/inventory/audit/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/intake/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/inventory/intake/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/inventory/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/reports/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/reports/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/sales/[id]/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/sales/[id]/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/sales/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/sales/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/inventory/aliases/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/settings/inventory/aliases/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/settings/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/profile/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/settings/profile/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/team/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/settings/team/page.tsx"
+    },
+    {
+      "file": "apps/app/app/(app)/workspaces/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/(app)/workspaces/page.tsx"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/admin/audit-logs/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/admin/audit-logs/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/admin/businesses/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/admin/businesses/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/admin/user/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/admin/user/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/admin/users/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/ai/alerts/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/ai/alerts/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/ai/analyze/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/ai/analyze/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/ai/product-intelligence/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/ai/product-intelligence/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/apply-recommendation/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/apply-recommendation/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/audit-logs/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/audit-logs/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/customers/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/customers/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/customers/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/customers/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/exposure-report/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/exposure-report/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/refresh-customer/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/refresh-customer/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/refresh-limits/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/refresh-limits/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/transactions/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/credit/transactions/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/customers/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/customers/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/customers/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/customers/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/debug-env/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/debug-env/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/featurebase/auth/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/featurebase/auth/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/inventory/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/inventory/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/inventory/adjust/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/inventory/adjust/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/approve/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/inventory/intake/approve/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/inventory/intake/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/inventory/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/inventory/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/alerts/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/alerts/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/auditlogs/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/auditlogs/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/preferences/[userId]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/preferences/[userId]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/preferences/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/preferences/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/notifications/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/notifications/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/bootstrap/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/bootstrap/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/checkout/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/checkout/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/customers/quick-create/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/customers/quick-create/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/customers/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/customers/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/exit/verify/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/exit/verify/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/pos/products/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/pos/products/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/sales/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/sales/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/team/members/[id]/audit-logs/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/team/members/[id]/role/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/team/members/[id]/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/team/members/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/team/members/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/team/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/team/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts"
+    },
+    {
+      "file": "apps/app/app/api/webhooks/clerk/route.ts",
+      "app": "app",
+      "kind": "api",
+      "owner": "apps/app/app/api/webhooks/clerk/route.ts"
+    },
+    {
+      "file": "apps/app/app/dashboard/operator/loading.tsx",
+      "app": "app",
+      "kind": "loading",
+      "owner": "apps/app/app/dashboard/operator/loading.tsx"
+    },
+    {
+      "file": "apps/app/app/dashboard/operator/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/dashboard/operator/page.tsx"
+    },
+    {
+      "file": "apps/app/app/feedback/[[...slug]]/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/feedback/[[...slug]]/page.tsx"
+    },
+    {
+      "file": "apps/app/app/global-error.tsx",
+      "app": "app",
+      "kind": "global-error",
+      "owner": "apps/app/app/global-error.tsx"
+    },
+    {
+      "file": "apps/app/app/inventory/menu/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/inventory/menu/page.tsx"
+    },
+    {
+      "file": "apps/app/app/inventory/search/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/inventory/search/page.tsx"
+    },
+    {
+      "file": "apps/app/app/login/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/login/page.tsx"
+    },
+    {
+      "file": "apps/app/app/not-found.tsx",
+      "app": "app",
+      "kind": "not-found",
+      "owner": "apps/app/app/not-found.tsx"
+    },
+    {
+      "file": "apps/app/app/onboarding/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/onboarding/page.tsx"
+    },
+    {
+      "file": "apps/app/app/pos/complete/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/pos/complete/page.tsx"
+    },
+    {
+      "file": "apps/app/app/pos/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/pos/page.tsx"
+    },
+    {
+      "file": "apps/app/app/pos/payment/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/pos/payment/page.tsx"
+    },
+    {
+      "file": "apps/app/app/pos/sale/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/pos/sale/page.tsx"
+    },
+    {
+      "file": "apps/app/app/register/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/register/page.tsx"
+    },
+    {
+      "file": "apps/app/app/waitlist/page.tsx",
+      "app": "app",
+      "kind": "page",
+      "owner": "apps/app/app/waitlist/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/beta/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/beta/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/legal/lawful-use/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/legal/lawful-use/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/legal/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/legal/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/legal/privacy/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/legal/privacy/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/legal/regulatory-disclaimer/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/legal/regulatory-disclaimer/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/legal/terms/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/legal/terms/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/login/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/login/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/privacy/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/privacy/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/customers-credit/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/customers-credit/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/inventory-control/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/inventory-control/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/operations-visibility/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/operations-visibility/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/sales-checkout/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/sales-checkout/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/product/team-access-security/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/product/team-access-security/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/changelog/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/changelog/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/guides/credit-and-payments/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/guides/credit-and-payments/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/guides/inventory-intake-and-adjustments/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/guides/inventory-intake-and-adjustments/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/guides/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/guides/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/guides/privacy-presets-and-team-roles/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/guides/privacy-presets-and-team-roles/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/resources/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/resources/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/terms/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/terms/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/use-cases/multi-role-teams/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/use-cases/multi-role-teams/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/use-cases/owner-operator/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/use-cases/owner-operator/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/use-cases/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/use-cases/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/use-cases/store-manager/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/use-cases/store-manager/page.tsx"
+    },
+    {
+      "file": "apps/marketing/app/waitlist/page.tsx",
+      "app": "marketing",
+      "kind": "page",
+      "owner": "apps/marketing/app/waitlist/page.tsx"
+    },
+    {
+      "file": "mintlify/beta-access-and-use.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/beta-access-and-use.mdx"
+    },
+    {
+      "file": "mintlify/failsafe-and-self-destruct.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/failsafe-and-self-destruct.mdx"
+    },
+    {
+      "file": "mintlify/fixing-issues.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/fixing-issues.mdx"
+    },
+    {
+      "file": "mintlify/getting-started.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/getting-started.mdx"
+    },
+    {
+      "file": "mintlify/glossary.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/glossary.mdx"
+    },
+    {
+      "file": "mintlify/how-sales-work.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/how-sales-work.mdx"
+    },
+    {
+      "file": "mintlify/index.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/index.mdx"
+    },
+    {
+      "file": "mintlify/keeping-your-data-safe.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/keeping-your-data-safe.mdx"
+    },
+    {
+      "file": "mintlify/legal-disclaimer.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/legal-disclaimer.mdx"
+    },
+    {
+      "file": "mintlify/numbers-that-matter.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/numbers-that-matter.mdx"
+    },
+    {
+      "file": "mintlify/payments-and-plans.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/payments-and-plans.mdx"
+    },
+    {
+      "file": "mintlify/staying-compliant.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/staying-compliant.mdx"
+    },
+    {
+      "file": "mintlify/store-setup.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/store-setup.mdx"
+    },
+    {
+      "file": "mintlify/team-access.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/team-access.mdx"
+    },
+    {
+      "file": "mintlify/your-customers.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/your-customers.mdx"
+    },
+    {
+      "file": "mintlify/your-products.mdx",
+      "app": "mintlify",
+      "kind": "page",
+      "owner": "mintlify/your-products.mdx"
+    }
   ],
-  "authBoundaries": [
-    "apps/app/app/(app)/admin/users/_components/UsersClient.tsx",
-    "apps/app/app/(app)/settings/page.tsx",
-    "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
-    "apps/app/app/actions/admin-users.ts",
-    "apps/app/app/actions/business.ts",
-    "apps/app/app/actions/get-current-business.ts",
-    "apps/app/app/actions/setup-business.ts",
-    "apps/app/app/api/admin/audit-logs/route.ts",
-    "apps/app/app/api/admin/businesses/route.ts",
-    "apps/app/app/api/admin/user/route.ts",
-    "apps/app/app/api/admin/users/[id]/route.ts",
-    "apps/app/app/api/credit/transactions/route.ts",
-    "apps/app/app/api/customers/[id]/route.ts",
-    "apps/app/app/api/customers/route.ts",
-    "apps/app/app/api/inventory/route.ts",
-    "apps/app/app/api/notifications/alerts/route.ts",
-    "apps/app/app/api/notifications/auditlogs/route.ts",
-    "apps/app/app/api/notifications/route.ts",
-    "apps/app/app/api/pos/_lib/server.ts",
-    "apps/app/app/api/pos/bootstrap/route.ts",
-    "apps/app/app/api/pos/checkout/route.ts",
-    "apps/app/app/api/pos/customers/quick-create/route.ts",
-    "apps/app/app/api/pos/customers/route.ts",
-    "apps/app/app/api/pos/exit/verify/route.ts",
-    "apps/app/app/api/pos/products/route.ts",
-    "apps/app/app/api/sales/route.ts",
-    "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
-    "apps/app/app/api/team/members/[id]/role/route.ts",
-    "apps/app/app/api/team/members/[id]/route.ts",
-    "apps/app/app/api/team/members/route.ts",
-    "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
-    "apps/app/app/api/webhooks/clerk/route.ts",
-    "apps/app/app/layout.tsx",
-    "apps/app/app/login/page.tsx",
-    "apps/app/app/onboarding/_actions.ts",
-    "apps/app/app/onboarding/layout.tsx",
-    "apps/app/app/register/page.tsx",
-    "apps/app/app/waitlist/page.tsx",
-    "apps/app/components/auth/role-guard.tsx",
-    "apps/app/components/layout/logout-button.tsx",
-    "apps/app/components/layout/sidebar.tsx",
-    "apps/app/components/layout/top-nav.tsx",
-    "apps/app/components/providers/business-setup-provider.tsx",
-    "apps/app/components/ui/page-header.tsx",
-    "apps/app/lib/adapters/auth.ts",
-    "apps/app/lib/auth/server-guards.ts",
-    "apps/app/lib/clerk.tsx",
-    "apps/app/lib/hooks/use-business.ts",
-    "apps/app/lib/hooks/use-permission.ts",
-    "apps/app/lib/hooks/use-user-role.ts",
-    "apps/app/middleware.ts",
-    "apps/app/tests/auth/permissions.test.ts",
-    "apps/app/tests/e2e/a11y.spec.ts",
-    "apps/app/tests/e2e/feature-flags.spec.ts",
-    "apps/app/tests/e2e/global.setup.ts",
-    "apps/app/tests/e2e/multi-tenancy.spec.ts",
-    "apps/app/tests/e2e/quick-pos-flow.spec.ts",
-    "apps/app/tests/e2e/visual-regression.spec.ts",
-    "apps/app/tests/middleware.test.ts"
+  "boundaries": [
+    {
+      "file": "apps/app/.prisma/client/generator-build/index.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/generator-build/index.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/.prisma/client/README.md",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/client.d.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/client.d.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/client.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/client.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/index-browser.d.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/index-browser.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/wasm-compiler-edge.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/runtime/wasm-compiler-edge.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/.prisma/client/scripts/default-index.d.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/.prisma/client/scripts/default-index.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/_components/AdminClient.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/ai/_components/AdminAIClient.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/audit/_components/AuditClient.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/audit/_components/AuditClient.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/features/_components/FeaturesClient.tsx",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/features/page.tsx",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/users/_components/UsersClient.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/admin/users/_components/UsersClient.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/ai-intelligence/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/credit/_hooks/useCreditManager.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/credit/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/customers/[id]/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/customers/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/dashboard/_components/DashboardHeader.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/dashboard/_hooks/useDashboardData.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/dashboard/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/help/page.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/insights/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/_components/InventoryForm.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/inventory/_hooks/useInventoryActions.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/sales/[id]/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/sales/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/inventory/aliases/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/workspaces/_components/WorkspaceCard.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/actions/admin-users.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/actions/admin-users.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/actions/admin-users.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/actions/admin-users.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/actions/beta.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/actions/business.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/actions/business.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/actions/business.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/actions/get-current-business.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/actions/get-current-business.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/actions/get-current-business.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/actions/rtbf.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/actions/rtbf.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/actions/rtbf.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/actions/setup-business.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/actions/setup-business.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/actions/setup-business.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/actions/user-management.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/actions/user-management.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/actions/user-management.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/audit-logs/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/businesses/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/businesses/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/admin/businesses/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/admin/user/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/user/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/admin/user/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/admin/user/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/admin/users/[id]/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/ai/alerts/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/ai/analyze/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/ai/product-intelligence/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/apply-recommendation/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/audit-logs/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/credit/audit-logs/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/customers/[id]/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/credit/customers/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/credit/customers/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/exposure-report/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/refresh-customer/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/[id]/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/credit/transactions/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/customers/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/customers/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/customers/[id]/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/customers/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/customers/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/customers/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/customers/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/featurebase/auth/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/[id]/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/adjust/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/adjust/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/approve/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/approve/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/intake/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/inventory/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/inventory/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/inventory/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/inventory/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/[id]/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/notifications/alerts/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/auditlogs/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/auditlogs/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/notifications/auditlogs/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/notifications/auditlogs/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/notifications/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/notifications/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/_lib/server.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/pos/_lib/server.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/pos/_lib/server.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/bootstrap/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/checkout/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/customers/quick-create/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/customers/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/exit/verify/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/pos/products/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/sales/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/sales/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/sales/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/role/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/team/members/[id]/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/members/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/team/members/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/team/members/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/team/route.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/app/api/team/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/api/webhooks/clerk/route.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/api/webhooks/clerk/route.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/feedback/[[...slug]]/page.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/app/layout.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/layout.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/login/page.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/login/page.tsx",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/onboarding/_actions.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/onboarding/_actions.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/onboarding/layout.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/onboarding/layout.tsx",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/pos/page.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/app/register/page.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/register/page.tsx",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/app/waitlist/page.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/app/waitlist/page.tsx",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/check_duplicates.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/components/ai/ai-intelligence-dashboard.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/ai/pricing-recommendation-card.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/credit/AICreditPanel.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/credit/CreditExposureDashboard.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/feature-gate.tsx",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/components/feedback/sentry-feedback-widget.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/layout/business-switcher.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/layout/logout-button.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/components/layout/sidebar.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/layout/top-nav.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/components/layout/top-nav.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/pos/shrinkage-form.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/pos/weight-entry-modal.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/providers/business-setup-provider.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/components/providers/featurebase-provider.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/providers/onboarding-provider.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/providers/posthog-provider.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/reports/shrinkage-report.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/components/sentry-feedback-button.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/ui/global-error-boundary.tsx",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/components/ui/page-header.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/components/ui/page-header.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations_combined.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations_combined.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20250128000001_add_ai_credit_engine.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20250128000001_ai_pricing_inventory_intel.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251127000001_add_business_settings.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251206000001_price_override_feature.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251206000003_customer_assignment.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251206000004_assign_customer_rpc.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251206000004_assign_customer_rpc.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251206000005_update_checkout_rpc.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251207000001_inventory_intake_cost_tracking.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20251208000001_rbac_implementation.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20260107000001_restore_get_user_permissions.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20260111000001_security_and_performance_remediation.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20260111000001_security_and_performance_remediation.sql",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/db/migrations/20260111000001_security_and_performance_remediation.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/01_business_profile.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/02_inventory.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/03_customers.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/04_credit.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/05_sales.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/06_ai_insights.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/07_admin.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/07_admin.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/08_rls_policies.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/08_rls_policies.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/09_rpc_functions.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/09_rpc_functions.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/10_ai_credit_rpcs.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/10_ai_credit_rpcs.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/10_delivery_management.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/11_pos_enhanced_rpc.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/11_pos_enhanced_rpc.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/12_pos_weight_shrinkage_loyalty.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/12_pos_weight_shrinkage_loyalty.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/13_pos_weight_shrinkage_loyalty_rpc.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/db/schema/13_pos_weight_shrinkage_loyalty_rpc.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/db/schema/14_pos_weight_checkout_rpc.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/edge/ai_insights/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/edge/ai_insights/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/edge/ai_pricing_inventory/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/edge/ai_pricing_inventory/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/edge/cashflow/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/edge/cashflow/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/edge/credit_risk/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/edge/credit_risk/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/edge/inventory_health/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/edge/inventory_health/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/instrumentation-client.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/lib/adapters/database.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/adapters/email.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/adapters/jobs.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/adapters/storage.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/auth/server-guards.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/lib/auth/server-guards.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/lib/auth/server-guards.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/clerk.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/lib/clerk.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/credit/aiEngine/features.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/credit/aiEngine/limitEngine.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/credit/creditDecisionService.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/credit/creditScheduler.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/db.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-business.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-business.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-feature-flag.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-feature-flag.ts",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-permission.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-realtime.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-realtime.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/hooks/use-user-role.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/lib/supabase/server.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/lib/utils/ai-engine.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/utils/credit-system.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/utils/inventory-engine.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/utils/offline-sync.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/utils/offline-sync.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/utils/pos-engine.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/utils/pos-weight-engine.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/lib/utils/pricing-engine.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/lib/validations/schemas.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/middleware.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/middleware.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/prisma/schema.prisma",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/prisma/schema.prisma",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/prisma/schema.prisma",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/public/sw.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/public/sw.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/scripts/check-business.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/db-check.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/force-password-reset.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/help-center-data.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/scripts/production-reset.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/production-reset.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/scripts/production-reset.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/scripts/seed-test-data.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/seed-test-data.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/scripts/verify-alignment.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/scripts/verify-alignment.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/scripts/verify-db.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/scripts/verify-db.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/supabase/functions/ai_insights/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/supabase/functions/ai_insights/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/functions/cashflow/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/supabase/functions/cashflow/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/functions/credit_risk/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/supabase/functions/credit_risk/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/functions/inventory_health/index.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/supabase/functions/inventory_health/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251128000000_init.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251128000000_init.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251220000000_rbac_schema.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251221000000_fix_rls_missing.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251221000001_fix_search_paths.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251221000002_optimize_performance.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251221000002_optimize_performance.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251223000001_add_inventory_intake.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251227000001_feature_flags.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251227000001_feature_flags.sql",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251228000000_fix_intake_functions.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251228000002_optimize_rls_policies.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251228000002_optimize_rls_policies.sql",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20251229000000_approvals_system.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20260121000000_ensure_alignment.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20260131000000_add_product_unit_aliases.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20260131000000_audit_log_tenant_isolation.sql",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/supabase/migrations/20260131000000_audit_log_tenant_isolation.sql",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/TESTING.md",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/ai-engines.spec.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/tests/customer-validation.unit.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/a11y.spec.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/feature-flags.spec.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/global.setup.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/multi-tenancy.spec.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/quick-pos-flow.spec.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/e2e/visual-regression.spec.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/event-desk-data-fetching.unit.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/tests/integration/audit.test.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/integration/audit.test.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "apps/app/tests/integration/audit.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/tests/integration/audit.test.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "apps/app/tests/integration/rtbf.test.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "apps/app/tests/integration/rtbf.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/app/tests/middleware.test.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/app/tests/middleware.test.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "apps/app/tests/security/security-rules.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/mobile/app/(tabs)/customers.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/mobile/app/(tabs)/index.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/mobile/src/contexts/AuthContext.tsx",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "apps/mobile/src/lib/types.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "apps/mobile/src/services/apiClient.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "CHECKLIST_PRECOMMIT.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "CHECKLIST_PRERELEASE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/agents.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/AI_CREDIT_ENGINE_DELIVERY_SUMMARY.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/AI_CREDIT_ENGINE_IMPLEMENTATION.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/AI_CREDIT_LIMIT_ENGINE_COMPLETE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/AI_DEPLOYMENT_GUIDE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/AI_INTEGRATION_CHECKLIST.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/COMPLIANCE_AUDIT.md",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "docs/COMPLIANCE_AUDIT.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/COMPLIANCE_AUDIT.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/CONSOLIDATED_MIGRATION_SUMMARY.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/CONSOLIDATED_MIGRATION_SUMMARY.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/CREDIT_ENGINE_SETUP.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/decisions/0000-vendor-policy.md",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "docs/decisions/0000-vendor-policy.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/ENV_MATRIX.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/FEATURES_SUMMARY.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/IMPLEMENTATION_SUMMARY.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/IMPLEMENTATION_UPDATES.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/IMPLEMENTATION.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/IMPLEMENTATION.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/INDEX_POS_MIGRATION.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/INDEX_POS_MIGRATION.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/INDEX.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/MIGRATION_GUIDE.md",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "docs/MIGRATION_GUIDE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/MIGRATION_GUIDE.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/MIGRATION_INSTRUCTIONS.md",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "docs/MIGRATION_QUICK_REFERENCE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/MIGRATION_QUICK_REFERENCE.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/MIGRATION_SYNC_STATUS.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/PHASE3_READINESS.md",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "docs/PHASE3_READINESS.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/PHASE3_READINESS.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/POS_FEATURE_DELIVERY_SUMMARY.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/POS_FEATURE_DELIVERY_SUMMARY.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/POS_WEIGHT_SHRINKAGE_LOYALTY_COMPLETE.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/POST_PHASE2_REVIEW.md",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "docs/POST_PHASE2_REVIEW.md",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "docs/POST_PHASE2_REVIEW.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/POST_PHASE2_REVIEW.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/PRD.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/PRD.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/QA_VALIDATION_REPORT.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/README_MIGRATION_READY.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/REPO_DOC_AUDIT.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/rules.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/testing/PRODUCTION_READINESS_REPORT.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/testing/TEST_MATRIX.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "docs/WRELIK_KIT_INTEGRATION.md",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "docs/WRELIK_KIT_INTEGRATION.md",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "docs/WRELIK_KIT_INTEGRATION.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "docs/WRELIK_KIT_INTEGRATION.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "mintlify/keeping-your-data-safe.mdx",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-analytics/dist/index.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-analytics/dist/react-native.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-analytics/src/index.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-analytics/src/react-native.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-analytics/src/react-native.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/index.d.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/index.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/index.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/next.js",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/next.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/react-native.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/react-native.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/dist/shared-BYrhBbPS.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/index.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/index.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/next.ts",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/next.ts",
+      "type": "auth",
+      "evidence": "Auth context call"
+    },
+    {
+      "file": "packages/wrelik-auth/src/react-native.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/shared.test.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-auth/src/shared.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-config/dist/index.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-config/dist/react-native.d.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-config/dist/react-native.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-config/dist/shared-Bmyj-QCX.d.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-config/src/react-native.test.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-config/src/shared.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-db/dist/index.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-db/dist/index.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-db/src/index.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/browser.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/browser.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/browser.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/node.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/node.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/node.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/react-native.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/react-native.js",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/react-native.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/dist/shared-DXFP3J32.d.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/src/browser.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/src/node.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/src/react-native.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "packages/wrelik-errors/src/shared.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "packages/wrelik-eslint-config/index.js",
+      "type": "auth",
+      "evidence": "Clerk auth boundary"
+    },
+    {
+      "file": "packages/wrelik-eslint-config/index.js",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "packages/wrelik-eslint-config/index.js",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "README.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "scripts/testing/audit-repo.ts",
+      "type": "db",
+      "evidence": "Prisma/DB access"
+    },
+    {
+      "file": "scripts/testing/audit-repo.ts",
+      "type": "db",
+      "evidence": "Supabase data access"
+    },
+    {
+      "file": "scripts/testing/audit-repo.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "scripts/testing/audit-repo.ts",
+      "type": "feature_flag",
+      "evidence": "Feature flag boundary"
+    },
+    {
+      "file": "scripts/testing/audit-repo.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "scripts/testing/data-integrity-check.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "scripts/testing/generate-test-matrix.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "scripts/testing/generate-test-matrix.ts",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    },
+    {
+      "file": "scripts/testing/run-full-gate.ts",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "STACK.md",
+      "type": "tenant",
+      "evidence": "Tenant/business boundary"
+    },
+    {
+      "file": "STACK.md",
+      "type": "observability",
+      "evidence": "Observability boundary"
+    }
   ],
-  "dbAccess": [
-    "apps/app/.prisma/client/runtime/client.d.ts",
-    "apps/app/.prisma/client/runtime/index-browser.d.ts",
-    "apps/app/.prisma/client/scripts/default-index.d.ts",
-    "apps/app/app/(app)/admin/_components/AdminClient.tsx",
-    "apps/app/app/(app)/admin/ai/_components/AdminAIClient.tsx",
-    "apps/app/app/(app)/admin/approvals/_components/ApprovalsClient.tsx",
-    "apps/app/app/(app)/admin/audit/_components/AuditClient.tsx",
-    "apps/app/app/(app)/admin/businesses/_components/BusinessesClient.tsx",
-    "apps/app/app/(app)/admin/features/_components/FeaturesClient.tsx",
-    "apps/app/app/(app)/admin/layout.tsx",
-    "apps/app/app/(app)/ai-intelligence/page.tsx",
-    "apps/app/app/(app)/credit/_hooks/useCreditManager.ts",
-    "apps/app/app/(app)/customers/[id]/page.tsx",
-    "apps/app/app/(app)/customers/page.tsx",
-    "apps/app/app/(app)/dashboard/_hooks/useDashboardData.ts",
-    "apps/app/app/(app)/insights/page.tsx",
-    "apps/app/app/(app)/inventory/_hooks/useInventoryActions.ts",
-    "apps/app/app/(app)/inventory/audit/page.tsx",
-    "apps/app/app/(app)/inventory/intake/page.tsx",
-    "apps/app/app/(app)/sales/[id]/page.tsx",
-    "apps/app/app/(app)/sales/page.tsx",
-    "apps/app/app/(app)/settings/inventory/aliases/page.tsx",
-    "apps/app/app/(app)/settings/page.tsx",
-    "apps/app/app/(app)/settings/profile/page.tsx",
-    "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
-    "apps/app/app/actions/admin-users.ts",
-    "apps/app/app/actions/beta.ts",
-    "apps/app/app/actions/business.ts",
-    "apps/app/app/actions/get-current-business.ts",
-    "apps/app/app/actions/rtbf.ts",
-    "apps/app/app/actions/setup-business.ts",
-    "apps/app/app/actions/user-management.ts",
-    "apps/app/app/api/admin/audit-logs/route.ts",
-    "apps/app/app/api/admin/businesses/route.ts",
-    "apps/app/app/api/admin/user/route.ts",
-    "apps/app/app/api/admin/users/[id]/route.ts",
-    "apps/app/app/api/ai/alerts/route.ts",
-    "apps/app/app/api/ai/analyze/route.ts",
-    "apps/app/app/api/ai/product-intelligence/route.ts",
-    "apps/app/app/api/credit/audit-logs/route.ts",
-    "apps/app/app/api/credit/customers/[id]/route.ts",
-    "apps/app/app/api/credit/customers/route.ts",
-    "apps/app/app/api/credit/refresh-customer/route.ts",
-    "apps/app/app/api/credit/transactions/[id]/route.ts",
-    "apps/app/app/api/credit/transactions/route.ts",
-    "apps/app/app/api/customers/[id]/route.ts",
-    "apps/app/app/api/customers/route.ts",
-    "apps/app/app/api/debug-env/route.ts",
-    "apps/app/app/api/featurebase/auth/route.ts",
-    "apps/app/app/api/inventory/[id]/route.ts",
-    "apps/app/app/api/inventory/adjust/route.ts",
-    "apps/app/app/api/inventory/intake/approve/route.ts",
-    "apps/app/app/api/inventory/intake/route.ts",
-    "apps/app/app/api/inventory/route.ts",
-    "apps/app/app/api/notifications/alerts/[id]/route.ts",
-    "apps/app/app/api/notifications/alerts/route.ts",
-    "apps/app/app/api/notifications/auditlogs/route.ts",
-    "apps/app/app/api/notifications/preferences/[userId]/route.ts",
-    "apps/app/app/api/notifications/preferences/route.ts",
-    "apps/app/app/api/notifications/route.ts",
-    "apps/app/app/api/pos/_lib/server.ts",
-    "apps/app/app/api/pos/bootstrap/route.ts",
-    "apps/app/app/api/pos/checkout/route.ts",
-    "apps/app/app/api/pos/customers/quick-create/route.ts",
-    "apps/app/app/api/pos/customers/route.ts",
-    "apps/app/app/api/pos/exit/verify/route.ts",
-    "apps/app/app/api/pos/products/route.ts",
-    "apps/app/app/api/sales/route.ts",
-    "apps/app/app/api/team/members/[id]/audit-logs/route.ts",
-    "apps/app/app/api/team/members/[id]/role/route.ts",
-    "apps/app/app/api/team/members/[id]/route.ts",
-    "apps/app/app/api/team/members/route.ts",
-    "apps/app/app/api/team/route.ts",
-    "apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts",
-    "apps/app/check_duplicates.ts",
-    "apps/app/components/ai/ai-intelligence-dashboard.tsx",
-    "apps/app/components/ai/inventory-forecast-card.tsx",
-    "apps/app/components/ai/pricing-recommendation-card.tsx",
-    "apps/app/components/crm/ProductCostBreakdown.tsx",
-    "apps/app/components/pos/shrinkage-form.tsx",
-    "apps/app/components/pos/weight-entry-modal.tsx",
-    "apps/app/components/providers/onboarding-provider.tsx",
-    "apps/app/components/reports/shrinkage-report.tsx",
-    "apps/app/db/migrations/20250128000001_add_ai_credit_engine.sql",
-    "apps/app/db/migrations/20250128000001_ai_pricing_inventory_intel.sql",
-    "apps/app/db/migrations/20250228000001_pos_weight_shrinkage_loyalty_consolidated.sql",
-    "apps/app/db/migrations/20251121000001_add_fees_to_sales.sql",
-    "apps/app/db/migrations/20251121000002_add_unit_cost_to_sales_line_items.sql",
-    "apps/app/db/migrations/20251127000001_add_business_settings.sql",
-    "apps/app/db/migrations/20251206000001_price_override_feature.sql",
-    "apps/app/db/migrations/20251206000002_tax_collection_toggle.sql",
-    "apps/app/db/migrations/20251206000003_customer_assignment.sql",
-    "apps/app/db/migrations/20251206000005_update_checkout_rpc.sql",
-    "apps/app/db/migrations/20251207000001_inventory_intake_cost_tracking.sql",
-    "apps/app/db/migrations/20251219000000_add_pos_manager_pin.sql",
-    "apps/app/db/migrations/20260107000001_restore_get_user_permissions.sql",
-    "apps/app/db/migrations_combined.sql",
-    "apps/app/edge/ai_insights/index.ts",
-    "apps/app/edge/ai_pricing_inventory/index.ts",
-    "apps/app/edge/cashflow/index.ts",
-    "apps/app/edge/credit_risk/index.ts",
-    "apps/app/edge/inventory_health/index.ts",
-    "apps/app/lib/auth/server-guards.ts",
-    "apps/app/lib/credit/aiEngine/features.ts",
-    "apps/app/lib/credit/aiEngine/limitEngine.ts",
-    "apps/app/lib/credit/creditDecisionService.ts",
-    "apps/app/lib/credit/creditScheduler.ts",
-    "apps/app/lib/db.ts",
-    "apps/app/lib/hooks/use-feature-flag.ts",
-    "apps/app/lib/hooks/use-permission.ts",
-    "apps/app/lib/hooks/use-realtime.ts",
-    "apps/app/lib/supabase/admin.ts",
-    "apps/app/lib/supabase/client.ts",
-    "apps/app/lib/supabase/server.ts",
-    "apps/app/lib/utils/ai-engine.ts",
-    "apps/app/lib/utils/credit-system.ts",
-    "apps/app/lib/utils/inventory-engine.ts",
-    "apps/app/lib/utils/offline-sync.ts",
-    "apps/app/lib/utils/pos-engine.ts",
-    "apps/app/lib/utils/pos-weight-engine.ts",
-    "apps/app/lib/utils/pricing-engine.ts",
-    "apps/app/prisma.config.ts",
-    "apps/app/prisma/schema.prisma",
-    "apps/app/scripts/check-business.ts",
-    "apps/app/scripts/db-check.ts",
-    "apps/app/scripts/force-password-reset.ts",
-    "apps/app/scripts/production-reset.ts",
-    "apps/app/scripts/seed-test-data.ts",
-    "apps/app/scripts/sync-help-center.ts",
-    "apps/app/scripts/verify-alignment.ts",
-    "apps/app/scripts/verify-db.ts",
-    "apps/app/supabase/functions/ai_insights/index.ts",
-    "apps/app/supabase/functions/cashflow/index.ts",
-    "apps/app/supabase/functions/credit_risk/index.ts",
-    "apps/app/supabase/functions/inventory_health/index.ts",
-    "apps/app/supabase/migrations/20251128000000_init.sql",
-    "apps/app/supabase/migrations/20251219000000_add_pos_manager_pin.sql",
-    "apps/app/supabase/migrations/20251220000000_rbac_schema.sql",
-    "apps/app/supabase/migrations/20251221000001_fix_search_paths.sql",
-    "apps/app/supabase/migrations/20251223000001_add_inventory_intake.sql",
-    "apps/app/supabase/migrations/20251228000000_fix_intake_functions.sql",
-    "apps/app/supabase/migrations/20251228000001_add_unit_of_measure.sql",
-    "apps/app/supabase/migrations/20251229000000_approvals_system.sql",
-    "apps/app/supabase/migrations/20260121000000_ensure_alignment.sql",
-    "apps/app/supabase/migrations/20260131000000_add_product_unit_aliases.sql",
-    "apps/app/supabase/migrations/20260131000000_audit_log_tenant_isolation.sql",
-    "apps/app/tests/dashboard-data-processing.unit.test.ts",
-    "apps/app/tests/event-desk-data-fetching.unit.test.ts",
-    "apps/app/tests/event-desk-data-processing.unit.test.ts",
-    "apps/app/tests/event-desk-integration.spec.ts",
-    "apps/app/tests/integration/audit.test.ts",
-    "apps/app/tests/integration/hierarchy.test.ts",
-    "apps/app/tests/integration/rtbf.test.ts",
-    "apps/app/tests/neon-inventory.test.tsx",
-    "apps/app/tests/setup.ts"
+  "vendors": [
+    {
+      "vendor": "clerk",
+      "dependency": "@clerk/nextjs",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "clerk",
+      "dependency": "@clerk/testing",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "clerk",
+      "dependency": "@clerk/clerk-expo",
+      "source": "apps/mobile/package.json"
+    },
+    {
+      "vendor": "clerk",
+      "dependency": "@clerk/backend",
+      "source": "packages/wrelik-auth/package.json"
+    },
+    {
+      "vendor": "inngest",
+      "dependency": "inngest",
+      "source": "packages/wrelik-jobs/package.json"
+    },
+    {
+      "vendor": "posthog",
+      "dependency": "posthog-js",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "posthog",
+      "dependency": "posthog-node",
+      "source": "packages/wrelik-analytics/package.json"
+    },
+    {
+      "vendor": "posthog",
+      "dependency": "posthog-react-native",
+      "source": "packages/wrelik-analytics/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client-runtime-utils",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/engines-version",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/query-compiler-wasm",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-better-sqlite3",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-d1",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-mariadb",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-libsql",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-mssql",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-neon",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-pg",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-planetscale",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client-common",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client-generator-js",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client-generator-ts",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client-engine-runtime",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/config",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/driver-adapter-utils",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/debug",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/dmmf",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/engines",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/fetch-engine",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/generator-helper",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/generator",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/get-platform",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/instrumentation",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/instrumentation-contract",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/internals",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/json-protocol",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/migrate",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/query-plan-executor",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/sqlcommenter",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/sqlcommenter-trace-context",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/ts-builders",
+      "source": "apps/app/.prisma/client/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/adapter-pg",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "prisma",
+      "dependency": "@prisma/client",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "resend",
+      "dependency": "resend",
+      "source": "packages/wrelik-email/package.json"
+    },
+    {
+      "vendor": "sentry",
+      "dependency": "@sentry/nextjs",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "sentry",
+      "dependency": "@sentry/browser",
+      "source": "packages/wrelik-errors/package.json"
+    },
+    {
+      "vendor": "sentry",
+      "dependency": "@sentry/node",
+      "source": "packages/wrelik-errors/package.json"
+    },
+    {
+      "vendor": "sentry",
+      "dependency": "@sentry/react-native",
+      "source": "packages/wrelik-errors/package.json"
+    },
+    {
+      "vendor": "supabase",
+      "dependency": "@supabase/ssr",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "supabase",
+      "dependency": "@supabase/supabase-js",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "supabase",
+      "dependency": "@supabase/supabase-js",
+      "source": "apps/mobile/package.json"
+    },
+    {
+      "vendor": "svix",
+      "dependency": "svix",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "upstash",
+      "dependency": "@upstash/ratelimit",
+      "source": "apps/app/package.json"
+    },
+    {
+      "vendor": "upstash",
+      "dependency": "@upstash/redis",
+      "source": "apps/app/package.json"
+    }
   ],
-  "featureFlags": [
-    "apps/app/app/(app)/admin/features/_components/FeaturesClient.tsx",
-    "apps/app/components/feature-gate.tsx",
-    "apps/app/db/migrations/20260111000001_security_and_performance_remediation.sql",
-    "apps/app/lib/hooks/use-feature-flag.ts",
-    "apps/app/supabase/migrations/20251227000001_feature_flags.sql",
-    "apps/app/supabase/migrations/20251228000002_optimize_rls_policies.sql",
-    "apps/app/tests/e2e/feature-flags.spec.ts",
-    "scripts/testing/audit-repo.ts"
-  ],
-  "observability": [
-    "apps/app/.prisma/client/runtime/client.d.ts",
-    "apps/app/app/(app)/admin/_components/AdminClient.tsx",
-    "apps/app/app/(app)/admin/audit/_components/AuditClient.tsx",
-    "apps/app/app/(app)/help/page.tsx",
-    "apps/app/app/actions/rtbf.ts",
-    "apps/app/app/actions/user-management.ts",
-    "apps/app/app/api/admin/user/route.ts",
-    "apps/app/app/api/credit/audit-logs/route.ts",
-    "apps/app/app/api/notifications/alerts/[id]/route.ts",
-    "apps/app/app/layout.tsx",
-    "apps/app/app/pos/page.tsx",
-    "apps/app/components/feedback/sentry-feedback-widget.tsx",
-    "apps/app/components/layout/sidebar.tsx",
-    "apps/app/components/layout/top-nav.tsx",
-    "apps/app/components/providers/posthog-provider.tsx",
-    "apps/app/components/sentry-feedback-button.tsx",
-    "apps/app/components/ui/global-error-boundary.tsx",
-    "apps/app/instrumentation-client.ts",
-    "apps/app/lib/adapters/analytics.ts",
-    "apps/app/lib/adapters/errors.ts",
-    "apps/app/lib/adapters/index.ts",
-    "apps/app/scripts/production-reset.ts",
-    "apps/app/wrelik.d.ts",
-    "packages/wrelik-analytics/src/index.ts",
-    "packages/wrelik-analytics/src/react-native.ts",
-    "packages/wrelik-config/src/react-native.test.ts",
-    "packages/wrelik-config/src/shared.ts",
-    "packages/wrelik-errors/src/browser.ts",
-    "packages/wrelik-errors/src/node.ts",
-    "packages/wrelik-errors/src/react-native.ts",
-    "scripts/testing/audit-repo.ts",
-    "scripts/testing/generate-test-matrix.ts"
-  ],
-  "experimental": [
-    "apps/app/app/(app)/demo/mobile-menu/page.tsx",
-    "docs/testing/TEST_MATRIX.md",
-    "scripts/testing/audit-repo.ts"
-  ],
-  "deprecatedOrStale": [
-    "CHANGELOG.md",
-    "apps/app/.prisma/client/runtime/client.d.ts",
-    "apps/app/lib/hooks/use-permission.ts",
-    "apps/app/lib/supabase/admin.ts",
-    "apps/app/lib/supabase/client.ts",
-    "apps/app/lib/supabase/server.ts",
-    "docs/VERSION_MANAGEMENT.md",
-    "docs/WRELIK_KIT_INTEGRATION.md",
-    "docs/agents.md",
-    "docs/testing/TEST_MATRIX.md",
-    "scripts/testing/audit-repo.ts",
-    "scripts/testing/policy-check.ts"
+  "deprecatedArtifacts": [
+    {
+      "file": "apps/app/playwright-report/index.html",
+      "rule": "stale-playwright-report"
+    },
+    {
+      "file": "apps/app/test-results/.last-run.json",
+      "rule": "stale-test-results"
+    },
+    {
+      "file": "apps/app/test-results/playwright-junit.xml",
+      "rule": "stale-test-results"
+    }
   ],
   "mandatoryRisks": [
     "Mixed auth/data model: Clerk + Prisma + Supabase compatibility surfaces",
-    "Runtime mock client present in apps/app/lib/supabase/client.ts",
+    "Runtime mock client compatibility path must not exist in production",
     "Deprecated/stale tracked artifacts: .orig/.rej/build logs/playwright-report/testsprite suites"
   ]
 }

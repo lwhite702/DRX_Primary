@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export async function POST(request: NextRequest) {
   try {

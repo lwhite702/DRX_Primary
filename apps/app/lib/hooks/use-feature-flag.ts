@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export function useFeatureFlag(featureId: string) {
   const { business } = useBusiness();
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     async function checkFeature() {

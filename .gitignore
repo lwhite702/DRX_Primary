@@ -5,6 +5,10 @@ node_modules/
 
 # Testing
 /coverage
+apps/app/playwright-report/
+apps/app/test-results/
+apps/app/coverage/
+testsprite_tests/
 
 # Next.js
 /.next/
@@ -36,6 +40,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+apps/app/build_error*.log
+**/*.orig
+**/*.rej
 
 # IDE
 .vscode/

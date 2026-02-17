@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Loader2, Users } from "lucide-react";
 import Link from "next/link";
@@ -29,7 +29,7 @@ export default function SettingsPage() {
   const [posManagerPin, setPosManagerPin] = useState("");
   const [saving, setSaving] = useState(false);
   const [mobileStep, setMobileStep] = useState<1 | 2>(1);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (business) {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { useUserRole } from "./use-user-role";
 
 const getFallbackPermissions = (role: string | null): string[] => {
@@ -45,7 +45,7 @@ const getFallbackPermissions = (role: string | null): string[] => {
 export function usePermission(businessId: string | undefined) {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
   const { role } = useUserRole(businessId);
 
   const fetchPermissions = useCallback(async () => {

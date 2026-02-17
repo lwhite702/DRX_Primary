@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 // import { db } from "@wrelik/db";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 // Mocks for build
-const realtime = getSupabaseClient();
+const realtime = createAppClient();
 // Mock db to prevent server-side imports in client bundle
 const db = {
   sales: { findMany: async (...args: any[]) => [] },

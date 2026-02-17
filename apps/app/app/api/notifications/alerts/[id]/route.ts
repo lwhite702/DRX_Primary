@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -14,12 +13,7 @@ export async function DELETE(
   } = await supabase.auth.getUser();
   if (!user || authError) return NextResponse.json({}, { status: 401 });
 
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
-  const { error } = await adminSupabase
+  const { error } = await supabase
     .from("notifications")
     .delete()
     .eq("id", id);
@@ -29,7 +23,7 @@ export async function DELETE(
   }
 
   // Audit Log
-  await adminSupabase.from("system_audit_log").insert({
+  await supabase.from("system_audit_log").insert({
     action: "delete_alert",
     actor_id: user.id,
     resource_type: "notification",

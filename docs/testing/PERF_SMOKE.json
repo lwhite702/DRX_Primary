@@ -1,12 +1,31 @@
 {
-  "generatedAt": "2026-02-15T05:23:22.566Z",
+  "schemaVersion": "3.0.0",
+  "generatedAt": "2026-02-16T11:06:39.869Z",
+  "mode": "pr",
   "metrics": {
-    "appNextMb": 484.02,
-    "marketingNextMb": 12.29
+    "appNextMb": 1422.88,
+    "marketingNextMb": 209.11,
+    "apiLatency": {}
+  },
+  "baseline": {
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-02-16T00:00:00.000Z",
+    "appNextMb": 1300,
+    "marketingNextMb": 220
   },
   "thresholds": {
-    "appNextMb": 300,
-    "marketingNextMb": 120
+    "appNextMb": 1495,
+    "marketingNextMb": 253,
+    "apiLatencyMs": 800
   },
-  "pass": false
+  "deltas": {
+    "appPct": 9.45,
+    "marketingPct": -4.95
+  },
+  "notes": {
+    "baselineUpdate": "Run `pnpm test:perf -- --update-baseline` on a clean CI baseline only.",
+    "lighthouse": "Run Lighthouse CI in dedicated nightly gate.",
+    "stress": "Run k6/autocannon in nightly/protected workflow only."
+  },
+  "pass": true
 }

@@ -11,8 +11,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app_related: ${{ steps.filter.outputs.app_related }}
+      docs_only: ${{ steps.filter.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app_related:
+              - 'apps/**'
+              - 'packages/**'
+              - 'scripts/**'
+              - '.github/workflows/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+            docs_only:
+              - 'mintlify/**'
+              - 'docs/**'
+
   repo-audit:
     runs-on: ubuntu-latest
+    needs: changes
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -24,7 +48,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:matrix
+      - run: pnpm test:matrix:validate
       - run: pnpm test:policy
+      - run: pnpm test:surfaces
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -36,7 +62,8 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    needs: repo-audit
+    needs: [repo-audit, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -51,7 +78,8 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-latest
-    needs: repo-audit
+    needs: [repo-audit, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -66,7 +94,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [lint, typecheck]
+    needs: [lint, typecheck, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -81,11 +110,8 @@ jobs:
 
   unit:
     runs-on: ubuntu-latest
-    needs: [lint, typecheck]
-    strategy:
-      fail-fast: true
-      matrix:
-        shard: [1, 2]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -100,13 +126,14 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: unit-${{ matrix.shard }}
+          name: unit
           path: |
             apps/app/coverage
 
   integration:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -122,11 +149,12 @@ jobs:
   e2e-web:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     strategy:
       fail-fast: true
       matrix:
-        shard: [1, 2]
+        shard: ["1/2", "2/2"]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -138,7 +166,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
-      - run: pnpm test:e2e:web
+      - run: PLAYWRIGHT_SHARD=${{ matrix.shard }} pnpm test:e2e:web:smoke
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,7 +177,8 @@ jobs:
 
   a11y:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -162,10 +191,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
       - run: pnpm test:a11y
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a11y
+          path: |
+            apps/app/playwright-report
+            apps/app/test-results
 
   security:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -181,11 +218,14 @@ jobs:
         if: always()
         with:
           name: security
-          path: docs/testing/SECURITY_SCAN.json
+          path: |
+            docs/testing/SECURITY_SCAN.json
+            docs/testing/SECURITY_SCAN.junit.xml
 
   perf-smoke:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -205,7 +245,8 @@ jobs:
 
   coverage-gate:
     runs-on: ubuntu-latest
-    needs: [unit]
+    needs: [unit, changes]
+    if: needs.changes.outputs.app_related == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -242,3 +283,4 @@ jobs:
             docs/testing/SUMMARY.md
             docs/testing/BETA_LAUNCH_CHECKLIST.md
             docs/testing/FULL_GATE_RESULTS.json
+            docs/testing/DATA_INTEGRITY.json

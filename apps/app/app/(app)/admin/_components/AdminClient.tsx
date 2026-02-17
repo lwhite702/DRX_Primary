@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Building2, Users, FileText, Brain } from "lucide-react";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default function AdminClient() {
     aiFailures: 0,
   });
   const [loading, setLoading] = useState(true);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (!supabase) {

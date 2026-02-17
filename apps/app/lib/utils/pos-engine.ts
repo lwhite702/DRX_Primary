@@ -4,7 +4,7 @@ import {
   type POSCheckout,
   type SalesLineItem,
 } from "@/lib/validations/schemas";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export type MiscFee = {
   type: string;
@@ -65,7 +65,7 @@ export interface CartState {
 
 export class POSEngine {
   private cart: CartState;
-  private supabase = getSupabaseClient();
+  private supabase = createAppClient();
 
   constructor() {
     this.cart = {

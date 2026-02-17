@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -15,12 +14,7 @@ export async function GET(
   } = await supabase.auth.getUser();
   if (!user || authError) return NextResponse.json({}, { status: 401 });
 
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
-  const { data, error } = await adminSupabase
+  const { data, error } = await supabase
     .from("notification_preferences")
     .select("*")
     .eq("user_id", userId)

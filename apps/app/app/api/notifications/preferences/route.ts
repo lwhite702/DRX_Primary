@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -16,14 +15,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { userId, preferences } = body;
 
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
   // Check if userId matches caller or if caller is admin/manager?
-  // Using Admin Supabase to upsert
-  const { error } = await adminSupabase
+  const { error } = await supabase
     .from("notification_preferences")
     .upsert({ user_id: userId, preferences: preferences });
 

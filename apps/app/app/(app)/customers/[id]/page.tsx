@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
@@ -63,7 +63,7 @@ export default function CustomerDetailPage() {
   const [user_id, setUser_id] = useState<string>("");
   const [can_apply_changes, setCan_apply_changes] = useState(false);
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (!business?.id) return;
