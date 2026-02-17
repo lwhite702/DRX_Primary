@@ -1,0 +1,11 @@
+node_modules
+.turbo
+.next
+coverage
+test-results
+playwright-report
+apps/*/.next
+apps/*/coverage
+apps/*/test-results
+apps/*/playwright-report
+**/*.log
