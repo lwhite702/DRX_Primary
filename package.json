@@ -67,14 +67,14 @@
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
-    "@wrelik/analytics": "file:./packages/wrelik-analytics-0.2.0.tgz",
-    "@wrelik/auth": "file:./packages/wrelik-auth-0.2.0.tgz",
-    "@wrelik/config": "file:./packages/wrelik-config-0.2.0.tgz",
-    "@wrelik/db": "file:./packages/wrelik-db-0.1.2.tgz",
-    "@wrelik/email": "file:./packages/wrelik-email-0.1.2.tgz",
-    "@wrelik/errors": "file:./packages/wrelik-errors-0.2.0.tgz",
-    "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.2.tgz",
-    "@wrelik/storage": "file:./packages/wrelik-storage-0.2.0.tgz",
+    "@wrelik/analytics": "0.2.0",
+    "@wrelik/auth": "0.2.0",
+    "@wrelik/config": "0.2.0",
+    "@wrelik/db": "0.1.2",
+    "@wrelik/email": "0.1.2",
+    "@wrelik/errors": "0.2.0",
+    "@wrelik/jobs": "0.1.2",
+    "@wrelik/storage": "0.2.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -139,14 +139,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "file:./packages/wrelik-auth-0.2.0.tgz",
-      "@wrelik/db": "file:./packages/wrelik-db-0.1.2.tgz",
-      "@wrelik/storage": "file:./packages/wrelik-storage-0.2.0.tgz",
-      "@wrelik/analytics": "file:./packages/wrelik-analytics-0.2.0.tgz",
-      "@wrelik/errors": "file:./packages/wrelik-errors-0.2.0.tgz",
-      "@wrelik/email": "file:./packages/wrelik-email-0.1.2.tgz",
-      "@wrelik/jobs": "file:./packages/wrelik-jobs-0.1.2.tgz",
-      "@wrelik/config": "file:./packages/wrelik-config-0.2.0.tgz"
+      "@wrelik/auth": "0.2.0",
+      "@wrelik/db": "0.1.2",
+      "@wrelik/storage": "0.2.0",
+      "@wrelik/analytics": "0.2.0",
+      "@wrelik/errors": "0.2.0",
+      "@wrelik/email": "0.1.2",
+      "@wrelik/jobs": "0.1.2",
+      "@wrelik/config": "0.2.0"
     }
   }
 }
