@@ -1,10 +1,12 @@
 {
   "name": "deelrx-crm",
-  "version": "0.4.8",
+  "version": "0.5.2",
   "private": true,
   "scripts": {
-    "build": "prisma generate && next build --webpack",
-    "dev": "doppler run -- next dev",
+    "build": "pnpm --filter deelrxcrm-app build",
+    "build:marketing": "pnpm --filter deelrxcrm-marketing build",
+    "build:all": "pnpm build && pnpm build:marketing",
+    "dev": "pnpm --filter deelrxcrm-app dev",
     "dev:ci": "next dev",
     "version:check": "node scripts/version.js check",
     "version:bump": "node scripts/version.js bump",
@@ -67,14 +69,14 @@
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
-    "@wrelik/analytics": "0.2.0",
-    "@wrelik/auth": "0.2.0",
-    "@wrelik/config": "0.2.0",
-    "@wrelik/db": "0.1.2",
-    "@wrelik/email": "0.1.2",
-    "@wrelik/errors": "0.2.0",
-    "@wrelik/jobs": "0.1.2",
-    "@wrelik/storage": "0.2.0",
+    "@wrelik/analytics": "workspace:*",
+    "@wrelik/auth": "workspace:*",
+    "@wrelik/config": "workspace:*",
+    "@wrelik/db": "workspace:*",
+    "@wrelik/email": "workspace:*",
+    "@wrelik/errors": "workspace:*",
+    "@wrelik/jobs": "workspace:*",
+    "@wrelik/storage": "workspace:*",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -139,14 +141,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "0.2.0",
-      "@wrelik/db": "0.1.2",
-      "@wrelik/storage": "0.2.0",
-      "@wrelik/analytics": "0.2.0",
-      "@wrelik/errors": "0.2.0",
-      "@wrelik/email": "0.1.2",
-      "@wrelik/jobs": "0.1.2",
-      "@wrelik/config": "0.2.0"
+      "@wrelik/auth": "workspace:*",
+      "@wrelik/db": "workspace:*",
+      "@wrelik/storage": "workspace:*",
+      "@wrelik/analytics": "workspace:*",
+      "@wrelik/errors": "workspace:*",
+      "@wrelik/email": "workspace:*",
+      "@wrelik/jobs": "workspace:*",
+      "@wrelik/config": "workspace:*"
     }
   }
 }
