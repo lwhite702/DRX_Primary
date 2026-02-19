@@ -68,7 +68,7 @@
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
     "@wrelik/analytics": "0.2.0",
-    "@wrelik/auth": "0.2.0",
+    "@wrelik/auth": "0.2.2",
     "@wrelik/config": "0.2.0",
     "@wrelik/db": "0.1.2",
     "@wrelik/email": "0.1.2",
@@ -139,7 +139,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "0.2.0",
+      "@wrelik/auth": "0.2.2",
       "@wrelik/db": "0.1.2",
       "@wrelik/storage": "0.2.0",
       "@wrelik/analytics": "0.2.0",
