@@ -1,3 +1,3 @@
 {
-  "installCommand": "ROOT_DIR=/vercel/path0; [ -f \"$ROOT_DIR/package.json\" ] || ROOT_DIR=$(pwd); cd \"$ROOT_DIR\" && npm install --legacy-peer-deps"
+  "installCommand": "APP_DIR=/vercel/path0/apps/app; [ -f \"$APP_DIR/package.json\" ] || APP_DIR=$(pwd); cd \"$APP_DIR\" && npm install --legacy-peer-deps"
 }
