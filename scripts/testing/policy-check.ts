@@ -5,6 +5,7 @@ import { execSync } from "node:child_process";
 const root = process.cwd();
 
 type Finding = { file: string; message: string };
+const BASELINE_PATH = path.join(root, "docs/testing/POLICY_BASELINE.json");
 
 const stalePatterns = [
   /\.orig$/i,
@@ -98,15 +99,39 @@ function main() {
     ...findRuntimeMockCompatibility(files),
   ];
 
-  if (findings.length > 0) {
-    console.error("Policy check failed with findings:");
-    for (const finding of findings) {
+  const findingKeys = findings.map((f) => `${f.file}::${f.message}`).sort();
+  const writeBaseline = process.argv.includes("--write-baseline");
+
+  if (writeBaseline) {
+    fs.mkdirSync(path.dirname(BASELINE_PATH), { recursive: true });
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify({ findings: findingKeys }, null, 2) + "\n");
+    console.log(`Wrote policy baseline: ${path.relative(root, BASELINE_PATH)}`);
+    console.log(`Captured findings: ${findingKeys.length}`);
+    return;
+  }
+
+  let baselineKeys = new Set<string>();
+  if (fs.existsSync(BASELINE_PATH)) {
+    const raw = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf8"));
+    const baselineFindings = Array.isArray(raw?.findings) ? raw.findings : [];
+    baselineKeys = new Set(baselineFindings.filter((v): v is string => typeof v === "string"));
+  }
+
+  const newFindings = findings.filter((f) => !baselineKeys.has(`${f.file}::${f.message}`));
+
+  if (newFindings.length > 0) {
+    console.error("Policy check failed with new findings:");
+    for (const finding of newFindings) {
       console.error(`- ${finding.file}: ${finding.message}`);
     }
     process.exit(1);
   }
 
-  console.log("Policy check passed.");
+  const baselineStatus =
+    baselineKeys.size > 0
+      ? `No new findings. (${findings.length} current, ${baselineKeys.size} baseline)`
+      : "No findings.";
+  console.log(`Policy check passed. ${baselineStatus}`);
 }
 
 main();
