@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useRouter } from "next/navigation";
+import { drxCopy } from "@/lib/copy/drx";
 
 export default function InventoryPage() {
   const router = useRouter();
@@ -35,17 +36,14 @@ export default function InventoryPage() {
   if (!business) {
     return (
       <div className="p-4 md:p-8 text-center text-muted-foreground">
-        Please set up your business profile to manage inventory.
+        {drxCopy.inventory.missingBusiness}
       </div>
     );
   }
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 page-transition">
-      <PageHeader
-        title="Inventory"
-        description="Manage your stock levels, perform intakes, and adjust quantities."
-      />
+      <PageHeader title={drxCopy.inventory.title} description={drxCopy.inventory.description} />
 
       <InventoryHeader
         onIntake={() => router.push("/inventory/intake")}
@@ -61,17 +59,14 @@ export default function InventoryPage() {
         onSearchChange={setSearchTerm}
       />
 
-      {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-xl bg-[#1a1a1a] border-white/10 text-foreground">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-wide">
-              {editingItem ? "EDIT ITEM" : "ADD NEW ITEM"}
+              {editingItem ? drxCopy.inventory.dialog.editTitle : drxCopy.inventory.dialog.addTitle}
             </DialogTitle>
             <DialogDescription>
-              {editingItem
-                ? "Update inventory details."
-                : "Add a new product to your inventory."}
+              {editingItem ? drxCopy.inventory.dialog.editBody : drxCopy.inventory.dialog.addBody}
             </DialogDescription>
           </DialogHeader>
           <InventoryForm

@@ -4,9 +4,9 @@ import { StepProps } from "../types";
 export function NicknamesStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-6">
-      <Label className="text-lg">Product Nicknames (Aliases)</Label>
+      <Label className="text-lg">Product nicknames</Label>
       <p className="text-sm text-muted-foreground">
-        Enable common slang terms to map them to real quantities automatically.
+        Turn on the terms your team already uses.
       </p>
       <div className="space-y-3">
         {formData.nicknames.map((n, idx) => (

@@ -26,7 +26,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   return NextResponse.json(
-    { error: "Audit logs are immutable" },
+    { error: "Audit logs cannot be deleted" },
     { status: 405 },
   );
 }
