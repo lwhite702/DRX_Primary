@@ -40,13 +40,6 @@ function redirectToApp(req: Request, pathname: string) {
 }
 
 export default clerkMiddleware(async (auth, req) => {
-  if (
-    process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true" &&
-    process.env.NODE_ENV !== "production"
-  ) {
-    return NextResponse.next();
-  }
-
   const url = req.nextUrl;
   const pathname = url.pathname;
   const hostname = req.headers.get("host") || "";

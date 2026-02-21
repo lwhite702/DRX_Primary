@@ -43,6 +43,7 @@ const initialState: QuickPosState = {
   session: {
     lastSaleId: null,
     lastCompletedAt: null,
+    pendingIdempotencyKey: null,
   },
   creditPolicyEnabled: false,
 };
@@ -63,6 +64,8 @@ type Action =
   | { type: "set_success"; payload: string | null }
   | { type: "set_exit_open"; payload: boolean }
   | { type: "mark_completed"; payload: { saleId: string } }
+  | { type: "set_idempotency_key"; payload: string }
+  | { type: "clear_idempotency_key" }
   | { type: "reset_for_next_sale" };
 
 function reducer(state: QuickPosState, action: Action): QuickPosState {
@@ -126,8 +129,25 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
         session: {
           lastSaleId: action.payload.saleId,
           lastCompletedAt: Date.now(),
+          pendingIdempotencyKey: null,
         },
         ui: { ...state.ui, successMessage: "Sale completed" },
+      };
+    case "set_idempotency_key":
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          pendingIdempotencyKey: action.payload,
+        },
+      };
+    case "clear_idempotency_key":
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          pendingIdempotencyKey: null,
+        },
       };
     case "reset_for_next_sale":
       return {
@@ -159,6 +179,8 @@ interface QuickPosStore {
   setSuccess: (value: string | null) => void;
   setExitOpen: (value: boolean) => void;
   markCompleted: (saleId: string) => void;
+  setIdempotencyKey: (value: string) => void;
+  clearIdempotencyKey: () => void;
   resetForNextSale: () => void;
 }
 
@@ -200,6 +222,11 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const setSuccess = useCallback((value: string | null) => dispatch({ type: "set_success", payload: value }), []);
   const setExitOpen = useCallback((value: boolean) => dispatch({ type: "set_exit_open", payload: value }), []);
   const markCompleted = useCallback((saleId: string) => dispatch({ type: "mark_completed", payload: { saleId } }), []);
+  const setIdempotencyKey = useCallback(
+    (value: string) => dispatch({ type: "set_idempotency_key", payload: value }),
+    [],
+  );
+  const clearIdempotencyKey = useCallback(() => dispatch({ type: "clear_idempotency_key" }), []);
   const resetForNextSale = useCallback(() => dispatch({ type: "reset_for_next_sale" }), []);
 
   const subtotal = useMemo(() => getSubtotal(state), [state]);
@@ -227,6 +254,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setSuccess,
       setExitOpen,
       markCompleted,
+      setIdempotencyKey,
+      clearIdempotencyKey,
       resetForNextSale,
     }),
     [
@@ -249,6 +278,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setSuccess,
       setExitOpen,
       markCompleted,
+      setIdempotencyKey,
+      clearIdempotencyKey,
       resetForNextSale,
     ],
   );

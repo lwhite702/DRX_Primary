@@ -37,6 +37,7 @@ export interface QuickPosUiState {
 export interface QuickPosSessionState {
   lastSaleId: string | null;
   lastCompletedAt: number | null;
+  pendingIdempotencyKey: string | null;
 }
 
 export interface QuickPosState {
@@ -63,6 +64,8 @@ export interface QuickPosBootstrapResponse {
 }
 
 export interface QuickPosCheckoutRequest {
+  mode: "quick";
+  idempotencyKey: string;
   customerId: string | null;
   payment: {
     method: QuickPosPaymentMethod;

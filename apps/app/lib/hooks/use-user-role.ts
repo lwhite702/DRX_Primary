@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { getUserRoleAction } from "@/app/actions/user-role";
-import { Permission } from "@/lib/auth/permissions";
+import { Permission, ROLE_PERMISSIONS } from "@/lib/auth/permissions";
 
 export type UserRole =
   | "owner"
@@ -14,20 +14,6 @@ export type UserRole =
   | null;
 
 export function useUserRole(businessId?: string) {
-  if (process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true") {
-    const hasPermission = (_permission: Permission) => true;
-    return {
-      role: "owner" as UserRole,
-      loading: false,
-      error: null,
-      isAdmin: true,
-      isManager: true,
-      canOverridePrice: true,
-      refreshRole: async () => {},
-      hasPermission,
-    };
-  }
-
   const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
@@ -73,9 +59,10 @@ export function useUserRole(businessId?: string) {
   const canOverridePrice = isManager;
 
   const hasPermission = (permission: Permission) => {
+    if (!role) return false;
     if (role === "super_admin") return true;
-    // Temporary permissive fallback while permission payload unification is in progress.
-    return true;
+    const allowed = ROLE_PERMISSIONS[role];
+    return allowed ? allowed.includes(permission) : false;
   };
 
   return {
