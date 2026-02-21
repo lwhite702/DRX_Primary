@@ -2,6 +2,9 @@
   "name": "deelrxcrm-app",
   "version": "0.5.2",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "build": "prisma generate && next build --webpack",
     "dev": "doppler run -- next dev",
