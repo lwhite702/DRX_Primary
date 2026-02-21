@@ -22,15 +22,23 @@ export async function POST(request: NextRequest) {
   const { userId, businessId } = await resolveAuthContext();
 
   if (!userId || !businessId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const response: PosCheckoutResponse = {
+      success: false,
+      error: "Unauthorized",
+    };
+    return NextResponse.json(response, { status: 401 });
   }
 
   const body = await request.json();
   const parsed = posCheckoutSchema.safeParse(body);
 
   if (!parsed.success) {
+    const response: PosCheckoutResponse = {
+      success: false,
+      error: "Invalid checkout payload",
+    };
     return NextResponse.json(
-      { error: "Invalid checkout payload" },
+      response,
       { status: 400 },
     );
   }

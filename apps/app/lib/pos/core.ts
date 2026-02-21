@@ -212,7 +212,7 @@ export async function checkout(
           totalAmount: asDecimal(totals.total),
           amountPaid: asDecimal(totals.total),
           changeAmount: asDecimal(0),
-          fees: cart.fees,
+          fees: cart.fees as unknown as Prisma.InputJsonValue,
           createdBy: cart.userId,
           items: {
             create: cart.items.map((item) => ({

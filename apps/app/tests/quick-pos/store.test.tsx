@@ -59,4 +59,33 @@ describe("quick pos store", () => {
     expect(storeRef!.state.cartItems).toHaveLength(0);
     expect(storeRef!.state.creditPolicyEnabled).toBe(true);
   });
+
+  it("persists and clears pending idempotency key correctly", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.setIdempotencyKey("77777777-7777-4777-8777-777777777777");
+    });
+
+    expect(storeRef!.state.session.pendingIdempotencyKey).toBe(
+      "77777777-7777-4777-8777-777777777777",
+    );
+
+    act(() => {
+      storeRef!.clearIdempotencyKey();
+    });
+
+    expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();
+
+    act(() => {
+      storeRef!.setIdempotencyKey("88888888-8888-4888-8888-888888888888");
+      storeRef!.markCompleted("sale-2");
+    });
+
+    expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();
+  });
 });
