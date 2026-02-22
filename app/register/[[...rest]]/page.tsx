@@ -1,26 +1,19 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  Clock,
-  Database,
-  Smartphone,
-  AlertCircle,
-} from "lucide-react";
+import { ShieldCheck, Clock, Database } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Login | DeelRx",
-  description: "Access your secure workspace.",
+  title: "Register | DeelRx",
+  description: "Create your secure workspace.",
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-gray-400">
       {/* Background Noise/Grid */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
 
       {/* Main Container */}
       <div className="w-full max-w-[480px] space-y-8 relative z-10">
@@ -40,11 +33,11 @@ export default function LoginPage() {
               DeelRx Operator Console
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white uppercase">
-              Sign In
+              Initialize Session
             </h1>
             <p className="text-xs text-muted-foreground">
-              Enter your credentials to access the operator console. All
-              sessions are logged and monitored.
+              Create your operator credentials. All sessions are anonymous and
+              private.
             </p>
           </div>
         </div>
@@ -63,7 +56,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <SignIn
+          <SignUp
             appearance={{
               elements: {
                 rootBox: "w-full",
@@ -91,15 +84,18 @@ export default function LoginPage() {
                 showOptionalFields: false,
               },
             }}
-            fallbackRedirectUrl="/dashboard"
+            fallbackRedirectUrl="/onboarding"
           />
         </div>
 
         <div className="text-center text-xs font-mono text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <span className="text-primary cursor-pointer hover:underline">
-            Request Access from Administrator
-          </span>
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-primary underline underline-offset-2 hover:opacity-90"
+          >
+            Back to Sign In
+          </Link>
         </div>
 
         {/* Security Info Card */}
@@ -167,54 +163,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Trusted Device */}
-        <div className="bg-[#0A0A0A] border border-white/5 rounded-xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-2 bg-primary/10 rounded-lg text-primary">
-              <Smartphone className="w-5 h-5" />
-            </div>
-            <div className="space-y-4 flex-1">
-              <div className="space-y-1">
-                <h3 className="text-xs font-medium text-white">
-                  Trusted Device Recognition
-                </h3>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  This device is not recognized. You may be asked to verify your
-                  identity.
-                </p>
-              </div>
-
-              {/* Device Stats */}
-              <div className="bg-black/40 rounded border border-white/5 p-3 space-y-2 font-mono text-[10px]">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">CURRENT DEVICE</span>
-                  <span className="text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">
-                    UNRECOGNIZED
-                  </span>
-                </div>
-                <div className="h-px bg-white/5 my-2" />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Browser</span>
-                  <span className="text-white">Chrome 120.0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">OS</span>
-                  <span className="text-white">macOS 14.2</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Location</span>
-                  <span className="text-white">San Francisco, CA</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">IP Address</span>
-                  <span className="text-white">192.168.1.42</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Build Info */}
+        {/* Header/Footer Build Info - kept similar to login */}
         <div className="pt-8 pb-4 text-center space-y-4">
           <div className="flex justify-center gap-4 text-[10px] text-muted-foreground/60 font-mono">
             <Link href="#" className="hover:text-white transition-colors">
