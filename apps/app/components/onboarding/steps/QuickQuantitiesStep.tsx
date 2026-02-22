@@ -5,11 +5,11 @@ export function QuickQuantitiesStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Label className="text-lg">Quick Quantities</Label>
+        <Label className="text-lg">Quick quantities</Label>
         <span className="text-xs text-muted-foreground">Tap to toggle</span>
       </div>
       <p className="text-sm text-muted-foreground">
-        These buttons will appear on your POS for one-tap additions.
+        These show up in POS so your crew can add product fast.
       </p>
       <div className="grid grid-cols-3 gap-3">
         {formData.quickQuantities.map((q, idx) => (

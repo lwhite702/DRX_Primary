@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowUp, PenLine, ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { drxCopy } from "@/lib/copy/drx";
 
 interface InventoryHeaderProps {
   onIntake: () => void;
@@ -16,11 +17,10 @@ export function InventoryHeader({
   return (
     <div className="space-y-4">
       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
-        Select Operation Type
+        {drxCopy.inventory.operationsLabel}
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Intake Card */}
         <Link href="/inventory/intake" className="block group">
           <Card className="bg-[#1a1a1a] border-white/5 hover:border-[#4ADE80]/50 transition-all duration-300 relative overflow-hidden group-hover:bg-[#4ADE80]/5 h-full">
             <CardContent className="p-6 flex flex-col items-start justify-between h-full">
@@ -29,19 +29,17 @@ export function InventoryHeader({
               </div>
               <div>
                 <h3 className="text-[#4ADE80] font-bold tracking-wide text-sm">
-                  INTAKE
+                  {drxCopy.inventory.cards.intake.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Add inventory stock
+                  {drxCopy.inventory.cards.intake.body}
                 </p>
               </div>
             </CardContent>
-            {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#4ADE80]/0 to-[#4ADE80]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </Card>
         </Link>
 
-        {/* Adjustment Card */}
         <button
           onClick={onAdjustment}
           className="block w-full text-left group h-full"
@@ -53,10 +51,10 @@ export function InventoryHeader({
               </div>
               <div>
                 <h3 className="text-white font-bold tracking-wide text-sm">
-                  ADJUSTMENT
+                  {drxCopy.inventory.cards.adjustment.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Manual correction
+                  {drxCopy.inventory.cards.adjustment.body}
                 </p>
               </div>
             </CardContent>
@@ -64,7 +62,6 @@ export function InventoryHeader({
           </Card>
         </button>
 
-        {/* Audit Log Card */}
         <button
           onClick={onAudit}
           className="block w-full text-left group h-full"
@@ -76,10 +73,10 @@ export function InventoryHeader({
               </div>
               <div>
                 <h3 className="text-white font-bold tracking-wide text-sm">
-                  AUDIT LOG
+                  {drxCopy.inventory.cards.audit.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  View history
+                  {drxCopy.inventory.cards.audit.body}
                 </p>
               </div>
             </CardContent>

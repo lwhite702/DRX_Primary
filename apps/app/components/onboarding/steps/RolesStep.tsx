@@ -5,9 +5,9 @@ import { StepProps } from "../types";
 export function RolesStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-6">
-      <Label className="text-lg">Staff Roles</Label>
+      <Label className="text-lg">Staff roles</Label>
       <p className="text-sm text-muted-foreground">
-        Which roles do you need right now? You can invite people later.
+        Pick who you need now. You can add people later.
       </p>
       <div className="space-y-4">
         <div className="flex items-center space-x-2 border p-4 rounded-lg">
@@ -26,7 +26,7 @@ export function RolesStep({ formData, setFormData }: StepProps) {
               Manager
             </label>
             <p className="text-sm text-muted-foreground">
-              Can edit inventory and view reports.
+              Handles inventory updates and reports.
             </p>
           </div>
         </div>
@@ -43,10 +43,10 @@ export function RolesStep({ formData, setFormData }: StepProps) {
               htmlFor="budtender"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Budtender
+              Sales crew
             </label>
             <p className="text-sm text-muted-foreground">
-              Can process sales and view limited inventory.
+              Runs checkout with limited inventory access.
             </p>
           </div>
         </div>
