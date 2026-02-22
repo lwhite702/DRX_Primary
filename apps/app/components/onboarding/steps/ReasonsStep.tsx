@@ -5,9 +5,9 @@ import { StepProps } from "../types";
 export function ReasonsStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-6">
-      <Label className="text-lg">Inventory Audit Reasons</Label>
+      <Label className="text-lg">Inventory reasons</Label>
       <p className="text-sm text-muted-foreground">
-        Standard reasons for stock adjustments.
+        Keep these tags so your audit trail stays clean.
       </p>
       <div className="grid grid-cols-2 gap-3">
         {formData.inventoryReasons.map((r, idx) => (

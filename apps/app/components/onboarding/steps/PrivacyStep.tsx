@@ -1,31 +1,21 @@
 import { Label } from "@/components/ui/label";
 import { CheckCircle2 } from "lucide-react";
 import { StepProps } from "../types";
+import { drxCopy } from "@/lib/copy/drx";
 
 const PRIVACY_PRESETS: Record<string, { label: string; desc: string }> = {
-  open: { label: "OPEN", desc: "Full customer details visible." },
-  balanced: {
-    label: "BALANCED",
-    desc: "Standard limits. Recommended.",
-  },
-  private: {
-    label: "PRIVATE",
-    desc: "Reduced info. No phone exports.",
-  },
-  max_secure: {
-    label: "MAX SECURE",
-    desc: "Minimal retention. Strict access.",
-  },
+  open: drxCopy.onboarding.privacy.presets.open,
+  balanced: drxCopy.onboarding.privacy.presets.balanced,
+  private: drxCopy.onboarding.privacy.presets.private,
+  max_secure: drxCopy.onboarding.privacy.presets.maxSecure,
 };
 
 export function PrivacyStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <Label className="text-lg">Privacy Level</Label>
-        <p className="text-sm text-muted-foreground">
-          Control how much customer data is stored and who can see it.
-        </p>
+        <Label className="text-lg">{drxCopy.onboarding.privacy.title}</Label>
+        <p className="text-sm text-muted-foreground">{drxCopy.onboarding.privacy.body}</p>
       </div>
 
       <div className="space-y-6">
@@ -41,9 +31,7 @@ export function PrivacyStep({ formData, setFormData }: StepProps) {
           >
             <div>
               <div className="font-bold">{PRIVACY_PRESETS[key].label}</div>
-              <div className="text-sm text-muted-foreground">
-                {PRIVACY_PRESETS[key].desc}
-              </div>
+              <div className="text-sm text-muted-foreground">{PRIVACY_PRESETS[key].desc}</div>
             </div>
             {formData.privacyPreset === key && (
               <CheckCircle2 className="text-accent" />
