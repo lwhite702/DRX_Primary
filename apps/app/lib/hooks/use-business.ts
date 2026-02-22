@@ -3,17 +3,6 @@ import { useOrganization, useOrganizationList, useUser } from "@clerk/nextjs";
 import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export function useBusiness() {
-  if (process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true") {
-    return {
-      business: null,
-      availableBusinesses: [],
-      loading: false,
-      needsSetup: false,
-      refreshBusiness: async () => {},
-      switchBusiness: (_organizationId: string) => {},
-    };
-  }
-
   const { isLoaded: isUserLoaded } = useUser();
   const { organization: activeOrg, isLoaded: isOrgLoaded } = useOrganization();
   const {

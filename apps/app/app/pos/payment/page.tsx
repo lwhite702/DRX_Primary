@@ -21,6 +21,7 @@ export default function QuickPosPaymentPage() {
     setError,
     setSuccess,
     markCompleted,
+    setIdempotencyKey,
   } = useQuickPosStore();
 
   useEffect(() => {
@@ -52,11 +53,19 @@ export default function QuickPosPaymentPage() {
     setProcessing(true);
     setError(null);
 
+    const idempotencyKey =
+      state.session.pendingIdempotencyKey ?? (crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
+    if (!state.session.pendingIdempotencyKey) {
+      setIdempotencyKey(idempotencyKey);
+    }
+
     try {
       const res = await fetch("/api/pos/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          mode: "quick",
+          idempotencyKey,
           customerId: state.customer.id,
           payment: state.payment,
           items: state.cartItems,

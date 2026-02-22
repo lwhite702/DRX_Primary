@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "middleware.ts",
+    "app/api/pos/**/*.ts",
+    "app/pos/**/*.ts",
+    "app/pos/**/*.tsx",
+    "lib/pos/**/*.ts",
+    "lib/quick-pos/**/*.ts",
+    "lib/quick-pos/**/*.tsx",
+    "tests/middleware.test.ts",
+    "tests/auth/**/*.ts",
+    "tests/pos/**/*.ts",
+    "tests/quick-pos/**/*.ts",
+    "tests/quick-pos/**/*.tsx",
+    "tests/setup.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "scripts/**/*",
+    "supabase/functions/**/*"
+  ]
+}

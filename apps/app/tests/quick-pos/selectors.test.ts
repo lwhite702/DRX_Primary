@@ -10,7 +10,7 @@ const baseState: QuickPosState = {
   customer: { id: null, phone: "", alias: null, remainingCredit: 0 },
   payment: { method: null, receipt: "none", creditConfirmed: false },
   ui: { search: "", exitDialogOpen: false, processing: false, hardError: null, successMessage: null },
-  session: { lastSaleId: null, lastCompletedAt: null },
+  session: { lastSaleId: null, lastCompletedAt: null, pendingIdempotencyKey: null },
   creditPolicyEnabled: false,
 };
 

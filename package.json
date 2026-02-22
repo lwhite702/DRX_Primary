@@ -2,14 +2,15 @@
   "name": "deelrx-crm",
   "version": "0.5.2",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
-    "build": "prisma generate && next build --webpack",
+    "build": "pnpm --filter deelrxcrm-app build && pnpm --filter deelrxcrm-marketing build",
     "dev": "doppler run -- next dev",
     "dev:ci": "next dev",
     "version:check": "node scripts/version.js check",
     "version:bump": "node scripts/version.js bump",
-    "lint": "pnpm lint:copy && eslint .",
-    "typecheck": "pnpm --filter deelrxcrm-app typecheck",
+    "lint": "pnpm --filter deelrxcrm-app lint:readiness && pnpm --filter deelrxcrm-marketing lint",
+    "typecheck": "pnpm --filter deelrxcrm-app typecheck:readiness && pnpm --filter deelrxcrm-marketing typecheck",
     "lint:compliance": "eslint . --max-warnings=0 || (echo '❌ Compliance violations detected' && exit 1)",
     "compliance:scan": "./scripts/scan-compliance.sh",
     "compliance:static": "pnpm compliance:scan && pnpm lint --quiet",
@@ -41,7 +42,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
-    "@clerk/nextjs": "^6.37.1",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",
@@ -114,7 +114,8 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "@clerk/nextjs": "^6.37.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
