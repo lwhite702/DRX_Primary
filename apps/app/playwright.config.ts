@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const appPort = Number(process.env.PLAYWRIGHT_APP_PORT || 3000);
+const appBaseUrl = `http://localhost:${appPort}`;
+const useWebpackDevServer = process.env.PW_NEXT_WEBPACK === "1";
+const skipGlobalSetup = process.env.PW_SKIP_GLOBAL_SETUP === "1";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.spec.ts",
@@ -13,7 +18,7 @@ export default defineConfig({
     ["list"],
   ],
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: appBaseUrl,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
@@ -29,10 +34,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? "pnpm dev:ci" : "pnpm dev",
-    url: "http://localhost:3000",
+    command: useWebpackDevServer
+      ? `pnpm exec next dev --webpack --port ${appPort}`
+      : `pnpm exec next dev --port ${appPort}`,
+    url: appBaseUrl,
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 600 * 1000,
   },
-  globalSetup: require.resolve("./tests/e2e/global.setup.ts"),
+  ...(skipGlobalSetup
+    ? {}
+    : { globalSetup: require.resolve("./tests/e2e/global.setup.ts") }),
 });
