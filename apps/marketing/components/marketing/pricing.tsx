@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@deelrx/ui";
 
 export function Pricing() {
   return (

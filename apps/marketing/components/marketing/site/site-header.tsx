@@ -66,7 +66,7 @@ export function SiteHeader() {
               })
             }
           >
-            Join beta waitlist
+            Join Beta Waitlist
           </Link>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@deelrx/ui";
 
 export function Hero() {
   const scrollToSection = (id: string) => {

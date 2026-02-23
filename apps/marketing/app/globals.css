@@ -254,3 +254,154 @@
   padding: 2rem;
   display: inline-block;
 }
+
+/* Landing CTA button */
+.neon-pulse-button {
+  border-radius: 9999px;
+  background: var(--color-neon-lime);
+  color: #000;
+  box-shadow: 0 0 30px rgba(204, 255, 0, 0.3);
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.neon-pulse-button:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 0 34px rgba(204, 255, 0, 0.42);
+}
+
+/* Landing demo motion */
+.hero-demo-stack {
+  perspective: 1000px;
+}
+
+.queue-card-wrap {
+  position: relative;
+  min-height: 178px;
+}
+
+.queue-state {
+  position: absolute;
+  inset: 0;
+}
+
+.queue-state-processing {
+  animation: queueFadeProcessing 3.2s ease-in-out infinite;
+}
+
+.queue-state-done {
+  animation: queueFadeDone 3.2s ease-in-out infinite;
+}
+
+.credit-card-pulse {
+  animation: creditPulse 2.6s ease-in-out infinite;
+}
+
+.inventory-bar-tick {
+  animation: inventoryTick 2.9s ease-in-out infinite;
+}
+
+.demo-status-dot {
+  animation: statusDotPulse 2s ease-in-out infinite;
+}
+
+.sparkline-drift {
+  animation: sparklineDrift 3.4s ease-in-out infinite;
+}
+
+.audit-ping {
+  animation: auditPing 2.2s ease-in-out infinite;
+}
+
+.card-lift {
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgba(204, 255, 0, 0.35);
+}
+
+@keyframes queueFadeProcessing {
+  0%,
+  42% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes queueFadeDone {
+  0%,
+  42% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  50%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes creditPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(204, 255, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(204, 255, 0, 0.16);
+  }
+}
+
+@keyframes inventoryTick {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(0.78);
+  }
+}
+
+@keyframes statusDotPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sparklineDrift {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.88;
+  }
+  50% {
+    transform: translateX(2px);
+    opacity: 1;
+  }
+}
+
+@keyframes auditPing {
+  0%,
+  100% {
+    text-shadow: 0 0 0 rgba(204, 255, 0, 0);
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(204, 255, 0, 0.5);
+  }
+}

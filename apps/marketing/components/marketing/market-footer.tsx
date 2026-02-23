@@ -4,8 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { NeonButton } from "./neon-button";
 import { SystemStatus } from "./system-status";
-
-const appLoginUrl = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app"}/login`;
+import { appWaitlistUrl } from "@/lib/app-links";
 
 export function MarketFooter() {
   return (
@@ -25,12 +24,15 @@ export function MarketFooter() {
         {/* Primary CTA Area */}
         <div className="text-center mb-32 space-y-8 max-w-4xl">
           <h2 className="text-4xl md:text-6xl font-sans font-bold text-white tracking-tight">
-            SYSTEM READY FOR DEPLOYMENT.
+            RUN YOUR FLOOR WITH DRX.
           </h2>
+          <p className="text-lg text-text-secondary">
+            Join beta, get set up fast, and keep your operation clean day to day.
+          </p>
           <div className="flex justify-center">
-            <Link href={appLoginUrl}>
+            <Link href={appWaitlistUrl}>
               <NeonButton className="px-12 py-6 text-xl">
-                Start Secure Session
+                Join Beta Waitlist
               </NeonButton>
             </Link>
           </div>
@@ -43,7 +45,7 @@ export function MarketFooter() {
               DEELRX CRM
             </div>
             <p className="text-text-muted text-sm max-w-xs">
-              POS and Management for privacy-focused operations.
+              Built for dispensaries all the way down to smaller operators.
             </p>
             <SystemStatus />
           </div>

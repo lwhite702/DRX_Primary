@@ -5,7 +5,7 @@ import { trackMarketingEvent } from "@/lib/analytics";
 import { appWaitlistUrl } from "@/lib/app-links";
 
 export function CtaRow({
-  primaryLabel = "Join beta waitlist",
+  primaryLabel = "Join Beta Waitlist",
   primaryHref = appWaitlistUrl,
   secondaryLabel,
   secondaryHref,
