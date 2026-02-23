@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Marketing Landing**: Refreshed the homepage experience with new landing sections, interactive demo primitives, and updated CTA/layout styling.
 - **Marketing Routing**: Updated legacy `/privacy` and `/terms` paths to align with legal hub routes.
 - **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
 - **Test Config**: Hardened Vitest coverage thresholds (90% lines/branches/functions/statements) and expanded Playwright retention/reporting for CI diagnostics.
