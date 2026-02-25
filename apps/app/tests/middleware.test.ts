@@ -119,4 +119,22 @@ describe("middleware auth and routing", () => {
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
+
+  it("passes through /api/public routes without auth redirect", async () => {
+    const req = makeRequest("/api/public/health", "deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("passes through Next.js internal assets", async () => {
+    const req = makeRequest("/_next/static/chunks/main.js", "deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("redirects marketing sign-in route to app sign-in", async () => {
+    const req = makeRequest("/sign-in", "deelrxcrm.com");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/sign-in");
+  });
 });

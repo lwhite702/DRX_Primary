@@ -2,9 +2,12 @@
   "name": "deelrxcrm-marketing",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "20.18.0"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "echo \"No tests for marketing app\""

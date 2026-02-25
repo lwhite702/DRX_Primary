@@ -4,8 +4,8 @@
  * Provides lightweight auth/session helpers for app code.
  */
 
-import { getSession as getWorkflowSession } from "@wrelik/auth/next";
-import type { WorkflowSession } from "@wrelik/auth";
+import type { WorkflowSession } from "@wrelik/auth/shared";
+import { getWorkflowSession } from "@/lib/adapters/auth/server";
 
 export type Session = WorkflowSession;
 export type User = { id: string };
@@ -14,7 +14,7 @@ export type User = { id: string };
  * Get the current authenticated user
  */
 export async function getCurrentUser(): Promise<User | null> {
-  const session = getWorkflowSession();
+  const session = await getWorkflowSession();
   if (!session.userId) return null;
   return { id: session.userId };
 }
@@ -23,7 +23,7 @@ export async function getCurrentUser(): Promise<User | null> {
  * Get the current session
  */
 export async function getSession(): Promise<Session | null> {
-  const session = getWorkflowSession();
+  const session = await getWorkflowSession();
   return session.userId ? session : null;
 }
 

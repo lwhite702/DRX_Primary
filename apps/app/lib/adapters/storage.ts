@@ -8,7 +8,7 @@ import {
   putObject,
   getSignedDownloadUrl,
   getSignedUploadUrl,
-} from "@wrelik/storage";
+} from "@wrelik/storage/server";
 
 /**
  * Upload a file to tenant-scoped storage

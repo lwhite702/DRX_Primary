@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -39,6 +39,9 @@ export async function setupBusinessAction(data: SetupBusinessData) {
         phoneNumber: data.ownerPhone,
         ownerId: userId,
         isActive: true,
+      },
+      select: {
+        id: true,
       },
     });
 

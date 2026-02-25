@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export function AICreditPanel({
   can_apply,
   user_id,
 }: AICreditPanelProps) {
+  const router = useRouter();
   const [recommendation, setRecommendation] =
     useState<CreditRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
@@ -113,7 +115,7 @@ export function AICreditPanel({
       }
 
       toast.success("Credit limit updated successfully");
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to apply recommendation"
@@ -151,7 +153,7 @@ export function AICreditPanel({
 
       toast.success("Credit limit overridden successfully");
       setShowOverrideDialog(false);
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to override limit"

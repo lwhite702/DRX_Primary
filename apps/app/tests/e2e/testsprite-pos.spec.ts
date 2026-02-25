@@ -82,7 +82,7 @@ test.describe("Testsprite POS Local", () => {
   }) => {
     await page.goto("/pos/sale");
 
-    await expect(page.getByRole("heading", { name: "Quick POS" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Quick Sale" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Cart" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Take Payment" })).toBeDisabled();
     await expect(page.getByText("No items")).toBeVisible();

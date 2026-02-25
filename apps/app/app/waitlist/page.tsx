@@ -1,5 +1,5 @@
-import { Waitlist } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { Waitlist } from "@/lib/adapters/auth/ui";
+import { auth } from "@/lib/adapters/auth/server";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";

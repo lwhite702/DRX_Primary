@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { Permission, Role } from "./permissions";
 import { redirect } from "next/navigation";
@@ -6,6 +6,10 @@ import { redirect } from "next/navigation";
 export async function getCurrentUserRole(
   businessId?: string,
 ): Promise<Role | null> {
+  if (isAuthBypassEnabled()) {
+    return "super_admin" as Role;
+  }
+
   const { userId } = await auth();
 
   if (!userId) return null;
@@ -27,6 +31,10 @@ export async function hasPermission(
   permission: Permission,
   businessId?: string,
 ): Promise<boolean> {
+  if (isAuthBypassEnabled()) {
+    return true;
+  }
+
   const { userId } = await auth();
 
   if (!userId) return false;

@@ -9,7 +9,7 @@ import {
   identify as identifyAnalytics,
   initAnalytics,
   shutdown as shutdownAnalytics,
-} from "@wrelik/analytics";
+} from "@wrelik/analytics/server";
 
 export { initAnalytics, shutdownAnalytics };
 

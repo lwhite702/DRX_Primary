@@ -31,7 +31,7 @@ export function QuickActions({ className }: QuickActionsProps) {
         <ActionButton label="Inventory" icon={Package} href="/inventory" />
         <ActionButton label="Credit" icon={CreditCard} href="/credit" />
         <ActionButton
-          label="Quick POS"
+          label="Quick Sale"
           icon={ScanLine}
           href="/pos/sale"
         />

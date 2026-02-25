@@ -4,19 +4,34 @@ import Link from "next/link";
 export function AppLogo({
   href = "/dashboard",
   showTagline = false,
+  size = "default",
 }: {
   href?: string;
   showTagline?: boolean;
+  size?: "default" | "sidebar";
 }) {
+  const isSidebar = size === "sidebar";
+
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 min-w-0"
+      className={
+        "flex min-w-0 items-center gap-3 " + (isSidebar ? "w-full" : "")
+      }
       aria-label="Deelrx CRM Home"
     >
-      <div className="relative h-8 w-[120px] shrink-0">
+      <div
+        className={
+          "relative shrink-0 " +
+          (isSidebar ? "h-[72px] w-[216px]" : "h-8 w-[120px]")
+        }
+      >
         <Image
-          src="/brand/DRX Wordmark Color.svg"
+          src={
+            isSidebar
+              ? "/brand/DRX Wordmark Color Tight.svg"
+              : "/brand/DRX Wordmark Color.svg"
+          }
           alt="Deelrx CRM"
           fill
           className="object-contain"

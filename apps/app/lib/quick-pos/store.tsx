@@ -44,6 +44,8 @@ const initialState: QuickPosState = {
     lastSaleId: null,
     lastCompletedAt: null,
     pendingIdempotencyKey: null,
+    lastSaleTotal: null,
+    lastReceipt: null,
   },
   creditPolicyEnabled: false,
 };
@@ -63,7 +65,10 @@ type Action =
   | { type: "set_error"; payload: string | null }
   | { type: "set_success"; payload: string | null }
   | { type: "set_exit_open"; payload: boolean }
-  | { type: "mark_completed"; payload: { saleId: string } }
+  | {
+      type: "mark_completed";
+      payload: { saleId: string; total: number; receipt: QuickPosReceiptOption };
+    }
   | { type: "set_idempotency_key"; payload: string }
   | { type: "clear_idempotency_key" }
   | { type: "reset_for_next_sale" };
@@ -130,6 +135,8 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
           lastSaleId: action.payload.saleId,
           lastCompletedAt: Date.now(),
           pendingIdempotencyKey: null,
+          lastSaleTotal: action.payload.total,
+          lastReceipt: action.payload.receipt,
         },
         ui: { ...state.ui, successMessage: "Sale completed" },
       };
@@ -178,7 +185,7 @@ interface QuickPosStore {
   setError: (value: string | null) => void;
   setSuccess: (value: string | null) => void;
   setExitOpen: (value: boolean) => void;
-  markCompleted: (saleId: string) => void;
+  markCompleted: (payload: { saleId: string; total: number; receipt: QuickPosReceiptOption }) => void;
   setIdempotencyKey: (value: string) => void;
   clearIdempotencyKey: () => void;
   resetForNextSale: () => void;
@@ -221,7 +228,11 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const setError = useCallback((value: string | null) => dispatch({ type: "set_error", payload: value }), []);
   const setSuccess = useCallback((value: string | null) => dispatch({ type: "set_success", payload: value }), []);
   const setExitOpen = useCallback((value: boolean) => dispatch({ type: "set_exit_open", payload: value }), []);
-  const markCompleted = useCallback((saleId: string) => dispatch({ type: "mark_completed", payload: { saleId } }), []);
+  const markCompleted = useCallback(
+    (payload: { saleId: string; total: number; receipt: QuickPosReceiptOption }) =>
+      dispatch({ type: "mark_completed", payload }),
+    [],
+  );
   const setIdempotencyKey = useCallback(
     (value: string) => dispatch({ type: "set_idempotency_key", payload: value }),
     [],

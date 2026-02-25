@@ -2,7 +2,7 @@
  * Wrelik Adapter Initialization
  */
 
-import { loadServerConfig } from "@wrelik/config";
+import { loadServerConfig } from "@wrelik/config/server";
 
 let initialized = false;
 

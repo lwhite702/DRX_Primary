@@ -12,8 +12,10 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const { business, loading: businessLoading, refreshBusiness } = useBusiness();
   const { hasPermission } = usePermission(business?.id);
   const [businessName, setBusinessName] = useState("");
@@ -113,11 +115,7 @@ export default function SettingsPage() {
 
       toast.success("Settings saved successfully!");
       await refreshBusiness();
-
-      // Force a small delay to ensure data is persisted
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      router.refresh();
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error(

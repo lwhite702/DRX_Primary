@@ -83,7 +83,7 @@ test.describe("Quick POS", () => {
     const startedAt = Date.now();
 
     await page.goto("/pos/sale");
-    await expect(page.getByRole("heading", { name: "Quick POS" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Quick Sale" })).toBeVisible();
 
     await page.getByRole("button", { name: /Favorite Item/i }).first().click();
     await expect(page.getByText("Favorite Item x1")).toBeVisible();
@@ -108,7 +108,7 @@ test.describe("Quick POS", () => {
   test("requires confirmation flow to exit quick pos", async ({ page }) => {
     await page.goto("/pos/sale");
 
-    await page.getByRole("button", { name: "Exit Quick POS" }).click();
+    await page.getByRole("button", { name: "Exit Quick Sale" }).click();
     await expect(page.getByText("Confirm and enter PIN to leave POS mode.")).toBeVisible();
 
     await page.getByRole("button", { name: "Confirm Exit" }).click();

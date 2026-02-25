@@ -1,4 +1,4 @@
-import { db } from "@wrelik/db";
+import { db } from "@wrelik/db/server";
 
 async function checkDuplicates() {
   // Get all business profiles

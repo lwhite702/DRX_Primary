@@ -52,7 +52,7 @@ describe("quick pos store", () => {
 
     act(() => {
       storeRef!.setCreditPolicy(true);
-      storeRef!.markCompleted("sale-1");
+      storeRef!.markCompleted({ saleId: "sale-1", total: 4, receipt: "none" });
       storeRef!.resetForNextSale();
     });
 
@@ -83,7 +83,7 @@ describe("quick pos store", () => {
 
     act(() => {
       storeRef!.setIdempotencyKey("88888888-8888-4888-8888-888888888888");
-      storeRef!.markCompleted("sale-2");
+      storeRef!.markCompleted({ saleId: "sale-2", total: 0, receipt: "none" });
     });
 
     expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();

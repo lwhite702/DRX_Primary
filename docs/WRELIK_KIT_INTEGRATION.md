@@ -1,115 +1,117 @@
-# Wrelik Kit Integration
+# Wrelik Kit Integration (DRX Beta Baseline)
 
-**Date:** 2026-02-28
-**Status:** ACTIVE (Phase 2 & Phase 3 Complete)
+## Status
 
-## Dependency Method
+- Source of truth for integration packages: published `@wrelik/*` packages (registry)
+- Vendored copies in `packages/wrelik-*`: reference only, not workspace-resolved
+- Monorepo policy: app/mobile code integrates through `@wrelik/*` and local adapters, not direct vendor SDK imports
 
-DRX consumes `wrelik-kit` packages via **npm/pnpm**.
-The packages are pinned to exact versions as defined in migration requirements.
+## How DRX Consumes `@wrelik/*`
 
-## Integrated Packages
+DRX pins `@wrelik/*` versions in the root `package.json` via `pnpm.overrides` and installs them from the registry.
 
-The following packages are required and installed (pinned to version 0.1.1):
+Current pinned versions (beta baseline):
 
-- `@wrelik/auth@0.1.1`
-- `@wrelik/auth/next@0.1.1`
-- `@wrelik/db@0.1.1`
-- `@wrelik/storage@0.1.1`
-- `@wrelik/analytics@0.1.1`
-- `@wrelik/errors@0.1.1`
-- `@wrelik/email@0.1.1`
-- `@wrelik/jobs@0.1.1`
-- `@wrelik/config@0.1.1`
+- `@wrelik/auth@0.2.2`
+- `@wrelik/db@0.1.2`
+- `@wrelik/storage@0.2.0`
+- `@wrelik/analytics@0.2.0`
+- `@wrelik/errors@0.2.0`
+- `@wrelik/email@0.1.2`
+- `@wrelik/jobs@0.1.2`
+- `@wrelik/config@0.2.0`
 
-## Installation Procedure
+## Workspace De-shadowing (Important)
 
-### Prerequisites
+`pnpm-workspace.yaml` explicitly excludes vendored `wrelik` packages:
 
-1. Ensure environment variables are set according to `docs/ENV_MATRIX.md`
-2. Run: `pnpm install` to install all @wrelik dependencies
-3. Verify packages are installed: `pnpm list @wrelik`
+```yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "!packages/wrelik-*"
+```
 
-### Adapter Initialization
+This prevents workspace linking from silently using vendored copies instead of the pinned registry packages.
 
-All adapters are initialized centrally in `lib/adapters/index.ts`.
+## Approved Integration Boundaries
 
-**IMPORTANT:** Adapters must be initialized once at application startup. Initialization calls include:
+Use these boundaries in DRX app/mobile code:
 
-1. **Database** (`@wrelik/db`)
-2. **Auth** (`@wrelik/auth` + `@wrelik/auth/next`)
-3. **Storage** (`@wrelik/storage` with R2)
-4. **Analytics** (`@wrelik/analytics` with PostHog)
-5. **Errors** (`@wrelik/errors` with Sentry)
-6. **Jobs** (`@wrelik/jobs` with Inngest)
-7. **Email** (`@wrelik/email` with Resend)
+- Auth (server + UI): local adapters under `apps/app/lib/adapters/auth/*`, backed by `@wrelik/auth`
+- Auth (mobile): local adapter under `apps/mobile/src/adapters/**`, backed by `@wrelik/auth` (`/react-native` today)
+- Errors: `@wrelik/errors` or local error adapter wrappers
+- Analytics: `@wrelik/analytics`
+- Jobs: `@wrelik/jobs`
+- Email: `@wrelik/email`
+- Storage: `@wrelik/storage`
+- Supabase (legacy bridge only): `apps/app/lib/supabase/**`
 
-## Usage Guidelines
+## Banned Direct Vendor Imports (Enforced by ESLint)
 
-### Database
+DRX fails compliance lint if runtime app/mobile code imports vendor SDKs directly outside approved adapter/bridge paths.
 
-**Legacy:** `import { createClient } from '@supabase/supabase-js'`
-**Wrelik:** `import { db } from '@wrelik/db'`
+Restricted families include:
 
-All database operations should use the singleton `db` instance from `@wrelik/db`.
+- `@clerk/*`
+- `@sentry/*`
+- `posthog*`
+- `resend`
+- `inngest`
+- `@aws-sdk/*` (S3 clients must stay behind `@wrelik/storage`)
+- `@supabase/*` (except the approved legacy bridge)
 
-### Storage
+### Allowed Exceptions (Narrow)
 
-**Legacy:** `import { S3Client } from '@aws-sdk/client-s3'`
-**Wrelik:** `import { storage } from '@wrelik/storage'`
+- `apps/app/lib/adapters/**` and `apps/mobile/src/adapters/**` during adapter implementation
+- `apps/app/lib/supabase/**` (legacy bridge only)
+- Test files (`*.test.*`, `*.spec.*`) where vendor test helpers are required (for example Clerk Playwright helpers)
+- Vendored reference packages in `packages/wrelik-*` are ignored by lint scanning
 
-File operations are automatically tenant-scoped via the adapter wrapper.
+## Actionable Replacements
 
-### Auth
+Use these replacements when lint fails:
 
-**Legacy:** `import { auth } from '@clerk/nextjs/server'`
-**Wrelik:** `import { auth } from '@wrelik/auth/next'`
+- `@clerk/*` -> `apps/app/lib/adapters/auth/*` (app) or `apps/mobile/src/adapters/auth/*` (mobile)
+- `@sentry/*` -> `@wrelik/errors` or local error adapter
+- `posthog*` -> `@wrelik/analytics`
+- `@aws-sdk/client-s3` -> `@wrelik/storage`
+- `resend` -> `@wrelik/email`
+- `inngest` -> `@wrelik/jobs`
+- `@supabase/*` -> `apps/app/lib/supabase/**` (only if the legacy bridge is explicitly needed)
 
-Server-side auth uses `@wrelik/auth/next`.
-Client-side auth components use exports from `@wrelik/auth/next`.
+## Temporary Fallback Policy (Removable)
 
-### Analytics
+Default policy is registry-pinned `@wrelik/*` only.
 
-**Legacy:** `import posthog from 'posthog-js'`
-**Wrelik:** `import { analytics } from '@wrelik/analytics'`
+If DRX is blocked by missing published APIs (for example a needed client entrypoint), use a temporary fallback only as a last resort:
 
-Use `analytics.track()`, `analytics.identify()`, and `analytics.page()` methods.
+- Git dependency pinning to a specific `wrelik-kit` commit, or
+- Tarball dependency pinning
 
-### Errors
+Removal criteria for any fallback:
 
-**Legacy:** `import * as Sentry from '@sentry/nextjs'`
-**Wrelik:** `import { errorTracker } from '@wrelik/errors'`
+1. Required API is released in `wrelik-kit`
+2. DRX pins move back to registry versions
+3. Fallback pin and any local workaround notes are deleted in the same PR
 
-Use `errorTracker.capture()`, `errorTracker.captureMessage()`, and `errorTracker.breadcrumb()`.
+## Mobile `/client` Entry Point Note
 
-### Email
+Target policy is `@wrelik/*/client` entrypoints for mobile.
 
-**Legacy:** Direct Resend SDK usage
-**Wrelik:** `import { email } from '@wrelik/email'`
+Current beta baseline uses `@wrelik/auth/react-native` behind `apps/mobile/src/adapters/auth/client.tsx` because the published `@wrelik/auth` package does not yet expose a stable `/client` alias. This is the only documented exception and should be removed once `/client` is published.
 
-Use `email.send()` and `email.sendTemplate()` methods.
+## Verification Commands (Repo Root)
 
-### Jobs
+Run these from `/Users/lee/Projects/DRX_Primary`:
 
-**Legacy:** Direct Inngest SDK usage
-**Wrelik:** `import { jobs } from '@wrelik/jobs'`
+```bash
+pnpm run verify:lock
+pnpm run verify:tarballs
+pnpm run compliance:imports
+```
 
-Use `jobs.send()` to trigger background tasks.
+## Related Docs
 
-## Validation
-
-To verify integration:
-
-1. `pnpm build` must pass.
-2. `npm run compliance:full` must pass with zero violations.
-3. `npm run lint` must generally pass (except defined legacy exclusions in test mocks).
-4. No direct vendor imports in `app/`, `components/`, `lib/`.
-5. All adapter imports must come from `lib/adapters/` directory.
-
-## Migration Notes
-
-- Legacy Supabase client interfaces are maintained in `lib/supabase/` for backward compatibility but internally use `@wrelik/db`.
-- Legacy Clerk imports in middleware and providers are replaced with `@wrelik/auth/next`.
-- All @sentry/nextjs imports replaced with `@wrelik/errors`.
-- All @aws-sdk imports replaced with `@wrelik/storage`.
-- Test files use mocks from `@wrelik/db` instead of Supabase.
+- `/Users/lee/Projects/DRX_Primary/README.md` (Node policy, domain routing, Quick POS overview)
+- `/Users/lee/Projects/DRX_Primary/docs/db-overview.md` (DB truth artifact for tenant-scoped POS/reporting)

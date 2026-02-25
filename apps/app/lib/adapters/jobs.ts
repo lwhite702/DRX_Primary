@@ -8,7 +8,7 @@ import {
   emit,
   createFunction as createJobFunction,
   inngest,
-} from "@wrelik/jobs";
+} from "@wrelik/jobs/server";
 
 export { inngest as jobs };
 

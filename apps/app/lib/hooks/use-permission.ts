@@ -43,12 +43,19 @@ const getFallbackPermissions = (role: string | null): string[] => {
 };
 
 export function usePermission(businessId: string | undefined) {
+  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
   const { role } = useUserRole(businessId);
 
   const fetchPermissions = useCallback(async () => {
+    if (authBypassEnabled) {
+      setPermissions(["*"]);
+      setLoading(false);
+      return;
+    }
+
     if (!businessId || !supabase) {
       setLoading(false);
       return;
@@ -78,21 +85,28 @@ export function usePermission(businessId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [businessId, supabase, role]);
+  }, [authBypassEnabled, businessId, supabase, role]);
 
   useEffect(() => {
+    if (authBypassEnabled) {
+      setPermissions(["*"]);
+      setLoading(false);
+      return;
+    }
+
     if (role) {
       fetchPermissions();
     } else {
       setLoading(false);
     }
-  }, [fetchPermissions, role]);
+  }, [authBypassEnabled, fetchPermissions, role]);
 
   const hasPermission = useCallback(
     (requiredPermission: string) => {
+      if (authBypassEnabled) return true;
       return permissions.includes(requiredPermission);
     },
-    [permissions],
+    [authBypassEnabled, permissions],
   );
 
   return {

@@ -10,28 +10,44 @@ export async function GET(request: NextRequest) {
   }
 
   const query = new URL(request.url).searchParams.get("search")?.trim() || "";
+  const exact = new URL(request.url).searchParams.get("exact") === "1";
+
+  const exactWhere = query
+    ? {
+        businessId,
+        OR: [
+          { sku: { equals: query, mode: "insensitive" as const } },
+          { productName: { equals: query, mode: "insensitive" as const } },
+        ],
+      }
+    : null;
 
   const products = await db.inventory.findMany({
-    where: {
-      businessId,
-      ...(query
-        ? {
-            OR: [
-              { productName: { contains: query, mode: "insensitive" } },
-              { sku: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where:
+      exact && exactWhere
+        ? exactWhere
+        : {
+            businessId,
+            ...(query
+              ? {
+                  OR: [
+                    { productName: { contains: query, mode: "insensitive" } },
+                    { sku: { contains: query, mode: "insensitive" } },
+                  ],
+                }
+              : {}),
+          },
     orderBy: {
       productName: "asc",
     },
-    take: 30,
+    take: exact ? 5 : 30,
     select: {
       id: true,
       productName: true,
+      sku: true,
       sellingPrice: true,
       quantityOnHand: true,
+      reorderLevel: true,
     },
   });
 
@@ -39,8 +55,11 @@ export async function GET(request: NextRequest) {
     items: products.map((item) => ({
       id: item.id,
       name: item.productName,
+      sku: item.sku,
+      barcode: null,
       price: toNumber(item.sellingPrice),
       quantity_on_hand: item.quantityOnHand,
+      low_stock_threshold: item.reorderLevel,
     })),
   });
 }

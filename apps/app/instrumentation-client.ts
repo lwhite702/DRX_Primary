@@ -2,15 +2,8 @@
  * Client Instrumentation
  */
 
-import * as Sentry from "@sentry/nextjs";
+import { initClientErrorInstrumentation } from "@/lib/adapters/errors-client";
 
-Sentry.init({
-  environment: process.env.NODE_ENV || "development",
-  tracesSampleRate: 1,
-  enableLogs: true,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-  sendDefaultPii: true,
-});
+initClientErrorInstrumentation();
 
 export const onRouterTransitionStart = () => {};

@@ -8,7 +8,7 @@ import {
   sendEmail as sendEmailRaw,
   sendTemplate,
   type SendEmailOptions,
-} from "@wrelik/email";
+} from "@wrelik/email/server";
 
 /**
  * Send an email

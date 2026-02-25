@@ -20,7 +20,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:matrix
@@ -44,7 +44,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -59,7 +59,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
@@ -74,7 +74,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -93,7 +93,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:unit || true
@@ -114,7 +114,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:integration || true
@@ -134,7 +134,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
@@ -157,7 +157,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
@@ -173,7 +173,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:security || true
@@ -193,7 +193,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:perf || true
@@ -213,7 +213,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter deelrxcrm-app test:coverage || true
@@ -229,7 +229,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:readiness

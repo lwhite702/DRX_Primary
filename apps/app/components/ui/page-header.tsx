@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
+import { UserButton, OrganizationSwitcher } from "@/lib/adapters/auth/ui";
 
 interface PageHeaderProps {
   title: string;

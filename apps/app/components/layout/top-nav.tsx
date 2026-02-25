@@ -2,12 +2,10 @@ import { NotificationsPopover } from "@/components/layout/notifications-popover"
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Menu, Search, Settings, User, LogOut } from "lucide-react";
-import { toast } from "sonner";
+import { Menu, ScanLine, Search, Settings } from "lucide-react";
 import { useState } from "react";
-import { SignOutButton, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/lib/adapters/auth/ui";
 
-import { AppLogo } from "@/components/layout/app-logo";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { primaryNav } from "@/components/layout/nav-items";
 import { Button } from "@/components/ui/button";
@@ -21,18 +19,10 @@ import {
 } from "@/components/ui/sheet";
 import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
 import { BusinessSwitcher } from "@/components/layout/business-switcher";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { useUserRole } from "@/lib/hooks/use-user-role";
+import { AppLogo } from "@/components/layout/app-logo";
 
 export function TopNav() {
   const pathname = usePathname();
@@ -66,9 +56,10 @@ export function TopNav() {
 
   const showAdminConsole =
     hasPermission("system.manage") || hasPermission("users.manage_all");
+  const canQuickSale = !loading && hasPermission("sales.create");
 
   return (
-    <header className="h-14 md:h-16 bg-muted border-b border-border flex items-center justify-between px-4 md:px-6 gap-3 min-w-0">
+    <header className="flex h-14 min-w-0 items-center justify-between gap-3 border-b border-border bg-muted px-4 md:h-16 md:px-6">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-background focus:p-2 focus:rounded focus:z-50"
@@ -165,7 +156,7 @@ export function TopNav() {
       </div>
 
       {/* Logo */}
-      <div className="flex items-center min-w-0 gap-2">
+      <div className="flex min-w-0 items-center gap-2 md:hidden">
         <div className="max-w-[220px] min-w-0">
           <AppLogo showTagline={false} />
         </div>
@@ -175,7 +166,7 @@ export function TopNav() {
       </div>
 
       {/* Desktop search */}
-      <div className="hidden md:block flex-1 max-w-md">
+      <div className="hidden max-w-md flex-1 md:block">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -187,7 +178,16 @@ export function TopNav() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-4">
+      <div className="flex items-center gap-1 md:ml-auto md:gap-4">
+        {canQuickSale ? (
+          <Link href="/pos/sale" className="hidden md:block">
+            <Button className="bg-accent hover:bg-accent/90 text-black font-semibold">
+              <ScanLine className="mr-2 h-4 w-4" />
+              Quick Sale
+            </Button>
+          </Link>
+        ) : null}
+
         <Button
           variant="ghost"
           size="icon-lg"
@@ -198,6 +198,19 @@ export function TopNav() {
         </Button>
 
         <NotificationsPopover />
+
+        {canQuickSale ? (
+          <Link href="/pos/sale" className="md:hidden">
+            <Button
+              variant="outline"
+              size="icon-lg"
+              aria-label="Open Quick Sale"
+              className="border-accent/40 text-accent hover:bg-accent/10"
+            >
+              <ScanLine className="w-5 h-5" />
+            </Button>
+          </Link>
+        ) : null}
 
         <div className="flex items-center gap-2">
           <BusinessSwitcher />

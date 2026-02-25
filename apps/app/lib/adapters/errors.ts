@@ -4,7 +4,7 @@
  * Wraps @wrelik/errors helpers.
  */
 
-import { captureError as capture, setUserContext } from "@wrelik/errors";
+import { captureError as capture, setUserContext } from "@wrelik/errors/server";
 
 /**
  * Capture an error

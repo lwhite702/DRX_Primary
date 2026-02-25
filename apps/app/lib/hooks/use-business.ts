@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { useOrganization, useOrganizationList, useUser } from "@clerk/nextjs";
+import { useOrganization, useOrganizationList, useUser } from "@/lib/adapters/auth/ui";
 import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export function useBusiness() {
+  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
   const { isLoaded: isUserLoaded } = useUser();
   const { organization: activeOrg, isLoaded: isOrgLoaded } = useOrganization();
   const {
@@ -17,7 +18,7 @@ export function useBusiness() {
   const [loading, setLoading] = useState(true);
 
   const fetchBusinessProfile = useCallback(async () => {
-    if (!activeOrg) {
+    if (!activeOrg && !authBypassEnabled) {
       setBusiness(null);
       setLoading(false);
       return;
@@ -32,14 +33,14 @@ export function useBusiness() {
     } finally {
       setLoading(false);
     }
-  }, [activeOrg]);
+  }, [activeOrg, authBypassEnabled]);
 
   useEffect(() => {
-    if (isOrgLoaded) {
+    if (isOrgLoaded || authBypassEnabled) {
       setLoading(true);
       fetchBusinessProfile();
     }
-  }, [fetchBusinessProfile, isOrgLoaded]);
+  }, [fetchBusinessProfile, isOrgLoaded, authBypassEnabled]);
 
   // Sync available businesses from Clerk memberships
   const availableBusinesses =
@@ -47,7 +48,18 @@ export function useBusiness() {
       id: mem.organization.id, // This is the Clerk Org ID
       business_name: mem.organization.name,
       // Add other mapped fields if necessary for UI compatibility
-    })) || [];
+    })) ||
+    [];
+
+  const bypassBusinesses =
+    authBypassEnabled && business
+      ? [
+          {
+            id: (business.clerkOrgId || business.id) as string,
+            business_name: (business.businessName || business.business_name || "Local Business") as string,
+          },
+        ]
+      : [];
 
   const isBasicLoaded = isUserLoaded && isOrgLoaded;
   const isFullLoaded = isBasicLoaded && isListLoaded;
@@ -58,16 +70,18 @@ export function useBusiness() {
 
   return {
     business, // Local DB BusinessProfile (with UUID)
-    availableBusinesses, // Clerk Organizations (with Clerk IDs)
+    availableBusinesses: authBypassEnabled ? bypassBusinesses : availableBusinesses, // Clerk Organizations (with Clerk IDs)
     loading: loading || !isEssentiallyLoaded,
     needsSetup:
-      isFullLoaded &&
-      availableBusinesses.length === 0 &&
-      !loading &&
-      !activeOrg,
+      (authBypassEnabled && !loading && !business) ||
+      (isFullLoaded &&
+        availableBusinesses.length === 0 &&
+        !loading &&
+        !activeOrg),
     refreshBusiness: fetchBusinessProfile,
     switchBusiness: (organizationId: string) => {
       // Expects Clerk Organization ID
+      if (authBypassEnabled) return;
       setActive?.({ organization: organizationId });
     },
   };

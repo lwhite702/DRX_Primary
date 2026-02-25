@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@/lib/adapters/auth/ui";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { BusinessSetupWizard } from "@/components/onboarding/business-setup-wizard";

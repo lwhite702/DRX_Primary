@@ -12,7 +12,7 @@ export function ReceiptChoice({
   onChange: (value: QuickPosReceiptOption) => void;
 }) {
   return (
-    <section className="rounded-md border border-neutral-800 bg-neutral-950 p-4">
+    <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm">
       <h2 className="text-lg font-semibold">Receipt</h2>
       <div className="mt-3 grid grid-cols-3 gap-2">
         {OPTIONS.map((option) => (
@@ -23,8 +23,8 @@ export function ReceiptChoice({
             className={
               "h-14 rounded-md border text-lg font-semibold uppercase " +
               (value === option
-                ? "border-white bg-white text-black"
-                : "border-neutral-700 bg-black text-white")
+                ? "border-accent bg-accent text-black"
+                : "border-white/10 bg-black/40 text-white hover:border-accent/30")
             }
           >
             {option}

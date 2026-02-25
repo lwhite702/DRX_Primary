@@ -4,6 +4,7 @@ const appPort = Number(process.env.PLAYWRIGHT_APP_PORT || 3000);
 const appBaseUrl = `http://localhost:${appPort}`;
 const useWebpackDevServer = process.env.PW_NEXT_WEBPACK === "1";
 const skipGlobalSetup = process.env.PW_SKIP_GLOBAL_SETUP === "1";
+const reuseExistingServer = process.env.PW_REUSE_EXISTING_SERVER === "1";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -38,7 +39,9 @@ export default defineConfig({
       ? `pnpm exec next dev --webpack --port ${appPort}`
       : `pnpm exec next dev --port ${appPort}`,
     url: appBaseUrl,
-    reuseExistingServer: !process.env.CI,
+    // Avoid silently targeting an unrelated local app on the same port.
+    // Reuse only when explicitly requested.
+    reuseExistingServer,
     timeout: 600 * 1000,
   },
   ...(skipGlobalSetup

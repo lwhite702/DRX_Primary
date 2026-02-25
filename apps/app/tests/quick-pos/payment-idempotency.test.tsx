@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QuickPosProvider } from "@/lib/quick-pos/store";
-import PaymentPage from "@/app/pos/payment/page";
+import PaymentPage from "@/app/(operator)/pos/payment/page";
 import { QUICK_POS_STORAGE_KEY } from "@/lib/quick-pos/constants";
 import type { QuickPosState } from "@/lib/quick-pos/types";
 
@@ -49,6 +49,8 @@ function seedState(overrides?: Partial<QuickPosState>) {
       lastSaleId: null,
       lastCompletedAt: null,
       pendingIdempotencyKey: null,
+      lastSaleTotal: null,
+      lastReceipt: null,
     },
     creditPolicyEnabled: true,
   };
@@ -82,7 +84,17 @@ describe("quick pos payment idempotency", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, saleId: "sale_123" }),
+        json: async () => ({
+          success: true,
+          saleId: "sale_123",
+          total: 10,
+          receipt: {
+            saleId: "sale_123",
+            total: 10,
+            receipt: "none",
+            channels: [],
+          },
+        }),
       });
 
     vi.stubGlobal("fetch", fetchMock);

@@ -69,7 +69,6 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
 
   handleReset = () => {
     this.setState({ hasError: false, error: undefined });
-    window.location.reload();
   };
 
   render() {

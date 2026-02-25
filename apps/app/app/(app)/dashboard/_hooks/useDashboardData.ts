@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export interface DashboardStats {
   salesToday: number;
   cashCollected: number;
   transactionsCount: number;
-  salesGrowth: number; // Percentage
+  salesGrowth: number;
   lowStockCount: number;
   overdueBalance: number;
   overdueCount: number;
@@ -36,15 +35,77 @@ export interface TopMover {
   revenue: number;
 }
 
+interface BaselineResponse {
+  today: {
+    salesTotal: number;
+    salesCount: number;
+    cashCollected: number;
+  };
+  week: {
+    salesTotal: number;
+    salesCount: number;
+  };
+  previousWeek: {
+    salesTotal: number;
+    salesCount: number;
+  };
+  topProducts: Array<{
+    id: string;
+    name: string;
+    sku: string | null;
+    quantitySold: number;
+    revenue: number;
+  }>;
+  lowStock: {
+    count: number;
+    items: Array<{
+      id: string;
+      name: string;
+      sku: string;
+      quantityOnHand: number;
+      lowStockThreshold: number;
+    }>;
+  };
+  credit: {
+    outstandingBalance: number;
+    activeBalances: number;
+  };
+  recentSales: Array<{
+    id: string;
+    total: number;
+    paymentMethod: string | null;
+    customerId: string | null;
+    createdAt: string;
+  }>;
+  latestAuditAt: string | null;
+}
+
+function formatAuditLabel(latestAuditAt: string | null) {
+  if (!latestAuditAt) return "NO AUDIT YET";
+  const diffMs = Date.now() - new Date(latestAuditAt).getTime();
+  const mins = Math.max(0, Math.floor(diffMs / 60000));
+  if (mins < 1) return "JUST NOW";
+  if (mins < 60) return `${mins} MIN AGO`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} HRS AGO`;
+  const days = Math.floor(hours / 24);
+  return `${days} DAYS AGO`;
+}
+
+function calcGrowth(current: number, previous: number) {
+  if (previous <= 0) {
+    return current > 0 ? 100 : 0;
+  }
+  return Number((((current - previous) / previous) * 100).toFixed(1));
+}
+
 export function useDashboardData(businessId: string | undefined) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = getSupabaseClient();
-
   const fetchDashboardData = useCallback(async () => {
-    if (!businessId || !supabase) {
+    if (!businessId) {
       setLoading(false);
       return;
     }
@@ -53,131 +114,45 @@ export function useDashboardData(businessId: string | undefined) {
       setLoading(true);
       setError(null);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayIso = today.toISOString();
+      const res = await fetch("/api/reports/pos-baseline", { credentials: "same-origin" });
+      if (!res.ok) {
+        throw new Error("Failed to load dashboard report");
+      }
 
-      // Parallel data fetching
-      const [todaysSales, lowStock, creditLimits, recentSales, topProducts] =
-        await Promise.all([
-          // 1. Sales Today
-          supabase
-            .from("sales")
-            .select("total_amount, payment_method, created_at")
-            .eq("business_id", businessId)
-            .eq("order_status", "completed")
-            .gte("created_at", todayIso),
+      const report = (await res.json()) as BaselineResponse;
 
-          // 2. Low Stock Items
-          supabase
-            .from("inventory")
-            .select("id", { count: "exact", head: true })
-            .eq("business_id", businessId)
-            .lt("quantity_on_hand", 10), // Assuming 10 is the global low stock threshold for now
+      const recentActivity: ActivityItem[] = report.recentSales.map((sale) => ({
+        id: sale.id,
+        type: "sale",
+        title: "Sale Completed",
+        description: `${sale.paymentMethod?.toUpperCase() || "UNKNOWN"} • ${sale.customerId ? "Registered" : "Walk-in"}`,
+        timestamp: sale.createdAt,
+        amount: sale.total,
+      }));
 
-          // 3. Credit / Overdue
-          supabase
-            .from("credit_limits")
-            .select("current_balance")
-            .eq("business_id", businessId)
-            .gt("current_balance", 0),
-
-          // 4. Recent Activity (Sales for now, can expand to others)
-          supabase
-            .from("sales")
-            .select("*")
-            .eq("business_id", businessId)
-            .order("created_at", { ascending: false })
-            .limit(5),
-
-          // 5. Top Movers (Mocked for now as it requires complex aggregation)
-          // In a real app, this would be an RPC call or a dedicated diverse query
-          Promise.resolve([]),
-        ]);
-
-      // --- Processing Data ---
-
-      // Sales Stats
-      const salesTodayTotal =
-        todaysSales.data?.reduce(
-          (sum: number, sale: any) => sum + (sale.total_amount || 0),
-          0,
-        ) || 0;
-      const cashCollected =
-        todaysSales.data
-          ?.filter((s: any) => s.payment_method === "cash")
-          .reduce(
-            (sum: number, sale: any) => sum + (sale.total_amount || 0),
-            0,
-          ) || 0;
-
-      // Overdue (Mock logic: assuming all positive balances are "overdue" for dashboard visual)
-      // Real logic would check due dates in transactions
-      const totalOverdue =
-        creditLimits.data?.reduce(
-          (sum: number, credit: any) => sum + (credit.current_balance || 0),
-          0,
-        ) || 0;
-      const overdueCount = creditLimits.data?.length || 0;
-
-      // Activity Feed Transformation
-      const activities: ActivityItem[] =
-        recentSales.data?.map((sale: any) => ({
-          id: sale.id,
-          type: "sale",
-          title: "Sale Completed",
-          description: `$${sale.total_amount} • Customer: ${sale.customer_id ? "Registered" : "Guest"}`,
-          timestamp: sale.created_at,
-          amount: sale.total_amount,
-        })) || [];
-
-      // Mocks for missing data points
-      const mockTopMovers: TopMover[] = [
-        {
-          id: "1",
-          name: "Blue Dream",
-          category: "Flower • 1oz",
-          quantitySold: 18,
-          revenue: 2240,
-        },
-        {
-          id: "2",
-          name: "Gelato",
-          category: "Flower • 3.5g",
-          quantitySold: 14,
-          revenue: 680,
-        },
-        {
-          id: "3",
-          name: "Wedding Cake",
-          category: "Concentrate • 1g",
-          quantitySold: 12,
-          revenue: 560,
-        },
-        {
-          id: "4",
-          name: "Sour Diesel",
-          category: "Flower • 7g",
-          quantitySold: 9,
-          revenue: 630,
-        },
-      ];
+      const topMovers: TopMover[] = report.topProducts.map((product) => ({
+        id: product.id,
+        name: product.name,
+        category: product.sku ? `SKU ${product.sku}` : "POS Product",
+        quantitySold: product.quantitySold,
+        revenue: product.revenue,
+      }));
 
       setStats({
-        salesToday: salesTodayTotal,
-        cashCollected,
-        transactionsCount: todaysSales.data?.length || 0,
-        salesGrowth: 12.5, // Mock
-        lowStockCount: lowStock.count || 0,
-        overdueBalance: totalOverdue,
-        overdueCount,
-        recentActivity: activities,
-        topMovers: mockTopMovers,
+        salesToday: report.today.salesTotal,
+        cashCollected: report.today.cashCollected,
+        transactionsCount: report.today.salesCount,
+        salesGrowth: calcGrowth(report.week.salesTotal, report.previousWeek.salesTotal),
+        lowStockCount: report.lowStock.count,
+        overdueBalance: report.credit.outstandingBalance,
+        overdueCount: report.credit.activeBalances,
+        recentActivity,
+        topMovers,
         systemHealth: {
           syncStatus: "CLEAN",
           brokenLinks: 0,
-          lastAudit: "12 MIN AGO",
-          location: "ACTIVE",
+          lastAudit: formatAuditLabel(report.latestAuditAt),
+          location: businessId ? "BUSINESS-SCOPED" : "UNKNOWN",
         },
       });
     } catch (err) {
@@ -186,7 +161,7 @@ export function useDashboardData(businessId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [businessId, supabase]);
+  }, [businessId]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -194,3 +169,4 @@ export function useDashboardData(businessId: string | undefined) {
 
   return { stats, loading, error, refresh: fetchDashboardData };
 }
+

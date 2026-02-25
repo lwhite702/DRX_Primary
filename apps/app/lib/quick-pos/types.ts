@@ -1,17 +1,15 @@
-export type QuickPosPaymentMethod = "cash" | "card" | "credit";
+import type {
+  CartLineItem,
+  PosQuickPaymentMethod,
+  PosReceiptOption,
+  QuickPosBootstrapResponseContract,
+  ReceiptOutput,
+} from "@/lib/pos/contract";
 
-export type QuickPosReceiptOption = "print" | "sms" | "none";
-
-export type QuickPosCartItemSource = "inventory" | "manual";
-
-export interface QuickPosCartItem {
-  id: string;
-  inventoryId: string | null;
-  name: string;
-  unitPrice: number;
-  qty: number;
-  source: QuickPosCartItemSource;
-}
+export type QuickPosPaymentMethod = PosQuickPaymentMethod;
+export type QuickPosReceiptOption = PosReceiptOption;
+export type QuickPosCartItemSource = CartLineItem["source"];
+export type QuickPosCartItem = CartLineItem;
 
 export interface QuickPosCustomer {
   id: string | null;
@@ -38,6 +36,8 @@ export interface QuickPosSessionState {
   lastSaleId: string | null;
   lastCompletedAt: number | null;
   pendingIdempotencyKey: string | null;
+  lastSaleTotal: number | null;
+  lastReceipt: QuickPosReceiptOption | null;
 }
 
 export interface QuickPosState {
@@ -49,19 +49,8 @@ export interface QuickPosState {
   creditPolicyEnabled: boolean;
 }
 
-export interface QuickPosBootstrapItem {
-  id: string;
-  name: string;
-  price: number;
-}
-
-export interface QuickPosBootstrapResponse {
-  favorites: QuickPosBootstrapItem[];
-  recentlySold: QuickPosBootstrapItem[];
-  creditPolicy: {
-    enabled: boolean;
-  };
-}
+export type QuickPosBootstrapItem = QuickPosBootstrapResponseContract["favorites"][number];
+export type QuickPosBootstrapResponse = QuickPosBootstrapResponseContract;
 
 export interface QuickPosCheckoutRequest {
   mode: "quick";
@@ -78,6 +67,8 @@ export interface QuickPosCheckoutRequest {
 export interface QuickPosCheckoutResponse {
   success: boolean;
   saleId?: string;
+  total?: number;
+  receipt?: ReceiptOutput;
   error?: string;
 }
 

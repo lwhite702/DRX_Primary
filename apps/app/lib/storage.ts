@@ -2,7 +2,7 @@
  * Storage Client
  */
 
-import { putObject, getSignedDownloadUrl } from "@wrelik/storage";
+import { putObject, getSignedDownloadUrl } from "@wrelik/storage/server";
 
 export const BUCKET_NAME = process.env.R2_BUCKET_NAME || "drx-primary-bucket";
 

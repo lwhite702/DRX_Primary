@@ -2,7 +2,9 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@wrelik/*/server": ["./lib/wrelik-shims/*/server.ts"],
+      "@wrelik/*/shared": ["./lib/wrelik-shims/*/shared.ts"]
     }
   },
   "include": [

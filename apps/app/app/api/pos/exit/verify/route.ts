@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { QUICK_POS_EXIT_PIN_FALLBACK } from "@/lib/quick-pos/constants";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
 import type { QuickPosExitVerifyRequest, QuickPosExitVerifyResponse } from "@/lib/quick-pos/types";
 
 export async function POST(request: NextRequest) {
+  if (isAuthBypassEnabledServer()) {
+    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
+  }
+
   const { businessId } = await resolveAuthContext();
 
   if (!businessId) {

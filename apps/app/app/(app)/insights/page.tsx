@@ -147,7 +147,7 @@ export default function EventDeskPage() {
         lowStockItems: lowStockItems.data || [],
       });
     } catch (error) {
-      console.error("Failed to load event desk data:", error);
+      console.error("Failed to load insights data:", error);
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ export default function EventDeskPage() {
     return (
       <div className="p-4 md:p-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Event Desk Board</h1>
+          <h1 className="text-3xl font-bold">Operations Insights</h1>
           <p className="text-muted-foreground mt-2">
             Real-time business metrics and alerts
           </p>
@@ -177,7 +177,7 @@ export default function EventDeskPage() {
   return (
     <div className="p-4 md:p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Event Desk Board</h1>
+        <h1 className="text-3xl font-bold">Operations Insights</h1>
         <p className="text-muted-foreground mt-2">
           Real-time business metrics and alerts
         </p>

@@ -1,9 +1,28 @@
 import { useEffect, useState } from "react";
-// import { db } from "@wrelik/db";
+// import { db } from "@wrelik/db/server";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
-// Mocks for build
-const realtime = getSupabaseClient();
+let didLogRealtimeBlock = false;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RealtimeChannelLike = any;
+
+function openRealtimeChannel(name: string): RealtimeChannelLike | null {
+  try {
+    const realtime = getSupabaseClient() as any;
+    return realtime.channel(name);
+  } catch (error) {
+    if (!didLogRealtimeBlock) {
+      didLogRealtimeBlock = true;
+      console.warn(
+        "[realtime] Legacy Supabase realtime channel disabled for this path. Initial data loads will continue without live updates.",
+        error,
+      );
+    }
+    return null;
+  }
+}
+
 // Mock db to prevent server-side imports in client bundle
 const db = {
   sales: { findMany: async (...args: any[]) => [] },
@@ -26,7 +45,8 @@ export function useRealtimeInventory(business_id: string | null) {
       });
 
     // Subscribe to changes via @wrelik/db realtime
-    const channel = realtime.channel(`inventory:${business_id}`);
+    const channel = openRealtimeChannel(`inventory:${business_id}`);
+    if (!channel) return;
     channel
       .on(
         "postgres_changes",
@@ -80,7 +100,8 @@ export function useRealtimeSales(business_id: string | null) {
       });
 
     // Subscribe to changes
-    const channel = realtime.channel(`sales:${business_id}`);
+    const channel = openRealtimeChannel(`sales:${business_id}`);
+    if (!channel) return;
     channel.on(
       "postgres_changes",
       {
@@ -137,9 +158,10 @@ export function useRealtimeCredit(
       });
 
     // Subscribe to changes
-    const channel = realtime.channel(
+    const channel = openRealtimeChannel(
       `credit:${business_id}${customer_id ? `:${customer_id}` : ""}`,
     );
+    if (!channel) return;
     channel.on(
       "postgres_changes",
       {
@@ -186,7 +208,8 @@ export function useRealtimeCustomers(business_id: string | null) {
       });
 
     // Subscribe to changes
-    const channel = realtime.channel(`customers:${business_id}`);
+    const channel = openRealtimeChannel(`customers:${business_id}`);
+    if (!channel) return;
     channel.on(
       "postgres_changes",
       {

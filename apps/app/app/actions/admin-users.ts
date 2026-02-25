@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { Role } from "@/lib/auth/permissions";
 

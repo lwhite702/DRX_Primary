@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@/lib/adapters/auth/server";
 import { redirect } from "next/navigation";
 
 export async function completeOnboarding(formData: FormData) {

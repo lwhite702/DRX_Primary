@@ -42,6 +42,7 @@ export async function GET() {
         select: {
           id: true,
           productName: true,
+          sku: true,
           sellingPrice: true,
         },
       })
@@ -55,6 +56,8 @@ export async function GET() {
     .map((item) => ({
       id: item!.id,
       name: item!.productName,
+      sku: item!.sku,
+      barcode: null,
       price: toNumber(item!.sellingPrice),
     }));
 
@@ -76,6 +79,7 @@ export async function GET() {
         select: {
           id: true,
           productName: true,
+          sku: true,
           sellingPrice: true,
         },
       },
@@ -94,6 +98,8 @@ export async function GET() {
     recentlySold.push({
       id: row.inventory.id,
       name: row.inventory.productName,
+      sku: row.inventory.sku,
+      barcode: null,
       price: toNumber(row.inventory.sellingPrice),
     });
 

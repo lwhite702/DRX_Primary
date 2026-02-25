@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuth as useClerkAuth, useUser, useSignIn } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
-import { ClerkProvider } from "@clerk/clerk-expo";
+import {
+  ClerkProvider,
+  toWorkflowSession,
+  useClerkAuth,
+  useSignIn,
+  useUser,
+} from "../adapters/auth/client";
 
 const tokenCache = {
   async getToken(key: string) {
@@ -61,11 +66,18 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       const fetchBusiness = async () => {
         try {
           const token = await getToken();
+          const workflowSession = toWorkflowSession({
+            userId,
+            orgId: null,
+            session: { user: user ? { publicMetadata: user.publicMetadata } : undefined },
+          });
           // We can't call the API yet because we haven't refactored the API client.
           // But we can check user public metadata if available.
           const metadata = user?.publicMetadata as any;
           if (metadata?.businessId) {
             setBusinessId(metadata.businessId);
+          } else if (workflowSession.tenantId) {
+            setBusinessId(workflowSession.tenantId);
           }
         } catch (e) {
           console.error("Failed to fetch business ID", e);

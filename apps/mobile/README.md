@@ -1,50 +1,36 @@
-# Welcome to your Expo app 👋
+# DRX Mobile (Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+`apps/mobile` is the DRX Expo client in the DRX monorepo.
 
-## Get started
+## Runtime Policy
 
-1. Install dependencies
+- **Node.js:** `20.18.0` (exact, matches monorepo policy)
+- **pnpm:** `9.15.9`
 
-   ```bash
-   npm install
-   ```
+## Development
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+From the repo root:
 
 ```bash
-npm run reset-project
+pnpm --filter deelrxcrm-mobile install
+pnpm --filter deelrxcrm-mobile start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Or inside `apps/mobile`:
 
-## Learn more
+```bash
+pnpm install
+pnpm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Auth Integration Boundary
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Mobile auth SDK usage is isolated in `/Users/lee/Projects/DRX_Primary/apps/mobile/src/adapters/auth/client.tsx`
+- `AuthContext` consumes the adapter and maps session shape through `@wrelik/auth/react-native`
+- Direct vendor imports (Clerk/Supabase/etc.) are restricted in `src/**` outside adapters via ESLint
 
-## Join the community
+## Note on `@wrelik/*/client`
 
-Join our community of developers creating universal apps.
+The current published `@wrelik/auth` package exposes `@wrelik/auth/react-native` (used here).  
+When upstream publishes a `@wrelik/auth/client` alias, mobile imports should switch to that alias without changing the app-level adapter boundary.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

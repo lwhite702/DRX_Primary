@@ -1,10 +1,11 @@
-import { SignUp } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { SignUp } from "@/lib/adapters/auth/ui";
+import { auth } from "@/lib/adapters/auth/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Clock, Database } from "lucide-react";
+import { drxClerkAuthAppearance } from "@/lib/auth/clerk-appearance";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -69,33 +70,10 @@ export default async function RegisterPage() {
           </div>
 
           <SignUp
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                cardBox:
-                  "w-full shadow-none border-none bg-transparent backdrop-blur-none p-6 pt-2 pb-8",
-                card: "bg-transparent shadow-none border-none p-0",
-                header: "hidden",
-                formButtonPrimary:
-                  "bg-primary text-black hover:bg-primary/90 h-11 rounded-md font-bold tracking-wide uppercase transition-all shadow-[0_0_20px_rgba(191,255,0,0.1)] hover:shadow-[0_0_30px_rgba(191,255,0,0.2)]",
-                socialButtonsBlockButton:
-                  "bg-white/5 border border-white/10 text-white hover:bg-white/10 h-10 rounded-md transition-colors",
-                dividerLine: "bg-white/5",
-                dividerText:
-                  "text-muted-foreground text-[10px] uppercase tracking-widest font-mono",
-                formFieldLabel:
-                  "text-muted-foreground text-[10px] uppercase tracking-wider font-mono mb-1.5",
-                formFieldInput:
-                  "bg-black/50 border-white/10 text-white rounded-md focus:ring-primary/50 focus:border-primary/50 h-10 font-mono text-sm placeholder:text-white/20",
-                footerActionLink:
-                  "text-primary hover:text-primary/90 font-mono text-xs",
-                footer: "hidden",
-              },
-              layout: {
-                socialButtonsPlacement: "bottom",
-                showOptionalFields: false,
-              },
-            }}
+            routing="path"
+            path="/register"
+            appearance={drxClerkAuthAppearance}
+            forceRedirectUrl="/onboarding"
             fallbackRedirectUrl="/onboarding"
           />
         </div>

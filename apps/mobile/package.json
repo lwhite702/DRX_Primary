@@ -2,6 +2,9 @@
   "name": "deelrxcrm-mobile",
   "main": "expo-router/entry",
   "version": "0.2.0",
+  "engines": {
+    "node": "20.18.0"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -19,6 +22,7 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@supabase/supabase-js": "^2.91.0",
+    "@wrelik/auth": "0.2.2",
     "axios": "^1.13.5",
     "date-fns": "^4.1.0",
     "expo": "^54.0.32",

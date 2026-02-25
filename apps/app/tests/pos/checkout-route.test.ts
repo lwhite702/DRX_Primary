@@ -129,7 +129,7 @@ describe("POST /api/pos/checkout", () => {
       ...cart,
       fees,
     }));
-    mocks.checkout.mockResolvedValue({ saleId: "sale_123" });
+    mocks.checkout.mockResolvedValue({ saleId: "sale_123", total: 15 });
   });
 
   it("returns 401 when auth context is missing", async () => {
@@ -165,6 +165,13 @@ describe("POST /api/pos/checkout", () => {
     expect(data).toEqual({
       success: true,
       saleId: "sale_123",
+      total: 15,
+      receipt: {
+        saleId: "sale_123",
+        total: 15,
+        receipt: "sms",
+        channels: [{ type: "receipt", value: "sms" }],
+      },
     });
     expect(mocks.createCart).toHaveBeenCalledWith({
       businessId: "business_123",

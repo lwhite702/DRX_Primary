@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import { QuickPosProvider } from "@/lib/quick-pos/store";
-import PaymentPage from "@/app/pos/payment/page";
-import CompletePage from "@/app/pos/complete/page";
+import PaymentPage from "@/app/(operator)/pos/payment/page";
+import CompletePage from "@/app/(operator)/pos/complete/page";
 
 const replace = vi.fn();
 

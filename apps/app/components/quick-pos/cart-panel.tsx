@@ -35,10 +35,15 @@ export function CartPanel({
   };
 
   return (
-    <section className="rounded-md border border-neutral-800 bg-neutral-950 p-4">
-      <h2 className="text-lg font-semibold">Cart</h2>
+    <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Cart</h2>
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">
+          {items.length} item{items.length === 1 ? "" : "s"}
+        </span>
+      </div>
       <div className="mt-3 space-y-2">
-        {items.length === 0 ? <p className="text-neutral-400">No items</p> : null}
+        {items.length === 0 ? <p className="text-muted-foreground">No items</p> : null}
 
         {items.map((item) => (
           <button
@@ -52,24 +57,24 @@ export function CartPanel({
                 timeoutRef.current = null;
               }
             }}
-            className="flex h-16 w-full items-center justify-between rounded-md border border-neutral-700 bg-black px-4 text-left"
+            className="flex h-16 w-full items-center justify-between rounded-md border border-white/10 bg-black/40 px-4 text-left transition hover:border-accent/30 hover:bg-accent/5"
           >
             <span className="text-lg font-semibold">
               {item.name} x{item.qty}
             </span>
-            <span className="text-lg">${(item.unitPrice * item.qty).toFixed(2)}</span>
+            <span className="text-lg font-semibold text-accent">${(item.unitPrice * item.qty).toFixed(2)}</span>
           </button>
         ))}
       </div>
 
-      <div className="mt-4 border-t border-neutral-800 pt-3 text-lg">
+      <div className="mt-4 border-t border-white/10 pt-3 text-lg">
         <div className="flex items-center justify-between">
-          <span className="text-neutral-300">Subtotal</span>
+          <span className="text-muted-foreground">Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
         <div className="mt-1 flex items-center justify-between text-2xl font-bold">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span className="text-accent">${total.toFixed(2)}</span>
         </div>
       </div>
     </section>

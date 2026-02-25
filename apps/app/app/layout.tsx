@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider } from "@/lib/adapters/auth/ui";
 
 const _plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -17,7 +17,10 @@ const _plusJakartaSans = Plus_Jakarta_Sans({
 const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  title: "Deelrx - Run real transactions. Without the mess.",
+  title:
+    process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true"
+      ? "[BYPASS] Deelrx - Run real transactions. Without the mess."
+      : "Deelrx - Run real transactions. Without the mess.",
   description:
     "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
   icons: {
@@ -65,6 +68,27 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const hasClerkPublishableKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const appShell = (
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
+      >
+        <GlobalErrorBoundary>
+          <PostHogProvider>
+            <FeaturebaseProvider />
+            {children}
+            <Toaster position="top-right" />
+          </PostHogProvider>
+        </GlobalErrorBoundary>
+      </body>
+    </html>
+  );
+
+  if (!hasClerkPublishableKey) {
+    return appShell;
+  }
+
   return (
     <ClerkProvider
       signInUrl="/login"
@@ -74,19 +98,7 @@ export default function RootLayout({
       signUpFallbackRedirectUrl="/onboarding"
       afterSignOutUrl="/login"
     >
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
-        >
-          <GlobalErrorBoundary>
-            <PostHogProvider>
-              <FeaturebaseProvider />
-              {children}
-              <Toaster position="top-right" />
-            </PostHogProvider>
-          </GlobalErrorBoundary>
-        </body>
-      </html>
+      {appShell}
     </ClerkProvider>
   );
 }

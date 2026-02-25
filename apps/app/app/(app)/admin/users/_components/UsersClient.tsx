@@ -37,7 +37,7 @@ import {
   fetchMyRole,
   type AdminUserItem,
 } from "@/app/actions/admin-users";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@/lib/adapters/auth/ui";
 
 // Helper for badge colors
 const getRoleBadgeColor = (role: string) => {

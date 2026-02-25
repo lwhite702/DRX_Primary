@@ -50,12 +50,17 @@ export function Sidebar() {
 
   return (
     <aside
-      className="w-64 bg-muted border-r border-border flex flex-col"
+      className="sticky top-0 flex h-screen w-64 flex-col border-r border-border bg-muted"
       role="complementary"
       aria-label="Main navigation sidebar"
     >
-      <div className="p-6 border-b border-border">
-        <AppLogo showTagline />
+      <div className="border-b border-border px-5 py-4">
+        <div className="flex flex-col items-start gap-2">
+          <AppLogo showTagline size="sidebar" />
+          <div className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500">
+            Beta
+          </div>
+        </div>
       </div>
 
       <nav

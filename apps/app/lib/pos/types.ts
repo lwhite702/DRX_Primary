@@ -1,30 +1,19 @@
-export type PosMode = "quick" | "full";
+export type {
+  CartLineItem as PosCartItem,
+  CheckoutPayload as PosCheckoutRequest,
+  PosFee,
+  PosMode,
+  PosPaymentMethod,
+  PosReceiptOption,
+  PosCartItemSource,
+} from "@/lib/pos/contract";
 
-export type PosPaymentMethod = "cash" | "card" | "credit" | "mixed" | "zelle";
-
-export type PosReceiptOption = "print" | "sms" | "none";
-
-export type PosCartItemSource = "inventory" | "manual";
-
-export interface PosCartItem {
-  id: string;
-  inventoryId: string | null;
-  name: string;
-  unitPrice: number;
-  qty: number;
-  source: PosCartItemSource;
-}
+import type { CartLineItem, PosFee, PosMode, PosPaymentMethod, PosReceiptOption } from "@/lib/pos/contract";
 
 export interface PosPayment {
   method: PosPaymentMethod;
   receipt: PosReceiptOption;
   creditConfirmed: boolean;
-}
-
-export interface PosFee {
-  type: string;
-  amount?: number;
-  value?: string;
 }
 
 export interface PosCart {
@@ -33,7 +22,7 @@ export interface PosCart {
   mode: PosMode;
   customerId: string | null;
   payment: PosPayment;
-  items: PosCartItem[];
+  items: CartLineItem[];
   taxAmount: number;
   fees: PosFee[];
 }
@@ -49,3 +38,4 @@ export interface PosCheckoutResult {
   saleId: string;
   total: number;
 }
+

@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSignIn } from "@/lib/adapters/auth/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,18 +14,58 @@ import { SecurityBadges } from "./security-badges";
 // const isTrustedDevice = false; // Toggle this to see unmatched state
 
 export function OperatorLoginForm() {
+  const router = useRouter();
+  const { isLoaded, signIn, setActive } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const clerkFallbackUrl = "/login?view=clerk";
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoaded || !signIn) {
+      setErrorMessage("Authentication is still initializing. Try again in a moment.");
+      return;
+    }
+
+    setErrorMessage(null);
     setLoading(true);
-    // Simulate login
-    setTimeout(() => {
+
+    try {
+      const result = await signIn.create({
+        identifier,
+        password,
+      });
+
+      if (result.status === "complete" && result.createdSessionId) {
+        await setActive?.({ session: result.createdSessionId });
+        router.replace("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      setErrorMessage("Additional verification is required. Use the secure recovery flow.");
+      router.push(clerkFallbackUrl);
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "errors" in error &&
+        Array.isArray((error as { errors?: Array<{ longMessage?: string; message?: string }> }).errors)
+          ? (error as { errors: Array<{ longMessage?: string; message?: string }> }).errors[0]
+              ?.longMessage ||
+            (error as { errors: Array<{ longMessage?: string; message?: string }> }).errors[0]
+              ?.message ||
+            "Sign-in failed. Check your credentials and try again."
+          : "Sign-in failed. Check your credentials and try again.";
+
+      setErrorMessage(message);
+    } finally {
       setLoading(false);
-      // Actual redirect handled by Clerk or NextAuth, this is UI only for now
-      console.log("Authenticating...");
-    }, 1500);
+    }
   };
 
   return (
@@ -53,6 +96,10 @@ export function OperatorLoginForm() {
               Username or Email
             </label>
             <Input
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              type="email"
+              autoComplete="username"
               placeholder="operator@domain.com"
               className="bg-[#0A0A0A] border-white/10 h-11 text-sm focus-visible:ring-[#4ADE80]/50"
               disabled={loading}
@@ -65,7 +112,7 @@ export function OperatorLoginForm() {
                 Password
               </label>
               <a
-                href="#"
+                href={clerkFallbackUrl}
                 className="text-[10px] font-bold text-[#D9F99D] hover:underline"
               >
                 Forgot?
@@ -74,6 +121,9 @@ export function OperatorLoginForm() {
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 placeholder="••••••••••••"
                 className="bg-[#0A0A0A] border-white/10 h-11 text-sm pr-10 focus-visible:ring-[#4ADE80]/50"
                 disabled={loading}
@@ -105,10 +155,16 @@ export function OperatorLoginForm() {
             </label>
           </div>
 
+          {errorMessage ? (
+            <div className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-[11px] text-red-200">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <Button
             type="submit"
             className="w-full bg-[#D9F99D] text-black hover:bg-[#bef264] font-bold tracking-wide h-11"
-            disabled={loading}
+            disabled={loading || !identifier || !password}
           >
             {loading ? "SIGNING IN..." : "SIGN IN"}
           </Button>
@@ -128,6 +184,7 @@ export function OperatorLoginForm() {
             <Button
               variant="outline"
               type="button"
+              onClick={() => router.push(clerkFallbackUrl)}
               className="w-full border-white/10 hover:bg-white/5 h-10 text-xs font-bold"
             >
               Sign in with Google
@@ -135,6 +192,7 @@ export function OperatorLoginForm() {
             <Button
               variant="outline"
               type="button"
+              onClick={() => router.push(clerkFallbackUrl)}
               className="w-full border-white/10 hover:bg-white/5 h-10 text-xs font-bold"
             >
               Sign in with Microsoft
@@ -142,10 +200,20 @@ export function OperatorLoginForm() {
             <Button
               variant="outline"
               type="button"
+              onClick={() => router.push(clerkFallbackUrl)}
               className="w-full border-white/10 hover:bg-white/5 h-10 text-xs font-bold"
             >
               Team SSO
             </Button>
+          </div>
+
+          <div className="pt-1 text-center">
+            <Link
+              href={clerkFallbackUrl}
+              className="text-[10px] font-mono uppercase tracking-wider text-white/60 hover:text-primary"
+            >
+              Use Recovery / SSO Flow
+            </Link>
           </div>
         </form>
       </div>
@@ -154,12 +222,12 @@ export function OperatorLoginForm() {
         <p className="text-sm text-muted-foreground mb-4">
           Don't have an account?
         </p>
-        <a
-          href="#"
+        <Link
+          href="/waitlist"
           className="text-[#D9F99D] font-bold text-sm hover:underline tracking-wide"
         >
           Request Access from Administrator
-        </a>
+        </Link>
       </div>
 
       <div className="bg-[#111] border border-white/5 rounded-xl p-5 text-center text-xs text-muted-foreground">
@@ -202,17 +270,17 @@ export function OperatorLoginForm() {
       </div>
 
       <div className="flex justify-center flex-wrap gap-4 text-[10px] text-muted-foreground font-bold tracking-wider uppercase">
-        <a href="#" className="hover:text-white">
+        <Link href="/privacy" className="hover:text-white">
           Privacy Policy
-        </a>
+        </Link>
         <span>•</span>
-        <a href="#" className="hover:text-white">
+        <Link href="/terms" className="hover:text-white">
           Terms of Service
-        </a>
+        </Link>
         <span>•</span>
-        <a href="#" className="hover:text-white">
+        <Link href={clerkFallbackUrl} className="hover:text-white">
           Security
-        </a>
+        </Link>
       </div>
 
       <div className="text-center text-[10px] font-mono text-muted-foreground opacity-50">

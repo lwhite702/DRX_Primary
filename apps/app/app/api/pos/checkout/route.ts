@@ -10,11 +10,14 @@ import {
   setPayment,
   setTaxAmount,
 } from "@/lib/pos/core";
+import type { ReceiptOutput } from "@/lib/pos/contract";
 import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
 
 type PosCheckoutResponse = {
   success: boolean;
   saleId?: string;
+  total?: number;
+  receipt?: ReceiptOutput;
   error?: string;
 };
 
@@ -86,9 +89,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await checkout(updatedCart, payload.idempotencyKey);
+    const receipt: ReceiptOutput = {
+      saleId: result.saleId,
+      total: result.total,
+      receipt: payload.payment.receipt,
+      channels:
+        payload.payment.receipt === "none"
+          ? []
+          : [{ type: "receipt", value: payload.payment.receipt }],
+    };
     const response: PosCheckoutResponse = {
       success: true,
       saleId: result.saleId,
+      total: result.total,
+      receipt,
     };
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

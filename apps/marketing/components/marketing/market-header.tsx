@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { appLoginUrl, appRegisterUrl } from "@/lib/app-links";
 
 import { Button } from "@deelrx/ui";
-
-const APP_URL = "https://deelrxcrm.app";
 
 function StatusChip() {
   const statuses = [
@@ -72,7 +71,7 @@ export function MarketHeader() {
           </button>
         ))}
         <Link
-          href={APP_URL}
+          href={appLoginUrl}
           className="text-sm font-bold tracking-widest hover:text-accent transition-all hover:drop-shadow-[0_0_8px_rgba(191,255,0,0.8)]"
         >
           LOGIN
@@ -88,7 +87,7 @@ export function MarketHeader() {
           size="sm"
           className="bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-full px-6"
         >
-          <Link href={APP_URL}>START</Link>
+          <Link href={appRegisterUrl}>START</Link>
         </Button>
         <button
           className="md:hidden p-2"
@@ -111,7 +110,7 @@ export function MarketHeader() {
               </button>
             ))}
             <Link
-              href={APP_URL}
+              href={appLoginUrl}
               className="text-2xl font-bold tracking-tight hover:text-accent"
             >
               LOGIN

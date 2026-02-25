@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@/lib/adapters/auth/ui";
 import { getUserRoleAction } from "@/app/actions/user-role";
 import { Permission, ROLE_PERMISSIONS } from "@/lib/auth/permissions";
 
@@ -14,12 +14,20 @@ export type UserRole =
   | null;
 
 export function useUserRole(businessId?: string) {
+  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
   const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRole = useCallback(async () => {
+    if (authBypassEnabled) {
+      setRole("super_admin");
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     if (!isLoaded) return;
 
     if (!user) {
@@ -43,7 +51,7 @@ export function useUserRole(businessId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [user, isLoaded, businessId]);
+  }, [user, isLoaded, businessId, authBypassEnabled]);
 
   useEffect(() => {
     fetchRole();

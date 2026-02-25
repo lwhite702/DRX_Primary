@@ -6,6 +6,72 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
 
 ---
 
+## Monorepo Reality (Beta Launch Baseline)
+
+This repository is a **pnpm monorepo**. Product ownership is explicit:
+
+- `apps/app` = the `.app` product (authenticated operator experience)
+- `apps/marketing` = marketing site only (`.com`)
+- `apps/mobile` = Expo mobile client
+- `packages/*` = shared packages (UI/brand plus vendored `wrelik-*` copies kept only for reference)
+
+### Node Version Policy
+
+- **Required Node.js:** `20.18.0` (exact)
+- **Package manager:** `pnpm@9.15.9`
+- CI and local policy are aligned (`.nvmrc`, `.node-version`, package `engines`)
+
+If you are using `nvm`:
+
+```bash
+nvm use
+```
+
+### Domain Routing (.com -> .app)
+
+- Marketing CTAs on `apps/marketing` should send users to the `.app` domain routes (for example `/login`, `/register`)
+- Middleware in `apps/app/middleware.ts` owns the redirect rules that prevent loops between `/`, `/login`, `/onboarding`, and `/dashboard`
+- `NEXT_PUBLIC_APP_URL` should point to the `.app` origin (for example `https://deelrxcrm.app`)
+
+#### Clerk Redirect / Origin Checklist
+
+Configure these in Clerk for both local and production environments:
+
+- Allowed origins: marketing `.com` origin(s) and app `.app` origin(s)
+- Sign-in URL: `.app/login`
+- Sign-up URL: `.app/register`
+- After sign-in URL: `.app/dashboard` (or `.app/onboarding` if your flow requires setup first)
+- After sign-up URL: `.app/onboarding` (or `.app/dashboard` if onboarding is complete)
+- Local dev origins and redirects: `http://localhost:3000` / `http://localhost:3001` (match your active ports)
+
+Do not point marketing CTAs to in-domain auth pages on `.com`; they should always link to `.app`.
+
+### Quick POS (Operator Fast Path)
+
+Quick POS lives in `apps/app` and is designed as a minimal ring-up flow:
+
+- `/pos/sale` → search/scan/add items
+- `/pos/payment` → tender + receipt selection
+- `/pos/complete` → receipt/confirmation state and quick reset for next sale
+
+The POS checkout contract is centralized in `/Users/lee/Projects/DRX_Primary/apps/app/lib/pos/contract.ts`.
+
+### wrelik-kit Consumption
+
+- DRX consumes `@wrelik/*` from published packages (registry-pinned versions)
+- Vendored `packages/wrelik-*` are **not** source-of-truth and are excluded from workspace resolution
+- Direct vendor SDK imports are restricted by ESLint; use app/mobile adapters and `@wrelik/*` boundaries instead
+
+See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details.
+
+### Staging / Preview Testing
+
+For preview deploy + demo data seeding (including the current shared-DB warning), see:
+
+- `/Users/lee/Projects/DRX_Primary/docs/STAGING_PREVIEW_WORKFLOW.md`
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -67,8 +133,8 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 8+
+- Node.js 20.18.0
+- pnpm 9.15.9
 - Supabase CLI
 
 ### Installation
@@ -112,14 +178,14 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
    npx supabase db reset
    ```
 
-6. **Run the development server**
+6. **Run the app product**
 
    ```bash
    pnpm dev
    ```
 
 7. **Open the app**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to the `apps/app` local URL (typically [http://localhost:3000](http://localhost:3000))
 
 ---
 
@@ -179,27 +245,18 @@ pnpm test:e2e
 ## 🏗 Project Structure
 
 ```
-drx-v2/
-├── app/                    # Next.js app directory
-│   ├── (app)/             # Authenticated app routes
-│   ├── actions/           # Server actions
-│   ├── api/               # API routes
-│   └── inventory/         # Inventory management
-├── components/            # React components
-│   ├── ui/               # Shadcn UI components
-│   ├── layout/           # Layout components
-│   └── providers/        # Context providers
-├── lib/                  # Shared utilities
-│   ├── auth/            # Authentication & permissions
-│   ├── credit/          # Credit decision engine
-│   ├── hooks/           # Custom React hooks
-│   ├── supabase/        # Supabase client
-│   ├── utils/           # Utility functions
-│   └── validations/     # Zod schemas
-├── supabase/            # Supabase configuration
-│   ├── migrations/      # Database migrations
-│   └── functions/       # Edge functions
-└── tests/               # Test files
+DRX_Primary/
+├── apps/
+│   ├── app/               # .app product (operator/authenticated experience)
+│   ├── marketing/         # .com marketing site
+│   └── mobile/            # Expo mobile client
+├── packages/
+│   ├── ui/                # Shared UI package
+│   ├── brand/             # Shared brand assets/tokens
+│   └── wrelik-*           # Vendored reference copies (not workspace source-of-truth)
+├── tooling/               # Shared lint/tooling config
+├── docs/                  # Project and launch docs
+└── scripts/               # Root automation/testing scripts
 ```
 
 ---
@@ -257,12 +314,13 @@ npx supabase db push
 ## 📝 Scripts
 
 ```bash
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm test         # Run tests
-pnpm test:e2e     # Run E2E tests
+pnpm dev          # Run apps/app locally (root proxy)
+pnpm build        # Build apps/app + apps/marketing
+pnpm start        # Start apps/app (root proxy)
+pnpm lint         # Launch readiness lint (app + marketing)
+pnpm typecheck    # Launch readiness typecheck (app + marketing)
+pnpm compliance:imports  # Enforce vendor import boundaries
+pnpm test:e2e:web # Run apps/app Playwright suite
 ```
 
 ---

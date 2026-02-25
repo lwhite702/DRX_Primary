@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@/lib/adapters/auth/ui";
 
 export function LogoutButton({ className }: { className?: string }) {
   return (
