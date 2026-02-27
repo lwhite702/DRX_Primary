@@ -11,7 +11,7 @@ export async function initializeAdapters() {
     return;
   }
 
-  loadServerConfig();
+  loadServerConfig({});
   initialized = true;
 }
 

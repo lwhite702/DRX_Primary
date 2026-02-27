@@ -2,16 +2,13 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"],
-      "@wrelik/*/server": ["./lib/wrelik-shims/*/server.ts"],
-      "@wrelik/*/shared": ["./lib/wrelik-shims/*/shared.ts"]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "**/*.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

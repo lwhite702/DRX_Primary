@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
+    "@clerk/nextjs": "^6.37.1",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",
@@ -85,14 +86,14 @@
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
-    "@wrelik/analytics": "0.2.0",
-    "@wrelik/auth": "0.2.2",
-    "@wrelik/config": "0.2.0",
-    "@wrelik/db": "0.1.2",
-    "@wrelik/email": "0.1.2",
-    "@wrelik/errors": "0.2.0",
-    "@wrelik/jobs": "0.1.2",
-    "@wrelik/storage": "0.2.0",
+    "@wrelik/analytics": "2.0.0",
+    "@wrelik/auth": "2.0.0",
+    "@wrelik/config": "2.0.0",
+    "@wrelik/db": "2.0.0",
+    "@wrelik/email": "2.0.0",
+    "@wrelik/errors": "2.0.0",
+    "@wrelik/jobs": "2.0.0",
+    "@wrelik/storage": "2.0.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -120,8 +121,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "3.25.76",
-    "@clerk/nextjs": "^6.37.1"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
@@ -158,14 +158,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "0.2.2",
-      "@wrelik/db": "0.1.2",
-      "@wrelik/storage": "0.2.0",
-      "@wrelik/analytics": "0.2.0",
-      "@wrelik/errors": "0.2.0",
-      "@wrelik/email": "0.1.2",
-      "@wrelik/jobs": "0.1.2",
-      "@wrelik/config": "0.2.0"
+      "@wrelik/auth": "2.0.0",
+      "@wrelik/db": "2.0.0",
+      "@wrelik/storage": "2.0.0",
+      "@wrelik/analytics": "2.0.0",
+      "@wrelik/errors": "2.0.0",
+      "@wrelik/email": "2.0.0",
+      "@wrelik/jobs": "2.0.0",
+      "@wrelik/config": "2.0.0"
     }
   }
 }

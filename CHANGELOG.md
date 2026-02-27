@@ -271,3 +271,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [types] Added ambient declaration for `@wrelik/analytics` in `apps/app/wrelik.d.ts` to support typed shim usage until upstream package types are published.
 - [lint] Extended `apps/app/eslint.config.mjs` with a targeted `no-restricted-imports` exception for shim files only.
 - [docs] Added branch handoff artifact `docs/internal/handoff/main-wrelik-runtime-subpath-handoff-2026-02-27.md` with scope, validation evidence, risks, rollback protocol, and next-branch prerequisites.
+
+### 2026-02-27 09:29 ET
+
+- [deps] Upgraded `@wrelik/auth`, `@wrelik/config`, `@wrelik/errors`, `@wrelik/storage`, `@wrelik/db`, `@wrelik/email`, `@wrelik/jobs`, and `@wrelik/analytics` to `2.0.0` in root/app/mobile dependency manifests.
+- [infra] Removed temporary DRX shim bridge under `apps/app/lib/wrelik-shims/*` after confirming official `./server|./client|./shared` exports are now published.
+- [config] Removed app-level TS path alias shims and shim-specific ESLint exception from `apps/app/tsconfig.json` and `apps/app/eslint.config.mjs`.
+- [adapters] Updated DRX adapter compatibility for Wrelik 2.0 API surface (`loadServerConfig({})` and jobs adapter singleton export replacement).
+- [mobile] Switched mobile auth adapter imports to official subpaths (`@wrelik/auth/client` and `@wrelik/auth/shared`) and refreshed mobile README integration notes.
+- [docs] Added `docs/internal/handoff/main-wrelik-v2-cutover-2026-02-27.md` with validation evidence, risks, and rollback protocol.
