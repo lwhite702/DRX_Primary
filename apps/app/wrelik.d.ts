@@ -8,5 +8,3 @@ declare module "@wrelik/analytics" {
   ): void;
   export function shutdown(): Promise<void>;
 }
-
-export {};
