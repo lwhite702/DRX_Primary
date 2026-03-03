@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Users } from "lucide-react";
 import Link from "next/link";
@@ -31,45 +30,47 @@ export default function SettingsPage() {
   const [posManagerPin, setPosManagerPin] = useState("");
   const [saving, setSaving] = useState(false);
   const [mobileStep, setMobileStep] = useState<1 | 2>(1);
-  const supabase = getSupabaseClient();
 
   useEffect(() => {
     if (business) {
-      setBusinessName(business.business_name || "");
-      setBusinessType(business.business_type || "");
-      setPhone(business.phone_number || "");
+      setBusinessName(business.businessName || business.business_name || "");
+      setBusinessType(business.businessType || business.business_type || "");
+      setPhone(business.phoneNumber || business.phone_number || "");
       setEmail(business.email || "");
       setAddress(business.address || "");
       setCity(business.city || "");
       setState(business.state || "");
-      setZipCode(business.zip_code || "");
+      setZipCode(business.zipCode || business.zip_code || "");
     }
   }, [business]);
 
   useEffect(() => {
-    if (business?.id && supabase) {
-      supabase
-        .from("business_settings")
-        .select("default_tax_rate, collect_tax, pos_manager_pin")
-        .eq("business_id", business.id)
-        .single()
-        .then(({ data }: any) => {
-          if (data) {
-            setTaxRate((data.default_tax_rate * 100).toFixed(2));
-            setCollectTax(data.collect_tax !== false);
-            setPosManagerPin(data.pos_manager_pin || "");
+    if (business?.id) {
+      fetch("/api/business/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setTaxRate(
+              (
+                (data.defaultTaxRate || data.default_tax_rate || 0) * 100
+              ).toFixed(2),
+            );
+            setCollectTax(
+              data.collectTax !== false && data.collect_tax !== false,
+            );
+            setPosManagerPin(data.posManagerPin || data.pos_manager_pin || "");
           }
         })
-        .catch((error: any) => {
+        .catch((error) => {
           console.error("Error loading business settings:", error);
         });
     }
-  }, [business?.id, supabase]);
+  }, [business?.id]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!business?.id || !supabase) {
+    if (!business?.id) {
       toast.error("Business not found");
       return;
     }
@@ -82,36 +83,36 @@ export default function SettingsPage() {
     setSaving(true);
 
     try {
-      const { error: businessError } = await supabase
-        .from("business_profile")
-        .update({
-          business_name: businessName,
-          business_type: businessType || null,
-          phone_number: phone || null,
-          email: email || null,
-          address: address || null,
-          city: city || null,
-          state: state || null,
-          zip_code: zipCode || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", business.id);
+      // 1. Save Profile
+      const profileRes = await fetch("/api/business/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName,
+          businessType,
+          phoneNumber: phone,
+          email,
+          address,
+          city,
+          state,
+          zipCode,
+        }),
+      });
 
-      if (businessError) throw businessError;
+      if (!profileRes.ok) throw new Error("Failed to save business profile");
 
-      if (taxRate) {
-        const { error: settingsError } = await supabase
-          .from("business_settings")
-          .update({
-            default_tax_rate: parseFloat(taxRate) / 100,
-            collect_tax: collectTax,
-            pos_manager_pin: posManagerPin || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("business_id", business.id);
+      // 2. Save Settings
+      const settingsRes = await fetch("/api/business/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          defaultTaxRate: parseFloat(taxRate) / 100,
+          collectTax,
+          posManagerPin: posManagerPin || null,
+        }),
+      });
 
-        if (settingsError) throw settingsError;
-      }
+      if (!settingsRes.ok) throw new Error("Failed to save business settings");
 
       toast.success("Settings saved successfully!");
       await refreshBusiness();
@@ -140,35 +141,35 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-       <div>
-         <h1 className="text-3xl font-bold">Settings</h1>
-         <p className="text-muted-foreground mt-2">
-           Configure your business settings
-         </p>
-       </div>
-       <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-         <p className="text-xs text-muted-foreground">v0.3.3</p>
-         <div className="flex gap-2">
-           {hasPermission("inventory.manage") && (
-             <Link href="/settings/inventory/aliases">
-               <Button variant="outline" className="gap-2">
-                 <Users className="w-4 h-4" />
-                 Manage Aliases
-               </Button>
-             </Link>
-           )}
-           {hasPermission("users.manage") && (
-             <Link href="/settings/team">
-               <Button variant="outline" className="gap-2">
-                 <Users className="w-4 h-4" />
-                 Manage Team
-               </Button>
-             </Link>
-           )}
-         </div>
-       </div>
-     </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-2">
+            Configure your business settings
+          </p>
+        </div>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+          <p className="text-xs text-muted-foreground">v0.4.0</p>
+          <div className="flex gap-2">
+            {hasPermission("inventory.manage") && (
+              <Link href="/settings/inventory/aliases">
+                <Button variant="outline" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Manage Aliases
+                </Button>
+              </Link>
+            )}
+            {hasPermission("users.manage") && (
+              <Link href="/settings/team">
+                <Button variant="outline" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Manage Team
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
       <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
         {/* Mobile progress */}
@@ -298,7 +299,6 @@ export default function SettingsPage() {
             <CardTitle>Business Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Tax Collection Toggle */}
             <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
               <div className="space-y-0.5 flex-1">
                 <Label htmlFor="collect-tax" className="text-base">
@@ -317,7 +317,6 @@ export default function SettingsPage() {
               />
             </div>
 
-            {/* Tax Rate */}
             <div className="space-y-2">
               <Label htmlFor="taxRate">Default Tax Rate (%)</Label>
               <Input
@@ -331,9 +330,6 @@ export default function SettingsPage() {
                 placeholder="8.0"
                 disabled={saving}
               />
-              <p className="text-sm text-muted-foreground">
-                This tax rate will be applied to all sales by default
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -358,14 +354,13 @@ export default function SettingsPage() {
                 disabled={saving}
               />
               <p className="text-sm text-muted-foreground">
-                PIN required for manager overrides (e.g., selling below cost).
-                Default is 1234.
+                PIN required for manager overrides.
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Mobile step controls */}
+        {/* Mobile controls */}
         <div className="md:hidden flex gap-2">
           {mobileStep === 2 && (
             <Button
@@ -397,14 +392,7 @@ export default function SettingsPage() {
               size="lg"
               className="flex-1"
             >
-              {saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Settings"
-              )}
+              {saving ? "Saving..." : "Save Settings"}
             </Button>
           )}
         </div>
@@ -412,14 +400,7 @@ export default function SettingsPage() {
         {/* Desktop save */}
         <div className="hidden md:flex justify-end">
           <Button type="submit" disabled={saving} size="lg">
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Settings"
-            )}
+            {saving ? "Saving..." : "Save Settings"}
           </Button>
         </div>
       </form>

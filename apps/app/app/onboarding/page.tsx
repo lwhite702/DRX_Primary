@@ -71,6 +71,21 @@ export default function OnboardingPage() {
           </label>
 
           <label className="grid gap-2">
+            <span className="technical-label text-[11px] text-white/80">
+              Dashboard View
+            </span>
+            <select
+              name="dashboardPreset"
+              defaultValue="operations"
+              className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+            >
+              <option value="operations">Operations (balanced daily overview)</option>
+              <option value="checkout">Checkout (front-counter workflow)</option>
+              <option value="inventory">Inventory (stock and replenishment focus)</option>
+            </select>
+          </label>
+
+          <label className="grid gap-2">
             <span className="technical-label text-[11px] text-white/70">
               {drxCopy.onboarding.page.tooling}
             </span>

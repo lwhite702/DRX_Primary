@@ -1,135 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-muted border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="relative h-8 w-[120px]">
-                <Image
-                  src="/brand/DRX Wordmark Color.svg"
-                  alt="DRX"
-                  fill
-                  className="object-contain object-left"
-                />
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Privacy-first point of sale and customer management system for
-              modern businesses.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-foreground mb-4">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/features"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Pricing
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-foreground mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/help"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:support@deelrx.com"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Email Support
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/accessibility"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Accessibility
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-border pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {currentYear} Wrelik Brands LLC. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4">
-              <p className="text-xs text-muted-foreground">v0.4.12</p>
-              <p className="text-xs text-muted-foreground">
-                Deelrx and DRX are trademarks of Wrelik Brands LLC.
-              </p>
-            </div>
-          </div>
+    <footer className="mt-auto border-t border-white/10 bg-[#070707] py-6 text-white/70">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+          <p>© {currentYear} Wrelik Brands LLC. All rights reserved.</p>
+          <p className="text-xs text-white/50">
+            Deelrx and DRX are trademarks of Wrelik Brands LLC.
+          </p>
         </div>
       </div>
     </footer>

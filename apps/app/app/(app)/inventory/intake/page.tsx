@@ -44,6 +44,7 @@ interface IntakeFormData {
 export default function InventoryIntakePage() {
   const { business, loading: businessLoading } = useBusiness();
   const inventory = useRealtimeInventory(business?.id || null);
+  const inventoryItems = Array.isArray(inventory) ? inventory : [];
   const [processing, setProcessing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [formData, setFormData] = useState<IntakeFormData>({
@@ -70,7 +71,7 @@ export default function InventoryIntakePage() {
     parseFloat(formData.delivery_cost || "0");
 
   const handleProductChange = (value: string) => {
-    const selectedItem = inventory.find((i) => i.id === value);
+    const selectedItem = inventoryItems.find((i) => i.id === value);
     setFormData({
       ...formData,
       inventory_id: value,
@@ -222,7 +223,7 @@ export default function InventoryIntakePage() {
                     <SelectValue placeholder="Select product to intake" />
                   </SelectTrigger>
                   <SelectContent>
-                    {inventory.map((item) => (
+                    {inventoryItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.product_name} (SKU: {item.sku}, Stock:{" "}
                         {item.quantity_on_hand}g)

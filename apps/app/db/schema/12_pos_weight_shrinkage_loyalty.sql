@@ -1,5 +1,9 @@
 -- Phase 1: No Sale / Drawer Events
-CREATE TABLE IF NOT EXISTS drawer_events (
+-- Since we are struggling with a persistent FK issue on a presumably new table, 
+-- we drop and recreate it with the correct types and referencing inline.
+DROP TABLE IF EXISTS drawer_events CASCADE;
+
+CREATE TABLE drawer_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID NOT NULL REFERENCES business_profile(id) ON DELETE CASCADE,
   location_id UUID,
@@ -26,10 +30,10 @@ CREATE TABLE IF NOT EXISTS shrinkage_events (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_shrinkage_events_business ON shrinkage_events(business_id);
-CREATE INDEX idx_shrinkage_events_inventory ON shrinkage_events(inventory_id);
-CREATE INDEX idx_shrinkage_events_user ON shrinkage_events(user_id);
-CREATE INDEX idx_shrinkage_events_created ON shrinkage_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_events_business ON shrinkage_events(business_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_events_inventory ON shrinkage_events(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_events_user ON shrinkage_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_events_created ON shrinkage_events(created_at);
 
 -- Phase 3: Random Inventory Checks
 CREATE TABLE IF NOT EXISTS inventory_checks (
@@ -45,10 +49,10 @@ CREATE TABLE IF NOT EXISTS inventory_checks (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_inventory_checks_business ON inventory_checks(business_id);
-CREATE INDEX idx_inventory_checks_inventory ON inventory_checks(inventory_id);
-CREATE INDEX idx_inventory_checks_user ON inventory_checks(user_id);
-CREATE INDEX idx_inventory_checks_created ON inventory_checks(created_at);
+CREATE INDEX IF NOT EXISTS idx_inventory_checks_business ON inventory_checks(business_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_checks_inventory ON inventory_checks(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_checks_user ON inventory_checks(user_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_checks_created ON inventory_checks(created_at);
 
 -- Phase 4: Extend Inventory for Weight-Based Tracking
 ALTER TABLE inventory ADD COLUMN IF NOT EXISTS base_unit VARCHAR(10) DEFAULT 'g';
@@ -71,9 +75,9 @@ CREATE TABLE IF NOT EXISTS bulk_pricing_rules (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_bulk_pricing_rules_business ON bulk_pricing_rules(business_id);
-CREATE INDEX idx_bulk_pricing_rules_inventory ON bulk_pricing_rules(inventory_id);
-CREATE INDEX idx_bulk_pricing_rules_active ON bulk_pricing_rules(is_active);
+CREATE INDEX IF NOT EXISTS idx_bulk_pricing_rules_business ON bulk_pricing_rules(business_id);
+CREATE INDEX IF NOT EXISTS idx_bulk_pricing_rules_inventory ON bulk_pricing_rules(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_bulk_pricing_rules_active ON bulk_pricing_rules(is_active);
 
 -- Phase 6: Extend Customers for Loyalty Program
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS purchase_count INTEGER DEFAULT 0;
@@ -118,10 +122,10 @@ CREATE TABLE IF NOT EXISTS stock_movements (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_stock_movements_business ON stock_movements(business_id);
-CREATE INDEX idx_stock_movements_inventory ON stock_movements(inventory_id);
-CREATE INDEX idx_stock_movements_type ON stock_movements(movement_type);
-CREATE INDEX idx_stock_movements_created ON stock_movements(created_at);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_business ON stock_movements(business_id);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_inventory ON stock_movements(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_type ON stock_movements(movement_type);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_created ON stock_movements(created_at);
 
 -- Table for Loyalty Tier History
 CREATE TABLE IF NOT EXISTS loyalty_tier_changes (
@@ -137,9 +141,9 @@ CREATE TABLE IF NOT EXISTS loyalty_tier_changes (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_loyalty_tier_changes_customer ON loyalty_tier_changes(customer_id);
-CREATE INDEX idx_loyalty_tier_changes_business ON loyalty_tier_changes(business_id);
-CREATE INDEX idx_loyalty_tier_changes_created ON loyalty_tier_changes(created_at);
+CREATE INDEX IF NOT EXISTS idx_loyalty_tier_changes_customer ON loyalty_tier_changes(customer_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_tier_changes_business ON loyalty_tier_changes(business_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_tier_changes_created ON loyalty_tier_changes(created_at);
 
 -- RLS Policies for new tables
 ALTER TABLE drawer_events ENABLE ROW LEVEL SECURITY;
@@ -152,29 +156,29 @@ ALTER TABLE loyalty_tier_changes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY drawer_events_business_access
   ON drawer_events
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));
 
 CREATE POLICY shrinkage_events_business_access
   ON shrinkage_events
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));
 
 CREATE POLICY inventory_checks_business_access
   ON inventory_checks
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));
 
 CREATE POLICY bulk_pricing_rules_business_access
   ON bulk_pricing_rules
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));
 
 CREATE POLICY stock_movements_business_access
   ON stock_movements
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));
 
 CREATE POLICY loyalty_tier_changes_business_access
   ON loyalty_tier_changes
   FOR ALL
-  USING (auth.uid() IS NOT NULL AND has_business_access(auth.uid(), business_id));
+  USING (auth.uid()::uuid IS NOT NULL AND has_business_access(auth.uid()::uuid, business_id::uuid));

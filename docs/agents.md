@@ -1,16 +1,3 @@
-# Wrelik Agent Operating Rules
-
-Version: 1.1
-Status: Required for all contributors (human or AI)
-Last updated: 2025-10-31 (America/New_York)
-
-This document defines how automated agents (Cursor, MCP agents, AI assistants, etc.) must work in this repository and in all future Wrelik applications.
-If an agent cannot follow these rules, the agent should stop and request human guidance rather than guessing.
-
-⸻
-
-## 0. Core Principles
-
 1. **Consistency beats improvisation.**
    All code, file structure, naming, and docs must match the conventions in this file before inventing something new.
 
@@ -388,18 +375,15 @@ Do not leave undocumented behavior.
 Agents MUST follow these security rules:
 
 1. **CRON_SECRET:**
-
    - Any cron-like route under /api/cron/\* MUST validate an Authorization: Bearer <CRON_SECRET> header.
    - Agents MUST ensure CRON_SECRET is documented in DOPPLER.md.
    - Agents MUST NOT hardcode actual secrets in code or commit them.
 
 2. **Vault / encrypted notes:**
-
    - Client-side encryption code MUST be documented in /docs/vault.md (create this file if it does not exist).
    - Agents MUST NOT log plaintext vault contents or derived keys.
 
 3. **API routes:**
-
    - Before adding a new API route, agent must:
      - Check if an equivalent or similar route already exists in the codebase.
      - Reuse patterns for error handling and response formatting.

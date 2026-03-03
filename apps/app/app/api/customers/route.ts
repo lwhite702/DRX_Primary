@@ -55,52 +55,50 @@ export async function GET(request: NextRequest) {
 
     const customers = await db.customers.findMany({
       where,
-      take: limit,
-      skip: offset,
+      take: isNaN(limit) ? 50 : limit,
+      skip: isNaN(offset) ? 0 : offset,
       orderBy: { createdAt: "desc" },
     });
+
+    console.log(
+      `[Customers API] Found ${customers.length} customers for business ${businessId}`,
+    );
 
     // Map to snake_case for mobile
     const mappedCustomers = customers.map((c) => ({
       id: c.id,
       business_id: c.businessId,
-      first_name: c.firstName,
-      last_name: c.lastName,
-      phone: c.phoneNumber, // Mobile expects 'phone' usually? Let's check type.
-      // Mobile types.ts says customer: { phone: string }? No, let's assume phone_number from DB => phone
-      // Wait, let's stick to standard if possible.
-      // Let's check mobile types. It probably expects snake_case for everything?
-      // I'll stick to DB -> snake_case
-      phone_number: c.phoneNumber,
-      email: c.email,
-      address: c.address,
-      city: c.city,
-      state: c.state,
-      zip_code: c.zipCode,
-      customer_type: c.customerType,
-      loyalty_tier: "bronze", // Placeholder/Default as DB doesn't have loyalty_tier on Customers model directly?
-      // Wait, DB Customers model DOES NOT HAVE loyalty_tier.
-      // But mobile expects it. I'll default to "bronze".
-      loyalty_points: 0, // DB doesn't have points?
-      // Check schema again.
-      // Customers model: totalPurchases, totalCreditUsed.
-      // No loyalty tier/points in Customers model.
-      // I will return defaults for now.
-      total_purchases: c.totalPurchases,
-      total_credit_used: c.totalCreditUsed,
-      credit_limit: 0, // Need to fetch from CreditLimit table?
-      // For list view, maybe 0 is fine or fetch extra?
-      // Mobile might expect it.
+      first_name: c.firstName || "",
+      last_name: c.lastName || "",
+      phone_number: c.phoneNumber || "",
+      email: c.email || "",
+      address: c.address || "",
+      city: c.city || "",
+      state: c.state || "",
+      zip_code: c.zipCode || "",
+      customer_type: c.customerType || "retail",
+      loyalty_tier: "bronze",
+      loyalty_points: 0,
+      total_purchases: Number(c.totalPurchases || 0),
+      total_credit_used: Number(c.totalCreditUsed || 0),
+      fixed_price_per_gram: (c as any).fixedPricePerGram
+        ? Number((c as any).fixedPricePerGram)
+        : null,
+      credit_limit: 0,
     }));
-
-    // If I need credit limit, I should include it.
-    // Let's keep it simple for now to unblock list.
 
     return NextResponse.json({ data: mappedCustomers });
   } catch (error) {
-    console.error("Customers API Error:", error);
+    console.error("Customers API Error Details:", error);
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+      console.error("Error Stack:", error.stack);
+    }
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      {
+        error: "Internal Server Error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }
@@ -142,6 +140,7 @@ export async function POST(request: NextRequest) {
       state,
       zip_code,
       customer_type,
+      fixed_price_per_gram,
     } = body;
 
     if (!first_name || !last_name) {
@@ -163,6 +162,7 @@ export async function POST(request: NextRequest) {
         state,
         zipCode: zip_code,
         customerType: customer_type || "retail",
+        fixedPricePerGram: fixed_price_per_gram,
         isActive: true,
       },
     });

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
 import { BusinessSwitcher } from "@/components/layout/business-switcher";
+import { DashboardViewSwitcher } from "@/components/layout/dashboard-view-switcher";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { useUserRole } from "@/lib/hooks/use-user-role";
@@ -57,6 +58,8 @@ export function TopNav() {
   const showAdminConsole =
     hasPermission("system.manage") || hasPermission("users.manage_all");
   const canQuickSale = !loading && hasPermission("sales.create");
+  const showDashboardViewSwitcher =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   return (
     <header className="flex h-14 min-w-0 items-center justify-between gap-3 border-b border-border bg-muted px-4 md:h-16 md:px-6">
@@ -213,6 +216,7 @@ export function TopNav() {
         ) : null}
 
         <div className="flex items-center gap-2">
+          {showDashboardViewSwitcher ? <DashboardViewSwitcher /> : null}
           <BusinessSwitcher />
           {role && (
             <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">

@@ -32,9 +32,12 @@ export default function QuickPosSalePage() {
     setSearch,
     setCreditPolicy,
     setError,
+    total,
   } = useQuickPosStore();
 
-  const [bootstrap, setBootstrap] = useState<QuickPosBootstrapResponse | null>(null);
+  const [bootstrap, setBootstrap] = useState<QuickPosBootstrapResponse | null>(
+    null,
+  );
   const [results, setResults] = useState<ProductResult[]>([]);
   const [manualPrice, setManualPrice] = useState("");
 
@@ -62,7 +65,9 @@ export default function QuickPosSalePage() {
     }
 
     const timer = window.setTimeout(async () => {
-      const res = await fetch(`/api/pos/products?search=${encodeURIComponent(search)}`);
+      const res = await fetch(
+        `/api/pos/products?search=${encodeURIComponent(search)}`,
+      );
       const data = (await res.json()) as { items?: ProductResult[] };
       setResults(data.items || []);
     }, 150);
@@ -75,7 +80,9 @@ export default function QuickPosSalePage() {
     if (!search) return;
 
     try {
-      const res = await fetch(`/api/pos/products?search=${encodeURIComponent(search)}&exact=1`);
+      const res = await fetch(
+        `/api/pos/products?search=${encodeURIComponent(search)}&exact=1`,
+      );
       if (!res.ok) {
         setError("Search failed");
         return;
@@ -96,7 +103,12 @@ export default function QuickPosSalePage() {
     }
   };
 
-  const addInventoryItem = (item: { id: string; name: string; price: number; quantity_on_hand?: number }) => {
+  const addInventoryItem = (item: {
+    id: string;
+    name: string;
+    price: number;
+    quantity_on_hand?: number;
+  }) => {
     if (item.quantity_on_hand !== undefined && item.quantity_on_hand <= 0) {
       setError("Out of stock");
       return;
@@ -133,14 +145,18 @@ export default function QuickPosSalePage() {
   };
 
   const subtotal = useMemo(
-    () => state.cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0),
+    () =>
+      state.cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0),
     [state.cartItems],
   );
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <StatusFeedback error={state.ui.hardError} success={state.ui.successMessage} />
+        <StatusFeedback
+          error={state.ui.hardError}
+          success={state.ui.successMessage}
+        />
 
         <ProductSearch
           value={state.ui.search}
@@ -162,7 +178,11 @@ export default function QuickPosSalePage() {
           onAdd={addInventoryItem}
         />
 
-        <PosKeypad value={manualPrice} onChange={setManualPrice} onAdd={addManualItem} />
+        <PosKeypad
+          value={manualPrice}
+          onChange={setManualPrice}
+          onAdd={addManualItem}
+        />
       </div>
 
       <div className="space-y-4">
@@ -171,7 +191,7 @@ export default function QuickPosSalePage() {
           onTap={incrementItem}
           onLongPressRemove={removeItem}
           subtotal={subtotal}
-          total={subtotal}
+          total={total}
         />
 
         <CustomerInline
@@ -196,7 +216,8 @@ export default function QuickPosSalePage() {
             Continue to Payment
           </button>
           <p className="mt-2 text-center text-xs text-white/60">
-            Scan, search, or tap items to build the cart, then complete the sale.
+            Scan, search, or tap items to build the cart, then complete the
+            sale.
           </p>
         </div>
       </div>

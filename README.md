@@ -12,8 +12,6 @@ This repository is a **pnpm monorepo**. Product ownership is explicit:
 
 - `apps/app` = the `.app` product (authenticated operator experience)
 - `apps/marketing` = marketing site only (`.com`)
-- `apps/mobile` = Expo mobile client
-- `packages/*` = shared packages (UI/brand plus vendored `wrelik-*` copies kept only for reference)
 
 ### Node Version Policy
 

@@ -25,8 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { Plus, Edit, Search, User, UserX } from "lucide-react";
+import { Plus, Edit, Search, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
@@ -42,7 +41,6 @@ export default function CustomersPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = getSupabaseClient();
 
   const {
     register,
@@ -58,30 +56,34 @@ export default function CustomersPage() {
   });
 
   const onSubmit = async (data: Customer) => {
-    if (!business?.id || !supabase) {
+    if (!business?.id) {
       toast.error("Business not found");
       return;
     }
 
     const promise = async () => {
-      if (editingCustomer?.id) {
-        const { error } = await supabase
-          .from("customers")
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingCustomer.id);
-        if (error) throw error;
-        return "Customer updated successfully";
-      } else {
-        const { error } = await supabase.from("customers").insert({
+      const url = editingCustomer?.id
+        ? `/api/customers/${editingCustomer.id}`
+        : "/api/customers";
+      const method = editingCustomer?.id ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           ...data,
           business_id: business.id,
-        });
-        if (error) throw error;
-        return "Customer added successfully";
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to save customer");
       }
+
+      return editingCustomer?.id
+        ? "Customer updated successfully"
+        : "Customer added successfully";
     };
 
     toast.promise(promise(), {
@@ -93,10 +95,6 @@ export default function CustomersPage() {
         return message;
       },
       error: (error) => {
-        // Handle Supabase errors which differ from standard Error objects
-        if (typeof error === "object" && error !== null && "message" in error) {
-          return (error as any).message;
-        }
         return error instanceof Error
           ? error.message
           : "Failed to save customer";

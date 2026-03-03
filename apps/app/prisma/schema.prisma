@@ -90,11 +90,13 @@ model Invite {
 
 model BusinessSettings {
   id              String          @id @default(uuid())
-  businessId      String          @map("business_id")
+  businessId      String          @unique @map("business_id")
   business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
   themePreference String?         @map("theme_preference") @db.VarChar(50)
   currency        String?         @default("USD") @db.VarChar(3)
   timezone        String?         @db.VarChar(100)
+  collectTax      Boolean?        @default(true) @map("collect_tax")
+  posManagerPin   String?         @default("1234") @map("pos_manager_pin") @db.VarChar(10)
   settingsData    Json?           @default("{}") @map("settings_data")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at")
@@ -163,9 +165,10 @@ model Customers {
   customerType    String?         @map("customer_type") @db.VarChar(50)
   totalPurchases  Decimal?        @default(0) @map("total_purchases") @db.Decimal(12, 2)
   totalCreditUsed Decimal?        @default(0) @map("total_credit_used") @db.Decimal(12, 2)
-  isActive        Boolean         @default(true) @map("is_active")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at")
+  fixedPricePerGram Decimal?        @map("fixed_price_per_gram") @db.Decimal(12, 2)
+  isActive           Boolean         @default(true) @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
 
   notes        CustomerNote[]
   creditTxns   CreditTransaction[]
@@ -234,6 +237,7 @@ model Sales {
   taxAmount     Decimal?        @default(0) @map("tax_amount") @db.Decimal(12, 2)
   totalAmount   Decimal?        @map("total_amount") @db.Decimal(12, 2)
   paymentMethod String?         @map("payment_method") @db.VarChar(50)
+  paymentRef    String?         @map("payment_ref") @db.VarChar(255)
   createdBy     String?         @map("created_by")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")

@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECT_REF="ljndzcilgplckhdjddry"
+PROJECT_REF="momkmatyoisoynyfbvta"
 
 echo "🚀 Deploying Supabase Edge Functions to project: $PROJECT_REF"
 echo ""
