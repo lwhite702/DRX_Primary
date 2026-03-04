@@ -2,9 +2,9 @@ name: CI Gate
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, staging]
   push:
-    branches: [main, development]
+    branches: [main, development, staging]
 
 concurrency:
   group: ci-gate-${{ github.ref }}
@@ -25,6 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:matrix
       - run: pnpm test:policy
+      - run: pnpm test:marketing-claims
       - uses: actions/upload-artifact@v4
         if: always()
         with:

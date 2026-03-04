@@ -1,48 +1,50 @@
 import type { Metadata } from "next";
 
+import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
+import { CtaRow } from "@/components/marketing/site/cta-row";
 import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
-import { CtaRow } from "@/components/marketing/site/cta-row";
+import { productDetailCanon } from "@/lib/feature-canon";
+
+const content = productDetailCanon["inventory-control"];
 
 export const metadata: Metadata = {
-  title: "Inventory Control | Deelrx CRM",
-  description:
-    "Current DRX inventory workflows: list, intake, adjustment, audit history, and aliases.",
+  title: "Inventory Control | DRX",
+  description: content.metaDescription,
 };
 
 export default function InventoryControlPage() {
   return (
     <PageFrame>
-      <h1 className="mb-8 text-4xl font-bold text-white">Inventory control</h1>
+      <h1 className="mb-8 text-4xl font-bold text-white">{content.title}</h1>
 
       <SectionBlock title="What this does">
-        <p>
-          Supports product management through <strong>Inventory</strong>,
-          <strong> Inventory Intake</strong>, <strong>Inventory Adjustment</strong>,
-          and <strong>Inventory Audit Log</strong>.
-        </p>
+        <p>{content.what}</p>
       </SectionBlock>
 
       <SectionBlock title="Why it matters operationally" className="mt-6">
-        <p>
-          Clean stock history keeps checkout moving and limits end-of-shift
-          disputes.
-        </p>
+        <p>{content.why}</p>
       </SectionBlock>
 
-      <SectionBlock title="Proof from live product behavior" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Dedicated intake route captures cost/weight and supplier context.</li>
-          <li>Adjustment route requires action type, quantity, and reason.</li>
-          <li>Audit log route shows transaction history by product and user.</li>
-          <li>Settings include business-specific product alias management.</li>
+      <SectionBlock title="Current feature scope" className="mt-6">
+        <ul className="space-y-2">
+          {content.proof.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Some bulk/reporting surfaces are still limited.</li>
-          <li>Role permissions must be configured correctly for safe operation.</li>
+      <SectionBlock title="Beta constraints" className="mt-6">
+        <ul className="space-y-2">
+          {content.limitations.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
         <CtaRow
           location="product_inventory_control"

@@ -1,46 +1,50 @@
 import type { Metadata } from "next";
 
+import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
+import { CtaRow } from "@/components/marketing/site/cta-row";
 import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
-import { CtaRow } from "@/components/marketing/site/cta-row";
+import { productDetailCanon } from "@/lib/feature-canon";
+
+const content = productDetailCanon["operations-visibility"];
 
 export const metadata: Metadata = {
-  title: "Operations Visibility | Deelrx CRM",
-  description:
-    "Current DRX visibility surfaces: Operator Dashboard and Event Desk Board metrics.",
+  title: "Operations Visibility | DRX",
+  description: content.metaDescription,
 };
 
 export default function OperationsVisibilityPage() {
   return (
     <PageFrame>
-      <h1 className="mb-8 text-4xl font-bold text-white">Operations visibility</h1>
+      <h1 className="mb-8 text-4xl font-bold text-white">{content.title}</h1>
 
       <SectionBlock title="What this does">
-        <p>
-          Gives live operational context through <strong>Operator Dashboard</strong>
-          and <strong>Event Desk Board</strong>.
-        </p>
+        <p>{content.what}</p>
       </SectionBlock>
 
       <SectionBlock title="Why it matters operationally" className="mt-6">
-        <p>
-          Shift teams need to spot pressure early: low stock, pending intake,
-          slow collections, and unusual movement.
-        </p>
+        <p>{content.why}</p>
       </SectionBlock>
 
-      <SectionBlock title="Proof from live product behavior" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Dashboard exposes current business snapshot and recent activity.</li>
-          <li>Event Desk Board shows sales totals, average sale, and inventory alerts.</li>
-          <li>Credit and intake metrics are included in current board logic.</li>
+      <SectionBlock title="Current feature scope" className="mt-6">
+        <ul className="space-y-2">
+          {content.proof.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Reports route is currently limited and not a full BI surface.</li>
-          <li>Visibility should be interpreted with active business/date context.</li>
+      <SectionBlock title="Beta constraints" className="mt-6">
+        <ul className="space-y-2">
+          {content.limitations.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
         <CtaRow
           location="product_operations_visibility"

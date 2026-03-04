@@ -32,6 +32,7 @@
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
     "test:unit": "pnpm --filter deelrxcrm-app test:coverage",
     "test:integration": "pnpm --filter deelrxcrm-app test:integration",
     "test:e2e:web": "pnpm --filter deelrxcrm-app test:e2e",
