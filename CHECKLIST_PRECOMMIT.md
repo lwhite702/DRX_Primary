@@ -1,29 +1,47 @@
-# Pre-Commit Checklist
+# Pre-commit checklist
 
-Running `pnpm run check` (or equivalent) should pass all these steps.
+Status: Active  
+Owner: DRX Engineering Team  
+Last Updated: 2026-03-03  
+Applies To: Deelrx CRM
 
-- [ ] **Linting**: No eslint errors or warnings.
-- [ ] **Typecheck**: `tsc` passes with no errors.
-- [ ] **Banned Imports**: No direct usages of `supabase`, `clerk` (direct), `sentry` (direct), etc.
-- [ ] **Secrets**: No secrets committed to git.
-- [ ] **Placeholders**: No `TODO`, `FIXME`, or stub data in critical paths.
-- [ ] **Environment Files**: No `.env.*` files tracked in git (except `.env.example`)
-- [ ] **Package Manager**: Only pnpm lockfile present (no `package-lock.json` or `yarn.lock`)
-- [ ] **Vendor Compliance**: All imports use `@wrelik/*` packages
+## Purpose
 
-### Quick Commands
+Ensure every commit meets baseline quality, policy, and safety checks before push.
 
-Run these commands to verify compliance:
+## Scope
+
+Use this checklist before committing code, configuration, or docs that affect behavior or release artifacts.
+
+## Requirements
+
+- Required local checks MUST pass.
+- Secrets and environment hygiene MUST be validated.
+- Repository policy violations MUST be resolved before commit.
+
+## Checklist
+
+- [ ] Linting passes with no blocking errors.
+- [ ] Typecheck passes with no blocking errors.
+- [ ] Relevant tests pass.
+- [ ] `pnpm test:policy` passes.
+- [ ] No direct banned vendor imports where adapters exist.
+- [ ] No secrets or private keys are staged.
+- [ ] No unintended environment files (for example `.env.local`) are staged.
+- [ ] Lockfile policy is respected (pnpm lockfile only).
+- [ ] Behavior changes are reflected in `CHANGELOG.md`.
+
+Recommended command pattern:
 
 ```bash
-# Full compliance check
-npm run compliance:full
-
-# Individual checks
-npm run compliance:imports   # Check for banned imports
-npm run compliance:secrets   # Check for tracked secrets
-npm run compliance:lockfiles # Check package manager consistency
+pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:policy
 ```
 
-- [ ] **Tests**: Unit tests pass.
-- [ ] **Versioning**: If logic changed, `package.json` version bumped and `CHANGELOG.md` updated.
+## Exceptions
+
+For documentation-only commits, teams MAY skip heavy build/test steps if repository policy allows it; lint and link integrity checks SHOULD still run.
+
+## References
+
+- `./CHECKLIST_PRERELEASE.md`
+- `./WRELIK_AGENTS.md`

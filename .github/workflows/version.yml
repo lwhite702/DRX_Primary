@@ -7,9 +7,9 @@ permissions:
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, staging]
   push:
-    branches: [main, development]
+    branches: [main, development, staging]
 
 jobs:
   version-check:

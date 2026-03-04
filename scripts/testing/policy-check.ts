@@ -6,6 +6,17 @@ const root = process.cwd();
 
 type Finding = { file: string; message: string };
 const BASELINE_PATH = path.join(root, "docs/testing/POLICY_BASELINE.json");
+const DUPLICATE_POLICY_DIR = path.join(root, "docs/policies");
+const REQUIRED_ROOT_POLICIES = [
+  "WRELIK_AGENTS.md",
+  "DEVELOPMENT_PROCESS.md",
+  "VERSIONING_POLICY.md",
+  "VERSION_MANAGEMENT_POLICY.md",
+  "RELEASE_POLICY.md",
+  "STACK_POLICY.md",
+  "CHECKLIST_PRECOMMIT.md",
+  "CHECKLIST_PRERELEASE.md",
+];
 
 const stalePatterns = [
   /\.orig$/i,
@@ -84,6 +95,27 @@ function findRuntimeMockCompatibility(files: string[]): Finding[] {
   return findings;
 }
 
+function findPolicyTopologyViolations(): Finding[] {
+  const findings: Finding[] = [];
+  if (fs.existsSync(DUPLICATE_POLICY_DIR)) {
+    findings.push({
+      file: "docs/policies",
+      message: "Duplicate policy source detected; root canonical policies only.",
+    });
+  }
+
+  for (const policyFile of REQUIRED_ROOT_POLICIES) {
+    if (!fs.existsSync(path.join(root, policyFile))) {
+      findings.push({
+        file: policyFile,
+        message: "Required root canonical policy file missing",
+      });
+    }
+  }
+
+  return findings;
+}
+
 function findStaleArtifacts(files: string[]): Finding[] {
   return files
     .filter((file) => stalePatterns.some((p) => p.test(file)))
@@ -93,6 +125,7 @@ function findStaleArtifacts(files: string[]): Finding[] {
 function main() {
   const files = trackedFiles();
   const findings = [
+    ...findPolicyTopologyViolations(),
     ...findStaleArtifacts(files),
     ...findDisallowedTestControls(files),
     ...findTodoComments(files),
