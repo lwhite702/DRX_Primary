@@ -4,9 +4,9 @@ This document summarizes DRX release execution.
 
 Canonical policy source:
 
-- `/Users/lee/Projects/DRX_Primary/RELEASE_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/CHECKLIST_PRERELEASE.md`
-- `/Users/lee/Projects/DRX_Primary/VERSIONING_POLICY.md`
+- `../RELEASE_POLICY.md`
+- `../CHECKLIST_PRERELEASE.md`
+- `../VERSIONING_POLICY.md`
 
 ## Promotion Path
 
