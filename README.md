@@ -66,19 +66,19 @@ See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details
 
 Policy source of truth is root canonical files:
 
-- `/Users/lee/Projects/DRX_Primary/WRELIK_AGENTS.md`
-- `/Users/lee/Projects/DRX_Primary/DEVELOPMENT_PROCESS.md`
-- `/Users/lee/Projects/DRX_Primary/RELEASE_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/VERSIONING_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/VERSION_MANAGEMENT_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/STACK_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/CHECKLIST_PRECOMMIT.md`
-- `/Users/lee/Projects/DRX_Primary/CHECKLIST_PRERELEASE.md`
+- `./WRELIK_AGENTS.md`
+- `./DEVELOPMENT_PROCESS.md`
+- `./RELEASE_POLICY.md`
+- `./VERSIONING_POLICY.md`
+- `./VERSION_MANAGEMENT_POLICY.md`
+- `./STACK_POLICY.md`
+- `./CHECKLIST_PRECOMMIT.md`
+- `./CHECKLIST_PRERELEASE.md`
 
 Upstream template provenance and import procedure:
 
-- `/Users/lee/Projects/DRX_Primary/POLICY_UPSTREAM.md`
-- `/Users/lee/Projects/DRX_Primary/docs/POLICY_IMPORT_WORKFLOW.md`
+- `./POLICY_UPSTREAM.md`
+- `docs/POLICY_IMPORT_WORKFLOW.md`
 
 ### Staging / Preview Testing
 
