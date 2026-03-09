@@ -92,8 +92,8 @@ For preview deploy + demo data seeding (including the current shared-DB warning)
 
 Canonical source:
 
-- `/Users/lee/Projects/DRX_Primary/docs/MARKETING_TRUE_FEATURE_LIST.md`
-- `/Users/lee/Projects/DRX_Primary/docs/MARKETING_FEATURE_CLAIM_MATRIX.md`
+- `docs/MARKETING_TRUE_FEATURE_LIST.md`
+- `docs/MARKETING_FEATURE_CLAIM_MATRIX.md`
 
 ### DRX Marketing Canon (Status-Aware)
 
