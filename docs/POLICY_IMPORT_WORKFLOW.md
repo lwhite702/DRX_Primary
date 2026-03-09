@@ -10,7 +10,7 @@ Define the manual process for syncing DRX root policy files from `wrelik-kit` te
 
 ## Source of Truth
 
-- Upstream templates: `/Users/lee/Projects/wrelik-kit/docs/policies`
+- Upstream templates: `https://github.com/user/wrelik-kit/docs/policies`
 - DRX canonical policy files: repository root policy files (`*.md` listed in `POLICY_UPSTREAM.md`)
 
 ## Procedure
