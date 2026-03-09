@@ -18,3 +18,7 @@ This document defines the required environment variables for the application to 
 | `INNGEST_EVENT_KEY`                 | Inngest Event Key                 | Yes      | Inngest    |
 | `INNGEST_SIGNING_KEY`               | Inngest Signing Key               | Yes      | Inngest    |
 | `NEXT_PUBLIC_APP_URL`               | Canonical Application URL         | Yes      | App        |
+| `DRX_PII_KEY_CURRENT_B64`           | Current PII encryption key (32-byte base64) | Yes | Security |
+| `DRX_PII_KEY_PREVIOUS_B64`          | Previous PII encryption key for rotation fallback | Optional | Security |
+| `DRX_PII_HASH_KEY_B64`              | Keyed hash secret for deterministic PII lookup hashes | Yes | Security |
+| `DRX_PRIVACY_CLEANUP_SECRET`        | Secret for scheduled privacy cleanup endpoint authorization | Recommended | Security |

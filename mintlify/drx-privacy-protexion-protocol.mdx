@@ -1,0 +1,102 @@
+# DRX Privacy ProteXion Protocol
+
+This page has two layers:
+
+1. Operator summary (what to do day to day)
+2. Technical appendix (how the system applies protections)
+
+## Operator summary
+
+### What this page is for
+
+Use this when deciding what customer data to collect, how long to keep it, and how to reduce on-screen exposure during live store work.
+
+### Core operating rules
+
+- Collect only what you need to run the sale and follow up on balances.
+- Alias-first profiles are valid and useful for many stores.
+- Sensitive fields should stay hidden when staff do not need full detail.
+- Temporary profiles should auto-expire based on store policy.
+
+### Before you start
+
+- Open `/settings`.
+- Confirm current privacy profile.
+- Confirm screen masking mode.
+- Confirm temporary profile retention defaults.
+
+### Fast path
+
+1. Pick privacy profile that matches your real workflow.
+2. Keep non-essential fields off unless needed.
+3. Turn on screen masking mode where shared screens are common.
+4. Confirm temporary profile retention window (1, 7, or 30 days).
+5. Run data footprint checks in settings on a regular schedule.
+
+### If blocked
+
+- If profile behavior does not match expectation, recheck field visibility and recommendation settings.
+- If decryption-related errors appear in logs or vault indicators, escalate before editing sensitive records.
+- If temporary profile cleanup does not run, verify retention settings and cleanup trigger path.
+
+### What is beta here
+
+- Core profile, masking, retention, and encrypted field handling are live.
+- Some advanced reporting and exported views around privacy metrics are beta-limited.
+
+## Technical appendix
+
+### Data minimization model
+
+Supported profile modes:
+
+- `alias_mode`
+- `standard_mode`
+- `business_crm_mode`
+
+Each mode controls field visibility and recommendation behavior.
+
+### Sensitive fields
+
+The protocol applies protected handling to fields such as:
+
+- alias
+- first name
+- phone
+- email
+- address
+- notes
+
+### Encryption and lookup behavior
+
+- Sensitive field values are encrypted before storage.
+- Deterministic keyed hashes are used for exact-match lookup paths where needed.
+- Version tagging supports key rotation behavior.
+
+### Vault mode behavior
+
+- Keys are loaded from runtime environment variables.
+- Keys are not stored in primary database tables.
+- Decrypt path tries current key first, then previous key for rotation fallback.
+
+### Retention and cleanup behavior
+
+- Inactivity and temporary profile windows drive cleanup eligibility.
+- Temporary profile cleanup can run before broader retention cleanup.
+- Profiles with active balance can be skipped from deletion paths.
+
+### Session and account safeguards
+
+- Session list and revoke path exist.
+- Lockout safeguards are present for repeated failed login events.
+
+## Related docs
+
+- [Keeping your data safe](/keeping-your-data-safe)
+- [Your customers](/your-customers)
+- [Team access](/team-access)
+- [Fixing issues](/fixing-issues)
+
+### Operator reminder
+
+Privacy settings should be reviewed whenever staffing model or customer policy changes. Do not set and forget.

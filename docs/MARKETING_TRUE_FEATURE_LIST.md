@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Marketing + Product Engineering  
-Last Updated: 2026-03-03
+Last Updated: 2026-03-04
 
 ## Canonical Voice
 
@@ -160,6 +160,135 @@ Evidence pointers:
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/mobile`
+
+## DRX Privacy ProteXion™
+
+Powered by DRX Intelligence™  
+Protected by DRX Privacy ProteXion™
+
+Most POS and CRM tools collect too much and keep it forever.  
+DRX does the opposite.
+
+Core principle: `collect less data and protect the rest.`
+
+### Alias-First Customer Tracking
+
+Status: `Live`
+
+- DRX does not require real names or personal information.
+- Track customers with aliases like `Big Mike`, `Blue Honda`, or `VIP 23`.
+- Nearly every CRM field is optional.
+- Optional fields include phone number, email address, address, and notes.
+- Operators can run transactions without attaching a customer profile.
+- Goal: collect only what you actually need.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/quick-create/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/[id]/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/components/quick-pos/customer-inline.tsx`
+
+### Privacy Profiles
+
+Status: `Live`
+
+- Operators choose privacy mode during onboarding and can change it anytime.
+- Alias Mode (Maximum Privacy): nickname-only tracking, no personal info required.
+- Standard Mode: light customer tracking with optional contact details.
+- Business CRM Mode: full CRM behavior for teams that choose to collect more.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/components/onboarding/steps/PrivacyStep.tsx`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
+
+### Strong Encryption
+
+Status: `Live`
+
+- Sensitive customer fields are encrypted.
+- If someone got database access, encrypted sensitive values stay unreadable without keys.
+- Encrypted fields include phone numbers, emails, addresses, and notes.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/crypto.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/[id]/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/quick-create/route.ts`
+
+### DRX Vault Mode™
+
+Status: `Live`
+
+- Unlock keys are controlled by the operator environment.
+- Keys are not stored in the database.
+- This adds another protection layer around sensitive customer records.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/crypto.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/vault-status/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+
+### Minimal Data Engine
+
+Status: `Live`
+
+- DRX shows how much personal data exists, so teams can keep a small data footprint.
+- Built-in counts include aliases, phone numbers, emails, addresses, and notes.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/inventory.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/inventory/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/inventory/refresh/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+
+### ProteXion Mode
+
+Status: `Live`
+
+- DRX can hide customer details on screen when privacy matters.
+- Example:
+- Normal View: `Alias: Big Mike`, `Phone: 404-555-9811`
+- ProteXion Mode: `Alias: B*** M***`, `Phone: Hidden`
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/masking.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/protexion/preferences/route.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+- `/Users/lee/Projects/DRX_Primary/apps/app/tests/privacy/masking.unit.test.ts`
+
+### Ephemeral Customer Profiles
+
+Status: `Live`
+
+- DRX supports temporary customer records with auto-delete windows.
+- Supported windows include 24 hours, 7 days, and 30 days.
+- Fits one-time customers and quick POS scenarios.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+- `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/customers-ephemeral.test.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/pos-quick-create-ephemeral.test.ts`
+
+### Data Retention Controls
+
+Status: `Live`
+
+- Operators control how long customer data stays in the system.
+- DRX can remove inactive records after a selected retention window.
+- No unnecessary data sitting around forever.
+
+Evidence pointers:
+- `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
+- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
+- `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/privacy-cleanup-ephemeral.test.ts`
+
+Closing statement:
+
+Most systems collect everything and keep it forever.  
+DRX collects less, protects what exists, and lets you stay in control.
+
+Powered by DRX Intelligence™  
+Protected by DRX Privacy ProteXion™
 
 ## Why DRX Exists
 

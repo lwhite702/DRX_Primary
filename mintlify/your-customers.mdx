@@ -1,42 +1,84 @@
 # Your customers
 
-Deelrx CRM tracks customer profiles, contact details, sales history, and credit activity.
+This page covers customer records, lookup patterns, and safe credit-related customer handling.
 
-## What this does
+## What this page is for
 
-- Create and edit customer profiles in **Customers**
-- Open customer detail records for sales and credit context
-- Connect customers to sales and credit limits
+Use this guide when creating or updating customer profiles in `/customers`, attaching customers to sales, and keeping customer data minimal.
 
-## Why this matters
+This page reflects live behavior: DRX supports alias-first profiles and optional contact fields.
 
-Customer records keep credit risk, payment follow-up, and repeat business clean.
+## Before you start
 
-## Step-by-step
+- **Recommended role**:
+  - Cashier: customer lookup and attach
+  - Supervisor/manager: customer edits and credit workflow support
+- **Routes used**:
+  - `/customers`
+  - `/customers/[id]`
+  - `/sales` and `/pos/sale` for attach behavior
+  - `/credit` for balance context
+- **Key data rule**:
+  - You can create a valid profile with alias-only data.
+  - Phone, email, first name, and last name are optional unless your own store policy says otherwise.
+- **Privacy rule**:
+  - Collect only what your team needs to run the sale and follow up on balances.
 
-1. Open **Customers**.
-2. Click add customer and enter profile details.
-3. Enter **First name** and at least one contact method: phone or email.
-4. Save and open the customer detail page when needed.
-5. Use **Credit Management** to track limits and balances.
+## Fast path
 
-## Common mistakes
+1. **Create profile** in `/customers`.
+   - Enter alias if that is enough for your workflow.
+   - Add contact details only when needed for follow-up.
+2. **Save and verify**.
+   - Confirm the profile appears in customer list.
+   - Confirm you can open detail route.
+3. **Attach in sales flow**.
+   - Standard flow: attach from `/sales`.
+   - Quick flow: attach from `/pos/sale` customer panel.
+4. **Use detail page for context** (`/customers/[id]`).
+   - Review history and credit context before extensions.
+5. **Handle temporary customer records**.
+   - If your privacy profile enables ephemeral records, confirm retention behavior in settings.
+   - Use temporary records for fast walk-in operations where long-term identity is not needed.
 
-- Saving without phone or email
-- Creating duplicate records with slight name variations
-- Not assigning customer on sales that should hit credit history
+## If blocked
 
-## Edge cases
+- **Save fails on customer create**:
+  - Check payload formatting.
+  - Remove empty noise fields and retry with alias-only first.
+- **Duplicate-like records appear**:
+  - Standardize alias format for shift teams.
+  - Add internal note convention for store-level disambiguation.
+- **Cannot attach customer in lane**:
+  - Confirm current business context.
+  - Confirm customer is active and visible in lookup results.
+- **Credit flow blocked after attach**:
+  - Attach alone is not enough; credit eligibility must pass route checks.
+- **Field visibility seems inconsistent**:
+  - Privacy settings can hide fields by profile and mask mode.
 
-- Customer assignment can be updated from **Sale Details** with role controls.
-- Some customer records can be active with partial profile data.
+## What is beta here
 
-## Current limitations
-
-- Customer-side messaging/automation flows are not exposed in-app.
+- Notes/tags and deeper loyalty-style tooling are beta-limited in current product surfaces.
+- Core customer create, edit, attach, and credit-context routes are live.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
+- [Quick Sale runbook](/quick-sale-runbook)
 - [Payments and plans](/payments-and-plans)
-- [Numbers that matter](/numbers-that-matter)
+- [Keeping your data safe](/keeping-your-data-safe)
+- [DRX Privacy ProteXion Protocol](/drx-privacy-protexion-protocol)
+
+## Shift checklist
+
+- Confirm customer lookup works for at least one known profile.
+- Confirm alias-only create still works for walk-in flow.
+- Confirm credit attach flow can find active customer records.
+- Confirm detail route opens without missing-field errors.
+
+## Team policy notes
+
+- Decide when alias-only is enough and when contact fields are required.
+- Keep one naming pattern for aliases to reduce duplicates.
+- Do not collect extra data by habit. Collect only what supports actual store work.

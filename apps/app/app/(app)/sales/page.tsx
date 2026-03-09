@@ -428,9 +428,14 @@ export default function SalesPage() {
           selectedCustomer
             ? {
                 name:
-                  customers.find((c) => c.id === selectedCustomer)?.first_name +
-                  " " +
-                  customers.find((c) => c.id === selectedCustomer)?.last_name,
+                  customers.find((c) => c.id === selectedCustomer)?.alias ||
+                  [
+                    customers.find((c) => c.id === selectedCustomer)?.first_name,
+                    customers.find((c) => c.id === selectedCustomer)?.last_name,
+                  ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  "Customer",
                 id: selectedCustomer,
               }
             : undefined

@@ -1,53 +1,51 @@
 # Glossary
 
-Deelrx CRM terms you will see inside DRX.
+Key terms used in live DRX routes.
 
 ## Core navigation terms
 
-- **Operator Dashboard**: The main operating snapshot page.
-- **Sales**: Checkout flow for creating and completing transactions.
-- **Inventory**: Product list and stock management area.
-- **Customers**: Customer profiles, contact info, and account context.
-- **Credit Management**: Credit limits, extensions, and payment tracking.
-- **Event Desk Board**: Live metrics for sales, inventory alerts, and intake status.
-- **Reports**: Reporting page. Current state: available page with limited output.
-- **Settings**: Business profile, tax behavior, POS security, and team links.
-- **Help & Support**: In-app support guidance and issue reporting.
+- **Dashboard**: Main operational snapshot route.
+- **Quick Sale**: Fast register flow for lane speed (`/pos/sale`).
+- **Sales**: Full checkout workflow with broader cart controls.
+- **Inventory**: Product and stock management routes.
+- **Customers**: Profile and customer history routes.
+- **Credit**: Credit balance and transaction management.
+- **Operations Insights**: Live metrics route for sales, stock alerts, and intake status.
+- **Reports**: Reporting route with currently limited output.
+- **Settings**: Business, team, privacy, and control settings.
+- **Help Center**: External support knowledge base link.
 
 ## Inventory terms
 
-- **Inventory Intake**: Workflow for recording incoming stock, cost, and weight.
-- **Inventory Adjustment**: Manual stock correction with required reason.
-- **Inventory Audit Log**: Time-ordered history of stock changes.
-- **Product Aliases**: Nicknames mapped to standard units/quantities.
-- **Reorder level**: Threshold used to surface low-stock risk.
+- **Inventory intake**: Record incoming stock, cost, and weight.
+- **Inventory adjustment**: Manual count correction with reason.
+- **Inventory audit**: History of stock movement actions.
+- **Reorder level**: Threshold used to flag low stock risk.
 
 ## Sales and payment terms
 
-- **Payment Method**: Checkout type. DRX supports Cash, Card, Credit, Zelle, and Mixed.
-- **Sale Details**: Record page for one completed sale.
-- **Price override**: Authorized manual price change during checkout.
-- **Delivery option**: Optional delivery profile and charge attached to a sale.
+- **Tender method**: How a transaction is paid (cash, card, credit, zelle, mixed).
+- **Sale details**: Route showing a single completed sale.
+- **Price override**: Controlled manual price change during checkout.
 
 ## Customer and credit terms
 
-- **Credit extension**: Increasing a customer's credit exposure.
-- **Credit payment**: Payment applied to reduce outstanding balance.
-- **Outstanding balance**: Current unpaid credit amount.
+- **Alias-first profile**: Customer profile using alias without requiring full identity fields.
+- **Credit extension**: Increase in allowed credit exposure.
+- **Credit payment**: Payment that reduces outstanding credit balance.
+- **Outstanding balance**: Current unpaid amount.
 
-## Privacy and access terms
+## Privacy and safety terms
 
-- **Privacy preset**: Data visibility profile selected during setup.
-- **Team Management**: Role assignment page for staff access control.
-- **Role permissions**: What each role can view or change.
-
-## Safety terms
-
-- **Offline sync queue**: Local transaction queue used when internet is down.
-- **RTBF deletion**: Owner/super admin initiated user deletion workflow.
+- **Privacy profile**: Field visibility and recommendation mode.
+- **Mask mode**: On-screen hiding behavior for sensitive customer data.
+- **Temporary profile**: Customer profile set to expire by retention policy.
+- **Vault mode**: Key ownership pattern where keys are not stored in database tables.
+- **Session revoke**: Manual termination of active account session.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
+- [Quick Sale runbook](/quick-sale-runbook)
 - [Your products](/your-products)
 - [Team access](/team-access)

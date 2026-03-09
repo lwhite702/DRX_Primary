@@ -76,6 +76,24 @@ export const getCustomers = async (
   return data.data || [];
 };
 
+export const getBusinessSettings = async (token: string | null) => {
+  return fetchWithAuth("/api/business/settings", token);
+};
+
+export const getScreenPrivacyPreference = async (token: string | null) => {
+  return fetchWithAuth("/api/privacy/protexion/preferences", token);
+};
+
+export const setScreenPrivacyPreference = async (
+  token: string | null,
+  manualEnabled: boolean,
+) => {
+  return fetchWithAuth("/api/privacy/protexion/preferences", token, {
+    method: "POST",
+    body: JSON.stringify({ manual_enabled: manualEnabled }),
+  });
+};
+
 export const createCustomer = async (
   customerData: any,
   token: string | null,

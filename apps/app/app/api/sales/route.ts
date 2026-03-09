@@ -84,11 +84,19 @@ export async function POST(request: NextRequest) {
           where: { id: customer_id },
           data: {
             totalCreditUsed: { increment: total_amount },
+            lastActivityAt: new Date(),
           },
         });
 
         // Note: Creating CreditTransaction record might be separate?
         // Mobile calls createCreditTransaction separately.
+      } else if (customer_id) {
+        await tx.customers.update({
+          where: { id: customer_id },
+          data: {
+            lastActivityAt: new Date(),
+          },
+        });
       }
 
       return newSale;

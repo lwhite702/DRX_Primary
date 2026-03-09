@@ -1,4 +1,7 @@
 import { appWaitlistUrl } from "@/lib/app-links";
+import {
+  featurebaseHelpdeskUrl,
+} from "@/lib/featurebase-links";
 
 export const topNavLinks = [
   { href: "/product", label: "Product" },
@@ -14,5 +17,7 @@ export const footerLinks = [
   { href: "/legal/terms", label: "Terms" },
   { href: "/legal/lawful-use", label: "Lawful Use" },
   { href: "/legal/regulatory-disclaimer", label: "Regulatory Disclaimer" },
-  { href: "/resources/changelog", label: "Changelog" },
+  { href: featurebaseHelpdeskUrl, label: "Help Desk" },
+  { href: "/updates/changelog", label: "Changelog" },
+  { href: "/updates/roadmap", label: "Roadmap" },
 ] as const;

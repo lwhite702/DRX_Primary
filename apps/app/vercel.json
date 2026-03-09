@@ -1,3 +1,9 @@
 {
-  "installCommand": "npm install --legacy-peer-deps --no-package-lock"
+  "installCommand": "npm install --legacy-peer-deps --no-package-lock",
+  "crons": [
+    {
+      "path": "/api/privacy/cleanup",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

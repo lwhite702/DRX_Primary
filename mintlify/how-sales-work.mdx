@@ -1,48 +1,89 @@
 # How sales work
 
-Deelrx CRM runs checkout from the **Sales** screen with live cart totals and payment handling.
+This page covers the standard **Sales** screen flow for full checkout handling.
 
-## What this does
+## What this page is for
 
-- Product search and add-to-cart
-- Optional customer assignment
-- Taxed totals and misc fees
-- Checkout with **Cash**, **Card**, **Credit**, **Zelle**, or **Mixed**
+Use this guide when your team runs checkout from `/sales` and needs the full cart workflow with customer attach, delivery context, fees, and tender selection.
 
-## Why this matters
+If your cashier lane uses the fast register flow, use [Quick Sale runbook](/quick-sale-runbook) instead.
 
-Sales is where inventory, customer balances, and revenue all update together.
+## Before you start
 
-## Step-by-step
+- **Recommended role**: Cashier or above for standard sales; supervisor/manager for restricted actions.
+- **Required route**: `/sales`
+- **Needed data state**:
+  - At least one sellable inventory item
+  - Optional customer profile (required for credit use)
+  - Tax behavior already set in settings
+- **Know your role limits**:
+  - Price overrides, void-style actions, and some reassignments can require higher roles.
 
-1. Open **Sales**.
-2. Search products and click **Add**.
-3. Adjust quantity or remove line items.
-4. Select customer if needed.
-5. Choose **Payment Method**.
-6. Add payment reference when using **Zelle**.
-7. Confirm totals and complete checkout.
+## Fast path
 
-## Common mistakes
+1. **Open Sales** (`/sales`).
+2. **Add items** by search and cart actions.
+3. **Set quantity** or remove line items as needed.
+4. **Attach customer** when needed.
+   - Optional for normal cash/card sales.
+   - Required when using credit tender.
+5. **Set payment method**.
+   - Supported methods in this flow: cash, card, credit, zelle, mixed.
+   - Add payment reference when needed (for example zelle confirmation).
+6. **Review totals**.
+   - Check subtotal, tax, fees, and total before submit.
+7. **Complete checkout**.
+   - Confirm success message and sale record ID.
+8. **Verify side effects**.
+   - Inventory moved as expected.
+   - Customer balance updated if credit used.
 
-- Trying to check out with an empty cart
-- Selling more than available stock
-- Forgetting to attach a customer for credit scenarios
+## If blocked
 
-## Edge cases
+- **Cannot checkout**:
+  - Confirm cart has at least one item.
+  - Confirm stock is available.
+  - Confirm payment method is selected.
+- **Credit method unavailable**:
+  - Attach a customer.
+  - Confirm credit is allowed for current context.
+- **Zelle flow rejected**:
+  - Enter payment reference field when prompted.
+- **Price override not available**:
+  - Role likely lacks override permission.
+  - Escalate to manager/supervisor route.
+- **Totals look off**:
+  - Check tax toggle in settings.
+  - Check for fee rows and delivery charge entries.
+- **Checkout error appears after click**:
+  - Retry once and check whether sale already completed before trying again.
 
-- Weight-based products can require measured entry before adding.
-- Random inventory checks can trigger during sales operations.
-- Manager/owner access is required for some reassignment and override actions.
+## What is beta here
 
-## Current limitations
-
-- Sale reassignment rules are stricter for credit sales.
-- Advanced reporting on sales trends is not built out in **Reports** yet.
+- **Report exports and deeper trend drill-down** are still beta-limited and do not change live checkout behavior.
+- Some advanced cross-location reporting views remain beta surfaces.
 
 ## Related docs
 
+- [Quick Sale runbook](/quick-sale-runbook)
+- [Payments and plans](/payments-and-plans)
 - [Your products](/your-products)
 - [Your customers](/your-customers)
-- [Payments and plans](/payments-and-plans)
 - [Fixing issues](/fixing-issues)
+
+## Shift checklist
+
+Use this quick list before and after each shift:
+
+- Confirm tax behavior is expected in first test cart.
+- Confirm one cash sale and one card sale can complete.
+- Confirm customer attach works from lookup.
+- Confirm credit method is only used when customer context is present.
+- Confirm last completed sale ID is visible for dispute follow-up.
+- At close, spot-check one sale detail route for tender correctness.
+
+## Operator notes
+
+- Keep one clear team rule for when to use standard Sales vs Quick Sale.
+- If your store allows manual fees or delivery charges, define who can apply them and when.
+- Keep route and click-path notes for recurring issues so new staff can recover faster.

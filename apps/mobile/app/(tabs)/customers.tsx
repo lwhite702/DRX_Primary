@@ -24,6 +24,9 @@ import {
   createCustomer,
   updateCustomer,
   getCustomerCreditBalance,
+  getBusinessSettings,
+  getScreenPrivacyPreference,
+  setScreenPrivacyPreference,
 } from "../../src/services/apiClient";
 import { Customer } from "../../src/lib/types";
 
@@ -40,13 +43,33 @@ export default function Customers() {
   const [creditBalances, setCreditBalances] = useState<Record<string, number>>(
     {},
   );
+  const [screenPrivacyMode, setScreenPrivacyMode] = useState<
+    "always_on" | "pos_only" | "manual"
+  >("manual");
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
+    useState(false);
+
+  const shouldMask =
+    screenPrivacyMode === "always_on" ||
+    (screenPrivacyMode === "manual" && manualScreenPrivacyEnabled);
+
+  const maskAlias = (value: string) =>
+    value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((token) => `${token[0]?.toUpperCase() || ""}***`)
+      .join(" ");
 
   // New customer form
   const [newCustomer, setNewCustomer] = useState({
+    alias: "",
     first_name: "",
     last_name: "",
     phone: "",
     email: "",
+    address: "",
+    notes: "",
     credit_limit: "0",
     fixed_price_per_gram: "",
   });
@@ -62,6 +85,19 @@ export default function Customers() {
         searchQuery || undefined,
       );
       setCustomers(data);
+
+      const [settingsData, preferenceData] = await Promise.all([
+        getBusinessSettings(token),
+        getScreenPrivacyPreference(token),
+      ]);
+
+      const mode = settingsData?.privacy_protocol?.screen_privacy?.mode;
+      setScreenPrivacyMode(
+        mode === "always_on" || mode === "pos_only" || mode === "manual"
+          ? mode
+          : "manual",
+      );
+      setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
 
       // Fetch credit balances for each customer
       const balances: Record<string, number> = {};
@@ -99,19 +135,18 @@ export default function Customers() {
 
   const handleSaveCustomer = async () => {
     if (!businessId) return;
-    if (!newCustomer.first_name.trim() || !newCustomer.last_name.trim()) {
-      Alert.alert("Error", "First and last name are required");
-      return;
-    }
 
     try {
       const token = await getToken();
       const customerData = {
         business_id: businessId,
-        first_name: newCustomer.first_name.trim(),
-        last_name: newCustomer.last_name.trim(),
+        alias: newCustomer.alias.trim() || undefined,
+        first_name: newCustomer.first_name.trim() || undefined,
+        last_name: newCustomer.last_name.trim() || undefined,
         phone: newCustomer.phone.trim() || null,
         email: newCustomer.email.trim() || null,
+        address: newCustomer.address.trim() || null,
+        notes: newCustomer.notes.trim() || null,
         credit_limit: parseFloat(newCustomer.credit_limit) || 0,
         loyalty_tier: editingCustomer?.loyalty_tier || "bronze",
         loyalty_points: editingCustomer?.loyalty_points || 0,
@@ -131,10 +166,13 @@ export default function Customers() {
       setAddModalVisible(false);
       setEditingCustomer(null);
       setNewCustomer({
+        alias: "",
         first_name: "",
         last_name: "",
         phone: "",
         email: "",
+        address: "",
+        notes: "",
         credit_limit: "0",
         fixed_price_per_gram: "",
       });
@@ -151,10 +189,13 @@ export default function Customers() {
   const openAddModal = () => {
     setEditingCustomer(null);
     setNewCustomer({
+      alias: "",
       first_name: "",
       last_name: "",
       phone: "",
       email: "",
+      address: "",
+      notes: "",
       credit_limit: "0",
       fixed_price_per_gram: "",
     });
@@ -164,10 +205,13 @@ export default function Customers() {
   const openEditModal = (customer: Customer) => {
     setEditingCustomer(customer);
     setNewCustomer({
-      first_name: customer.first_name,
-      last_name: customer.last_name,
+      alias: customer.alias || "",
+      first_name: customer.first_name || "",
+      last_name: customer.last_name || "",
       phone: customer.phone || "",
       email: customer.email || "",
+      address: customer.address || "",
+      notes: customer.notes || "",
       credit_limit: customer.credit_limit.toString(),
       fixed_price_per_gram: customer.fixed_price_per_gram
         ? customer.fixed_price_per_gram.toString()
@@ -180,6 +224,13 @@ export default function Customers() {
     const creditUsed = creditBalances[item.id] || 0;
     const creditAvailable = Math.max(0, item.credit_limit - creditUsed);
     const loyaltyTier = item.loyalty_tier || "bronze";
+    const displayName =
+      item.alias ||
+      `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+      (item.phone ? `Customer ${item.phone.slice(-4)}` : "Customer");
+    const maskedDisplayName = maskAlias(displayName);
+    const visibleName = shouldMask ? maskedDisplayName : displayName;
+    const avatarLabel = visibleName.charAt(0).toUpperCase() || "C";
 
     return (
       <TouchableOpacity style={styles.customerCard} activeOpacity={0.7}>
@@ -190,14 +241,12 @@ export default function Customers() {
               { borderColor: COLORS[loyaltyTier] },
             ]}
           >
-            <Text style={styles.avatarText}>{item.first_name.charAt(0)}</Text>
+            <Text style={styles.avatarText}>{avatarLabel}</Text>
           </View>
           <View style={styles.customerInfo}>
             <View style={styles.headerRow}>
               <View style={styles.nameRow}>
-                <Text style={styles.customerName}>
-                  {item.first_name} {item.last_name}
-                </Text>
+                <Text style={styles.customerName}>{visibleName}</Text>
                 <View
                   style={[
                     styles.tierBadge,
@@ -233,8 +282,17 @@ export default function Customers() {
                 />
               </TouchableOpacity>
             </View>
+            {item.alias && (item.first_name || item.last_name) ? (
+              <Text style={styles.customerPhone}>
+                {shouldMask
+                  ? "Legal: Hidden"
+                  : `Legal: ${[item.first_name, item.last_name].filter(Boolean).join(" ")}`}
+              </Text>
+            ) : null}
             {item.phone && (
-              <Text style={styles.customerPhone}>{item.phone}</Text>
+              <Text style={styles.customerPhone}>
+                {shouldMask ? "Hidden" : item.phone}
+              </Text>
             )}
             <Text style={styles.loyaltyPoints}>
               {item.loyalty_points} loyalty points
@@ -278,9 +336,30 @@ export default function Customers() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Customers</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
-          <Ionicons name="add" size={24} color={COLORS.background} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: SPACING.sm }}>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={async () => {
+              try {
+                const token = await getToken();
+                const next = !manualScreenPrivacyEnabled;
+                await setScreenPrivacyPreference(token, next);
+                setManualScreenPrivacyEnabled(next);
+              } catch (error) {
+                console.error("Failed to toggle ProteXion mode", error);
+              }
+            }}
+          >
+            <Ionicons
+              name={manualScreenPrivacyEnabled ? "eye-off" : "eye"}
+              size={20}
+              color={COLORS.background}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
+            <Ionicons name="add" size={24} color={COLORS.background} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search */}
@@ -348,9 +427,20 @@ export default function Customers() {
             </View>
 
             <View style={styles.form}>
+              <Text style={styles.inputLabel}>Alias</Text>
+              <TextInput
+                style={styles.input}
+                value={newCustomer.alias}
+                onChangeText={(t) =>
+                  setNewCustomer({ ...newCustomer, alias: t })
+                }
+                placeholder="Preferred display name"
+                placeholderTextColor={COLORS.textMuted}
+              />
+
               <View style={styles.row}>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>First Name *</Text>
+                  <Text style={styles.inputLabel}>First Name</Text>
                   <TextInput
                     style={styles.input}
                     value={newCustomer.first_name}
@@ -362,7 +452,7 @@ export default function Customers() {
                   />
                 </View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Last Name *</Text>
+                  <Text style={styles.inputLabel}>Last Name</Text>
                   <TextInput
                     style={styles.input}
                     value={newCustomer.last_name}
@@ -398,6 +488,28 @@ export default function Customers() {
                 placeholderTextColor={COLORS.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
+              />
+
+              <Text style={styles.inputLabel}>Address</Text>
+              <TextInput
+                style={styles.input}
+                value={newCustomer.address}
+                onChangeText={(t) =>
+                  setNewCustomer({ ...newCustomer, address: t })
+                }
+                placeholder="Street, city, state"
+                placeholderTextColor={COLORS.textMuted}
+              />
+
+              <Text style={styles.inputLabel}>Notes</Text>
+              <TextInput
+                style={styles.input}
+                value={newCustomer.notes}
+                onChangeText={(t) =>
+                  setNewCustomer({ ...newCustomer, notes: t })
+                }
+                placeholder="Optional notes"
+                placeholderTextColor={COLORS.textMuted}
               />
 
               <Text style={styles.inputLabel}>Credit Limit</Text>

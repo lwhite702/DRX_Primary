@@ -17,15 +17,21 @@ export function SiteFooter() {
         </div>
 
         <div className="grid grid-cols-1 gap-2 text-sm md:text-right">
-          {footerLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-text-secondary transition-colors hover:text-neon-lime"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {footerLinks.map((link) => {
+            const isExternal = link.href.startsWith("http");
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="text-text-secondary transition-colors hover:text-neon-lime"
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </footer>

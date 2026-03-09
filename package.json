@@ -27,6 +27,7 @@
     "verify:tarballs": "cd apps/app && node scripts/verify-tarballs.mjs",
     "wrelik:refresh": "cd apps/app && node scripts/refresh-wrelik.mjs",
     "seed:demo": "pnpm --filter deelrxcrm-app seed:demo",
+    "drx:rotate-pii-key": "pnpm --filter deelrxcrm-app drx:rotate-pii-key",
     "start": "pnpm --filter deelrxcrm-app start",
     "test": "vitest",
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
@@ -45,7 +46,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint:copy": "node scripts/copy-lint.js"
+    "lint:copy": "node scripts/copy-lint.js",
+    "test:docs:mintlify": "node --experimental-strip-types scripts/testing/mintlify-docs-audit.ts || pnpm dlx tsx scripts/testing/mintlify-docs-audit.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",

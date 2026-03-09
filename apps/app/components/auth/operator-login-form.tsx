@@ -21,8 +21,46 @@ export function OperatorLoginForm() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lockoutUntil, setLockoutUntil] = useState<string | null>(null);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(
+    null,
+  );
 
   const clerkFallbackUrl = "/login?view=clerk";
+
+  const formatLockoutTime = (isoString: string) => {
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return "shortly";
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const checkLockoutState = async () => {
+    const response = await fetch("/api/auth/lockout/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier }),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  };
+
+  const recordFailure = async () => {
+    const response = await fetch("/api/auth/lockout/failure", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier }),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  };
+
+  const recordSuccess = async () => {
+    await fetch("/api/auth/lockout/success", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier }),
+    }).catch(() => null);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,21 +73,70 @@ export function OperatorLoginForm() {
     setLoading(true);
 
     try {
+      const lockoutState = await checkLockoutState();
+      if (lockoutState?.locked) {
+        setLockoutUntil(lockoutState.locked_until || null);
+        setErrorMessage(
+          `Too many failed attempts. Try again after ${formatLockoutTime(
+            lockoutState.locked_until,
+          )}.`,
+        );
+        setLoading(false);
+        return;
+      }
+      setRemainingAttempts(
+        typeof lockoutState?.remaining_attempts === "number"
+          ? lockoutState.remaining_attempts
+          : null,
+      );
+
       const result = await signIn.create({
         identifier,
         password,
       });
 
       if (result.status === "complete" && result.createdSessionId) {
+        await recordSuccess();
         await setActive?.({ session: result.createdSessionId });
         router.replace("/dashboard");
         router.refresh();
         return;
       }
 
+      const failedState = await recordFailure();
+      if (failedState?.locked) {
+        setLockoutUntil(failedState.locked_until || null);
+        setErrorMessage(
+          `Too many failed attempts. Try again after ${formatLockoutTime(
+            failedState.locked_until,
+          )}.`,
+        );
+      } else {
+        setRemainingAttempts(
+          typeof failedState?.remaining_attempts === "number"
+            ? failedState.remaining_attempts
+            : remainingAttempts,
+        );
+      }
       setErrorMessage("Additional verification is required. Use the secure recovery flow.");
       router.push(clerkFallbackUrl);
     } catch (error: unknown) {
+      const failedState = await recordFailure();
+      if (failedState?.locked) {
+        setLockoutUntil(failedState.locked_until || null);
+        setErrorMessage(
+          `Too many failed attempts. Try again after ${formatLockoutTime(
+            failedState.locked_until,
+          )}.`,
+        );
+        return;
+      }
+
+      const attemptsLeft =
+        typeof failedState?.remaining_attempts === "number"
+          ? failedState.remaining_attempts
+          : null;
+
       const message =
         typeof error === "object" &&
         error !== null &&
@@ -62,7 +149,12 @@ export function OperatorLoginForm() {
             "Sign-in failed. Check your credentials and try again."
           : "Sign-in failed. Check your credentials and try again.";
 
-      setErrorMessage(message);
+      setRemainingAttempts(attemptsLeft);
+      setErrorMessage(
+        attemptsLeft !== null
+          ? `${message} ${attemptsLeft} attempt(s) remaining before lockout.`
+          : message,
+      );
     } finally {
       setLoading(false);
     }
@@ -158,6 +250,11 @@ export function OperatorLoginForm() {
           {errorMessage ? (
             <div className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-[11px] text-red-200">
               {errorMessage}
+              {lockoutUntil ? (
+                <div className="mt-1 text-[10px] text-red-100/90">
+                  Locked until {formatLockoutTime(lockoutUntil)}
+                </div>
+              ) : null}
             </div>
           ) : null}
 

@@ -1,202 +1,22 @@
 {
-  "generatedAt": "2026-02-21T04:59:43.240Z",
-  "recommendation": "GO",
+  "generatedAt": "2026-03-04T06:13:54Z",
+  "recommendation": "NO-GO",
   "rule": "GO only if Gates 0-3 pass at 100%",
   "gates": [
-    {
-      "id": 0,
-      "name": "Build Stability",
-      "requiredForBeta": true,
-      "pass": true,
-      "passRate": 100,
-      "checks": [
-        {
-          "command": "pnpm install --frozen-lockfile",
-          "code": 0,
-          "durationSec": 1.67
-        },
-        {
-          "command": "pnpm lint",
-          "code": 0,
-          "durationSec": 3.9
-        },
-        {
-          "command": "pnpm typecheck",
-          "code": 0,
-          "durationSec": 4.03
-        },
-        {
-          "command": "pnpm build",
-          "code": 0,
-          "durationSec": 27.94
-        }
-      ]
-    },
-    {
-      "id": 1,
-      "name": "Auth Stability",
-      "requiredForBeta": true,
-      "pass": true,
-      "passRate": 100,
-      "checks": [
-        {
-          "command": "pnpm --filter deelrxcrm-app vitest run tests/middleware.test.ts tests/auth",
-          "code": 0,
-          "durationSec": 0.22
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "name": "Environment Discipline",
-      "requiredForBeta": true,
-      "pass": true,
-      "passRate": 100,
-      "checks": [
-        {
-          "command": "pnpm test:matrix",
-          "code": 0,
-          "durationSec": 3.59
-        },
-        {
-          "command": "pnpm test:policy",
-          "code": 0,
-          "durationSec": 2.05
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "name": "Data Integrity",
-      "requiredForBeta": true,
-      "pass": true,
-      "passRate": 100,
-      "checks": [
-        {
-          "command": "pnpm --filter deelrxcrm-app vitest run tests/pos tests/quick-pos",
-          "code": 0,
-          "durationSec": 0.55
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "name": "Permissions + Audit",
-      "requiredForBeta": false,
-      "pass": true,
-      "passRate": 100,
-      "checks": [
-        {
-          "command": "pnpm --filter deelrxcrm-app vitest run tests/integration/audit.test.ts",
-          "code": 0,
-          "durationSec": 0.47
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "name": "Observability",
-      "requiredForBeta": false,
-      "pass": false,
-      "passRate": 0,
-      "checks": [
-        {
-          "command": "pnpm test:security",
-          "code": 1,
-          "durationSec": 0.98
-        },
-        {
-          "command": "pnpm test:perf",
-          "code": 1,
-          "durationSec": 0.56
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "name": "UX Readiness",
-      "requiredForBeta": false,
-      "pass": false,
-      "passRate": 0,
-      "checks": [
-        {
-          "command": "pnpm test:e2e:web",
-          "code": 1,
-          "durationSec": 1.93
-        },
-        {
-          "command": "pnpm test:a11y",
-          "code": 1,
-          "durationSec": 1.5
-        }
-      ]
-    }
+    {"id":0,"name":"Build Stability","requiredForBeta":true,"pass":false},
+    {"id":1,"name":"Auth Stability","requiredForBeta":true,"pass":false},
+    {"id":2,"name":"Environment Discipline","requiredForBeta":true,"pass":false},
+    {"id":3,"name":"Data Integrity","requiredForBeta":true,"pass":false},
+    {"id":4,"name":"Permissions + Audit","requiredForBeta":false,"pass":false,"note":"Not run in this pass"},
+    {"id":5,"name":"Observability","requiredForBeta":false,"pass":false,"note":"Not run in this pass"},
+    {"id":6,"name":"UX Readiness","requiredForBeta":false,"pass":false,"note":"Blocked by app compile errors"}
   ],
-  "commands": [
-    {
-      "command": "pnpm install --frozen-lockfile",
-      "code": 0,
-      "durationSec": 1.67
+  "privacyExtensionVerification": {
+    "targetedTests": {
+      "status": "pass",
+      "files": 7,
+      "tests": 22
     },
-    {
-      "command": "pnpm lint",
-      "code": 0,
-      "durationSec": 3.9
-    },
-    {
-      "command": "pnpm typecheck",
-      "code": 0,
-      "durationSec": 4.03
-    },
-    {
-      "command": "pnpm build",
-      "code": 0,
-      "durationSec": 27.94
-    },
-    {
-      "command": "pnpm --filter deelrxcrm-app vitest run tests/middleware.test.ts tests/auth",
-      "code": 0,
-      "durationSec": 0.22
-    },
-    {
-      "command": "pnpm test:matrix",
-      "code": 0,
-      "durationSec": 3.59
-    },
-    {
-      "command": "pnpm test:policy",
-      "code": 0,
-      "durationSec": 2.05
-    },
-    {
-      "command": "pnpm --filter deelrxcrm-app vitest run tests/pos tests/quick-pos",
-      "code": 0,
-      "durationSec": 0.55
-    },
-    {
-      "command": "pnpm --filter deelrxcrm-app vitest run tests/integration/audit.test.ts",
-      "code": 0,
-      "durationSec": 0.47
-    },
-    {
-      "command": "pnpm test:security",
-      "code": 1,
-      "durationSec": 0.98
-    },
-    {
-      "command": "pnpm test:perf",
-      "code": 1,
-      "durationSec": 0.56
-    },
-    {
-      "command": "pnpm test:e2e:web",
-      "code": 1,
-      "durationSec": 1.93
-    },
-    {
-      "command": "pnpm test:a11y",
-      "code": 1,
-      "durationSec": 1.5
-    }
-  ]
+    "mobileTypecheck": "pass"
+  }
 }

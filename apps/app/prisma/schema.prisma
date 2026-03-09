@@ -39,6 +39,7 @@ model BusinessProfile {
   deliveryProfiles DeliveryManagement[]
   aiPricingRecs    AiPricingRecommendation[]
   aiDecisions      AiDecisionLog[]
+  privacyInventorySnapshots PrivacyInventorySnapshot[]
   
   @@map("business_profile")
 }
@@ -154,11 +155,13 @@ model Customers {
   id              String          @id @default(uuid())
   businessId      String          @map("business_id")
   business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  firstName       String          @map("first_name") @db.VarChar(100)
-  lastName        String          @map("last_name") @db.VarChar(100)
+  alias           String?         @db.VarChar(100)
+  firstName       String?         @map("first_name") @db.VarChar(100)
+  lastName        String?         @map("last_name") @db.VarChar(100)
   phoneNumber     String?         @map("phone_number") @db.VarChar(20)
   email           String?         @db.VarChar(255)
   address         String?
+  notes           String?
   city            String?         @db.VarChar(100)
   state           String?         @db.VarChar(50)
   zipCode         String?         @map("zip_code") @db.VarChar(20)
@@ -166,15 +169,33 @@ model Customers {
   totalPurchases  Decimal?        @default(0) @map("total_purchases") @db.Decimal(12, 2)
   totalCreditUsed Decimal?        @default(0) @map("total_credit_used") @db.Decimal(12, 2)
   fixedPricePerGram Decimal?        @map("fixed_price_per_gram") @db.Decimal(12, 2)
+  lastActivityAt    DateTime        @default(now()) @map("last_activity_at")
+  aliasEncrypted    String?         @map("alias_encrypted")
+  firstNameEncrypted String?        @map("first_name_encrypted")
+  phoneEncrypted    String?         @map("phone_encrypted")
+  emailEncrypted    String?         @map("email_encrypted")
+  addressEncrypted  String?         @map("address_encrypted")
+  notesEncrypted    String?         @map("notes_encrypted")
+  aliasHash         String?         @map("alias_hash")
+  phoneHash         String?         @map("phone_hash")
+  emailHash         String?         @map("email_hash")
+  piiEncryptionVersion Int          @default(1) @map("pii_encryption_version")
+  ephemeral          Boolean         @default(false)
+  ephemeralExpiresAt DateTime?       @map("ephemeral_expires_at")
   isActive           Boolean         @default(true) @map("is_active")
   createdAt          DateTime        @default(now()) @map("created_at")
   updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
 
-  notes        CustomerNote[]
+  customerNotes CustomerNote[]
   creditTxns   CreditTransaction[]
   creditLimits CreditLimit[]
   sales        Sales[]
 
+  @@index([businessId, lastActivityAt])
+  @@index([businessId, ephemeral, ephemeralExpiresAt])
+  @@index([aliasHash])
+  @@index([phoneHash])
+  @@index([emailHash])
   @@map("customers")
 }
 
@@ -361,6 +382,57 @@ model UserRole {
   updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at")
 
   @@map("user_roles")
+}
+
+model AuthLockoutWindow {
+  id              String   @id @default(uuid())
+  identifierHash  String   @map("identifier_hash")
+  ipHash          String   @default("") @map("ip_hash")
+  failedCount     Int      @default(0) @map("failed_count")
+  windowStartedAt DateTime @default(now()) @map("window_started_at")
+  lockedUntil     DateTime? @map("locked_until")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([identifierHash, ipHash])
+  @@index([identifierHash, ipHash])
+  @@map("auth_lockout_windows")
+}
+
+model AuthSessionEvent {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  sessionId  String   @map("session_id")
+  eventType  String   @map("event_type")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  deviceType String?  @map("device_type")
+  city       String?
+  country    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  metadata   Json?    @default("{}")
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("auth_session_events")
+}
+
+model PrivacyInventorySnapshot {
+  id          String          @id @default(uuid())
+  businessId  String          @map("business_id")
+  business    BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  capturedAt  DateTime        @default(now()) @map("captured_at")
+  aliasCount  Int             @default(0) @map("alias_count")
+  phoneCount  Int             @default(0) @map("phone_count")
+  emailCount  Int             @default(0) @map("email_count")
+  addressCount Int            @default(0) @map("address_count")
+  notesCount  Int             @default(0) @map("notes_count")
+  aliasDelta  Int             @default(0) @map("alias_delta")
+  phoneDelta  Int             @default(0) @map("phone_delta")
+  emailDelta  Int             @default(0) @map("email_delta")
+  addressDelta Int            @default(0) @map("address_delta")
+  notesDelta  Int             @default(0) @map("notes_delta")
+
+  @@index([businessId, capturedAt(sort: Desc)])
+  @@map("privacy_inventory_snapshots")
 }
 
 

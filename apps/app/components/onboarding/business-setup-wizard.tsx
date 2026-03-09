@@ -155,7 +155,7 @@ export function BusinessSetupWizard({
     ],
 
     // Privacy
-    privacyPreset: "balanced", // open, balanced, private, max_secure
+    privacyPreset: "standard_mode",
 
     // Staff Roles (active roles to create)
     enableManager: true,

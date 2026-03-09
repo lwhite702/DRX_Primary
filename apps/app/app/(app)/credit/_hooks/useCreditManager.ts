@@ -30,6 +30,7 @@ export function useCreditManager(businessId: string | undefined) {
       .select("id, first_name, last_name")
       .eq("business_id", businessId)
       .eq("is_active", true)
+      .eq("ephemeral", false)
       .order("first_name");
 
     if (data) setCustomers(data as unknown as Customer[]);

@@ -42,12 +42,20 @@ export const drxCopy = {
     },
     privacy: {
       title: "Your books stay yours.",
-      body: "We collect what DRX needs to run. Nothing extra. No data resale. No creepy tracking.",
+      body: "Start with a privacy profile. You can change field visibility, retention, and alias-only controls later in settings.",
       presets: {
-        open: { label: "OPEN", desc: "Full customer details for your crew." },
-        balanced: { label: "BALANCED", desc: "Clean limits for most teams." },
-        private: { label: "PRIVATE", desc: "Less stored info. Tighter visibility." },
-        maxSecure: { label: "MAX TIGHT", desc: "Minimum retention. Strict access." },
+        aliasMode: {
+          label: "ALIAS MODE",
+          desc: "Alias only, low-data operations.",
+        },
+        standardMode: {
+          label: "STANDARD MODE",
+          desc: "Balanced defaults for most teams.",
+        },
+        businessCrmMode: {
+          label: "BUSINESS CRM MODE",
+          desc: "Full CRM field visibility.",
+        },
       },
     },
   },

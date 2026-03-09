@@ -31,7 +31,49 @@ Do not ship silent documentation updates.
 
 - Source of truth reviewed: live app UI labels and current production workflows.
 
-## Current baseline
+## Current release notes
+
+## [Product Version 0.5.3] - 2026-03-04
+
+### Pages affected
+
+- /index
+- /getting-started
+- /store-setup
+- /how-sales-work
+- /quick-sale-runbook
+- /your-products
+- /your-customers
+- /payments-and-plans
+- /numbers-that-matter
+- /staying-compliant
+- /team-access
+- /keeping-your-data-safe
+- /drx-privacy-protexion-protocol
+- /failsafe-and-self-destruct
+- /fixing-issues
+- /beta-access-and-use
+- /legal-disclaimer
+- /glossary
+- /CHANGELOG
+
+### Summary
+
+- Completed parity rewrite of Mintlify docs against current app routes and labels.
+- Corrected customer requirements to match live alias-first behavior.
+- Added dedicated Quick Sale runbook for `/pos/sale` -> `/pos/payment` -> `/pos/complete`.
+- Replaced outdated Event Desk naming with Operations Insights.
+- Reworked audit-ready wording while preserving `/staying-compliant` slug for link stability.
+- Expanded operator runbooks with prerequisites, fast paths, blocked-path handling, explicit beta notes, and route-accurate references.
+- Updated navigation to include quick-sale-runbook in Daily Operations.
+- Added governance artifacts:
+  - `docs/audits/mintlify-parity-audit-2026-03-04.md`
+  - `docs/audits/mintlify-parity-matrix.json`
+
+### Notes
+
+- Claim policy used for this rewrite: strict live-only claims by default; beta surfaces explicitly labeled.
+- Source of truth reviewed: app routes in `apps/app/app`, feature claim matrix, and brand voice guide.
 
 ## [Product Version 0.4.12] - 2026-02-13
 
@@ -56,12 +98,11 @@ Do not ship silent documentation updates.
 ### Summary
 
 - Established external customer-facing Mintlify structure with required operator-friendly sections.
-- Aligned wording to current app labels including **Sales**, **Inventory**, **Customers**, **Credit Management**, **Event Desk Board**, **Settings**, and **Help & Support**.
-- Documented current **Reports** limitation: page is present with "No reports yet."
+- Aligned wording to then-current app labels including Sales, Inventory, Customers, Credit, metrics, Settings, and Help.
+- Documented reports limitation: page present with "No reports yet".
 - Added policy/reference pages for beta access, legal use boundaries, and glossary terms.
-- Added a dedicated failsafe/self-destruct page that distinguishes live safeguards from non-existent one-click destruction features.
+- Added dedicated failsafe/self-destruct page to distinguish live safeguards from non-existent one-click destruction features.
 
 ### Notes
 
-- UI copy source file `EXTRACTED_UI_COPY.md` was not present in this workspace at build time.
-- Baseline was validated against live route/page implementations in `apps/app/app/(app)`.
+- Baseline validation was performed against live route implementations under `apps/app/app/(app)`.

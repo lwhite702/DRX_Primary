@@ -1,0 +1,301 @@
+[
+  {
+    "page": "/index",
+    "claim": "DRX includes Quick Sale and Operations Insights as primary operator workflows",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/layout/nav-items.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/insights/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Landing page lacked explicit fast paths for shift-start actions"
+    ],
+    "severity": "P1",
+    "required_action": "Add direct Quick Sale and Operations Insights entry points with route-level guidance"
+  },
+  {
+    "page": "/getting-started",
+    "claim": "A new operator can complete onboarding and verify readiness through setup, first inventory item, and first test sale",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/onboarding/setup-guide.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/onboarding/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No role/prereq section",
+      "No blocked-path triage"
+    ],
+    "severity": "P1",
+    "required_action": "Rewrite as full onboarding runbook with prerequisites, verification, and failure recovery"
+  },
+  {
+    "page": "/store-setup",
+    "claim": "Store setup lives across onboarding and Settings routes",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/onboarding/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/profile/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Missing route-level detail for profile/tax/team handoff"
+    ],
+    "severity": "P1",
+    "required_action": "Expand with exact settings subroutes and permission checks"
+  },
+  {
+    "page": "/how-sales-work",
+    "claim": "Sales flow supports cart, customer attach, tender selection, and checkout",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/_components/PaymentSection.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/checkout/route.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Did not separate standard Sales vs Quick Sale paths"
+    ],
+    "severity": "P2",
+    "required_action": "Scope this page to standard Sales flow and cross-link to Quick Sale runbook"
+  },
+  {
+    "page": "/quick-sale-runbook",
+    "claim": "Quick Sale uses /pos/sale -> /pos/payment -> /pos/complete",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/complete/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No dedicated runbook existed"
+    ],
+    "severity": "P1",
+    "required_action": "Add new runbook with fast path, blockers, and idempotency handling"
+  },
+  {
+    "page": "/your-products",
+    "claim": "Inventory supports intake, adjust, and audit with approval pathways",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/intake/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/audit/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No branch for approval-required intake"
+    ],
+    "severity": "P1",
+    "required_action": "Add forked intake instructions for immediate-post vs approval-required outcomes"
+  },
+  {
+    "page": "/your-customers",
+    "claim": "Customer creation supports alias-first and optional contact fields",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/lib/validations/schemas.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/tests/customer-validation.unit.test.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/customers/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Document incorrectly required first name + phone/email"
+    ],
+    "severity": "P0",
+    "required_action": "Correct requirements and add alias-first plus ephemeral profile usage guidance"
+  },
+  {
+    "page": "/payments-and-plans",
+    "claim": "Tender options include cash, card, credit, zelle, and mixed",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/_components/PaymentSection.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/lib/validations/schemas.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No tender-specific edge-case handling",
+      "No distinction between POS credit and account credit workflows"
+    ],
+    "severity": "P1",
+    "required_action": "Expand with tender-specific runbook and credit safeguards"
+  },
+  {
+    "page": "/numbers-that-matter",
+    "claim": "Operations Insights shows live metrics, low stock alerts, and pending intakes",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/insights/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/layout/nav-items.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Used deprecated name Event Desk Board"
+    ],
+    "severity": "P1",
+    "required_action": "Replace naming with Operations Insights and align metric interpretation guidance"
+  },
+  {
+    "page": "/staying-compliant",
+    "claim": "Inventory audit, shrinkage, and reason capture help teams stay audit-ready",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/audit/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/adjust/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/pos/shrinkage-form.tsx"
+    ],
+    "voice_violations": [
+      "Contains forbidden brand word: compliance"
+    ],
+    "usability_gaps": [
+      "No escalation path when variance repeats"
+    ],
+    "severity": "P1",
+    "required_action": "Keep slug but rewrite heading/body to avoid forbidden lexeme and improve audit-ready playbook depth"
+  },
+  {
+    "page": "/team-access",
+    "claim": "Role access maps to cashier, supervisor, manager, owner/super-admin permissions",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/lib/auth/permissions.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/team/_components/TeamClient.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No practical action matrix by task"
+    ],
+    "severity": "P1",
+    "required_action": "Add role-task matrix tied to live permission keys"
+  },
+  {
+    "page": "/keeping-your-data-safe",
+    "claim": "DRX provides role gating, vault status visibility, session controls, and lockout routes",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/api/security/sessions/route.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/api/auth/lockout/check/route.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No explicit revoke-session or lockout response workflow"
+    ],
+    "severity": "P1",
+    "required_action": "Expand with concrete incident-response checks and session revoke instructions"
+  },
+  {
+    "page": "/drx-privacy-protexion-protocol",
+    "claim": "DRX privacy protocol includes alias mode, encrypted PII, vault-mode key ownership, screen masking, and ephemeral retention",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/crypto.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/cleanup/route.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Too technical up front for operator audience"
+    ],
+    "severity": "P2",
+    "required_action": "Restructure with operator-first summary and technical appendix"
+  },
+  {
+    "page": "/fixing-issues",
+    "claim": "Operators can escalate via in-app support paths and issue reporting",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/support-ticket-dialog.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No route-level triage map",
+      "No duplicate-sale prevention steps"
+    ],
+    "severity": "P1",
+    "required_action": "Add triage playbooks by route and issue type"
+  },
+  {
+    "page": "/failsafe-and-self-destruct",
+    "claim": "DRX has operational safeguards but no one-click workspace destruction control",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Needs stronger warning language to prevent mistaken destructive assumptions"
+    ],
+    "severity": "P2",
+    "required_action": "Tighten language around controlled deletion and legal/admin escalation"
+  },
+  {
+    "page": "/beta-access-and-use",
+    "claim": "Some workflow surfaces remain beta-limited, including reports depth",
+    "claim_status": "beta",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/reports/page.tsx",
+      "/Users/lee/Projects/DRX_Primary/docs/MARKETING_TRUE_FEATURE_LIST.md"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "No explicit operator fallback behavior when a beta surface is minimal"
+    ],
+    "severity": "P2",
+    "required_action": "Add practical beta-operating guidance and escalation rules"
+  },
+  {
+    "page": "/legal-disclaimer",
+    "claim": "Legal page sets lawful-use boundaries and non-advice statement",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/mintlify/legal-disclaimer.mdx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Could better connect legal boundaries to day-to-day operator behavior"
+    ],
+    "severity": "P3",
+    "required_action": "Add concise operational interpretation notes while preserving legal tone"
+  },
+  {
+    "page": "/glossary",
+    "claim": "Glossary mirrors live app labels and workflow terms",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/apps/app/components/layout/nav-items.ts",
+      "/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/team/_components/TeamClient.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Contains outdated Event Desk Board label"
+    ],
+    "severity": "P1",
+    "required_action": "Update glossary labels to current UI and align terminology with operator workflows"
+  },
+  {
+    "page": "/CHANGELOG",
+    "claim": "Mintlify changelog tracks customer-facing docs changes by version",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Users/lee/Projects/DRX_Primary/mintlify/CHANGELOG.md"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [
+      "Missing latest parity rewrite entry"
+    ],
+    "severity": "P1",
+    "required_action": "Add new structured changelog entry with pages affected and claim policy notes"
+  }
+]

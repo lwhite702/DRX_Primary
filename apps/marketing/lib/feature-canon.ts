@@ -20,6 +20,51 @@ export interface FeatureSection {
   bullets: FeatureBullet[];
 }
 
+export interface PrivacyProtexionExample {
+  label: string;
+  lines: string[];
+}
+
+export interface PrivacyProtexionBlock {
+  id:
+    | "alias-first-customer-tracking"
+    | "privacy-profiles"
+    | "strong-encryption"
+    | "drx-vault-mode"
+    | "minimal-data-engine"
+    | "protexion-mode"
+    | "ephemeral-customer-profiles"
+    | "data-retention-controls";
+  title: string;
+  status: FeatureStatus;
+  body: string;
+  bullets: string[];
+  examples?: PrivacyProtexionExample[];
+}
+
+export type OperatorShowcaseCardId =
+  | "point-of-sale"
+  | "inventory"
+  | "credit-fronts"
+  | "customers"
+  | "pricing"
+  | "anywhere-access"
+  | "audit-control";
+
+export interface OperatorShowcaseCard {
+  id: OperatorShowcaseCardId;
+  title: string;
+  subtitle: string;
+  status: "live" | "beta";
+}
+
+export interface OperatorShowcaseSection {
+  eyebrow: string;
+  heading: string;
+  supportingLines: [string, string];
+  cards: OperatorShowcaseCard[];
+}
+
 export interface ProductDetailContent {
   slug:
     | "sales-checkout"
@@ -171,6 +216,183 @@ export const marketingFeatureSections: FeatureSection[] = [
     ],
   },
 ];
+
+export const drxPrivacyProtexion = {
+  title: "DRX Privacy ProteXion™",
+  brandLines: [
+    "Powered by DRX Intelligence™",
+    "Protected by DRX Privacy ProteXion™",
+  ],
+  concept: [
+    "Most POS and CRM systems collect way too much customer info and keep it forever.",
+    "DRX does the opposite.",
+  ],
+  principle: "collect less data and protect the rest.",
+  blocks: [
+    {
+      id: "alias-first-customer-tracking",
+      title: "Alias-First Customer Tracking",
+      status: "live",
+      body: "DRX does not force real names or personal info just to run checkout.",
+      bullets: [
+        "Track customers with nicknames or aliases.",
+        "Nearly every CRM field is optional: phone number, email address, address, and notes.",
+        "You can run transactions without attaching a customer profile at all.",
+        "Collect only what you actually need.",
+      ],
+      examples: [
+        {
+          label: "Alias examples",
+          lines: ["Big Mike", "Blue Honda", "VIP 23"],
+        },
+      ],
+    },
+    {
+      id: "privacy-profiles",
+      title: "Privacy Profiles",
+      status: "live",
+      body: "During onboarding, operators choose how private they want the system to be.",
+      bullets: [
+        "Alias Mode (Maximum Privacy): track with nicknames only and no personal info required.",
+        "Standard Mode: light customer tracking with optional contact details.",
+        "Business CRM Mode: full CRM features if you want to collect more information.",
+        "These settings can be changed anytime.",
+      ],
+    },
+    {
+      id: "strong-encryption",
+      title: "Strong Encryption",
+      status: "live",
+      body:
+        "Sensitive customer information is encrypted. If someone somehow got database access, those values stay unreadable.",
+      bullets: [
+        "Encrypted fields include phone numbers, emails, addresses, and notes.",
+      ],
+    },
+    {
+      id: "drx-vault-mode",
+      title: "DRX Vault Mode™",
+      status: "live",
+      body:
+        "The keys that unlock encrypted data are controlled by your operator environment, not stored in the database.",
+      bullets: [
+        "Database records keep encrypted values only.",
+        "Operator-controlled key handling adds another layer of protection.",
+      ],
+    },
+    {
+      id: "minimal-data-engine",
+      title: "Minimal Data Engine",
+      status: "live",
+      body:
+        "DRX shows exactly how much personal information exists in your system so you can keep your footprint small.",
+      bullets: [
+        "Aliases stored",
+        "Phone numbers stored",
+        "Emails stored",
+        "Addresses stored",
+        "Notes stored",
+      ],
+    },
+    {
+      id: "protexion-mode",
+      title: "ProteXion Mode",
+      status: "live",
+      body: "When privacy matters, DRX can hide customer details on screen.",
+      bullets: [
+        "Use masking to reduce shoulder-surfing risk on shared screens.",
+      ],
+      examples: [
+        {
+          label: "Normal View",
+          lines: ["Alias: Big Mike", "Phone: 404-555-9811"],
+        },
+        {
+          label: "ProteXion Mode",
+          lines: ["Alias: B*** M***", "Phone: Hidden"],
+        },
+      ],
+    },
+    {
+      id: "ephemeral-customer-profiles",
+      title: "Ephemeral Customer Profiles",
+      status: "live",
+      body:
+        "Need a temporary customer record for quick POS or a one-time buyer? DRX supports auto-delete windows.",
+      bullets: [
+        "24 hours",
+        "7 days",
+        "30 days",
+      ],
+    },
+    {
+      id: "data-retention-controls",
+      title: "Data Retention Controls",
+      status: "live",
+      body:
+        "You control how long customer data stays in the system. DRX can remove inactive records automatically.",
+      bullets: [
+        "Set retention windows by policy.",
+        "Avoid unnecessary data sitting around forever.",
+      ],
+    },
+  ] satisfies PrivacyProtexionBlock[],
+  closing:
+    "Most systems collect everything and keep it forever. DRX collects less, protects what exists, and lets you stay in control.",
+};
+
+export const operatorShowcaseCanon: OperatorShowcaseSection = {
+  eyebrow: "What DRX Does",
+  heading: "Built for operators.",
+  supportingLines: [
+    "Serious tools for street-level business.",
+    "No fluff. No corporate nonsense. Just control.",
+  ],
+  cards: [
+    {
+      id: "point-of-sale",
+      title: "Point of Sale",
+      subtitle: "Quick sales entry. Tap, type, done.",
+      status: "live",
+    },
+    {
+      id: "inventory",
+      title: "Inventory",
+      subtitle: "Always know what you have and what moved.",
+      status: "live",
+    },
+    {
+      id: "credit-fronts",
+      title: "Credit & Fronts",
+      subtitle: "Track who owes what without spreadsheets.",
+      status: "live",
+    },
+    {
+      id: "customers",
+      title: "Customers",
+      subtitle: "Know your people. History, preferences, balances.",
+      status: "beta",
+    },
+    {
+      id: "pricing",
+      title: "Pricing",
+      subtitle: "Calculate margins instantly. No guesswork.",
+      status: "live",
+    },
+    {
+      id: "anywhere-access",
+      title: "Anywhere Access",
+      subtitle: "Desktop, mobile, tablet. Always in sync.",
+      status: "live",
+    },
+    {
+      id: "audit-control",
+      title: "Audit & Control",
+      subtitle: "Every action logged. Full transparency.",
+      status: "live",
+    },
+  ],
+};
 
 export const productDetailCanon: Record<ProductDetailContent["slug"], ProductDetailContent> = {
   "sales-checkout": {

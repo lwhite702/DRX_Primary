@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Edit, Plus, Search, UserX } from "lucide-react";
+import { toast } from "sonner";
+
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,24 +29,49 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Tour } from "@/components/ui/tour";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { Plus, Edit, Search, UserX } from "lucide-react";
-import { toast } from "sonner";
-import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
 import { formatPhoneNumber } from "@/lib/utils/format-phone";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { Tour } from "@/components/ui/tour";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+import type {
+  PrivacyField,
+  PrivacyProtocolSettings,
+} from "@/lib/privacy/types";
+import {
+  maskAlias,
+  maskSensitiveText,
+  shouldMaskFromProtocol,
+} from "@/lib/privacy/masking";
+
+function getCustomerDisplayName(customer: any, masked = false) {
+  if (masked) {
+    const sourceAlias =
+      customer.alias ||
+      [customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+      (customer.phone_number ? `Customer ${String(customer.phone_number).slice(-4)}` : "Customer");
+    return maskAlias(sourceAlias);
+  }
+  return (
+    customer.alias ||
+    [customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+    (customer.phone_number ? `Customer ${String(customer.phone_number).slice(-4)}` : "Customer")
+  );
+}
 
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();
+
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
+    useState(false);
 
   const {
     register,
@@ -54,6 +85,28 @@ export default function CustomersPage() {
       is_active: true,
     },
   });
+
+  useEffect(() => {
+    if (!business?.id) return;
+
+    Promise.all([
+      fetch("/api/business/settings").then((res) => res.json()),
+      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
+    ])
+      .then(([data, preferenceData]) => {
+        setPrivacyProtocol(
+          data.privacy_protocol || data.privacyProtocol || getDefaultPrivacyProtocol(),
+        );
+        setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
+      })
+      .catch(() => {
+        setPrivacyProtocol(getDefaultPrivacyProtocol());
+      });
+  }, [business?.id]);
+
+  const isFieldVisible = (field: PrivacyField) => {
+    return privacyProtocol.fields[field]?.visible ?? false;
+  };
 
   const onSubmit = async (data: Customer) => {
     if (!business?.id) {
@@ -91,13 +144,14 @@ export default function CustomersPage() {
       success: (message) => {
         setShowDialog(false);
         setEditingCustomer(null);
-        reset();
+        reset({
+          business_id: business.id,
+          is_active: true,
+        });
         return message;
       },
       error: (error) => {
-        return error instanceof Error
-          ? error.message
-          : "Failed to save customer";
+        return error instanceof Error ? error.message : "Failed to save customer";
       },
     });
   };
@@ -117,12 +171,25 @@ export default function CustomersPage() {
     setShowDialog(true);
   };
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredCustomers = useMemo(
+    () =>
+      customers.filter((customer) => {
+        const search = searchTerm.toLowerCase();
+        if (!search) return true;
+
+        return (
+          getCustomerDisplayName(customer).toLowerCase().includes(search) ||
+          (customer.phone_number || "").toLowerCase().includes(search) ||
+          (customer.email || "").toLowerCase().includes(search)
+        );
+      }),
+    [customers, searchTerm],
+  );
+
+  const shouldMask = shouldMaskFromProtocol(
+    privacyProtocol,
+    manualScreenPrivacyEnabled,
+    false,
   );
 
   if (businessLoading) {
@@ -184,100 +251,107 @@ export default function CustomersPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {isFieldVisible("alias") ? (
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input id="first_name" {...register("first_name")} />
-                  {errors.first_name && (
-                    <p className="text-sm text-destructive">
-                      {errors.first_name.message}
-                    </p>
+                  <Label htmlFor="alias">Alias</Label>
+                  <Input id="alias" {...register("alias")} />
+                  {errors.alias && (
+                    <p className="text-sm text-destructive">{errors.alias.message}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name</Label>
-                  <Input id="last_name" {...register("last_name")} />
-                  {errors.last_name && (
-                    <p className="text-sm text-destructive">
-                      {errors.last_name.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+              ) : null}
 
-              <div className="space-y-2">
-                <Label htmlFor="alias">Alias (Optional)</Label>
-                <Input id="alias" {...register("alias")} />
-                {errors.alias && (
-                  <p className="text-sm text-destructive">
-                    {errors.alias.message}
-                  </p>
-                )}
-              </div>
+              {isFieldVisible("first_name") ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name</Label>
+                    <Input id="first_name" {...register("first_name")} />
+                    {errors.first_name && (
+                      <p className="text-sm text-destructive">{errors.first_name.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input id="last_name" {...register("last_name")} />
+                    {errors.last_name && (
+                      <p className="text-sm text-destructive">{errors.last_name.message}</p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone_number">
-                    Phone Number
-                    <HelpTooltip content="Primary contact number. Format: (XXX) XXX-XXXX" />
-                  </Label>
-                  <Input
-                    id="phone_number"
-                    {...register("phone_number")}
-                    onChange={(e) => {
-                      const formatted = formatPhoneNumber(e.target.value);
-                      e.target.value = formatted;
-                      register("phone_number").onChange(e);
-                    }}
-                  />
-                  {errors.phone_number && (
-                    <p className="text-sm text-destructive">
-                      {errors.phone_number.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">
-                    Email
-                    <HelpTooltip content="Used for digital receipts and account notifications." />
-                  </Label>
-                  <Input id="email" type="email" {...register("email")} />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+              {isFieldVisible("phone") || isFieldVisible("email") ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {isFieldVisible("phone") ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="phone_number">
+                        Phone Number
+                        <HelpTooltip content="Primary contact number." />
+                      </Label>
+                      <Input
+                        id="phone_number"
+                        {...register("phone_number")}
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value);
+                          e.target.value = formatted;
+                          register("phone_number").onChange(e);
+                        }}
+                      />
+                      {errors.phone_number && (
+                        <p className="text-sm text-destructive">{errors.phone_number.message}</p>
+                      )}
+                    </div>
+                  ) : null}
 
-              <p className="text-sm text-muted-foreground">
-                * Either phone number or email is required
-              </p>
+                  {isFieldVisible("email") ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="email">
+                        Email
+                        <HelpTooltip content="Used for digital receipts and account notifications." />
+                      </Label>
+                      <Input id="email" type="email" {...register("email")} />
+                      {errors.email && (
+                        <p className="text-sm text-destructive">{errors.email.message}</p>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" {...register("address")} />
-              </div>
+              {isFieldVisible("address") ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" {...register("address")} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input id="city" {...register("city")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input id="state" {...register("state")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zip_code">Zip Code</Label>
+                      <Input id="zip_code" {...register("zip_code")} />
+                    </div>
+                  </div>
+                </>
+              ) : null}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {isFieldVisible("notes") ? (
                 <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" {...register("city")} />
+                  <Label htmlFor="notes">Notes</Label>
+                  <Input id="notes" {...register("notes")} />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input id="state" {...register("state")} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip_code">Zip Code</Label>
-                  <Input id="zip_code" {...register("zip_code")} />
-                </div>
-              </div>
+              ) : null}
 
               <div className="space-y-2">
                 <Label htmlFor="customer_type">
                   Customer Type
-                  <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
+                  <HelpTooltip content="Optional category for reporting." />
                 </Label>
                 <Input id="customer_type" {...register("customer_type")} />
               </div>
@@ -285,7 +359,7 @@ export default function CustomersPage() {
               <div className="space-y-2">
                 <Label htmlFor="fixed_price_per_gram">
                   Fixed Price / Gram ($)
-                  <HelpTooltip content="Override base price for weight-based products for this customer." />
+                  <HelpTooltip content="Optional override for weight-based pricing." />
                 </Label>
                 <Input
                   id="fixed_price_per_gram"
@@ -303,17 +377,16 @@ export default function CustomersPage() {
                   onClick={() => {
                     setShowDialog(false);
                     setEditingCustomer(null);
-                    reset();
+                    reset({
+                      business_id: business.id,
+                      is_active: true,
+                    });
                   }}
                 >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting
-                    ? "Saving..."
-                    : editingCustomer
-                      ? "Update"
-                      : "Add"}
+                  {isSubmitting ? "Saving..." : editingCustomer ? "Update" : "Add"}
                 </Button>
               </div>
             </form>
@@ -321,7 +394,6 @@ export default function CustomersPage() {
         </Dialog>
       </div>
 
-      {/* Search */}
       <div className="relative z-10">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#FFD700] h-4 w-4" />
@@ -334,13 +406,10 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Customers Table */}
       <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
         <div className="p-6 border-b border-white/5 flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-[#FFD700] shadow-[0_0_10px_#FFD700]" />
-          <h2 className="headline-text text-lg tracking-wider text-[#FFD700]">
-            CUSTOMER LIST
-          </h2>
+          <h2 className="headline-text text-lg tracking-wider text-[#FFD700]">CUSTOMER LIST</h2>
         </div>
         <CardContent className="p-0">
           {filteredCustomers.length === 0 ? (
@@ -357,7 +426,6 @@ export default function CustomersPage() {
             />
           ) : (
             <>
-              {/* Mobile cards */}
               <div className="md:hidden space-y-3">
                 {filteredCustomers.map((customer) => (
                   <div
@@ -371,16 +439,13 @@ export default function CustomersPage() {
                             href={`/customers/${customer.id}`}
                             className="font-medium text-foreground hover:underline"
                           >
-                            {customer.first_name} {customer.last_name}
+                            {getCustomerDisplayName(customer, shouldMask)}
                           </Link>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            {customer.email ||
-                              customer.phone_number ||
-                              "No contact info"}
-                          </p>
-                          {customer.alias && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Alias: {customer.alias}
+                          {(customer.phone_number || customer.email) && (
+                            <p className="text-sm text-muted-foreground mt-1 break-words">
+                              {shouldMask
+                                ? maskSensitiveText()
+                                : customer.phone_number || customer.email}
                             </p>
                           )}
                         </div>
@@ -396,32 +461,15 @@ export default function CustomersPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                         <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            Total Purchases
-                          </p>
+                          <p className="text-xs text-muted-foreground">Total Purchases</p>
                           <p className="font-medium">
                             ${Number(customer.total_purchases || 0).toFixed(2)}
                           </p>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            Credit Used
-                          </p>
+                          <p className="text-xs text-muted-foreground">Credit Used</p>
                           <p className="font-medium">
-                            $
-                            {Number(customer.total_credit_used || 0).toFixed(2)}
-                          </p>
-                        </div>
-                        <div className="col-span-2">
-                          <p className="text-xs text-muted-foreground">
-                            Address
-                          </p>
-                          <p className="text-sm text-foreground break-words">
-                            {customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${
-                                  customer.state || ""
-                                }`
-                              : "-"}
+                            ${Number(customer.total_credit_used || 0).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -430,23 +478,28 @@ export default function CustomersPage() {
                 ))}
               </div>
 
-              {/* Desktop table */}
               <div className="hidden md:block">
                 <Table className="w-full">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-white/10">
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Name
+                        Customer
                       </TableHead>
-                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Phone
-                      </TableHead>
-                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Email
-                      </TableHead>
-                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Address
-                      </TableHead>
+                      {isFieldVisible("phone") ? (
+                        <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Phone
+                        </TableHead>
+                      ) : null}
+                      {isFieldVisible("email") ? (
+                        <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Email
+                        </TableHead>
+                      ) : null}
+                      {isFieldVisible("address") ? (
+                        <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Address
+                        </TableHead>
+                      ) : null}
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Purchases
                       </TableHead>
@@ -465,29 +518,34 @@ export default function CustomersPage() {
                         className="border-white/5 hover:bg-[#FFD700]/5 transition-colors group"
                       >
                         <TableCell className="font-medium">
-                          <div>
-                            <Link
-                              href={`/customers/${customer.id}`}
-                              className="text-blue-600 hover:underline"
-                            >
-                              {customer.first_name} {customer.last_name}
-                            </Link>
-                            {customer.alias && (
-                              <p className="text-xs text-muted-foreground">
-                                ({customer.alias})
-                              </p>
-                            )}
-                          </div>
+                          <Link
+                            href={`/customers/${customer.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {getCustomerDisplayName(customer, shouldMask)}
+                          </Link>
                         </TableCell>
-                        <TableCell>{customer.phone_number || "-"}</TableCell>
-                        <TableCell>{customer.email || "-"}</TableCell>
-                        <TableCell>
-                          {customer.address
-                            ? `${customer.address}, ${customer.city || ""} ${
-                                customer.state || ""
-                              }`
-                            : "-"}
-                        </TableCell>
+                        {isFieldVisible("phone") ? (
+                          <TableCell>
+                            {shouldMask
+                              ? maskSensitiveText()
+                              : customer.phone_number || "-"}
+                          </TableCell>
+                        ) : null}
+                        {isFieldVisible("email") ? (
+                          <TableCell>
+                            {shouldMask ? maskSensitiveText() : customer.email || "-"}
+                          </TableCell>
+                        ) : null}
+                        {isFieldVisible("address") ? (
+                          <TableCell>
+                            {shouldMask
+                              ? maskSensitiveText()
+                              : customer.address
+                              ? `${customer.address}, ${customer.city || ""} ${customer.state || ""}`
+                              : "-"}
+                          </TableCell>
+                        ) : null}
                         <TableCell>
                           ${Number(customer.total_purchases || 0).toFixed(2)}
                         </TableCell>

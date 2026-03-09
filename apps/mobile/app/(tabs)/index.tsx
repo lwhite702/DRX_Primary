@@ -844,52 +844,63 @@ export default function POS() {
                     setCustomerModalVisible(false);
                   }}
                 >
-                  <View
-                    style={[
-                      styles.customerAvatar,
-                      { borderColor: COLORS[item.loyalty_tier] },
-                    ]}
-                  >
-                    <Text style={styles.avatarText}>
-                      {item.first_name.charAt(0)}
-                    </Text>
-                  </View>
-                  <View style={styles.customerInfo}>
-                    <Text style={styles.customerName}>
-                      {item.first_name} {item.last_name}
-                    </Text>
-                    <View style={styles.customerMeta}>
-                      <View
-                        style={[
-                          styles.tierBadge,
-                          { backgroundColor: COLORS[item.loyalty_tier] + "20" },
-                        ]}
-                      >
-                        <Ionicons
-                          name={
-                            item.loyalty_tier === "gold"
-                              ? "star"
-                              : item.loyalty_tier === "silver"
-                                ? "star-half"
-                                : "star-outline"
-                          }
-                          size={12}
-                          color={COLORS[item.loyalty_tier]}
-                        />
-                        <Text
+                  {(() => {
+                    const customerName =
+                      item.alias ||
+                      `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+                      "Customer";
+                    return (
+                      <>
+                        <View
                           style={[
-                            styles.tierText,
-                            { color: COLORS[item.loyalty_tier] },
+                            styles.customerAvatar,
+                            { borderColor: COLORS[item.loyalty_tier] },
                           ]}
                         >
-                          {item.loyalty_tier.toUpperCase()}
-                        </Text>
-                      </View>
-                      <Text style={styles.loyaltyPoints}>
-                        {item.loyalty_points} pts
-                      </Text>
-                    </View>
-                  </View>
+                          <Text style={styles.avatarText}>
+                            {customerName.charAt(0) || "C"}
+                          </Text>
+                        </View>
+                        <View style={styles.customerInfo}>
+                          <Text style={styles.customerName}>{customerName}</Text>
+                          <View style={styles.customerMeta}>
+                            <View
+                              style={[
+                                styles.tierBadge,
+                                {
+                                  backgroundColor:
+                                    COLORS[item.loyalty_tier] + "20",
+                                },
+                              ]}
+                            >
+                              <Ionicons
+                                name={
+                                  item.loyalty_tier === "gold"
+                                    ? "star"
+                                    : item.loyalty_tier === "silver"
+                                      ? "star-half"
+                                      : "star-outline"
+                                }
+                                size={12}
+                                color={COLORS[item.loyalty_tier]}
+                              />
+                              <Text
+                                style={[
+                                  styles.tierText,
+                                  { color: COLORS[item.loyalty_tier] },
+                                ]}
+                              >
+                                {item.loyalty_tier.toUpperCase()}
+                              </Text>
+                            </View>
+                            <Text style={styles.loyaltyPoints}>
+                              {item.loyalty_points} pts
+                            </Text>
+                          </View>
+                        </View>
+                      </>
+                    );
+                  })()}
                   <View style={styles.customerCredit}>
                     <Text style={styles.creditLabel}>Credit Limit</Text>
                     <Text style={styles.creditValue}>
