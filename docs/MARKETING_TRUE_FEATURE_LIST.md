@@ -40,11 +40,11 @@ Status: `Live` (refund tracking phrasing: `Beta`)
 - Transaction history.
 
 Evidence pointers:
-- `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx`
-- `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx`
-- `/Users/lee/Projects/DRX_Primary/apps/app/components/quick-pos/product-search.tsx`
-- `/Users/lee/Projects/DRX_Primary/apps/app/tests/e2e/quick-pos-flow.spec.ts`
-- `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/[id]/page.tsx`
+- `apps/app/app/(operator)/pos/sale/page.tsx`
+- `apps/app/app/(operator)/pos/payment/page.tsx`
+- `apps/app/components/quick-pos/product-search.tsx`
+- `apps/app/tests/e2e/quick-pos-flow.spec.ts`
+- `apps/app/app/(app)/sales/[id]/page.tsx`
 
 ### Quick POS Mode
 
