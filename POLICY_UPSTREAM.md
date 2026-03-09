@@ -6,8 +6,8 @@ Last Updated: 2026-03-03
 
 ## Upstream Source
 
-- Source repository: `/Users/lee/Projects/wrelik-kit`
-- Source folder: `/Users/lee/Projects/wrelik-kit/docs/policies`
+- Source repository: `https://github.com/user/wrelik-kit`
+- Source folder: `/docs/policies`
 - Upstream commit: `4677f33fc4674f3d8f39e3e756354b2010b1e3af`
 
 ## Imported Files
