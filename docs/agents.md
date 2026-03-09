@@ -26,7 +26,7 @@ If this file conflicts with any root policy file, the root policy file wins.
 
 ## Marketing Content Canon
 
-- Canonical marketing feature source: `/Users/lee/Projects/DRX_Primary/docs/MARKETING_TRUE_FEATURE_LIST.md`
-- Claim governance matrix: `/Users/lee/Projects/DRX_Primary/docs/MARKETING_FEATURE_CLAIM_MATRIX.md`
+- `./MARKETING_TRUE_FEATURE_LIST.md`
+- `./MARKETING_FEATURE_CLAIM_MATRIX.md`
 - Marketing copy changes must start from the canonical feature list and remain aligned with matrix status.
 - No claim may be promoted from `Beta` or `Planned` to `Live` without updating the claim matrix and adding evidence paths in the same change.
