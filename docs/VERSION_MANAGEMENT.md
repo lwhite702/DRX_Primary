@@ -2,8 +2,8 @@
 
 Canonical policy source:
 
-- `/Users/lee/Projects/DRX_Primary/VERSIONING_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/VERSION_MANAGEMENT_POLICY.md`
+- `../VERSIONING_POLICY.md`
+- `../VERSION_MANAGEMENT_POLICY.md`
 
 ## DRX Workflow
 
