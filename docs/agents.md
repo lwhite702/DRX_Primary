@@ -6,14 +6,14 @@ This file is supplemental guidance only.
 
 All governance, branching, release, and versioning policy is defined in root canonical files:
 
-- `/Users/lee/Projects/DRX_Primary/WRELIK_AGENTS.md`
-- `/Users/lee/Projects/DRX_Primary/DEVELOPMENT_PROCESS.md`
-- `/Users/lee/Projects/DRX_Primary/RELEASE_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/VERSIONING_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/VERSION_MANAGEMENT_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/STACK_POLICY.md`
-- `/Users/lee/Projects/DRX_Primary/CHECKLIST_PRECOMMIT.md`
-- `/Users/lee/Projects/DRX_Primary/CHECKLIST_PRERELEASE.md`
+- `../WRELIK_AGENTS.md`
+- `../DEVELOPMENT_PROCESS.md`
+- `../RELEASE_POLICY.md`
+- `../VERSIONING_POLICY.md`
+- `../VERSION_MANAGEMENT_POLICY.md`
+- `../STACK_POLICY.md`
+- `../CHECKLIST_PRECOMMIT.md`
+- `../CHECKLIST_PRERELEASE.md`
 
 If this file conflicts with any root policy file, the root policy file wins.
 
