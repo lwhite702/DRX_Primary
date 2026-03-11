@@ -82,7 +82,7 @@ export default function AdminClient() {
           <p className="text-sm text-muted-foreground">v0.4.12</p>
         </div>
         <p className="text-muted-foreground mt-2">
-          Enterprise administration and management
+          Admin controls for the full DRX workspace
         </p>
       </div>
 

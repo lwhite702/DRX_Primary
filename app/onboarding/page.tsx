@@ -7,6 +7,8 @@ export const metadata: Metadata = {
 };
 
 export default function OnboardingPage() {
+  const hasClerkPublishableKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left: Form */}
@@ -21,22 +23,28 @@ export default function OnboardingPage() {
             </p>
           </div>
           <div className="flex justify-center">
-            <CreateOrganization
-              afterCreateOrganizationUrl="/dashboard"
-              appearance={{
-                elements: {
-                  formButtonPrimary:
-                    "bg-primary text-primary-foreground hover:bg-primary/90",
-                  card: "bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl",
-                  headerTitle:
-                    "text-2xl font-bold tracking-tight text-foreground hidden", // Hidden since we have our own header
-                  headerSubtitle: "text-muted-foreground hidden",
-                  formFieldLabel: "text-foreground",
-                  formFieldInput:
-                    "bg-background border-white/10 text-foreground",
-                },
-              }}
-            />
+            {hasClerkPublishableKey ? (
+              <CreateOrganization
+                afterCreateOrganizationUrl="/dashboard"
+                appearance={{
+                  elements: {
+                    formButtonPrimary:
+                      "bg-primary text-primary-foreground hover:bg-primary/90",
+                    card: "bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl",
+                    headerTitle:
+                      "text-2xl font-bold tracking-tight text-foreground hidden", // Hidden since we have our own header
+                    headerSubtitle: "text-muted-foreground hidden",
+                    formFieldLabel: "text-foreground",
+                    formFieldInput:
+                      "bg-background border-white/10 text-foreground",
+                  },
+                }}
+              />
+            ) : (
+              <div className="w-full rounded-lg border border-white/10 bg-black/30 p-5 text-sm text-muted-foreground">
+                Clerk is not configured in this environment yet. Add your publishable key to enable workspace setup.
+              </div>
+            )}
           </div>
         </div>
       </div>

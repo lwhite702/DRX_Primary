@@ -40,6 +40,7 @@ import { ReasonsStep } from "./steps/ReasonsStep";
 import { NicknamesStep } from "./steps/NicknamesStep";
 import { ReviewStep } from "./steps/ReviewStep";
 import { BusinessSetupFormData } from "./types";
+import { drxCopy } from "@/lib/copy/drx";
 
 interface BusinessSetupWizardProps {
   userId: string;
@@ -52,44 +53,69 @@ const STEPS: {
   icon: LucideIcon;
   component: React.ComponentType<any>;
 }[] = [
-  { id: "welcome", title: "Welcome", icon: Building2, component: WelcomeStep },
+  {
+    id: "welcome",
+    title: drxCopy.onboarding.wizard.steps.welcome,
+    icon: Building2,
+    component: WelcomeStep,
+  },
   {
     id: "details",
-    title: "Business Details",
+    title: drxCopy.onboarding.wizard.steps.details,
     icon: Building2,
     component: BusinessDetailsStep,
   },
   {
     id: "owner",
-    title: "Owner Contact",
+    title: drxCopy.onboarding.wizard.steps.owner,
     icon: User,
     component: OwnerContactStep,
   },
-  { id: "units", title: "Units", icon: Scale, component: UnitsStep },
+  {
+    id: "units",
+    title: drxCopy.onboarding.wizard.steps.units,
+    icon: Scale,
+    component: UnitsStep,
+  },
   {
     id: "quantities",
-    title: "Quick Quantities",
+    title: drxCopy.onboarding.wizard.steps.quantities,
     icon: Zap,
     component: QuickQuantitiesStep,
   },
   {
     id: "privacy",
-    title: "Privacy Settings",
+    title: drxCopy.onboarding.wizard.steps.privacy,
     icon: Shield,
     component: PrivacyStep,
   },
-  { id: "roles", title: "Staff Roles", icon: Users, component: RolesStep },
+  {
+    id: "roles",
+    title: drxCopy.onboarding.wizard.steps.roles,
+    icon: Users,
+    component: RolesStep,
+  },
   {
     id: "reasons",
-    title: "Inventory Reasons",
+    title: drxCopy.onboarding.wizard.steps.reasons,
     icon: ClipboardList,
     component: ReasonsStep,
   },
-  { id: "nicknames", title: "Nicknames", icon: Tag, component: NicknamesStep },
-  { id: "review", title: "Review", icon: CheckCircle2, component: ReviewStep },
+  {
+    id: "nicknames",
+    title: drxCopy.onboarding.wizard.steps.nicknames,
+    icon: Tag,
+    component: NicknamesStep,
+  },
+  {
+    id: "review",
+    title: drxCopy.onboarding.wizard.steps.review,
+    icon: CheckCircle2,
+    component: ReviewStep,
+  },
   {
     id: "complete",
-    title: "Complete",
+    title: drxCopy.onboarding.wizard.steps.complete,
     icon: CheckCircle2,
     component: () => null,
   },
@@ -188,7 +214,7 @@ export function BusinessSetupWizard({
 
       if (error) throw new Error(error);
 
-      toast.success("Business setup complete!");
+      toast.success(drxCopy.onboarding.wizard.setupComplete);
 
       if (onComplete) {
         await onComplete();
@@ -197,7 +223,7 @@ export function BusinessSetupWizard({
       }
     } catch (error: any) {
       console.error("Setup error:", error);
-      toast.error(error.message || "Failed to complete setup.");
+      toast.error(error.message || drxCopy.onboarding.wizard.setupFailed);
     } finally {
       setLoading(false);
     }
@@ -226,7 +252,9 @@ export function BusinessSetupWizard({
           </div>
           <CardTitle>{STEPS[currentStep].title}</CardTitle>
           {STEPS[currentStep].id === "details" && (
-            <CardDescription>Basic info about your operation.</CardDescription>
+            <CardDescription>
+              {drxCopy.onboarding.wizard.detailsDescription}
+            </CardDescription>
           )}
         </CardHeader>
 
@@ -241,7 +269,7 @@ export function BusinessSetupWizard({
             disabled={currentStep === 0 || loading}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {drxCopy.common.back}
           </Button>
 
           {currentStep === STEPS.length - 2 ? (
@@ -251,11 +279,11 @@ export function BusinessSetupWizard({
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}
-              Finish Setup
+              {drxCopy.onboarding.wizard.finish}
             </Button>
           ) : (
             <Button onClick={handleNext} disabled={loading} className="px-8">
-              Next
+              {drxCopy.common.next}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}

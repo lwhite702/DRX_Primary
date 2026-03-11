@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 import { type Inventory } from "@/lib/validations/schemas";
 import { Input } from "@/components/ui/input";
+import { drxCopy } from "@/lib/copy/drx";
 
 interface InventoryListProps {
   inventory: Inventory[];
   onEdit: (item: Inventory) => void;
-  // onViewCost removed as unused for now
   onAddItem: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -57,12 +57,12 @@ export function InventoryList({
     <div className="space-y-4">
       <div className="space-y-2">
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
-          Select Product
+          {drxCopy.inventory.searchLabel}
         </p>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name or alias..."
+            placeholder={drxCopy.inventory.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="bg-[#1a1a1a] border-white/5 pl-9 h-12 rounded-lg focus:bg-[#1a1a1a] focus:ring-1 focus:ring-white/10"
@@ -74,16 +74,15 @@ export function InventoryList({
         <div className="py-12">
           <EmptyState
             icon={PackageOpen}
-            title="No products found"
-            description="Try a different search term or add a new item."
-            actionLabel="Add Item"
+            title={drxCopy.inventory.emptyTitle}
+            description={drxCopy.inventory.emptyBody}
+            actionLabel={drxCopy.inventory.addItem}
             onAction={onAddItem}
             className="bg-transparent border-none"
           />
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Mobile/Card List (Default for this new UI) */}
           <div className="space-y-2">
             {filteredInventory.map((item) => {
               const isLowStock = item.quantity_on_hand <= item.reorder_level;
@@ -106,11 +105,11 @@ export function InventoryList({
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                            {item.category || "UNCATEGORIZED"}
+                            {item.category || drxCopy.inventory.uncategorized}
                           </span>
                           {isLowStock && (
                             <span className="text-[10px] font-bold tracking-wider text-red-500 uppercase flex items-center gap-1">
-                              • LOW STOCK
+                              • {drxCopy.inventory.lowStock}
                             </span>
                           )}
                           <span className="text-[10px] font-mono text-muted-foreground/60">
