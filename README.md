@@ -62,6 +62,24 @@ The POS checkout contract is centralized in `/Users/lee/Projects/DRX_Primary/app
 
 See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details.
 
+### Policies
+
+Policy source of truth is root canonical files:
+
+- `./WRELIK_AGENTS.md`
+- `./DEVELOPMENT_PROCESS.md`
+- `./RELEASE_POLICY.md`
+- `./VERSIONING_POLICY.md`
+- `./VERSION_MANAGEMENT_POLICY.md`
+- `./STACK_POLICY.md`
+- `./CHECKLIST_PRECOMMIT.md`
+- `./CHECKLIST_PRERELEASE.md`
+
+Upstream template provenance and import procedure:
+
+- `./POLICY_UPSTREAM.md`
+- `docs/POLICY_IMPORT_WORKFLOW.md`
+
 ### Staging / Preview Testing
 
 For preview deploy + demo data seeding (including the current shared-DB warning), see:
@@ -72,23 +90,21 @@ For preview deploy + demo data seeding (including the current shared-DB warning)
 
 ## 🚀 Features
 
-### Core Functionality
+Canonical source:
 
-- **Point of Sale (POS)** - Fast, intuitive transaction processing with offline support
-- **Customer Management** - Comprehensive CRM with credit limit tracking and payment history
-- **Inventory Management** - Real-time inventory tracking with unit-based measurements (grams/ounces)
-- **Credit Management** - AI-powered credit limit recommendations and risk scoring
-- **Sales Analytics** - Real-time dashboards and business insights
-- **Multi-Business Support** - Manage multiple business locations from one platform
+- `docs/MARKETING_TRUE_FEATURE_LIST.md`
+- `docs/MARKETING_FEATURE_CLAIM_MATRIX.md`
 
-### Advanced Features
+### DRX Marketing Canon (Status-Aware)
 
-- **Role-Based Access Control (RBAC)** - Granular permissions (Super Admin, Manager, Supervisor, Cashier)
-- **AI Intelligence** - Product pricing recommendations and inventory forecasting
-- **Inventory Intake** - Sophisticated intake workflow with approval system
-- **Offline Mode** - Continue working even without internet connectivity
-- **Progressive Web App (PWA)** - Install on any device for native-like experience
-- **Audit Logging** - Complete system audit trail for compliance
+- **Fast Point of Sale** (`Live`, refund tracking claim `Beta`) - clean checkout, scan/search, discounts, multiple payments, customer lookup, transaction history
+- **Quick POS Mode** (`Live`) - scan product, adjust quantity, apply discount, take payment, done
+- **Inventory That Actually Makes Sense** (`Live`, purchase-order tracking claim `Beta`) - stock visibility, low-stock alerts, SKU/barcode, batch/vendor tracking, adjustment logs
+- **Customer Tracking That Works** (`Live`, notes/tags + loyalty claim `Beta`) - profiles, purchase history, customer insights
+- **Real Business Reports** (`Live`, downloadable/deep slices claim `Beta`) - sales windows, category and best-seller visibility, revenue context, dashboard overview
+- **Team Control & Accountability** (`Live`) - role-based control, secure login, and user activity visibility
+- **Multi-Location Ready** (`Beta`) - separate store views and central multi-business administration
+- **Works on Desktop and Mobile** (`Live`) - desktop dashboards with mobile-friendly checkout and cloud access
 
 ---
 

@@ -1,72 +1,74 @@
-import { BarChart, Users, Zap, Shield, Box, CreditCard } from "lucide-react";
+import {
+  BarChart3,
+  Boxes,
+  CreditCard,
+  Shield,
+  Smartphone,
+  Store,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+
+import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
+import {
+  marketingFeatureSections,
+  type FeatureSection,
+} from "@/lib/feature-canon";
+
+const iconBySection: Record<FeatureSection["id"], LucideIcon> = {
+  "fast-pos": Zap,
+  "quick-pos": Smartphone,
+  inventory: Boxes,
+  customers: Users,
+  reports: BarChart3,
+  "team-control": Shield,
+  "multi-location": Store,
+  "desktop-mobile": CreditCard,
+};
 
 export function Features() {
-  const features = [
-    {
-      title: "SECURITY THAT MINDS ITS BUSINESS",
-      description: "No unnecessary data collection. Your business stays yours.",
-      icon: Shield,
-    },
-    {
-      title: "INVENTORY THAT ACTUALLY MOVES",
-      description: "Track stock changes in real time without guessing.",
-      icon: Box,
-    },
-    {
-      title: "CREDIT WITHOUT CHAOS",
-      description: "Record pay-later balances clearly and privately.",
-      icon: CreditCard,
-    },
-    {
-      title: "CLIENTS WHO DON'T WANT EMAILS",
-      description: "CRM built for discretion and speed, not spam.",
-      icon: Users,
-    },
-    {
-      title: "ANALYTICS THAT DON'T NARK",
-      description: "Operational insights for your eyes only.",
-      icon: BarChart,
-    },
-    {
-      title: "MOBILE FIRST. ALWAYS.",
-      description: "Runs on any device. Dark mode by default.",
-      icon: Zap,
-    },
-  ];
-
   return (
-    <section id="features" className="py-24 px-6 bg-black">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold tracking-tighter text-white uppercase mb-2">
-            Features That Mind Their Business
-          </h2>
-          <p className="text-muted-foreground font-mono text-sm">
-            HARDENED TOOLS FOR OPERATORS.
-          </p>
-        </div>
+    <section id="features" className="mx-auto w-full max-w-6xl px-6 pb-16">
+      <div className="mb-8">
+        <h2 className="headline-text text-3xl text-white md:text-4xl">What DRX Does</h2>
+        <p className="body-copy mt-3 max-w-3xl text-text-secondary">
+          No bloated menus. No complicated setup. No enterprise energy.
+        </p>
+      </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
-            <div
-              key={i}
-              className="group bg-[#0A0A0A] border border-white/10 p-8 hover:border-[#BFFF00]/50 transition-colors duration-300 relative overflow-hidden"
+      <div className="grid gap-6 md:grid-cols-2">
+        {marketingFeatureSections.map((section) => {
+          const Icon = iconBySection[section.id];
+
+          return (
+            <article
+              key={section.id}
+              className="luminosity-card card-lift rounded-[2rem] border border-border/60 p-6"
             >
-              <div className="absolute top-0 left-0 w-1 h-0 bg-[#BFFF00] group-hover:h-full transition-all duration-300" />
-
-              <div className="mb-6 p-3 bg-[#BFFF00]/10 w-fit rounded text-[#BFFF00]">
-                <feature.icon className="w-6 h-6" />
+              <div className="mb-4 flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-neon-lime/15 text-neon-lime">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="text-xl font-semibold text-white">{section.title}</h3>
               </div>
 
-              <h3 className="text-lg font-bold text-white mb-2 uppercase tracking-wide">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
+              <p className="body-copy text-sm text-text-secondary">{section.intro}</p>
+
+              <ul className="mt-4 space-y-2">
+                {section.bullets.map((bullet) => (
+                  <li
+                    key={bullet.text}
+                    className="flex items-start justify-between gap-2 text-sm text-white/90"
+                  >
+                    <span>{bullet.text}</span>
+                    <FeatureStatusChip status={bullet.status} />
+                  </li>
+                ))}
+              </ul>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

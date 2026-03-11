@@ -1,47 +1,50 @@
 import type { Metadata } from "next";
 
+import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
+import { CtaRow } from "@/components/marketing/site/cta-row";
 import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
-import { CtaRow } from "@/components/marketing/site/cta-row";
+import { productDetailCanon } from "@/lib/feature-canon";
+
+const content = productDetailCanon["customers-credit"];
 
 export const metadata: Metadata = {
-  title: "Customers & Credit | Deelrx CRM",
-  description:
-    "Current DRX customer and credit workflows: profiles, balances, extensions, and payments.",
+  title: "Customers & Credit | DRX",
+  description: content.metaDescription,
 };
 
 export default function CustomersCreditPage() {
   return (
     <PageFrame>
-      <h1 className="mb-8 text-4xl font-bold text-white">Customers & credit</h1>
+      <h1 className="mb-8 text-4xl font-bold text-white">{content.title}</h1>
 
       <SectionBlock title="What this does">
-        <p>
-          Manages customer records, linked sale history, and credit account
-          activity in one workflow.
-        </p>
+        <p>{content.what}</p>
       </SectionBlock>
 
       <SectionBlock title="Why it matters operationally" className="mt-6">
-        <p>
-          Credit risk and follow-up discipline break down fast when customer
-          records are incomplete or disconnected.
-        </p>
+        <p>{content.why}</p>
       </SectionBlock>
 
-      <SectionBlock title="Proof from live product behavior" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Customer creation requires first name and at least one contact method.</li>
-          <li>Customer detail view includes sales/credit metrics and AI credit panel.</li>
-          <li>Credit management supports extension and payment recording flows.</li>
-          <li>Outstanding balances and limit data are surfaced in credit overview.</li>
+      <SectionBlock title="Current feature scope" className="mt-6">
+        <ul className="space-y-2">
+          {content.proof.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Advanced automation/messaging is not part of current customer flow.</li>
-          <li>Permission quality still determines safe credit operations.</li>
+      <SectionBlock title="Beta constraints" className="mt-6">
+        <ul className="space-y-2">
+          {content.limitations.map((item) => (
+            <li key={item.text} className="flex items-start justify-between gap-2">
+              <span>{item.text}</span>
+              <FeatureStatusChip status={item.status} />
+            </li>
+          ))}
         </ul>
         <CtaRow
           location="product_customers_credit"
