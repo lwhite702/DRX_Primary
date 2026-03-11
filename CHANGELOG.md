@@ -33,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Legacy Artifacts**: Removed stale tracked CI/testing artifacts and legacy TestSprite suites from version control.
 
+## [0.5.4] - 2026-03-11
+
+### Fixed
+
+- **Production Build**: Removed the duplicate `/help` page so Next.js no longer resolves two routes to the same path during deployment.
+- **Auth Adapter**: Replaced the broken `@wrelik/auth/server` dependency path in the app server adapter with local Clerk session normalization so production compilation succeeds.
+
 ## [0.5.1] - 2026-02-14
 
 ### Added
