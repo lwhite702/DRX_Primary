@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { db } from "@/lib/db";
+import { validateInventoryAvailability } from "@/lib/pos/core";
+import type { PosCartItem } from "@/lib/pos/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,42 +12,55 @@ export async function POST(request: NextRequest) {
     }
 
     const { items } = await request.json();
-    const errors: any[] = [];
+    const normalizedItems: PosCartItem[] = (Array.isArray(items) ? items : []).map((item) => {
+      const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+      return {
+        id:
+          String(
+            record.id ??
+              record.inventoryId ??
+              record.inventory_id ??
+              record.sku ??
+              crypto.randomUUID(),
+          ),
+        inventoryId:
+          typeof record.inventoryId === "string"
+            ? record.inventoryId
+            : typeof record.inventory_id === "string"
+              ? record.inventory_id
+              : null,
+        name:
+          typeof record.name === "string"
+            ? record.name
+            : typeof record.product_name === "string"
+              ? record.product_name
+              : "Inventory Item",
+        sku: typeof record.sku === "string" ? record.sku : null,
+        barcode: typeof record.barcode === "string" ? record.barcode : null,
+        unitPrice: Number(record.unitPrice ?? record.unit_price ?? 0),
+        qty: Number(record.qty ?? record.quantity ?? 1),
+        source: "inventory",
+        weightGrams:
+          record.weightGrams !== undefined
+            ? Number(record.weightGrams)
+            : record.weight_grams !== undefined
+              ? Number(record.weight_grams)
+              : undefined,
+      };
+    });
 
-    for (const item of items) {
-      const inventory = await db.inventory.findUnique({
-        where: { businessId_sku: { businessId: businessId, sku: item.sku } }, // Wait, mobile often uses inventory_id
-      });
-
-      // If SKU not found, try by ID
-      const target =
-        inventory ||
-        (await db.inventory.findUnique({
-          where: { id: item.inventory_id },
-        }));
-
-      if (!target) {
-        errors.push({
-          inventory_id: item.inventory_id,
-          message: "Item not found",
-        });
-        continue;
-      }
-
-      if (target.quantityOnHand < item.quantity) {
-        errors.push({
-          inventory_id: item.inventory_id,
-          message: `Insufficient stock for ${target.productName}. Available: ${target.quantityOnHand}`,
-        });
-      }
-    }
+    const result = await validateInventoryAvailability(db, businessId, normalizedItems);
 
     return NextResponse.json({
-      valid: errors.length === 0,
-      errors,
+      valid: result.valid,
+      errors: result.errors.map((error) => ({
+        inventory_id: error.inventoryId,
+        message: error.message,
+      })),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Stock Validation Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -5,6 +5,12 @@ export const posPaymentMethodSchema = z.enum(["cash", "card", "credit", "mixed",
 export const posQuickPaymentMethodSchema = z.enum(["cash", "card", "credit"]);
 export const posReceiptOptionSchema = z.enum(["print", "sms", "none"]);
 export const posCartItemSourceSchema = z.enum(["inventory", "manual"]);
+export const posCheckoutSourceSchema = z.enum([
+  "quick-pos",
+  "legacy-sales",
+  "checkout-enhanced",
+  "sales-api",
+]);
 
 export const posScopeSchema = z.object({
   tenantId: z.string().uuid().nullable().optional(),
@@ -38,6 +44,12 @@ export const cartLineItemSchema = z.object({
   unitPrice: z.number().nonnegative(),
   qty: z.number().int().positive(),
   source: posCartItemSourceSchema,
+  weightGrams: z.number().positive().optional(),
+  pricePerGram: z.number().positive().optional(),
+  bulkTierApplied: z.string().min(1).optional(),
+  loyaltyDiscountApplied: z.number().nonnegative().optional(),
+  originalPrice: z.number().nonnegative().optional(),
+  overrideReason: z.string().min(1).optional(),
 });
 
 export const posFeeSchema = z.object({
@@ -62,6 +74,7 @@ export const quickCheckoutPayloadSchema = z.object({
   mode: z.literal("quick"),
   idempotencyKey: z.string().uuid(),
   customerId: z.string().uuid().nullable().optional(),
+  source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
   items: z.array(cartLineItemSchema).min(1),
 });
@@ -70,6 +83,7 @@ export const fullCheckoutPayloadSchema = z.object({
   mode: z.literal("full"),
   idempotencyKey: z.string().uuid(),
   customerId: z.string().uuid().nullable().optional(),
+  source: posCheckoutSourceSchema.optional().default("legacy-sales"),
   payment: fullPosPaymentSchema,
   items: z
     .array(
@@ -81,6 +95,11 @@ export const fullCheckoutPayloadSchema = z.object({
     .min(1),
   taxAmount: z.number().nonnegative().default(0),
   fees: z.array(posFeeSchema).optional().default([]),
+  paymentRef: z.string().min(1).optional(),
+  amountPaid: z.number().nonnegative().optional(),
+  deliveryManagementId: z.string().uuid().nullable().optional(),
+  deliveryAddress: z.string().optional(),
+  deliveryPrice: z.number().nonnegative().optional().default(0),
 });
 
 export const checkoutPayloadSchema = z.discriminatedUnion("mode", [
@@ -116,6 +135,7 @@ export type PosPaymentMethod = z.infer<typeof posPaymentMethodSchema>;
 export type PosQuickPaymentMethod = z.infer<typeof posQuickPaymentMethodSchema>;
 export type PosReceiptOption = z.infer<typeof posReceiptOptionSchema>;
 export type PosCartItemSource = z.infer<typeof posCartItemSourceSchema>;
+export type PosCheckoutSource = z.infer<typeof posCheckoutSourceSchema>;
 export type PosScope = z.infer<typeof posScopeSchema>;
 export type PosProduct = z.infer<typeof posProductSchema>;
 export type StockAdjustment = z.infer<typeof stockAdjustmentSchema>;
@@ -131,4 +151,3 @@ export type QuickPosBootstrapResponseContract = z.infer<typeof quickPosBootstrap
 // Backward-compatible aliases for existing imports during the transition.
 export const posCheckoutSchema = checkoutPayloadSchema;
 export type PosCheckoutRequest = CheckoutPayload;
-

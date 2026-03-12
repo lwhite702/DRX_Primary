@@ -17,6 +17,9 @@ const mocks = vi.hoisted(() => {
     setPayment: vi.fn(),
     setTaxAmount: vi.fn(),
     setFees: vi.fn(),
+    setPaymentRef: vi.fn(),
+    setAmountPaid: vi.fn(),
+    setDelivery: vi.fn(),
     checkout: vi.fn(),
     PosCheckoutError,
   };
@@ -33,6 +36,9 @@ vi.mock("@/lib/pos/core", () => ({
   setPayment: mocks.setPayment,
   setTaxAmount: mocks.setTaxAmount,
   setFees: mocks.setFees,
+  setPaymentRef: mocks.setPaymentRef,
+  setAmountPaid: mocks.setAmountPaid,
+  setDelivery: mocks.setDelivery,
   checkout: mocks.checkout,
 }));
 
@@ -129,7 +135,24 @@ describe("POST /api/pos/checkout", () => {
       ...cart,
       fees,
     }));
-    mocks.checkout.mockResolvedValue({ saleId: "sale_123", total: 15 });
+    mocks.setPaymentRef.mockImplementation((cart, paymentRef) => ({
+      ...cart,
+      paymentRef,
+    }));
+    mocks.setAmountPaid.mockImplementation((cart, amountPaid) => ({
+      ...cart,
+      amountPaid,
+    }));
+    mocks.setDelivery.mockImplementation((cart, delivery) => ({
+      ...cart,
+      ...delivery,
+    }));
+    mocks.checkout.mockResolvedValue({
+      saleId: "sale_123",
+      orderNumber: "POS-33333333-3333-4333-8333-333333333333",
+      total: 15,
+      changeAmount: 0,
+    });
   });
 
   it("returns 401 when auth context is missing", async () => {
@@ -165,7 +188,9 @@ describe("POST /api/pos/checkout", () => {
     expect(data).toEqual({
       success: true,
       saleId: "sale_123",
+      orderNumber: "POS-33333333-3333-4333-8333-333333333333",
       total: 15,
+      changeAmount: 0,
       receipt: {
         saleId: "sale_123",
         total: 15,
@@ -177,6 +202,7 @@ describe("POST /api/pos/checkout", () => {
       businessId: "business_123",
       userId: "user_123",
       mode: "quick",
+      source: "quick-pos",
       customerId: QUICK_CUSTOMER_ID,
     });
     expect(mocks.setFees).toHaveBeenCalledWith(
@@ -197,6 +223,26 @@ describe("POST /api/pos/checkout", () => {
     expect(mocks.setFees).toHaveBeenCalledWith(expect.any(Object), [
       { type: "service", amount: 2.5 },
     ]);
+  });
+
+  it("maps full mode delivery and payment metadata into the canonical cart", async () => {
+    const payload = makeFullPayload({
+      paymentRef: "ZELLE-123",
+      amountPaid: 25,
+      deliveryManagementId: "55555555-5555-4555-8555-555555555555",
+      deliveryAddress: "123 Main St",
+      deliveryPrice: 4.5,
+    });
+
+    const res = await POST(makeRequest(payload) as any);
+    expect(res.status).toBe(201);
+    expect(mocks.setPaymentRef).toHaveBeenCalledWith(expect.any(Object), "ZELLE-123");
+    expect(mocks.setAmountPaid).toHaveBeenCalledWith(expect.any(Object), 25);
+    expect(mocks.setDelivery).toHaveBeenCalledWith(expect.any(Object), {
+      deliveryManagementId: "55555555-5555-4555-8555-555555555555",
+      deliveryAddress: "123 Main St",
+      deliveryPrice: 4.5,
+    });
   });
 
   it("returns 409 for duplicate idempotency keys", async () => {

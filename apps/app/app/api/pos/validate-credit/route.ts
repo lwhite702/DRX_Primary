@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { validateCreditBalance } from "@/lib/pos/core";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,42 +17,18 @@ export async function GET(request: NextRequest) {
     if (!customerId) {
       return NextResponse.json({ valid: true });
     }
-
-    const customer = await db.customers.findUnique({
-      where: { id: customerId },
-      include: {
-        creditLimits: {
-          where: { businessId },
-        },
-      },
-    });
-
-    if (!customer) {
-      return NextResponse.json({ valid: true, warning: "Customer not found" });
-    }
-
-    const creditLimit = customer.creditLimits[0];
-    const currentBalance = Number(creditLimit?.currentBalance || 0);
-    const maxLimit = Number(customer.totalPurchases || 1000); // Fallback logic or specific field if exists
-
-    // Note: The original logic checked credit_limit_ai_recommended too.
-    // For now, we simplify to basic credit check.
-    const projectedBalance = currentBalance + amount;
-
-    if (projectedBalance > maxLimit) {
-      return NextResponse.json({
-        valid: false,
-        warning: `Credit limit exceeded. Limit: ${maxLimit}, Projected: ${projectedBalance}`,
-      });
-    }
+    const result = await validateCreditBalance(db, businessId, customerId, amount);
 
     return NextResponse.json({
-      valid: true,
-      currentBalance,
-      maxLimit,
+      valid: result.valid,
+      currentBalance: result.currentBalance,
+      maxLimit: result.maxLimit,
+      remaining: result.remaining,
+      warning: result.warning,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Credit Validation Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

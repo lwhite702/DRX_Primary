@@ -44,6 +44,8 @@ export function useSalesCart(businessId?: string) {
     sku: string;
     weight_grams: number;
     unit_price: number;
+    price_per_gram?: number;
+    bulk_tier_applied?: string;
     line_total: number;
   }) => {
     posEngine.addItem({
@@ -52,6 +54,9 @@ export function useSalesCart(businessId?: string) {
       sku: item.sku,
       quantity: 1,
       unit_price: item.line_total,
+      weight_grams: item.weight_grams,
+      price_per_gram: item.price_per_gram,
+      bulk_tier_applied: item.bulk_tier_applied,
     });
     refreshCart();
   };

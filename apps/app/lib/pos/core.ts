@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { toNumber } from "@/app/api/pos/_lib/server";
+import type { CartLineItem } from "@/lib/pos/contract";
 import type {
   PosCart,
   PosCartItem,
@@ -18,6 +19,36 @@ const DEFAULT_PAYMENT: PosPayment = {
   creditConfirmed: false,
 };
 
+type CheckoutDbClient = Prisma.TransactionClient | typeof db;
+
+type InventoryValidationError = {
+  inventoryId: string | null;
+  message: string;
+};
+
+type InventoryAvailabilityResult = {
+  valid: boolean;
+  errors: InventoryValidationError[];
+  stockById: Map<
+    string,
+    {
+      id: string;
+      productName: string;
+      quantityOnHand: number;
+      inventoryInGrams: number;
+      unitCost: number;
+    }
+  >;
+};
+
+type CreditValidationResult = {
+  valid: boolean;
+  currentBalance: number;
+  maxLimit: number;
+  remaining: number;
+  warning?: string;
+};
+
 class PosCheckoutError extends Error {
   status: number;
 
@@ -27,29 +58,225 @@ class PosCheckoutError extends Error {
   }
 }
 
-function asDecimal(value: number) {
-  return new Prisma.Decimal(value.toFixed(2));
+function asDecimal(value: number, scale = 2) {
+  return new Prisma.Decimal(value.toFixed(scale));
+}
+
+function roundCurrency(value: number) {
+  return Number(value.toFixed(2));
+}
+
+function roundWeight(value: number) {
+  return Number(value.toFixed(4));
 }
 
 function buildOrderNumber(idempotencyKey: string) {
   return `POS-${idempotencyKey}`.slice(0, 50);
 }
 
+function getLineTotal(item: CartLineItem) {
+  if (item.weightGrams && item.weightGrams > 0) {
+    if (item.pricePerGram && item.pricePerGram > 0) {
+      return roundCurrency(item.pricePerGram * item.weightGrams);
+    }
+    return roundCurrency(item.unitPrice * item.qty);
+  }
+
+  return roundCurrency(item.unitPrice * item.qty);
+}
+
+async function getCollectTaxSetting(tx: CheckoutDbClient, businessId: string) {
+  const settings = await tx.businessSettings.findUnique({
+    where: { businessId },
+    select: { collectTax: true },
+  });
+
+  return settings?.collectTax !== false;
+}
+
+async function loadInventoryRows(
+  tx: CheckoutDbClient,
+  businessId: string,
+  inventoryIds: string[],
+  lockRows: boolean,
+) {
+  if (inventoryIds.length === 0) {
+    return [];
+  }
+
+  if (lockRows) {
+    return tx.$queryRaw<
+      Array<{
+        id: string;
+        product_name: string;
+        quantity_on_hand: number;
+        inventory_in_grams: number | null;
+        unit_cost: number | null;
+      }>
+    >(
+      Prisma.sql`
+        SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost
+        FROM inventory
+        WHERE business_id = ${businessId}
+          AND id IN (${Prisma.join(inventoryIds)})
+        FOR UPDATE
+      `,
+    );
+  }
+
+  return tx.$queryRaw<
+    Array<{
+      id: string;
+      product_name: string;
+      quantity_on_hand: number;
+      inventory_in_grams: number | null;
+      unit_cost: number | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost
+      FROM inventory
+      WHERE business_id = ${businessId}
+        AND id IN (${Prisma.join(inventoryIds)})
+    `,
+  );
+}
+
+export async function validateInventoryAvailability(
+  tx: CheckoutDbClient,
+  businessId: string,
+  items: CartLineItem[],
+  options?: { lockRows?: boolean },
+): Promise<InventoryAvailabilityResult> {
+  const inventoryItems = items.filter((item) => item.inventoryId);
+  const inventoryIds = Array.from(
+    new Set(inventoryItems.map((item) => item.inventoryId!).filter(Boolean)),
+  );
+  const rows = await loadInventoryRows(tx, businessId, inventoryIds, Boolean(options?.lockRows));
+  const stockById = new Map(
+    rows.map((row) => [
+      row.id,
+      {
+        id: row.id,
+        productName: row.product_name,
+        quantityOnHand: row.quantity_on_hand,
+        inventoryInGrams: toNumber(row.inventory_in_grams),
+        unitCost: toNumber(row.unit_cost),
+      },
+    ]),
+  );
+
+  const errors: InventoryValidationError[] = [];
+
+  for (const item of inventoryItems) {
+    const inventory = stockById.get(item.inventoryId!);
+    if (!inventory) {
+      errors.push({
+        inventoryId: item.inventoryId ?? null,
+        message: `Inventory item not found for ${item.name}`,
+      });
+      continue;
+    }
+
+    if (item.weightGrams && item.weightGrams > 0) {
+      if (inventory.inventoryInGrams < item.weightGrams) {
+        errors.push({
+          inventoryId: item.inventoryId ?? null,
+          message: `Insufficient weight for ${inventory.productName}. Available: ${inventory.inventoryInGrams}, Requested: ${item.weightGrams}`,
+        });
+      }
+      continue;
+    }
+
+    if (inventory.quantityOnHand < item.qty) {
+      errors.push({
+        inventoryId: item.inventoryId ?? null,
+        message: `Insufficient stock for ${inventory.productName}. Available: ${inventory.quantityOnHand}, Requested: ${item.qty}`,
+      });
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    stockById,
+  };
+}
+
+export async function validateCreditBalance(
+  tx: CheckoutDbClient,
+  businessId: string,
+  customerId: string | null | undefined,
+  amount: number,
+): Promise<CreditValidationResult> {
+  if (!customerId) {
+    return {
+      valid: true,
+      currentBalance: 0,
+      maxLimit: 0,
+      remaining: 0,
+    };
+  }
+
+  const credit = await tx.creditLimit.findFirst({
+    where: {
+      businessId,
+      customerId,
+    },
+    select: {
+      maxCreditLimit: true,
+      currentBalance: true,
+    },
+  });
+
+  if (!credit) {
+    return {
+      valid: false,
+      currentBalance: 0,
+      maxLimit: 0,
+      remaining: 0,
+      warning: "No credit limit configured for customer",
+    };
+  }
+
+  const currentBalance = toNumber(credit.currentBalance);
+  const maxLimit = toNumber(credit.maxCreditLimit);
+  const remaining = roundCurrency(maxLimit - currentBalance);
+  const valid = remaining >= amount;
+
+  return {
+    valid,
+    currentBalance,
+    maxLimit,
+    remaining,
+    warning: valid
+      ? undefined
+      : `Credit limit exceeded. Remaining: ${remaining.toFixed(2)}, Requested: ${amount.toFixed(2)}`,
+  };
+}
+
 export function createCart(params: {
   businessId: string;
   userId: string;
   mode: PosCart["mode"];
+  source?: PosCart["source"];
   customerId?: string | null;
 }): PosCart {
   return {
     businessId: params.businessId,
     userId: params.userId,
     mode: params.mode,
+    source: params.source ?? (params.mode === "quick" ? "quick-pos" : "legacy-sales"),
     customerId: params.customerId ?? null,
     payment: { ...DEFAULT_PAYMENT },
     items: [],
     taxAmount: 0,
     fees: [],
+    paymentRef: null,
+    amountPaid: null,
+    deliveryManagementId: null,
+    deliveryAddress: null,
+    deliveryPrice: 0,
   };
 }
 
@@ -57,7 +284,15 @@ export function addItem(cart: PosCart, item: PosCartItem): PosCart {
   const existing = cart.items.find((entry) => entry.id === item.id);
   const nextItems = existing
     ? cart.items.map((entry) =>
-        entry.id === item.id ? { ...entry, qty: entry.qty + item.qty } : entry,
+        entry.id === item.id
+          ? {
+              ...entry,
+              qty: entry.qty + item.qty,
+              weightGrams: entry.weightGrams && item.weightGrams
+                ? roundWeight(entry.weightGrams + item.weightGrams)
+                : entry.weightGrams ?? item.weightGrams,
+            }
+          : entry,
       )
     : [...cart.items, item];
 
@@ -76,22 +311,41 @@ export function setTaxAmount(cart: PosCart, taxAmount: number): PosCart {
   return { ...cart, taxAmount };
 }
 
+export function setPaymentRef(cart: PosCart, paymentRef: string | null | undefined): PosCart {
+  return { ...cart, paymentRef: paymentRef ?? null };
+}
+
+export function setAmountPaid(cart: PosCart, amountPaid: number | null | undefined): PosCart {
+  return { ...cart, amountPaid: amountPaid ?? null };
+}
+
+export function setDelivery(
+  cart: PosCart,
+  delivery: {
+    deliveryManagementId?: string | null;
+    deliveryAddress?: string | null;
+    deliveryPrice?: number | null;
+  },
+): PosCart {
+  return {
+    ...cart,
+    deliveryManagementId: delivery.deliveryManagementId ?? null,
+    deliveryAddress: delivery.deliveryAddress ?? null,
+    deliveryPrice: delivery.deliveryPrice ?? 0,
+  };
+}
+
 export function quote(cart: PosCart): PosQuote {
-  const subtotal = cart.items.reduce(
-    (sum, item) => sum + item.unitPrice * item.qty,
-    0,
-  );
-  const feesTotal = cart.fees.reduce(
-    (sum, fee) => sum + (fee.amount ?? 0),
-    0,
-  );
+  const subtotal = cart.items.reduce((sum, item) => sum + getLineTotal(item), 0);
+  const feesTotal = cart.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0);
   const taxAmount = cart.taxAmount;
-  const total = Number((subtotal + feesTotal + taxAmount).toFixed(2));
+  const deliveryPrice = cart.deliveryPrice ?? 0;
+  const total = roundCurrency(subtotal + feesTotal + taxAmount + deliveryPrice);
 
   return {
-    subtotal: Number(subtotal.toFixed(2)),
-    taxAmount: Number(taxAmount.toFixed(2)),
-    feesTotal: Number(feesTotal.toFixed(2)),
+    subtotal: roundCurrency(subtotal),
+    taxAmount: roundCurrency(taxAmount),
+    feesTotal: roundCurrency(feesTotal),
     total,
   };
 }
@@ -126,11 +380,10 @@ export async function checkout(
     }
   }
 
-  const totals = quote(cart);
   const orderNumber = buildOrderNumber(idempotencyKey);
 
   try {
-    const result = await db.$transaction(async (tx) => {
+    return await db.$transaction(async (tx) => {
       const existingSale = await tx.sales.findFirst({
         where: {
           businessId: cart.businessId,
@@ -143,61 +396,65 @@ export async function checkout(
         throw new PosCheckoutError("Duplicate idempotency key", 409);
       }
 
-      const inventoryItems = cart.items.filter((item) => item.inventoryId);
-      const inventoryIds = inventoryItems.map((item) => item.inventoryId!) as string[];
+      const collectTax = await getCollectTaxSetting(tx, cart.businessId);
+      const taxAmount = collectTax ? cart.taxAmount : 0;
+      const subtotal = roundCurrency(cart.items.reduce((sum, item) => sum + getLineTotal(item), 0));
+      const feeAmount = roundCurrency(cart.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0));
+      const deliveryPrice = roundCurrency(cart.deliveryPrice ?? 0);
 
-      if (inventoryIds.length > 0) {
-        const lockedInventory = await tx.$queryRaw<
-          { id: string; quantity_on_hand: number }[]
-        >(
-          Prisma.sql`
-            SELECT id, quantity_on_hand
-            FROM inventory
-            WHERE business_id = ${cart.businessId}
-            AND id IN (${Prisma.join(inventoryIds)})
-            FOR UPDATE
-          `,
-        );
-
-        const stockMap = new Map(
-          lockedInventory.map((row) => [row.id, row.quantity_on_hand]),
-        );
-
-        for (const item of inventoryItems) {
-          const available = stockMap.get(item.inventoryId!);
-          if (available === undefined) {
-            throw new PosCheckoutError("Inventory item not found", 404);
-          }
-          if (available - item.qty < 0) {
-            throw new PosCheckoutError(`Insufficient stock for ${item.name}`);
-          }
-        }
+      const inventoryCheck = await validateInventoryAvailability(tx, cart.businessId, cart.items, {
+        lockRows: true,
+      });
+      if (!inventoryCheck.valid) {
+        throw new PosCheckoutError(inventoryCheck.errors[0]?.message ?? "Insufficient stock");
       }
 
-      if (cart.payment.method === "credit" && cart.customerId) {
-        const credit = await tx.creditLimit.findFirst({
+      let loyaltyDiscountRate = 0;
+      let loyaltyDiscountAmount = 0;
+
+      if (cart.customerId) {
+        const customer = await tx.customers.findFirst({
           where: {
+            id: cart.customerId,
             businessId: cart.businessId,
-            customerId: cart.customerId,
           },
           select: {
             id: true,
-            maxCreditLimit: true,
-            currentBalance: true,
+            discountRate: true,
           },
         });
 
-        if (!credit) {
-          throw new PosCheckoutError("No credit limit configured for customer");
+        if (!customer) {
+          throw new PosCheckoutError("Customer not found", 404);
         }
 
-        const remaining =
-          toNumber(credit.maxCreditLimit) - toNumber(credit.currentBalance);
+        loyaltyDiscountRate = toNumber(customer.discountRate);
+        loyaltyDiscountAmount = roundCurrency(subtotal * loyaltyDiscountRate);
+      }
 
-        if (remaining < totals.total) {
-          throw new PosCheckoutError("Credit cap exceeded");
+      const subtotalAfterDiscount = roundCurrency(subtotal - loyaltyDiscountAmount);
+      const total = roundCurrency(subtotalAfterDiscount + feeAmount + taxAmount + deliveryPrice);
+
+      if (cart.payment.method === "credit" && cart.customerId) {
+        const creditCheck = await validateCreditBalance(
+          tx,
+          cart.businessId,
+          cart.customerId,
+          total,
+        );
+
+        if (!creditCheck.valid) {
+          throw new PosCheckoutError(creditCheck.warning ?? "Credit cap exceeded");
         }
       }
+
+      const amountPaid = roundCurrency(
+        cart.amountPaid ??
+          (cart.payment.method === "credit" ? 0 : total),
+      );
+      const changeAmount = roundCurrency(
+        cart.payment.method === "credit" ? 0 : Math.max(amountPaid - total, 0),
+      );
 
       const sale = await tx.sales.create({
         data: {
@@ -207,29 +464,85 @@ export async function checkout(
           orderStatus: "completed",
           orderType: cart.mode === "quick" ? "quick" : "retail",
           paymentMethod: cart.payment.method,
-          subtotal: asDecimal(totals.subtotal),
-          taxAmount: asDecimal(totals.taxAmount),
-          totalAmount: asDecimal(totals.total),
-          amountPaid: asDecimal(totals.total),
-          changeAmount: asDecimal(0),
+          paymentRef: cart.paymentRef ?? null,
+          subtotal: asDecimal(subtotal),
+          taxAmount: asDecimal(taxAmount),
+          totalAmount: asDecimal(total),
+          amountPaid: asDecimal(amountPaid),
+          changeAmount: asDecimal(changeAmount),
           fees: cart.fees as unknown as Prisma.InputJsonValue,
+          deliveryManagementId: cart.deliveryManagementId ?? null,
+          deliveryAddress: cart.deliveryAddress ?? null,
+          deliveryPrice: asDecimal(deliveryPrice),
           createdBy: cart.userId,
           items: {
-            create: cart.items.map((item) => ({
-              inventoryId: item.inventoryId,
-              quantity: item.qty,
-              unitPrice: asDecimal(item.unitPrice),
-              lineTotal: asDecimal(item.unitPrice * item.qty),
-            })),
+            create: cart.items.map((item) => {
+              const inventory = item.inventoryId
+                ? inventoryCheck.stockById.get(item.inventoryId)
+                : null;
+              const pricePerGram =
+                item.weightGrams && item.weightGrams > 0
+                  ? item.pricePerGram ?? roundWeight(item.unitPrice / item.weightGrams)
+                  : null;
+
+              return {
+                inventoryId: item.inventoryId,
+                quantity: item.qty,
+                unitPrice: asDecimal(item.unitPrice),
+                lineTotal: asDecimal(getLineTotal(item)),
+                unitCost: inventory ? asDecimal(inventory.unitCost) : undefined,
+                weightSoldGrams:
+                  item.weightGrams && item.weightGrams > 0
+                    ? asDecimal(item.weightGrams, 4)
+                    : undefined,
+                pricePerGram:
+                  pricePerGram && pricePerGram > 0
+                    ? asDecimal(pricePerGram, 4)
+                    : undefined,
+                bulkTierApplied: item.bulkTierApplied,
+                loyaltyDiscountApplied:
+                  item.loyaltyDiscountApplied !== undefined
+                    ? asDecimal(item.loyaltyDiscountApplied, 4)
+                    : loyaltyDiscountRate > 0
+                      ? asDecimal(loyaltyDiscountRate, 4)
+                      : undefined,
+                originalPrice:
+                  item.originalPrice !== undefined
+                    ? asDecimal(item.originalPrice)
+                    : undefined,
+                priceOverrideReason: item.overrideReason,
+              };
+            }),
           },
         },
-        select: { id: true },
+        select: { id: true, orderNumber: true },
       });
 
-      if (inventoryItems.length > 0) {
-        for (const item of inventoryItems) {
+      for (const item of cart.items) {
+        if (!item.inventoryId) {
+          continue;
+        }
+
+        if (item.weightGrams && item.weightGrams > 0) {
           await tx.inventory.update({
-            where: { id: item.inventoryId! },
+            where: { id: item.inventoryId },
+            data: {
+              inventoryInGrams: { decrement: asDecimal(item.weightGrams, 4) },
+            },
+          });
+
+          await tx.inventoryLog.create({
+            data: {
+              inventoryId: item.inventoryId,
+              transactionType: "sale",
+              quantityChange: null,
+              reason: `POS ${cart.mode} weighted checkout (${item.weightGrams}g)`,
+              createdBy: cart.userId,
+            },
+          });
+        } else {
+          await tx.inventory.update({
+            where: { id: item.inventoryId },
             data: {
               quantityOnHand: { decrement: item.qty },
             },
@@ -237,13 +550,31 @@ export async function checkout(
 
           await tx.inventoryLog.create({
             data: {
-              inventoryId: item.inventoryId!,
+              inventoryId: item.inventoryId,
               transactionType: "sale",
               quantityChange: -item.qty,
               reason: `POS ${cart.mode} checkout`,
               createdBy: cart.userId,
             },
           });
+        }
+      }
+
+      if (cart.customerId) {
+        await tx.customers.update({
+          where: { id: cart.customerId },
+          data: {
+            purchaseCount: { increment: 1 },
+            totalPurchases: { increment: asDecimal(subtotalAfterDiscount) },
+          },
+        });
+
+        try {
+          await tx.$executeRaw`
+            SELECT update_customer_loyalty_tier(${cart.businessId}::uuid, ${cart.customerId}::uuid)
+          `;
+        } catch {
+          // Some environments may not have the loyalty helper yet; the sale should still complete.
         }
       }
 
@@ -254,7 +585,14 @@ export async function checkout(
             customerId: cart.customerId,
           },
           data: {
-            currentBalance: { increment: asDecimal(totals.total) },
+            currentBalance: { increment: asDecimal(total) },
+          },
+        });
+
+        await tx.customers.update({
+          where: { id: cart.customerId },
+          data: {
+            totalCreditUsed: { increment: asDecimal(total) },
           },
         });
 
@@ -263,7 +601,7 @@ export async function checkout(
             businessId: cart.businessId,
             customerId: cart.customerId,
             transactionType: "extension",
-            amount: asDecimal(totals.total),
+            amount: asDecimal(total),
             description: `POS sale ${sale.id}`,
             status: "completed",
             createdBy: cart.userId,
@@ -279,18 +617,27 @@ export async function checkout(
           userId: cart.userId,
           businessId: cart.businessId,
           newValues: {
+            source: cart.source,
             mode: cart.mode,
-            total: totals.total,
+            total,
+            subtotal,
+            taxAmount,
+            loyaltyDiscountAmount,
             idempotencyKey,
             paymentMethod: cart.payment.method,
+            orderNumber: sale.orderNumber,
+            itemCount: cart.items.length,
           },
         },
       });
 
-      return sale;
+      return {
+        saleId: sale.id,
+        orderNumber: sale.orderNumber,
+        total,
+        changeAmount,
+      };
     });
-
-    return { saleId: result.id, total: totals.total };
   } catch (error) {
     if (error instanceof PosCheckoutError) {
       throw error;
@@ -302,7 +649,7 @@ export async function checkout(
       }
     }
 
-    throw new PosCheckoutError("Checkout failed", 400);
+    throw new PosCheckoutError(error instanceof Error ? error.message : "Checkout failed", 400);
   }
 }
 

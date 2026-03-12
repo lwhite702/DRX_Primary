@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { businessId } = await resolveAuthContext();
     if (!businessId) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     // Since there is no specific RPC for delivery options yet (it was a direct table select),
     // we use Prisma to fetch from the table.
-    const options = await db.delivery_management.findMany({
+    const options = await db.deliveryManagement.findMany({
       where: {
         businessId,
         isActive: true,
@@ -19,8 +19,9 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(options);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Delivery Options Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

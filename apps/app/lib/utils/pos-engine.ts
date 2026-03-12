@@ -1,10 +1,3 @@
-import { z } from "zod";
-import {
-  posCheckoutSchema,
-  type POSCheckout,
-  type SalesLineItem,
-} from "@/lib/validations/schemas";
-
 export type MiscFee = {
   type: string;
   amount: number;
@@ -39,6 +32,10 @@ export interface CartItem {
   quantity: number;
   unit_price: number;
   line_total: number;
+  weight_grams?: number;
+  price_per_gram?: number;
+  bulk_tier_applied?: string;
+  loyalty_discount_applied?: number;
   overridden_price?: number;
   original_price?: number;
   override_reason?: string;
@@ -314,6 +311,9 @@ export class POSEngine {
   ): Promise<{
     success: boolean;
     sale_id?: string;
+    order_number?: string;
+    total_amount?: number;
+    change_amount?: number;
     error?: string;
   }> {
     // Validate stock
@@ -336,25 +336,42 @@ export class POSEngine {
 
     try {
       const checkoutData = {
+        mode: "full",
+        source: "legacy-sales",
+        idempotencyKey: crypto.randomUUID(),
         customerId: this.cart.customer_id,
-        orderType: "retail",
-        paymentMethod: this.cart.payment_method,
-        paymentRef: this.cart.payment_ref,
-        lineItems: this.cart.items.map((i) => ({
-          inventory_id: i.inventory_id,
-          quantity: i.quantity,
-          unit_price: i.unit_price,
+        payment: {
+          method: this.cart.payment_method,
+          receipt: "none",
+          creditConfirmed: this.cart.payment_method === "credit",
+        },
+        items: this.cart.items.map((i) => ({
+          id: i.inventory_id,
+          inventoryId: i.inventory_id,
+          name: i.product_name,
+          sku: i.sku,
+          unitPrice: i.overridden_price ?? i.unit_price,
+          qty: i.quantity,
+          source: "inventory",
+          weightGrams: i.weight_grams,
+          pricePerGram: i.price_per_gram,
+          bulkTierApplied: i.bulk_tier_applied,
+          loyaltyDiscountApplied: i.loyalty_discount_applied,
+          originalPrice: i.original_price,
+          overrideReason: i.override_reason,
         })),
         taxAmount: this.cart.tax_amount,
         fees: fees,
+        paymentRef: this.cart.payment_ref,
         deliveryManagementId: this.cart.delivery_management_id,
         deliveryAddress: this.cart.delivery_address,
         deliveryPrice: this.cart.delivery_price,
         amountPaid: this.cart.amount_paid,
       };
 
-      const res = await fetch("/api/pos/checkout-enhanced", {
+      const res = await fetch("/api/pos/checkout", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(checkoutData),
       });
 
@@ -362,7 +379,14 @@ export class POSEngine {
       if (result.success) {
         this.clearCart();
       }
-      return result;
+      return {
+        success: result.success,
+        sale_id: result.saleId,
+        order_number: result.orderNumber,
+        total_amount: result.total,
+        change_amount: result.changeAmount,
+        error: result.error,
+      };
     } catch (e: any) {
       return { success: false, error: e.message };
     }

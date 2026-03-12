@@ -1,6 +1,19 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import {
+  PosCheckoutError,
+  addItem,
+  checkout,
+  createCart,
+  setAmountPaid,
+  setDelivery,
+  setFees,
+  setPayment,
+  setPaymentRef,
+  setTaxAmount,
+} from "@/lib/pos/core";
+import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,45 +23,79 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    let cart = createCart({
+      businessId,
+      userId,
+      mode: "full",
+      source: "checkout-enhanced",
+      customerId: body.customerId || null,
+    });
 
-    // Call the Postgres enhanced function
-    // params: p_business_id, p_customer_id, p_order_type, p_payment_method, p_line_items, p_tax_amount, p_fees, p_delivery_management_id, p_delivery_address, p_delivery_price, p_amount_paid
-    const result: any[] = await db.$queryRaw`
-      SELECT * FROM process_pos_checkout_enhanced(
-        ${businessId}::uuid,
-        ${body.customerId || null}::uuid,
-        ${body.orderType || "retail"},
-        ${body.paymentMethod || "cash"},
-        ${JSON.stringify(body.lineItems)}::jsonb,
-        ${body.taxAmount || 0}::decimal,
-        ${JSON.stringify(body.fees || [])}::jsonb,
-        ${body.deliveryManagementId || null}::uuid,
-        ${body.deliveryAddress || null},
-        ${body.deliveryPrice || 0}::decimal,
-        ${body.amountPaid || 0}::decimal,
-        ${userId}::uuid
-      )
-    `;
-
-    if (result && result.length > 0 && result[0].success) {
-      return NextResponse.json({
-        success: true,
-        sale_id: result[0].sale_id,
-        order_number: result[0].order_number,
-        total_amount: result[0].total_amount,
-        change_amount: result[0].change_amount,
-      });
+    const items = Array.isArray(body.lineItems) ? body.lineItems : [];
+    for (const item of items) {
+      const cartItem: PosCartItem = {
+        id: item.id || item.inventory_id,
+        inventoryId: item.inventory_id,
+        name: item.product_name || item.name || "Inventory Item",
+        unitPrice: Number(item.overridden_price ?? item.unit_price ?? 0),
+        qty: Number(item.quantity ?? 1),
+        source: "inventory",
+        sku: item.sku ?? null,
+        barcode: item.barcode ?? null,
+        weightGrams:
+          item.weight_grams !== undefined ? Number(item.weight_grams) : undefined,
+        pricePerGram:
+          item.price_per_gram !== undefined ? Number(item.price_per_gram) : undefined,
+        bulkTierApplied: item.bulk_tier_applied,
+        loyaltyDiscountApplied:
+          item.loyalty_discount_applied !== undefined
+            ? Number(item.loyalty_discount_applied)
+            : undefined,
+        originalPrice:
+          item.original_price !== undefined ? Number(item.original_price) : undefined,
+        overrideReason: item.override_reason,
+      };
+      cart = addItem(cart, cartItem);
     }
 
+    const payment: PosPayment = {
+      method: body.paymentMethod || "cash",
+      receipt: "none",
+      creditConfirmed: body.paymentMethod === "credit",
+    };
+
+    cart = setPayment(cart, payment);
+    cart = setTaxAmount(cart, Number(body.taxAmount || 0));
+    cart = setFees(cart, (body.fees || []) as PosFee[]);
+    cart = setPaymentRef(cart, body.paymentRef || null);
+    cart = setAmountPaid(
+      cart,
+      body.amountPaid !== undefined ? Number(body.amountPaid) : null,
+    );
+    cart = setDelivery(cart, {
+      deliveryManagementId: body.deliveryManagementId || null,
+      deliveryAddress: body.deliveryAddress || null,
+      deliveryPrice:
+        body.deliveryPrice !== undefined ? Number(body.deliveryPrice) : 0,
+    });
+
+    const result = await checkout(cart, body.idempotencyKey || randomUUID());
+
+    return NextResponse.json({
+      success: true,
+      sale_id: result.saleId,
+      order_number: result.orderNumber,
+      total_amount: result.total,
+      change_amount: result.changeAmount,
+    });
+  } catch (error) {
+    const status = error instanceof PosCheckoutError ? error.status : 400;
     return NextResponse.json(
       {
         success: false,
-        error: result?.[0]?.error_message || "Checkout failed",
+        error: error instanceof Error ? error.message : "Checkout failed",
       },
-      { status: 400 },
+      { status },
     );
-  } catch (error: any) {
-    console.error("Enhanced Checkout Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

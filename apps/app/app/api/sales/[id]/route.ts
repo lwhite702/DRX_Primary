@@ -75,8 +75,7 @@ export async function PATCH(
       where: { id: saleId },
       data: {
         paymentMethod: body.paymentMethod || sale.paymentMethod,
-        // payment_ref is not in Prisma schema yet, but wait, let me check that.
-        // It was in the Supabase query. Let's see if it's in schema.prisma.
+        paymentRef: body.paymentRef ?? sale.paymentRef,
       },
     });
 

@@ -34,6 +34,7 @@ interface WeightEntryModalProps {
     sku: string;
     weight_grams: number;
     unit_price: number;
+    price_per_gram?: number;
     bulk_tier_applied?: string;
     line_total: number;
   }) => void;
@@ -51,7 +52,6 @@ export function WeightEntryModal({
   const [tierName, setTierName] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [aliases, setAliases] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [loadingAliases, setLoadingAliases] = useState(false);
   const [processing, setProcessing] = useState(false);
   const supabase = getSupabaseClient();
@@ -137,6 +137,7 @@ export function WeightEntryModal({
         sku: product.sku,
         weight_grams: parseFloat(weightGrams),
         unit_price: totalPrice,
+        price_per_gram: pricePerGram,
         bulk_tier_applied: tierName || undefined,
         line_total: totalPrice,
       });
