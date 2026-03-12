@@ -38,6 +38,7 @@ import { CartFees } from "./_components/CartFees";
 import { CartTotals } from "./_components/CartTotals";
 import { PaymentSection } from "./_components/PaymentSection";
 import { AdminActions } from "./_components/AdminActions";
+import { drxCopy } from "@/lib/copy/drx";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -207,10 +208,10 @@ export default function SalesPage() {
     try {
       const result = await applyAIPricing(business.id, rec.id);
       if (result.success) {
-        toast.success(`Price updated to ${result.newPrice?.toFixed(2)}`);
+        toast.success(`${drxCopy.pos.cart.priceUpdatedTo} ${result.newPrice?.toFixed(2)}`);
         setAiRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
       } else {
-        toast.error(result.message || "Failed to apply pricing");
+        toast.error(result.message || drxCopy.pos.cart.priceApplyFailed);
       }
     } catch (e: any) {
       toast.error(e.message);
@@ -226,17 +227,17 @@ export default function SalesPage() {
     try {
       const result = await processCheckout(selectedCustomer, amountPaid);
       if (result.success) {
-        toast.success(`Sale completed! Order ID: ${result.sale_id}`);
+        toast.success(`${drxCopy.pos.cart.saleComplete} ${result.sale_id}`);
         setSelectedCustomer(undefined);
         setAmountPaid("");
         setDeliveryAddress("");
         setDeliveryPrice(0);
         setShowAmountPaidMode(false);
       } else {
-        toast.error(result.error || "Checkout failed");
+        toast.error(result.error || drxCopy.pos.cart.checkoutFailed);
       }
     } catch (e: any) {
-      toast.error(e.message || "Checkout failed");
+      toast.error(e.message || drxCopy.pos.cart.checkoutFailed);
     }
   };
 
@@ -245,7 +246,7 @@ export default function SalesPage() {
   if (!business) {
     return (
       <div className="p-4 md:p-8">
-        No business found. Please set up your business first.
+        {drxCopy.pos.missingBusiness}
       </div>
     );
   }
@@ -256,10 +257,10 @@ export default function SalesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
         <div>
           <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            POINT OF SALE
+            {drxCopy.pos.title}
           </h1>
           <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            TERMINAL: {business?.name?.toUpperCase() || "MAIN"} •{" "}
+            {drxCopy.pos.subtitlePrefix} {business?.name?.toUpperCase() || "MAIN"} •{" "}
             {new Date().toLocaleDateString()}
           </p>
         </div>
