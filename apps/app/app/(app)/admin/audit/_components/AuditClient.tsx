@@ -154,7 +154,7 @@ export function AuditClient() {
             System Audit Trails
           </h1>
           <p className="text-muted-foreground mt-1">
-            Immutable logs for security and compliance audits
+            Locked audit logs for security and compliance checks
           </p>
         </div>
         <div className="flex items-center gap-2">

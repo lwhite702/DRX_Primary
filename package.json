@@ -8,15 +8,15 @@
     "dev:ci": "next dev",
     "version:check": "node scripts/version.js check",
     "version:bump": "node scripts/version.js bump",
-    "lint": "eslint .",
+    "lint": "pnpm lint:copy && eslint .",
     "typecheck": "pnpm --filter deelrxcrm-app typecheck",
-    "lint:compliance": "eslint . --max-warnings=0 || (echo '❌ Compliance violations detected' && exit 1)",
+    "lint:compliance": "eslint . --max-warnings=0 || (echo '\u274c Compliance violations detected' && exit 1)",
     "compliance:scan": "./scripts/scan-compliance.sh",
     "compliance:static": "pnpm compliance:scan && pnpm lint --quiet",
-    "compliance:secrets": "git ls-files | grep -E '^\\.env\\.' | grep -v '^\\.env\\.example' && echo '❌ Environment files found in git - secrets may be exposed' && exit 1 || echo '✅ No environment files tracked in git'",
-    "compliance:lockfiles": "if [ $(git ls-files | grep -E 'package-lock\\.json|yarn\\.lock' | wc -l) -gt 1 ]; then echo '❌ Multiple package manager lockfiles found' && exit 1; else echo '✅ Single package manager enforced'; fi",
-    "compliance:imports": "eslint . --max-warnings=0 || (echo '❌ Banned vendor imports detected' && exit 1)",
-    "compliance:full": "npm run compliance:secrets && npm run compliance:lockfiles && npm run compliance:imports && npm run verify:tarballs && npm run verify:lock && echo '✅ All compliance checks passed'",
+    "compliance:secrets": "git ls-files | grep -E '^\\.env\\.' | grep -v '^\\.env\\.example' && echo '\u274c Environment files found in git - secrets may be exposed' && exit 1 || echo '\u2705 No environment files tracked in git'",
+    "compliance:lockfiles": "if [ $(git ls-files | grep -E 'package-lock\\.json|yarn\\.lock' | wc -l) -gt 1 ]; then echo '\u274c Multiple package manager lockfiles found' && exit 1; else echo '\u2705 Single package manager enforced'; fi",
+    "compliance:imports": "eslint . --max-warnings=0 || (echo '\u274c Banned vendor imports detected' && exit 1)",
+    "compliance:full": "npm run compliance:secrets && npm run compliance:lockfiles && npm run compliance:imports && npm run verify:tarballs && npm run verify:lock && echo '\u2705 All compliance checks passed'",
     "verify:lock": "node scripts/verify-build-lock.mjs",
     "verify:tarballs": "node scripts/verify-tarballs.mjs",
     "wrelik:refresh": "node scripts/refresh-wrelik.mjs",
@@ -36,7 +36,8 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "lint:copy": "node scripts/copy-lint.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
@@ -159,5 +160,6 @@
       "@wrelik/jobs": "0.1.2",
       "@wrelik/config": "0.2.0"
     }
-  }
+  },
+  "packageManager": "pnpm@10.18.3"
 }

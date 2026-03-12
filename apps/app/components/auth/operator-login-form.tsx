@@ -110,7 +110,7 @@ export function OperatorLoginForm() {
             className="w-full bg-[#D9F99D] text-black hover:bg-[#bef264] font-bold tracking-wide h-11"
             disabled={loading}
           >
-            {loading ? "AUTHENTICATING..." : "AUTHENTICATE"}
+            {loading ? "SIGNING IN..." : "SIGN IN"}
           </Button>
 
           <div className="relative py-2">
@@ -144,7 +144,7 @@ export function OperatorLoginForm() {
               type="button"
               className="w-full border-white/10 hover:bg-white/5 h-10 text-xs font-bold"
             >
-              Enterprise SSO
+              Team SSO
             </Button>
           </div>
         </form>

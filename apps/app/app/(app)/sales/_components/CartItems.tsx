@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ShoppingCart } from "lucide-react";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { type CartState } from "@/lib/utils/pos-engine";
+import { drxCopy } from "@/lib/copy/drx";
 
 interface CartItemsProps {
   cart: CartState;
@@ -27,8 +28,8 @@ export function CartItems({
     return (
       <EmptyState
         icon={ShoppingCart}
-        title="Cart is empty"
-        description="Scan items or select from inventory to start a sale."
+        title={drxCopy.pos.cart.emptyTitle}
+        description={drxCopy.pos.cart.emptyBody}
         className="py-4 border-none shadow-none"
       />
     );
@@ -46,7 +47,7 @@ export function CartItems({
               <p className="text-sm font-medium">{item.product_name}</p>
               {item.overridden_price && (
                 <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
-                  ⚠️ Override
+                  ⚠️ {drxCopy.pos.cart.overrideBadge}
                 </span>
               )}
             </div>
@@ -54,7 +55,7 @@ export function CartItems({
               ${item.unit_price.toFixed(2)} × {item.quantity}
               {item.overridden_price && item.original_price && (
                 <span className="ml-2 line-through text-muted-foreground">
-                  (was ${item.original_price.toFixed(2)})
+                  ({drxCopy.pos.cart.wasPrice} ${item.original_price.toFixed(2)})
                 </span>
               )}
             </p>
@@ -66,7 +67,7 @@ export function CartItems({
                   variant="ghost"
                   size="sm"
                   onClick={() => onOverridePrice(item)}
-                  title="Override Price"
+                  title={drxCopy.pos.cart.overrideTitle}
                 >
                   <DollarSign className="h-4 w-4" />
                 </Button>
