@@ -69,36 +69,50 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const hasClerkPublishableKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-  const appShell = (
+  const shouldEnableMeticulous =
+    process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
+
+  return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {shouldEnableMeticulous ? (
+          <script
+            data-recording-token="cRGkJLMiRI2wrAO55KfQl9KZtjVmHSivvTyM80Wy"
+            data-is-production-environment="false"
+            src="https://snippet.meticulous.ai/v1/meticulous.js"
+          />
+        ) : null}
+      </head>
       <body
         className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
       >
-        <GlobalErrorBoundary>
-          <PostHogProvider>
-            <FeaturebaseProvider />
-            {children}
-            <Toaster position="top-right" />
-          </PostHogProvider>
-        </GlobalErrorBoundary>
+        {hasClerkPublishableKey ? (
+          <ClerkProvider
+            signInUrl="/login"
+            signUpUrl="/register"
+            waitlistUrl="/waitlist"
+            signInFallbackRedirectUrl="/dashboard"
+            signUpFallbackRedirectUrl="/onboarding"
+            afterSignOutUrl="/login"
+          >
+            <GlobalErrorBoundary>
+              <PostHogProvider>
+                <FeaturebaseProvider />
+                {children}
+                <Toaster position="top-right" />
+              </PostHogProvider>
+            </GlobalErrorBoundary>
+          </ClerkProvider>
+        ) : (
+          <GlobalErrorBoundary>
+            <PostHogProvider>
+              <FeaturebaseProvider />
+              {children}
+              <Toaster position="top-right" />
+            </PostHogProvider>
+          </GlobalErrorBoundary>
+        )}
       </body>
     </html>
-  );
-
-  if (!hasClerkPublishableKey) {
-    return appShell;
-  }
-
-  return (
-    <ClerkProvider
-      signInUrl="/login"
-      signUpUrl="/register"
-      waitlistUrl="/waitlist"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/onboarding"
-      afterSignOutUrl="/login"
-    >
-      {appShell}
-    </ClerkProvider>
   );
 }
