@@ -6,8 +6,11 @@ import {
   addItem,
   checkout,
   createCart,
+  setAmountPaid,
+  setDelivery,
   setFees,
   setPayment,
+  setPaymentRef,
   setTaxAmount,
 } from "@/lib/pos/core";
 import type { ReceiptOutput } from "@/lib/pos/contract";
@@ -16,7 +19,9 @@ import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
 type PosCheckoutResponse = {
   success: boolean;
   saleId?: string;
+  orderNumber?: string;
   total?: number;
+  changeAmount?: number;
   receipt?: ReceiptOutput;
   error?: string;
 };
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
     businessId,
     userId,
     mode: payload.mode,
+    source: payload.source,
     customerId: payload.customerId ?? null,
   });
 
@@ -64,6 +70,12 @@ export async function POST(request: NextRequest) {
       unitPrice: item.unitPrice,
       qty: item.qty,
       source: item.source,
+      weightGrams: item.weightGrams,
+      pricePerGram: item.pricePerGram,
+      bulkTierApplied: item.bulkTierApplied,
+      loyaltyDiscountApplied: item.loyaltyDiscountApplied,
+      originalPrice: item.originalPrice,
+      overrideReason: item.overrideReason,
     };
     updatedCart = addItem(updatedCart, cartItem);
   }
@@ -85,6 +97,13 @@ export async function POST(request: NextRequest) {
   } else {
     updatedCart = setTaxAmount(updatedCart, payload.taxAmount ?? 0);
     updatedCart = setFees(updatedCart, payload.fees ?? []);
+    updatedCart = setPaymentRef(updatedCart, payload.paymentRef);
+    updatedCart = setAmountPaid(updatedCart, payload.amountPaid);
+    updatedCart = setDelivery(updatedCart, {
+      deliveryManagementId: payload.deliveryManagementId ?? null,
+      deliveryAddress: payload.deliveryAddress ?? null,
+      deliveryPrice: payload.deliveryPrice ?? 0,
+    });
   }
 
   try {
@@ -101,7 +120,9 @@ export async function POST(request: NextRequest) {
     const response: PosCheckoutResponse = {
       success: true,
       saleId: result.saleId,
+      orderNumber: result.orderNumber,
       total: result.total,
+      changeAmount: result.changeAmount,
       receipt,
     };
     return NextResponse.json(response, { status: 201 });

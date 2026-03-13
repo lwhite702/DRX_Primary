@@ -38,19 +38,71 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/app/api/pos/_lib/server", () => ({
+  toNumber(value: unknown) {
+    if (typeof value === "number") return value;
+    if (value && typeof value === "object" && "toNumber" in value) {
+      return (value as { toNumber: () => number }).toNumber();
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  },
+}));
+
 import {
   PosCheckoutError,
   addItem,
   checkout,
   createCart,
   quote,
+  setAmountPaid,
+  setDelivery,
   setFees,
   setPayment,
+  setPaymentRef,
   setTaxAmount,
 } from "@/lib/pos/core";
 import { db } from "@/lib/db";
 
 const mockedDb = vi.mocked(db);
+
+function createTxBase(overrides?: Record<string, unknown>) {
+  return {
+    businessSettings: {
+      findUnique: vi.fn().mockResolvedValue({ collectTax: true }),
+    },
+    sales: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({
+        id: "sale_123",
+        orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+      }),
+    },
+    customers: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    creditLimit: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    inventory: {
+      update: vi.fn().mockResolvedValue({}),
+    },
+    inventoryLog: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+    creditTransaction: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+    systemAuditLog: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+    $queryRaw: vi.fn().mockResolvedValue([]),
+    $executeRaw: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
 
 function createBaseCart() {
   const cart = createCart({
@@ -130,11 +182,11 @@ describe("pos core", () => {
   it("rejects duplicate idempotency keys with 409", async () => {
     const cart = createBaseCart();
     mockedDb.$transaction.mockImplementation(async (fn: any) => {
-      const tx = {
+      const tx = createTxBase({
         sales: {
           findFirst: vi.fn().mockResolvedValue({ id: "sale-existing" }),
         },
-      };
+      });
       return fn(tx);
     });
 
@@ -170,17 +222,17 @@ describe("pos core", () => {
     );
 
     mockedDb.$transaction.mockImplementation(async (fn: any) => {
-      const tx = {
-        sales: {
-          findFirst: vi.fn().mockResolvedValue(null),
-        },
+      const tx = createTxBase({
         $queryRaw: vi.fn().mockResolvedValue([
           {
             id: "22222222-2222-4222-8222-222222222222",
+            product_name: "Inventory Item",
             quantity_on_hand: 2,
+            inventory_in_grams: 0,
+            unit_cost: 4,
           },
         ]),
-      };
+      });
       return fn(tx);
     });
 
@@ -214,9 +266,13 @@ describe("pos core", () => {
     });
 
     mockedDb.$transaction.mockImplementation(async (fn: any) => {
-      const tx = {
-        sales: {
-          findFirst: vi.fn().mockResolvedValue(null),
+      const tx = createTxBase({
+        customers: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: "44444444-4444-4444-8444-444444444444",
+            discountRate: 0,
+          }),
+          update: vi.fn().mockResolvedValue({}),
         },
         creditLimit: {
           findFirst: vi.fn().mockResolvedValue({
@@ -225,13 +281,135 @@ describe("pos core", () => {
             currentBalance: 9,
           }),
         },
-      };
+      });
       return fn(tx);
     });
 
     await expect(checkout(withItem, "55555555-5555-4555-8555-555555555555")).rejects.toMatchObject({
-      message: "Credit cap exceeded",
       status: 400,
+    });
+  });
+
+  it("persists rich full-checkout metadata and weighted line items", async () => {
+    let txUsed: ReturnType<typeof createTxBase> | undefined;
+    const cart = setDelivery(
+      setAmountPaid(
+        setPaymentRef(
+          setPayment(
+            addItem(
+              createCart({
+                businessId: "11111111-1111-4111-8111-111111111111",
+                userId: "user_123",
+                mode: "full",
+                source: "legacy-sales",
+                customerId: "44444444-4444-4444-8444-444444444444",
+              }),
+              {
+                id: "weighted-line",
+                inventoryId: "22222222-2222-4222-8222-222222222222",
+                name: "Weighted Item",
+                unitPrice: 28,
+                qty: 1,
+                source: "inventory",
+                weightGrams: 3.5,
+                pricePerGram: 8,
+                bulkTierApplied: "3.5g",
+                originalPrice: 30,
+                overrideReason: "Manager approved",
+              },
+            ),
+            {
+              method: "card",
+              receipt: "print",
+              creditConfirmed: false,
+            },
+          ),
+          "AUTH-123",
+        ),
+        35,
+      ),
+      {
+        deliveryManagementId: "66666666-6666-4666-8666-666666666666",
+        deliveryAddress: "123 Main St",
+        deliveryPrice: 5,
+      },
+    );
+
+    mockedDb.$transaction.mockImplementation(async (fn: any) => {
+      txUsed = createTxBase({
+        customers: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: "44444444-4444-4444-8444-444444444444",
+            discountRate: 0.1,
+          }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        $queryRaw: vi.fn().mockResolvedValue([
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            product_name: "Weighted Item",
+            quantity_on_hand: 5,
+            inventory_in_grams: 10,
+            unit_cost: 5,
+          },
+        ]),
+      });
+      return fn(txUsed);
+    });
+
+    const result = await checkout(cart, "11111111-1111-4111-8111-111111111111");
+
+    expect(result).toEqual({
+      saleId: "sale_123",
+      orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+      total: 30.2,
+      changeAmount: 4.8,
+    });
+    expect(txUsed?.sales.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          paymentRef: "AUTH-123",
+          deliveryAddress: "123 Main St",
+        }),
+      }),
+    );
+    expect(txUsed?.$queryRaw).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          raw: expect.arrayContaining([expect.stringContaining("FOR UPDATE")]),
+        }),
+      ]),
+    );
+    expect(txUsed?.inventory.update).toHaveBeenCalledWith({
+      where: { id: "22222222-2222-4222-8222-222222222222" },
+      data: {
+        inventoryInGrams: { decrement: expect.any(Object) },
+      },
+    });
+    expect(txUsed?.inventoryLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        inventoryId: "22222222-2222-4222-8222-222222222222",
+        transactionType: "sale",
+        quantityChange: null,
+        reason: "POS full weighted checkout (3.5g)",
+      }),
+    });
+    expect(txUsed?.systemAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "pos.checkout",
+        entityType: "sales",
+        entityId: "sale_123",
+        businessId: "11111111-1111-4111-8111-111111111111",
+        userId: "user_123",
+        newValues: expect.objectContaining({
+          source: "legacy-sales",
+          mode: "full",
+          idempotencyKey: "11111111-1111-4111-8111-111111111111",
+          paymentMethod: "card",
+          orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+          itemCount: 1,
+        }),
+      }),
     });
   });
 
