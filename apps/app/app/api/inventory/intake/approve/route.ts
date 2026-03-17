@@ -240,6 +240,18 @@ async function processApprovedIntake(
     supplier,
   });
 
+  await supabase.from("inventory_batches").insert({
+    business_id,
+    inventory_id,
+    intake_id,
+    original_quantity_grams: total_weight_grams,
+    remaining_quantity_grams: total_weight_grams,
+    unit_cost_per_gram: calculated_cost_per_gram,
+    supplier,
+    received_at: new Date().toISOString(),
+    created_by: user_id,
+  });
+
   // Create inventory log entries
   await supabase.from("inventory_log").insert({
     inventory_id,

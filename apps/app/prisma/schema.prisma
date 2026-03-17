@@ -30,6 +30,9 @@ model BusinessProfile {
   invites          Invite[]
   settings         BusinessSettings[]
   inventory        Inventory[]
+  inventoryIntakes InventoryIntake[]
+  costHistory      CostHistory[]
+  inventoryBatches InventoryBatch[]
   customers        Customers[]
   creditTxns       CreditTransaction[]
   creditLimits     CreditLimit[]
@@ -130,6 +133,10 @@ model Inventory {
   updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
 
   logs        InventoryLog[]
+  intakes     InventoryIntake[]
+  batches     InventoryBatch[]
+  costHistory CostHistory[]
+  allocations SalesLineItemAllocation[]
   salesItems     SalesLineItem[]
   pricingRecs    AiPricingRecommendation[]
   forecasts      InventoryForecast[]
@@ -152,6 +159,72 @@ model InventoryLog {
   createdAt       DateTime  @default(now()) @map("created_at")
 
   @@map("inventory_log")
+}
+
+model InventoryIntake {
+  id                    String          @id @default(uuid())
+  businessId            String          @map("business_id")
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId           String          @map("inventory_id")
+  inventory             Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  totalCost             Decimal         @map("total_cost") @db.Decimal(12, 4)
+  totalWeightGrams      Decimal         @map("total_weight_grams") @db.Decimal(12, 4)
+  calculatedCostPerGram Decimal         @map("calculated_cost_per_gram") @db.Decimal(12, 6)
+  deliveryCost          Decimal?        @default(0) @map("delivery_cost") @db.Decimal(12, 2)
+  supplier              String?         @db.VarChar(255)
+  requiresApproval      Boolean         @default(false) @map("requires_approval")
+  approvedBy            String?         @map("approved_by")
+  approvedAt            DateTime?       @map("approved_at")
+  status                String?         @default("approved") @db.VarChar(50)
+  rejectionReason       String?         @map("rejection_reason")
+  createdBy             String?         @map("created_by")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  costHistory CostHistory[]
+  batches     InventoryBatch[]
+
+  @@map("inventory_intakes")
+}
+
+model CostHistory {
+  id               String          @id @default(uuid())
+  businessId       String          @map("business_id")
+  business         BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId      String          @map("inventory_id")
+  inventory        Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  intakeId         String?         @map("intake_id")
+  intake           InventoryIntake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  costPerGram      Decimal         @map("cost_per_gram") @db.Decimal(12, 6)
+  totalCost        Decimal         @map("total_cost") @db.Decimal(12, 4)
+  totalWeightGrams Decimal         @map("total_weight_grams") @db.Decimal(12, 4)
+  deliveryCost     Decimal?        @default(0) @map("delivery_cost") @db.Decimal(12, 2)
+  supplier         String?         @db.VarChar(255)
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  @@map("cost_history")
+}
+
+model InventoryBatch {
+  id                    String          @id @default(uuid())
+  businessId            String          @map("business_id")
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId           String          @map("inventory_id")
+  inventory             Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  intakeId              String?         @map("intake_id")
+  intake                InventoryIntake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  originalQuantityGrams Decimal         @map("original_quantity_grams") @db.Decimal(12, 4)
+  remainingQuantityGrams Decimal        @map("remaining_quantity_grams") @db.Decimal(12, 4)
+  unitCostPerGram       Decimal         @map("unit_cost_per_gram") @db.Decimal(12, 6)
+  supplier              String?         @db.VarChar(255)
+  receivedAt            DateTime        @default(now()) @map("received_at")
+  createdBy             String?         @map("created_by")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  allocations SalesLineItemAllocation[]
+
+  @@map("inventory_batches")
 }
 
 // 03: Customers
@@ -262,6 +335,7 @@ model Sales {
 
   deliveryProfile DeliveryManagement? @relation(fields: [deliveryManagementId], references: [id])
   items           SalesLineItem[]
+  allocations     SalesLineItemAllocation[]
 
   @@unique([businessId, orderNumber])
   @@map("sales")
@@ -285,7 +359,31 @@ model SalesLineItem {
   priceOverrideReason String? @map("price_override_reason")
   createdAt   DateTime   @default(now()) @map("created_at")
 
+  allocations SalesLineItemAllocation[]
+
   @@map("sales_line_items")
+}
+
+model SalesLineItemAllocation {
+  id              String         @id @default(uuid())
+  saleId          String         @map("sale_id")
+  sale            Sales          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  salesLineItemId String         @map("sales_line_item_id")
+  salesLineItem   SalesLineItem  @relation(fields: [salesLineItemId], references: [id], onDelete: Cascade)
+  inventoryId     String         @map("inventory_id")
+  inventory       Inventory      @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  batchId         String?        @map("batch_id")
+  batch           InventoryBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  quantityGrams   Decimal        @map("quantity_grams") @db.Decimal(12, 4)
+  unitCostPerGram Decimal        @map("unit_cost_per_gram") @db.Decimal(12, 6)
+  extendedCost    Decimal        @map("extended_cost") @db.Decimal(12, 4)
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@index([saleId])
+  @@index([salesLineItemId])
+  @@index([inventoryId])
+  @@index([batchId])
+  @@map("sales_line_item_allocations")
 }
 
 model DeliveryManagement {

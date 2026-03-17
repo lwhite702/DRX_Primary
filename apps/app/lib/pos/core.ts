@@ -33,12 +33,21 @@ type InventoryAvailabilityResult = {
     string,
     {
       id: string;
-      productName: string;
-      quantityOnHand: number;
-      inventoryInGrams: number;
-      unitCost: number;
-    }
-  >;
+        productName: string;
+        quantityOnHand: number;
+        inventoryInGrams: number;
+        unitCost: number;
+        convertToGrams: number;
+      }
+    >;
+};
+
+type InventoryBatchAllocation = {
+  batchId: string | null;
+  inventoryId: string;
+  quantityGrams: number;
+  unitCostPerGram: number;
+  extendedCost: number;
 };
 
 type CreditValidationResult = {
@@ -112,10 +121,11 @@ async function loadInventoryRows(
         quantity_on_hand: number;
         inventory_in_grams: number | null;
         unit_cost: number | null;
+        convert_to_grams: number | null;
       }>
     >(
       Prisma.sql`
-        SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost
+        SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
         FROM inventory
         WHERE business_id = ${businessId}
           AND id IN (${Prisma.join(inventoryIds)})
@@ -131,10 +141,11 @@ async function loadInventoryRows(
       quantity_on_hand: number;
       inventory_in_grams: number | null;
       unit_cost: number | null;
+      convert_to_grams: number | null;
     }>
   >(
     Prisma.sql`
-      SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost
+      SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
       FROM inventory
       WHERE business_id = ${businessId}
         AND id IN (${Prisma.join(inventoryIds)})
@@ -162,6 +173,7 @@ export async function validateInventoryAvailability(
         quantityOnHand: row.quantity_on_hand,
         inventoryInGrams: toNumber(row.inventory_in_grams),
         unitCost: toNumber(row.unit_cost),
+        convertToGrams: toNumber(row.convert_to_grams),
       },
     ]),
   );
@@ -253,6 +265,95 @@ export async function validateCreditBalance(
       ? undefined
       : `Credit limit exceeded. Remaining: ${remaining.toFixed(2)}, Requested: ${amount.toFixed(2)}`,
   };
+}
+
+function getInventoryAllocationQuantityGrams(
+  item: CartLineItem,
+  inventory: InventoryAvailabilityResult["stockById"] extends Map<string, infer TValue>
+    ? TValue
+    : never,
+) {
+  if (item.weightGrams && item.weightGrams > 0) {
+    return roundWeight(item.weightGrams);
+  }
+
+  if (inventory.convertToGrams > 0) {
+    return roundWeight(inventory.convertToGrams * item.qty);
+  }
+
+  return 0;
+}
+
+async function allocateInventoryBatches(
+  tx: CheckoutDbClient,
+  businessId: string,
+  inventoryId: string,
+  quantityGrams: number,
+): Promise<InventoryBatchAllocation[]> {
+  if (quantityGrams <= 0) {
+    return [];
+  }
+
+  const rows = await tx.$queryRaw<
+    Array<{
+      id: string;
+      remaining_quantity_grams: number;
+      unit_cost_per_gram: number;
+    }>
+  >(
+    Prisma.sql`
+      SELECT id, remaining_quantity_grams, unit_cost_per_gram
+      FROM inventory_batches
+      WHERE business_id = ${businessId}
+        AND inventory_id = ${inventoryId}
+        AND remaining_quantity_grams > 0
+      ORDER BY received_at ASC, created_at ASC
+      FOR UPDATE
+    `,
+  );
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const allocations: InventoryBatchAllocation[] = [];
+  let remainingToAllocate = roundWeight(quantityGrams);
+
+  for (const row of rows) {
+    if (remainingToAllocate <= 0) {
+      break;
+    }
+
+    const available = roundWeight(Number(row.remaining_quantity_grams));
+    const allocated = roundWeight(Math.min(available, remainingToAllocate));
+    if (allocated <= 0) {
+      continue;
+    }
+
+    const unitCostPerGram = Number(row.unit_cost_per_gram);
+    allocations.push({
+      batchId: row.id,
+      inventoryId,
+      quantityGrams: allocated,
+      unitCostPerGram,
+      extendedCost: Number((allocated * unitCostPerGram).toFixed(4)),
+    });
+
+    await tx.inventoryBatch.update({
+      where: { id: row.id },
+      data: {
+        remainingQuantityGrams: asDecimal(available - allocated, 4),
+      },
+    });
+
+    remainingToAllocate = roundWeight(remainingToAllocate - allocated);
+  }
+
+  if (remainingToAllocate > 0) {
+    throw new PosCheckoutError(`Insufficient FIFO batch inventory for item ${inventoryId}`);
+  }
+
+  return allocations;
 }
 
 export function createCart(params: {
@@ -475,50 +576,93 @@ export async function checkout(
           deliveryAddress: cart.deliveryAddress ?? null,
           deliveryPrice: asDecimal(deliveryPrice),
           createdBy: cart.userId,
-          items: {
-            create: cart.items.map((item) => {
-              const inventory = item.inventoryId
-                ? inventoryCheck.stockById.get(item.inventoryId)
-                : null;
-              const pricePerGram =
-                item.weightGrams && item.weightGrams > 0
-                  ? item.pricePerGram ?? roundWeight(item.unitPrice / item.weightGrams)
-                  : null;
-
-              return {
-                inventoryId: item.inventoryId,
-                quantity: item.qty,
-                unitPrice: asDecimal(item.unitPrice),
-                lineTotal: asDecimal(getLineTotal(item)),
-                unitCost: inventory ? asDecimal(inventory.unitCost) : undefined,
-                weightSoldGrams:
-                  item.weightGrams && item.weightGrams > 0
-                    ? asDecimal(item.weightGrams, 4)
-                    : undefined,
-                pricePerGram:
-                  pricePerGram && pricePerGram > 0
-                    ? asDecimal(pricePerGram, 4)
-                    : undefined,
-                bulkTierApplied: item.bulkTierApplied,
-                loyaltyDiscountApplied:
-                  item.loyaltyDiscountApplied !== undefined
-                    ? asDecimal(item.loyaltyDiscountApplied, 4)
-                    : loyaltyDiscountRate > 0
-                      ? asDecimal(loyaltyDiscountRate, 4)
-                      : undefined,
-                originalPrice:
-                  item.originalPrice !== undefined
-                    ? asDecimal(item.originalPrice)
-                    : undefined,
-                priceOverrideReason: item.overrideReason,
-              };
-            }),
-          },
         },
         select: { id: true, orderNumber: true },
       });
 
       for (const item of cart.items) {
+        const inventory = item.inventoryId
+          ? inventoryCheck.stockById.get(item.inventoryId)
+          : null;
+        const allocationQuantityGrams = inventory
+          ? getInventoryAllocationQuantityGrams(item, inventory)
+          : 0;
+        const pricePerGram =
+          item.weightGrams && item.weightGrams > 0
+            ? item.pricePerGram ?? roundWeight(item.unitPrice / item.weightGrams)
+            : null;
+
+        const batchAllocations =
+          item.inventoryId && allocationQuantityGrams > 0
+            ? await allocateInventoryBatches(
+                tx,
+                cart.businessId,
+                item.inventoryId,
+                allocationQuantityGrams,
+              )
+            : [];
+        const allocatedExtendedCost = batchAllocations.reduce(
+          (sum, entry) => sum + entry.extendedCost,
+          0,
+        );
+        const allocatedUnitCost =
+          batchAllocations.length > 0
+            ? item.weightGrams && item.weightGrams > 0
+              ? allocatedExtendedCost / item.weightGrams
+              : allocatedExtendedCost / item.qty
+            : null;
+
+        const saleLineItem = await tx.salesLineItem.create({
+          data: {
+            saleId: sale.id,
+            inventoryId: item.inventoryId,
+            quantity: item.qty,
+            unitPrice: asDecimal(item.unitPrice),
+            lineTotal: asDecimal(getLineTotal(item)),
+            unitCost:
+              allocatedUnitCost !== null
+                ? asDecimal(allocatedUnitCost)
+                : inventory
+                  ? asDecimal(inventory.unitCost)
+                  : undefined,
+            weightSoldGrams:
+              item.weightGrams && item.weightGrams > 0
+                ? asDecimal(item.weightGrams, 4)
+                : undefined,
+            pricePerGram:
+              pricePerGram && pricePerGram > 0
+                ? asDecimal(pricePerGram, 4)
+                : undefined,
+            bulkTierApplied: item.bulkTierApplied,
+            loyaltyDiscountApplied:
+              item.loyaltyDiscountApplied !== undefined
+                ? asDecimal(item.loyaltyDiscountApplied, 4)
+                : loyaltyDiscountRate > 0
+                  ? asDecimal(loyaltyDiscountRate, 4)
+                  : undefined,
+            originalPrice:
+              item.originalPrice !== undefined
+                ? asDecimal(item.originalPrice)
+                : undefined,
+            priceOverrideReason: item.overrideReason,
+          },
+          select: { id: true },
+        });
+
+        if (batchAllocations.length > 0) {
+          await tx.salesLineItemAllocation.createMany({
+            data: batchAllocations.map((entry) => ({
+              saleId: sale.id,
+              salesLineItemId: saleLineItem.id,
+              inventoryId: entry.inventoryId,
+              batchId: entry.batchId,
+              quantityGrams: asDecimal(entry.quantityGrams, 4),
+              unitCostPerGram: asDecimal(entry.unitCostPerGram, 6),
+              extendedCost: asDecimal(entry.extendedCost, 4),
+            })),
+          });
+        }
+
         if (!item.inventoryId) {
           continue;
         }
@@ -545,6 +689,13 @@ export async function checkout(
             where: { id: item.inventoryId },
             data: {
               quantityOnHand: { decrement: item.qty },
+              ...(allocationQuantityGrams > 0
+                ? {
+                    inventoryInGrams: {
+                      decrement: asDecimal(allocationQuantityGrams, 4),
+                    },
+                  }
+                : {}),
             },
           });
 
