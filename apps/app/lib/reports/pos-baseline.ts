@@ -31,14 +31,20 @@ export interface PosBaselineReport {
     salesTotal: number;
     salesCount: number;
     cashCollected: number;
+    costOfGoodsSold: number;
+    grossProfit: number;
   };
   week: {
     salesTotal: number;
     salesCount: number;
+    costOfGoodsSold: number;
+    grossProfit: number;
   };
   previousWeek: {
     salesTotal: number;
     salesCount: number;
+    costOfGoodsSold: number;
+    grossProfit: number;
   };
   topProducts: Array<{
     id: string;
@@ -64,6 +70,8 @@ export interface PosBaselineReport {
   recentSales: Array<{
     id: string;
     total: number;
+    costOfGoodsSold: number;
+    grossProfit: number;
     paymentMethod: string | null;
     customerId: string | null;
     createdAt: string;
@@ -98,6 +106,7 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
         createdAt: { gte: todayStart },
       },
       select: {
+        id: true,
         totalAmount: true,
         paymentMethod: true,
       },
@@ -108,7 +117,7 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
         orderStatus: "completed",
         createdAt: { gte: weekStart },
       },
-      select: { totalAmount: true },
+      select: { id: true, totalAmount: true },
     }),
     db.sales.findMany({
       where: {
@@ -119,7 +128,7 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
           lt: previousWeekEnd,
         },
       },
-      select: { totalAmount: true },
+      select: { id: true, totalAmount: true },
     }),
     db.creditLimit.findMany({
       where: {
@@ -223,6 +232,30 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
     })
     .filter((row): row is NonNullable<typeof row> => Boolean(row));
 
+  const costSaleIds = Array.from(
+    new Set(
+      [...todaySales, ...weekSales, ...previousWeekSales, ...recentSales]
+        .map((sale) => sale.id)
+        .filter(Boolean),
+    ),
+  );
+
+  const saleCosts = costSaleIds.length
+    ? await db.salesLineItemAllocation.groupBy({
+        by: ["saleId"],
+        where: {
+          saleId: { in: costSaleIds },
+        },
+        _sum: {
+          extendedCost: true,
+        },
+      })
+    : [];
+
+  const cogsBySaleId = new Map(
+    saleCosts.map((row) => [row.saleId, toNumber(row._sum.extendedCost)]),
+  );
+
   const todaySalesTotal = todaySales.reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
   const weekSalesTotal = weekSales.reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
   const previousWeekSalesTotal = previousWeekSales.reduce(
@@ -232,6 +265,12 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
   const cashCollected = todaySales
     .filter((sale) => sale.paymentMethod === "cash")
     .reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
+  const todayCogs = todaySales.reduce((sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0), 0);
+  const weekCogs = weekSales.reduce((sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0), 0);
+  const previousWeekCogs = previousWeekSales.reduce(
+    (sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0),
+    0,
+  );
 
   const lowStockCountRaw = lowStockCountRows[0]?.count ?? 0;
   const lowStockCount = typeof lowStockCountRaw === "bigint" ? Number(lowStockCountRaw) : Number(lowStockCountRaw);
@@ -241,14 +280,20 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
       salesTotal: Number(todaySalesTotal.toFixed(2)),
       salesCount: todaySales.length,
       cashCollected: Number(cashCollected.toFixed(2)),
+      costOfGoodsSold: Number(todayCogs.toFixed(2)),
+      grossProfit: Number((todaySalesTotal - todayCogs).toFixed(2)),
     },
     week: {
       salesTotal: Number(weekSalesTotal.toFixed(2)),
       salesCount: weekSales.length,
+      costOfGoodsSold: Number(weekCogs.toFixed(2)),
+      grossProfit: Number((weekSalesTotal - weekCogs).toFixed(2)),
     },
     previousWeek: {
       salesTotal: Number(previousWeekSalesTotal.toFixed(2)),
       salesCount: previousWeekSales.length,
+      costOfGoodsSold: Number(previousWeekCogs.toFixed(2)),
+      grossProfit: Number((previousWeekSalesTotal - previousWeekCogs).toFixed(2)),
     },
     topProducts,
     lowStock: {
@@ -270,6 +315,8 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
     recentSales: recentSales.map((sale) => ({
       id: sale.id,
       total: toNumber(sale.totalAmount),
+      costOfGoodsSold: Number((cogsBySaleId.get(sale.id) ?? 0).toFixed(2)),
+      grossProfit: Number((toNumber(sale.totalAmount) - (cogsBySaleId.get(sale.id) ?? 0)).toFixed(2)),
       paymentMethod: sale.paymentMethod ?? null,
       customerId: sale.customerId ?? null,
       createdAt: sale.createdAt.toISOString(),
@@ -278,4 +325,3 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
     generatedAt: now.toISOString(),
   };
 }
-

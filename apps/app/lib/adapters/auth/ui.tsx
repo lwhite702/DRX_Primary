@@ -5,6 +5,8 @@ import * as Clerk from "@clerk/nextjs";
 import { isAuthBypassEnabledClient } from "@/lib/auth/bypass";
 
 const authBypassEnabled = isAuthBypassEnabledClient();
+const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+const shouldStubClerk = authBypassEnabled || !clerkConfigured;
 
 const bypassUser = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -12,6 +14,12 @@ const bypassUser = {
   lastName: "Tester",
   fullName: "Local Tester",
   primaryEmailAddress: { emailAddress: "local@drx.test" },
+};
+
+const unauthenticatedState = {
+  isLoaded: true,
+  isSignedIn: false,
+  user: null,
 };
 
 function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) {
@@ -45,22 +53,22 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
 }
 
 export function ClerkProvider(props: any) {
-  if (authBypassEnabled) return <>{props.children}</>;
+  if (shouldStubClerk) return <>{props.children}</>;
   return <Clerk.ClerkProvider {...props} />;
 }
 
 export function SignIn(props: any) {
-  if (authBypassEnabled) return <BypassAuthCard mode="sign-in" />;
+  if (shouldStubClerk) return <BypassAuthCard mode="sign-in" />;
   return <Clerk.SignIn {...props} />;
 }
 
 export function SignUp(props: any) {
-  if (authBypassEnabled) return <BypassAuthCard mode="sign-up" />;
+  if (shouldStubClerk) return <BypassAuthCard mode="sign-up" />;
   return <Clerk.SignUp {...props} />;
 }
 
 export function Waitlist(props: any) {
-  if (authBypassEnabled) return <BypassAuthCard mode="waitlist" />;
+  if (shouldStubClerk) return <BypassAuthCard mode="waitlist" />;
   return <Clerk.Waitlist {...props} />;
 }
 
@@ -71,6 +79,9 @@ export function useUser() {
       isSignedIn: true,
       user: bypassUser,
     } as any;
+  }
+  if (!clerkConfigured) {
+    return unauthenticatedState as any;
   }
   return Clerk.useUser();
 }
@@ -84,6 +95,16 @@ export function useAuth() {
       orgId: "org_local_bypass",
       sessionId: "bypass-session",
       getToken: async () => "bypass-token",
+    } as any;
+  }
+  if (!clerkConfigured) {
+    return {
+      isLoaded: true,
+      isSignedIn: false,
+      userId: null,
+      orgId: null,
+      sessionId: null,
+      getToken: async () => null,
     } as any;
   }
   return Clerk.useAuth();
@@ -102,6 +123,13 @@ export function useSignIn() {
       setActive: async () => undefined,
     } as any;
   }
+  if (!clerkConfigured) {
+    return {
+      isLoaded: true,
+      signIn: null,
+      setActive: async () => undefined,
+    } as any;
+  }
   return Clerk.useSignIn();
 }
 
@@ -112,11 +140,17 @@ export function useOrganization() {
       organization: null,
     } as any;
   }
+  if (!clerkConfigured) {
+    return {
+      isLoaded: true,
+      organization: null,
+    } as any;
+  }
   return Clerk.useOrganization();
 }
 
 export function useOrganizationList(...args: any[]) {
-  if (authBypassEnabled) {
+  if (shouldStubClerk) {
     void args;
     return {
       isLoaded: true,
@@ -128,7 +162,7 @@ export function useOrganizationList(...args: any[]) {
 }
 
 export const OrganizationSwitcher = ((props: any) => {
-  if (authBypassEnabled) {
+  if (shouldStubClerk) {
     return (
       <button
         type="button"
@@ -169,12 +203,12 @@ function BypassSignOutButton({ children, redirectUrl, afterSignOutUrl }: any) {
 }
 
 export const SignOutButton = ((props: any) => {
-  if (authBypassEnabled) return <BypassSignOutButton {...props} />;
+  if (shouldStubClerk) return <BypassSignOutButton {...props} />;
   return <Clerk.SignOutButton {...props} />;
 }) as any;
 
 const UserButtonImpl: any = (props: any) => {
-  if (authBypassEnabled) {
+  if (shouldStubClerk) {
     return (
       <button
         type="button"
@@ -190,12 +224,12 @@ const UserButtonImpl: any = (props: any) => {
 };
 
 UserButtonImpl.MenuItems = (props: any) => {
-  if (authBypassEnabled) return null;
+  if (shouldStubClerk) return null;
   return <Clerk.UserButton.MenuItems {...props} />;
 };
 
 UserButtonImpl.Action = (props: any) => {
-  if (authBypassEnabled) return null;
+  if (shouldStubClerk) return null;
   return <Clerk.UserButton.Action {...props} />;
 };
 

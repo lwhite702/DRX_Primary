@@ -312,6 +312,28 @@ export default function SaleDetailPage() {
                     )}
                   </span>
                 </div>
+                {sale.costSummary && (
+                  <>
+                    <div className="flex justify-between text-sm pt-2 border-t">
+                      <span>COGS:</span>
+                      <span>
+                        ${Number(sale.costSummary.costOfGoodsSold || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Gross Profit:</span>
+                      <span>
+                        ${Number(sale.costSummary.grossProfit || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Gross Margin:</span>
+                      <span>
+                        {Number(sale.costSummary.grossMarginPercent || 0).toFixed(2)}%
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

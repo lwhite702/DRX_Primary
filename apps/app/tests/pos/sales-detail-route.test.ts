@@ -24,7 +24,7 @@ vi.mock("@/lib/db", () => ({
 import { GET, PATCH } from "@/app/api/sales/[id]/route";
 
 function makePatchRequest(body: unknown) {
-  return new Request("http://localhost/api/sales/sale_123", {
+  return new NextRequest("http://localhost/api/sales/sale_123", {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
@@ -44,12 +44,14 @@ describe("GET/PATCH /api/sales/[id]", () => {
       orderNumber: "POS-123",
       paymentMethod: "card",
       paymentRef: "AUTH-123",
+      totalAmount: 28,
       amountPaid: 35,
       changeAmount: 4.8,
       deliveryAddress: "123 Main St",
       deliveryPrice: 5,
       items: [
         {
+          id: "line_123",
           inventoryId: "inv_1",
           quantity: 1,
           unitPrice: 28,
@@ -64,6 +66,24 @@ describe("GET/PATCH /api/sales/[id]", () => {
             id: "inv_1",
             productName: "Weighted Item",
           },
+          allocations: [
+            {
+              id: "alloc_1",
+              quantityGrams: 3.5,
+              unitCostPerGram: 4.25,
+              extendedCost: 14.875,
+              batch: {
+                id: "batch_1",
+                supplier: "Farm A",
+                receivedAt: "2026-03-10T10:00:00.000Z",
+                intake: {
+                  id: "intake_1",
+                  totalCost: 425,
+                  totalWeightGrams: 100,
+                },
+              },
+            },
+          ],
         },
       ],
       customer: {
@@ -103,6 +123,15 @@ describe("GET/PATCH /api/sales/[id]", () => {
         items: {
           include: {
             inventory: true,
+            allocations: {
+              include: {
+                batch: {
+                  include: {
+                    intake: true,
+                  },
+                },
+              },
+            },
           },
         },
         customer: true,
@@ -111,6 +140,11 @@ describe("GET/PATCH /api/sales/[id]", () => {
     expect(data.paymentRef).toBe("AUTH-123");
     expect(data.amountPaid).toBe(35);
     expect(data.deliveryAddress).toBe("123 Main St");
+    expect(data.costSummary).toEqual({
+      costOfGoodsSold: 14.875,
+      grossProfit: 13.125,
+      grossMarginPercent: 46.88,
+    });
     expect(data.items[0]).toEqual(
       expect.objectContaining({
         unitCost: 5,
@@ -122,6 +156,22 @@ describe("GET/PATCH /api/sales/[id]", () => {
         priceOverrideReason: "Manager approved",
       }),
     );
+    expect(data.items[0].allocations).toEqual([
+      expect.objectContaining({
+        quantityGrams: 3.5,
+        unitCostPerGram: 4.25,
+        extendedCost: 14.875,
+        batch: expect.objectContaining({
+          id: "batch_1",
+          supplier: "Farm A",
+          intake: expect.objectContaining({
+            id: "intake_1",
+            totalCost: 425,
+            totalWeightGrams: 100,
+          }),
+        }),
+      }),
+    ]);
   });
 
   it("updates payment method and paymentRef together", async () => {
