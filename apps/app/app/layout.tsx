@@ -68,7 +68,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const hasClerkPublishableKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   const shouldEnableMeticulous =
     process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
 
@@ -86,24 +85,14 @@ export default function RootLayout({
       <body
         className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
       >
-        {hasClerkPublishableKey ? (
-          <ClerkProvider
-            signInUrl="/login"
-            signUpUrl="/register"
-            waitlistUrl="/waitlist"
-            signInFallbackRedirectUrl="/dashboard"
-            signUpFallbackRedirectUrl="/onboarding"
-            afterSignOutUrl="/login"
-          >
-            <GlobalErrorBoundary>
-              <PostHogProvider>
-                <FeaturebaseProvider />
-                {children}
-                <Toaster position="top-right" />
-              </PostHogProvider>
-            </GlobalErrorBoundary>
-          </ClerkProvider>
-        ) : (
+        <ClerkProvider
+          signInUrl="/login"
+          signUpUrl="/register"
+          waitlistUrl="/waitlist"
+          signInFallbackRedirectUrl="/dashboard"
+          signUpFallbackRedirectUrl="/onboarding"
+          afterSignOutUrl="/login"
+        >
           <GlobalErrorBoundary>
             <PostHogProvider>
               <FeaturebaseProvider />
@@ -111,7 +100,7 @@ export default function RootLayout({
               <Toaster position="top-right" />
             </PostHogProvider>
           </GlobalErrorBoundary>
-        )}
+        </ClerkProvider>
       </body>
     </html>
   );
