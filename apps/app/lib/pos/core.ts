@@ -606,10 +606,8 @@ export async function checkout(
           0,
         );
         const allocatedUnitCost =
-          batchAllocations.length > 0
-            ? item.weightGrams && item.weightGrams > 0
-              ? allocatedExtendedCost / item.weightGrams
-              : allocatedExtendedCost / item.qty
+          batchAllocations.length > 0 && item.qty > 0
+            ? allocatedExtendedCost / item.qty
             : null;
 
         const saleLineItem = await tx.salesLineItem.create({

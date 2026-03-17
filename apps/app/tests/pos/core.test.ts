@@ -406,7 +406,7 @@ describe("pos core", () => {
       data: expect.objectContaining({
         saleId: "sale_123",
         inventoryId: "22222222-2222-4222-8222-222222222222",
-        unitCost: expect.any(Object),
+        unitCost: expect.objectContaining({ value: 14.88 }),
       }),
       select: { id: true },
     });
@@ -558,7 +558,7 @@ describe("pos core", () => {
         saleId: "sale_123",
         inventoryId: "77777777-7777-4777-8777-777777777777",
         quantity: 2,
-        unitCost: expect.any(Object),
+        unitCost: expect.objectContaining({ value: 8.5 }),
       }),
       select: { id: true },
     });
