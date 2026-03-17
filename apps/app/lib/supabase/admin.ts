@@ -8,5 +8,3 @@
 import { db } from "@/lib/db";
 
 export const supabaseAdmin = db as any;
-
-export const supabaseAdminClient = db as any;

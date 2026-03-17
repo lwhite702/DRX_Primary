@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
-import Button from './Button';
 
 interface EmptyStateProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -21,7 +20,13 @@ export default function EmptyState({ icon, title, message, actionLabel, onAction
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       {actionLabel && onAction && (
-        <Button title={actionLabel} onPress={onAction} style={styles.button} />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onAction}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>{actionLabel}</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -58,5 +63,16 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: SPACING.lg,
+    alignItems: 'center',
+    backgroundColor: COLORS.accent,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  buttonText: {
+    color: COLORS.background,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
   },
 });

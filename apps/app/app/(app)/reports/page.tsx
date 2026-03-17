@@ -9,10 +9,7 @@ import {
 } from "@/components/ui/table";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
-
-function formatCurrency(value: number) {
-  return `$${value.toFixed(2)}`;
-}
+import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 export default async function ReportsPage() {
   const { businessId } = await resolveAuthContext();
@@ -201,7 +198,7 @@ export default async function ReportsPage() {
               </span>
             </div>
             <div className="text-xs text-muted-foreground pt-2">
-              Latest audit activity: {report.latestAuditAt ? new Date(report.latestAuditAt).toLocaleString() : "None"}
+              Latest audit activity: {report.latestAuditAt ? formatDateTime(report.latestAuditAt) : "None"}
             </div>
           </CardContent>
         </Card>

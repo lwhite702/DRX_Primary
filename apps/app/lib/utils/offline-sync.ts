@@ -19,7 +19,7 @@ interface OfflineTransaction {
   retry_count: number;
 }
 
-export class OfflineSyncManager {
+class OfflineSyncManager {
   private db: IDBDatabase | null = null;
 
   async init(): Promise<void> {
@@ -290,4 +290,3 @@ export class OfflineSyncManager {
 
 // Singleton instance
 export const offlineSyncManager = new OfflineSyncManager();
-
