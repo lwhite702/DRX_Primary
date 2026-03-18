@@ -11,6 +11,8 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
+const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
+
 export default async function ReportsPage() {
   const { businessId } = await resolveAuthContext();
 
@@ -158,7 +160,7 @@ export default async function ReportsPage() {
               {report.lowStock.count} products are at or below reorder level.
             </p>
             <div className="space-y-2">
-              {report.lowStock.items.slice(0, 8).map((item) => (
+              {report.lowStock.items.slice(0, MAX_LOW_STOCK_ITEMS_DISPLAY).map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-sm">
                   <div>
                     <div className="font-medium">{item.name}</div>
