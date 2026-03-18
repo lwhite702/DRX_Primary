@@ -1,0 +1,168 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "9b9642d04d373fef39472ab0f9bdb86574fc606b",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773796898,
+  "message": "refactor(help): unify support center and featurebase docs",
+  "files_changed": [
+    "apps/app/app/(app)/help/_components/help-checklist-card.tsx",
+    "apps/app/app/(app)/help/_components/help-page-shell.tsx",
+    "apps/app/app/(app)/help/_components/help-section-nav.tsx",
+    "apps/app/app/(app)/help/_components/help-support-sidebar.tsx",
+    "apps/app/app/(app)/help/_components/help-troubleshoot-card.tsx",
+    "apps/app/app/(app)/help/library/page.tsx",
+    "apps/app/app/(app)/help/operations/page.tsx",
+    "apps/app/app/(app)/help/page.tsx",
+    "apps/app/app/(app)/help/sell/page.tsx",
+    "apps/app/app/(app)/help/start/page.tsx",
+    "apps/app/app/(app)/help/troubleshoot/page.tsx",
+    "apps/app/app/feedback/[[...slug]]/page.tsx",
+    "apps/app/components/featurebase/help-library-embed.tsx",
+    "apps/app/lib/help/featurebase-taxonomy.ts",
+    "apps/app/lib/help/support-center.ts",
+    "apps/app/lib/hooks/use-featurebase-help-embed.ts",
+    "apps/app/scripts/sync-help-center.ts",
+    "apps/app/tests/e2e/help-center-smoke.spec.ts",
+    "apps/app/tests/help/featurebase-taxonomy.test.ts",
+    "apps/app/tests/help/support-center-config.test.ts"
+  ],
+  "added": 1442,
+  "deleted": 534,
+  "file_changes": [
+    {
+      "path": "apps/app/app/(app)/help/_components/help-checklist-card.tsx",
+      "added": 63,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/_components/help-page-shell.tsx",
+      "added": 59,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/_components/help-section-nav.tsx",
+      "added": 52,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/_components/help-support-sidebar.tsx",
+      "added": 95,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/_components/help-troubleshoot-card.tsx",
+      "added": 61,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/library/page.tsx",
+      "added": 43,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/operations/page.tsx",
+      "added": 36,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/page.tsx",
+      "added": 62,
+      "deleted": 441,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/sell/page.tsx",
+      "added": 36,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/start/page.tsx",
+      "added": 36,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/help/troubleshoot/page.tsx",
+      "added": 36,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/feedback/[[...slug]]/page.tsx",
+      "added": 47,
+      "deleted": 57,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/featurebase/help-library-embed.tsx",
+      "added": 105,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/help/featurebase-taxonomy.ts",
+      "added": 105,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/help/support-center.ts",
+      "added": 263,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/hooks/use-featurebase-help-embed.ts",
+      "added": 98,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/scripts/sync-help-center.ts",
+      "added": 69,
+      "deleted": 36,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/e2e/help-center-smoke.spec.ts",
+      "added": 66,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/help/featurebase-taxonomy.test.ts",
+      "added": 71,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/help/support-center-config.test.ts",
+      "added": 39,
+      "deleted": 0,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 1442,
+  "human_deleted": 534,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}
