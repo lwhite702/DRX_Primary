@@ -2,12 +2,22 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+const isVitest = Boolean(process.env.VITEST);
+
 export default defineConfig({
   plugins: [react()],
+  css: isVitest
+    ? {
+        postcss: {
+          plugins: [],
+        },
+      }
+    : undefined,
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    css: false,
     exclude: [
       '**/node_modules/**', 
       '**/dist/**', 

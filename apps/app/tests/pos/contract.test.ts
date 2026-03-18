@@ -41,6 +41,41 @@ describe("POS contract", () => {
     });
 
     expect(result.success).toBe(true);
+    expect(result.success && result.data.source).toBe("quick-pos");
+  });
+
+  it("validates full checkout payloads with weighted and delivery metadata", () => {
+    const result = posCheckoutSchema.safeParse({
+      mode: "full",
+      idempotencyKey: "55555555-5555-4555-8555-555555555555",
+      customerId: "66666666-6666-4666-8666-666666666666",
+      source: "legacy-sales",
+      payment: { method: "card", receipt: "print", creditConfirmed: false },
+      items: [
+        {
+          id: "weighted-1",
+          inventoryId: "77777777-7777-4777-8777-777777777777",
+          name: "Weighted Item",
+          unitPrice: 28,
+          qty: 1,
+          source: "inventory",
+          weightGrams: 3.5,
+          pricePerGram: 8,
+          bulkTierApplied: "3.5g",
+          originalPrice: 30,
+          overrideReason: "Manager approved",
+        },
+      ],
+      taxAmount: 1.2,
+      fees: [{ type: "service", amount: 2 }],
+      paymentRef: "ZELLE-123",
+      amountPaid: 35,
+      deliveryManagementId: "88888888-8888-4888-8888-888888888888",
+      deliveryAddress: "123 Main St",
+      deliveryPrice: 4,
+    });
+
+    expect(result.success).toBe(true);
   });
 
   it("validates stock adjustments and receipt output", () => {
@@ -63,4 +98,3 @@ describe("POS contract", () => {
     ).toBeTruthy();
   });
 });
-
