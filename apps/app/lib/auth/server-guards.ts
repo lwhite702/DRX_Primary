@@ -59,6 +59,8 @@ export async function hasPermission(
   return !!perms?.[permission];
 }
 
+// These guard helpers are kept as route-level building blocks even when
+// direct static references are sparse or config-driven.
 export async function requirePermission(permission: Permission) {
   const allowed = await hasPermission(permission);
   if (!allowed) {

@@ -131,11 +131,13 @@ function DialogDescription({
 
 export {
   Dialog,
+  // Intentionally re-exported as part of the shared dialog primitive surface.
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  // Intentionally re-exported for composition by consumers that need custom layering.
   DialogOverlay,
   DialogPortal,
   DialogTitle,

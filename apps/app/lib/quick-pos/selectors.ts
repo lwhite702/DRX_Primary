@@ -12,10 +12,6 @@ export function getTotal(state: QuickPosState): number {
   return getSubtotal(state) + getTax(state);
 }
 
-export function getCartCount(state: QuickPosState): number {
-  return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
-}
-
 export function canUseCredit(state: QuickPosState): boolean {
   return (
     state.creditPolicyEnabled &&

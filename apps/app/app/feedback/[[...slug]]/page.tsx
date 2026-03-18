@@ -1,64 +1,54 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect, useRef } from "react";
-import Script from "next/script";
+type FeedbackRedirectPageProps = {
+  params?:
+    | Promise<{ slug?: string[] }>
+    | {
+        slug?: string[];
+      };
+  searchParams?:
+    | Promise<Record<string, string | string[] | undefined>>
+    | Record<string, string | string[] | undefined>;
+};
 
-export default function FeedbackPage() {
-  const org = process.env.NEXT_PUBLIC_FEATUREBASE_ORG || "deelrxcrm";
-  const initialized = useRef(false);
+function appendQueryValue(
+  query: URLSearchParams,
+  key: string,
+  value: string | string[] | undefined,
+) {
+  if (!value) {
+    return;
+  }
 
-  useEffect(() => {
-    if (initialized.current) return;
+  if (Array.isArray(value)) {
+    value.forEach((entry) => query.append(key, entry));
+    return;
+  }
 
-    if (window.Featurebase) {
-      initialized.current = true;
-      window.Featurebase("init_embed_widget", {
-        organization: org,
-        embedOptions: {
-          path: "/", // Always start at root, internal routing handles the rest via syncing
-          filters: "",
-          routeSyncingBasePath: "/feedback",
-        },
-        stylingOptions: {
-          theme: "dark",
-          hideMenu: false,
-          hideLogo: false,
-        },
-      });
-    }
-  }, [org]);
+  query.append(key, value);
+}
 
-  return (
-    <div className="w-full min-h-screen bg-background">
-      {/* Container for the embed */}
-      <div data-featurebase-embed className="w-full h-full min-h-[800px]" />
+export default async function FeedbackRedirectPage({
+  params,
+  searchParams,
+}: FeedbackRedirectPageProps) {
+  const resolvedParams = (await Promise.resolve(params)) ?? {};
+  const resolvedSearchParams = (await Promise.resolve(searchParams)) ?? {};
 
-      {/* 
-        Ensure SDK is present if accessed directly. 
-        If FeaturebaseProvider is present in layout, this might be redundant but safe.
-      */}
-      <Script
-        id="featurebase-sdk-embed"
-        src="https://do.featurebase.app/js/sdk.js"
-        onLoad={() => {
-          if (!initialized.current && window.Featurebase) {
-            initialized.current = true;
-            window.Featurebase("init_embed_widget", {
-              organization: org,
-              embedOptions: {
-                path: "/",
-                filters: "",
-                routeSyncingBasePath: "/feedback",
-              },
-              stylingOptions: {
-                theme: "dark",
-                hideMenu: false,
-                hideLogo: false,
-              },
-            });
-          }
-        }}
-      />
-    </div>
-  );
+  const query = new URLSearchParams();
+
+  Object.entries(resolvedSearchParams).forEach(([key, value]) => {
+    appendQueryValue(query, key, value);
+  });
+
+  const legacyPath = resolvedParams.slug?.length
+    ? `/${resolvedParams.slug.join("/")}`
+    : undefined;
+
+  if (legacyPath) {
+    query.set("path", legacyPath);
+  }
+
+  const queryString = query.toString();
+  redirect(queryString ? `/help/library?${queryString}` : "/help/library");
 }

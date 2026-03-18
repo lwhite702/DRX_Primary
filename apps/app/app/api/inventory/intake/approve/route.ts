@@ -108,7 +108,6 @@ export async function POST(request: NextRequest) {
     // Approve and process intake
 
     // 1. If there are overrides, update the intake record first
-    // 1. If there are overrides, update the intake record first
     if (override_values && Object.keys(override_values).length > 0) {
       // Calculate new cost per gram if cost or weight changed
       let new_cost_per_gram = intake.calculated_cost_per_gram;
@@ -240,17 +239,31 @@ async function processApprovedIntake(
     supplier,
   });
 
-  await supabase.from("inventory_batches").insert({
-    business_id,
-    inventory_id,
-    intake_id,
-    original_quantity_grams: total_weight_grams,
-    remaining_quantity_grams: total_weight_grams,
-    unit_cost_per_gram: calculated_cost_per_gram,
-    supplier,
-    received_at: new Date().toISOString(),
-    created_by: user_id,
-  });
+  try {
+    const { error: batchError } = await supabase.from("inventory_batches").insert({
+      business_id,
+      inventory_id,
+      intake_id,
+      original_quantity_grams: total_weight_grams,
+      remaining_quantity_grams: total_weight_grams,
+      unit_cost_per_gram: calculated_cost_per_gram,
+      supplier,
+      received_at: new Date().toISOString(),
+      created_by: user_id,
+    });
+
+    if (batchError) {
+      console.warn(
+        "Failed to create inventory batch during intake approval:",
+        batchError,
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Inventory batch creation failed during intake approval (non-critical):",
+      error,
+    );
+  }
 
   // Create inventory log entries
   await supabase.from("inventory_log").insert({

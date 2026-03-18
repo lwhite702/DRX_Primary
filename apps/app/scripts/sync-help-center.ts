@@ -2,6 +2,14 @@ import path from "path";
 import { Agent } from "https";
 import dotenv from "dotenv";
 import { helpCenterData } from "./help-center-data";
+import {
+  FEATUREBASE_CATEGORY_MAP,
+  FEATUREBASE_CATEGORY_ORDER,
+  assertMappedCategories,
+  extractCategoryFromTags,
+  listDistinctCategories,
+  sortHelpArticlesDeterministically,
+} from "../lib/help/featurebase-taxonomy";
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
@@ -18,16 +26,42 @@ interface CollectionMap {
   [key: string]: string;
 }
 
-const CATEGORY_MAP: Record<string, string> = {
-  "getting-started": "Getting Started",
-  pos: "POS & Sales",
-  inventory: "Inventory",
-  products: "Products",
-  customers: "Customers",
-  privacy: "Privacy & Security",
+type FeaturebaseCollection = {
+  id: string;
+  name: string;
 };
 
-async function performRequest(method: string, endpoint: string, body?: any) {
+type FeaturebaseArticle = {
+  id: string;
+  title: string;
+};
+
+type HelpCenterArticle = (typeof helpCenterData)[number];
+
+type FeaturebaseEnvelope = {
+  data?: unknown;
+  results?: unknown;
+};
+
+function normalizeResponseArray<T>(response: unknown): T[] {
+  if (Array.isArray(response)) {
+    return response as T[];
+  }
+
+  if (response && typeof response === "object") {
+    const envelope = response as FeaturebaseEnvelope;
+    if (Array.isArray(envelope.data)) {
+      return envelope.data as T[];
+    }
+    if (Array.isArray(envelope.results)) {
+      return envelope.results as T[];
+    }
+  }
+
+  return [];
+}
+
+async function performRequest(method: string, endpoint: string, body?: unknown) {
   const url = `${API_BASE}${endpoint}`;
   const opts: RequestInit & { agent?: Agent } = {
     method,
@@ -55,8 +89,8 @@ async function performRequest(method: string, endpoint: string, body?: any) {
 }
 
 async function getCollections() {
-  const res: any = await performRequest("GET", "/help_center/collections");
-  return res.data || res.results || res || [];
+  const response = await performRequest("GET", "/help_center/collections");
+  return normalizeResponseArray<FeaturebaseCollection>(response);
 }
 
 async function createCollection(name: string) {
@@ -69,15 +103,15 @@ async function createCollection(name: string) {
 }
 
 async function getArticles() {
-  const res: any = await performRequest(
+  const response = await performRequest(
     "GET",
     "/help_center/articles?limit=100",
   );
-  return res.data || res.results || res || [];
+  return normalizeResponseArray<FeaturebaseArticle>(response);
 }
 
 async function upsertArticle(
-  article: any,
+  article: HelpCenterArticle,
   collectionId: string,
   existingId?: string,
 ) {
@@ -102,36 +136,38 @@ async function upsertArticle(
       console.log(`Creating article: ${article.title}`);
       return await performRequest("POST", "/help_center/articles", payload);
     }
-  } catch (err: any) {
-    console.error(`Failed to upsert "${article.title}"`, err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Failed to upsert "${article.title}"`, message);
   }
 }
 
 async function main() {
   console.log("Starting Help Center migration...");
 
+  assertMappedCategories(helpCenterData, FEATUREBASE_CATEGORY_MAP);
+
+  const sortedArticles = sortHelpArticlesDeterministically(
+    helpCenterData,
+    FEATUREBASE_CATEGORY_ORDER,
+  );
+
   // 1. Manage Collections
-  const existingCollections: any[] = await getCollections();
+  const existingCollections = await getCollections();
   console.log(`Found ${existingCollections.length} existing collections.`);
 
   const collectionIds: CollectionMap = {};
 
-  const distinctCategories = [
-    ...new Set(
-      helpCenterData.flatMap((a) =>
-        a.tags
-          .filter((t: string) => t.startsWith("category:"))
-          .map((t: string) => t.split(":")[1]),
-      ),
-    ),
-  ];
+  const distinctCategories = listDistinctCategories(sortedArticles);
 
   for (const catKey of distinctCategories) {
-    const displayName =
-      CATEGORY_MAP[catKey] || catKey.charAt(0).toUpperCase() + catKey.slice(1);
+    const displayName = FEATUREBASE_CATEGORY_MAP[catKey];
+    if (!displayName) {
+      throw new Error(`Unmapped category encountered during collection sync: ${catKey}`);
+    }
 
     let collection = existingCollections.find(
-      (c: any) => c.name === displayName,
+      (c) => c.name === displayName,
     );
     if (!collection) {
       const created = await createCollection(displayName);
@@ -150,19 +186,16 @@ async function main() {
   }
 
   // 2. Manage Articles
-  const existingArticles: any[] = await getArticles();
+  const existingArticles = await getArticles();
   console.log(
     `Found ${existingArticles.length} existing articles on Featurebase.`,
   );
 
   let successCount = 0;
 
-  for (const article of helpCenterData) {
+  for (const article of sortedArticles) {
     try {
-      const catTag = article.tags.find((t: string) =>
-        t.startsWith("category:"),
-      );
-      const catKey = catTag ? catTag.split(":")[1] : null;
+      const catKey = extractCategoryFromTags(article.tags);
 
       if (!catKey || !collectionIds[catKey]) {
         console.warn(
@@ -172,7 +205,7 @@ async function main() {
       }
 
       const existing = existingArticles.find(
-        (a: any) => a.title === article.title,
+        (a) => a.title === article.title,
       );
       await upsertArticle(article, collectionIds[catKey], existing?.id);
       successCount++;
@@ -182,7 +215,7 @@ async function main() {
   }
 
   console.log(
-    `Migration complete. Successfully processed ${successCount}/${helpCenterData.length} articles.`,
+    `Migration complete. Successfully processed ${successCount}/${sortedArticles.length} articles.`,
   );
 }
 
