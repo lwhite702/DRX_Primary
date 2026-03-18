@@ -108,7 +108,6 @@ export async function POST(request: NextRequest) {
     // Approve and process intake
 
     // 1. If there are overrides, update the intake record first
-    // 1. If there are overrides, update the intake record first
     if (override_values && Object.keys(override_values).length > 0) {
       // Calculate new cost per gram if cost or weight changed
       let new_cost_per_gram = intake.calculated_cost_per_gram;
