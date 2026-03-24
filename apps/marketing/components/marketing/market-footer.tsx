@@ -8,90 +8,72 @@ import { appWaitlistUrl } from "@/lib/app-links";
 
 export function MarketFooter() {
   return (
-    <footer className="relative bg-black pt-32 pb-12 overflow-hidden">
-      {/* Background Watermark */}
-      <div className="absolute top-[-10%] left-[-5%] w-[120%] opacity-5 pointer-events-none select-none z-0">
+    <footer className="relative overflow-hidden bg-black pb-12 pt-24">
+      <div className="pointer-events-none absolute left-[-5%] top-[-10%] z-0 w-[120%] select-none opacity-5">
         <Image
           src="/brand/drx-wordmark-color.svg"
-          alt="DRX Watermark"
+          alt="Pixel Pronto watermark"
           width={2000}
           height={600}
-          className="w-full h-auto"
+          className="h-auto w-full"
         />
       </div>
 
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-12 flex flex-col items-center">
-        {/* Primary CTA Area */}
-        <div className="text-center mb-32 space-y-8 max-w-4xl">
-          <h2 className="text-4xl md:text-6xl font-sans font-bold text-white tracking-tight">
-            RUN YOUR FLOOR WITH DRX.
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-12">
+        <div className="mb-24 max-w-4xl space-y-8 text-center">
+          <h2 className="text-4xl font-sans font-bold tracking-tight text-white md:text-6xl">
+            LAUNCH FASTER WITH PIXEL PRONTO.
           </h2>
           <p className="text-lg text-text-secondary">
-            Join beta, get set up fast, and keep your operation clean day to day.
+            One clearer system for your website, lead capture, booking, payments, and managed
+            support.
           </p>
           <div className="flex justify-center">
             <Link href={appWaitlistUrl}>
-              <NeonButton className="px-12 py-6 text-xl">
-                Join Beta Waitlist
-              </NeonButton>
+              <NeonButton className="px-12 py-6 text-xl">Start your launch</NeonButton>
             </Link>
           </div>
         </div>
 
-        {/* Footer Links & Info */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-white/10 pt-12">
+        <div className="grid w-full grid-cols-1 gap-12 border-t border-white/10 pt-12 md:grid-cols-3">
           <div className="space-y-4">
-            <div className="inline-block bg-neon-lime text-black px-2 py-1 font-mono font-bold text-xs uppercase">
-              DEELRX CRM
+            <div className="inline-block bg-neon-lime px-2 py-1 font-mono text-xs font-bold uppercase text-black">
+              Pixel Pronto
             </div>
-            <p className="text-text-muted text-sm max-w-xs">
-              Built for dispensaries all the way down to smaller operators.
+            <p className="max-w-xs text-sm text-text-muted">
+              Fast-launch website and business system for small businesses that need to get online
+              and start earning sooner.
             </p>
             <SystemStatus />
           </div>
 
           <div className="space-y-4 md:text-center">
-            <div className="font-mono text-sm text-white/50 uppercase tracking-widest mb-4">
+            <div className="mb-4 font-mono text-sm uppercase tracking-widest text-white/50">
               Legal
             </div>
-            <div className="flex flex-col md:flex-row gap-6 md:justify-center font-mono text-base uppercase text-text-secondary">
-              <Link
-                href="/legal/privacy"
-                className="hover:text-neon-lime transition-colors"
-              >
+            <div className="flex flex-col gap-6 font-mono text-base uppercase text-text-secondary md:flex-row md:justify-center">
+              <Link href="/legal/privacy" className="transition-colors hover:text-neon-lime">
                 Privacy
               </Link>
-              <Link
-                href="/legal/terms"
-                className="hover:text-neon-lime transition-colors"
-              >
+              <Link href="/legal/terms" className="transition-colors hover:text-neon-lime">
                 Terms of Service
               </Link>
               <Link
                 href="/legal/regulatory-disclaimer"
-                className="hover:text-neon-lime transition-colors"
+                className="transition-colors hover:text-neon-lime"
               >
                 Regulatory Disclaimer
               </Link>
             </div>
           </div>
 
-          <div className="flex flex-col md:items-end justify-between h-full space-y-4">
-            <div className="font-mono text-xs text-white/40 uppercase tracking-widest">
-              Connect
-            </div>
-            <div className="flex gap-4">
-              {/* Social placeholders */}
-              <span className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer">
-                𝕏
-              </span>
-              <span className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer">
-                M
-              </span>
-            </div>
-            <div className="text-text-muted text-xs font-mono">
-              © 2026 DEELRX SYSTEMS.
-            </div>
+          <div className="flex h-full flex-col justify-between space-y-4 md:items-end">
+            <div className="font-mono text-xs uppercase tracking-widest text-white/40">Support</div>
+            <p className="max-w-xs text-right text-sm text-text-muted">
+              Need a cleaner path than a slow agency or a pile of disconnected tools? Pixel Pronto
+              is built to keep launch simple.
+            </p>
+            <div className="text-xs font-mono text-text-muted">© 2026 PIXEL PRONTO.</div>
           </div>
         </div>
       </div>
