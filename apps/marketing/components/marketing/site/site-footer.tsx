@@ -1,28 +1,47 @@
 import Link from "next/link";
-import { footerLinks } from "./nav-config";
+
+import { marketingContent } from "@/lib/marketing-content";
 
 export function SiteFooter() {
+  const footer = marketingContent.footer;
+
   return (
-    <footer className="border-t border-border/50 bg-black/70">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-md space-y-3">
-          <p className="text-sm font-semibold text-white">Deelrx CRM</p>
-          <p className="text-sm text-text-secondary">
-            Built for dispensaries all the way down to smaller operators.
-          </p>
-          <p className="text-xs text-text-muted">
-            Trust notes: role-based access, auditable inventory changes, privacy
-            presets, and offline queue with reconnect sync.
-          </p>
+    <footer className="mt-12 border-t border-white/10 bg-black/40">
+      <div className="mx-auto w-full max-w-6xl px-6 py-10">
+        <div className="grid gap-8 md:grid-cols-4">
+          <div className="md:col-span-2">
+            <p className="text-lg font-bold text-white">Deelrx CRM</p>
+            <p className="mt-3 text-sm text-text-secondary">{footer.about}</p>
+            <p className="mt-3 text-xs text-text-muted">{footer.disclaimer}</p>
+          </div>
+
+          <div>
+            <p className="text-xs font-mono uppercase tracking-[0.22em] text-accent">Menu</p>
+            <div className="mt-3 space-y-2 text-sm">
+              {footer.menuLinks.map((link) => (
+                <Link key={link.label} href={link.href} className="block text-text-secondary hover:text-accent">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-mono uppercase tracking-[0.22em] text-accent">Resources</p>
+            <div className="mt-3 space-y-2 text-sm">
+              {footer.resourceLinks.map((link) => (
+                <Link key={link.label} href={link.href} className="block text-text-secondary hover:text-accent">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 text-sm md:text-right">
-          {footerLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-text-secondary transition-colors hover:text-neon-lime"
-            >
+        <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-white/10 pt-5 text-xs text-text-secondary">
+          <span>{footer.contact}</span>
+          {footer.legalLinks.map((link) => (
+            <Link key={link.label} href={link.href} className="hover:text-accent">
               {link.label}
             </Link>
           ))}

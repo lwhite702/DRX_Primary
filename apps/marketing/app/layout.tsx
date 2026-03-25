@@ -15,26 +15,26 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Deelrx CRM - Run real transactions. Without the mess.",
+  title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
   description:
-    "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+    "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
   icons: {
     icon: "/brand/favicon-32.png",
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx CRM - Run real transactions. Without the mess.",
+    title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
     description:
-      "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx CRM - Run real transactions. Without the mess.",
+    title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
     description:
-      "Deelrx CRM is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {
@@ -54,7 +54,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0B0B0C",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
