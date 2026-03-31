@@ -137,6 +137,7 @@ export default function QuickPosPaymentPage() {
         onClick={finalize}
         disabled={state.ui.processing || !state.payment.method}
         className="h-16 w-full rounded-lg bg-accent text-2xl font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label="Complete Sale"
       >
         {state.ui.processing ? "Processing..." : "Complete Sale"}
       </button>

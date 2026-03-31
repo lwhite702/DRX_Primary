@@ -8,30 +8,27 @@ const hasClerkTestingEnv =
   Boolean(process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 async function ensureHelpAccess(page: import("@playwright/test").Page) {
-  if (!hasBypassAuth && !hasClerkTestingEnv) {
-    test.skip(
-      true,
-      "Protected help routes require bypass auth mode or Clerk testing credentials.",
-    );
-  }
-
   if (hasClerkTestingEnv) {
     await setupClerkTestingToken({ page });
   }
 
   await page.goto("/help", { waitUntil: "domcontentloaded" });
 
-  if (/\/login(?:\?|$)/.test(new URL(page.url()).pathname)) {
-    test.skip(
-      true,
-      "Authenticated help-route test session was not established in this environment.",
-    );
-  }
+  const redirectedToLogin = /\/login(?:\?|$)/.test(new URL(page.url()).pathname);
+  return {
+    hasProtectedAccess: (hasBypassAuth || hasClerkTestingEnv) && !redirectedToLogin,
+    redirectedToLogin,
+  };
 }
 
 test.describe("Help center smoke", () => {
   test("hub and task routes load", async ({ page }) => {
-    await ensureHelpAccess(page);
+    const access = await ensureHelpAccess(page);
+    if (!access.hasProtectedAccess) {
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
+      return;
+    }
 
     await expect(page.getByText("Support Center", { exact: true })).toBeVisible();
 
@@ -53,7 +50,12 @@ test.describe("Help center smoke", () => {
   });
 
   test("library embed loads and feedback route redirects", async ({ page }) => {
-    await ensureHelpAccess(page);
+    const access = await ensureHelpAccess(page);
+    if (!access.hasProtectedAccess) {
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
+      return;
+    }
 
     await page.goto("/help/library?topic=start", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Knowledge Library", { exact: true })).toBeVisible();

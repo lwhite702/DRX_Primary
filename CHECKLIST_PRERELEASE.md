@@ -22,12 +22,15 @@ Use this checklist before promoting `staging` to `main`.
 ## Checklist
 
 - [ ] Version artifacts are complete (`CHANGELOG.md`, `VERSION`, root/app version consistency).
+- [ ] `pnpm release:preflight` passes on Node `20.18.0`.
 - [ ] `pnpm version:check` passes.
 - [ ] Release notes reflect shipped behavior.
 - [ ] Environment matrix documentation matches deployed config/secrets.
 - [ ] Database migrations were tested in staging (if applicable).
 - [ ] Tenant isolation and access boundaries were verified.
 - [ ] Critical smoke paths were validated.
+- [ ] Hybrid required gates are green (auth/data integrity + required UX suites).
+- [ ] Advisory gate artifacts are attached (integration/full-e2e/security/perf/coverage).
 - [ ] Compliance and policy checks passed.
 - [ ] No policy exceptions remain undocumented.
 
