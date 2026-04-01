@@ -35,3 +35,4 @@
 | codex/pos-checkout-integrity | codex/pos-checkout-integrity | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/pos-formatters-locale | codex/pos-formatters-locale | shared-history | merged | none | clean merge |
 | codex/pr36-version-align | codex/pr36-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/pr37-version-align | codex/pr37-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
