@@ -1,0 +1,46 @@
+{
+  "cli": {
+    "version": ">= 10.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EAS_BUILD_NPM_CLIENT": "pnpm",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EAS_BUILD_NPM_CLIENT": "pnpm",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EAS_BUILD_NPM_CLIENT": "pnpm",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+      }
+    },
+    "production": {
+      "env": {
+        "EAS_BUILD_NPM_CLIENT": "pnpm",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

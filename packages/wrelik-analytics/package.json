@@ -1,0 +1,32 @@
+{
+  "name": "@wrelik/analytics",
+  "version": "0.2.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./react-native": "./dist/react-native.js"
+  },
+  "dependencies": {
+    "posthog-node": "^3.6.3",
+    "posthog-react-native": "^2.10.1",
+    "@wrelik/errors": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.0",
+    "@types/react": "^19.2.10",
+    "@types/react-native": "^0.73.0",
+    "tsup": "^8.0.1",
+    "vitest": "^1.2.2",
+    "@wrelik/eslint-config": "workspace:*",
+    "@wrelik/tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/react-native.ts --format cjs,esm --clean",
+    "lint": "eslint src/",
+    "test": "vitest run --passWithNoTests"
+  }
+}

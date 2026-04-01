@@ -4,9 +4,9 @@
 
 set -e
 
-PROJECT_REF="ljndzcilgplckhdjddry"
+PROJECT_REF="momkmatyoisoynyfbvta"
 DB_PASSWORD="4xalTLbiuPJ7rd7r"
-DB_HOST="db.ljndzcilgplckhdjddry.supabase.co"
+DB_HOST="db.momkmatyoisoynyfbvta.supabase.co"
 DB_USER="postgres"
 DB_NAME="postgres"
 
@@ -35,6 +35,13 @@ MIGRATIONS=(
   "07_admin.sql"
   "08_rls_policies.sql"
   "09_rpc_functions.sql"
+  "10_ai_credit_rpcs.sql"
+  "10_delivery_management.sql"
+  "11_pos_enhanced_rpc.sql"
+  "12_pos_weight_shrinkage_loyalty.sql"
+  "13_pos_weight_shrinkage_loyalty_rpc.sql"
+  "14_pos_weight_checkout_rpc.sql"
+  "17_add_payment_ref.sql"
 )
 
 echo "📋 Running ${#MIGRATIONS[@]} migration files..."

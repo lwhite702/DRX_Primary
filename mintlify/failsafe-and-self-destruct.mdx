@@ -1,0 +1,42 @@
+# Failsafe and self-destruct
+
+Deelrx CRM includes operational failsafes. DRX does not provide a one-click "self-destruct" control in normal operator workflows.
+
+## What exists today (verified)
+
+- **Offline transaction queue**: When internet drops, supported transactions are stored locally and synced when connection returns.
+- **Retry control**: Sync retries are capped to prevent infinite loops on broken payloads.
+- **Permission guards**: Sensitive pages/actions enforce role-based access.
+- **Audit trail**: Inventory and credit actions are logged for review.
+- **RTBF deletion path**: Owner/super admin deletion workflow exists for user removal use cases.
+
+## What "self-destruct" means in DRX right now
+
+- There is no operator-facing feature that destroys the entire business workspace in one action.
+- Security copy in auth screens references **Auto-Wipe** behavior for local/session handling.
+- Treat any destructive request as controlled admin/legal workflow, not a day-to-day store action.
+
+## Step-by-step: safe response during incidents
+
+1. Stop high-risk actions (checkout overrides, bulk adjustments).
+2. Confirm user role and business context.
+3. Capture logs and exact error details.
+4. Use **Report a Bug** with full reproduction notes.
+5. Escalate to owner/super admin for any account deletion or legal hold decision.
+
+## Common mistakes
+
+- Assuming offline queue means all actions are always recoverable
+- Treating auth-screen security copy as a universal destructive control
+- Running deletions before audit/legal review
+
+## Current limitations
+
+- No exposed operator button for full workspace wipe/destruction.
+- RTBF/deletion flows are restricted and should be treated as controlled admin actions.
+
+## Related docs
+
+- [Keeping your data safe](/keeping-your-data-safe)
+- [Fixing issues](/fixing-issues)
+- [Legal disclaimer](/legal-disclaimer)

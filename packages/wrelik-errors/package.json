@@ -1,0 +1,35 @@
+{
+  "name": "@wrelik/errors",
+  "version": "0.2.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/node.js",
+  "types": "./dist/node.d.ts",
+  "exports": {
+    ".": {
+      "react-native": "./dist/react-native.js",
+      "browser": "./dist/browser.js",
+      "import": "./dist/node.js",
+      "require": "./dist/node.js"
+    },
+    "./react-native": "./dist/react-native.js"
+  },
+  "dependencies": {
+    "@sentry/browser": "^10.38.0",
+    "@sentry/node": "^7.101.1",
+    "@sentry/react-native": "^5.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.0",
+    "tsup": "^8.0.1",
+    "vitest": "^1.2.2",
+    "@wrelik/eslint-config": "workspace:*",
+    "@wrelik/tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsup src/node.ts src/browser.ts src/react-native.ts --format cjs,esm --dts --clean",
+    "lint": "eslint src/",
+    "test": "vitest run --passWithNoTests"
+  }
+}

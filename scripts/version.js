@@ -1,185 +1,98 @@
 #!/usr/bin/env node
-/* eslint-env node, commonjs */
-/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 
-/**
- * Version Management Helper
- *
- * This script helps determine the next version number based on
- * changes in the CHANGELOG.md [Unreleased] section.
- *
- * Usage:
- *   node scripts/version.js check    - Suggest next version
- *   node scripts/version.js bump     - Update version and CHANGELOG
- */
+const fs = require("node:fs");
+const path = require("node:path");
 
-const fs = require("fs");
-const path = require("path");
+const root = process.cwd();
+const ROOT_PACKAGE_JSON = path.join(root, "package.json");
+const APP_PACKAGE_JSON = path.join(root, "apps", "app", "package.json");
+const VERSION_FILE = path.join(root, "VERSION");
 
-const CURRENT_VERSION = require("../package.json").version;
-const CHANGELOG_PATH = path.join(__dirname, "../CHANGELOG.md");
-
-function parseVersion(version) {
-  const [major, minor, patch] = version.split(".").map(Number);
-  return { major, minor, patch };
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function incrementVersion(current, type) {
-  const v = parseVersion(current);
-
-  switch (type) {
-    case "major":
-      return `${v.major + 1}.0.0`;
-    case "minor":
-      return `${v.major}.${v.minor + 1}.0`;
-    case "patch":
-      return `${v.major}.${v.minor}.${v.patch + 1}`;
-    default:
-      throw new Error(`Unknown version type: ${type}`);
-  }
+function writeJson(filePath, value) {
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2) + "\n");
 }
 
-function analyzeChangelog() {
-  const changelog = fs.readFileSync(CHANGELOG_PATH, "utf-8");
-
-  // Extract [Unreleased] section
-  const unreleasedMatch = changelog.match(
-    /## \[Unreleased\]([\s\S]*?)(?=## \[|$)/
-  );
-
-  if (!unreleasedMatch) {
-    return { hasChanges: false };
-  }
-
-  const unreleased = unreleasedMatch[1];
-
-  // Check for breaking changes or major features
-  const hasBreaking = /### Removed|### Changed.*breaking|BREAKING/i.test(
-    unreleased
-  );
-  const hasAdded = /### Added/i.test(unreleased);
-  const hasFixed = /### Fixed/i.test(unreleased);
-
-  // Determine version bump type
-  let bumpType = "patch"; // default
-
-  if (hasBreaking) {
-    bumpType = "major";
-  } else if (hasAdded) {
-    bumpType = "minor";
-  }
-
-  return {
-    hasChanges: true,
-    bumpType,
-    hasBreaking,
-    hasAdded,
-    hasFixed,
-    content: unreleased,
-  };
+function readVersions() {
+  const rootPkg = readJson(ROOT_PACKAGE_JSON);
+  const appPkg = readJson(APP_PACKAGE_JSON);
+  const versionFile = fs.existsSync(VERSION_FILE)
+    ? fs.readFileSync(VERSION_FILE, "utf8").trim()
+    : "";
+  return { rootPkg, appPkg, versionFile };
 }
 
-function suggestVersion() {
-  console.log(`\n📦 Current version: v${CURRENT_VERSION}\n`);
-
-  const analysis = analyzeChangelog();
-
-  if (!analysis.hasChanges) {
-    console.log("✅ No unreleased changes found in CHANGELOG.md");
-    return;
-  }
-
-  console.log("📋 Unreleased changes detected:");
-  if (analysis.hasBreaking) console.log("  🔴 Breaking changes (MAJOR)");
-  if (analysis.hasAdded) console.log("  🟢 New features (MINOR)");
-  if (analysis.hasFixed) console.log("  🔵 Bug fixes (PATCH)");
-
-  const suggested = incrementVersion(CURRENT_VERSION, analysis.bumpType);
-
-  console.log(`\n💡 Suggested version: v${suggested}`);
-  console.log(`   (${analysis.bumpType.toUpperCase()} bump)\n`);
-
-  console.log("To release:");
-  console.log(`  1. Run: node scripts/version.js bump`);
-  console.log(`  2. Review changes in package.json and CHANGELOG.md`);
-  console.log(`  3. Commit: git commit -m "chore: Release v${suggested}"`);
-  console.log(`  4. Tag: git tag v${suggested}`);
-  console.log(`  5. Push: git push origin main --tags\n`);
+function parseSemver(version) {
+  const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+  if (!m) throw new Error(`Invalid semver: ${version}`);
+  return { major: Number(m[1]), minor: Number(m[2]), patch: Number(m[3]) };
 }
 
-function bumpVersion() {
-  const analysis = analyzeChangelog();
+function bumpSemver(version, type) {
+  const v = parseSemver(version);
+  if (type === "major") return `${v.major + 1}.0.0`;
+  if (type === "minor") return `${v.major}.${v.minor + 1}.0`;
+  return `${v.major}.${v.minor}.${v.patch + 1}`;
+}
 
-  if (!analysis.hasChanges) {
-    console.log("❌ No unreleased changes to release");
+function checkVersions() {
+  const { rootPkg, appPkg, versionFile } = readVersions();
+  const rootVersion = String(rootPkg.version || "");
+  const appVersion = String(appPkg.version || "");
+
+  console.log(`root package.json version: ${rootVersion}`);
+  console.log(`apps/app/package.json version: ${appVersion}`);
+  console.log(`VERSION file: ${versionFile || "(missing)"}`);
+
+  const mismatches = [];
+  if (rootVersion !== appVersion) {
+    mismatches.push(`root package.json (${rootVersion}) != apps/app/package.json (${appVersion})`);
+  }
+  if (!versionFile || versionFile !== rootVersion) {
+    mismatches.push(`VERSION (${versionFile || "(missing)"}) != root package.json (${rootVersion})`);
+  }
+
+  if (mismatches.length > 0) {
+    console.log("");
+    console.log("Version mismatch detected:");
+    for (const mismatch of mismatches) console.log(`- ${mismatch}`);
     process.exit(1);
   }
 
-  const newVersion = incrementVersion(CURRENT_VERSION, analysis.bumpType);
-  const today = new Date().toISOString().split("T")[0];
-
-  // Update package.json
-  const packageJson = require("../package.json");
-  packageJson.version = newVersion;
-  fs.writeFileSync(
-    path.join(__dirname, "../package.json"),
-    JSON.stringify(packageJson, null, 2) + "\n"
-  );
-
-  // Update CHANGELOG.md
-  let changelog = fs.readFileSync(CHANGELOG_PATH, "utf-8");
-  changelog = changelog.replace(
-    /## \[Unreleased\]/,
-    `## [Unreleased]\n\n## [${newVersion}] - ${today}`
-  );
-  fs.writeFileSync(CHANGELOG_PATH, changelog);
-
-  // Update UI components
-  updateUIVersions(newVersion);
-
-  console.log(`\n✅ Version bumped to v${newVersion}`);
-  console.log(`   Updated: package.json, CHANGELOG.md, UI components\n`);
+  console.log("");
+  console.log("Version consistency check passed.");
 }
 
-function updateUIVersions(version) {
-  const filesToUpdate = [
-    "../components/layout/sidebar.tsx",
-    "../components/layout/bottom-nav.tsx",
-  ];
+function bumpVersions() {
+  const type = process.argv[3] || "patch";
+  if (!["major", "minor", "patch"].includes(type)) {
+    console.error("Usage: node scripts/version.js bump [major|minor|patch]");
+    process.exit(1);
+  }
 
-  filesToUpdate.forEach((relativePath) => {
-    const filePath = path.join(__dirname, relativePath);
+  const { rootPkg, appPkg, versionFile } = readVersions();
+  const sourceVersion = String(rootPkg.version || versionFile || "");
+  const nextVersion = bumpSemver(sourceVersion, type);
+  rootPkg.version = nextVersion;
+  appPkg.version = nextVersion;
+  writeJson(ROOT_PACKAGE_JSON, rootPkg);
+  writeJson(APP_PACKAGE_JSON, appPkg);
+  fs.writeFileSync(VERSION_FILE, `${nextVersion}\n`);
 
-    if (!fs.existsSync(filePath)) {
-      console.warn(`⚠️ File not found, skipping version update: ${filePath}`);
-      return;
-    }
-
-    let content = fs.readFileSync(filePath, "utf-8");
-    const updatedContent = content.replace(/v\d+\.\d+\.\d+/, `v${version}`);
-
-    if (content === updatedContent) {
-      console.warn(`⚠️ No version string found to update in: ${filePath}`);
-    } else {
-      fs.writeFileSync(filePath, updatedContent);
-    }
-  });
+  console.log(`Bumped version ${sourceVersion} -> ${nextVersion} (${type})`);
 }
 
-// Main
 const command = process.argv[2];
-
-switch (command) {
-  case "check":
-    suggestVersion();
-    break;
-  case "bump":
-    bumpVersion();
-    break;
-  default:
-    console.log("Usage:");
-    console.log("  node scripts/version.js check  - Suggest next version");
-    console.log(
-      "  node scripts/version.js bump   - Update version and CHANGELOG"
-    );
+if (command === "check") {
+  checkVersions();
+} else if (command === "bump") {
+  bumpVersions();
+} else {
+  console.log("Usage:");
+  console.log("  node scripts/version.js check");
+  console.log("  node scripts/version.js bump [major|minor|patch]");
+  process.exit(1);
 }

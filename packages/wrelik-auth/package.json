@@ -1,0 +1,32 @@
+{
+  "name": "@wrelik/auth",
+  "version": "0.2.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./next": "./dist/next.js",
+    "./react-native": "./dist/react-native.js"
+  },
+  "dependencies": {
+    "@clerk/backend": "^0.38.0",
+    "@wrelik/errors": "workspace:*"
+  },
+  "peerDependencies": {
+    "@clerk/nextjs": "^4.29.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "vitest": "^1.2.2",
+    "@wrelik/tsconfig": "workspace:*",
+    "@wrelik/eslint-config": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/next.ts src/react-native.ts --format cjs,esm --dts --clean",
+    "lint": "eslint src/",
+    "test": "vitest run --passWithNoTests"
+  }
+}

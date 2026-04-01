@@ -1,0 +1,580 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 01: Business Profile
+model BusinessProfile {
+  id           String   @id @default(uuid())
+  clerkOrgId   String?  @unique @map("clerk_org_id") // Link to Clerk Organization
+  businessName String   @map("business_name") @db.VarChar(255)
+  businessType String?  @map("business_type") @db.VarChar(100)
+  address      String?
+  city         String?  @db.VarChar(100)
+  state        String?  @db.VarChar(50)
+  zipCode      String?  @map("zip_code") @db.VarChar(20)
+  phoneNumber  String?  @map("phone_number") @db.VarChar(20)
+  email        String?  @db.VarChar(255)
+  ownerId      String   @map("owner_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  users            User[]
+  invites          Invite[]
+  settings         BusinessSettings[]
+  inventory        Inventory[]
+  inventoryIntakes InventoryIntake[]
+  costHistory      CostHistory[]
+  inventoryBatches InventoryBatch[]
+  customers        Customers[]
+  creditTxns       CreditTransaction[]
+  creditLimits     CreditLimit[]
+  sales            Sales[]
+  aiInsights       AiInsight[]
+  userRoles        UserRole[]
+  deliveryProfiles DeliveryManagement[]
+  aiPricingRecs    AiPricingRecommendation[]
+  aiDecisions      AiDecisionLog[]
+  
+  @@map("business_profile")
+}
+
+// 00: Authentication & Multi-Tenancy
+model User {
+  id           String    @id @default(uuid())
+  clerkUserId  String?   @unique @map("clerk_user_id") // Link to Clerk User
+  email        String    @unique @db.VarChar(255)
+  // passwordHash removed - handled by Clerk
+  name         String?   @db.VarChar(100)
+  role         String    @default("MEMBER") @db.VarChar(50) // OWNER, ADMIN, MEMBER
+  status       String    @default("ACTIVE") @db.VarChar(50) // ACTIVE, INVITED, SUSPENDED, ARCHIVED
+  tenantId     String    @map("tenant_id")
+  tenant       BusinessProfile @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // sessions removed - handled by Clerk
+  
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+
+// Session model removed
+
+model Invite {
+  id        String   @id @default(uuid())
+  email     String   @db.VarChar(255)
+  token     String   @unique
+  tenantId  String   @map("tenant_id")
+  tenant    BusinessProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role      String   @default("MEMBER") @db.VarChar(50)
+  status    String   @default("PENDING") @db.VarChar(50) // PENDING, ACCEPTED, EXPIRED
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  invitedBy String?  @map("invited_by")
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([token])
+  @@map("invites")
+}
+
+model BusinessSettings {
+  id              String          @id @default(uuid())
+  businessId      String          @unique @map("business_id")
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  themePreference String?         @map("theme_preference") @db.VarChar(50)
+  currency        String?         @default("USD") @db.VarChar(3)
+  timezone        String?         @db.VarChar(100)
+  collectTax      Boolean?        @default(true) @map("collect_tax")
+  posManagerPin   String?         @default("1234") @map("pos_manager_pin") @db.VarChar(10)
+  settingsData    Json?           @default("{}") @map("settings_data")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("business_settings")
+}
+
+// 02: Inventory
+model Inventory {
+  id                 String          @id @default(uuid())
+  businessId         String          @map("business_id")
+  business           BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sku                String          @db.VarChar(100)
+  productName        String          @map("product_name") @db.VarChar(255)
+  description        String?
+  category           String?         @db.VarChar(100)
+  quantityOnHand     Int             @default(0) @map("quantity_on_hand")
+  reorderLevel       Int             @default(10) @map("reorder_level")
+  unitCost           Decimal?        @map("unit_cost") @db.Decimal(12, 2)
+  sellingPrice       Decimal?        @map("selling_price") @db.Decimal(12, 2)
+  supplierId         String?         @map("supplier_id")
+  aiPricingEnabled   Boolean         @default(true) @map("ai_pricing_enabled")
+  quantityUnit       String?         @default("unit") @map("quantity_unit") @db.VarChar(50)
+  unitToServingRatio Decimal?        @default(1) @map("unit_to_serving_ratio") @db.Decimal(10, 4)
+  baseUnit           String?         @default("g") @map("base_unit") @db.VarChar(10)
+  convertToGrams     Decimal?        @default(1) @map("convert_to_grams") @db.Decimal(12, 4)
+  inventoryInGrams   Decimal?        @default(0) @map("inventory_in_grams") @db.Decimal(16, 4)
+  allowFractionalWeight Boolean?     @default(true) @map("allow_fractional_weight")
+  pricePerGram       Decimal?        @map("price_per_gram") @db.Decimal(12, 4)
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  logs        InventoryLog[]
+  intakes     InventoryIntake[]
+  batches     InventoryBatch[]
+  costHistory CostHistory[]
+  allocations SalesLineItemAllocation[]
+  salesItems     SalesLineItem[]
+  pricingRecs    AiPricingRecommendation[]
+  forecasts      InventoryForecast[]
+  alerts         InventoryAlert[]
+  velocityCache  SalesVelocityCache?
+  decisions      AiDecisionLog[]
+  
+  @@unique([businessId, sku])
+  @@map("inventory")
+}
+
+model InventoryLog {
+  id              String    @id @default(uuid())
+  inventoryId     String    @map("inventory_id")
+  inventory       Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  transactionType String?   @map("transaction_type") @db.VarChar(50)
+  quantityChange  Int?      @map("quantity_change")
+  reason          String?
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("inventory_log")
+}
+
+model InventoryIntake {
+  id                    String          @id @default(uuid())
+  businessId            String          @map("business_id")
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId           String          @map("inventory_id")
+  inventory             Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  totalCost             Decimal         @map("total_cost") @db.Decimal(12, 4)
+  totalWeightGrams      Decimal         @map("total_weight_grams") @db.Decimal(12, 4)
+  calculatedCostPerGram Decimal         @map("calculated_cost_per_gram") @db.Decimal(12, 6)
+  deliveryCost          Decimal?        @default(0) @map("delivery_cost") @db.Decimal(12, 2)
+  supplier              String?         @db.VarChar(255)
+  requiresApproval      Boolean         @default(false) @map("requires_approval")
+  approvedBy            String?         @map("approved_by")
+  approvedAt            DateTime?       @map("approved_at")
+  status                String?         @default("approved") @db.VarChar(50)
+  rejectionReason       String?         @map("rejection_reason")
+  createdBy             String?         @map("created_by")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  costHistory CostHistory[]
+  batches     InventoryBatch[]
+
+  @@map("inventory_intakes")
+}
+
+model CostHistory {
+  id               String          @id @default(uuid())
+  businessId       String          @map("business_id")
+  business         BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId      String          @map("inventory_id")
+  inventory        Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  intakeId         String?         @map("intake_id")
+  intake           InventoryIntake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  costPerGram      Decimal         @map("cost_per_gram") @db.Decimal(12, 6)
+  totalCost        Decimal         @map("total_cost") @db.Decimal(12, 4)
+  totalWeightGrams Decimal         @map("total_weight_grams") @db.Decimal(12, 4)
+  deliveryCost     Decimal?        @default(0) @map("delivery_cost") @db.Decimal(12, 2)
+  supplier         String?         @db.VarChar(255)
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  @@map("cost_history")
+}
+
+model InventoryBatch {
+  id                    String          @id @default(uuid())
+  businessId            String          @map("business_id")
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId           String          @map("inventory_id")
+  inventory             Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  intakeId              String?         @map("intake_id")
+  intake                InventoryIntake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  originalQuantityGrams Decimal         @map("original_quantity_grams") @db.Decimal(12, 4)
+  remainingQuantityGrams Decimal        @map("remaining_quantity_grams") @db.Decimal(12, 4)
+  unitCostPerGram       Decimal         @map("unit_cost_per_gram") @db.Decimal(12, 6)
+  supplier              String?         @db.VarChar(255)
+  receivedAt            DateTime        @default(now()) @map("received_at")
+  createdBy             String?         @map("created_by")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  allocations SalesLineItemAllocation[]
+
+  @@map("inventory_batches")
+}
+
+// 03: Customers
+model Customers {
+  id              String          @id @default(uuid())
+  businessId      String          @map("business_id")
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  firstName       String          @map("first_name") @db.VarChar(100)
+  lastName        String          @map("last_name") @db.VarChar(100)
+  phoneNumber     String?         @map("phone_number") @db.VarChar(20)
+  email           String?         @db.VarChar(255)
+  address         String?
+  city            String?         @db.VarChar(100)
+  state           String?         @db.VarChar(50)
+  zipCode         String?         @map("zip_code") @db.VarChar(20)
+  customerType    String?         @map("customer_type") @db.VarChar(50)
+  totalPurchases  Decimal?        @default(0) @map("total_purchases") @db.Decimal(12, 2)
+  totalCreditUsed Decimal?        @default(0) @map("total_credit_used") @db.Decimal(12, 2)
+  fixedPricePerGram Decimal?        @map("fixed_price_per_gram") @db.Decimal(12, 2)
+  purchaseCount      Int?            @default(0) @map("purchase_count")
+  loyaltyTier        String?         @default("none") @map("loyalty_tier") @db.VarChar(50)
+  discountRate       Decimal?        @default(0) @map("discount_rate") @db.Decimal(5, 4)
+  nextTierAt         Int?            @default(5) @map("next_tier_at")
+  loyaltyUpdatedAt   DateTime?       @map("loyalty_updated_at")
+  isActive           Boolean         @default(true) @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  notes        CustomerNote[]
+  creditTxns   CreditTransaction[]
+  creditLimits CreditLimit[]
+  sales        Sales[]
+
+  @@map("customers")
+}
+
+model CustomerNote {
+  id         String    @id @default(uuid())
+  customerId String    @map("customer_id")
+  customer   Customers @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  noteText   String    @map("note_text")
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("customer_notes")
+}
+
+// 04: Credit
+model CreditTransaction {
+  id              String          @id @default(uuid())
+  businessId      String          @map("business_id")
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId      String          @map("customer_id")
+  customer        Customers       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  transactionType String?         @map("transaction_type") @db.VarChar(50)
+  amount          Decimal         @db.Decimal(12, 2)
+  description     String?
+  dueDate         DateTime?       @map("due_date") @db.Date
+  paidDate        DateTime?       @map("paid_date") @db.Date
+  status          String?         @default("pending") @db.VarChar(50)
+  createdBy       String?         @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("credit_transactions")
+}
+
+model CreditLimit {
+  id             String          @id @default(uuid())
+  businessId     String          @map("business_id")
+  business       BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId     String          @map("customer_id")
+  customer       Customers       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  maxCreditLimit Decimal?        @map("max_credit_limit") @db.Decimal(12, 2)
+  currentBalance Decimal?        @default(0) @map("current_balance") @db.Decimal(12, 2)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("credit_limits")
+}
+
+// 05: Sales
+model Sales {
+  id            String          @id @default(uuid())
+  businessId    String          @map("business_id")
+  business      BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId    String?         @map("customer_id")
+  customer      Customers?      @relation(fields: [customerId], references: [id])
+  orderNumber   String          @map("order_number") @db.VarChar(50)
+  orderType     String?         @map("order_type") @db.VarChar(50)
+  orderStatus   String?         @default("pending") @map("order_status") @db.VarChar(50)
+  subtotal      Decimal?        @db.Decimal(12, 2)
+  taxAmount     Decimal?        @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  totalAmount   Decimal?        @map("total_amount") @db.Decimal(12, 2)
+  paymentMethod String?         @map("payment_method") @db.VarChar(50)
+  paymentRef    String?         @map("payment_ref") @db.VarChar(255)
+  createdBy     String?         @map("created_by")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  // Enhanced POS fields
+  fees                 Json?    @default("[]")
+  deliveryManagementId String?  @map("delivery_management_id")
+  deliveryAddress      String?  @map("delivery_address")
+  deliveryPrice        Decimal? @default(0) @map("delivery_price") @db.Decimal(12, 2)
+  amountPaid           Decimal? @default(0) @map("amount_paid") @db.Decimal(12, 2)
+  changeAmount         Decimal? @default(0) @map("change_amount") @db.Decimal(12, 2)
+
+  deliveryProfile DeliveryManagement? @relation(fields: [deliveryManagementId], references: [id])
+  items           SalesLineItem[]
+  allocations     SalesLineItemAllocation[]
+
+  @@unique([businessId, orderNumber])
+  @@map("sales")
+}
+
+model SalesLineItem {
+  id          String     @id @default(uuid())
+  saleId      String     @map("sale_id")
+  sale        Sales      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  inventoryId String?    @map("inventory_id")
+  inventory   Inventory? @relation(fields: [inventoryId], references: [id])
+  quantity    Int
+  unitPrice   Decimal    @map("unit_price") @db.Decimal(12, 2)
+  lineTotal   Decimal?   @map("line_total") @db.Decimal(12, 2)
+  unitCost    Decimal?   @map("unit_cost") @db.Decimal(12, 2)
+  weightSoldGrams Decimal? @map("weight_sold_grams") @db.Decimal(12, 4)
+  pricePerGram  Decimal?   @map("price_per_gram") @db.Decimal(12, 4)
+  bulkTierApplied String?  @map("bulk_tier_applied") @db.VarChar(50)
+  loyaltyDiscountApplied Decimal? @default(0) @map("loyalty_discount_applied") @db.Decimal(5, 4)
+  originalPrice Decimal?   @map("original_price") @db.Decimal(12, 2)
+  priceOverrideReason String? @map("price_override_reason")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  allocations SalesLineItemAllocation[]
+
+  @@map("sales_line_items")
+}
+
+model SalesLineItemAllocation {
+  id              String         @id @default(uuid())
+  saleId          String         @map("sale_id")
+  sale            Sales          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  salesLineItemId String         @map("sales_line_item_id")
+  salesLineItem   SalesLineItem  @relation(fields: [salesLineItemId], references: [id], onDelete: Cascade)
+  inventoryId     String         @map("inventory_id")
+  inventory       Inventory      @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  batchId         String?        @map("batch_id")
+  batch           InventoryBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  quantityGrams   Decimal        @map("quantity_grams") @db.Decimal(12, 4)
+  unitCostPerGram Decimal        @map("unit_cost_per_gram") @db.Decimal(12, 6)
+  extendedCost    Decimal        @map("extended_cost") @db.Decimal(12, 4)
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@index([saleId])
+  @@index([salesLineItemId])
+  @@index([inventoryId])
+  @@index([batchId])
+  @@map("sales_line_item_allocations")
+}
+
+model DeliveryManagement {
+  id                 String          @id @default(uuid())
+  businessId         String          @map("business_id")
+  business           BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name               String          @db.VarChar(255)
+  provider           String?         @db.VarChar(100)
+  basePrice          Decimal?        @default(0) @map("base_price") @db.Decimal(12, 2)
+  isActive           Boolean         @default(true) @map("is_active")
+  allowPriceOverride Boolean         @default(true) @map("allow_price_override")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  sales Sales[]
+
+  @@map("delivery_management")
+}
+
+model AiPricingRecommendation {
+  id                    String          @id @default(uuid())
+  businessId            String          @map("business_id")
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inventoryId           String          @map("inventory_id")
+  inventory             Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  recommendedPrice      Decimal?        @map("recommended_price") @db.Decimal(12, 2)
+  confidenceScore       Decimal?        @map("confidence_score") @db.Decimal(5, 2)
+  currentPrice          Decimal?        @map("current_price") @db.Decimal(12, 2)
+  priceChangePercentage Decimal?        @map("price_change_percentage") @db.Decimal(5, 2)
+  recommendationReason  String?         @map("recommendation_reason")
+  status                String?         @default("pending") @db.VarChar(50)
+  isActive              Boolean         @default(true) @map("is_active")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("ai_pricing_recommendations")
+}
+
+// 06: AI Insights
+model AiInsight {
+  id                String          @id @default(uuid())
+  businessId        String          @map("business_id")
+  business          BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  insightType       String?         @map("insight_type") @db.VarChar(100)
+  insightTitle      String?         @map("insight_title") @db.VarChar(255)
+  insightContent    String?         @map("insight_content")
+  priority          String?         @db.VarChar(50)
+  actionRecommended String?         @map("action_recommended")
+  status            String?         @default("pending") @db.VarChar(50)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("ai_insights")
+}
+
+model AiInsightFailure {
+  id           String   @id @default(uuid())
+  businessId   String?  @map("business_id")
+  // Note: Optional relation as it might fail before business resolution or be system wide
+  functionName String?  @map("function_name") @db.VarChar(100)
+  errorMessage String?  @map("error_message")
+  errorStack   String?  @map("error_stack")
+  inputData    Json?    @map("input_data")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("ai_insights_failures")
+}
+
+// 07: Admin & Roles
+model AdminUser {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id") // Link to Clerk User ID
+  role            String?  @db.VarChar(50)
+  permissionLevel Int?     @map("permission_level")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model UserRole {
+  id          String          @id @default(uuid())
+  businessId  String          @map("business_id")
+  business    BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId      String          @map("user_id") // Link to Clerk User ID
+  role        String?         @db.VarChar(50)
+  permissions Json?           @default("{}")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@map("user_roles")
+}
+
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String   @db.VarChar(255)
+  message   String
+  type      String   @db.VarChar(50) // "approval" | "system" | "alert"
+  link      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model SystemAuditLog {
+  id         String   @id @default(uuid())
+  action     String?  @db.VarChar(255)
+  entityType String?  @map("entity_type") @db.VarChar(100)
+  entityId   String?  @map("entity_id")
+  userId     String?  @map("user_id")
+  businessId String?  @map("business_id")
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("system_audit_log")
+}
+
+model InventoryForecast {
+  id                        String    @id @default(uuid())
+  businessId                String    @map("business_id")
+  inventoryId               String    @map("inventory_id")
+  inventory                 Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  currentStock              Int       @map("current_stock")
+  velocity7d                Decimal   @map("velocity_7d") @db.Decimal(10, 4)
+  velocity30d               Decimal   @map("velocity_30d") @db.Decimal(10, 4)
+  velocity90d               Decimal   @map("velocity_90d") @db.Decimal(10, 4)
+  velocityTrend             String?   @map("velocity_trend") @db.VarChar(50)
+  projectedStockoutDate     DateTime? @map("projected_stockout_date") @db.Date
+  daysUntilStockout         Int?      @map("days_until_stockout")
+  recommendedRestockQuantity Int      @map("recommended_restock_quantity")
+  restockUrgency            String?   @map("restock_urgency") @db.VarChar(50)
+  inventoryRiskLevel        String?   @map("inventory_risk_level") @db.VarChar(50)
+  reasoning                 String?
+  confidenceScore           Decimal?  @map("confidence_score") @db.Decimal(5, 2)
+  forecastFactors           Json?     @map("forecast_factors")
+  createdAt                 DateTime  @default(now()) @map("created_at")
+
+  @@map("inventory_forecasts")
+}
+
+model InventoryAlert {
+  id          String    @id @default(uuid())
+  businessId  String    @map("business_id")
+  inventoryId String    @map("inventory_id")
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  alertType   String    @map("alert_type") @db.VarChar(100)
+  severity    String    @map("severity") @db.VarChar(50)
+  message     String
+  data        Json?
+  isRead      Boolean   @default(false) @map("is_read")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("inventory_alerts")
+}
+
+model SalesVelocityCache {
+  id             String    @id @default(uuid())
+  businessId     String    @map("business_id")
+  inventoryId    String    @unique @map("inventory_id")
+  inventory      Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  velocity7d     Decimal   @map("velocity_7d") @db.Decimal(10, 4)
+  velocity30d    Decimal   @map("velocity_30d") @db.Decimal(10, 4)
+  velocity90d    Decimal   @map("velocity_90d") @db.Decimal(10, 4)
+  last7dUnits    Int       @default(0) @map("last_7d_units")
+  last30dUnits   Int       @default(0) @map("last_30d_units")
+  last90dUnits   Int       @default(0) @map("last_90d_units")
+  cacheUpdatedAt DateTime  @default(now()) @map("cache_updated_at")
+
+  @@unique([businessId, inventoryId])
+  @@map("sales_velocity_cache")
+}
+
+model AiDecisionLog {
+  id              String   @id @default(uuid())
+  businessId      String   @map("business_id")
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId       String   @map("product_id")
+  inventory       Inventory? @relation(fields: [productId], references: [id])
+  decisionType    String   @map("decision_type") @db.VarChar(50)
+  oldValue        Json?    @map("old_value")
+  newValue        Json?    @map("new_value")
+  aiRecommendation Json?   @map("ai_recommendation")
+  reasoning       String?
+  decidedBy       String?  @map("decided_by") @db.VarChar(50)
+  decidedByUserId String?  @map("decided_by_user_id")
+  overrideReason  String?  @map("override_reason")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("ai_decision_log")
+}

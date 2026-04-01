@@ -1,4 +1,4 @@
-# DRX CRM
+# Deelrx CRM
 
 **Privacy-first POS, CRM, inventory, and credit management system for small businesses**
 
@@ -6,25 +6,105 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
 
 ---
 
+## Monorepo Reality (Beta Launch Baseline)
+
+This repository is a **pnpm monorepo**. Product ownership is explicit:
+
+- `apps/app` = the `.app` product (authenticated operator experience)
+- `apps/marketing` = marketing site only (`.com`)
+
+### Node Version Policy
+
+- **Required Node.js:** `20.18.0` (exact)
+- **Package manager:** `pnpm@9.15.9`
+- CI and local policy are aligned (`.nvmrc`, `.node-version`, package `engines`)
+
+If you are using `nvm`:
+
+```bash
+nvm use
+```
+
+### Domain Routing (.com -> .app)
+
+- Marketing CTAs on `apps/marketing` should send users to the `.app` domain routes (for example `/login`, `/register`)
+- Middleware in `apps/app/middleware.ts` owns the redirect rules that prevent loops between `/`, `/login`, `/onboarding`, and `/dashboard`
+- `NEXT_PUBLIC_APP_URL` should point to the `.app` origin (for example `https://deelrxcrm.app`)
+
+#### Clerk Redirect / Origin Checklist
+
+Configure these in Clerk for both local and production environments:
+
+- Allowed origins: marketing `.com` origin(s) and app `.app` origin(s)
+- Sign-in URL: `.app/login`
+- Sign-up URL: `.app/register`
+- After sign-in URL: `.app/dashboard` (or `.app/onboarding` if your flow requires setup first)
+- After sign-up URL: `.app/onboarding` (or `.app/dashboard` if onboarding is complete)
+- Local dev origins and redirects: `http://localhost:3000` / `http://localhost:3001` (match your active ports)
+
+Do not point marketing CTAs to in-domain auth pages on `.com`; they should always link to `.app`.
+
+### Quick POS (Operator Fast Path)
+
+Quick POS lives in `apps/app` and is designed as a minimal ring-up flow:
+
+- `/pos/sale` → search/scan/add items
+- `/pos/payment` → tender + receipt selection
+- `/pos/complete` → receipt/confirmation state and quick reset for next sale
+
+The POS checkout contract is centralized in `/Users/lee/Projects/DRX_Primary/apps/app/lib/pos/contract.ts`.
+
+### wrelik-kit Consumption
+
+- DRX consumes `@wrelik/*` from published packages (registry-pinned versions)
+- Vendored `packages/wrelik-*` are **not** source-of-truth and are excluded from workspace resolution
+- Direct vendor SDK imports are restricted by ESLint; use app/mobile adapters and `@wrelik/*` boundaries instead
+
+See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details.
+
+### Policies
+
+Policy source of truth is root canonical files:
+
+- `./WRELIK_AGENTS.md`
+- `./DEVELOPMENT_PROCESS.md`
+- `./RELEASE_POLICY.md`
+- `./VERSIONING_POLICY.md`
+- `./VERSION_MANAGEMENT_POLICY.md`
+- `./STACK_POLICY.md`
+- `./CHECKLIST_PRECOMMIT.md`
+- `./CHECKLIST_PRERELEASE.md`
+
+Upstream template provenance and import procedure:
+
+- `./POLICY_UPSTREAM.md`
+- `docs/POLICY_IMPORT_WORKFLOW.md`
+
+### Staging / Preview Testing
+
+For preview deploy + demo data seeding (including the current shared-DB warning), see:
+
+- `/Users/lee/Projects/DRX_Primary/docs/STAGING_PREVIEW_WORKFLOW.md`
+
+---
+
 ## 🚀 Features
 
-### Core Functionality
+Canonical source:
 
-- **Point of Sale (POS)** - Fast, intuitive transaction processing with offline support
-- **Customer Management** - Comprehensive CRM with credit limit tracking and payment history
-- **Inventory Management** - Real-time inventory tracking with unit-based measurements (grams/ounces)
-- **Credit Management** - AI-powered credit limit recommendations and risk scoring
-- **Sales Analytics** - Real-time dashboards and business insights
-- **Multi-Business Support** - Manage multiple business locations from one platform
+- `docs/MARKETING_TRUE_FEATURE_LIST.md`
+- `docs/MARKETING_FEATURE_CLAIM_MATRIX.md`
 
-### Advanced Features
+### DRX Marketing Canon (Status-Aware)
 
-- **Role-Based Access Control (RBAC)** - Granular permissions (Super Admin, Manager, Supervisor, Cashier)
-- **AI Intelligence** - Product pricing recommendations and inventory forecasting
-- **Inventory Intake** - Sophisticated intake workflow with approval system
-- **Offline Mode** - Continue working even without internet connectivity
-- **Progressive Web App (PWA)** - Install on any device for native-like experience
-- **Audit Logging** - Complete system audit trail for compliance
+- **Fast Point of Sale** (`Live`, refund tracking claim `Beta`) - clean checkout, scan/search, discounts, multiple payments, customer lookup, transaction history
+- **Quick POS Mode** (`Live`) - scan product, adjust quantity, apply discount, take payment, done
+- **Inventory That Actually Makes Sense** (`Live`, purchase-order tracking claim `Beta`) - stock visibility, low-stock alerts, SKU/barcode, batch/vendor tracking, adjustment logs
+- **Customer Tracking That Works** (`Live`, notes/tags + loyalty claim `Beta`) - profiles, purchase history, customer insights
+- **Real Business Reports** (`Live`, downloadable/deep slices claim `Beta`) - sales windows, category and best-seller visibility, revenue context, dashboard overview
+- **Team Control & Accountability** (`Live`) - role-based control, secure login, and user activity visibility
+- **Multi-Location Ready** (`Beta`) - separate store views and central multi-business administration
+- **Works on Desktop and Mobile** (`Live`) - desktop dashboards with mobile-friendly checkout and cloud access
 
 ---
 
@@ -67,8 +147,8 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 8+
+- Node.js 20.18.0
+- pnpm 9.15.9
 - Supabase CLI
 
 ### Installation
@@ -112,14 +192,14 @@ A modern, full-stack CRM and point-of-sale system built with Next.js 16, Supabas
    npx supabase db reset
    ```
 
-6. **Run the development server**
+6. **Run the app product**
 
    ```bash
    pnpm dev
    ```
 
 7. **Open the app**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to the `apps/app` local URL (typically [http://localhost:3000](http://localhost:3000))
 
 ---
 
@@ -179,27 +259,18 @@ pnpm test:e2e
 ## 🏗 Project Structure
 
 ```
-drx-v2/
-├── app/                    # Next.js app directory
-│   ├── (app)/             # Authenticated app routes
-│   ├── actions/           # Server actions
-│   ├── api/               # API routes
-│   └── inventory/         # Inventory management
-├── components/            # React components
-│   ├── ui/               # Shadcn UI components
-│   ├── layout/           # Layout components
-│   └── providers/        # Context providers
-├── lib/                  # Shared utilities
-│   ├── auth/            # Authentication & permissions
-│   ├── credit/          # Credit decision engine
-│   ├── hooks/           # Custom React hooks
-│   ├── supabase/        # Supabase client
-│   ├── utils/           # Utility functions
-│   └── validations/     # Zod schemas
-├── supabase/            # Supabase configuration
-│   ├── migrations/      # Database migrations
-│   └── functions/       # Edge functions
-└── tests/               # Test files
+DRX_Primary/
+├── apps/
+│   ├── app/               # .app product (operator/authenticated experience)
+│   ├── marketing/         # .com marketing site
+│   └── mobile/            # Expo mobile client
+├── packages/
+│   ├── ui/                # Shared UI package
+│   ├── brand/             # Shared brand assets/tokens
+│   └── wrelik-*           # Vendored reference copies (not workspace source-of-truth)
+├── tooling/               # Shared lint/tooling config
+├── docs/                  # Project and launch docs
+└── scripts/               # Root automation/testing scripts
 ```
 
 ---
@@ -257,12 +328,13 @@ npx supabase db push
 ## 📝 Scripts
 
 ```bash
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm test         # Run tests
-pnpm test:e2e     # Run E2E tests
+pnpm dev          # Run apps/app locally (root proxy)
+pnpm build        # Build apps/app + apps/marketing
+pnpm start        # Start apps/app (root proxy)
+pnpm lint         # Launch readiness lint (app + marketing)
+pnpm typecheck    # Launch readiness typecheck (app + marketing)
+pnpm compliance:imports  # Enforce vendor import boundaries
+pnpm test:e2e:web # Run apps/app Playwright suite
 ```
 
 ---

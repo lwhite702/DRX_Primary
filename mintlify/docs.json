@@ -1,0 +1,54 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Deelrx CRM",
+  "theme": "mint",
+  "colors": {
+    "primary": "#4ADE80",
+    "light": "#86EFAC",
+    "dark": "#22C55E"
+  },
+  "navigation": [
+    {
+      "group": "Start Here",
+      "pages": [
+        "index",
+        "getting-started",
+        "store-setup"
+      ]
+    },
+    {
+      "group": "Daily Operations",
+      "pages": [
+        "how-sales-work",
+        "your-products",
+        "your-customers",
+        "payments-and-plans"
+      ]
+    },
+    {
+      "group": "Control & Visibility",
+      "pages": [
+        "staying-compliant",
+        "numbers-that-matter",
+        "team-access",
+        "keeping-your-data-safe",
+        "failsafe-and-self-destruct",
+        "fixing-issues"
+      ]
+    },
+    {
+      "group": "Policies & Reference",
+      "pages": [
+        "beta-access-and-use",
+        "legal-disclaimer",
+        "glossary"
+      ]
+    },
+    {
+      "group": "Release Notes",
+      "pages": [
+        "CHANGELOG"
+      ]
+    }
+  ]
+}
