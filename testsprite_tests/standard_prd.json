@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "project": "DeelRx Inventory and Credit Management Platform",
+    "date": "2026-01-29",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "DeelRx is a unified, multi-tenant retail platform designed for regulated inventory-driven businesses. It provides a privacy-first, high-performance POS system with granular owner-configurable controls for inventory, credit management, and compliance.",
+  "core_goals": [
+    "Deliver a blazing-fast, accurate, and privacy-centric POS system compatible with mobile and web.",
+    "Enable full business control with detailed inventory tracking, credit management, and owner-customizable settings.",
+    "Ensure stringent tenant data isolation and compliance with privacy and audit requirements.",
+    "Support multi-unit measurement handling with automatic conversions and alias management.",
+    "Provide an intuitive onboarding process capturing all critical business setup data.",
+    "Implement end-to-end encryption, strict role-based permissions, and comprehensive audit logs for security and compliance."
+  ],
+  "key_features": [
+    "Multi-tenant architecture with strict data isolation and scoped user roles.",
+    "Guided onboarding capturing business details, privacy presets, unit settings, and initial roles.",
+    "Comprehensive inventory management supporting intake, adjustments, batch imports, and audit logging.",
+    "Flexible unit and alias management including cross-unit conversions and quickpick quantities.",
+    "Credit Management API enabling credit limit refreshes, exposure reporting, and transaction oversight.",
+    "POS and transaction workflows optimized for speed and privacy with barcode and offline mode options.",
+    "Advanced privacy controls with presets ranging from open CRM to max secure alias-only modes including failsafes and data burn actions.",
+    "Audit log retention and GDPR compliance including irreversible deletion of PII where applicable.",
+    "Owner-configurable settings for credit policies, loyalty programs, compliance retention, and export permissions."
+  ],
+  "user_flow_summary": [
+    "Tenant onboarding flow capturing all required business information, privacy presets, unit selections, and initial user roles first before usage.",
+    "Inventory intake process with product selection via text search or barcode scan, quantity input in multiple units, reason selection, and audit logging.",
+    "Inventory adjustment workflow supporting increments, decrements, or absolute quantity setting with mandatory reason and permission checks.",
+    "Batch upload and multi-row intake for inventory via CSV with full audit logging and error handling.",
+    "POS sales and transaction processing with alias auto-fill, offline support, and privacy mode enforcement.",
+    "Admin management of settings post-onboarding including reasons lists, credit policies, role management, and privacy configurations.",
+    "Audit log review and compliance reporting available to authorized roles, respecting tenant and privacy boundaries."
+  ],
+  "validation_criteria": [
+    "Complete tenant data isolation verified with no cross-tenant access or data leaks.",
+    "Mandatory completion of all required onboarding fields before tenant activation.",
+    "All inventory transactions logged with user, timestamp, previous and new quantities, reason, and device source within 30 seconds.",
+    "Role-based access strictly enforced to limit actions and data visibility.",
+    "Privacy presets functional with audit logs, export restrictions, and irrevocable data burn options operating as intended.",
+    "Performance benchmarks met: sub-1 second response for POS operations and under 2 seconds for batch imports.",
+    "Security features including multi-factor authentication, end-to-end encryption, and tamper-proof audit logs implemented.",
+    "Offline operations sync correctly and deduplicate changes without data loss or corruption.",
+    "Compliance features including GDPR “right to be forgotten” and retention policies validated through testing."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "Next.js",
+      "Tailwind CSS",
+      "Supabase",
+      "PostgreSQL",
+      "Radix UI",
+      "Framer Motion",
+      "Sentry",
+      "Vitest",
+      "Playwright"
+    ],
+    "features": [
+      {
+        "name": "Credit Management API",
+        "description": "Handles credit limit refreshes, exposure reports, transactions, and customer credit status.",
+        "files": [
+          "app/api/credit"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Credit Management API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/api/credit/refresh-limits": {
+              "post": {
+                "summary": "Refresh credit limits",
+                "responses": {
+                  "200": {
+                    "description": "OK"
+                  }
+                }
+              }
+            },
+            "/api/credit/exposure-report": {
+              "get": {
+                "summary": "Get exposure report",
+                "responses": {
+                  "200": {
+                    "description": "OK"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Inventory API",
+        "description": "Manages product inventory and intake processes.",
+        "files": [
+          "app/api/inventory"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Inventory API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/api/inventory": {
+              "get": {
+                "summary": "List inventory",
+                "responses": {
+                  "200": {
+                    "description": "OK"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -11,11 +11,30 @@ export const businessProfileSchema = z.object({
   zip_code: z.string().max(20).optional(),
   phone_number: z.string().max(20).optional(),
   email: z.string().email().optional(),
+  recovery_email: z.string().email().optional(),
   owner_id: z.string().uuid(),
   is_active: z.boolean().default(true),
+  onboarding_completed: z.boolean().default(false),
 });
 
 export type BusinessProfile = z.infer<typeof businessProfileSchema>;
+
+// Business Settings Schema
+export const businessSettingsSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  privacy_preset: z
+    .enum(["open", "balanced", "private", "max_secure"])
+    .default("balanced"),
+  supported_units: z.array(z.string()).default(["g", "oz", "lb", "L", "ml"]),
+  default_tax_rate: z.number().nonnegative().default(0.08),
+  theme_preference: z.string().optional(),
+  currency: z.string().default("USD"),
+  timezone: z.string().default("America/New_York"),
+  settings_data: z.record(z.any()).default({}),
+});
+
+export type BusinessSettings = z.infer<typeof businessSettingsSchema>;
 
 // Inventory Schemas
 export const inventorySchema = z.object({
@@ -25,7 +44,7 @@ export const inventorySchema = z.object({
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
-  unit_of_measure: z.enum(["g", "oz"]).default("g"),
+  unit_of_measure: z.enum(["g", "oz", "lb", "L", "ml"]).default("g"),
   quantity_on_hand: z.number().int().min(0).default(0),
   reorder_level: z.number().int().min(0).default(10),
   unit_cost: z.number().nonnegative().optional(),

@@ -54,3 +54,18 @@
 | cto/update-dispensary-branding | origin/cto/update-dispensary-branding | shared-history | merged | none | clean merge |
 | cto/you-are-a-production-readiness-engineer-responsible-for-hard | cto/you-are-a-production-readiness-engineer-responsible-for-hard | shared-history | merged | none | clean merge |
 | cto/you-are-codex-senior-next-js-clerk-monorepo-engineer-your-jo | origin/cto/you-are-codex-senior-next-js-clerk-monorepo-engineer-your-jo | shared-history | merged | none | clean merge |
+| development | origin/development | shared-history | merged | binary:.DS_Store + text | dropped .DS_Store; kept ours for unresolved text conflicts |
+| drx-crm-pos-e2e-reliability-fixes | origin/drx-crm-pos-e2e-reliability-fixes | shared-history | merged | none | clean merge |
+| feat-ai-credit-limit-engine-drx | origin/feat-ai-credit-limit-engine-drx | shared-history | merged | none | clean merge |
+| feat-pos-weight-shrinkage-comps-random-inventory-bulk-pricing-loyalty | origin/feat-pos-weight-shrinkage-comps-random-inventory-bulk-pricing-loyalty | shared-history | merged | none | clean merge |
+| feat-single-migration-json-sql-functions-dashboard | origin/feat-single-migration-json-sql-functions-dashboard | shared-history | merged | none | clean merge |
+| feat/ai-pricing-inventory-intel | origin/feat/ai-pricing-inventory-intel | shared-history | merged | none | clean merge |
+| feat/mobile-responsive-rebuild-bottom-nav-drawers | origin/feat/mobile-responsive-rebuild-bottom-nav-drawers | shared-history | merged | none | clean merge |
+| feat/part3-compliance | feat/part3-compliance | shared-history | merged | none | clean merge |
+| feat/pos-enable-ai-pricing-delivery-management-amount-paid-calc | origin/feat/pos-enable-ai-pricing-delivery-management-amount-paid-calc | shared-history | merged | none | clean merge |
+| feature-rbac-roles-permissions-backend-frontend | origin/feature-rbac-roles-permissions-backend-frontend | shared-history | merged | none | clean merge |
+| feature/ai-credit-limit-engine-drx | origin/feature/ai-credit-limit-engine-drx | shared-history | merged | none | clean merge |
+| migrate/modular-stack-core | migrate/modular-stack-core | shared-history | merged | none | clean merge |
+| qa-crm-pos-e2e-reliability-fixes | origin/qa-crm-pos-e2e-reliability-fixes | shared-history | merged | none | clean merge |
+| quick-pos | quick-pos | shared-history | merged | none | clean merge |
+| refactor/wrelik-kit-integration | refactor/wrelik-kit-integration | shared-history | merged | none | clean merge |

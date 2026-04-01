@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "backendAuthType": "Bearer token",
+  "backendCredential": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWttYXR5b2lzb3lueWZidnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MzIyNDQsImV4cCI6MjA4MDIwODI0NH0.pwS898NA6fK5x7zT_g89jGNkrnVFp-hRnjHWqiwH4qw",
+  "executionArgs": {
+    "projectName": "DRX_Primary-1",
+    "projectPath": "/Users/lee/Projects/DRX_Primary-1",
+    "testIds": [],
+    "additionalInstruction": "Test the main pages and basic navigation.",
+    "envs": {
+      "API_KEY": "sk-user-TvbDiQdglnSZQZVuA-2p3zJClbqGEeqHrJjQB4Zk7J5MD8A7-AxVyas8WQQQwHyaAnFYN2Xkdr5Q4mBNU_H6Mazq5CjK-uAfaqoCuM5fcHU_HsNiltc3iyvt6ZlaF_Tkh98"
+    }
+  },
+  "proxy": "http://945e4731-3c40-408b-b374-40d3bd6c3583:wOzkYdBEngPSqDi5loHekIQmS5vhYOv8@tun.testsprite.com:8080"
+}
