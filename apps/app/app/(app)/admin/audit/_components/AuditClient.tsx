@@ -118,7 +118,13 @@ export function AuditClient() {
         log.user_id,
         log.business_id,
       ]);
-      content = [headers, ...rows].map((row) => row.join(",")).join("\n");
+      content = [headers, ...rows]
+        .map((row) =>
+          row
+            .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+            .join(","),
+        )
+        .join("\n");
       mimeType = "text/csv";
       fileName += ".csv";
     } else {
