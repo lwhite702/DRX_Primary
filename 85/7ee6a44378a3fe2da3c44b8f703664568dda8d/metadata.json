@@ -1,0 +1,182 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "857ee6a44378a3fe2da3c44b8f703664568dda8d",
+  "branch": "codex/pos-checkout-integrity-staging",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773391551,
+  "message": "Backport POS checkout integrity to staging",
+  "files_changed": [
+    "apps/app/app/(app)/sales/_hooks/useSalesCart.ts",
+    "apps/app/app/api/pos/checkout-enhanced/route.ts",
+    "apps/app/app/api/pos/checkout/route.ts",
+    "apps/app/app/api/pos/delivery-options/route.ts",
+    "apps/app/app/api/pos/validate-credit/route.ts",
+    "apps/app/app/api/pos/validate-stock/route.ts",
+    "apps/app/app/api/sales/[id]/route.ts",
+    "apps/app/app/api/sales/route.ts",
+    "apps/app/components/pos/weight-entry-modal.tsx",
+    "apps/app/lib/pos/contract.ts",
+    "apps/app/lib/pos/core.ts",
+    "apps/app/lib/pos/types.ts",
+    "apps/app/lib/utils/pos-engine.ts",
+    "apps/app/prisma/schema.prisma",
+    "apps/app/tests/pos/checkout-route.test.ts",
+    "apps/app/tests/pos/compat-routes.test.ts",
+    "apps/app/tests/pos/contract.test.ts",
+    "apps/app/tests/pos/core.test.ts",
+    "apps/app/tests/pos/sales-detail-route.test.ts",
+    "apps/app/tests/pos/validate-credit-route.test.ts",
+    "apps/app/tests/pos/validate-stock-route.test.ts",
+    "apps/app/vitest.config.ts"
+  ],
+  "added": 1977,
+  "deleted": 561,
+  "file_changes": [
+    {
+      "path": "apps/app/app/(app)/sales/_hooks/useSalesCart.ts",
+      "added": 5,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/pos/checkout-enhanced/route.ts",
+      "added": 101,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/pos/checkout/route.ts",
+      "added": 21,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/pos/delivery-options/route.ts",
+      "added": 27,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/pos/validate-credit/route.ts",
+      "added": 34,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/pos/validate-stock/route.ts",
+      "added": 66,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/sales/[id]/route.ts",
+      "added": 132,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/sales/route.ts",
+      "added": 81,
+      "deleted": 84,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/pos/weight-entry-modal.tsx",
+      "added": 2,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/pos/contract.ts",
+      "added": 20,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/pos/core.ts",
+      "added": 426,
+      "deleted": 79,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/pos/types.ts",
+      "added": 17,
+      "deleted": 2,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/utils/pos-engine.ts",
+      "added": 174,
+      "deleted": 376,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/prisma/schema.prisma",
+      "added": 24,
+      "deleted": 4,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/checkout-route.test.ts",
+      "added": 47,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/compat-routes.test.ts",
+      "added": 198,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/contract.test.ts",
+      "added": 35,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/core.test.ts",
+      "added": 190,
+      "deleted": 12,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/sales-detail-route.test.ts",
+      "added": 150,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/validate-credit-route.test.ts",
+      "added": 93,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/validate-stock-route.test.ts",
+      "added": 124,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/vitest.config.ts",
+      "added": 10,
+      "deleted": 0,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 1977,
+  "human_deleted": 561,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -1,0 +1,42 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "6039201bf0d1f03328b86dc23d92e836a4ccaeb5",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773727572,
+  "message": "Fix weighted FIFO unit cost calculation",
+  "files_changed": [
+    "apps/app/lib/pos/core.ts",
+    "apps/app/tests/pos/core.test.ts"
+  ],
+  "added": 4,
+  "deleted": 6,
+  "file_changes": [
+    {
+      "path": "apps/app/lib/pos/core.ts",
+      "added": 2,
+      "deleted": 4,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/core.test.ts",
+      "added": 2,
+      "deleted": 2,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 4,
+  "human_deleted": 6,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

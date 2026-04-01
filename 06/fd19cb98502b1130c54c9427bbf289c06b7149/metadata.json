@@ -1,0 +1,42 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "06fd19cb98502b1130c54c9427bbf289c06b7149",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773797646,
+  "message": "fix(reports,intake): extract low-stock constant and harden batch insert",
+  "files_changed": [
+    "apps/app/app/(app)/reports/page.tsx",
+    "apps/app/app/api/inventory/intake/approve/route.ts"
+  ],
+  "added": 28,
+  "deleted": 12,
+  "file_changes": [
+    {
+      "path": "apps/app/app/(app)/reports/page.tsx",
+      "added": 3,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/inventory/intake/approve/route.ts",
+      "added": 25,
+      "deleted": 11,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 28,
+  "human_deleted": 12,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

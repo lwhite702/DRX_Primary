@@ -71,3 +71,5 @@
 | refactor/wrelik-kit-integration | refactor/wrelik-kit-integration | shared-history | merged | none | clean merge |
 | save/primary-1-work | origin/save/primary-1-work | shared-history | merged | binary:.DS_Store + text | dropped .DS_Store; kept ours for unresolved text conflicts |
 | seer/refactor/offline-sync-numeric-status | origin/seer/refactor/offline-sync-numeric-status | shared-history | merged | none | clean merge |
+| staging | origin/staging | shared-history | merged | text | kept ours for unresolved text conflicts |
+| vercel/react-server-components-cve-vu-5f2iev | origin/vercel/react-server-components-cve-vu-5f2iev | shared-history | merged | none | clean merge |
