@@ -32,3 +32,5 @@
 | codex/implement-drx-brand-voice-across-app | origin/codex/implement-drx-brand-voice-across-app | shared-history | merged | none | clean merge |
 | codex/local-preserve-20260311 | codex/local-preserve-20260311 | shared-history | merged | none | clean merge |
 | codex/pos-checkout-integrity-staging | codex/pos-checkout-integrity-staging | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/pos-checkout-integrity | codex/pos-checkout-integrity | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/pos-formatters-locale | codex/pos-formatters-locale | shared-history | merged | none | clean merge |
