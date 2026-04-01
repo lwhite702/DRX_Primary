@@ -23,3 +23,5 @@
 | codex/create-skill-files-for-manage-srs | origin/codex/create-skill-files-for-manage-srs | shared-history | merged | none | clean merge |
 | codex/design-drx-intelligence-system | origin/codex/design-drx-intelligence-system | shared-history | merged | none | clean merge |
 | codex/designtest | codex/designtest | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/drx-cyber-technical-landing | codex/drx-cyber-technical-landing | shared-history | merged | binary:.DS_Store + text | dropped .DS_Store; kept ours for unresolved text conflicts |
+| codex/fix-authentication-and-routing-issues-on-.app | origin/codex/fix-authentication-and-routing-issues-on-.app | shared-history | merged | none | clean merge |
