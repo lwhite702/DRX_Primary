@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Build System**: Fixed root package.json build script to correctly delegate to apps/app for monorepo builds.
+- **Dependencies**: Updated @wrelik/* packages to use workspace protocol for proper monorepo resolution.
+- **Marketing App**: Added missing UI component re-exports for Button component from @deelrx/ui package.
+- **Versioning**: Synchronized version numbers across VERSION file, root package.json, and apps/app/package.json (0.5.2).
+
+### Changed
+
+- **Build Scripts**: Added `build:marketing` and `build:all` scripts to root package.json for comprehensive build support.
+
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 - **Sentry Feedback**: Fixed runtime crash on Help page by guarding feedback initialization when Sentry client is unavailable.
 - **Type/Test Stability**: Resolved app typecheck failures and aligned unit/integration tests with current adapter and schema contracts.

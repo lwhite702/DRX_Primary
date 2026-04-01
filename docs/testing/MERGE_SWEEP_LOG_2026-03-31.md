@@ -37,3 +37,15 @@
 | codex/pr36-version-align | codex/pr36-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/pr37-version-align | codex/pr37-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/update-pixel-pronto-landing-page-for-clarity-and-conversion | origin/codex/update-pixel-pronto-landing-page-for-clarity-and-conversion | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/wip-before-main-align-20260217 | codex/wip-before-main-align-20260217 | shared-history | merged | text | kept ours for unresolved text conflicts |
+| cto-task-add-these-mandatory-guardrails-and-validation-steps-to-the-r | origin/cto-task-add-these-mandatory-guardrails-and-validation-steps-to-the-r | shared-history | merged | none | clean merge |
+| cto-task-below-are-two-deliverables-1-exact-phase-2-cleanup-checklist | origin/cto-task-below-are-two-deliverables-1-exact-phase-2-cleanup-checklist | shared-history | merged | none | clean merge |
+| cto-task-i-tried-to-deploy-with-app-marketing-and-got-a-build-failure | origin/cto-task-i-tried-to-deploy-with-app-marketing-and-got-a-build-failure | shared-history | merged | none | clean merge |
+| cto-task-phase-2-promptwrelik-kit-integration-and-adapter-enforcement | origin/cto-task-phase-2-promptwrelik-kit-integration-and-adapter-enforcement | shared-history | merged | none | clean merge |
+| cto-task-prompt-mini-repo-setup-for-deelrxcrm-on-vercel-marketing-app | origin/cto-task-prompt-mini-repo-setup-for-deelrxcrm-on-vercel-marketing-app | shared-history | merged | none | clean merge |
+| cto-task-review-and-solve-build-iss-ues-and-bugs-ensure-the-dependenc | origin/cto-task-review-and-solve-build-iss-ues-and-bugs-ensure-the-dependenc | shared-history | merged | none | clean merge |
+| cto-task-solve-build-errors-11-26-49-739-running-build-in-washington | origin/cto-task-solve-build-errors-11-26-49-739-running-build-in-washington | shared-history | merged | none | clean merge |
+| cto-task-when-visiting-the-app-page-i-am-constantly-being-redirected | origin/cto-task-when-visiting-the-app-page-i-am-constantly-being-redirected | shared-history | merged | none | clean merge |
+| cto-task-you-are-an-autonomous-senior-engineer-systems-auditor-and-mi | origin/cto-task-you-are-an-autonomous-senior-engineer-systems-auditor-and-mi | shared-history | merged | none | clean merge |
+| cto-task-you-are-establishing-the-design-language-for-the-drx-deelrx | origin/cto-task-you-are-establishing-the-design-language-for-the-drx-deelrx | shared-history | merged | none | clean merge |
+| cto-task-you-are-the-release-authority-and-systems-integrity-enforcer-e02 | origin/cto-task-you-are-the-release-authority-and-systems-integrity-enforcer-e02 | shared-history | merged | none | clean merge |
