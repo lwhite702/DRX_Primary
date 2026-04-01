@@ -19,3 +19,6 @@
 | codex/ci-check-fixes | codex/ci-check-fixes | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/ci-node-20-19-fix | codex/ci-node-20-19-fix | shared-history | merged | none | clean merge |
 | codex/ci-node-20-19 | codex/ci-node-20-19 | shared-history | merged | none | clean merge |
+| codex/conduct-dead-code-audit | origin/codex/conduct-dead-code-audit | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/create-skill-files-for-manage-srs | origin/codex/create-skill-files-for-manage-srs | shared-history | merged | none | clean merge |
+| codex/design-drx-intelligence-system | origin/codex/design-drx-intelligence-system | shared-history | merged | none | clean merge |
