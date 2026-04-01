@@ -4,12 +4,17 @@ import path from "node:path";
 const root = process.cwd();
 const reportPath = path.join(root, "docs/testing/PERF_SMOKE.json");
 
+const SKIP_DIRS = new Set(["cache"]);
+
 function directorySize(dir: string): number {
   if (!fs.existsSync(dir)) return 0;
   let total = 0;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) total += directorySize(absolute);
+    if (entry.isDirectory()) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      total += directorySize(absolute);
+    }
     else total += fs.statSync(absolute).size;
   }
   return total;

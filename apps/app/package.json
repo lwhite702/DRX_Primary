@@ -45,7 +45,7 @@
     "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",
     "test:regression": "vitest run tests/regression",
-    "pos:backfill-lineage": "tsx scripts/backfill-pos-cost-lineage.ts"
+    "pos:backfill-lineage": "node scripts/backfill-pos-cost-lineage.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.1",

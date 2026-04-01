@@ -143,10 +143,13 @@ describe("POS compatibility routes", () => {
     expect(res.status).toBe(200);
     expect(data).toEqual({
       success: true,
-      sale_id: "sale_123",
-      order_number: "POS-123",
-      total_amount: 15,
-      change_amount: 0,
+      saleId: "sale_123",
+      orderNumber: "POS-123",
+      totals: {
+        total: 15,
+        changeAmount: 0,
+      },
+      errors: [],
     });
     expect(mocks.createCart).toHaveBeenCalledWith({
       businessId: "business_123",
@@ -177,7 +180,21 @@ describe("POS compatibility routes", () => {
 
     const data = await res.json();
     expect(res.status).toBe(201);
-    expect(data.id).toBe("sale_123");
+    expect(data).toEqual({
+      success: true,
+      saleId: "sale_123",
+      orderNumber: "POS-123",
+      totals: {
+        total: 15,
+        changeAmount: 0,
+      },
+      errors: [],
+      sale: {
+        id: "sale_123",
+        orderNumber: "POS-123",
+        items: [{ inventoryId: "inv_1" }],
+      },
+    });
     expect(mocks.createCart).toHaveBeenCalledWith({
       businessId: "business_123",
       userId: "user_123",

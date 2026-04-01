@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-30T08:39:01.219Z",
+  "generatedAt": "2026-04-01T01:04:22.784Z",
   "recommendation": "GO",
   "rule": "GO only if all required gates pass at 100%",
   "gates": [
@@ -13,22 +13,22 @@
         {
           "command": "pnpm release:preflight",
           "code": 0,
-          "durationSec": 3.83
+          "durationSec": 5.12
         },
         {
           "command": "pnpm lint",
           "code": 0,
-          "durationSec": 6.68
+          "durationSec": 7.61
         },
         {
           "command": "pnpm typecheck",
           "code": 0,
-          "durationSec": 7.82
+          "durationSec": 10.42
         },
         {
           "command": "pnpm build",
           "code": 0,
-          "durationSec": 41.17
+          "durationSec": 64.8
         }
       ]
     },
@@ -42,7 +42,7 @@
         {
           "command": "pnpm --filter deelrxcrm-app test:required:auth-data",
           "code": 0,
-          "durationSec": 6.14
+          "durationSec": 6.98
         }
       ]
     },
@@ -56,12 +56,52 @@
         {
           "command": "pnpm test:matrix",
           "code": 0,
-          "durationSec": 3.87
+          "durationSec": 4.41
         },
         {
           "command": "pnpm test:policy",
           "code": 0,
-          "durationSec": 1.88
+          "durationSec": 2.39
+        },
+        {
+          "command": "pnpm test:feature-freeze",
+          "code": 0,
+          "durationSec": 2.38
+        },
+        {
+          "command": "pnpm test:feature-lock",
+          "code": 0,
+          "durationSec": 2.27
+        },
+        {
+          "command": "pnpm test:observability-contract",
+          "code": 0,
+          "durationSec": 2.28
+        },
+        {
+          "command": "pnpm test:doppler-sync",
+          "code": 0,
+          "durationSec": 2.76
+        },
+        {
+          "command": "pnpm test:feature-flags-contract",
+          "code": 0,
+          "durationSec": 2.25
+        },
+        {
+          "command": "pnpm test:metadata-contract",
+          "code": 0,
+          "durationSec": 2.32
+        },
+        {
+          "command": "pnpm test:login-surfaces",
+          "code": 0,
+          "durationSec": 2.29
+        },
+        {
+          "command": "pnpm test:coverage:strict",
+          "code": 0,
+          "durationSec": 6.03
         }
       ]
     },
@@ -75,7 +115,7 @@
         {
           "command": "pnpm --filter deelrxcrm-app test:required:auth-data",
           "code": 0,
-          "durationSec": 6.14
+          "durationSec": 6.98
         }
       ]
     },
@@ -89,7 +129,7 @@
         {
           "command": "pnpm --filter deelrxcrm-app vitest run tests/integration/audit.test.ts",
           "code": 0,
-          "durationSec": 0.75
+          "durationSec": 1.31
         }
       ]
     },
@@ -97,18 +137,18 @@
       "id": 5,
       "name": "Observability",
       "requiredForBeta": false,
-      "pass": false,
-      "passRate": 0,
+      "pass": true,
+      "passRate": 100,
       "checks": [
         {
           "command": "pnpm test:security",
-          "code": 1,
-          "durationSec": 2.14
+          "code": 0,
+          "durationSec": 2.57
         },
         {
           "command": "pnpm test:perf",
-          "code": 1,
-          "durationSec": 2.02
+          "code": 0,
+          "durationSec": 2.42
         }
       ]
     },
@@ -122,17 +162,17 @@
         {
           "command": "pnpm test:e2e:required",
           "code": 0,
-          "durationSec": 45.93
+          "durationSec": 65.54
         },
         {
           "command": "pnpm --filter deelrxcrm-app test:e2e:visual:required",
           "code": 0,
-          "durationSec": 44.92
+          "durationSec": 51.78
         },
         {
           "command": "pnpm test:a11y:required",
           "code": 0,
-          "durationSec": 60.95
+          "durationSec": 60.04
         }
       ]
     }
@@ -141,67 +181,107 @@
     {
       "command": "pnpm release:preflight",
       "code": 0,
-      "durationSec": 3.83
+      "durationSec": 5.12
     },
     {
       "command": "pnpm lint",
       "code": 0,
-      "durationSec": 6.68
+      "durationSec": 7.61
     },
     {
       "command": "pnpm typecheck",
       "code": 0,
-      "durationSec": 7.82
+      "durationSec": 10.42
     },
     {
       "command": "pnpm build",
       "code": 0,
-      "durationSec": 41.17
+      "durationSec": 64.8
     },
     {
       "command": "pnpm --filter deelrxcrm-app test:required:auth-data",
       "code": 0,
-      "durationSec": 6.14
+      "durationSec": 6.98
     },
     {
       "command": "pnpm test:matrix",
       "code": 0,
-      "durationSec": 3.87
+      "durationSec": 4.41
     },
     {
       "command": "pnpm test:policy",
       "code": 0,
-      "durationSec": 1.88
+      "durationSec": 2.39
+    },
+    {
+      "command": "pnpm test:feature-freeze",
+      "code": 0,
+      "durationSec": 2.38
+    },
+    {
+      "command": "pnpm test:feature-lock",
+      "code": 0,
+      "durationSec": 2.27
+    },
+    {
+      "command": "pnpm test:observability-contract",
+      "code": 0,
+      "durationSec": 2.28
+    },
+    {
+      "command": "pnpm test:doppler-sync",
+      "code": 0,
+      "durationSec": 2.76
+    },
+    {
+      "command": "pnpm test:feature-flags-contract",
+      "code": 0,
+      "durationSec": 2.25
+    },
+    {
+      "command": "pnpm test:metadata-contract",
+      "code": 0,
+      "durationSec": 2.32
+    },
+    {
+      "command": "pnpm test:login-surfaces",
+      "code": 0,
+      "durationSec": 2.29
+    },
+    {
+      "command": "pnpm test:coverage:strict",
+      "code": 0,
+      "durationSec": 6.03
     },
     {
       "command": "pnpm --filter deelrxcrm-app vitest run tests/integration/audit.test.ts",
       "code": 0,
-      "durationSec": 0.75
+      "durationSec": 1.31
     },
     {
       "command": "pnpm test:security",
-      "code": 1,
-      "durationSec": 2.14
+      "code": 0,
+      "durationSec": 2.57
     },
     {
       "command": "pnpm test:perf",
-      "code": 1,
-      "durationSec": 2.02
+      "code": 0,
+      "durationSec": 2.42
     },
     {
       "command": "pnpm test:e2e:required",
       "code": 0,
-      "durationSec": 45.93
+      "durationSec": 65.54
     },
     {
       "command": "pnpm --filter deelrxcrm-app test:e2e:visual:required",
       "code": 0,
-      "durationSec": 44.92
+      "durationSec": 51.78
     },
     {
       "command": "pnpm test:a11y:required",
       "code": 0,
-      "durationSec": 60.95
+      "durationSec": 60.04
     }
   ]
 }

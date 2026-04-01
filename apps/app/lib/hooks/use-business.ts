@@ -44,7 +44,7 @@ export function useBusiness() {
 
   // Sync available businesses from Clerk memberships
   const availableBusinesses =
-    userMemberships?.data?.map((mem) => ({
+    userMemberships?.data?.map((mem: any) => ({
       id: mem.organization.id, // This is the Clerk Org ID
       business_name: mem.organization.name,
       // Add other mapped fields if necessary for UI compatibility

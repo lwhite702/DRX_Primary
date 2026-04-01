@@ -58,7 +58,6 @@ export default function SalesPage() {
     setQuantity,
     removeFromCart,
     setCustomer,
-    processCheckout,
     overridePrice,
     setDelivery,
     setTaxEnabled,
@@ -225,21 +224,8 @@ export default function SalesPage() {
   };
 
   const handleCheckoutWrapper = async () => {
-    try {
-      const result = await processCheckout(selectedCustomer, amountPaid);
-      if (result.success) {
-        toast.success(`${drxCopy.pos.cart.saleComplete} ${result.sale_id}`);
-        setSelectedCustomer(undefined);
-        setAmountPaid("");
-        setDeliveryAddress("");
-        setDeliveryPrice(0);
-        setShowAmountPaidMode(false);
-      } else {
-        toast.error(result.error || drxCopy.pos.cart.checkoutFailed);
-      }
-    } catch (e: any) {
-      toast.error(e.message || drxCopy.pos.cart.checkoutFailed);
-    }
+    toast.info("Primary checkout has moved to /pos for cashier operations.");
+    window.location.assign("/pos");
   };
 
   if (businessLoading) return <SalesSkeleton />;
@@ -294,6 +280,9 @@ export default function SalesPage() {
                   CURRENT CART
                 </h2>
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Sales checkout from this screen is deprecated. Use `/pos` for live cashier transactions.
+              </p>
             </div>
 
             <div className="p-4 flex-1 flex flex-col space-y-4">
