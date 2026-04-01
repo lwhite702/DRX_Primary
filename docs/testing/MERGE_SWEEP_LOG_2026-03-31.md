@@ -36,3 +36,4 @@
 | codex/pos-formatters-locale | codex/pos-formatters-locale | shared-history | merged | none | clean merge |
 | codex/pr36-version-align | codex/pr36-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/pr37-version-align | codex/pr37-version-align | shared-history | merged | text | kept ours for unresolved text conflicts |
+| codex/update-pixel-pronto-landing-page-for-clarity-and-conversion | origin/codex/update-pixel-pronto-landing-page-for-clarity-and-conversion | shared-history | merged | text | kept ours for unresolved text conflicts |

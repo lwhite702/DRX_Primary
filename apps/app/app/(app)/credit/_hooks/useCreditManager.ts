@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { creditSystem } from "@/lib/utils/credit-system";
 import { AgingData } from "../_components/CreditAgingTable";
@@ -21,7 +21,7 @@ export function useCreditManager(businessId: string | undefined) {
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const fetchCustomers = useCallback(async () => {
     if (!businessId || !supabase) return;

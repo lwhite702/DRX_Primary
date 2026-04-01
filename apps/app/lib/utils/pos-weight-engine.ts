@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export interface WeightBasedCartItem {
   inventory_id: string;
@@ -25,7 +25,7 @@ export interface LoyaltyInfo {
 }
 
 export class POSWeightEngine {
-  private supabase = getSupabaseClient();
+  private supabase = createAppClient();
 
   /**
    * Get bulk pricing for a specific weight

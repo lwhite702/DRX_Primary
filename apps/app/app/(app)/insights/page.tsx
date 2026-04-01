@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 interface EventDeskMetrics {
   totalSales: number;
@@ -41,7 +41,7 @@ export default function EventDeskPage() {
   const loadEventDeskData = async () => {
     if (!business?.id) return;
 
-    const supabase = getSupabaseClient();
+    const supabase = createAppClient();
     if (!supabase) return;
 
     try {

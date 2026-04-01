@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { type Inventory } from "@/lib/validations/schemas";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ export function useInventoryActions(businessId: string | undefined) {
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   // Fetch inventory
   React.useEffect(() => {

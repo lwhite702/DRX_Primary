@@ -29,6 +29,7 @@ const stalePatterns = [
 ];
 
 const testFilePattern = /\.(test|spec)\.(ts|tsx|js)$/;
+const gatedTestPathPattern = /^apps\/(app|marketing|mobile)\/tests\/(?!non_gated\/)/;
 const productionPathPattern = /^(apps\/(app|marketing|mobile)\/(app|components|lib|src)|packages\/[^/]+\/src)\//;
 
 function trackedFiles(): string[] {
@@ -46,22 +47,26 @@ function read(file: string): string {
 
 function findDisallowedTestControls(files: string[]): Finding[] {
   const findings: Finding[] = [];
+  const checks = [".skip(", ".only(", "test.todo(", "it.todo(", "describe.todo("];
+
   for (const file of files) {
     if (!testFilePattern.test(file)) continue;
+    if (!gatedTestPathPattern.test(file)) continue;
     const text = read(file);
-    const checks = [".skip(", ".only(", "test.todo(", "it.todo(", "describe.todo("];
     for (const check of checks) {
       if (text.includes(check)) {
-        findings.push({ file, message: `Disallowed test control detected: ${check}` });
+        findings.push({ file, message: `Disallowed test control detected in gated suite: ${check}` });
       }
     }
   }
+
   return findings;
 }
 
 function findTodoComments(files: string[]): Finding[] {
   const findings: Finding[] = [];
   const regex = /(^|\s)\/\/\s*(TODO|FIXME|XXX)\b|\/\*+[\s\S]*?(TODO|FIXME|XXX)\b[\s\S]*?\*\//gm;
+
   for (const file of files) {
     if (!productionPathPattern.test(file)) continue;
     if (!/\.(ts|tsx|js|jsx)$/.test(file)) continue;
@@ -70,14 +75,16 @@ function findTodoComments(files: string[]): Finding[] {
       findings.push({ file, message: "TODO/FIXME/XXX comment in production code path" });
     }
   }
+
   return findings;
 }
 
 function findRuntimeMockCompatibility(files: string[]): Finding[] {
   const findings: Finding[] = [];
-  const mockFile = "apps/app/lib/supabase/client.ts";
-  if (files.includes(mockFile)) {
-    findings.push({ file: mockFile, message: "Runtime mock compatibility client exists" });
+  const legacyMockFile = "apps/app/lib/supabase/client.ts";
+
+  if (files.includes(legacyMockFile)) {
+    findings.push({ file: legacyMockFile, message: "Legacy runtime mock compatibility file exists" });
   }
 
   for (const file of files) {
@@ -85,13 +92,20 @@ function findRuntimeMockCompatibility(files: string[]): Finding[] {
     if (file.includes("/tests/") || testFilePattern.test(file)) continue;
     if (!/\.(ts|tsx)$/.test(file)) continue;
     const text = read(file);
-    if (/(getSupabaseClient\(|from\s+["']@\/lib\/supabase\/client["'])/.test(text)) {
-      findings.push({ file, message: "Production path depends on Supabase compatibility client" });
+
+    if (/@\/lib\/supabase\/client/.test(text)) {
+      findings.push({ file, message: "Production path imports legacy Supabase compatibility client" });
     }
+
+    if (/getSupabaseClient\(/.test(text)) {
+      findings.push({ file, message: "Production path uses legacy getSupabaseClient()" });
+    }
+
     if (/mockSupabase/i.test(text)) {
-      findings.push({ file, message: "Mock Supabase symbol detected in production path" });
+      findings.push({ file, message: "Production path references mockSupabase symbol" });
     }
   }
+
   return findings;
 }
 

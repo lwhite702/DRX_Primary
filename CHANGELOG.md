@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing Gate**: Added repository audit, test matrix generation, policy enforcement, data-integrity check, security scan, performance smoke check, and full readiness report generators under `scripts/testing/*`.
 - **CI/CD**: Added unified `.github/workflows/ci-gate.yml` fail-fast workflow with artifacts for audit, E2E, security, performance, and readiness reporting.
 - **E2E Coverage**: Added Playwright accessibility and visual regression suites (`apps/app/tests/e2e/a11y.spec.ts`, `apps/app/tests/e2e/visual-regression.spec.ts`).
+- **Testing & Release Gate**: Added deterministic ownership map (`docs/testing/TEST_OWNERSHIP.json`), matrix validator (`scripts/testing/validate-matrix.ts`), cross-surface smoke checks (`scripts/testing/smoke-surfaces.ts`), and testing governance policy (`docs/testing/TESTING_POLICY.md`).
 
 ### Changed
 
@@ -28,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
 - **Test Config**: Hardened Vitest coverage thresholds (90% lines/branches/functions/statements) and expanded Playwright retention/reporting for CI diagnostics.
 - **Package Scripts**: Added canonical root testing scripts (`test:unit`, `test:integration`, `test:e2e:web`, `test:a11y`, `test:security`, `test:perf`, `test:regression`, `test:all`, `test:matrix`, `test:policy`, `test:readiness`).
+- **CI Gate**: Hardened `.github/workflows/ci-gate.yml` with matrix validation, shard-aware E2E smoke runs, deterministic artifacts, and fail-fast gate ordering.
+- **Nightly Gate**: Added `.github/workflows/ci-nightly-full-gate.yml` for full E2E/security/perf/data-integrity runs outside PR runtime budget.
+- **Supabase Migration**: Removed runtime legacy `apps/app/lib/supabase/client.ts` usage from production paths and introduced adapter-first replacements under `apps/app/lib/data/`.
 
 ### Removed
 

@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { computeCustomerFeatures } from "./aiEngine/features";
 import { computeAICreditLimit } from "./aiEngine/limitEngine";
 
@@ -31,7 +31,7 @@ export async function refreshAICreditRecommendation(
   };
   error?: string;
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return { success: false, error: "Supabase client not available" };
@@ -134,7 +134,7 @@ export async function applyAICreditRecommendation(
   new_limit?: number;
   error?: string;
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return { success: false, error: "Supabase client not available" };
@@ -222,7 +222,7 @@ export async function overrideCreditLimit(
   success: boolean;
   error?: string;
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return { success: false, error: "Supabase client not available" };
@@ -298,7 +298,7 @@ export async function logCreditDecision(decision: CreditDecisionLog): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return { success: false, error: "Supabase client not available" };
@@ -337,7 +337,7 @@ export async function getCreditDecisionHistory(
   customer_id: string,
   limit: number = 10
 ): Promise<CreditDecisionLog[]> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return [];
@@ -381,7 +381,7 @@ export async function getCreditExposureReport(business_id: string): Promise<{
   at_risk_customers: number;
   customers_reviewed_today: number;
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return {

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { AlertTriangle, TrendingDown, Package } from "lucide-react";
 import {
   Select,
@@ -25,7 +25,7 @@ interface ShrinkageReportProps {
 }
 
 export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
   const [shrinkageEvents, setShrinkageEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("7");

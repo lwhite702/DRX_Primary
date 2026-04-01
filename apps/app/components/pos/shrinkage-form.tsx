@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { AlertCircle, Lock } from "lucide-react";
 
@@ -37,7 +37,7 @@ export function ShrinkageForm({
   businessId,
   onSuccess,
 }: ShrinkageFormProps) {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
   const [inventory, setInventory] = useState<any[]>([]);
   const [selectedInventory, setSelectedInventory] = useState<string>("");
   const [quantityGrams, setQuantityGrams] = useState("");

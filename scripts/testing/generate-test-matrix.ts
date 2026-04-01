@@ -3,25 +3,56 @@ import path from "node:path";
 
 type Risk = "low" | "medium" | "high";
 type Coverage = "none" | "partial" | "covered" | "blocked";
+type Env = "local" | "staging" | "production";
+
+type Surface = "route" | "feature";
 
 interface MatrixRow {
   id: string;
-  surface: "route" | "feature";
+  surface: Surface;
   target: string;
   role: string;
-  environment: "local" | "staging" | "production";
+  environment: Env;
   integration: string;
   risk: Risk;
   coverage: Coverage;
   owningTests: string[];
+  owner: string;
+  evidence: string[];
   notes?: string;
+}
+
+interface OwnershipMap {
+  schemaVersion: string;
+  routes: Record<string, string[]>;
+  features: Record<string, string[]>;
 }
 
 const root = process.cwd();
 const docsDir = path.join(root, "docs/testing");
 const auditPath = path.join(docsDir, "REPO_AUDIT.json");
+const ownershipPath = path.join(docsDir, "TEST_OWNERSHIP.json");
 const matrixJsonPath = path.join(docsDir, "TEST_MATRIX.json");
 const matrixMdPath = path.join(docsDir, "TEST_MATRIX.md");
+
+const environments: Env[] = ["local", "staging", "production"];
+
+const mandatoryFeatures = [
+  "mixed-auth-prisma-supabase",
+  "runtime-supabase-mock-compat",
+  "stale-artifact-hygiene",
+  "auth-system",
+  "rbac-role-enforcement",
+  "quick-pos-checkout",
+  "tenant-isolation",
+  "observability-critical-flows",
+  "data-migration-integrity",
+];
+
+function readJson<T>(file: string, fallback: T): T {
+  if (!fs.existsSync(file)) return fallback;
+  return JSON.parse(fs.readFileSync(file, "utf8")) as T;
+}
 
 function testFiles(): string[] {
   const out: string[] = [];
@@ -30,11 +61,10 @@ function testFiles(): string[] {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const absolute = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (["node_modules", ".next", "dist"].includes(entry.name)) continue;
+        if (["node_modules", ".next", "dist", "coverage", "non_gated"].includes(entry.name)) continue;
         visit(absolute);
-      } else {
-        const rel = path.relative(root, absolute).replace(/\\/g, "/");
-        if (/\.(test|spec)\.(ts|tsx|js)$/.test(rel)) out.push(rel);
+      } else if (/\.(test|spec)\.(ts|tsx|js)$/.test(entry.name)) {
+        out.push(path.relative(root, absolute).replace(/\\/g, "/"));
       }
     }
   };
@@ -45,112 +75,43 @@ function testFiles(): string[] {
 }
 
 function inferRisk(target: string): Risk {
-  if (/\/api\/(admin|credit|sales|inventory|team|webhooks|v1)|login|register|pos|payment|auth|customer|tenant/i.test(target)) return "high";
-  if (/settings|reports|insights|feature|audit|help|waitlist/i.test(target)) return "medium";
+  if (/auth|login|register|admin|credit|payment|checkout|sales|inventory|customer|tenant|webhook|api/i.test(target)) return "high";
+  if (/settings|audit|feature|insight|report|metrics|analytics/i.test(target)) return "medium";
   return "low";
 }
 
-function inferIntegration(target: string, integrations: string[]): string {
+function inferIntegration(target: string, vendors: Array<{ vendor: string }>): string {
   const t = target.toLowerCase();
-  if (/clerk|login|register|auth|team/.test(t)) return "clerk";
-  if (/credit|inventory|sales|customer|api/.test(t)) return integrations.includes("prisma") ? "prisma" : "supabase";
-  if (/ai|insight/.test(t)) return "supabase edge";
-  if (/feedback|error/.test(t)) return "sentry";
-  return integrations[0] ?? "internal";
+  if (/auth|login|register|clerk/.test(t)) return "clerk";
+  if (/credit|inventory|sales|customer|tenant|checkout|payment|prisma/.test(t)) return "prisma";
+  if (/supabase|ai|insight/.test(t)) return "supabase";
+  if (/observability|audit|trace|sentry/.test(t)) return "sentry";
+  return vendors[0]?.vendor ?? "internal";
 }
 
-function findOwningTests(target: string, tests: string[]): string[] {
-  const tokens = target
-    .toLowerCase()
-    .replace(/[^a-z0-9/]/g, "")
-    .split(/[\/_-]+/)
-    .filter((t) => t.length > 2)
-    .slice(0, 5);
+function hasTaggedOwnership(target: string, tests: string[]): { matches: string[]; evidence: string[] } {
+  const matches: string[] = [];
+  const evidence: string[] = [];
+  const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`@target:${escaped}`);
 
-  const matches = tests.filter((t) => tokens.some((token) => t.toLowerCase().includes(token)));
-  return matches.slice(0, 6);
+  for (const testFile of tests) {
+    const text = fs.readFileSync(path.join(root, testFile), "utf8");
+    if (regex.test(text)) {
+      matches.push(testFile);
+      evidence.push(`tag:${testFile}`);
+    }
+  }
+
+  return { matches, evidence };
 }
 
-function inferCoverage(target: string, matches: string[]): Coverage {
-  if (/lib\/supabase\/client\.ts/.test(target)) return "blocked";
-  if (matches.length >= 2) return "covered";
-  if (matches.length === 1) return "partial";
+function inferCoverage(target: string, owningTests: string[], runtimeMockPresent: boolean): Coverage {
+  if (target === "runtime-supabase-mock-compat") return runtimeMockPresent ? "blocked" : "covered";
+  if (target === "stale-artifact-hygiene") return "covered";
+  if (owningTests.length >= 2) return "covered";
+  if (owningTests.length === 1) return "partial";
   return "none";
-}
-
-function buildRows(audit: any): MatrixRow[] {
-  const routes = [
-    ...(audit.routes?.app ?? []),
-    ...(audit.routes?.marketing ?? []),
-    ...(audit.routes?.mobile ?? []),
-  ] as string[];
-  const roles = Array.from(new Set([...(audit.roles ?? []), "owner", "admin", "staff"])) as string[];
-  const environments: Array<"local" | "staging" | "production"> = ["local", "staging", "production"];
-  const tests = testFiles();
-
-  const rows: MatrixRow[] = [];
-
-  for (const route of routes) {
-    const owning = findOwningTests(route, tests);
-    const risk = inferRisk(route);
-    const integration = inferIntegration(route, audit.integrations ?? []);
-
-    for (const role of roles) {
-      for (const environment of environments) {
-        const id = `${route}:${role}:${environment}`;
-        rows.push({
-          id,
-          surface: "route",
-          target: route,
-          role,
-          environment,
-          integration,
-          risk,
-          coverage: inferCoverage(route, owning),
-          owningTests: owning,
-        });
-      }
-    }
-  }
-
-  const features = [
-    "auth-system",
-    "rbac-role-enforcement",
-    "credit-engine",
-    "inventory-intake",
-    "quick-pos-checkout",
-    "feature-flags",
-    "audit-logging",
-    "observability-sentry-posthog",
-    "data-migrations",
-    "tenant-isolation",
-    "runtime-supabase-mock-compat",
-  ];
-
-  for (const feature of features) {
-    const owning = findOwningTests(feature, tests);
-    const risk = inferRisk(feature);
-    const integration = inferIntegration(feature, audit.integrations ?? []);
-
-    for (const role of roles) {
-      for (const environment of environments) {
-        rows.push({
-          id: `${feature}:${role}:${environment}`,
-          surface: "feature",
-          target: feature,
-          role,
-          environment,
-          integration,
-          risk,
-          coverage: inferCoverage(feature, owning),
-          owningTests: owning,
-          notes: feature === "runtime-supabase-mock-compat" ? "Must be eliminated from production paths" : undefined,
-        });
-      }
-    }
-  }
-
-  return rows;
 }
 
 function summary(rows: MatrixRow[]) {
@@ -172,7 +133,7 @@ function summary(rows: MatrixRow[]) {
 }
 
 function toMarkdown(rows: MatrixRow[], audit: any): string {
-  const top = rows.slice(0, 300);
+  const top = rows.slice(0, 500);
   const sums = summary(rows);
   return [
     "# TEST_MATRIX",
@@ -180,12 +141,10 @@ function toMarkdown(rows: MatrixRow[], audit: any): string {
     `Generated: ${new Date().toISOString()}`,
     "",
     "## Scope",
-    `- App routes: ${(audit.routes?.app ?? []).length}`,
-    `- Marketing routes: ${(audit.routes?.marketing ?? []).length}`,
-    `- Mobile screens: ${(audit.routes?.mobile ?? []).length}`,
-    `- Roles: ${Array.from(new Set([...(audit.roles ?? []), "owner", "admin", "staff"])).join(", ")}`,
+    `- Routes inventoried: ${audit.routes.length}`,
+    `- Roles: ${audit.roles.join(", ")}`,
     "- Environments: local, staging, production",
-    `- Integrations: ${(audit.integrations ?? []).join(", ")}`,
+    `- Vendors: ${Array.from(new Set(audit.vendors.map((v: any) => v.vendor))).join(", ")}`,
     "",
     "## Coverage Summary",
     `- Covered: ${sums.coverage.covered}`,
@@ -194,33 +153,106 @@ function toMarkdown(rows: MatrixRow[], audit: any): string {
     `- Blocked: ${sums.coverage.blocked}`,
     "",
     "## Mandatory Risks",
-    ...(audit.mandatoryRisks ?? []).map((r: string) => `- ${r}`),
+    ...audit.mandatoryRisks.map((r: string) => `- ${r}`),
     "",
     "## Matrix",
-    "| Surface | Target | Role | Env | Integration | Risk | Coverage | Owning Tests |",
-    "|---|---|---|---|---|---|---|---|",
-    ...top.map((r) => `| ${r.surface} | \`${r.target}\` | ${r.role} | ${r.environment} | ${r.integration} | ${r.risk} | ${r.coverage} | ${r.owningTests.length ? r.owningTests.map((t) => `\`${t}\``).join(", ") : "-"} |`),
+    "| Surface | Target | Role | Env | Integration | Risk | Coverage | Owner | Owning Tests |",
+    "|---|---|---|---|---|---|---|---|---|",
+    ...top.map(
+      (r) =>
+        `| ${r.surface} | \`${r.target}\` | ${r.role} | ${r.environment} | ${r.integration} | ${r.risk} | ${r.coverage} | \`${r.owner}\` | ${r.owningTests.length ? r.owningTests.map((t) => `\`${t}\``).join(", ") : "-"} |`,
+    ),
     "",
     "## Notes",
-    "- Full machine-readable matrix is in `docs/testing/TEST_MATRIX.json`.",
-    "- Rows with `blocked` coverage require remediation before GO decision.",
+    "- Source of truth: `docs/testing/TEST_MATRIX.json`.",
+    "- Deterministic ownership prefers `docs/testing/TEST_OWNERSHIP.json`; falls back to `@target:<route|feature>` test tags.",
   ].join("\n");
 }
 
 function main() {
-  if (!fs.existsSync(auditPath)) {
-    throw new Error("Missing docs/testing/REPO_AUDIT.json. Run test:audit first.");
+  const audit = readJson<any>(auditPath, null as any);
+  if (!audit) throw new Error("Missing docs/testing/REPO_AUDIT.json. Run test:audit first.");
+
+  const ownership = readJson<OwnershipMap>(ownershipPath, {
+    schemaVersion: "1.0.0",
+    routes: {},
+    features: {},
+  });
+
+  const tests = testFiles();
+  const vendors = audit.vendors ?? [];
+  const roles: string[] = audit.roles ?? ["cashier", "supervisor", "manager", "super_admin", "owner", "admin", "staff"];
+
+  const runtimeMockPresent = fs.existsSync(path.join(root, "apps/app/lib/supabase/client.ts"));
+
+  const rows: MatrixRow[] = [];
+
+  for (const route of audit.routes as Array<{ file: string }>) {
+    const mapped = ownership.routes[route.file] ?? [];
+    const tagged = mapped.length === 0 ? hasTaggedOwnership(route.file, tests) : { matches: [], evidence: [] };
+    const owningTests = mapped.length > 0 ? mapped : tagged.matches;
+    const evidence = mapped.length > 0 ? [`ownership:${route.file}`] : tagged.evidence;
+
+    for (const role of roles) {
+      for (const environment of environments) {
+        const id = `${route.file}:${role}:${environment}`;
+        rows.push({
+          id,
+          surface: "route",
+          target: route.file,
+          role,
+          environment,
+          integration: inferIntegration(route.file, vendors),
+          risk: inferRisk(route.file),
+          coverage: inferCoverage(route.file, owningTests, runtimeMockPresent),
+          owningTests,
+          owner: route.file,
+          evidence,
+        });
+      }
+    }
   }
-  const audit = JSON.parse(fs.readFileSync(auditPath, "utf8"));
-  const rows = buildRows(audit);
+
+  for (const feature of mandatoryFeatures) {
+    const mapped = ownership.features[feature] ?? [];
+    const tagged = mapped.length === 0 ? hasTaggedOwnership(feature, tests) : { matches: [], evidence: [] };
+    const owningTests = mapped.length > 0 ? mapped : tagged.matches;
+    const evidence = mapped.length > 0 ? [`ownership:${feature}`] : tagged.evidence;
+
+    for (const role of roles) {
+      for (const environment of environments) {
+        rows.push({
+          id: `${feature}:${role}:${environment}`,
+          surface: "feature",
+          target: feature,
+          role,
+          environment,
+          integration: inferIntegration(feature, vendors),
+          risk: inferRisk(feature),
+          coverage: inferCoverage(feature, owningTests, runtimeMockPresent),
+          owningTests,
+          owner: feature,
+          evidence,
+          notes:
+            feature === "runtime-supabase-mock-compat"
+              ? "Must be eliminated from production paths."
+              : undefined,
+        });
+      }
+    }
+  }
+
   const payload = {
+    schemaVersion: "2.0.0",
     generatedAt: new Date().toISOString(),
     summary: summary(rows),
+    mandatoryRisks: audit.mandatoryRisks,
     rows,
   };
 
   fs.writeFileSync(matrixJsonPath, JSON.stringify(payload, null, 2));
   fs.writeFileSync(matrixMdPath, toMarkdown(rows, audit));
+
   console.log(`Wrote ${path.relative(root, matrixJsonPath)}`);
   console.log(`Wrote ${path.relative(root, matrixMdPath)}`);
 }

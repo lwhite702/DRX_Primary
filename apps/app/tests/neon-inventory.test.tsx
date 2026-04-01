@@ -14,8 +14,8 @@ vi.mock("@/lib/hooks/use-realtime", () => ({
   useRealtimeInventory: () => [],
 }));
 
-vi.mock("@/lib/supabase/client", () => ({
-  getSupabaseClient: () => ({}),
+vi.mock("@/lib/data/client/supabase-client", () => ({
+  createAppClient: () => ({}),
 }));
 
 // Mock components that might cause issues

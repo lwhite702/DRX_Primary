@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import {
   Card,
@@ -65,7 +65,7 @@ export function ApprovalsClient() {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const fetchIntakes = async () => {
     try {

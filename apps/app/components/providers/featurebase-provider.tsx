@@ -14,6 +14,8 @@ interface FeaturebaseProviderProps {
 
 export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
   const appId = process.env.NEXT_PUBLIC_FEATUREBASE_APP_ID;
+  const sanitizedEmail = sanitizeEmail(user?.email);
+  const sanitizedUserId = sanitizeUserId(user?.id);
 
   const [token, setToken] = useState<string | null>(null);
 
@@ -42,8 +44,8 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
         window.Featurebase("boot", {
           appId: appId,
           theme: "dark",
-          email: user.email,
-          userId: user.id,
+          email: sanitizedEmail,
+          userId: sanitizedUserId,
           jwt: token, // passing JWT for secure verification (legacy support)
           featurebaseJwt: token, // correct key per documentation
         });
@@ -64,8 +66,8 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
             window.Featurebase("boot", {
               appId: appId,
               theme: "dark",
-              email: user?.email,
-              userId: user?.id,
+              email: sanitizedEmail,
+              userId: sanitizedUserId,
               jwt: token,
               featurebaseJwt: token,
             });
@@ -75,7 +77,7 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
                 process.env.NEXT_PUBLIC_FEATUREBASE_ORG || "deelrxcrm",
               theme: "dark",
               placement: "right",
-              email: user?.email,
+              email: sanitizedEmail,
               featurebaseJwt: token,
               metadata: null,
             });
@@ -84,6 +86,20 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
       />
     </>
   );
+}
+
+export function sanitizeEmail(value?: string): string | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(normalized)) return undefined;
+  return normalized;
+}
+
+export function sanitizeUserId(value?: string): string | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim();
+  if (!/^[a-zA-Z0-9:_-]{3,128}$/.test(normalized)) return undefined;
+  return normalized;
 }
 
 // Add type definition for window

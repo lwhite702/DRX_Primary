@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 interface AIIntelligenceDashboardProps {
   businessId: string;
@@ -21,7 +21,7 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
     opportunitiesCount: 0,
   });
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     fetchDashboardData();
