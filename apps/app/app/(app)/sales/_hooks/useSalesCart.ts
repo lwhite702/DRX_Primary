@@ -12,7 +12,7 @@ export function useSalesCart(businessId?: string) {
   const [fees, setFees] = useState<MiscFee[]>([]);
   const [processing, setProcessing] = useState(false);
 
-  // Refresh cart when engine updates (if needed, though we usually drive this manually)
+  const refreshCart = useCallback(() => setCart(posEngine.getCart()), [posEngine]);
   const refreshCart = () => setCart(posEngine.getCart());
 
   // Re-initialize if needed when businessId changes, though POSEngine might be stateless regarding businessId until checkout
