@@ -69,3 +69,5 @@
 | qa-crm-pos-e2e-reliability-fixes | origin/qa-crm-pos-e2e-reliability-fixes | shared-history | merged | none | clean merge |
 | quick-pos | quick-pos | shared-history | merged | none | clean merge |
 | refactor/wrelik-kit-integration | refactor/wrelik-kit-integration | shared-history | merged | none | clean merge |
+| save/primary-1-work | origin/save/primary-1-work | shared-history | merged | binary:.DS_Store + text | dropped .DS_Store; kept ours for unresolved text conflicts |
+| seer/refactor/offline-sync-numeric-status | origin/seer/refactor/offline-sync-numeric-status | shared-history | merged | none | clean merge |
