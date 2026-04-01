@@ -49,3 +49,8 @@
 | cto-task-you-are-an-autonomous-senior-engineer-systems-auditor-and-mi | origin/cto-task-you-are-an-autonomous-senior-engineer-systems-auditor-and-mi | shared-history | merged | none | clean merge |
 | cto-task-you-are-establishing-the-design-language-for-the-drx-deelrx | origin/cto-task-you-are-establishing-the-design-language-for-the-drx-deelrx | shared-history | merged | none | clean merge |
 | cto-task-you-are-the-release-authority-and-systems-integrity-enforcer-e02 | origin/cto-task-you-are-the-release-authority-and-systems-integrity-enforcer-e02 | shared-history | merged | none | clean merge |
+| cto/complete-outstanding-items-to-have-app-production-ready-and | origin/cto/complete-outstanding-items-to-have-app-production-ready-and | shared-history | merged | text | kept ours for unresolved text conflicts |
+| cto/fix-npm-dependency-conflict | origin/cto/fix-npm-dependency-conflict | shared-history | merged | none | clean merge |
+| cto/update-dispensary-branding | origin/cto/update-dispensary-branding | shared-history | merged | none | clean merge |
+| cto/you-are-a-production-readiness-engineer-responsible-for-hard | cto/you-are-a-production-readiness-engineer-responsible-for-hard | shared-history | merged | none | clean merge |
+| cto/you-are-codex-senior-next-js-clerk-monorepo-engineer-your-jo | origin/cto/you-are-codex-senior-next-js-clerk-monorepo-engineer-your-jo | shared-history | merged | none | clean merge |

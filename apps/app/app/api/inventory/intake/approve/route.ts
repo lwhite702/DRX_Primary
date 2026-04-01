@@ -278,6 +278,32 @@ async function processApprovedIntake(
     throw error;
   }
 
+  try {
+    const { error: batchError } = await supabase.from("inventory_batches").insert({
+      business_id,
+      inventory_id,
+      intake_id,
+      original_quantity_grams: total_weight_grams,
+      remaining_quantity_grams: total_weight_grams,
+      unit_cost_per_gram: calculated_cost_per_gram,
+      supplier,
+      received_at: new Date().toISOString(),
+      created_by: user_id,
+    });
+
+    if (batchError) {
+      console.warn(
+        "Failed to create inventory batch during intake approval:",
+        batchError,
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Inventory batch creation failed during intake approval (non-critical):",
+      error,
+    );
+  }
+
   // Create inventory log entries
   const { error: intakeLogError } = await supabase.from("inventory_log").insert({
     inventory_id,
