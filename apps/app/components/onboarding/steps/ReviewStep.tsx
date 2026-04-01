@@ -1,6 +1,12 @@
 import { StepProps } from "../types";
+import { PRIVACY_PROFILE_OPTIONS } from "@/lib/privacy/profiles";
 
 export function ReviewStep({ formData }: StepProps) {
+  const privacyLabel =
+    PRIVACY_PROFILE_OPTIONS.find(
+      (option) => option.id === formData.privacyPreset,
+    )?.label || formData.privacyPreset;
+
   return (
     <div className="space-y-6 text-center py-6">
       <h3 className="text-2xl font-bold">Ready to roll?</h3>
@@ -13,7 +19,7 @@ export function ReviewStep({ formData }: StepProps) {
         </div>
         <div className="flex justify-between py-2 border-b">
           <span className="text-muted-foreground">Privacy</span>
-          <span className="font-medium uppercase">{formData.privacyPreset}</span>
+          <span className="font-medium uppercase">{privacyLabel}</span>
         </div>
         <div className="flex justify-between py-2 border-b">
           <span className="text-muted-foreground">Default unit</span>

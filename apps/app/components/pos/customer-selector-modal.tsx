@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, User, CreditCard, Award } from "lucide-react";
 import { LoyaltyBadge } from "./loyalty-badge";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import {
+  maskAlias,
+  maskSensitiveText,
+  shouldMaskFromProtocol,
+} from "@/lib/privacy/masking";
 
 interface Customer {
   id: string;
+  alias?: string;
   first_name: string;
   last_name: string;
   phone_number?: string;
@@ -44,11 +52,41 @@ export function CustomerSelectorModal({
   selectedCustomerId,
 }: CustomerSelectorModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
+    useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/business/settings").then((res) => res.json()),
+      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
+    ])
+      .then(([settingsData, preferenceData]) => {
+        setPrivacyProtocol(
+          settingsData.privacy_protocol ||
+            settingsData.privacyProtocol ||
+            getDefaultPrivacyProtocol(),
+        );
+        setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
+      })
+      .catch((error) => {
+        console.error("Failed to load ProteXion settings", error);
+      });
+  }, []);
+
+  const shouldMask = shouldMaskFromProtocol(
+    privacyProtocol,
+    manualScreenPrivacyEnabled,
+    true,
+  );
 
   const filteredCustomers = customers.filter((customer) => {
     const searchLower = searchTerm.toLowerCase();
     const fullName =
-      `${customer.first_name} ${customer.last_name}`.toLowerCase();
+      (customer.alias ||
+        `${customer.first_name} ${customer.last_name}`.trim() ||
+        "customer").toLowerCase();
     const phone = customer.phone_number?.toLowerCase() || "";
     const email = customer.email?.toLowerCase() || "";
 
@@ -116,16 +154,26 @@ export function CustomerSelectorModal({
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <p className="font-medium">
-                          {customer.first_name} {customer.last_name}
+                          {shouldMask
+                            ? maskAlias(
+                                customer.alias ||
+                                  `${customer.first_name} ${customer.last_name}`.trim() ||
+                                  "Customer",
+                              )
+                            : customer.alias ||
+                            `${customer.first_name} ${customer.last_name}`.trim() ||
+                            "Customer"}
                         </p>
                       </div>
 
                       {/* Contact Info */}
                       <div className="text-sm text-muted-foreground space-y-1">
                         {customer.phone_number && (
-                          <p>📱 {customer.phone_number}</p>
+                          <p>📱 {shouldMask ? maskSensitiveText() : customer.phone_number}</p>
                         )}
-                        {customer.email && <p>✉️ {customer.email}</p>}
+                        {customer.email && (
+                          <p>✉️ {shouldMask ? maskSensitiveText() : customer.email}</p>
+                        )}
                       </div>
 
                       {/* Loyalty Badge */}

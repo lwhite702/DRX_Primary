@@ -36,14 +36,19 @@ export interface Inventory {
 export interface Customer {
   id: string;
   business_id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone: string | null;
+  alias?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  notes?: string | null;
   credit_limit: number;
   loyalty_tier: "bronze" | "silver" | "gold";
   loyalty_points: number;
   fixed_price_per_gram?: number;
+  ephemeral?: boolean;
+  ephemeral_expires_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }

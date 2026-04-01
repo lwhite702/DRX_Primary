@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { cleanPhone, resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
+import { resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
+import { decodeCustomerPii, getCustomerDisplayName } from "@/lib/privacy/customer-pii";
+import { hashLookupValue } from "@/lib/privacy/crypto";
+
+function cleanPhone(value: string) {
+  return value.replace(/[^0-9]/g, "");
+}
 
 export async function GET(request: NextRequest) {
   const { businessId } = await resolveAuthContext();
@@ -16,11 +22,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ items: [] });
   }
 
+  let phoneHash: string | null = null;
+  try {
+    phoneHash = await hashLookupValue(phone);
+  } catch (error) {
+    console.warn("[privacy] phone hash lookup unavailable", error);
+  }
+
   const customers = await db.customers.findMany({
     where: {
       businessId,
       isActive: true,
-      phoneNumber: { contains: phone },
+      OR: [
+        ...(phoneHash ? [{ phoneHash }] : []),
+        { phoneNumber: { contains: phone } },
+      ],
     },
     take: 10,
     orderBy: {
@@ -28,9 +44,19 @@ export async function GET(request: NextRequest) {
     },
     select: {
       id: true,
+      alias: true,
       firstName: true,
       lastName: true,
       phoneNumber: true,
+      aliasEncrypted: true,
+      firstNameEncrypted: true,
+      phoneEncrypted: true,
+      emailEncrypted: true,
+      addressEncrypted: true,
+      notesEncrypted: true,
+      email: true,
+      address: true,
+      notes: true,
       creditLimits: {
         where: { businessId },
         take: 1,
@@ -42,8 +68,9 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  return NextResponse.json({
-    items: customers.map((customer) => {
+  const items = await Promise.all(
+    customers.map(async (customer) => {
+      const pii = await decodeCustomerPii(customer as unknown as Record<string, unknown>);
       const limit = customer.creditLimits[0];
       const remainingCredit = limit
         ? Math.max(0, toNumber(limit.maxCreditLimit) - toNumber(limit.currentBalance))
@@ -51,10 +78,12 @@ export async function GET(request: NextRequest) {
 
       return {
         id: customer.id,
-        phone: customer.phoneNumber || "",
-        alias: `${customer.firstName} ${customer.lastName}`.trim(),
+        phone: pii.phone || "",
+        alias: getCustomerDisplayName(pii),
         remainingCredit,
       };
     }),
-  });
+  );
+
+  return NextResponse.json({ items });
 }

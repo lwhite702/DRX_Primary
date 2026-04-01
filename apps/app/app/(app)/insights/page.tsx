@@ -80,7 +80,8 @@ export default function EventDeskPage() {
           .from("customers")
           .select("*", { count: "exact", head: true })
           .eq("business_id", business.id)
-          .eq("is_active", true),
+          .eq("is_active", true)
+          .eq("ephemeral", false),
         supabase
           .from("credit_limits")
           .select("current_balance")

@@ -255,7 +255,9 @@ export function useRealtimeCustomers(business_id: string | null) {
         if (payload.eventType === "INSERT") {
           setCustomers((prev) =>
             [payload.new, ...prev].sort((a, b) =>
-              a.first_name.localeCompare(b.first_name),
+              (a.first_name || a.alias || "").localeCompare(
+                b.first_name || b.alias || "",
+              ),
             ),
           );
         } else if (payload.eventType === "UPDATE") {

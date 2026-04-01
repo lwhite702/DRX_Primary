@@ -66,6 +66,11 @@ export async function POST(request: NextRequest) {
       data: { currentBalance: newBalance },
     });
 
+    await db.customers.update({
+      where: { id: customer_id },
+      data: { lastActivityAt: new Date() },
+    });
+
     // Also update Customer totalCreditUsed if needed?
     // The previous implementation didn't. `sales/route.ts` did.
     // Let's stick to updating CreditLimit here.

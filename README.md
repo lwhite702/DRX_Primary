@@ -105,6 +105,7 @@ Canonical source:
 - **Team Control & Accountability** (`Live`) - role-based control, secure login, and user activity visibility
 - **Multi-Location Ready** (`Beta`) - separate store views and central multi-business administration
 - **Works on Desktop and Mobile** (`Live`) - desktop dashboards with mobile-friendly checkout and cloud access
+- **DRX Privacy ProteXion™** (`Live`) - alias-first tracking, encrypted sensitive fields, screen masking, and operator-controlled retention with minimal data footprint
 
 ---
 
@@ -253,6 +254,21 @@ pnpm test:coverage
 # Run E2E tests
 pnpm test:e2e
 ```
+
+### Mintlify Docs Audit
+
+Run the Mintlify documentation quality gate:
+
+```bash
+pnpm test:docs:mintlify
+```
+
+This check enforces:
+
+- Forbidden brand words
+- Broken internal Mintlify links
+- Missing beta labels for non-live claims in parity matrix
+- Missing required operator sections on operational docs pages
 
 ---
 

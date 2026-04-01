@@ -2,7 +2,10 @@
 
 import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+import type { PrivacyProfile } from "@/lib/privacy/types";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 export type SetupBusinessData = {
   businessName: string;
@@ -14,7 +17,7 @@ export type SetupBusinessData = {
   ownerPhone: string;
   defaultUnit: string;
   quickQuantities: any[];
-  privacyPreset: string;
+  privacyPreset: PrivacyProfile;
   inventoryReasons: any[];
   nicknames: any[];
   ownerName: string;
@@ -50,6 +53,8 @@ export async function setupBusinessAction(data: SetupBusinessData) {
     }
 
     // 2. Create Business Settings
+    const privacyProtocol = getDefaultPrivacyProtocol(data.privacyPreset);
+
     await db.businessSettings.create({
       data: {
         businessId: business.id,
@@ -60,11 +65,12 @@ export async function setupBusinessAction(data: SetupBusinessData) {
           default_unit: data.defaultUnit,
           quick_quantities: data.quickQuantities,
           privacy_preset: data.privacyPreset,
+          privacy_protocol: privacyProtocol,
           inventory_reasons: data.inventoryReasons,
           nicknames: data.nicknames,
           owner_name: data.ownerName,
           default_tax_rate: 0.0,
-        },
+        } as unknown as Prisma.InputJsonValue,
       },
       // Note: mapping to Prisma model might differ if settingsData is Json
     });
