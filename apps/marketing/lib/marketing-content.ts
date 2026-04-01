@@ -47,7 +47,7 @@ export const marketingContent = {
     headline: "Built for people who actually run product.",
     subheadline:
       "Deelrx CRM (DRX) keeps your sales, inventory, and customers tight in one place. No spreadsheets, no guessing, no slowdown.",
-    primaryCta: { label: "Join the Beta", href: "/beta" },
+    primaryCta: { label: "Join the Beta", href: "/waitlist" },
     secondaryCta: { label: "See How It Works", href: "/#how-it-works" },
   } satisfies HeroContent,
   benefits: [
@@ -68,7 +68,7 @@ export const marketingContent = {
     {
       title: "Add What You Sell",
       body: "Put in your items, prices, and amounts. DRX organizes everything for you.",
-      cta: { label: "Join the Beta", href: "/beta" },
+      cta: { label: "Join the Beta", href: "/waitlist" },
     },
     {
       title: "Make the Sale",
@@ -78,7 +78,7 @@ export const marketingContent = {
     {
       title: "Stay in Control",
       body: "See what's working, what's not, and adjust on the fly.",
-      cta: { label: "Get Early Access", href: "/beta" },
+      cta: { label: "Get Early Access", href: "/waitlist" },
     },
   ] satisfies HowItWorksStep[],
   betaAccess: {
@@ -97,7 +97,7 @@ export const marketingContent = {
     ],
     limitedSpots:
       "We're letting in a small group at a time to keep things running smooth. Once it fills up, access closes.",
-    cta: { label: "Request Access", href: "/beta" },
+    cta: { label: "Request Access", href: "/waitlist" },
   } satisfies BetaAccessSection,
   faq: [
     {

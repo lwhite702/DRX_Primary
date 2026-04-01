@@ -44,7 +44,7 @@ function HeroNavbar() {
         </nav>
 
         <Link
-          href="/beta"
+          href="/waitlist"
           className="inline-flex h-10 items-center justify-center rounded-2xl border border-accent/40 bg-accent px-5 text-sm font-bold text-black shadow-[0_10px_22px_rgba(204,255,0,0.2)] transition hover:brightness-95"
         >
           Take the first step
@@ -297,7 +297,7 @@ function ClosingCtaSection() {
           Join the beta and shape the tool with us while access is still open.
         </p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <LimeButton href="/beta" label="Join the Beta" />
+          <LimeButton href="/waitlist" label="Join the Beta" />
           <GhostButton href="/#docs" label="Read the FAQ" />
         </div>
       </div>

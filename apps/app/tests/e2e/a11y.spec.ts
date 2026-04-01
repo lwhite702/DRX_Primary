@@ -3,6 +3,9 @@ import AxeBuilder from "@axe-core/playwright";
 
 const publicRoutes = ["/login", "/register"];
 const protectedRoutes = ["/pos/sale", "/settings"];
+const bypassAuthEnabled =
+  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+const target = process.env.A11Y_TARGET || "all";
 const hasClerkTestingKeys =
   Boolean(process.env.CLERK_SECRET_KEY) &&
   Boolean(
@@ -10,19 +13,23 @@ const hasClerkTestingKeys =
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   );
 
-const routes = hasClerkTestingKeys
-  ? [...publicRoutes, ...protectedRoutes]
-  : publicRoutes;
+const routes = (() => {
+  if (target === "public") return publicRoutes;
+  if (target === "protected") return protectedRoutes;
+  return hasClerkTestingKeys || bypassAuthEnabled
+    ? [...publicRoutes, ...protectedRoutes]
+    : publicRoutes;
+})();
 
-if (!hasClerkTestingKeys) {
+if (!hasClerkTestingKeys && !bypassAuthEnabled) {
   console.warn(
-    "[a11y.spec] Missing Clerk test credentials; skipping protected-route a11y checks",
+    "[a11y.spec] Missing auth test credentials; running public-route accessibility checks only",
   );
 }
 
 test.describe("Accessibility", () => {
   test.beforeEach(async ({ page }) => {
-    if (!hasClerkTestingKeys) {
+    if (bypassAuthEnabled || !hasClerkTestingKeys) {
       return;
     }
     const { setupClerkTestingToken } = await import("@clerk/testing/playwright");
@@ -53,6 +60,9 @@ test.describe("Accessibility", () => {
   }
 
   test("supports keyboard navigation for login", async ({ page }) => {
+    if (target === "protected") {
+      return;
+    }
     await page.goto("/login", { waitUntil: "domcontentloaded" });
     await page.keyboard.press("Tab");
     await page.keyboard.press("Tab");

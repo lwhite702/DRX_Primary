@@ -12,6 +12,16 @@ function toNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isMissingTableError(error: unknown, tableName: string) {
+  if (!error || typeof error !== "object") return false;
+  const prismaErr = error as { code?: string; message?: string };
+  return (
+    prismaErr.code === "P2021" &&
+    typeof prismaErr.message === "string" &&
+    prismaErr.message.includes(tableName)
+  );
+}
+
 function startOfDay(date = new Date()) {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
@@ -240,8 +250,16 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
     ),
   );
 
-  const saleCosts = costSaleIds.length
-    ? await db.salesLineItemAllocation.groupBy({
+  let saleCosts:
+    | Array<{
+        saleId: string;
+        _sum: { extendedCost: unknown };
+      }>
+    | [] = [];
+
+  if (costSaleIds.length) {
+    try {
+      saleCosts = await db.salesLineItemAllocation.groupBy({
         by: ["saleId"],
         where: {
           saleId: { in: costSaleIds },
@@ -249,8 +267,16 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
         _sum: {
           extendedCost: true,
         },
-      })
-    : [];
+      });
+    } catch (error) {
+      if (!isMissingTableError(error, "sales_line_item_allocations")) {
+        throw error;
+      }
+      // Keep report APIs available in environments where the allocation table
+      // has not been migrated yet. COGS defaults to 0 until migration lands.
+      saleCosts = [];
+    }
+  }
 
   const cogsBySaleId = new Map(
     saleCosts.map((row) => [row.saleId, toNumber(row._sum.extendedCost)]),

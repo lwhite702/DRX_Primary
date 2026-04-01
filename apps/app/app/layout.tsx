@@ -17,6 +17,12 @@ const _plusJakartaSans = Plus_Jakarta_Sans({
 const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app",
+  ),
+  alternates: {
+    canonical: "/",
+  },
   title:
     process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true"
       ? "[BYPASS] Deelrx - Run real transactions. Without the mess."
@@ -29,16 +35,17 @@ export const metadata: Metadata = {
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx - Run real transactions. Without, mess.",
+    title: "Deelrx - Run real transactions. Without the mess.",
     description:
       "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     type: "website",
     locale: "en_US",
+    url: "/",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx - Run real transactions. Without, mess.",
+    title: "Deelrx - Run real transactions. Without the mess.",
     description:
       "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
     images: ["/brand/opengraph-image.png"],

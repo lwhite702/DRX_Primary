@@ -2,8 +2,6 @@
  * Client Instrumentation
  */
 
-import { initClientErrorInstrumentation } from "@/lib/adapters/errors-client";
-
-initClientErrorInstrumentation();
+import "./sentry.client.config";
 
 export const onRouterTransitionStart = () => {};

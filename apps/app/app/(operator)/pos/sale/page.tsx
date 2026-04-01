@@ -38,20 +38,27 @@ export default function QuickPosSalePage() {
   const [bootstrap, setBootstrap] = useState<QuickPosBootstrapResponse | null>(
     null,
   );
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [manualPrice, setManualPrice] = useState("");
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/pos/bootstrap");
-      if (!res.ok) {
-        setError("Unable to load POS");
-        return;
-      }
+      try {
+        const res = await fetch("/api/pos/bootstrap");
+        if (!res.ok) {
+          setError("Unable to load POS");
+          return;
+        }
 
-      const data = (await res.json()) as QuickPosBootstrapResponse;
-      setBootstrap(data);
-      setCreditPolicy(data.creditPolicy.enabled);
+        const data = (await res.json()) as QuickPosBootstrapResponse;
+        setBootstrap(data);
+        setCreditPolicy(data.creditPolicy.enabled);
+      } catch {
+        setError("Unable to load POS");
+      } finally {
+        setIsBootstrapping(false);
+      }
     };
 
     load();
@@ -65,11 +72,21 @@ export default function QuickPosSalePage() {
     }
 
     const timer = window.setTimeout(async () => {
-      const res = await fetch(
-        `/api/pos/products?search=${encodeURIComponent(search)}`,
-      );
-      const data = (await res.json()) as { items?: ProductResult[] };
-      setResults(data.items || []);
+      try {
+        const res = await fetch(
+          `/api/pos/products?search=${encodeURIComponent(search)}`,
+        );
+        if (!res.ok) {
+          setError("Search unavailable");
+          setResults([]);
+          return;
+        }
+        const data = (await res.json()) as { items?: ProductResult[] };
+        setResults(data.items || []);
+      } catch {
+        setError("Search unavailable");
+        setResults([]);
+      }
     }, 150);
 
     return () => window.clearTimeout(timer);
@@ -157,6 +174,15 @@ export default function QuickPosSalePage() {
           error={state.ui.hardError}
           success={state.ui.successMessage}
         />
+        {isBootstrapping ? (
+          <div
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70"
+            role="status"
+            aria-live="polite"
+          >
+            Loading register data and favorites...
+          </div>
+        ) : null}
 
         <ProductSearch
           value={state.ui.search}
@@ -210,8 +236,9 @@ export default function QuickPosSalePage() {
           <button
             type="button"
             onClick={() => router.push("/pos/payment")}
-            disabled={state.cartItems.length === 0}
+            disabled={state.cartItems.length === 0 || isBootstrapping}
             className="h-16 w-full rounded-lg bg-accent text-2xl font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Continue to payment"
           >
             Continue to Payment
           </button>
