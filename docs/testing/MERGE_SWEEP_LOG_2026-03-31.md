@@ -25,3 +25,4 @@
 | codex/designtest | codex/designtest | shared-history | merged | text | kept ours for unresolved text conflicts |
 | codex/drx-cyber-technical-landing | codex/drx-cyber-technical-landing | shared-history | merged | binary:.DS_Store + text | dropped .DS_Store; kept ours for unresolved text conflicts |
 | codex/fix-authentication-and-routing-issues-on-.app | origin/codex/fix-authentication-and-routing-issues-on-.app | shared-history | merged | none | clean merge |
+| codex/implement-drx-brand-voice-across-app-bkoz8m | origin/codex/implement-drx-brand-voice-across-app-bkoz8m | shared-history | merged | text | kept ours for unresolved text conflicts |
