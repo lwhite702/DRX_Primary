@@ -1,25 +1,30 @@
 import { refreshAICreditRecommendation } from "@/lib/credit/creditDecisionService";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const RefreshCustomerSchema = z.object({
+  customer_id: z.string().min(1),
+});
 
 export async function POST(request: Request) {
   try {
-    const { customer_id, business_id } = await request.json();
+    const { businessId } = await resolveAuthContext();
+    if (!businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!customer_id || !business_id) {
+    const payload = RefreshCustomerSchema.safeParse(await request.json());
+    if (!payload.success) {
       return NextResponse.json(
-        { error: "Missing required fields: customer_id, business_id" },
-        { status: 400 }
+        { error: "Invalid payload", details: payload.error.flatten() },
+        { status: 400 },
       );
     }
 
-    // Verify user has access to this business
-    // This would normally be done with auth middleware
-    // For now, relying on row-level security in Supabase
-
     const result = await refreshAICreditRecommendation(
-      customer_id,
-      business_id
+      payload.data.customer_id,
+      businessId,
     );
 
     if (!result.success) {
