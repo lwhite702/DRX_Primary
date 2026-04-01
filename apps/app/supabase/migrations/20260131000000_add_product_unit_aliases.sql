@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS product_unit_aliases (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(business_id, alias_name)
-    ) WITH CHECK (EXISTS (SELECT 1 FROM business_profile WHERE business_profile.owner_id = auth.uid() AND business_profile.id = product_unit_aliases.business_id) OR EXISTS (SELECT 1 FROM user_roles WHERE user_roles.user_id = auth.uid() AND user_roles.business_id = product_unit_aliases.business_id AND user_roles.role IN ('owner', 'manager')));
+);
 
 -- Enable RLS
 ALTER TABLE product_unit_aliases ENABLE ROW LEVEL SECURITY;
