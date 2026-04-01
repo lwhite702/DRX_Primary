@@ -30,6 +30,8 @@ Use this checklist before promoting `staging` to `main`.
 - [ ] Tenant isolation and access boundaries were verified.
 - [ ] Critical smoke paths were validated.
 - [ ] Hybrid required gates are green (auth/data integrity + required UX suites).
+- [ ] Feature freeze checks are green (`pnpm test:feature-freeze` and `pnpm test:feature-lock`) for v1.0 beta launch.
+- [ ] Hardening contracts are green (`pnpm test:observability-contract`, `pnpm test:doppler-sync`, `pnpm test:feature-flags-contract`, `pnpm test:metadata-contract`, `pnpm test:login-surfaces`, `pnpm test:coverage:strict`).
 - [ ] Advisory gate artifacts are attached (integration/full-e2e/security/perf/coverage).
 - [ ] Compliance and policy checks passed.
 - [ ] No policy exceptions remain undocumented.

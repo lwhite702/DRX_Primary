@@ -15,6 +15,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://deelrxcrm.com",
+  ),
+  alternates: {
+    canonical: "/",
+  },
   title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
   description:
     "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",

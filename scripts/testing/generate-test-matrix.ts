@@ -40,6 +40,7 @@ function testFiles(): string[] {
   };
   visit(path.join(root, "apps"));
   visit(path.join(root, "packages"));
+  visit(path.join(root, "scripts/testing"));
   return out.sort();
 }
 

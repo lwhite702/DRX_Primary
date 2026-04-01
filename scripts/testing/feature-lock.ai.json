@@ -1,0 +1,59 @@
+{
+  "name": "ai-intelligence-feature-lock",
+  "description": "Protects core AI/intelligence surfaces from accidental dead-code cleanup",
+  "locks": [
+    {
+      "file": "apps/app/app/(app)/ai-intelligence/page.tsx",
+      "mustContain": [
+        "AIIntelligencePage",
+        "AIIntelligenceDashboard",
+        "PricingRecommendationCard",
+        "InventoryForecastCard",
+        "fetch(\"/api/ai/product-intelligence\"",
+        "fetch(\"/api/ai/analyze\""
+      ]
+    },
+    {
+      "file": "apps/app/app/api/ai/product-intelligence/route.ts",
+      "mustContain": [
+        "export async function POST",
+        "export async function GET",
+        "aiEngine.analyzeProduct",
+        "aiEngine.getBusinessIntelligence"
+      ]
+    },
+    {
+      "file": "apps/app/app/api/ai/analyze/route.ts",
+      "mustContain": [
+        "export async function POST",
+        "aiEngine.analyzeBatch"
+      ]
+    },
+    {
+      "file": "apps/app/components/ai/ai-intelligence-dashboard.tsx",
+      "mustContain": [
+        "AIIntelligenceDashboard"
+      ]
+    },
+    {
+      "file": "apps/app/components/ai/pricing-recommendation-card.tsx",
+      "mustContain": [
+        "PricingRecommendationCard"
+      ]
+    },
+    {
+      "file": "apps/app/components/ai/inventory-forecast-card.tsx",
+      "mustContain": [
+        "InventoryForecastCard"
+      ]
+    },
+    {
+      "file": "apps/app/lib/utils/ai-engine.ts",
+      "mustContain": [
+        "analyzeProduct",
+        "analyzeBatch",
+        "getBusinessIntelligence"
+      ]
+    }
+  ]
+}

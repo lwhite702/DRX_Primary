@@ -1,0 +1,17 @@
+{
+  "version": "v1.0",
+  "flags": [
+    {
+      "id": "ai_insights",
+      "description": "Access to AI-driven business insights",
+      "defaultGlobalEnabled": true,
+      "rollout": "global"
+    },
+    {
+      "id": "advanced_inventory",
+      "description": "Access to inventory intake costing and logs",
+      "defaultGlobalEnabled": true,
+      "rollout": "global"
+    }
+  ]
+}

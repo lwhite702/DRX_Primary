@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-30T08:36:21.179Z",
+  "generatedAt": "2026-04-01T00:18:17.086Z",
   "apps": [
     "apps/app",
     "apps/marketing",
@@ -163,7 +163,17 @@
       "apps/marketing/app/use-cases/store-manager/page.tsx",
       "apps/marketing/app/waitlist/page.tsx"
     ],
-    "mobile": []
+    "mobile": [
+      "apps/mobile/app/(tabs)/credits.tsx",
+      "apps/mobile/app/(tabs)/customers.tsx",
+      "apps/mobile/app/(tabs)/index.tsx",
+      "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "apps/mobile/app/(tabs)/more.tsx",
+      "apps/mobile/app/feedback.tsx",
+      "apps/mobile/app/index.tsx",
+      "apps/mobile/app/login.tsx"
+    ]
   },
   "roles": [
     "admin",
@@ -359,6 +369,7 @@
     "apps/app/db/migrations/20251219000000_add_pos_manager_pin.sql",
     "apps/app/db/migrations/20260107000001_restore_get_user_permissions.sql",
     "apps/app/db/migrations/20260316000001_inventory_fifo_batches.sql",
+    "apps/app/db/migrations/20260331000001_pos_audit_closure_integrity.sql",
     "apps/app/db/migrations_combined.sql",
     "apps/app/db/schema/00_supabase_shim.sql",
     "apps/app/edge/ai_insights/index.ts",
@@ -432,7 +443,8 @@
     "apps/app/supabase/migrations/20251227000001_feature_flags.sql",
     "apps/app/supabase/migrations/20251228000002_optimize_rls_policies.sql",
     "apps/app/tests/e2e/feature-flags.spec.ts",
-    "scripts/testing/audit-repo.ts"
+    "scripts/testing/audit-repo.ts",
+    "scripts/testing/feature-flags-parity-check.ts"
   ],
   "observability": [
     "apps/app/.prisma/client/runtime/client.d.ts",
@@ -453,8 +465,12 @@
     "apps/app/components/sentry-feedback-button.tsx",
     "apps/app/components/ui/global-error-boundary.tsx",
     "apps/app/instrumentation-client.ts",
+    "apps/app/instrumentation.ts",
     "apps/app/lib/adapters/errors-client.ts",
     "apps/app/scripts/production-reset.ts",
+    "apps/app/sentry.client.config.ts",
+    "apps/app/sentry.edge.config.ts",
+    "apps/app/sentry.server.config.ts",
     "packages/wrelik-analytics/src/index.ts",
     "packages/wrelik-analytics/src/react-native.ts",
     "packages/wrelik-config/src/react-native.test.ts",
@@ -463,7 +479,9 @@
     "packages/wrelik-errors/src/node.ts",
     "packages/wrelik-errors/src/react-native.ts",
     "scripts/testing/audit-repo.ts",
-    "scripts/testing/generate-test-matrix.ts"
+    "scripts/testing/doppler-sync-missing-from-env.ts",
+    "scripts/testing/generate-test-matrix.ts",
+    "scripts/testing/observability-contract-check.ts"
   ],
   "experimental": [
     "apps/app/app/(app)/demo/mobile-menu/page.tsx",

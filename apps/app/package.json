@@ -34,7 +34,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts --workers=1 && NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/quick-pos-required.spec.ts tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
+    "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/quick-pos-required.spec.ts tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
     "test:e2e:auth": "E2E_REQUIRE_AUTH=1 playwright test tests/e2e/auth-routing-authenticated.spec.ts --workers=1",
     "test:e2e:testsprite": "NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true playwright test -c playwright.testsprite.local.config.ts --timeout=20000",
     "test:e2e:ui": "playwright test --ui",
@@ -44,7 +44,8 @@
     "test:e2e:visual:required": "VISUAL_TARGET=public NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=false BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --workers=1 && VISUAL_TARGET=protected NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/visual-regression.spec.ts --workers=1",
     "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",
-    "test:regression": "vitest run tests/regression"
+    "test:regression": "vitest run tests/regression",
+    "pos:backfill-lineage": "tsx scripts/backfill-pos-cost-lineage.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.1",

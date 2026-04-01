@@ -1,17 +1,17 @@
 # TEST_MATRIX
 
-Generated: 2026-03-30T08:36:22.560Z
+Generated: 2026-04-01T00:18:18.358Z
 
 ## Scope
 - App routes: 108
 - Marketing routes: 27
-- Mobile screens: 0
+- Mobile screens: 9
 - Roles: admin, cashier, manager, owner, staff, super_admin, supervisor
 - Environments: local, staging, production
 - Integrations: aws, clerk, inngest, posthog, prisma, resend, sentry, supabase, svix, upstash
 
 ## Coverage Summary
-- Covered: 2835
+- Covered: 3024
 - Partial: 0
 - None: 231
 - Blocked: 0
