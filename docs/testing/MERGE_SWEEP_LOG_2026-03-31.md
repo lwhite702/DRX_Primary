@@ -73,3 +73,9 @@
 | seer/refactor/offline-sync-numeric-status | origin/seer/refactor/offline-sync-numeric-status | shared-history | merged | none | clean merge |
 | staging | origin/staging | shared-history | merged | text | kept ours for unresolved text conflicts |
 | vercel/react-server-components-cve-vu-5f2iev | origin/vercel/react-server-components-cve-vu-5f2iev | shared-history | merged | none | clean merge |
+| oobo/anchors/v1 | oobo/anchors/v1 | no-merge-base | merged | text | kept ours for unresolved text conflicts |
+
+## Summary
+- Mergeable-history branches: 65
+- No-merge-base branches: 1
+- Failures: 0
