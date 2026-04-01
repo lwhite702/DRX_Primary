@@ -41,7 +41,7 @@ export function BusinessSwitcher() {
         <DropdownMenuContent className="w-[200px]">
           <DropdownMenuLabel>My Businesses</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {availableBusinesses.map((b) => (
+          {availableBusinesses.map((b: any) => (
             <DropdownMenuItem
               key={b.id}
               onSelect={() => switchBusiness(b.id)} // b.id is Clerk Org ID

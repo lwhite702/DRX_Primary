@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 // import { db } from "@wrelik/db/server";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 let didLogRealtimeBlock = false;
 
@@ -42,19 +41,13 @@ function normalizeInventoryPayload(payload: any): any[] {
 }
 
 function openRealtimeChannel(name: string): RealtimeChannelLike | null {
-  try {
-    const realtime = getSupabaseClient() as any;
-    return realtime.channel(name);
-  } catch (error) {
-    if (!didLogRealtimeBlock) {
-      didLogRealtimeBlock = true;
-      console.warn(
-        "[realtime] Legacy Supabase realtime channel disabled for this path. Initial data loads will continue without live updates.",
-        error,
-      );
-    }
-    return null;
+  if (!didLogRealtimeBlock) {
+    didLogRealtimeBlock = true;
+    console.warn(
+      `[realtime] live channel '${name}' disabled until @wrelik realtime adapter migration is complete. Falling back to API snapshots.`,
+    );
   }
+  return null;
 }
 
 // Mock db to prevent server-side imports in client bundle

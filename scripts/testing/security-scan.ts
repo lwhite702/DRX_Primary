@@ -22,7 +22,19 @@ function walk(dir: string, files: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const absolute = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (["node_modules", ".next", "dist", "tests", "testsprite_tests"].includes(entry.name)) continue;
+      if (
+        [
+          "node_modules",
+          ".next",
+          "dist",
+          "tests",
+          "testsprite_tests",
+          "test-results",
+          "playwright-report",
+          "coverage",
+        ].includes(entry.name)
+      )
+        continue;
       walk(absolute, files);
     } else if (/\.(ts|tsx|js|jsx)$/.test(entry.name)) {
       files.push(path.relative(root, absolute).replace(/\\/g, "/"));
@@ -36,7 +48,16 @@ for (const target of targets) {
     const text = fs.readFileSync(path.join(root, file), "utf8");
     for (const check of checks) {
       if (check.regex.test(text)) {
-        findings.push({ file, severity: check.severity, rule: check.rule, detail: check.detail });
+        if (check.rule === "SEC-MOCK-SUPABASE" && /\bgetSupabaseClient\(/.test(text)) {
+          // getSupabaseClient is the production client accessor; do not classify as mock usage.
+          if (!/\bmockSupabase\b/.test(text)) continue;
+        }
+        findings.push({
+          file,
+          severity: check.severity,
+          rule: check.rule,
+          detail: check.detail,
+        });
       }
     }
   }

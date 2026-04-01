@@ -1,3 +1,3 @@
 {
-  "installCommand": "npm install --legacy-peer-deps --no-package-lock"
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile"
 }

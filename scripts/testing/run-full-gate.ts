@@ -31,7 +31,7 @@ const gates: GateDefinition[] = [
     requiredForBeta: true,
     objective: "Deterministic install, lint/typecheck/build integrity.",
     commands: [
-      "pnpm install --frozen-lockfile",
+      "pnpm release:preflight",
       "pnpm lint",
       "pnpm typecheck",
       "pnpm build",
@@ -43,7 +43,7 @@ const gates: GateDefinition[] = [
     requiredForBeta: true,
     objective: "Auth redirects, onboarding flow, and session handling.",
     commands: [
-      "pnpm --filter deelrxcrm-app vitest run tests/middleware.test.ts tests/auth",
+      "pnpm --filter deelrxcrm-app test:required:auth-data",
     ],
   },
   {
@@ -51,7 +51,18 @@ const gates: GateDefinition[] = [
     name: "Environment Discipline",
     requiredForBeta: true,
     objective: "Policy and repository discipline checks.",
-    commands: ["pnpm test:matrix", "pnpm test:policy"],
+    commands: [
+      "pnpm test:matrix",
+      "pnpm test:policy",
+      "pnpm test:feature-freeze",
+      "pnpm test:feature-lock",
+      "pnpm test:observability-contract",
+      "pnpm test:doppler-sync",
+      "pnpm test:feature-flags-contract",
+      "pnpm test:metadata-contract",
+      "pnpm test:login-surfaces",
+      "pnpm test:coverage:strict",
+    ],
   },
   {
     id: 3,
@@ -59,7 +70,7 @@ const gates: GateDefinition[] = [
     requiredForBeta: true,
     objective: "POS checkout contract and transactional safety checks.",
     commands: [
-      "pnpm --filter deelrxcrm-app vitest run tests/pos tests/quick-pos",
+      "pnpm --filter deelrxcrm-app test:required:auth-data",
     ],
   },
   {
@@ -81,9 +92,13 @@ const gates: GateDefinition[] = [
   {
     id: 6,
     name: "UX Readiness",
-    requiredForBeta: false,
+    requiredForBeta: true,
     objective: "End-to-end UX stability and accessibility sanity checks.",
-    commands: ["pnpm test:e2e:web", "pnpm test:a11y"],
+    commands: [
+      "pnpm test:e2e:required",
+      "pnpm --filter deelrxcrm-app test:e2e:visual:required",
+      "pnpm test:a11y:required",
+    ],
   },
 ];
 
@@ -169,7 +184,7 @@ function main() {
     `Recommendation: **${recommendation}**`,
     "",
     "## Release Rule",
-    "- Beta can ship only if Gates 0-3 are at 100% pass rate.",
+    "- Beta can ship only if all required gates are at 100% pass rate.",
     `- Required gate pass status: **${failedRequired.length === 0 ? "PASS" : "FAIL"}**`,
     "",
     "## Gate Summary",
@@ -216,8 +231,8 @@ function main() {
     "",
     "## Recommendation Rationale",
     failedRequired.length === 0
-      ? "All required gates (0-3) passed at 100%."
-      : "At least one required gate (0-3) failed; release should not proceed until remediated.",
+      ? "All required gates passed at 100%."
+      : "At least one required gate failed; release should not proceed until remediated.",
   ].join("\n");
 
   const summary = [
@@ -231,7 +246,7 @@ function main() {
     `- Optional gates passed: ${optionalGateResults.length - failedOptional.length}/${optionalGateResults.length}`,
     `- Total failed commands: ${failedCommands.length}`,
     "",
-    "## Required Gates (0-3)",
+    "## Required Gates",
     ...requiredGateResults.map(
       (gate) => `- Gate ${gate.id} ${gate.name}: ${gate.pass ? "PASS" : "FAIL"} (${gate.passRate.toFixed(2)}%)`,
     ),
@@ -245,7 +260,7 @@ function main() {
   const raw = {
     generatedAt: new Date().toISOString(),
     recommendation,
-    rule: "GO only if Gates 0-3 pass at 100%",
+    rule: "GO only if all required gates pass at 100%",
     gates: gateResults.map((gate) => ({
       id: gate.id,
       name: gate.name,

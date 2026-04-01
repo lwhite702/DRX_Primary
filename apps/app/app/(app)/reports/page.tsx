@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -9,11 +10,19 @@ import {
 } from "@/components/ui/table";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
+import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams?: {
+    from?: string;
+    to?: string;
+  };
+}) {
   const { businessId } = await resolveAuthContext();
 
   if (!businessId) {
@@ -27,7 +36,17 @@ export default async function ReportsPage() {
     );
   }
 
-  const report = await getPosBaselineReport(businessId);
+  const from = searchParams?.from ? new Date(searchParams.from) : undefined;
+  const to = searchParams?.to ? new Date(searchParams.to) : undefined;
+  const range = {
+    from: from && !Number.isNaN(from.getTime()) ? from : undefined,
+    to: to && !Number.isNaN(to.getTime()) ? to : undefined,
+  };
+
+  const [report, reconciliation] = await Promise.all([
+    getPosBaselineReport(businessId, range),
+    getPosReconciliationReport(businessId, range),
+  ]);
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -36,6 +55,15 @@ export default async function ReportsPage() {
         <p className="text-muted-foreground mt-2">
           Baseline sales, cost, and margin visibility from the stabilized POS ledger.
         </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Window: {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)}
+        </p>
+        <Link
+          href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}
+          className="text-xs text-primary underline underline-offset-4"
+        >
+          Export reconciliation CSV
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -81,6 +109,17 @@ export default async function ReportsPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               {report.credit.activeBalances} customers with balances
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Unallocated Historical Sales</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-2xl font-bold">{report.unallocatedSalesCount}</div>
+            <p className="text-sm text-muted-foreground">
+              Sales without FIFO allocation lineage in selected period
             </p>
           </CardContent>
         </Card>
@@ -201,6 +240,46 @@ export default async function ReportsPage() {
             </div>
             <div className="text-xs text-muted-foreground pt-2">
               Latest audit activity: {report.latestAuditAt ? formatDateTime(report.latestAuditAt) : "None"}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Reconciliation Health</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div className="flex items-center justify-between">
+              <span>Sales Checked</span>
+              <span className="font-medium">{reconciliation.summary.salesChecked}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Discrepancies</span>
+              <span className="font-medium">{reconciliation.summary.discrepancies}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Header vs Line Total Mismatch</span>
+              <span className="font-medium">
+                {reconciliation.summary.discrepancyByCode.SALE_TOTAL_MISMATCH}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Allocation Gaps</span>
+              <span className="font-medium">
+                {reconciliation.summary.discrepancyByCode.LINE_ALLOCATION_GAP}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Inventory Log Missing</span>
+              <span className="font-medium">
+                {reconciliation.summary.discrepancyByCode.INVENTORY_LOG_MISSING}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Inventory Log Qty Mismatch</span>
+              <span className="font-medium">
+                {reconciliation.summary.discrepancyByCode.INVENTORY_LOG_QUANTITY_MISMATCH}
+              </span>
             </div>
           </CardContent>
         </Card>

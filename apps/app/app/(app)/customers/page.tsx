@@ -35,6 +35,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Tour } from "@/components/ui/tour";
 
+type CustomerRecord = Customer & {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  alias?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  total_purchases?: number;
+  total_credit_used?: number;
+};
+
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();
@@ -102,7 +116,7 @@ export default function CustomersPage() {
     });
   };
 
-  const handleEdit = (customer: any) => {
+  const handleEdit = (customer: CustomerRecord) => {
     setEditingCustomer(customer);
     reset(customer);
     setShowDialog(true);
@@ -117,7 +131,7 @@ export default function CustomersPage() {
     setShowDialog(true);
   };
 
-  const filteredCustomers = customers.filter(
+  const filteredCustomers = (customers as CustomerRecord[]).filter(
     (customer) =>
       customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,7 +158,13 @@ export default function CustomersPage() {
   if (!business) {
     return (
       <div className="p-4 md:p-8">
-        No business found. Please set up your business first.
+        <EmptyState
+          icon={UserX}
+          title="No business found"
+          description="Complete onboarding first so customer profiles can be attached to a business."
+          actionLabel="Go to onboarding"
+          onAction={() => (window.location.href = "/onboarding")}
+        />
       </div>
     );
   }
@@ -330,6 +350,7 @@ export default function CustomersPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-[#FFD700]/50 text-foreground rounded-lg tracking-wider"
+            aria-label="Search customers"
           />
         </div>
       </div>
@@ -388,7 +409,7 @@ export default function CustomersPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEdit(customer)}
-                          aria-label="Edit customer"
+                          aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -499,6 +520,7 @@ export default function CustomersPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEdit(customer)}
+                            aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

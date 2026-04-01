@@ -321,6 +321,8 @@ model Sales {
   totalAmount   Decimal?        @map("total_amount") @db.Decimal(12, 2)
   paymentMethod String?         @map("payment_method") @db.VarChar(50)
   paymentRef    String?         @map("payment_ref") @db.VarChar(255)
+  saleSource    String?         @default("unknown") @map("sale_source") @db.VarChar(50)
+  checkoutVersion String?       @default("v1") @map("checkout_version") @db.VarChar(20)
   createdBy     String?         @map("created_by")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")

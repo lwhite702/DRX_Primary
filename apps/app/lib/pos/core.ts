@@ -18,6 +18,7 @@ const DEFAULT_PAYMENT: PosPayment = {
   receipt: "none",
   creditConfirmed: false,
 };
+const CHECKOUT_VERSION = "v2";
 
 type CheckoutDbClient = Prisma.TransactionClient | typeof db;
 
@@ -313,7 +314,7 @@ async function allocateInventoryBatches(
   );
 
   if (rows.length === 0) {
-    return [];
+    throw new PosCheckoutError(`Missing FIFO batch inventory for item ${inventoryId}`);
   }
 
   const allocations: InventoryBatchAllocation[] = [];
@@ -580,6 +581,13 @@ export async function checkout(
         select: { id: true, orderNumber: true },
       });
 
+      await tx.$executeRaw`
+        UPDATE sales
+        SET sale_source = ${cart.source},
+            checkout_version = ${CHECKOUT_VERSION}
+        WHERE id = ${sale.id}::uuid
+      `;
+
       for (const item of cart.items) {
         const inventory = item.inventoryId
           ? inventoryCheck.stockById.get(item.inventoryId)
@@ -601,6 +609,9 @@ export async function checkout(
                 allocationQuantityGrams,
               )
             : [];
+        if (allocationQuantityGrams > 0 && batchAllocations.length === 0) {
+          throw new PosCheckoutError(`Missing FIFO allocations for item ${item.inventoryId}`);
+        }
         const allocatedExtendedCost = batchAllocations.reduce(
           (sum, entry) => sum + entry.extendedCost,
           0,

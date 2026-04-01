@@ -15,11 +15,20 @@ import {
 } from "@/lib/pos/core";
 import type { ReceiptOutput } from "@/lib/pos/contract";
 import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
+import {
+  buildCheckoutFailure,
+  buildCheckoutSuccess,
+} from "@/lib/pos/response";
 
 type PosCheckoutResponse = {
   success: boolean;
-  saleId?: string;
-  orderNumber?: string;
+  saleId?: string | null;
+  orderNumber?: string | null;
+  totals?: {
+    total: number;
+    changeAmount: number;
+  } | null;
+  errors?: string[];
   total?: number;
   changeAmount?: number;
   receipt?: ReceiptOutput;
@@ -108,6 +117,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await checkout(updatedCart, payload.idempotencyKey);
+    const envelope = buildCheckoutSuccess(result);
     const receipt: ReceiptOutput = {
       saleId: result.saleId,
       total: result.total,
@@ -118,9 +128,7 @@ export async function POST(request: NextRequest) {
           : [{ type: "receipt", value: payload.payment.receipt }],
     };
     const response: PosCheckoutResponse = {
-      success: true,
-      saleId: result.saleId,
-      orderNumber: result.orderNumber,
+      ...envelope,
       total: result.total,
       changeAmount: result.changeAmount,
       receipt,
@@ -130,7 +138,9 @@ export async function POST(request: NextRequest) {
     const status =
       error instanceof PosCheckoutError ? error.status : 400;
     const response: PosCheckoutResponse = {
-      success: false,
+      ...buildCheckoutFailure(
+        error instanceof Error ? error.message : "Checkout failed",
+      ),
       error: error instanceof Error ? error.message : "Checkout failed",
     };
     return NextResponse.json(response, { status });

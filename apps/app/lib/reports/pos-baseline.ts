@@ -12,6 +12,16 @@ function toNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isMissingTableError(error: unknown, tableName: string) {
+  if (!error || typeof error !== "object") return false;
+  const prismaErr = error as { code?: string; message?: string };
+  return (
+    prismaErr.code === "P2021" &&
+    typeof prismaErr.message === "string" &&
+    prismaErr.message.includes(tableName)
+  );
+}
+
 function startOfDay(date = new Date()) {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
@@ -27,6 +37,11 @@ function startOfWeek(date = new Date()) {
 }
 
 export interface PosBaselineReport {
+  period: {
+    from: string;
+    to: string;
+    mode: "default" | "custom";
+  };
   today: {
     salesTotal: number;
     salesCount: number;
@@ -72,21 +87,41 @@ export interface PosBaselineReport {
     total: number;
     costOfGoodsSold: number;
     grossProfit: number;
+    costSource: "fifo" | "unallocated";
     paymentMethod: string | null;
     customerId: string | null;
     createdAt: string;
   }>;
+  unallocatedSalesCount: number;
   latestAuditAt: string | null;
   generatedAt: string;
 }
 
-export async function getPosBaselineReport(businessId: string): Promise<PosBaselineReport> {
+export async function getPosBaselineReport(
+  businessId: string,
+  range?: { from?: Date; to?: Date },
+): Promise<PosBaselineReport> {
   const now = new Date();
-  const todayStart = startOfDay(now);
-  const weekStart = startOfWeek(now);
+  const hasCustomRange = Boolean(range?.from || range?.to);
+  const todayStart = hasCustomRange ? startOfDay(range?.from ?? now) : startOfDay(now);
+  const todayEnd = hasCustomRange
+    ? (() => {
+        const end = new Date(range?.to ?? now);
+        end.setHours(23, 59, 59, 999);
+        return end;
+      })()
+    : undefined;
+  const weekStart = hasCustomRange ? todayStart : startOfWeek(now);
+  const weekEnd = hasCustomRange ? todayEnd : undefined;
   const previousWeekStart = new Date(weekStart);
-  previousWeekStart.setDate(previousWeekStart.getDate() - 7);
-  const previousWeekEnd = new Date(weekStart);
+  const previousWeekEnd = new Date(weekEnd ?? weekStart);
+  if (hasCustomRange && weekEnd) {
+    const spanMs = weekEnd.getTime() - weekStart.getTime();
+    previousWeekStart.setTime(weekStart.getTime() - spanMs - 1);
+    previousWeekEnd.setTime(weekStart.getTime() - 1);
+  } else {
+    previousWeekStart.setDate(previousWeekStart.getDate() - 7);
+  }
 
   const [
     todaySales,
@@ -103,7 +138,10 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
       where: {
         businessId,
         orderStatus: "completed",
-        createdAt: { gte: todayStart },
+        createdAt: {
+          gte: todayStart,
+          ...(todayEnd ? { lte: todayEnd } : {}),
+        },
       },
       select: {
         id: true,
@@ -115,7 +153,10 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
       where: {
         businessId,
         orderStatus: "completed",
-        createdAt: { gte: weekStart },
+        createdAt: {
+          gte: weekStart,
+          ...(weekEnd ? { lte: weekEnd } : {}),
+        },
       },
       select: { id: true, totalAmount: true },
     }),
@@ -125,7 +166,7 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
         orderStatus: "completed",
         createdAt: {
           gte: previousWeekStart,
-          lt: previousWeekEnd,
+          ...(hasCustomRange ? { lte: previousWeekEnd } : { lt: previousWeekEnd }),
         },
       },
       select: { id: true, totalAmount: true },
@@ -164,7 +205,10 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
         sale: {
           businessId,
           orderStatus: "completed",
-          createdAt: { gte: weekStart },
+          createdAt: {
+            gte: weekStart,
+            ...(weekEnd ? { lte: weekEnd } : {}),
+          },
         },
       },
       _sum: {
@@ -240,20 +284,44 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
     ),
   );
 
-  const saleCosts = costSaleIds.length
-    ? await db.salesLineItemAllocation.groupBy({
-        by: ["saleId"],
-        where: {
-          saleId: { in: costSaleIds },
-        },
+  let saleCosts:
+    | Array<{
+        saleId: string;
+        _sum: { extendedCost: unknown };
+      }>
+    | [] = [];
+
+  if (costSaleIds.length) {
+    try {
+      const rows = await db.$queryRaw<Array<{ sale_id: string; extended_cost_sum: unknown }>>(
+        Prisma.sql`
+          SELECT sale_id, SUM(extended_cost) AS extended_cost_sum
+          FROM sales_line_item_allocations
+          WHERE sale_id IN (${Prisma.join(costSaleIds)})
+          GROUP BY sale_id
+        `,
+      );
+      saleCosts = rows.map((row) => ({
+        saleId: row.sale_id,
         _sum: {
-          extendedCost: true,
+          extendedCost: row.extended_cost_sum,
         },
-      })
-    : [];
+      }));
+    } catch (error) {
+      if (!isMissingTableError(error, "sales_line_item_allocations")) {
+        throw error;
+      }
+      // Keep report APIs available in environments where the allocation table
+      // has not been migrated yet. COGS defaults to 0 until migration lands.
+      saleCosts = [];
+    }
+  }
 
   const cogsBySaleId = new Map(
     saleCosts.map((row) => [row.saleId, toNumber(row._sum.extendedCost)]),
+  );
+  const unallocatedSaleIds = new Set(
+    costSaleIds.filter((saleId) => !cogsBySaleId.has(saleId)),
   );
 
   const todaySalesTotal = todaySales.reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
@@ -276,6 +344,11 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
   const lowStockCount = typeof lowStockCountRaw === "bigint" ? Number(lowStockCountRaw) : Number(lowStockCountRaw);
 
   return {
+    period: {
+      from: weekStart.toISOString(),
+      to: (weekEnd ?? now).toISOString(),
+      mode: hasCustomRange ? "custom" : "default",
+    },
     today: {
       salesTotal: Number(todaySalesTotal.toFixed(2)),
       salesCount: todaySales.length,
@@ -317,10 +390,12 @@ export async function getPosBaselineReport(businessId: string): Promise<PosBasel
       total: toNumber(sale.totalAmount),
       costOfGoodsSold: Number((cogsBySaleId.get(sale.id) ?? 0).toFixed(2)),
       grossProfit: Number((toNumber(sale.totalAmount) - (cogsBySaleId.get(sale.id) ?? 0)).toFixed(2)),
+      costSource: cogsBySaleId.has(sale.id) ? "fifo" : "unallocated",
       paymentMethod: sale.paymentMethod ?? null,
       customerId: sale.customerId ?? null,
       createdAt: sale.createdAt.toISOString(),
     })),
+    unallocatedSalesCount: unallocatedSaleIds.size,
     latestAuditAt: latestAudit?.createdAt.toISOString() ?? null,
     generatedAt: now.toISOString(),
   };
