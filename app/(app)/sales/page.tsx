@@ -285,7 +285,7 @@ export default function SalesPage() {
     try {
       posEngine.setCustomer(selectedCustomer);
 
-      if (amountPaid) {
+      if (amountPaid && !isNaN(parseFloat(amountPaid))) {
         posEngine.setAmountPaid(parseFloat(amountPaid));
       }
 
