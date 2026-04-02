@@ -13,7 +13,6 @@ export function useSalesCart(businessId?: string) {
   const [processing, setProcessing] = useState(false);
 
   const refreshCart = useCallback(() => setCart(posEngine.getCart()), [posEngine]);
-  const refreshCart = () => setCart(posEngine.getCart());
 
   // Re-initialize if needed when businessId changes, though POSEngine might be stateless regarding businessId until checkout
   useEffect(() => {

@@ -21,6 +21,18 @@ const DEFAULT_PAYMENT: PosPayment = {
 const CHECKOUT_VERSION = "v2";
 
 type CheckoutDbClient = Prisma.TransactionClient | typeof db;
+type SqlCapableClient = {
+  $queryRaw<T = unknown>(query: Prisma.Sql): Promise<T>;
+};
+
+type InventoryRow = {
+  id: string;
+  product_name: string;
+  quantity_on_hand: number;
+  inventory_in_grams: number | null;
+  unit_cost: number | null;
+  convert_to_grams: number | null;
+};
 
 type InventoryValidationError = {
   inventoryId: string | null;
@@ -49,6 +61,11 @@ type InventoryBatchAllocation = {
   quantityGrams: number;
   unitCostPerGram: number;
   extendedCost: number;
+};
+type InventoryBatchRow = {
+  id: string;
+  remaining_quantity_grams: number;
+  unit_cost_per_gram: number;
 };
 
 type CreditValidationResult = {
@@ -109,22 +126,14 @@ async function loadInventoryRows(
   businessId: string,
   inventoryIds: string[],
   lockRows: boolean,
-) {
+): Promise<InventoryRow[]> {
   if (inventoryIds.length === 0) {
     return [];
   }
+  const sqlClient = tx as unknown as SqlCapableClient;
 
   if (lockRows) {
-    return tx.$queryRaw<
-      Array<{
-        id: string;
-        product_name: string;
-        quantity_on_hand: number;
-        inventory_in_grams: number | null;
-        unit_cost: number | null;
-        convert_to_grams: number | null;
-      }>
-    >(
+    return sqlClient.$queryRaw<InventoryRow[]>(
       Prisma.sql`
         SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
         FROM inventory
@@ -135,16 +144,7 @@ async function loadInventoryRows(
     );
   }
 
-  return tx.$queryRaw<
-    Array<{
-      id: string;
-      product_name: string;
-      quantity_on_hand: number;
-      inventory_in_grams: number | null;
-      unit_cost: number | null;
-      convert_to_grams: number | null;
-    }>
-  >(
+  return sqlClient.$queryRaw<InventoryRow[]>(
     Prisma.sql`
       SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
       FROM inventory
@@ -165,7 +165,7 @@ export async function validateInventoryAvailability(
     new Set(inventoryItems.map((item) => item.inventoryId!).filter(Boolean)),
   );
   const rows = await loadInventoryRows(tx, businessId, inventoryIds, Boolean(options?.lockRows));
-  const stockById = new Map(
+  const stockById: InventoryAvailabilityResult["stockById"] = new Map(
     rows.map((row) => [
       row.id,
       {
@@ -295,13 +295,8 @@ async function allocateInventoryBatches(
     return [];
   }
 
-  const rows = await tx.$queryRaw<
-    Array<{
-      id: string;
-      remaining_quantity_grams: number;
-      unit_cost_per_gram: number;
-    }>
-  >(
+  const sqlClient = tx as unknown as SqlCapableClient;
+  const rows = await sqlClient.$queryRaw<InventoryBatchRow[]>(
     Prisma.sql`
       SELECT id, remaining_quantity_grams, unit_cost_per_gram
       FROM inventory_batches

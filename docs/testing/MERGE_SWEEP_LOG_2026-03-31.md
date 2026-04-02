@@ -90,5 +90,6 @@
   - `pnpm lint`: pass (warnings only)
   - `pnpm test:integration`: pass (3 files, 32 tests)
   - `pnpm test:unit`: test execution pass (28 files, 222 tests), but fails coverage threshold gate (global 90%)
-  - `pnpm typecheck`: fails in `apps/app/lib/pos/core.ts`
-  - `pnpm build`: fails due duplicate `contact` routes and duplicate `refreshCart` identifier in `app/(app)/sales/_hooks/useSalesCart.ts`
+  - `pnpm typecheck`: pass after POS core raw-query typing fixes
+  - `pnpm build`: pass after removing duplicate `contact` route and duplicate `refreshCart` declaration
+  - Remaining expected gate issue: `pnpm test:unit` fails only due global coverage thresholds (tests themselves pass)
