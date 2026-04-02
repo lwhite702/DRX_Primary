@@ -79,3 +79,16 @@
 - Mergeable-history branches: 65
 - No-merge-base branches: 1
 - Failures: 0
+
+## Validation Addendum (2026-04-02)
+- Installed dependencies with `pnpm install --no-frozen-lockfile` (Node runtime in shell is `v25.6.1`; repo target remains `20.18.0`).
+- Fixed unit-test import resolution by adding legacy shim:
+  - `apps/app/lib/data/client/supabase-client.ts`
+- Removed duplicate `/login` page route to avoid collision with `/login/[[...rest]]`:
+  - deleted `apps/app/app/login/page.tsx`
+- Re-ran checks:
+  - `pnpm lint`: pass (warnings only)
+  - `pnpm test:integration`: pass (3 files, 32 tests)
+  - `pnpm test:unit`: test execution pass (28 files, 222 tests), but fails coverage threshold gate (global 90%)
+  - `pnpm typecheck`: fails in `apps/app/lib/pos/core.ts`
+  - `pnpm build`: fails due duplicate `contact` routes and duplicate `refreshCart` identifier in `app/(app)/sales/_hooks/useSalesCart.ts`
