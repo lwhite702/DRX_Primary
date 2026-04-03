@@ -1,0 +1,25 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "ae350c63dde1737abcf040bdef52be54def2291b",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773797785,
+  "message": "merge: resolve main conflicts in reports and intake approval",
+  "files_changed": [],
+  "added": 2,
+  "deleted": 3,
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 0,
+  "human_deleted": 0,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -10,6 +10,13 @@ import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
 import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import {
+  maskAlias,
+  maskSensitiveText,
+  shouldMaskFromProtocol,
+} from "@/lib/privacy/masking";
 import {
   Sheet,
   SheetContent,
@@ -63,6 +70,11 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [user_id, setUser_id] = useState<string>("");
   const [can_apply_changes, setCan_apply_changes] = useState(false);
+  const [privacyProtocol, setPrivacyProtocol] = useState<PrivacyProtocolSettings>(
+    getDefaultPrivacyProtocol(),
+  );
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
+    useState(false);
 
   useEffect(() => {
     if (!business?.id) return;
@@ -97,6 +109,23 @@ export default function CustomerDetailPage() {
             late_payment_count: data.metrics.late_payment_count || 0,
           });
         }
+
+        const [settingsRes, preferenceRes] = await Promise.all([
+          fetch("/api/business/settings"),
+          fetch("/api/privacy/protexion/preferences"),
+        ]);
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          setPrivacyProtocol(
+            settingsData.privacy_protocol ||
+              settingsData.privacyProtocol ||
+              getDefaultPrivacyProtocol(),
+          );
+        }
+        if (preferenceRes.ok) {
+          const preferenceData = await preferenceRes.json();
+          setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
+        }
       } catch (error) {
         toast.error("Failed to load customer details");
         console.error(error);
@@ -116,6 +145,19 @@ export default function CustomerDetailPage() {
     return <div className="p-4 md:p-8">Customer not found</div>;
   }
 
+  const shouldMask = shouldMaskFromProtocol(
+    privacyProtocol,
+    manualScreenPrivacyEnabled,
+    false,
+  );
+
+  const displayName =
+    customer.alias ||
+    [customer.firstName || customer.first_name, customer.lastName || customer.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    "Customer";
+
   return (
     <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
@@ -131,8 +173,7 @@ export default function CustomerDetailPage() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold break-words">
-              {customer.firstName || customer.first_name}{" "}
-              {customer.lastName || customer.last_name}
+              {shouldMask ? maskAlias(displayName) : displayName}
             </h1>
             <p className="text-muted-foreground mt-1 text-xs break-all">
               Customer ID: {customer.id}
@@ -190,36 +231,50 @@ export default function CustomerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="text-sm">{customer.email || "N/A"}</p>
+                {privacyProtocol.fields.email.visible ? (
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm">
+                        {shouldMask ? maskSensitiveText() : customer.email || "N/A"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+                ) : null}
+                {privacyProtocol.fields.phone.visible ? (
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="text-sm">
+                        {shouldMask
+                          ? maskSensitiveText()
+                          : customer.phoneNumber || customer.phone_number || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {privacyProtocol.fields.address.visible ? (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Phone</p>
+                    <p className="text-xs text-muted-foreground">Address</p>
                     <p className="text-sm">
-                      {customer.phoneNumber || customer.phone_number || "N/A"}
+                      {shouldMask
+                        ? maskSensitiveText()
+                        : `${customer.address || "N/A"}${customer.city ? `, ${customer.city}` : ""}${
+                            customer.state ? `, ${customer.state}` : ""
+                          }${
+                            customer.zipCode || customer.zip_code
+                              ? ` ${customer.zipCode || customer.zip_code}`
+                              : ""
+                          }`}
                     </p>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Address</p>
-                  <p className="text-sm">
-                    {customer.address || "N/A"}
-                    {customer.city && `, ${customer.city}`}
-                    {customer.state && `, ${customer.state}`}
-                    {(customer.zipCode || customer.zip_code) &&
-                      ` ${customer.zipCode || customer.zip_code}`}
-                  </p>
-                </div>
-              </div>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -290,16 +345,20 @@ export default function CustomerDetailPage() {
           </Card>
 
           {/* Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Credit Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                {customer.notes || customer.credit_notes || "No notes"}
-              </p>
-            </CardContent>
-          </Card>
+          {privacyProtocol.fields.notes.visible ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Credit Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">
+                  {shouldMask
+                    ? maskSensitiveText()
+                    : customer.notes || customer.credit_notes || "No notes"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
 
         {/* Sidebar - AI Credit Panel */}

@@ -1,39 +1,32 @@
 import { Label } from "@/components/ui/label";
 import { CheckCircle2 } from "lucide-react";
 import { StepProps } from "../types";
-import { drxCopy } from "@/lib/copy/drx";
-
-const PRIVACY_PRESETS: Record<string, { label: string; desc: string }> = {
-  open: drxCopy.onboarding.privacy.presets.open,
-  balanced: drxCopy.onboarding.privacy.presets.balanced,
-  private: drxCopy.onboarding.privacy.presets.private,
-  max_secure: drxCopy.onboarding.privacy.presets.maxSecure,
-};
+import { PRIVACY_PROFILE_OPTIONS } from "@/lib/privacy/profiles";
 
 export function PrivacyStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <Label className="text-lg">{drxCopy.onboarding.privacy.title}</Label>
-        <p className="text-sm text-muted-foreground">{drxCopy.onboarding.privacy.body}</p>
+        <Label className="text-lg">Privacy profile</Label>
+        <p className="text-sm text-muted-foreground">
+          Choose how much customer data DRX recommends collecting during onboarding.
+        </p>
       </div>
 
       <div className="space-y-6">
-        {(
-          Object.keys(PRIVACY_PRESETS) as Array<keyof typeof PRIVACY_PRESETS>
-        ).map((key) => (
+        {PRIVACY_PROFILE_OPTIONS.map((profile) => (
           <div
-            key={key}
+            key={profile.id}
             className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all ${
-              formData.privacyPreset === key ? "border-accent bg-accent/5" : ""
+              formData.privacyPreset === profile.id ? "border-accent bg-accent/5" : ""
             }`}
-            onClick={() => setFormData({ ...formData, privacyPreset: key })}
+            onClick={() => setFormData({ ...formData, privacyPreset: profile.id })}
           >
             <div>
-              <div className="font-bold">{PRIVACY_PRESETS[key].label}</div>
-              <div className="text-sm text-muted-foreground">{PRIVACY_PRESETS[key].desc}</div>
+              <div className="font-bold">{profile.label}</div>
+              <div className="text-sm text-muted-foreground">{profile.description}</div>
             </div>
-            {formData.privacyPreset === key && (
+            {formData.privacyPreset === profile.id && (
               <CheckCircle2 className="text-accent" />
             )}
           </div>

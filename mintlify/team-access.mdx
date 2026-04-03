@@ -1,42 +1,79 @@
 # Team access
 
-Deelrx CRM controls access by role through **Team Management** and permission checks across the app.
+This page explains how DRX role access works in daily operations.
 
-## What this does
+## What this page is for
 
-- Shows current team members and roles
-- Lets authorized users change role assignments
-- Gates pages and actions by permission
+Use this guide to assign roles, verify action boundaries, and reduce avoidable mistakes caused by over-permissioned accounts.
 
-## Why this matters
+Team access is managed from **Settings -> Manage Team** and the **Team Management** route.
 
-Role hygiene prevents avoidable inventory, sales, and settings errors.
+## Before you start
 
-## Step-by-step
+- **Recommended role**: Owner, super admin, or manager with user-management scope.
+- **Primary route**: `/settings/team`
+- **Reference route**: `/settings`
+- **Policy prep**:
+  - Decide who should be cashier, supervisor, manager.
+  - Decide who can approve sensitive actions on live shift.
 
-1. Open **Settings**.
-2. Click **Manage Team**.
-3. Review each role assignment.
-4. Update role where needed and confirm.
-5. Re-test restricted actions with that user account.
+## Fast path
 
-## Common mistakes
+1. **Open Team Management** (`/settings/team`).
+2. **Review current members and roles**.
+3. **Assign least-needed role first**.
+   - Start low, then expand only if workflow requires it.
+4. **Save and verify live behavior**.
+   - Log in as that role and test one allowed action and one blocked action.
+5. **Document role changes** in your shift handoff notes.
 
-- Granting broad roles for convenience and forgetting to roll back
-- Assuming all supervisors/managers can perform owner-level actions
-- Not validating role impact on live workflows
+## Role-task matrix (live behavior)
 
-## Edge cases
+| Task | Cashier | Supervisor | Manager | Owner / Super admin |
+| --- | --- | --- | --- | --- |
+| Create sale | Yes | Yes | Yes | Yes |
+| Process payment | Yes | Yes | Yes | Yes |
+| Void/discount sensitive actions | No | Yes | Yes | Yes |
+| Manage customers | View only | Yes | Yes | Yes |
+| Manage inventory levels | No | No | Yes | Yes |
+| Change store settings | No | No | Yes | Yes |
+| Manage staff roles | No | No | Yes | Yes |
+| System-level controls | No | No | No | Yes |
 
-- **Owner** role is protected and not freely reassigned in the same flow.
-- Team access UI is visible, but actions are blocked without manage permission.
+## If blocked
 
-## Current limitations
+- **Team page opens but role change controls are disabled**:
+  - Current account likely lacks user-management scope.
+- **User can view a page but action fails**:
+  - This is expected when route visibility and action rights differ.
+- **Owner role cannot be reassigned in normal flow**:
+  - Expected safeguard. Use approved admin path only.
+- **Live workflow broke after role downgrade**:
+  - Re-run role-task check and restore only missing rights.
 
-- Team invite lifecycle is not fully surfaced in this page flow.
+## What is beta here
+
+- Core role assignment and route/action checks are live.
+- Some cross-business admin surfaces are beta-limited and should not be your day-to-day role management path.
 
 ## Related docs
 
-- [Keeping your data safe](/keeping-your-data-safe)
 - [Store setup](/store-setup)
-- [Staying compliant](/staying-compliant)
+- [Keeping your data safe](/keeping-your-data-safe)
+- [Stay audit-ready](/staying-compliant)
+- [Fixing issues](/fixing-issues)
+
+## Weekly role hygiene check
+
+- Remove elevated access for staff who changed duties.
+- Confirm supervisor and manager counts match current staffing.
+- Verify at least one denied-action test for each role still behaves correctly.
+
+## Handoff rule
+
+When roles change, include this in shift handoff:
+
+- User ID changed
+- Old role -> new role
+- Why it changed
+- Which route/action was validated after change

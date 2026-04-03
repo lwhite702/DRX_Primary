@@ -1,3 +1,5 @@
+import type { PrivacyProfile } from "@/lib/privacy/types";
+
 export interface QuickQuantity {
   label: string;
   value: number;
@@ -38,7 +40,7 @@ export interface BusinessSetupFormData {
   quickQuantities: QuickQuantity[];
 
   // Privacy
-  privacyPreset: string;
+  privacyPreset: PrivacyProfile;
 
   // Staff Roles
   enableManager: boolean;

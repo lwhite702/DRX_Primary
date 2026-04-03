@@ -1,0 +1,100 @@
+# Quick Sale runbook
+
+This runbook covers the fast lane flow:
+
+- `/pos/sale`
+- `/pos/payment`
+- `/pos/complete`
+
+## What this page is for
+
+Use this when your team is ringing customers fast and wants the shortest checkout path with fewer on-screen decisions. It is built for high-throughput counter work.
+
+This page is route-accurate for the current app flow and should be used for cashier training, shift huddles, and recovery steps after lane errors.
+
+## Before you start
+
+- **Recommended role**: Cashier or above.
+- **Needed state**:
+  - Register is in correct business context.
+  - At least one sellable product exists.
+  - Scanner/search works for your station.
+- **Credit usage note**:
+  - Credit tender requires a customer attached and credit allowed.
+- **Lane safety note**:
+  - Treat duplicate-click risk seriously. If a submit error occurs, verify whether sale already posted before retrying.
+
+## Fast path
+
+1. **Open Quick Sale** at `/pos/sale`.
+2. **Add item to cart**.
+   - Scan barcode, type search, or tap quick/favorite item.
+   - For manual line item, enter valid manual price.
+3. **Adjust quantity**.
+   - Tap to increase.
+   - Remove wrong lines before moving to payment.
+4. **Attach customer when needed**.
+   - Optional for normal cash/card lanes.
+   - Required for credit tender.
+5. **Continue to payment** (`/pos/payment`).
+6. **Select payment method**.
+   - cash, card, credit, zelle, mixed.
+   - For credit, confirm credit charge prompt.
+7. **Set receipt choice**.
+8. **Complete sale**.
+   - On success, system routes to `/pos/complete` and then returns to sale screen.
+9. **Start next customer**.
+   - Verify cart reset happened before scanning next order.
+
+## If blocked
+
+- **No products found on scan/search**:
+  - Confirm scan value is correct.
+  - Retry with search text.
+  - If still missing, verify product exists and has stock.
+- **Out of stock message**:
+  - Do not force lane workaround.
+  - Use intake/adjust route first, then retry.
+- **Cannot continue to payment**:
+  - Cart is empty or lane state is invalid.
+  - Add item and retry.
+- **Credit unavailable**:
+  - Attach customer.
+  - Confirm credit rules allow current transaction.
+- **Payment failed**:
+  - Retry once.
+  - Check if sale ID already exists before second submit.
+- **Returned to sale page too quickly after complete screen**:
+  - This is expected behavior. The page auto-resets for next customer.
+
+## What is beta here
+
+- Core Quick Sale route flow is live.
+- Any expanded analytics or report export around these transactions is beta-limited and does not change lane workflow.
+
+## Related docs
+
+- [How sales work](/how-sales-work)
+- [Payments and plans](/payments-and-plans)
+- [Your products](/your-products)
+- [Fixing issues](/fixing-issues)
+
+## Lane coaching notes
+
+Use these coaching points for new cashiers:
+
+- Scan/search first, then manual item only when needed.
+- Never submit payment repeatedly if the lane is slow.
+- Confirm sale complete state before taking next customer.
+- If credit is selected by mistake, back out and pick the correct tender before submit.
+- Keep customer attach optional unless your store policy requires it.
+
+## Shift-start micro test
+
+Run this in under two minutes:
+
+1. Add one item by search.
+2. Open payment route.
+3. Select cash.
+4. Return without submit.
+5. Confirm lane still responds and cart state is valid.

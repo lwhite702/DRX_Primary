@@ -2,7 +2,7 @@
  * Helper functions for unit of measure
  */
 
-export type UnitOfMeasure = "g" | "oz";
+export type UnitOfMeasure = "g" | "oz" | "lb" | "L" | "ml";
 
 const LIQUID_CATEGORIES = [
   "beverage",
@@ -30,10 +30,18 @@ export function getUnitForCategory(category?: string | null): UnitOfMeasure {
  * Get display label for unit of measure
  */
 export function getUnitLabel(unit: UnitOfMeasure, plural = false): string {
-  if (unit === "oz") {
-    return plural ? "ounces" : "ounce";
+  switch (unit) {
+    case "oz":
+      return plural ? "ounces" : "ounce";
+    case "lb":
+      return plural ? "pounds" : "pound";
+    case "L":
+      return plural ? "liters" : "liter";
+    case "ml":
+      return plural ? "milliliters" : "milliliter";
+    default:
+      return plural ? "grams" : "gram";
   }
-  return plural ? "grams" : "gram";
 }
 
 /**

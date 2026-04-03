@@ -10,6 +10,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
+import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -69,13 +70,17 @@ export function Sidebar() {
       >
         {filteredNav.map((item) => {
           const Icon = item.icon;
+          const isExternal = Boolean(item.external);
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            !isExternal &&
+            (pathname === item.href || pathname.startsWith(item.href + "/"));
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
               className={
                 "flex items-center gap-3 px-4 py-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " +
                 (isActive
@@ -102,7 +107,9 @@ export function Sidebar() {
           </Link>
         )}
         <Link
-          href="/help"
+          href={featurebaseHelpdeskUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
         >
           <svg

@@ -18,7 +18,7 @@ import { PricingRecommendationCard } from "@/components/ai/pricing-recommendatio
 import { InventoryForecastCard } from "@/components/ai/inventory-forecast-card";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { RefreshCw, AlertTriangle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import type { AIPricingRecommendation, InventoryForecast } from "@/lib/validations/schemas";
@@ -37,7 +37,7 @@ export default function AIIntelligencePage() {
   );
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const filteredInventory = inventory.filter(
     (item) =>

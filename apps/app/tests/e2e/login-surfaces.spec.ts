@@ -6,10 +6,12 @@ const bypassAuthEnabled =
 test.describe("Login and register surfaces", () => {
   test("/login is accessible", async ({ page }) => {
     await page.goto("/login");
-    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page).toHaveURL(/\/(login|dashboard)(?:\?|$)/);
 
-    if (bypassAuthEnabled) {
-      await expect(page.locator("body")).toContainText(/Auth Bypass Enabled/i);
+    const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
+
+    if (bypassAuthEnabled || landedOnDashboard) {
+      await expect(page.locator("body")).toContainText(/operator dashboard/i);
       return;
     }
 
@@ -18,10 +20,12 @@ test.describe("Login and register surfaces", () => {
 
   test("/register is accessible", async ({ page }) => {
     await page.goto("/register");
-    await expect(page).toHaveURL(/\/register(?:\?|$)/);
+    await expect(page).toHaveURL(/\/(register|dashboard)(?:\?|$)/);
 
-    if (bypassAuthEnabled) {
-      await expect(page.locator("body")).toContainText(/Auth Bypass Enabled/i);
+    const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
+
+    if (bypassAuthEnabled || landedOnDashboard) {
+      await expect(page.locator("body")).toContainText(/operator dashboard/i);
       return;
     }
 

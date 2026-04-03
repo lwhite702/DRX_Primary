@@ -1,5 +1,5 @@
 import { refreshAICreditRecommendation } from "@/lib/credit/creditDecisionService";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

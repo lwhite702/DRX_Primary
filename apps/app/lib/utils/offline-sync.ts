@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import type { POSCheckout } from "@/lib/validations/schemas";
 
 const DB_NAME = "drx_crm_offline";
@@ -194,7 +194,7 @@ class OfflineSyncManager {
     failed: number;
     errors: string[];
   }> {
-    const supabase = getSupabaseClient();
+    const supabase = createAppClient();
     if (!supabase) {
       return { success: 0, failed: 0, errors: ["Supabase client not available"] };
     }

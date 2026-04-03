@@ -92,14 +92,18 @@ export function TopNav() {
               <nav className="space-y-1" aria-label="Main menu">
                 {filteredNav.map((item) => {
                   const Icon = item.icon;
+                  const isExternal = Boolean(item.external);
                   const isActive =
-                    pathname === item.href ||
-                    pathname.startsWith(item.href + "/");
+                    !isExternal &&
+                    (pathname === item.href ||
+                      pathname.startsWith(item.href + "/"));
 
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
                       onClick={() => setMobileMenuOpen(false)}
                       className={
                         "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors " +

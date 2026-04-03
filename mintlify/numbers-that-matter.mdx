@@ -1,41 +1,92 @@
 # Numbers that matter
 
-Deelrx CRM gives you live operational metrics in **Operator Dashboard** and **Event Desk Board**.
+This page explains how to read the live metrics in **Dashboard** and **Operations Insights**.
 
-## What this does
+## What this page is for
 
-- Shows daily and recent operational signals
-- Surfaces inventory alerts and pending intake counts
-- Tracks customer and credit exposure metrics
+Use this guide at shift start, mid-shift, and close to make quick decisions from current numbers instead of guesswork.
 
-## Why this matters
+This page is focused on route-accurate operator reading, not deep analyst reporting.
 
-You can decide faster when the numbers are in one place.
+## Before you start
 
-## Step-by-step
+- **Recommended role**: Cashier, supervisor, manager, or owner based on route access.
+- **Routes used**:
+  - `/dashboard`
+  - `/insights` (Operations Insights)
+  - `/inventory`
+  - `/credit`
+- **Important check**:
+  - Make sure you are in the right business/workspace before trusting totals.
 
-1. Start each shift in **Operator Dashboard**.
-2. Check sales activity and system health.
-3. Open **Event Desk Board** for totals, averages, and alerts.
-4. Use the metrics to prioritize restock, collections, and staffing.
+## Fast path
 
-## Common mistakes
+1. **Start in Dashboard** (`/dashboard`).
+   - Confirm day trend is not flat due to wrong context.
+2. **Open Operations Insights** (`/insights`).
+   - Review today sales total and transaction count.
+   - Review average sale value.
+   - Review inventory alerts and pending intake count.
+3. **Check activity tiles**.
+   - Recent intakes
+   - Low-stock items
+4. **Cross-check when needed**.
+   - If alerts spike, open `/inventory` and `/inventory/intake`.
+   - If credit exposure looks high, open `/credit`.
+5. **Use reports route carefully**.
+   - `/reports` exists, but output remains minimal in current build.
 
-- Treating zero values as bugs before confirming date scope
-- Ignoring low-stock flags until checkout failures start
-- Checking numbers without confirming current business context
+## If blocked
 
-## Edge cases
+- **All zeros but store has activity**:
+  - Confirm correct date and business context.
+  - Confirm transactions actually completed.
+- **Low-stock count seems wrong**:
+  - Recheck reorder threshold on flagged products.
+  - Confirm recent intakes posted or approved.
+- **Pending intakes never drop**:
+  - Intake may require approval; confirm queue path and status handling.
+- **Credit risk seems high without clear cause**:
+  - Check recent extensions and payments in `/credit` before escalating.
 
-- Fresh stores can show sparse or zero metrics until activity exists.
-- Real-time values can shift while you are actively processing sales.
+## What is beta here
 
-## Current limitations
-
-- **Reports** currently shows an empty state: "No reports yet".
+- Reports depth and export-heavy reporting remain beta-limited.
+- Core dashboard and Operations Insights metrics are live.
 
 ## Related docs
 
 - [Your products](/your-products)
+- [Payments and plans](/payments-and-plans)
 - [Your customers](/your-customers)
 - [Fixing issues](/fixing-issues)
+
+## Metric reading guardrails
+
+- Treat sharp metric swings as a signal to validate route context first.
+- Use inventory alerts as action triggers, not passive warnings.
+- Use pending intake counts to avoid selling stock that is not yet posted.
+
+## Shift-close review
+
+- Confirm day sales count is plausible for lane traffic.
+- Confirm no high-priority stock alert was ignored.
+- Confirm credit exposure changes have owner/manager visibility.
+
+## Role-based read order
+
+- **Cashier**: transaction count, low-stock alerts that block lane flow.
+- **Supervisor**: pending intakes and alert trend for current shift.
+- **Manager/owner**: day sales, average sale drift, credit exposure movement.
+
+## Escalation thresholds
+
+Escalate same shift when:
+
+- Inventory alerts jump sharply with no intake context.
+- Average sale drops hard versus normal pattern and route checks look clean.
+- Pending intake queue blocks expected stock for top sellers.
+
+## Daily close note
+
+Capture one short note each close with the top driver behind day totals. Over a week, these notes make trend review faster and reduce guesswork.

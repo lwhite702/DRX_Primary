@@ -1,42 +1,102 @@
 # Payments and plans
 
-Deelrx CRM handles transaction payments in **Sales** and account balances in **Credit Management**.
+This page explains how tender methods and customer credit behavior work in live DRX routes.
 
-## What this does
+## What this page is for
 
-- Takes payment via **Cash**, **Card**, **Credit**, **Zelle**, and **Mixed**
-- Records payment references when required
-- Tracks credit extension and payment transactions
+Use this guide when your team needs clear payment handling across normal checkout and credit follow-up work.
 
-## Why this matters
+This page focuses on **tender correctness**, **credit safety**, and **what to do when a payment path is blocked**.
 
-Payment accuracy protects cashflow and customer trust.
+## Before you start
 
-## Step-by-step
+- **Recommended role**:
+  - Cashier: normal tender handling
+  - Supervisor/manager: exception handling and credit follow-up
+- **Routes used**:
+  - `/sales`
+  - `/pos/payment`
+  - `/credit`
+  - `/sales/[id]`
+- **Live tender options**:
+  - cash
+  - card
+  - credit
+  - zelle
+  - mixed
+- **Credit rule**:
+  - Credit tender is tied to customer context and store rules.
 
-1. In **Sales**, set the **Payment Method**.
-2. Enter references for methods that need one (for example **Zelle**).
-3. Complete checkout.
-4. For account balances, open **Credit Management**.
-5. Use extension/payment dialogs to update customer credit history.
+## Fast path
 
-## Common mistakes
+1. **Select payment method** during checkout.
+2. **Enter required references** for methods that need it.
+   - Example: zelle confirmation text.
+3. **Confirm totals before submit**.
+   - Verify subtotal, tax, fees, and final amount.
+4. **Submit once and verify result**.
+   - Confirm sale success state and sale ID.
+5. **For credit activity**, open `/credit`.
+   - Record extension or payment with customer selected.
+   - Confirm updated balance and recent activity entries.
+6. **After shift close**, spot-check payment history in sale detail routes.
 
-- Posting sale as **Credit** when it should be immediate payment
-- Forgetting payment reference when required by your process
-- Not reconciling credit activity daily
+## If blocked
 
-## Edge cases
+- **No payment method selected error**:
+  - Select tender first, then submit.
+- **Credit unavailable**:
+  - Attach customer.
+  - Confirm credit eligibility and role scope.
+- **Zelle submit fails**:
+  - Enter required reference note.
+  - Retry after validating connection and payload.
+- **Mixed tender confusion in lane**:
+  - Confirm operator process and amount split policy before submit.
+- **Possible duplicate payment risk after timeout**:
+  - Check if a sale ID was already created.
+  - Do not post a second transaction until status is confirmed.
+- **Credit balance looks wrong**:
+  - Verify recent extension/payment actions in `/credit` and corresponding sale record.
 
-- Reassigning customer on credit sales may require manager/owner access.
-- Partial payment handling can affect remaining balance visibility.
+## What is beta here
 
-## Current limitations
-
-- Billing/subscription plan management is not exposed in DRX app pages.
+- Deeper export/report layers around payment analysis are beta-limited.
+- Core tender selection and credit activity routes are live.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
+- [Quick Sale runbook](/quick-sale-runbook)
 - [Your customers](/your-customers)
 - [Numbers that matter](/numbers-that-matter)
+- [Fixing issues](/fixing-issues)
+
+## Tender-specific tips
+
+- **Cash**: confirm amount handling and change process by shift policy.
+- **Card**: confirm card path completed before moving to next customer.
+- **Credit**: confirm customer and eligibility before submit.
+- **Zelle**: always record reference value for follow-up.
+- **Mixed**: confirm split math before final submit.
+
+## Closeout checks
+
+- Spot-check at least three transactions by tender type.
+- Confirm credit activity from shift is visible in `/credit`.
+- Flag any unclear tender notes before shift handoff.
+
+## Manager handoff checklist
+
+At handoff, manager confirms:
+
+- No unresolved duplicate-payment questions remain.
+- Credit entries from shift have matching context notes.
+- Zelle references are present where used.
+- Tender exceptions were reviewed and accepted.
+
+## Training notes for new cashiers
+
+- Learn one primary tender path first.
+- Practice credit path only after customer attach behavior is clear.
+- Ask for supervisor help before forcing a workaround in live lane.

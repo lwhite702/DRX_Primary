@@ -7,6 +7,7 @@ const bypassAuthEnabled =
   process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
 const target = process.env.A11Y_TARGET || "all";
 const hasClerkTestingKeys =
+  Boolean(process.env.CLERK_TESTING_TOKEN) &&
   Boolean(process.env.CLERK_SECRET_KEY) &&
   Boolean(
     process.env.CLERK_PUBLISHABLE_KEY ||

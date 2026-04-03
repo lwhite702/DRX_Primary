@@ -1,0 +1,42 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "6f9a312eba1327eb9096e3d123c680c73e4305b6",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773726375,
+  "message": "Fix Clerk provider fallback handling",
+  "files_changed": [
+    "apps/app/app/layout.tsx",
+    "apps/app/lib/adapters/auth/ui.tsx"
+  ],
+  "added": 53,
+  "deleted": 30,
+  "file_changes": [
+    {
+      "path": "apps/app/app/layout.tsx",
+      "added": 9,
+      "deleted": 20,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/adapters/auth/ui.tsx",
+      "added": 44,
+      "deleted": 10,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 53,
+  "human_deleted": 30,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -11,11 +11,30 @@ export const businessProfileSchema = z.object({
   zip_code: z.string().max(20).optional(),
   phone_number: z.string().max(20).optional(),
   email: z.string().email().optional(),
+  recovery_email: z.string().email().optional(),
   owner_id: z.string().uuid(),
   is_active: z.boolean().default(true),
+  onboarding_completed: z.boolean().default(false),
 });
 
 export type BusinessProfile = z.infer<typeof businessProfileSchema>;
+
+// Business Settings Schema
+export const businessSettingsSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  privacy_preset: z
+    .enum(["open", "balanced", "private", "max_secure"])
+    .default("balanced"),
+  supported_units: z.array(z.string()).default(["g", "oz", "lb", "L", "ml"]),
+  default_tax_rate: z.number().nonnegative().default(0.08),
+  theme_preference: z.string().optional(),
+  currency: z.string().default("USD"),
+  timezone: z.string().default("America/New_York"),
+  settings_data: z.record(z.any()).default({}),
+});
+
+export type BusinessSettings = z.infer<typeof businessSettingsSchema>;
 
 // Inventory Schemas
 export const inventorySchema = z.object({
@@ -25,7 +44,7 @@ export const inventorySchema = z.object({
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
-  unit_of_measure: z.enum(["g", "oz"]).default("g"),
+  unit_of_measure: z.enum(["g", "oz", "lb", "L", "ml"]).default("g"),
   quantity_on_hand: z.number().int().min(0).default(0),
   reorder_level: z.number().int().min(0).default(10),
   unit_cost: z.number().nonnegative().optional(),
@@ -36,39 +55,58 @@ export const inventorySchema = z.object({
 export type Inventory = z.infer<typeof inventorySchema>;
 
 // Customer Schemas
-export const customerSchema = z
-  .object({
-    id: z.string().uuid().optional(),
-    business_id: z.string().uuid(),
-    first_name: z.string().min(1).max(100),
-    last_name: z.string().max(100).optional(),
-    alias: z.string().max(100).optional(),
-    phone_number: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().max(20).optional(),
-    ),
-    email: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().email().optional(),
-    ),
-    address: z.string().optional(),
-    city: z.string().max(100).optional(),
-    state: z.string().max(50).optional(),
-    zip_code: z.string().max(20).optional(),
-    customer_type: z.string().max(50).optional(),
-    fixed_price_per_gram: z.coerce.number().nonnegative().optional().nullable(),
-    is_active: z.boolean().default(true),
-  })
-  .refine(
-    (data) => {
-      // Either phone number OR email is required (at least one must be present)
-      return !!data.phone_number || !!data.email;
-    },
-    {
-      message: "Either phone number or email is required",
-      path: ["phone_number"], // Error will appear on phone_number field
-    },
-  );
+export const customerSchema = z.object({
+  id: z.string().uuid().optional(),
+  business_id: z.string().uuid(),
+  alias: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(100).optional(),
+  ),
+  first_name: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(100).optional(),
+  ),
+  last_name: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(100).optional(),
+  ),
+  phone_number: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(20).optional(),
+  ),
+  email: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().email().optional(),
+  ),
+  address: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().optional(),
+  ),
+  notes: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().optional(),
+  ),
+  city: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(100).optional(),
+  ),
+  state: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(50).optional(),
+  ),
+  zip_code: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(20).optional(),
+  ),
+  customer_type: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().max(50).optional(),
+  ),
+  fixed_price_per_gram: z.coerce.number().nonnegative().optional().nullable(),
+  ephemeral: z.boolean().optional(),
+  ephemeral_retention_days: z.union([z.literal(1), z.literal(7), z.literal(30)]).optional(),
+  is_active: z.boolean().default(true),
+});
 
 export type Customer = z.infer<typeof customerSchema>;
 

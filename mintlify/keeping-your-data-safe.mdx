@@ -1,42 +1,88 @@
 # Keeping your data safe
 
-Deelrx CRM protects operational data with role-based access, tenant scoping, and controlled update flows.
+This page is the operator security runbook for account access and customer data handling.
 
-## What this does
+## What this page is for
 
-- Restricts sensitive actions by role and permission
-- Segments records by business context
-- Limits settings and team changes to authorized users
+Use this guide to keep account access tight, reduce avoidable data exposure, and respond quickly when a session or login pattern looks wrong.
 
-## Why this matters
+This guide is written for day-to-day operators and managers, not only technical admins.
 
-Most data incidents in store software are permission mistakes, not hacks.
+## Before you start
 
-## Step-by-step
+- **Recommended role**:
+  - Manager for routine checks
+  - Owner/super admin for high-impact actions
+- **Routes and controls used**:
+  - `/settings`
+  - `/settings/team`
+  - Session routes under security APIs
+  - Privacy controls in settings
+- **Core rule**:
+  - Shared accounts create hidden risk. Use named accounts and role limits.
 
-1. Keep role assignments current in **Team Management**.
-2. Limit who can access **Settings**, **Inventory Adjustment**, and credit actions.
-3. Require clear reasons for stock changes.
-4. Review logs and issue reports weekly.
+## Fast path
 
-## Common mistakes
+1. **Review role assignments** in `/settings/team`.
+   - Remove extra access first.
+2. **Review privacy controls** in `/settings`.
+   - Confirm field visibility and masking mode match your store policy.
+   - Confirm retention behavior for temporary profiles.
+3. **Check vault status in settings**.
+   - Confirm key state indicators are healthy.
+4. **Review active sessions**.
+   - Identify unknown device/session entries.
+   - Revoke sessions that do not match known operator use.
+5. **Handle failed login patterns**.
+   - Watch lockout events and reset workflow for affected user.
+6. **Set weekly review habit**.
+   - Roles, sessions, and data-footprint checks should be part of manager routine.
 
-- Shared operator accounts across staff
-- Leaving elevated role access active after staffing changes
-- Treating audit/history pages as optional
+## If blocked
 
-## Edge cases
+- **Cannot revoke session**:
+  - Current role likely lacks required scope.
+  - Escalate to owner/super admin.
+- **Vault status shows missing key state**:
+  - Do not ignore this.
+  - Pause sensitive customer edits and escalate immediately.
+- **Repeated lockout events for one account**:
+  - Treat as possible credential issue.
+  - Rotate password, revoke sessions, and re-check role rights.
+- **Masked fields confuse cashier flow**:
+  - Verify screen mode setting and manual mask preference.
+  - Do not disable masking globally without manager review.
 
-- Users can see page shells but still be blocked on action by permission checks.
-- Some advanced actions rely on both role and feature-specific guard logic.
+## What is beta here
 
-## Current limitations
-
-- Security analytics and policy dashboards are not exposed as dedicated DRX pages.
+- Core role, session, lockout, and privacy controls are live.
+- Some expanded security analytics views are beta-limited and should not replace manual weekly checks.
 
 ## Related docs
 
 - [Team access](/team-access)
-- [Staying compliant](/staying-compliant)
-- [Failsafe and self-destruct](/failsafe-and-self-destruct)
+- [DRX Privacy ProteXion Protocol](/drx-privacy-protexion-protocol)
+- [Your customers](/your-customers)
 - [Fixing issues](/fixing-issues)
+
+## Weekly safety routine
+
+1. Review active sessions and revoke unknown devices.
+2. Review role changes and remove stale elevated access.
+3. Check privacy profile and masking settings still match store policy.
+4. Confirm temporary profile retention is still set to intended window.
+
+## Incident response quick card
+
+- If account risk is suspected: revoke sessions, rotate credentials, and review logs.
+- If vault/key state looks wrong: pause sensitive edits and escalate.
+- If lockout repeats: treat as high-priority account event and document actions.
+
+## Manager review questions
+
+Ask these each week:
+
+- Which accounts had elevated access this week and why?
+- Were unknown sessions revoked the same day they were found?
+- Did masking settings stay in the intended mode during staffed hours?
+- Were there lockout events that suggest shared credentials or weak handoff habits?

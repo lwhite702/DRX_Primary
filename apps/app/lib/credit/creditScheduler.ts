@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { refreshAICreditRecommendation } from "./creditDecisionService";
 
 export interface SchedulerLog {
@@ -23,7 +23,7 @@ export async function refreshAllCustomerLimits(
   failed: number;
   logs: SchedulerLog[];
 }> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return { processed: 0, successful: 0, failed: 0, logs: [] };
@@ -128,7 +128,7 @@ export async function scheduleNightlyRefresh(): Promise<void> {
   // This would be called by a cron job (Vercel Cron, AWS Lambda, or similar)
   // For now, this serves as the interface that external schedulers can call
 
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     console.error("Supabase client not available for scheduler");
@@ -176,7 +176,7 @@ async function logSchedulerRun(
     logs: SchedulerLog[];
   }
 ): Promise<void> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return;

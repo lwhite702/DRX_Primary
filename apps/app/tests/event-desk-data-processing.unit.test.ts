@@ -7,8 +7,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 
 // Mock external dependencies
-vi.mock('@/lib/supabase/client', () => ({
-  getSupabaseClient: vi.fn(),
+vi.mock('@/lib/data/client/supabase-client', () => ({
+  createAppClient: vi.fn(),
 }));
 
 vi.mock('@/lib/hooks/use-business', () => ({

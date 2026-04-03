@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Loader2, Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
   const router = useRouter();
 
   useEffect(() => {

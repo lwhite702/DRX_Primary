@@ -1,0 +1,333 @@
+[
+  {
+    "id": "TC001",
+    "title": "Tenant Onboarding with Complete Required Fields",
+    "description": "Verify onboarding fails if any required business, privacy preset, unit selection, or user role field is missing, and succeeds only when all are completed.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start onboarding process for a new tenant"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to complete onboarding with missing required business information"
+      },
+      {
+        "type": "assertion",
+        "description": "Check onboarding is rejected and appropriate error messages are shown"
+      },
+      {
+        "type": "action",
+        "description": "Complete all required onboarding fields including business details, privacy presets, unit selections, and initial user roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify onboarding completes successfully and tenant is activated"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Multi-Tenant Data Isolation Enforcement",
+    "description": "Ensure tenant data is strictly isolated; users of one tenant cannot access or retrieve data from other tenants.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as User A from Tenant 1 and attempt to access Tenant 2’s inventory data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with no data leakage"
+      },
+      {
+        "type": "action",
+        "description": "Login as User B from Tenant 2 and attempt to access Tenant 1’s credit exposure reports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and no data is returned"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Inventory Intake Via Barcode and Text Search",
+    "description": "Validate inventory intake flow using both barcode scanning and product text search to add products with multiple units and input correct quantities.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to inventory intake screen"
+      },
+      {
+        "type": "action",
+        "description": "Search for a product by text and select it"
+      },
+      {
+        "type": "action",
+        "description": "Input quantity using supported multi-unit measurement"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid reason for intake"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm intake is successful and audit log entry is created with correct user, timestamp, previous and new quantities, reason, and device source"
+      },
+      {
+        "type": "action",
+        "description": "Repeat intake process using barcode scan to select product"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify intake succeeds with audit logging as above"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Inventory Adjustment with Increments, Decrements, and Absolute Setting",
+    "description": "Test inventory adjustment workflow for increment, decrement, and setting absolute quantities with enforced permission and mandatory reason.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to adjust inventory without required permission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify action is denied"
+      },
+      {
+        "type": "action",
+        "description": "Adjust inventory by incrementing quantity with valid reason and permission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify quantity is correctly updated and audit log captures all details"
+      },
+      {
+        "type": "action",
+        "description": "Adjust inventory by decrementing quantity similarly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify correctness and audit log entry"
+      },
+      {
+        "type": "action",
+        "description": "Set inventory item quantity to an absolute value"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm quantity update and audit log recorded"
+      },
+      {
+        "type": "action",
+        "description": "Try adjusting inventory without providing a reason"
+      },
+      {
+        "type": "assertion",
+        "description": "Assert adjustment is rejected with error"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Batch CSV Inventory Upload with Error Handling and Audit Logging",
+    "description": "Verify batch upload of multiple inventory rows via CSV handles valid and invalid entries properly, logs all transactions, and reports errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a CSV file with valid inventory intake rows"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm batch import completes successfully and audit logs created for each row"
+      },
+      {
+        "type": "action",
+        "description": "Upload a CSV file with some invalid rows (e.g., missing required fields, invalid quantities)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify errors reported clearly and only valid rows processed with proper audit logs"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Credit Limit Refresh and Exposure Reporting via API",
+    "description": "Validate Credit Management API endpoints for refreshing credit limits and retrieving exposure reports, ensuring accuracy and proper authorization.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send POST request to /api/credit/refresh-limits to refresh credit limits for a tenant"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify HTTP 200 response and updated credit limits"
+      },
+      {
+        "type": "action",
+        "description": "Send GET request to /api/credit/exposure-report for tenant's credit exposure"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response includes accurate exposure data"
+      },
+      {
+        "type": "action",
+        "description": "Attempt API calls without required permissions or invalid authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with appropriate error code"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "POS Operation Speed and Privacy Mode Enforcement",
+    "description": "Test POS transaction workflows ensuring sub-second response times, offline mode handling, alias auto-fill, and enforcement of configured privacy presets.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform POS sale using barcode scan and alias auto-fill with privacy preset set to alias-only mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Validate response time is under 1 second and privacy constraints are respected (e.g., customer PII obscured)"
+      },
+      {
+        "type": "action",
+        "description": "Simulate offline POS transaction"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify transaction persists locally and syncs correctly when online without duplicates or data loss"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Role-Based Access Control for Sensitive Settings and Data",
+    "description": "Ensure strict enforcement of role permissions to limit access to credit policies, inventory adjustments, audit logs, and privacy configurations.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access audit logs, credit management, or privacy settings with a user role lacking permissions"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access is denied and no data is returned"
+      },
+      {
+        "type": "action",
+        "description": "Access above resources with authorized role"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full access and ability to modify configurations where permitted"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Audit Log Accuracy, Completeness, and Tamper-Proofing",
+    "description": "Verify all inventory transactions, credit changes, and sensitive actions are logged with user identity, timestamp, previous and new values, reason, and device source within 30 seconds, and logs cannot be altered.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform inventory intake, adjustment, and credit refresh actions"
+      },
+      {
+        "type": "assertion",
+        "description": "Check audit logs for completeness and timing compliance"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to edit or delete audit log entries as a regular user"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm modification is forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Privacy Preset Enforcement Including Data Burn and Export Restrictions",
+    "description": "Validate that system applies privacy presets correctly including open CRM, max secure alias-only modes, and that data burn actions and export restrictions operate as intended.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Set privacy preset to open CRM and verify customer data is visible and exportable"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm full customer details accessible and export allowed"
+      },
+      {
+        "type": "action",
+        "description": "Change privacy preset to max secure alias-only mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify customer personal data is replaced by aliases and exports are blocked"
+      },
+      {
+        "type": "action",
+        "description": "Execute a data burn action"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm irreversible deletion of PII and audit log entry of this action"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Audit Log Retention and GDPR Compliance Including Right to be Forgotten",
+    "description": "Test compliance with GDPR including retention policies, irreversible PII deletion, and honoring user data deletion requests.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform data deletion request for a customer’s personal data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify PII is irreversibly deleted from all tenant data stores"
+      },
+      {
+        "type": "action",
+        "description": "Check audit logs for required retention periods"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm audit logs retain necessary info but exclude PII beyond retention term"
+      }
+    ]
+  }
+]
