@@ -19,25 +19,30 @@ const hasClerkMiddlewareEnv =
         process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY,
       )));
 
-function getAppOrigin(req: Request) {
+function getCurrentOrigin(req: Request) {
   const host = req.headers.get("host") ?? "";
-  if (host.includes("localhost") || host.startsWith("127.0.0.1")) {
-    const protocol = "http";
-    return `${protocol}://${host}`;
-  }
-
-  const configured = process.env.NEXT_PUBLIC_APP_URL;
-  if (configured) {
-    return configured.replace(/\/$/, "");
-  }
-
-  const fallbackHost = host || "deelrxcrm.app";
-  const protocol = fallbackHost.includes("localhost") ? "http" : "https";
-  return `${protocol}://${fallbackHost}`;
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const protocol =
+    forwardedProto ||
+    (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
+  return `${protocol}://${host || "deelrxcrm.app"}`;
 }
 
-function redirectToApp(req: Request, pathname: string) {
-  return NextResponse.redirect(new URL(pathname, getAppOrigin(req)));
+function getConfiguredAppOrigin() {
+  const configured = process.env.NEXT_PUBLIC_APP_URL;
+  return configured ? configured.replace(/\/$/, "") : "https://deelrxcrm.app";
+}
+
+function getAppOrigin(req: Request, preserveCurrentHost = false) {
+  if (preserveCurrentHost) {
+    return getCurrentOrigin(req);
+  }
+
+  return getConfiguredAppOrigin();
+}
+
+function redirectToApp(req: Request, pathname: string, preserveCurrentHost = false) {
+  return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
 }
 
 function middlewareWithoutClerk(
@@ -76,17 +81,17 @@ function middlewareWithoutClerk(
 
   if (isAuthBypassEnabled()) {
     if (pathname === "/" || isAuthEntryPath(pathname) || pathname === "/waitlist") {
-      return redirectToApp(req, "/dashboard");
+      return redirectToApp(req, "/dashboard", true);
     }
     return NextResponse.next();
   }
 
   if (pathname === "/" || isClerkUiPath(pathname)) {
-    return redirectToApp(req, "/waitlist");
+    return redirectToApp(req, "/waitlist", true);
   }
 
   if (!isPublicAppPath(pathname) && !pathname.startsWith("/api")) {
-    return redirectToApp(req, "/waitlist");
+    return redirectToApp(req, "/waitlist", true);
   }
 
   return NextResponse.next();
@@ -144,28 +149,28 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
 
       if (pathname === "/") {
         if (!userId) {
-          return redirectToApp(req, "/login");
+          return redirectToApp(req, "/login", true);
         }
 
-        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding");
+        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding", true);
       }
 
       if (userId && isAuthEntryPath(pathname)) {
-        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding");
+        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding", true);
       }
 
       if (userId && !pathname.startsWith("/api")) {
         if (!onboardingComplete && !isOnboardingPath(pathname)) {
-          return redirectToApp(req, "/onboarding");
+          return redirectToApp(req, "/onboarding", true);
         }
 
         if (onboardingComplete && isOnboardingPath(pathname)) {
-          return redirectToApp(req, "/dashboard");
+          return redirectToApp(req, "/dashboard", true);
         }
       }
 
       if (!userId && !isPublicAppPath(pathname)) {
-        const loginUrl = new URL("/login", getAppOrigin(req));
+        const loginUrl = new URL("/login", getAppOrigin(req, true));
         if (!pathname.startsWith("/api")) {
           loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
         }
