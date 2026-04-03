@@ -11,9 +11,15 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
   const initSignatureRef = useRef<string | null>(null);
+  const isAuthSurface =
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/sign-in") ||
+    pathname?.startsWith("/sign-up") ||
+    pathname?.startsWith("/waitlist");
 
   useEffect(() => {
-    if (!key) return;
+    if (!key || isAuthSurface) return;
     const signature = `${key}:${host}`;
     if (initSignatureRef.current === signature) return;
     posthog.init(key, {
@@ -26,14 +32,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       },
     });
     initSignatureRef.current = signature;
-  }, [host, key]);
+  }, [host, isAuthSurface, key]);
 
   useEffect(() => {
-    if (!key || !pathname) return;
+    if (!key || !pathname || isAuthSurface) return;
     const query = searchParams?.toString();
     const url = query ? `${pathname}?${query}` : pathname;
     posthog.capture("$pageview", { $current_url: url, path: pathname });
-  }, [key, pathname, searchParams]);
+  }, [isAuthSurface, key, pathname, searchParams]);
 
   return <>{children}</>;
 }
