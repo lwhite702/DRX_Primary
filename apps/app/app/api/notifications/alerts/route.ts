@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const AlertPayloadSchema = z.object({
@@ -10,6 +11,38 @@ const AlertPayloadSchema = z.object({
   message: z.string().min(1),
   metadata: z.unknown().optional(),
 });
+
+function isJsonValue(value: unknown): value is Prisma.InputJsonValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.every(isJsonValue);
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).every(isJsonValue);
+  }
+
+  return false;
+}
+
+function toInputJsonValue(value: unknown): Prisma.InputJsonValue | undefined {
+  if (value === undefined) return undefined;
+  if (isJsonValue(value)) return value;
+
+  try {
+    return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function POST(request: NextRequest) {
   const { userId: actorId } = await auth();
@@ -45,6 +78,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const normalizedMetadata = toInputJsonValue(payload.data.metadata);
+
     // Audit Log
     await db.systemAuditLog.create({
       data: {
@@ -56,7 +91,7 @@ export async function POST(request: NextRequest) {
           userId: targetUserId,
           type: payload.data.type,
           notificationId: notification.id,
-          metadata: payload.data.metadata,
+          ...(normalizedMetadata !== undefined ? { metadata: normalizedMetadata } : {}),
         },
       },
     });

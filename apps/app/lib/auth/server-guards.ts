@@ -79,6 +79,6 @@ export async function requireRole(role: Role) {
 export async function protectRoute(permission: Permission) {
   const allowed = await hasPermission(permission);
   if (!allowed) {
-    redirect("/sign-in");
+    redirect("/login");
   }
 }

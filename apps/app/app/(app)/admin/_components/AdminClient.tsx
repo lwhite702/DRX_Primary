@@ -24,26 +24,6 @@ export default function AdminClient() {
 
     async function fetchStats() {
       try {
-        // Check if user is admin
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          setLoading(false);
-          return;
-        }
-
-        const { data: adminCheck } = await supabase
-          .from("admin_users")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-
-        if (!adminCheck) {
-          setLoading(false);
-          return;
-        }
-
         // Fetch stats
         const [businesses, users, auditLogs, aiFailures] = await Promise.all([
           supabase.from("business_profile").select("id", { count: "exact" }),
