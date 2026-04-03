@@ -1,4 +1,5 @@
 {
   "framework": "nextjs",
-  "installCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && corepack pnpm install --no-frozen-lockfile"
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && corepack pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm exec prisma generate && pnpm run build"
 }
