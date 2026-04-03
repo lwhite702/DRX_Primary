@@ -26,7 +26,8 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { userId } = await auth();
   const params = (await Promise.resolve(searchParams)) ?? {};
-  const useClerkWidget = params.view === "clerk";
+  // Use Clerk widget by default to keep a single stable login surface.
+  const useClerkWidget = params.view !== "operator";
 
   if (userId) {
     redirect("/dashboard");
