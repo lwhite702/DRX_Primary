@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.4] - 2026-03-11
 
-### Fixed
+### Removed
 
 - **Production Build**: Removed the duplicate `/help` page so Next.js no longer resolves two routes to the same path during deployment.
 - **Auth Adapter**: Replaced the broken `@wrelik/auth/server` dependency path in the app server adapter with local Clerk session normalization so production compilation succeeds.
