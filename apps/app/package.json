@@ -48,7 +48,7 @@
     "pos:backfill-lineage": "node scripts/backfill-pos-cost-lineage.mjs"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.37.1",
+    "@clerk/nextjs": "^7.0.8",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",
