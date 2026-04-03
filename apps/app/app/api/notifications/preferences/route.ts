@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { z } from "zod";
+
+const NotificationPreferencesSchema = z.object({
+  preferences: z.record(z.string(), z.unknown()),
+});
 
 export async function POST(request: NextRequest) {
   const supabase = await createServerClient();
@@ -13,20 +17,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { userId, preferences } = body;
+  const payload = NotificationPreferencesSchema.safeParse(await request.json());
+  if (!payload.success) {
+    return NextResponse.json(
+      { error: "Invalid preferences payload", details: payload.error.flatten() },
+      { status: 400 },
+    );
+  }
 
-  const adminSupabase = createServiceRoleClient();
-
-  // Check if userId matches caller or if caller is admin/manager?
-  // Using Admin Supabase to upsert
-  const { error } = await adminSupabase
+  const { error } = await supabase
     .from("notification_preferences")
-    .upsert({ user_id: userId, preferences: preferences });
+    .upsert({ user_id: user.id, preferences: payload.data.preferences });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ userId, preferences }, { status: 201 });
+  return NextResponse.json(
+    { userId: user.id, preferences: payload.data.preferences },
+    { status: 201 },
+  );
 }

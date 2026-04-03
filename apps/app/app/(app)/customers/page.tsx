@@ -34,6 +34,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Tour } from "@/components/ui/tour";
+import {
+  getCustomerDisplayName,
+  maskPII,
+  PrivacyPreset,
+} from "@/lib/utils/privacy";
+
+type CustomerRecord = Customer & {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  alias?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  total_purchases?: number;
+  total_credit_used?: number;
+};
 
 type CustomerRecord = Customer & {
   id: string;
@@ -50,7 +69,7 @@ type CustomerRecord = Customer & {
 };
 
 export default function CustomersPage() {
-  const { business, loading: businessLoading } = useBusiness();
+  const { business, settings, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -392,12 +411,24 @@ export default function CustomersPage() {
                             href={`/customers/${customer.id}`}
                             className="font-medium text-foreground hover:underline"
                           >
-                            {customer.first_name} {customer.last_name}
+                            {getCustomerDisplayName(
+                              customer,
+                              settings?.privacy_preset as PrivacyPreset,
+                            )}
                           </Link>
                           <p className="text-sm text-muted-foreground mt-1 break-words">
-                            {customer.email ||
-                              customer.phone_number ||
-                              "No contact info"}
+                            {maskPII(
+                              customer.email,
+                              "email",
+                              settings?.privacy_preset as PrivacyPreset,
+                            ) === "- " &&
+                            maskPII(
+                              customer.phone_number,
+                              "phone",
+                              settings?.privacy_preset as PrivacyPreset,
+                            ) === "-"
+                              ? "No contact info"
+                              : `${maskPII(customer.email, "email", settings?.privacy_preset as PrivacyPreset)} • ${maskPII(customer.phone_number, "phone", settings?.privacy_preset as PrivacyPreset)}`}
                           </p>
                           {customer.alias && (
                             <p className="text-xs text-muted-foreground mt-1">
@@ -491,7 +522,10 @@ export default function CustomersPage() {
                               href={`/customers/${customer.id}`}
                               className="text-blue-600 hover:underline"
                             >
-                              {customer.first_name} {customer.last_name}
+                              {getCustomerDisplayName(
+                                customer,
+                                settings?.privacy_preset as PrivacyPreset,
+                              )}
                             </Link>
                             {customer.alias && (
                               <p className="text-xs text-muted-foreground">
@@ -500,14 +534,29 @@ export default function CustomersPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{customer.phone_number || "-"}</TableCell>
-                        <TableCell>{customer.email || "-"}</TableCell>
                         <TableCell>
-                          {customer.address
-                            ? `${customer.address}, ${customer.city || ""} ${
-                                customer.state || ""
-                              }`
-                            : "-"}
+                          {maskPII(
+                            customer.phone_number,
+                            "phone",
+                            settings?.privacy_preset as PrivacyPreset,
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {maskPII(
+                            customer.email,
+                            "email",
+                            settings?.privacy_preset as PrivacyPreset,
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {settings?.privacy_preset === "max_secure" ||
+                          settings?.privacy_preset === "private"
+                            ? "*** Redacted ***"
+                            : customer.address
+                              ? `${customer.address}, ${customer.city || ""} ${
+                                  customer.state || ""
+                                }`
+                              : "-"}
                         </TableCell>
                         <TableCell>
                           ${Number(customer.total_purchases || 0).toFixed(2)}

@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-03-30T08:36:22.552Z",
+  "generatedAt": "2026-04-01T01:01:17.985Z",
   "summary": {
-    "total": 3066,
+    "total": 3297,
     "coverage": {
-      "covered": 2835,
+      "covered": 3066,
       "partial": 0,
       "none": 231,
       "blocked": 0
     },
     "risk": {
-      "high": 1260,
+      "high": 1344,
       "medium": 462,
-      "low": 1344
+      "low": 1491
     }
   },
   "rows": [
@@ -30256,6 +30256,384 @@
       ]
     },
     {
+      "id": "apps/app/app/api/pos/preflight/route.ts:admin:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:admin:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:admin:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:cashier:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:cashier:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:cashier:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:manager:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:manager:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:manager:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:owner:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:owner:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:owner:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:staff:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:staff:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:staff:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:super_admin:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:super_admin:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:super_admin:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:supervisor:local",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:supervisor:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/pos/preflight/route.ts:supervisor:production",
+      "surface": "route",
+      "target": "apps/app/app/api/pos/preflight/route.ts",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
       "id": "apps/app/app/api/pos/products/route.ts:admin:local",
       "surface": "route",
       "target": "apps/app/app/api/pos/products/route.ts",
@@ -31753,6 +32131,384 @@
       "id": "apps/app/app/api/reports/pos-baseline/route.ts:supervisor:production",
       "surface": "route",
       "target": "apps/app/app/api/reports/pos-baseline/route.ts",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:admin:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:admin:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:admin:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:cashier:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:cashier:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:cashier:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:manager:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:manager:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:manager:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:owner:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:owner:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:owner:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:staff:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:staff:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:staff:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:super_admin:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:super_admin:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:super_admin:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:supervisor:local",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:supervisor:staging",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/app/app/api/reports/pos-reconciliation/route.ts:supervisor:production",
+      "surface": "route",
+      "target": "apps/app/app/api/reports/pos-reconciliation/route.ts",
       "role": "supervisor",
       "environment": "production",
       "integration": "prisma",
@@ -51035,6 +51791,3408 @@
       "environment": "production",
       "integration": "supabase edge",
       "risk": "medium",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/credits.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/credits.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/customers.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/customers.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/index.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/index.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/add.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/add.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/inventory/index.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/inventory/index.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "prisma",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/(tabs)/more.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/(tabs)/more.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/feedback.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/feedback.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "sentry",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/index.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/index.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "aws",
+      "risk": "low",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "admin",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "admin",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "admin",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:cashier:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "cashier",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:cashier:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "cashier",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:cashier:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "cashier",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:manager:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "manager",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:manager:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "manager",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:manager:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "manager",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:owner:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "owner",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:owner:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "owner",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:owner:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "owner",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:staff:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "staff",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:staff:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "staff",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:staff:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "staff",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:super_admin:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "super_admin",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:super_admin:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "super_admin",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:super_admin:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "super_admin",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:supervisor:local",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "supervisor",
+      "environment": "local",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:supervisor:staging",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "supervisor",
+      "environment": "staging",
+      "integration": "clerk",
+      "risk": "high",
+      "coverage": "covered",
+      "owningTests": [
+        "apps/app/tests/ai-engines.spec.ts",
+        "apps/app/tests/auth/permissions.test.ts",
+        "apps/app/tests/auth/route-classification.test.ts",
+        "apps/app/tests/customer-validation.unit.test.ts",
+        "apps/app/tests/dashboard-data-processing.unit.test.ts",
+        "apps/app/tests/data-processing-logic.test.ts"
+      ]
+    },
+    {
+      "id": "apps/mobile/app/login.tsx:supervisor:production",
+      "surface": "route",
+      "target": "apps/mobile/app/login.tsx",
+      "role": "supervisor",
+      "environment": "production",
+      "integration": "clerk",
+      "risk": "high",
       "coverage": "covered",
       "owningTests": [
         "apps/app/tests/ai-engines.spec.ts",

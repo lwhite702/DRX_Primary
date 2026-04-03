@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { TrendingUp, TrendingDown, Minus, Package, Truck } from "lucide-react";
 import { format } from "date-fns";
 
@@ -30,7 +30,7 @@ export function ProductCostBreakdown({
   const [loading, setLoading] = useState(true);
   const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
   const [latestCost, setLatestCost] = useState<CostHistoryEntry | null>(null);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     loadCostData();

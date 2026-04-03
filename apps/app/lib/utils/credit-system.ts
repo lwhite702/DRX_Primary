@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { offlineSyncManager } from "./offline-sync";
 import type { CreditTransaction } from "@/lib/validations/schemas";
 
@@ -24,7 +24,7 @@ export interface ReliabilityScore {
 }
 
 export class CreditSystem {
-  private supabase = getSupabaseClient();
+  private supabase = createAppClient();
 
   // Extend credit (front)
   async extendCredit(

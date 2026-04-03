@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Marketing + Product Engineering  
-Last Updated: 2026-03-03
+Last Updated: 2026-03-04
 
 Reference source: `/Users/lee/Projects/DRX_Primary/docs/MARKETING_TRUE_FEATURE_LIST.md`
 
@@ -54,6 +54,14 @@ Reference source: `/Users/lee/Projects/DRX_Primary/docs/MARKETING_TRUE_FEATURE_L
 | Mobile-friendly checkout | Live | "Mobile-friendly checkout workflows" | "Native offline-first mobile parity in all modules" | `apps/app/app/(operator)/pos/sale/page.tsx` |
 | Cloud-based access | Live | "Cloud-hosted app access" | "Offline sync for all modules everywhere" | `apps/app/middleware.ts` |
 | Login from anywhere | Live | "Authenticated cloud access from supported clients" | "Unlimited global access without policy constraints" | `apps/app/middleware.ts` |
+| Alias-first tracking + optional fields + no-profile checkout | Live | "Use aliases, keep PII optional, and run checkout without forced profiles" | "Real identity is required for every sale" | `apps/app/app/api/pos/customers/quick-create/route.ts`, `apps/app/components/quick-pos/customer-inline.tsx`, `apps/app/app/api/customers/[id]/route.ts` |
+| Privacy Profiles (Alias/Standard/Business CRM) | Live | "Choose privacy mode at onboarding and change it anytime" | "Privacy mode is permanent and cannot be changed" | `apps/app/components/onboarding/steps/PrivacyStep.tsx`, `apps/app/app/(app)/settings/page.tsx`, `apps/app/lib/privacy/profiles.ts` |
+| Encrypted sensitive fields | Live | "Sensitive fields are encrypted and not readable without keys" | "Data is always readable to anyone with DB access" | `apps/app/lib/privacy/crypto.ts`, `apps/app/app/api/customers/[id]/route.ts`, `apps/app/app/api/pos/customers/quick-create/route.ts` |
+| DRX Vault Mode keys not stored in DB | Live | "Keys are controlled in the operator environment, not stored in the database" | "Database stores plaintext keys" | `apps/app/lib/privacy/crypto.ts`, `apps/app/app/api/privacy/vault-status/route.ts` |
+| Minimal Data Engine inventory counts | Live | "See counts for aliases, phones, emails, addresses, and notes" | "No visibility into stored personal data" | `apps/app/lib/privacy/inventory.ts`, `apps/app/app/api/privacy/inventory/route.ts`, `apps/app/app/(app)/settings/page.tsx` |
+| ProteXion masking behavior | Live | "Mask customer details on shared screens when privacy matters" | "Masking is unavailable in operator views" | `apps/app/lib/privacy/masking.ts`, `apps/app/app/api/privacy/protexion/preferences/route.ts`, `apps/app/tests/privacy/masking.unit.test.ts` |
+| Ephemeral profile windows (24h/7d/30d) | Live | "Set temporary customer profiles to auto-delete on 24h, 7d, or 30d windows" | "All customer profiles are permanent" | `apps/app/lib/privacy/profiles.ts`, `apps/app/tests/integration/customers-ephemeral.test.ts`, `apps/app/tests/integration/pos-quick-create-ephemeral.test.ts` |
+| Data retention cleanup controls | Live | "Control retention windows and remove inactive records automatically" | "Records are kept forever with no cleanup controls" | `apps/app/lib/privacy/profiles.ts`, `apps/app/app/(app)/settings/page.tsx`, `apps/app/tests/integration/privacy-cleanup-ephemeral.test.ts` |
 
 ## Promotion Rule
 

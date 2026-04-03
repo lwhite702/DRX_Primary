@@ -1,42 +1,116 @@
 # Fixing issues
 
-Deelrx CRM gives you a fast support path through **Help & Support**, **Report a Bug**, and in-app feedback actions.
+This page is the incident playbook for frontline operators.
 
-## What this does
+## What this page is for
 
-- Covers common operator issues
-- Provides direct issue reporting from app UI
-- Keeps support context tied to actual workflow pages
+Use this guide when a live flow breaks and you need fast, repeatable steps to recover without creating extra data problems.
 
-## Why this matters
+The goal is simple: restore flow, keep records clean, and escalate with useful details.
 
-Fast issue reporting reduces downtime during live operations.
+## Before you start
 
-## Step-by-step
+- **Recommended role**: Any operator can run first checks; manager handles deeper escalations.
+- **Routes often involved**:
+  - `/pos/sale`
+  - `/sales`
+  - `/inventory`
+  - `/customers`
+  - `/insights`
+  - `/help`
+- **Escalation channel**:
+  - Use in-app issue reporting and include route + exact action + exact error text.
 
-1. Open **Help & Support**.
-2. Check known issue patterns and fixes.
-3. If unresolved, click **Report an Issue or Ask a Question**.
-4. Include the exact page, action, and visible error text.
-5. Re-test after applying the recommended fix.
+## Fast path
 
-## Common mistakes
+1. **Stop and identify route**.
+   - Name exact route and last click.
+2. **Retry once only**.
+   - Do not spam submit actions.
+3. **Confirm whether action already completed**.
+   - For checkout issues, check sale ID and history first.
+4. **Apply route-specific checks** (below).
+5. **Escalate with full context** if unresolved.
 
-- Sending "it broke" with no reproduction details
-- Not including payment method or product context for sales issues
-- Reporting inventory errors without product/SKU reference
+## If blocked
 
-## Edge cases
+### POS / Quick Sale issues
 
-- Network interruptions can fail checkout while preserving cart state.
-- Inventory and customer validation can block saves until required fields are fixed.
+- **Symptom**: Cannot complete sale
+- **Checks**:
+  - Cart has items
+  - Payment method selected
+  - Credit has attached customer and eligibility
+  - Stock not zero
+- **Recovery**:
+  - Retry once.
+  - Verify no sale ID was already created before re-submitting.
 
-## Current limitations
+### Inventory issues
 
-- Dedicated support SLA/status tracking is not displayed in DRX app pages.
+- **Symptom**: Stock mismatch or intake failure
+- **Checks**:
+  - Correct product selected
+  - Intake values valid
+  - Approval-required path acknowledged
+- **Recovery**:
+  - Avoid duplicate intake submissions.
+  - Use adjustment with clear reason after recount.
+
+### Customer issues
+
+- **Symptom**: Customer save/attach fails
+- **Checks**:
+  - Alias-only payload works as fallback
+  - No malformed fields
+  - Correct business context
+- **Recovery**:
+  - Save minimal profile first, then enrich fields.
+
+### Metrics/report issues
+
+- **Symptom**: Totals look wrong
+- **Checks**:
+  - Date scope and business context
+  - Transaction completion status
+- **Recovery**:
+  - Cross-check with sale records before reporting as system bug.
+
+### Access issues
+
+- **Symptom**: Page visible but action denied
+- **Checks**:
+  - Role permissions for action
+  - Team role assignment current
+- **Recovery**:
+  - Escalate to manager/owner for role correction.
+
+## What is beta here
+
+- Some report/export surfaces remain beta-limited and can appear minimal.
+- Core escalation flows and route-level operator recovery checks are live.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
+- [Quick Sale runbook](/quick-sale-runbook)
 - [Your products](/your-products)
+- [Your customers](/your-customers)
 - [Keeping your data safe](/keeping-your-data-safe)
+
+## Escalation payload template
+
+When opening an issue, include:
+
+- Route path
+- Last click/action
+- Exact error text
+- Whether sale ID appeared
+- Whether retry changed behavior
+- Staff role used during issue
+
+## Do-not-do list during incidents
+
+- Do not retry checkout repeatedly without status check.
+- Do not run manual stock edits to hide unresolved intake issues.
+- Do not change team roles during lane pressure unless it is required for recovery.

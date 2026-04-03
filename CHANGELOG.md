@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Build System**: Fixed root package.json build script to correctly delegate to apps/app for monorepo builds.
+- **Dependencies**: Updated @wrelik/* packages to use workspace protocol for proper monorepo resolution.
+- **Marketing App**: Added missing UI component re-exports for Button component from @deelrx/ui package.
+- **Versioning**: Synchronized version numbers across VERSION file, root package.json, and apps/app/package.json (0.5.2).
+
+### Changed
+
+- **Build Scripts**: Added `build:marketing` and `build:all` scripts to root package.json for comprehensive build support.
+
 - **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
 - **Sentry Feedback**: Fixed runtime crash on Help page by guarding feedback initialization when Sentry client is unavailable.
 - **Type/Test Stability**: Resolved app typecheck failures and aligned unit/integration tests with current adapter and schema contracts.
@@ -20,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing Gate**: Added repository audit, test matrix generation, policy enforcement, data-integrity check, security scan, performance smoke check, and full readiness report generators under `scripts/testing/*`.
 - **CI/CD**: Added unified `.github/workflows/ci-gate.yml` fail-fast workflow with artifacts for audit, E2E, security, performance, and readiness reporting.
 - **E2E Coverage**: Added Playwright accessibility and visual regression suites (`apps/app/tests/e2e/a11y.spec.ts`, `apps/app/tests/e2e/visual-regression.spec.ts`).
+- **Testing & Release Gate**: Added deterministic ownership map (`docs/testing/TEST_OWNERSHIP.json`), matrix validator (`scripts/testing/validate-matrix.ts`), cross-surface smoke checks (`scripts/testing/smoke-surfaces.ts`), and testing governance policy (`docs/testing/TESTING_POLICY.md`).
 
 ### Changed
 
@@ -28,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
 - **Test Config**: Hardened Vitest coverage thresholds (90% lines/branches/functions/statements) and expanded Playwright retention/reporting for CI diagnostics.
 - **Package Scripts**: Added canonical root testing scripts (`test:unit`, `test:integration`, `test:e2e:web`, `test:a11y`, `test:security`, `test:perf`, `test:regression`, `test:all`, `test:matrix`, `test:policy`, `test:readiness`).
+- **CI Gate**: Hardened `.github/workflows/ci-gate.yml` with matrix validation, shard-aware E2E smoke runs, deterministic artifacts, and fail-fast gate ordering.
+- **Nightly Gate**: Added `.github/workflows/ci-nightly-full-gate.yml` for full E2E/security/perf/data-integrity runs outside PR runtime budget.
+- **Supabase Migration**: Removed runtime legacy `apps/app/lib/supabase/client.ts` usage from production paths and introduced adapter-first replacements under `apps/app/lib/data/`.
 
 ### Removed
 
@@ -35,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.4] - 2026-03-11
 
-### Removed
+### Fixed
 
 - **Production Build**: Removed the duplicate `/help` page so Next.js no longer resolves two routes to the same path during deployment.
 - **Auth Adapter**: Replaced the broken `@wrelik/auth/server` dependency path in the app server adapter with local Clerk session normalization so production compilation succeeds.

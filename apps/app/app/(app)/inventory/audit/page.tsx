@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
@@ -39,7 +39,7 @@ export default function InventoryAuditPage() {
 
     const fetchLogs = async () => {
       setLoading(true);
-      const supabase = getSupabaseClient();
+      const supabase = createAppClient();
 
       // Fetch logs joined with inventory details
       // Note: This assumes RLS policies allow reading inventory_log

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@prisma/client", () => ({
   Prisma: {
     sql: (...args: unknown[]) => args,
+    join: (values: unknown[]) => values,
   },
 }));
 
@@ -33,7 +34,15 @@ vi.mock("@/lib/db", () => ({
 import { db } from "@/lib/db";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 
-const mockedDb = vi.mocked(db);
+const mockedDb = db as unknown as {
+  sales: { findMany: ReturnType<typeof vi.fn> };
+  creditLimit: { findMany: ReturnType<typeof vi.fn> };
+  systemAuditLog: { findFirst: ReturnType<typeof vi.fn> };
+  salesLineItem: { groupBy: ReturnType<typeof vi.fn> };
+  salesLineItemAllocation: { groupBy: ReturnType<typeof vi.fn> };
+  inventory: { findMany: ReturnType<typeof vi.fn> };
+  $queryRaw: ReturnType<typeof vi.fn>;
+};
 
 describe("getPosBaselineReport", () => {
   beforeEach(() => {
@@ -72,11 +81,6 @@ describe("getPosBaselineReport", () => {
         _sum: { quantity: 3, lineTotal: 180 },
       },
     ] as never);
-    mockedDb.salesLineItemAllocation.groupBy.mockResolvedValue([
-      { saleId: "sale_today", _sum: { extendedCost: 40 } },
-      { saleId: "sale_week", _sum: { extendedCost: 30 } },
-      { saleId: "sale_prev", _sum: { extendedCost: 10 } },
-    ] as never);
     mockedDb.inventory.findMany.mockResolvedValue([
       { id: "inv_1", productName: "Flower", sku: "FLOW-1" },
     ] as never);
@@ -90,7 +94,12 @@ describe("getPosBaselineReport", () => {
           reorder_level: 5,
         },
       ] as never)
-      .mockResolvedValueOnce([{ count: 1n }] as never);
+      .mockResolvedValueOnce([{ count: 1 }] as never)
+      .mockResolvedValueOnce([
+        { sale_id: "sale_today", extended_cost_sum: 40 },
+        { sale_id: "sale_week", extended_cost_sum: 30 },
+        { sale_id: "sale_prev", extended_cost_sum: 10 },
+      ] as never);
   });
 
   it("includes FIFO-backed COGS and gross profit in baseline metrics", async () => {

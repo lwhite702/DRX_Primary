@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export interface CustomerFeatures {
   customer_id: string;
@@ -208,7 +208,7 @@ export async function computeCustomerFeatures(
   business_id: string,
   current_credit_limit: number
 ): Promise<CustomerFeatures | null> {
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!supabase) {
     return null;

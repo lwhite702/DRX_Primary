@@ -25,7 +25,10 @@ export const helpCenterData: HelpArticle[] = [
       <p>Owners, Managers, and Staff.</p>
       <h3>Key Features</h3>
       <ul>
-        <li><strong>Privacy Presets:</strong> You decide data retention.</li>
+        <li><strong>Privacy Profiles:</strong> You decide data retention.</li>
+        <li><strong>Vault Mode:</strong> Encryption keys stay in your environment, never in the database.</li>
+        <li><strong>Minimal Data Engine:</strong> Monitor stored PII counts and trend changes.</li>
+        <li><strong>Ephemeral Profiles:</strong> Quick POS customers can auto-expire in 1, 7, or 30 days.</li>
         <li><strong>Offline Mode:</strong> Keep selling without Wi-Fi.</li>
       </ul>
       <h3>Common Mistakes</h3>
@@ -33,7 +36,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Tenant Basics: Businesses Stay Separate</li>
-         <li>Owner Setup: Business Info, Units, Privacy Preset</li>
+         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
       </ul>
     `,
   },
@@ -52,7 +55,7 @@ export const helpCenterData: HelpArticle[] = [
       <p>Run through this list to be ready.</p>
       <ol>
         <li>Create Business Profile.</li>
-        <li>Configure Privacy Preset.</li>
+        <li>Configure Privacy Profile.</li>
         <li>Add a Unit.</li>
         <li>Create Staff Accounts.</li>
         <li>Add Products.</li>
@@ -61,13 +64,13 @@ export const helpCenterData: HelpArticle[] = [
       <ul><li>Using Owner account for sales.</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Owner Setup: Business Info, Units, Privacy Preset</li>
+         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
          <li>Staff Roles Overview (Owner, Manager, Staff)</li>
       </ul>
     `,
   },
   {
-    title: "Owner Setup: Business Info, Units, Privacy Preset",
+    title: "Owner Setup: Business Info, Units, Privacy Profile",
     summary: "Configure your business identity and privacy settings.",
     tags: [
       "help",
@@ -82,13 +85,13 @@ export const helpCenterData: HelpArticle[] = [
       <ol>
        <li>Go to Settings > Business.</li>
        <li>Enter Name and Logo.</li>
-       <li>Set Privacy Preset (Standard, Private, Max Secure).</li>
+       <li>Set Privacy Profile (Alias Mode, Standard Mode, Business CRM Mode).</li>
       </ol>
       <h3>Fixes</h3>
       <ul><li>If logo doesn't load, check file size (< 2MB).</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Privacy Presets Explained (Open/Balanced/Private/Max Secure)</li>
+         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
          <li>Tenant Basics: Businesses Stay Separate</li>
       </ul>
     `,
@@ -187,7 +190,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>What DRX Is and How It Works</li>
-         <li>Privacy Presets Explained (Open/Balanced/Private/Max Secure)</li>
+         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
       </ul>
     `,
   },
@@ -896,7 +899,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Add a Customer (Minimal vs Full Details)</li>
-         <li>Privacy Presets Explained (Open/Balanced/Private/Max Secure)</li>
+         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
       </ul>
     `,
   },
@@ -916,7 +919,7 @@ export const helpCenterData: HelpArticle[] = [
       <p>You can create a profile with just a nickname, or add full info (Name, Phone, Email) if permitted.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Customer Visibility by Privacy Preset</li>
+         <li>Customer Visibility by Privacy Profile</li>
          <li>Customers: When You Need Them and When You Don’t</li>
       </ul>
     `,
@@ -943,7 +946,7 @@ export const helpCenterData: HelpArticle[] = [
     `,
   },
   {
-    title: "Customer Visibility by Privacy Preset",
+    title: "Customer Visibility by Privacy Profile",
     summary: "How privacy rules hide customer info.",
     tags: [
       "help",
@@ -962,7 +965,7 @@ export const helpCenterData: HelpArticle[] = [
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Privacy Presets Explained (Open/Balanced/Private/Max Secure)</li>
+         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
          <li>Sensitive Actions: Who Can Do What</li>
       </ul>
     `,
@@ -1159,7 +1162,7 @@ export const helpCenterData: HelpArticle[] = [
 
   // Privacy, Exports, Audit, Security (2)
   {
-    title: "Privacy Presets Explained (Open/Balanced/Private/Max Secure)",
+    title: "Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)",
     summary: "Choosing the right data policy for you.",
     tags: [
       "help",
@@ -1179,8 +1182,8 @@ export const helpCenterData: HelpArticle[] = [
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Owner Setup: Business Info, Units, Privacy Preset</li>
-         <li>Customer Visibility by Privacy Preset</li>
+         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
+         <li>Customer Visibility by Privacy Profile</li>
       </ul>
     `,
   },
@@ -1201,7 +1204,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Sensitive Actions: Who Can Do What</li>
-         <li>Owner Setup: Business Info, Units, Privacy Preset</li>
+         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
       </ul>
     `,
   },

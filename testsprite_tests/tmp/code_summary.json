@@ -1,0 +1,62 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js",
+    "Tailwind CSS",
+    "Supabase",
+    "PostgreSQL",
+    "Radix UI",
+    "Framer Motion",
+    "Sentry",
+    "Vitest",
+    "Playwright"
+  ],
+  "features": [
+    {
+      "name": "Credit Management API",
+      "description": "Handles credit limit refreshes, exposure reports, transactions, and customer credit status.",
+      "files": ["app/api/credit"],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Credit Management API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/credit/refresh-limits": {
+            "post": {
+              "summary": "Refresh credit limits",
+              "responses": { "200": { "description": "OK" } }
+            }
+          },
+          "/api/credit/exposure-report": {
+            "get": {
+              "summary": "Get exposure report",
+              "responses": { "200": { "description": "OK" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Inventory API",
+      "description": "Manages product inventory and intake processes.",
+      "files": ["app/api/inventory"],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Inventory API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/inventory": {
+            "get": {
+              "summary": "List inventory",
+              "responses": { "200": { "description": "OK" } }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

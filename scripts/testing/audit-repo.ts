@@ -48,6 +48,12 @@ function collectRoutes(base: string): string[] {
   const full = path.join(root, base);
   if (!fs.existsSync(full)) return [];
   const files = walk(full);
+  if (base === "apps/mobile/app") {
+    return files
+      .filter((f) => /\/[^/]+\.(tsx|ts)$/.test(f))
+      .filter((f) => !/\/_layout\.(tsx|ts)$/.test(f))
+      .sort();
+  }
   return files
     .filter((f) => /\/(page|route|loading|error|global-error|not-found)\.tsx?$/.test(f))
     .sort();

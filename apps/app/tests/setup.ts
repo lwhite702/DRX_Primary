@@ -49,8 +49,8 @@ const mockSupabaseClient = {
   },
 };
 
-vi.mock("@/lib/supabase/client", () => ({
-  getSupabaseClient: vi.fn(() => mockSupabaseClient),
+vi.mock("@/lib/data/client/supabase-client", () => ({
+  createAppClient: vi.fn(() => mockSupabaseClient),
 }));
 
 // Mock use-business hook

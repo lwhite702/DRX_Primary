@@ -115,7 +115,7 @@ export default function WorkspacesClient() {
 
         {/* Business List */}
         <div className="space-y-4">
-          {availableBusinesses.map((b, i) => {
+          {availableBusinesses.map((b: any, i: number) => {
             const mockor = getMockData(i);
             const isActive = b.id === business?.id;
 

@@ -1,0 +1,112 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "ab4ab62c45bc121866f700e9006baf43f28959dc",
+  "branch": "codex/marketing-dark-main",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1774436226,
+  "message": "feat(marketing): implement dark figma-based homepage and shared surface reskin",
+  "files_changed": [
+    "apps/marketing/app/globals.css",
+    "apps/marketing/app/layout.tsx",
+    "apps/marketing/app/page.tsx",
+    "apps/marketing/components/marketing/landing/sections.tsx",
+    "apps/marketing/components/marketing/market-footer.tsx",
+    "apps/marketing/components/marketing/site/cta-row.tsx",
+    "apps/marketing/components/marketing/site/nav-config.ts",
+    "apps/marketing/components/marketing/site/page-frame.tsx",
+    "apps/marketing/components/marketing/site/section-block.tsx",
+    "apps/marketing/components/marketing/site/site-footer.tsx",
+    "apps/marketing/components/marketing/site/site-header.tsx",
+    "apps/marketing/lib/marketing-content.ts"
+  ],
+  "added": 684,
+  "deleted": 587,
+  "file_changes": [
+    {
+      "path": "apps/marketing/app/globals.css",
+      "added": 54,
+      "deleted": 353,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/app/layout.tsx",
+      "added": 7,
+      "deleted": 7,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/app/page.tsx",
+      "added": 9,
+      "deleted": 51,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/landing/sections.tsx",
+      "added": 350,
+      "deleted": 74,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/market-footer.tsx",
+      "added": 27,
+      "deleted": 47,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/cta-row.tsx",
+      "added": 4,
+      "deleted": 4,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/nav-config.ts",
+      "added": 8,
+      "deleted": 11,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/page-frame.tsx",
+      "added": 17,
+      "deleted": 3,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/section-block.tsx",
+      "added": 1,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/site-footer.tsx",
+      "added": 38,
+      "deleted": 19,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/components/marketing/site/site-header.tsx",
+      "added": 15,
+      "deleted": 17,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/marketing/lib/marketing-content.ts",
+      "added": 154,
+      "deleted": 0,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 684,
+  "human_deleted": 587,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

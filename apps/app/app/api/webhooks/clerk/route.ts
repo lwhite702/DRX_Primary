@@ -108,6 +108,40 @@ export async function POST(req: Request) {
       // But for now, we follow the schema: User belongs to Tenant.
     }
 
+    if (
+      eventType === "session.created" ||
+      eventType === "session.ended" ||
+      eventType === "session.removed" ||
+      eventType === "session.revoked"
+    ) {
+      const sessionData = evt.data as Record<string, any>;
+      const latestActivity = sessionData.latest_activity || {};
+      const userId = sessionData.user_id || sessionData.userId;
+      const sessionId = sessionData.id || sessionData.session_id;
+
+      if (userId && sessionId) {
+        await prisma.authSessionEvent.create({
+          data: {
+            userId,
+            sessionId,
+            eventType,
+            ipAddress: latestActivity.ip_address || sessionData.ip_address || null,
+            userAgent:
+              latestActivity.user_agent ||
+              sessionData.user_agent ||
+              null,
+            deviceType:
+              latestActivity.device_type ||
+              sessionData.device_type ||
+              null,
+            city: latestActivity.city || sessionData.city || null,
+            country: latestActivity.country || sessionData.country || null,
+            metadata: sessionData,
+          },
+        });
+      }
+    }
+
     // Additional events: organizationMembership.created to sync roles/invites.
   } catch (error) {
     console.log("Webhook error: ", error);

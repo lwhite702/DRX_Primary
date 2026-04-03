@@ -1,45 +1,94 @@
 # Your products
 
-Deelrx CRM manages products through **Inventory**, **Inventory Intake**, **Inventory Adjustment**, and **Inventory Audit Log**.
+This page is the daily product and stock operating guide for DRX.
 
-## What this does
+## What this page is for
 
-- Add and edit products
-- Record intake cost and received weight
-- Adjust stock with reasons
-- Keep a log of stock movement
-- Manage nickname mappings in **Product Aliases**
+Use this guide to keep your catalog clean, stock counts accurate, and lane sell-through smooth.
 
-## Why this matters
+It covers how product records, intake records, adjustments, and audit history work together.
 
-Clean product data keeps sales fast and protects your margins.
+## Before you start
 
-## Step-by-step
+- **Recommended role**:
+  - Cashier: view and sell
+  - Manager/supervisor: intake and stock corrections
+- **Routes used in this flow**:
+  - `/inventory`
+  - `/inventory/intake`
+  - `/inventory/adjust`
+  - `/inventory/audit`
+- **Required data**:
+  - SKU and product name
+  - Unit and price
+  - Initial stock or intake plan
+- **Important habit**:
+  - Use intake and adjust routes instead of side edits when possible.
 
-1. Open **Inventory** and create products.
-2. Use **Inventory Intake** for incoming stock and supplier/cost entry.
-3. Use **Inventory Adjustment** for corrections with a reason.
-4. Review **Inventory Audit Log** for change history.
-5. Use **Manage Aliases** when your team uses unit nicknames.
+## Fast path
 
-## Common mistakes
+1. **Create or review product records** in `/inventory`.
+   - Confirm SKU, name, and base sell values.
+   - Confirm product can appear in lane search.
+2. **Receive stock** in `/inventory/intake`.
+   - Select product.
+   - Enter total cost, total received weight, optional supplier, optional delivery cost.
+   - Confirm cost-per-unit calculation before submit.
+3. **Handle intake result**.
+   - If intake posts right away, verify quantity update in inventory list.
+   - If intake requires approval, track pending status and wait for manager action.
+4. **Correct stock when needed** in `/inventory/adjust`.
+   - Use clear reason text.
+   - Use decrease, increase, or set-to action carefully.
+5. **Review trail** in `/inventory/audit`.
+   - Confirm each stock movement has clear context.
+   - Use this route after any dispute.
+6. **Pre-shift low-stock check**.
+   - Review low-stock indicators before counter opens.
+   - Refill or adjust before lane pressure starts.
 
-- Manually editing around intake instead of recording intake properly
-- Skipping reasons on adjustments
-- Forgetting to verify unit mappings before selling by weight
+## If blocked
 
-## Edge cases
+- **Intake submit fails**:
+  - Check product selection is valid.
+  - Check cost and weight are positive values.
+  - Retry once, then capture route + payload for support.
+- **Intake says approval required**:
+  - This is expected in some stores.
+  - Do not re-submit duplicate intake entries.
+  - Move pending item through approval workflow.
+- **Cart cannot sell item that looks in stock**:
+  - Re-open product and verify current quantity and unit mapping.
+  - Check business context did not switch.
+- **Audit trail has unclear entries**:
+  - Team is likely using vague reason text.
+  - Update shift policy: reason must explain what changed and why.
+- **Alias/nickname search misses product**:
+  - Check `/settings/inventory/aliases` for duplicates or disabled entries.
 
-- Intake can route to approval flow when required.
-- Out-of-stock items are blocked from cart add.
-- Deleted products may appear as historical records in logs.
+## What is beta here
 
-## Current limitations
-
-- **Reports** currently does not expose full inventory reporting pages.
+- Purchase-order style rollups and deep export layers are beta-limited.
+- Core inventory create/intake/adjust/audit routes are live and should be used for day-to-day operations.
 
 ## Related docs
 
-- [Staying compliant](/staying-compliant)
 - [How sales work](/how-sales-work)
+- [Quick Sale runbook](/quick-sale-runbook)
 - [Numbers that matter](/numbers-that-matter)
+- [Stay audit-ready](/staying-compliant)
+- [Fixing issues](/fixing-issues)
+
+## Shift checklist
+
+- Check low-stock flags before opening lane.
+- Confirm one recent intake posted as expected.
+- Confirm adjustment reason quality from prior shift.
+- Confirm at least one top seller has accurate quantity.
+- Confirm alias mappings still match what staff say at the counter.
+
+## Team quality standards
+
+- Every adjustment reason must explain cause, not just outcome.
+- Intake entries should include enough cost detail for manager review.
+- If a SKU repeatedly drifts, open a manager-level review and stop patching the same item silently.

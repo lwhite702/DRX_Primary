@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = createAppClient();
     if (!supabase) {
       return NextResponse.json(
         { error: "Supabase client not available" },

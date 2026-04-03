@@ -1,19 +1,15 @@
 import { getCreditExposureReport } from "@/lib/credit/creditDecisionService";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const business_id = searchParams.get("business_id");
-
-    if (!business_id) {
-      return NextResponse.json(
-        { error: "Missing business_id parameter" },
-        { status: 400 }
-      );
+    const { businessId } = await resolveAuthContext();
+    if (!businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const report = await getCreditExposureReport(business_id);
+    const report = await getCreditExposureReport(businessId);
 
     return NextResponse.json(report, { status: 200 });
   } catch (error) {

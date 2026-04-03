@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import {
   Building2,
   Users,
@@ -29,7 +29,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);

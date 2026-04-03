@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
@@ -33,7 +33,7 @@ export function BusinessesClient() {
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (!supabase) {

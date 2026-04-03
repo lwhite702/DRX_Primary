@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, TrendingDown, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { type PricingRecommendation } from "@/lib/utils/pricing-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 interface PricingRecommendationCardProps {
   recommendation: PricingRecommendation | null;
@@ -30,7 +30,7 @@ export function PricingRecommendationCard({
   onApplied,
 }: PricingRecommendationCardProps) {
   const [applying, setApplying] = useState(false);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!recommendation) {
     return null;

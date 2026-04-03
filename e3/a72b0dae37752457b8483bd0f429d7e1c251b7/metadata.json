@@ -1,0 +1,112 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "e3a72b0dae37752457b8483bd0f429d7e1c251b7",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773725044,
+  "message": "Add FIFO cost lineage to POS checkout and reports",
+  "files_changed": [
+    "apps/app/app/(app)/reports/page.tsx",
+    "apps/app/app/(app)/sales/[id]/page.tsx",
+    "apps/app/app/api/inventory/intake/approve/route.ts",
+    "apps/app/app/api/inventory/intake/route.ts",
+    "apps/app/app/api/sales/[id]/route.ts",
+    "apps/app/db/migrations/20260316000001_inventory_fifo_batches.sql",
+    "apps/app/lib/pos/core.ts",
+    "apps/app/lib/reports/pos-baseline.ts",
+    "apps/app/prisma/schema.prisma",
+    "apps/app/tests/pos/core.test.ts",
+    "apps/app/tests/pos/sales-detail-route.test.ts",
+    "apps/app/tests/reports/pos-baseline.test.ts"
+  ],
+  "added": 1089,
+  "deleted": 76,
+  "file_changes": [
+    {
+      "path": "apps/app/app/(app)/reports/page.tsx",
+      "added": 202,
+      "deleted": 8,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/sales/[id]/page.tsx",
+      "added": 22,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/inventory/intake/approve/route.ts",
+      "added": 12,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/inventory/intake/route.ts",
+      "added": 20,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/sales/[id]/route.ts",
+      "added": 37,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/db/migrations/20260316000001_inventory_fifo_batches.sql",
+      "added": 84,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/pos/core.ts",
+      "added": 198,
+      "deleted": 47,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/reports/pos-baseline.ts",
+      "added": 49,
+      "deleted": 3,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/prisma/schema.prisma",
+      "added": 98,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/core.test.ts",
+      "added": 189,
+      "deleted": 16,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/pos/sales-detail-route.test.ts",
+      "added": 51,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/tests/reports/pos-baseline.test.ts",
+      "added": 127,
+      "deleted": 0,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 1089,
+  "human_deleted": 76,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -14,6 +14,7 @@ import {
   setTaxAmount,
 } from "@/lib/pos/core";
 import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
+import { buildCheckoutFailure, buildCheckoutSuccess } from "@/lib/pos/response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,21 +82,11 @@ export async function POST(request: NextRequest) {
 
     const result = await checkout(cart, body.idempotencyKey || randomUUID());
 
-    return NextResponse.json({
-      success: true,
-      sale_id: result.saleId,
-      order_number: result.orderNumber,
-      total_amount: result.total,
-      change_amount: result.changeAmount,
-    });
+    return NextResponse.json(buildCheckoutSuccess(result));
   } catch (error) {
     const status = error instanceof PosCheckoutError ? error.status : 400;
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Checkout failed",
-      },
-      { status },
-    );
+    return NextResponse.json(buildCheckoutFailure(error instanceof Error ? error.message : "Checkout failed"), {
+      status,
+    });
   }
 }

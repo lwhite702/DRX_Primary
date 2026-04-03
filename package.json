@@ -29,12 +29,24 @@
     "verify:tarballs": "cd apps/app && node scripts/verify-tarballs.mjs",
     "wrelik:refresh": "cd apps/app && node scripts/refresh-wrelik.mjs",
     "seed:demo": "pnpm --filter deelrxcrm-app seed:demo",
+    "drx:rotate-pii-key": "pnpm --filter deelrxcrm-app drx:rotate-pii-key",
     "start": "pnpm --filter deelrxcrm-app start",
     "test": "vitest",
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:repo-hygiene": "pnpm dlx tsx scripts/testing/repo-hygiene-check.ts",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
+    "test:observability-contract": "pnpm dlx tsx scripts/testing/observability-contract-check.ts",
+    "test:doppler-sync": "pnpm dlx tsx scripts/testing/doppler-env-sync-check.ts",
+    "doppler:sync:missing": "pnpm dlx tsx scripts/testing/doppler-sync-missing-from-env.ts",
+    "test:feature-flags-contract": "pnpm dlx tsx scripts/testing/feature-flags-parity-check.ts",
+    "test:metadata-contract": "pnpm dlx tsx scripts/testing/metadata-seo-contract-check.ts",
+    "test:login-surfaces": "pnpm dlx tsx scripts/testing/login-surface-check.ts",
+    "test:coverage:strict": "pnpm test:matrix && pnpm dlx tsx scripts/testing/coverage-strict-gate.ts",
+    "test:feature-freeze": "pnpm dlx tsx scripts/testing/feature-freeze.ts",
+    "test:feature-freeze:write": "pnpm dlx tsx scripts/testing/feature-freeze.ts --write-baseline",
+    "test:feature-lock": "pnpm dlx tsx scripts/testing/feature-lock.ts",
     "test:unit": "pnpm --filter deelrxcrm-app test:coverage",
     "test:integration": "pnpm --filter deelrxcrm-app test:integration",
     "test:e2e:web": "pnpm --filter deelrxcrm-app test:e2e",
@@ -50,7 +62,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint:copy": "node scripts/copy-lint.js"
+    "lint:copy": "node scripts/copy-lint.js",
+    "test:docs:mintlify": "node --experimental-strip-types scripts/testing/mintlify-docs-audit.ts || pnpm dlx tsx scripts/testing/mintlify-docs-audit.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
@@ -127,8 +140,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "3.25.76",
-    "@clerk/nextjs": "^6.37.1"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

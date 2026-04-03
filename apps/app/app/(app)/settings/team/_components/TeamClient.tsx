@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export default function TeamClient() {
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (business?.id) {

@@ -1,39 +1,53 @@
 # Failsafe and self-destruct
 
-Deelrx CRM includes operational failsafes. DRX does not provide a one-click "self-destruct" control in normal operator workflows.
+This page explains what safeguards are real in DRX and what is not a normal operator feature.
 
-## What exists today (verified)
+## What this page is for
 
-- **Offline transaction queue**: When internet drops, supported transactions are stored locally and synced when connection returns.
-- **Retry control**: Sync retries are capped to prevent infinite loops on broken payloads.
-- **Permission guards**: Sensitive pages/actions enforce role-based access.
-- **Audit trail**: Inventory and credit actions are logged for review.
-- **RTBF deletion path**: Owner/super admin deletion workflow exists for user removal use cases.
+Use this guide when a team member asks for a "panic wipe" or assumes the app has one-click destructive controls.
 
-## What "self-destruct" means in DRX right now
+This page prevents dangerous mistakes by separating live safeguards from unsupported assumptions.
 
-- There is no operator-facing feature that destroys the entire business workspace in one action.
-- Security copy in auth screens references **Auto-Wipe** behavior for local/session handling.
-- Treat any destructive request as controlled admin/legal workflow, not a day-to-day store action.
+## Before you start
 
-## Step-by-step: safe response during incidents
+- **Recommended role**: Manager or owner for any destructive request review.
+- **Routes involved**:
+  - `/help`
+  - `/inventory/audit`
+  - session and account admin routes
+- **Ground rule**:
+  - Do not run destructive account actions during lane pressure without owner review.
 
-1. Stop high-risk actions (checkout overrides, bulk adjustments).
-2. Confirm user role and business context.
-3. Capture logs and exact error details.
-4. Use **Report a Bug** with full reproduction notes.
-5. Escalate to owner/super admin for any account deletion or legal hold decision.
+## Fast path
 
-## Common mistakes
+1. **Confirm incident type**.
+   - Data error, account risk, device loss, or legal request.
+2. **Pause risky actions**.
+   - Stop manual overrides until issue is understood.
+3. **Use live safeguards**.
+   - Session revoke for account concerns.
+   - Audit review for stock/sale disputes.
+   - Support escalation for route failures.
+4. **Escalate destructive requests**.
+   - Owner/super admin decides if deletion path is required.
+5. **Document action and outcome**.
+   - Keep a clear trail for handoff.
 
-- Assuming offline queue means all actions are always recoverable
-- Treating auth-screen security copy as a universal destructive control
-- Running deletions before audit/legal review
+## If blocked
 
-## Current limitations
+- **Team asks for full workspace destruction button**:
+  - That is not a normal operator feature.
+  - Use controlled admin/legal process.
+- **Assumption that offline queue means full rollback**:
+  - Offline queue helps continuity but does not replace careful incident handling.
+- **Unclear whether user deletion is appropriate**:
+  - Pause and escalate before action.
+  - Confirm legal and business policy path.
 
-- No exposed operator button for full workspace wipe/destruction.
-- RTBF/deletion flows are restricted and should be treated as controlled admin actions.
+## What is beta here
+
+- Core safeguard behavior listed here is live.
+- Some broader incident analytics views are beta-limited and should not replace route-level checks.
 
 ## Related docs
 
