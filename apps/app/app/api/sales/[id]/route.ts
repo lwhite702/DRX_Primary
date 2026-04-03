@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "../../pos/_lib/server";
 
+function toNumber(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (value && typeof value === "object" && "toNumber" in value) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
@@ -20,6 +29,15 @@ export async function GET(
         items: {
           include: {
             inventory: true,
+            allocations: {
+              include: {
+                batch: {
+                  include: {
+                    intake: true,
+                  },
+                },
+              },
+            },
           },
         },
         customer: true,
@@ -30,7 +48,25 @@ export async function GET(
       return NextResponse.json({ error: "Sale not found" }, { status: 404 });
     }
 
-    return NextResponse.json(sale);
+    const costOfGoodsSold = sale.items.reduce((sum, item) => {
+      const allocationCost = (item.allocations ?? []).reduce(
+        (allocationSum, allocation) => allocationSum + toNumber(allocation.extendedCost),
+        0,
+      );
+      return sum + allocationCost;
+    }, 0);
+    const totalRevenue = toNumber(sale.totalAmount);
+    const grossProfit = totalRevenue - costOfGoodsSold;
+    const grossMarginPercent = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+
+    return NextResponse.json({
+      ...sale,
+      costSummary: {
+        costOfGoodsSold: Number(costOfGoodsSold.toFixed(4)),
+        grossProfit: Number(grossProfit.toFixed(4)),
+        grossMarginPercent: Number(grossMarginPercent.toFixed(2)),
+      },
+    });
   } catch (error) {
     console.error("GET Sale Error:", error);
     return NextResponse.json(

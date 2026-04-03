@@ -136,11 +136,13 @@ function SheetDescription({
 export {
   Sheet,
   SheetTrigger,
+  // Intentionally re-exported as part of the shared sheet primitive surface.
   SheetClose,
   SheetPortal,
   SheetOverlay,
   SheetContent,
   SheetHeader,
+  // Intentionally re-exported for composition by consumers with custom layouts.
   SheetFooter,
   SheetTitle,
   SheetDescription,

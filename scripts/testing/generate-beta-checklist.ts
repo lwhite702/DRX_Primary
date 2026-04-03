@@ -8,18 +8,19 @@ const content = `# BETA_LAUNCH_CHECKLIST
 
 Generated: ${new Date().toISOString()}
 
-## Beta Launch Rule
-- Beta may ship only if **Gate 0, Gate 1, Gate 2, and Gate 3** pass at **100%**.
+## Beta Launch Rule (Hybrid Gates)
+- Beta may ship only if all required gates pass at 100%.
 - Any failure in required gates is an automatic **NO-GO**.
+- Advisory gates must run and produce artifacts, but do not block beta ship.
 
 ## Gate Verification
 - [ ] Gate 0 — Build Stability (Required): install determinism, lint, typecheck, build
 - [ ] Gate 1 — Auth Stability (Required): routing/session/onboarding behavior
 - [ ] Gate 2 — Environment Discipline (Required): policy + matrix discipline checks
 - [ ] Gate 3 — Data Integrity (Required): POS contract + transactional integrity checks
-- [ ] Gate 4 — Permissions + Audit (Optional): role behavior and audit trails
-- [ ] Gate 5 — Observability (Optional): security + performance smoke checks
-- [ ] Gate 6 — UX Readiness (Optional): e2e + accessibility checks
+- [ ] Gate 6 — UX Readiness (Required): e2e flow + visual regression + accessibility checks
+- [ ] Gate 4 — Permissions + Audit (Advisory): role behavior and audit trails
+- [ ] Gate 5 — Observability (Advisory): security + performance smoke checks
 
 ## Release Controls
 - [ ] Feature freeze confirmation

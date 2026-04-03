@@ -200,8 +200,8 @@ export default async function RegisterPage() {
           </div>
 
           <div className="text-[8px] text-muted-foreground/30 font-mono uppercase">
-            DRX OPERATOR CONSOLE v2.4.1 <br />
-            BUILD 20260131.0722
+            DRX OPERATOR CONSOLE <br />
+            BETA ACCESS
           </div>
         </div>
       </div>

@@ -1,26 +1,53 @@
 import { useEffect, useState } from "react";
 // import { db } from "@wrelik/db/server";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 let didLogRealtimeBlock = false;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RealtimeChannelLike = any;
 
+// Normalize Prisma/camelCase API payloads to the legacy snake_case client shape
+// that existing pages still expect while we finish the adapter migration.
+function normalizeInventoryItem(item: any) {
+  if (!item || typeof item !== "object") return item;
+  return {
+    ...item,
+    id: item.id,
+    sku: item.sku ?? null,
+    product_name: item.product_name ?? item.productName ?? "",
+    productName: item.productName ?? item.product_name ?? "",
+    quantity_on_hand: item.quantity_on_hand ?? item.quantityOnHand ?? 0,
+    quantityOnHand: item.quantityOnHand ?? item.quantity_on_hand ?? 0,
+    reorder_level: item.reorder_level ?? item.reorderLevel ?? 0,
+    reorderLevel: item.reorderLevel ?? item.reorder_level ?? 0,
+    unit_of_measure: item.unit_of_measure ?? item.unitOfMeasure ?? "g",
+    unitOfMeasure: item.unitOfMeasure ?? item.unit_of_measure ?? "g",
+    business_id: item.business_id ?? item.businessId ?? null,
+    businessId: item.businessId ?? item.business_id ?? null,
+    created_at: item.created_at ?? item.createdAt ?? null,
+    createdAt: item.createdAt ?? item.created_at ?? null,
+    updated_at: item.updated_at ?? item.updatedAt ?? null,
+    updatedAt: item.updatedAt ?? item.updated_at ?? null,
+  };
+}
+
+function normalizeInventoryPayload(payload: any): any[] {
+  const rows = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+  return rows.map(normalizeInventoryItem);
+}
+
 function openRealtimeChannel(name: string): RealtimeChannelLike | null {
-  try {
-    const realtime = getSupabaseClient() as any;
-    return realtime.channel(name);
-  } catch (error) {
-    if (!didLogRealtimeBlock) {
-      didLogRealtimeBlock = true;
-      console.warn(
-        "[realtime] Legacy Supabase realtime channel disabled for this path. Initial data loads will continue without live updates.",
-        error,
-      );
-    }
-    return null;
+  if (!didLogRealtimeBlock) {
+    didLogRealtimeBlock = true;
+    console.warn(
+      `[realtime] live channel '${name}' disabled until @wrelik realtime adapter migration is complete. Falling back to API snapshots.`,
+    );
   }
+  return null;
 }
 
 // Mock db to prevent server-side imports in client bundle
@@ -41,7 +68,11 @@ export function useRealtimeInventory(business_id: string | null) {
     fetch(`/api/inventory?business_id=${business_id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data) setInventory(data);
+        setInventory(normalizeInventoryPayload(data));
+      })
+      .catch((error) => {
+        console.warn("[realtime] Failed to load inventory snapshot", error);
+        setInventory([]);
       });
 
     // Subscribe to changes via @wrelik/db realtime
@@ -58,11 +89,16 @@ export function useRealtimeInventory(business_id: string | null) {
         },
         (payload: any) => {
           if (payload.eventType === "INSERT") {
-            setInventory((prev) => [...prev, payload.new]);
+            setInventory((prev) => [
+              ...prev,
+              normalizeInventoryItem(payload.new),
+            ]);
           } else if (payload.eventType === "UPDATE") {
             setInventory((prev) =>
               prev.map((item) =>
-                item.id === payload.new.id ? payload.new : item,
+                item.id === payload.new.id
+                  ? normalizeInventoryItem(payload.new)
+                  : item,
               ),
             );
           } else if (payload.eventType === "DELETE") {
@@ -198,13 +234,10 @@ export function useRealtimeCustomers(business_id: string | null) {
     if (!business_id) return;
 
     // Initial fetch
-    db.customer
-      .findMany({
-        where: { business_id },
-        orderBy: { first_name: "asc" },
-      })
+    fetch(`/api/customers?business_id=${business_id}`)
+      .then((res) => res.json())
       .then((data) => {
-        if (data) setCustomers(data);
+        if (data && data.data) setCustomers(data.data);
       });
 
     // Subscribe to changes

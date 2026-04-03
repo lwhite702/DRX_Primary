@@ -5,7 +5,6 @@ import {
   createRouteMatcher,
 } from "@clerk/nextjs/server";
 import type { WebhookEvent as ClerkWebhookEvent } from "@clerk/nextjs/server";
-import { fromClerkAuth } from "@wrelik/auth/server";
 import type { WorkflowSession } from "@wrelik/auth/shared";
 import {
   BYPASS_AUTH_ORG_ID,
@@ -16,6 +15,24 @@ import {
 export { clerkClient, clerkMiddleware, createRouteMatcher };
 export type WebhookEvent = ClerkWebhookEvent;
 export const isAuthBypassEnabled = isAuthBypassEnabledServer;
+
+function fromClerkAuth(
+  authState: Awaited<ReturnType<typeof clerkAuth>>,
+): WorkflowSession {
+  if (!authState?.userId) {
+    return { userId: null, tenantId: null, roles: [] };
+  }
+
+  const roles = Array.isArray((authState.sessionClaims as any)?.publicMetadata?.roles)
+    ? ((authState.sessionClaims as any).publicMetadata.roles as string[])
+    : [];
+
+  return {
+    userId: authState.userId,
+    tenantId: authState.orgId ?? null,
+    roles,
+  };
+}
 
 function getBypassAuthState() {
   return {

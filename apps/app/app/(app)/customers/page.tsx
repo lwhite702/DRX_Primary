@@ -25,8 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { Plus, Edit, Search, User, UserX } from "lucide-react";
+import { Plus, Edit, Search, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
@@ -36,13 +35,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Tour } from "@/components/ui/tour";
 
+type CustomerRecord = Customer & {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  alias?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  total_purchases?: number;
+  total_credit_used?: number;
+};
+
 export default function CustomersPage() {
   const { business, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = getSupabaseClient();
 
   const {
     register,
@@ -58,30 +70,34 @@ export default function CustomersPage() {
   });
 
   const onSubmit = async (data: Customer) => {
-    if (!business?.id || !supabase) {
+    if (!business?.id) {
       toast.error("Business not found");
       return;
     }
 
     const promise = async () => {
-      if (editingCustomer?.id) {
-        const { error } = await supabase
-          .from("customers")
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingCustomer.id);
-        if (error) throw error;
-        return "Customer updated successfully";
-      } else {
-        const { error } = await supabase.from("customers").insert({
+      const url = editingCustomer?.id
+        ? `/api/customers/${editingCustomer.id}`
+        : "/api/customers";
+      const method = editingCustomer?.id ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           ...data,
           business_id: business.id,
-        });
-        if (error) throw error;
-        return "Customer added successfully";
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to save customer");
       }
+
+      return editingCustomer?.id
+        ? "Customer updated successfully"
+        : "Customer added successfully";
     };
 
     toast.promise(promise(), {
@@ -93,10 +109,6 @@ export default function CustomersPage() {
         return message;
       },
       error: (error) => {
-        // Handle Supabase errors which differ from standard Error objects
-        if (typeof error === "object" && error !== null && "message" in error) {
-          return (error as any).message;
-        }
         return error instanceof Error
           ? error.message
           : "Failed to save customer";
@@ -104,7 +116,7 @@ export default function CustomersPage() {
     });
   };
 
-  const handleEdit = (customer: any) => {
+  const handleEdit = (customer: CustomerRecord) => {
     setEditingCustomer(customer);
     reset(customer);
     setShowDialog(true);
@@ -119,7 +131,7 @@ export default function CustomersPage() {
     setShowDialog(true);
   };
 
-  const filteredCustomers = customers.filter(
+  const filteredCustomers = (customers as CustomerRecord[]).filter(
     (customer) =>
       customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,7 +158,13 @@ export default function CustomersPage() {
   if (!business) {
     return (
       <div className="p-4 md:p-8">
-        No business found. Please set up your business first.
+        <EmptyState
+          icon={UserX}
+          title="No business found"
+          description="Complete onboarding first so customer profiles can be attached to a business."
+          actionLabel="Go to onboarding"
+          onAction={() => (window.location.href = "/onboarding")}
+        />
       </div>
     );
   }
@@ -332,6 +350,7 @@ export default function CustomersPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-[#FFD700]/50 text-foreground rounded-lg tracking-wider"
+            aria-label="Search customers"
           />
         </div>
       </div>
@@ -390,7 +409,7 @@ export default function CustomersPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEdit(customer)}
-                          aria-label="Edit customer"
+                          aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -501,6 +520,7 @@ export default function CustomersPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEdit(customer)}
+                            aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

@@ -4,6 +4,7 @@ import { DollarSign, Package, CreditCard, User } from "lucide-react";
 
 interface ActivityTimelineProps {
   activities: ActivityItem[];
+  compact?: boolean;
 }
 
 const getIcon = (type: ActivityItem["type"]) => {
@@ -36,30 +37,31 @@ const getColor = (type: ActivityItem["type"]) => {
   }
 };
 
-export function ActivityTimeline({ activities }: ActivityTimelineProps) {
+export function ActivityTimeline({ activities, compact = false }: ActivityTimelineProps) {
   if (!activities.length) return null;
+  const visibleActivities = compact ? activities.slice(0, 5) : activities;
 
   return (
-    <div className="space-y-4">
-      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
+    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)] md:p-5">
+      <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
         SECTION D: RECENT ACTIVITY TIMELINE
       </div>
 
       <div className="space-y-1">
-        {activities.map((item) => (
+        {visibleActivities.map((item) => (
           <div
             key={item.id}
-            className="group p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5 flex items-start gap-4"
+            className="group flex items-start gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-white/10 hover:bg-white/5"
           >
             <div className={`p-2 rounded-full shrink-0 ${getColor(item.type)}`}>
               {getIcon(item.type)}
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-bold text-white">{item.title}</h4>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-white/75">
                 {item.description}
               </p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">
+              <p className="mt-1 text-[10px] text-white/55">
                 {new Date(item.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -70,9 +72,9 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
         ))}
       </div>
 
-      <button className="w-full text-[10px] font-bold text-muted-foreground hover:text-white py-2 text-center uppercase tracking-widest">
+      <button className="w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white">
         View Full Activity Log →
       </button>
-    </div>
+    </section>
   );
 }

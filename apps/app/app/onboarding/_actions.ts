@@ -1,6 +1,10 @@
 "use server";
 
 import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import {
+  getDefaultPinnedItemsForPreset,
+  type DashboardViewPreset,
+} from "@/lib/auth/dashboard-preferences";
 import { redirect } from "next/navigation";
 
 export async function completeOnboarding(formData: FormData) {
@@ -14,6 +18,11 @@ export async function completeOnboarding(formData: FormData) {
   const role = String(formData.get("role") || "").trim();
   const teamSize = String(formData.get("teamSize") || "").trim();
   const tooling = String(formData.get("tooling") || "").trim();
+  const dashboardPresetRaw = String(formData.get("dashboardPreset") || "operations").trim();
+  const dashboardPreset: DashboardViewPreset =
+    dashboardPresetRaw === "checkout" || dashboardPresetRaw === "inventory"
+      ? dashboardPresetRaw
+      : "operations";
 
   if (!businessName || !role || !teamSize) {
     throw new Error("Missing required onboarding fields.");
@@ -39,6 +48,12 @@ export async function completeOnboarding(formData: FormData) {
         role,
         teamSize,
         tooling,
+        dashboardPreferences: {
+          preset: dashboardPreset,
+          pinnedItemIds: getDefaultPinnedItemsForPreset(dashboardPreset),
+          version: 1,
+          updatedAt: new Date().toISOString(),
+        },
       },
     },
   });

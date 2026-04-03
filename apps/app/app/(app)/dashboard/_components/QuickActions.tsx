@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import type { DashboardViewPreset } from "@/lib/auth/dashboard-preferences";
 
 interface ActionCardProps {
   icon: React.ElementType;
@@ -18,6 +19,7 @@ interface ActionCardProps {
   href: string;
   color: string; // Tailwind text color class like "text-[#4ADE80]"
   bgColor: string; // Tailwind bg color class like "bg-[#4ADE80]/10"
+  compact?: boolean;
 }
 
 function ActionCard({
@@ -27,11 +29,15 @@ function ActionCard({
   href,
   color,
   bgColor,
+  compact = false,
 }: ActionCardProps) {
   return (
     <Link
       href={href}
-      className="bg-[#0A0A0A] border border-white/5 p-4 rounded-xl flex flex-col gap-3 hover:border-white/10 hover:bg-[#111] transition-all group"
+      className={cn(
+        "flex flex-col rounded-xl border border-white/10 bg-[#0A0A0A] transition-all group hover:border-white/20 hover:bg-[#111]",
+        compact ? "gap-2 p-3" : "gap-3 p-4",
+      )}
     >
       <div
         className={cn(
@@ -45,7 +51,7 @@ function ActionCard({
       </div>
       <div>
         <h3 className="text-sm font-bold text-white mb-0.5">{title}</h3>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
+        <p className="text-[10px] uppercase tracking-wide text-white/75">
           {description}
         </p>
       </div>
@@ -53,14 +59,32 @@ function ActionCard({
   );
 }
 
-export function QuickActions() {
+export function QuickActions({
+  preset = "operations",
+  compact = false,
+}: {
+  preset?: DashboardViewPreset;
+  compact?: boolean;
+}) {
+  const checkoutMode = preset === "checkout";
+
   return (
-    <div className="space-y-4">
-      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
+    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.15)] md:p-5">
+      <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
         SECTION B: QUICK OPERATIONS
       </div>
+      <p className="text-xs text-white/70">
+        High-frequency actions for counter staff and operators.
+      </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div
+        className={cn(
+          "grid gap-4",
+          checkoutMode
+            ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
+            : "grid-cols-2 md:grid-cols-4",
+        )}
+      >
         <ActionCard
           icon={ShoppingCart}
           title="Start Sale"
@@ -68,6 +92,7 @@ export function QuickActions() {
           href="/sales"
           color="text-[#4ADE80]"
           bgColor="bg-[#4ADE80]/10"
+          compact={compact}
         />
         <ActionCard
           icon={PackagePlus}
@@ -76,6 +101,7 @@ export function QuickActions() {
           href="/inventory"
           color="text-blue-500"
           bgColor="bg-blue-500/10"
+          compact={compact}
         />
         <ActionCard
           icon={UserPlus}
@@ -84,6 +110,7 @@ export function QuickActions() {
           href="/customers"
           color="text-purple-500"
           bgColor="bg-purple-500/10"
+          compact={compact}
         />
         <ActionCard
           icon={CreditCard}
@@ -92,6 +119,7 @@ export function QuickActions() {
           href="/credit"
           color="text-orange-500"
           bgColor="bg-orange-500/10"
+          compact={compact}
         />
 
         {/* Secondary Row */}
@@ -102,6 +130,7 @@ export function QuickActions() {
           href="/credit"
           color="text-[#4ADE80]"
           bgColor="bg-[#4ADE80]/10"
+          compact={compact}
         />
         <ActionCard
           icon={List}
@@ -110,6 +139,7 @@ export function QuickActions() {
           href="/inventory"
           color="text-orange-500"
           bgColor="bg-orange-500/10"
+          compact={compact}
         />
         <ActionCard
           icon={FileText}
@@ -118,10 +148,10 @@ export function QuickActions() {
           href="/reports"
           color="text-gray-400"
           bgColor="bg-gray-400/10"
+          compact={compact}
         />
-        {/* Placeholder for symmetry or another action */}
-        <div className="hidden md:block"></div>
+        {!checkoutMode ? <div className="hidden md:block" /> : null}
       </div>
-    </div>
+    </section>
   );
 }

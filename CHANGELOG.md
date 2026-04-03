@@ -33,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Legacy Artifacts**: Removed stale tracked CI/testing artifacts and legacy TestSprite suites from version control.
 
+## [0.5.4] - 2026-03-11
+
+### Removed
+
+- **Production Build**: Removed the duplicate `/help` page so Next.js no longer resolves two routes to the same path during deployment.
+- **Auth Adapter**: Replaced the broken `@wrelik/auth/server` dependency path in the app server adapter with local Clerk session normalization so production compilation succeeds.
+
 ## [0.5.1] - 2026-02-14
 
 ### Added
@@ -263,3 +270,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Lint**: Fixed various lint errors and warnings (`fc460e5`, `33816f2`)
 - **Tests**: Fixed E2E test env vars (`a00b640`)
 - **RLS**: Fixed policies for admin access (`0c19fb2`)
+
+### 2026-02-27 07:19 ET
+
+- [adapters] Migrated DRX app-layer Wrelik imports to runtime subpaths (`@wrelik/*/server` and `@wrelik/*/shared`) in adapter and storage consumers.
+- [infra] Added temporary Wrelik compatibility shim layer under `apps/app/lib/wrelik-shims/*` plus TS path aliases in `apps/app/tsconfig.json` to bridge current published package exports.
+- [types] Added ambient declaration for `@wrelik/analytics` in `apps/app/wrelik.d.ts` to support typed shim usage until upstream package types are published.
+- [lint] Extended `apps/app/eslint.config.mjs` with a targeted `no-restricted-imports` exception for shim files only.
+- [docs] Added branch handoff artifact `docs/internal/handoff/main-wrelik-runtime-subpath-handoff-2026-02-27.md` with scope, validation evidence, risks, rollback protocol, and next-branch prerequisites.
+
+### 2026-02-27 09:29 ET
+
+- [deps] Upgraded `@wrelik/auth`, `@wrelik/config`, `@wrelik/errors`, `@wrelik/storage`, `@wrelik/db`, `@wrelik/email`, `@wrelik/jobs`, and `@wrelik/analytics` to `2.0.0` in root/app/mobile dependency manifests.
+- [infra] Removed temporary DRX shim bridge under `apps/app/lib/wrelik-shims/*` after confirming official `./server|./client|./shared` exports are now published.
+- [config] Removed app-level TS path alias shims and shim-specific ESLint exception from `apps/app/tsconfig.json` and `apps/app/eslint.config.mjs`.
+- [adapters] Updated DRX adapter compatibility for Wrelik 2.0 API surface (`loadServerConfig({})` and jobs adapter singleton export replacement).
+- [mobile] Switched mobile auth adapter imports to official subpaths (`@wrelik/auth/client` and `@wrelik/auth/shared`) and refreshed mobile README integration notes.
+- [docs] Added `docs/internal/handoff/main-wrelik-v2-cutover-2026-02-27.md` with validation evidence, risks, and rollback protocol.

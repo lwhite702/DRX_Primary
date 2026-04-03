@@ -168,7 +168,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
             </div>
 
-            {/* Trusted Device */}
+            {/* Session Context */}
             <div className="bg-[#0A0A0A] border border-white/5 rounded-xl p-6">
               <div className="flex items-start gap-4">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -177,38 +177,35 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <div className="space-y-4 flex-1">
                   <div className="space-y-1">
                     <h3 className="text-xs font-medium text-white">
-                      Trusted Device Recognition
+                      Session Context Checks
                     </h3>
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      This device is not recognized. You may be asked to verify your
-                      identity.
+                      Device and session checks run after sign-in. If risk is
+                      detected, we ask for additional verification before
+                      dashboard access.
                     </p>
                   </div>
 
-                  {/* Device Stats */}
+                  {/* Session Signal Summary */}
                   <div className="bg-black/40 rounded border border-white/5 p-3 space-y-2 font-mono text-[10px]">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">CURRENT DEVICE</span>
-                      <span className="text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">
-                        UNRECOGNIZED
+                      <span className="text-muted-foreground">SESSION MODE</span>
+                      <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                        SECURE
                       </span>
                     </div>
                     <div className="h-px bg-white/5 my-2" />
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Browser</span>
-                      <span className="text-white">Chrome 120.0</span>
+                      <span className="text-muted-foreground">Token Rotation</span>
+                      <span className="text-white">Enabled</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">OS</span>
-                      <span className="text-white">macOS 14.2</span>
+                      <span className="text-muted-foreground">Route Guards</span>
+                      <span className="text-white">Enforced</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Location</span>
-                      <span className="text-white">San Francisco, CA</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">IP Address</span>
-                      <span className="text-white">192.168.1.42</span>
+                      <span className="text-muted-foreground">Audit Context</span>
+                      <span className="text-white">Captured</span>
                     </div>
                   </div>
                 </div>

@@ -38,17 +38,6 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  toNumber(value: unknown) {
-    if (typeof value === "number") return value;
-    if (value && typeof value === "object" && "toNumber" in value) {
-      return (value as { toNumber: () => number }).toNumber();
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  },
-}));
-
 import {
   PosCheckoutError,
   addItem,
@@ -78,6 +67,14 @@ function createTxBase(overrides?: Record<string, unknown>) {
         orderNumber: "POS-11111111-1111-4111-8111-111111111111",
       }),
     },
+    salesLineItem: {
+      create: vi.fn().mockResolvedValue({
+        id: "line_123",
+      }),
+    },
+    salesLineItemAllocation: {
+      createMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
     customers: {
       findFirst: vi.fn().mockResolvedValue(null),
       update: vi.fn().mockResolvedValue({}),
@@ -87,6 +84,9 @@ function createTxBase(overrides?: Record<string, unknown>) {
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     inventory: {
+      update: vi.fn().mockResolvedValue({}),
+    },
+    inventoryBatch: {
       update: vi.fn().mockResolvedValue({}),
     },
     inventoryLog: {
@@ -336,6 +336,30 @@ describe("pos core", () => {
     );
 
     mockedDb.$transaction.mockImplementation(async (fn: any) => {
+      const queryRaw = vi.fn().mockImplementation(async (query: unknown) => {
+        const sql = JSON.stringify(query);
+        if (sql.includes("FROM inventory_batches")) {
+          return [
+            {
+              id: "batch_123",
+              remaining_quantity_grams: 5,
+              unit_cost_per_gram: 4.25,
+            },
+          ];
+        }
+
+        return [
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            product_name: "Weighted Item",
+            quantity_on_hand: 5,
+            inventory_in_grams: 10,
+            unit_cost: 5,
+            convert_to_grams: 1,
+          },
+        ];
+      });
+
       txUsed = createTxBase({
         customers: {
           findFirst: vi.fn().mockResolvedValue({
@@ -344,15 +368,7 @@ describe("pos core", () => {
           }),
           update: vi.fn().mockResolvedValue({}),
         },
-        $queryRaw: vi.fn().mockResolvedValue([
-          {
-            id: "22222222-2222-4222-8222-222222222222",
-            product_name: "Weighted Item",
-            quantity_on_hand: 5,
-            inventory_in_grams: 10,
-            unit_cost: 5,
-          },
-        ]),
+        $queryRaw: queryRaw,
       });
       return fn(txUsed);
     });
@@ -373,18 +389,39 @@ describe("pos core", () => {
         }),
       }),
     );
-    expect(txUsed?.$queryRaw).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({
-          raw: expect.arrayContaining([expect.stringContaining("FOR UPDATE")]),
-        }),
-      ]),
-    );
+    expect(txUsed?.$queryRaw).toHaveBeenCalledTimes(2);
     expect(txUsed?.inventory.update).toHaveBeenCalledWith({
       where: { id: "22222222-2222-4222-8222-222222222222" },
       data: {
         inventoryInGrams: { decrement: expect.any(Object) },
       },
+    });
+    expect(txUsed?.inventoryBatch.update).toHaveBeenCalledWith({
+      where: { id: "batch_123" },
+      data: {
+        remainingQuantityGrams: expect.any(Object),
+      },
+    });
+    expect(txUsed?.salesLineItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        saleId: "sale_123",
+        inventoryId: "22222222-2222-4222-8222-222222222222",
+        unitCost: expect.objectContaining({ value: 14.88 }),
+      }),
+      select: { id: true },
+    });
+    expect(txUsed?.salesLineItemAllocation.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          saleId: "sale_123",
+          salesLineItemId: "line_123",
+          inventoryId: "22222222-2222-4222-8222-222222222222",
+          batchId: "batch_123",
+          quantityGrams: expect.any(Object),
+          unitCostPerGram: expect.any(Object),
+          extendedCost: expect.any(Object),
+        }),
+      ],
     });
     expect(txUsed?.inventoryLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
@@ -431,5 +468,130 @@ describe("pos core", () => {
     await expect(checkout(cart, "66666666-6666-4666-8666-666666666666")).rejects.toBeInstanceOf(
       PosCheckoutError,
     );
+  });
+
+  it("allocates FIFO batches for unit inventory using gram conversion", async () => {
+    let txUsed: ReturnType<typeof createTxBase> | undefined;
+    const cart = setPayment(
+      addItem(
+        createCart({
+          businessId: "11111111-1111-4111-8111-111111111111",
+          userId: "user_123",
+          mode: "full",
+          customerId: null,
+        }),
+        {
+          id: "unit-line",
+          inventoryId: "77777777-7777-4777-8777-777777777777",
+          name: "Pre-Roll Twin Pack",
+          unitPrice: 22,
+          qty: 2,
+          source: "inventory",
+        },
+      ),
+      {
+        method: "cash",
+        receipt: "none",
+        creditConfirmed: false,
+      },
+    );
+
+    mockedDb.$transaction.mockImplementation(async (fn: any) => {
+      const queryRaw = vi.fn().mockImplementation(async (query: unknown) => {
+        const sql = JSON.stringify(query);
+        if (sql.includes("FROM inventory_batches")) {
+          return [
+            {
+              id: "batch_unit_1",
+              remaining_quantity_grams: 1,
+              unit_cost_per_gram: 8,
+            },
+            {
+              id: "batch_unit_2",
+              remaining_quantity_grams: 1,
+              unit_cost_per_gram: 9,
+            },
+          ];
+        }
+
+        return [
+          {
+            id: "77777777-7777-4777-8777-777777777777",
+            product_name: "Pre-Roll Twin Pack",
+            quantity_on_hand: 4,
+            inventory_in_grams: 4,
+            unit_cost: 8.5,
+            convert_to_grams: 1,
+          },
+        ];
+      });
+
+      txUsed = createTxBase({
+        $queryRaw: queryRaw,
+      });
+      return fn(txUsed);
+    });
+
+    const result = await checkout(cart, "77777777-7777-4777-8777-777777777778");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        saleId: "sale_123",
+        total: 44,
+        changeAmount: 0,
+      }),
+    );
+    expect(txUsed?.inventoryBatch.update).toHaveBeenNthCalledWith(1, {
+      where: { id: "batch_unit_1" },
+      data: {
+        remainingQuantityGrams: expect.any(Object),
+      },
+    });
+    expect(txUsed?.inventoryBatch.update).toHaveBeenNthCalledWith(2, {
+      where: { id: "batch_unit_2" },
+      data: {
+        remainingQuantityGrams: expect.any(Object),
+      },
+    });
+    expect(txUsed?.salesLineItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        saleId: "sale_123",
+        inventoryId: "77777777-7777-4777-8777-777777777777",
+        quantity: 2,
+        unitCost: expect.objectContaining({ value: 8.5 }),
+      }),
+      select: { id: true },
+    });
+    expect(txUsed?.salesLineItemAllocation.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          batchId: "batch_unit_1",
+          quantityGrams: expect.any(Object),
+          unitCostPerGram: expect.any(Object),
+          extendedCost: expect.any(Object),
+        }),
+        expect.objectContaining({
+          batchId: "batch_unit_2",
+          quantityGrams: expect.any(Object),
+          unitCostPerGram: expect.any(Object),
+          extendedCost: expect.any(Object),
+        }),
+      ],
+    });
+    expect(txUsed?.inventory.update).toHaveBeenCalledWith({
+      where: { id: "77777777-7777-4777-8777-777777777777" },
+      data: {
+        quantityOnHand: { decrement: 2 },
+        inventoryInGrams: { decrement: expect.any(Object) },
+      },
+    });
+    expect(txUsed?.inventoryLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        inventoryId: "77777777-7777-4777-8777-777777777777",
+        transactionType: "sale",
+        quantityChange: -2,
+        reason: "POS full checkout",
+      }),
+    });
   });
 });

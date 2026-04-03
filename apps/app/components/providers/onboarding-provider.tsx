@@ -5,17 +5,16 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  type ReactNode,
 } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export type OnboardingStep = "profile" | "product" | "customer" | "sale";
 
 interface OnboardingState {
   steps: Record<OnboardingStep, boolean>;
   isLoading: boolean;
-  progress: number; // 0 to 100
+  progress: number;
   isComplete: boolean;
   refreshOnboarding: () => Promise<void>;
   dismissGuide: () => void;
@@ -24,12 +23,23 @@ interface OnboardingState {
 
 const OnboardingContext = createContext<OnboardingState | null>(null);
 
+function extractRows(payload: unknown): unknown[] {
+  if (Array.isArray(payload)) return payload;
+  if (
+    payload &&
+    typeof payload === "object" &&
+    Array.isArray((payload as { data?: unknown[] }).data)
+  ) {
+    return (payload as { data: unknown[] }).data;
+  }
+  return [];
+}
+
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { business } = useBusiness();
-  const supabase = getSupabaseClient();
 
   const [steps, setSteps] = useState<Record<OnboardingStep, boolean>>({
-    profile: true, // Assuming if they are here, profile exists partially
+    profile: true,
     product: false,
     customer: false,
     sale: false,
@@ -37,50 +47,51 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isGuideDismissed, setIsGuideDismissed] = useState(false);
 
-  // Check LocalStorage for dismissal
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const dismissed = localStorage.getItem("drx_onboarding_dismissed");
-      if (dismissed === "true") setIsGuideDismissed(true);
-    }
+    if (typeof window === "undefined") return;
+    const dismissed = window.localStorage.getItem("drx_onboarding_dismissed");
+    if (dismissed === "true") setIsGuideDismissed(true);
   }, []);
 
   const dismissGuide = () => {
     setIsGuideDismissed(true);
-    localStorage.setItem("drx_onboarding_dismissed", "true");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("drx_onboarding_dismissed", "true");
+    }
   };
 
   const checkProgress = async () => {
-    if (!business?.id || !supabase) return;
+    if (!business?.id) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      // Parallel checks for speed
-      const [inventoryRes, customerRes, salesRes] = await Promise.all([
-        supabase
-          .from("inventory")
-          .select("id")
-          .eq("business_id", business.id)
-          .limit(1),
-        supabase
-          .from("customers")
-          .select("id")
-          .eq("business_id", business.id)
-          .limit(1),
-        supabase
-          .from("sales")
-          .select("id")
-          .eq("business_id", business.id)
-          .limit(1),
+      const [inventoryRes, customerRes, baselineRes] = await Promise.all([
+        fetch("/api/inventory?limit=1", { credentials: "same-origin" }),
+        fetch("/api/customers?limit=1", { credentials: "same-origin" }),
+        fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
       ]);
 
-      const newSteps = {
-        profile: true,
-        product: (inventoryRes.data?.length ?? 0) > 0,
-        customer: (customerRes.data?.length ?? 0) > 0,
-        sale: (salesRes.data?.length ?? 0) > 0,
-      };
+      const inventoryJson = inventoryRes.ok ? await inventoryRes.json() : null;
+      const customerJson = customerRes.ok ? await customerRes.json() : null;
+      const baselineJson = baselineRes.ok ? await baselineRes.json() : null;
 
-      setSteps(newSteps);
+      const inventoryRows = extractRows(inventoryJson);
+      const customerRows = extractRows(customerJson);
+      const hasSales =
+        (baselineJson?.today?.salesCount ?? 0) > 0 ||
+        (baselineJson?.week?.salesCount ?? 0) > 0 ||
+        (Array.isArray(baselineJson?.recentSales) && baselineJson.recentSales.length > 0);
+
+      setSteps({
+        profile: true,
+        product: inventoryRows.length > 0,
+        customer: customerRows.length > 0,
+        sale: hasSales,
+      });
     } catch (err) {
       console.error("Failed to check onboarding progress", err);
     } finally {
@@ -89,7 +100,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    checkProgress();
+    void checkProgress();
   }, [business?.id]);
 
   const totalSteps = Object.keys(steps).length;

@@ -7,10 +7,12 @@
 import {
   emit,
   createFunction as createJobFunction,
-  inngest,
 } from "@wrelik/jobs/server";
 
-export { inngest as jobs };
+export const jobs = {
+  emit,
+  createFunction: createJobFunction,
+};
 
 /**
  * Send an event to trigger a job

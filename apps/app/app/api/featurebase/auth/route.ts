@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { createClient } from "@/lib/supabase/server";
 
-// API Key from environment variables (secured in .env.local)
-const FEATUREBASE_API_KEY = process.env.FEATUREBASE_API_KEY;
 const FEATUREBASE_JWT_SECRET = process.env.FEATUREBASE_JWT_SECRET;
 
 export async function GET(request: Request) {

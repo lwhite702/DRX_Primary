@@ -14,10 +14,13 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
   if (!hasLowStock && !hasOverdue) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
+    <section className="space-y-4 rounded-2xl border border-orange-500/15 bg-orange-500/[0.03] p-4 shadow-[0_8px_24px_rgba(249,115,22,0.04)] md:p-5">
+      <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
         SECTION C: ALERTS THAT MATTER
       </div>
+      <p className="text-xs text-white/70">
+        Real exceptions that need action now. Nothing decorative.
+      </p>
 
       <div className="space-y-3">
         {hasLowStock && (
@@ -29,7 +32,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
               <h3 className="text-orange-500 font-bold text-sm">
                 Low Stock Threshold Breached
               </h3>
-              <p className="text-xs text-[#BC9C5D] mt-0.5">
+              <p className="mt-0.5 text-xs text-orange-100/80">
                 {stats.lowStockCount} products are below your configured minimum
                 stock level. Restock recommended to avoid stockouts.
               </p>
@@ -52,7 +55,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
               <h3 className="text-red-500 font-bold text-sm">
                 Overdue Credit Balances
               </h3>
-              <p className="text-xs text-[#BC5D5D] mt-0.5">
+              <p className="mt-0.5 text-xs text-red-100/80">
                 {stats.overdueCount} customers have outstanding balances past
                 due date, totaling ${stats.overdueBalance}. Collection action
                 may be required.
@@ -67,6 +70,6 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,0 +1,20 @@
+import { expect, test } from "@playwright/test";
+
+const checks = [
+  { route: "/dashboard", text: /Operator Dashboard/i },
+  { route: "/customers", text: /CUSTOMERS/i },
+  { route: "/pos/sale", text: /Continue to Payment/i },
+  { route: "/help", text: /Support Center/i },
+  { route: "/help/library?topic=start", text: /Knowledge Library/i },
+];
+
+test.describe("Required UX smoke", () => {
+  for (const check of checks) {
+    test(`route renders: ${check.route}`, async ({ page }) => {
+      await page.goto(check.route, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("body")).toBeVisible();
+      await expect(page.locator("body")).not.toContainText(/Application error|Internal Server Error/i);
+      await expect(page.locator("body")).toContainText(check.text);
+    });
+  }
+});

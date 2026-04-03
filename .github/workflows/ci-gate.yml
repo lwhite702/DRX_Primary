@@ -2,9 +2,9 @@ name: CI Gate
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, staging]
   push:
-    branches: [main, development]
+    branches: [main, development, staging]
 
 concurrency:
   group: ci-gate-${{ github.ref }}
@@ -25,6 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:matrix
       - run: pnpm test:policy
+      - run: pnpm test:marketing-claims
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -34,9 +35,23 @@ jobs:
             docs/testing/TEST_MATRIX.md
             docs/testing/TEST_MATRIX.json
 
-  lint:
+  preflight:
     runs-on: ubuntu-latest
     needs: repo-audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: pnpm
+      - run: pnpm release:preflight
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: [repo-audit, preflight]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -51,7 +66,7 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-latest
-    needs: repo-audit
+    needs: [repo-audit, preflight]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -81,6 +96,7 @@ jobs:
 
   unit:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [lint, typecheck]
     strategy:
       fail-fast: true
@@ -96,7 +112,7 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:unit || true
+      - run: pnpm test:unit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -104,7 +120,7 @@ jobs:
           path: |
             apps/app/coverage
 
-  integration:
+  required-auth-data:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
@@ -117,10 +133,53 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:integration || true
+      - run: pnpm --filter deelrxcrm-app test:required:auth-data
+
+  required-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm test:e2e:required
+      - run: pnpm --filter deelrxcrm-app test:e2e:visual:required
+      - run: pnpm test:a11y:required
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: required-ux
+          path: |
+            apps/app/playwright-report
+            apps/app/test-results
+
+  integration:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:integration
 
   e2e-web:
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 30
     needs: [build]
     strategy:
@@ -138,7 +197,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
-      - run: pnpm test:e2e:web || true
+      - run: pnpm test:e2e:web
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,6 +208,7 @@ jobs:
 
   a11y:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -161,10 +221,42 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
-      - run: pnpm test:a11y || true
+      - run: pnpm test:a11y
+
+  auth-e2e:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: [build]
+    if: ${{ secrets.CLERK_TESTING_TOKEN != '' && secrets.CLERK_SECRET_KEY != '' && (secrets.CLERK_PUBLISHABLE_KEY != '' || secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm test:e2e:auth
+        env:
+          E2E_REQUIRE_AUTH: "1"
+          CLERK_TESTING_TOKEN: ${{ secrets.CLERK_TESTING_TOKEN }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auth-e2e
+          path: |
+            apps/app/playwright-report
+            apps/app/test-results
 
   security:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -176,7 +268,7 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:security || true
+      - run: pnpm test:security
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -185,6 +277,7 @@ jobs:
 
   perf-smoke:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -196,7 +289,7 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:perf || true
+      - run: pnpm test:perf
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -205,6 +298,7 @@ jobs:
 
   coverage-gate:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [unit]
     steps:
       - uses: actions/checkout@v4
@@ -216,12 +310,12 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter deelrxcrm-app test:coverage || true
+      - run: pnpm --filter deelrxcrm-app test:coverage
 
   report:
     runs-on: ubuntu-latest
     if: always()
-    needs: [repo-audit, lint, typecheck, build, unit, integration, e2e-web, a11y, security, perf-smoke, coverage-gate]
+    needs: [repo-audit, preflight, lint, typecheck, build, required-auth-data, required-ux, unit, integration, e2e-web, a11y, auth-e2e, security, perf-smoke, coverage-gate]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -12,7 +12,7 @@ export function SectionBlock({
   return (
     <section
       className={cn(
-        "rounded-2xl border border-border/60 bg-surface-elevated/40 p-6 md:p-8",
+        "rounded-3xl border border-white/15 bg-gradient-to-b from-surface-elevated to-surface p-6 md:p-8",
         className
       )}
     >

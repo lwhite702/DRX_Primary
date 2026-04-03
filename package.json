@@ -1,12 +1,14 @@
 {
   "name": "deelrx-crm",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": "20.18.0"
   },
   "scripts": {
+    "release:preflight": "node scripts/release/preflight.mjs",
+    "normalize:next-env": "node scripts/release/normalize-next-env.mjs",
     "build": "pnpm --filter deelrxcrm-app build && pnpm --filter deelrxcrm-marketing build",
     "dev": "doppler run -- pnpm --filter deelrxcrm-app dev",
     "dev:bypass": "pnpm --filter deelrxcrm-app dev:bypass",
@@ -32,10 +34,14 @@
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
     "test:unit": "pnpm --filter deelrxcrm-app test:coverage",
     "test:integration": "pnpm --filter deelrxcrm-app test:integration",
     "test:e2e:web": "pnpm --filter deelrxcrm-app test:e2e",
+    "test:e2e:required": "pnpm --filter deelrxcrm-app test:e2e:required",
+    "test:e2e:auth": "pnpm --filter deelrxcrm-app test:e2e:auth",
     "test:a11y": "pnpm --filter deelrxcrm-app test:e2e:a11y",
+    "test:a11y:required": "pnpm --filter deelrxcrm-app test:e2e:a11y:required",
     "test:security": "pnpm dlx tsx scripts/testing/security-scan.ts",
     "test:perf": "pnpm dlx tsx scripts/testing/perf-smoke.ts",
     "test:readiness": "pnpm dlx tsx scripts/testing/run-full-gate.ts",
@@ -48,6 +54,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
+    "@clerk/nextjs": "^6.37.1",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",
@@ -85,14 +92,14 @@
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
-    "@wrelik/analytics": "0.2.0",
-    "@wrelik/auth": "0.2.2",
-    "@wrelik/config": "0.2.0",
-    "@wrelik/db": "0.1.2",
-    "@wrelik/email": "0.1.2",
-    "@wrelik/errors": "0.2.0",
-    "@wrelik/jobs": "0.1.2",
-    "@wrelik/storage": "0.2.0",
+    "@wrelik/analytics": "2.0.0",
+    "@wrelik/auth": "2.0.0",
+    "@wrelik/config": "2.0.0",
+    "@wrelik/db": "2.0.0",
+    "@wrelik/email": "2.0.0",
+    "@wrelik/errors": "2.0.0",
+    "@wrelik/jobs": "2.0.0",
+    "@wrelik/storage": "2.0.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -104,7 +111,7 @@
     "input-otp": "1.4.1",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.454.0",
-    "next": "16.0.7",
+    "next": "16.1.7",
     "next-themes": "^0.4.6",
     "pg": "^8.18.0",
     "posthog-js": "^1.310.1",
@@ -158,14 +165,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@wrelik/auth": "0.2.2",
-      "@wrelik/db": "0.1.2",
-      "@wrelik/storage": "0.2.0",
-      "@wrelik/analytics": "0.2.0",
-      "@wrelik/errors": "0.2.0",
-      "@wrelik/email": "0.1.2",
-      "@wrelik/jobs": "0.1.2",
-      "@wrelik/config": "0.2.0"
+      "@wrelik/auth": "2.0.0",
+      "@wrelik/db": "2.0.0",
+      "@wrelik/storage": "2.0.0",
+      "@wrelik/analytics": "2.0.0",
+      "@wrelik/errors": "2.0.0",
+      "@wrelik/email": "2.0.0",
+      "@wrelik/jobs": "2.0.0",
+      "@wrelik/config": "2.0.0"
     }
   }
 }

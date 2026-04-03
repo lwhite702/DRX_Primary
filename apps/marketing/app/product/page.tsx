@@ -1,69 +1,32 @@
 import type { Metadata } from "next";
 
+import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
+import { CtaRow } from "@/components/marketing/site/cta-row";
 import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
-import { CtaRow } from "@/components/marketing/site/cta-row";
 import { TrackedLink } from "@/components/marketing/site/tracked-link";
+import {
+  marketingFeatureSections,
+  productHubCards,
+} from "@/lib/feature-canon";
 
 export const metadata: Metadata = {
-  title: "Product | Deelrx CRM",
+  title: "Product | DRX",
   description:
-    "Feature index for checkout, inventory, customers, credit, visibility, and role-based controls in Deelrx CRM.",
+    "Fast POS, inventory, customers, reporting, and team accountability for operators who run real businesses.",
 };
-
-const productPages = [
-  {
-    href: "/product/sales-checkout",
-    title: "Sales & checkout",
-    desc: "Cart flow, payment methods, and sale detail controls.",
-  },
-  {
-    href: "/product/inventory-control",
-    title: "Inventory control",
-    desc: "Intake, adjustment, audit history, and aliases.",
-  },
-  {
-    href: "/product/customers-credit",
-    title: "Customers & credit",
-    desc: "Profiles, account balances, extensions, and payments.",
-  },
-  {
-    href: "/product/operations-visibility",
-    title: "Operations visibility",
-    desc: "Operator Dashboard and Event Desk Board metrics.",
-  },
-  {
-    href: "/product/team-access-security",
-    title: "Team access & security controls",
-    desc: "Role permissions, guardrails, privacy presets, and audit context.",
-  },
-];
 
 export default function ProductHubPage() {
   return (
     <PageFrame>
-      <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">Product</h1>
+      <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">What DRX Does</h1>
       <p className="mb-8 max-w-3xl text-text-secondary">
-        Evidence-backed feature map based on current DRX workflows.
+        No bloated menus. No complicated setup. No enterprise energy.
       </p>
 
-      <SectionBlock title="What this does">
-        <p>
-          Breaks down each core operational area with current behavior,
-          guardrails, and practical limits.
-        </p>
-      </SectionBlock>
-
-      <SectionBlock title="Why it matters operationally" className="mt-6">
-        <p>
-          Operators can qualify fit fast without marketing noise or unsupported
-          claims.
-        </p>
-      </SectionBlock>
-
-      <SectionBlock title="Proof from live product behavior" className="mt-6">
+      <SectionBlock title="Core product surfaces">
         <div className="grid gap-3 md:grid-cols-2">
-          {productPages.map((item) => (
+          {productHubCards.map((item) => (
             <TrackedLink
               key={item.href}
               href={item.href}
@@ -78,14 +41,28 @@ export default function ProductHubPage() {
         </div>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Beta release posture remains active.</li>
-          <li>
-            Reports exist as a route but are currently limited in output.
-          </li>
+      <SectionBlock title="Feature claim status" className="mt-6">
+        <ul className="space-y-2">
+          {marketingFeatureSections.map((section) => {
+            const sectionStatus = section.bullets.some((bullet) => bullet.status === "planned")
+              ? "planned"
+              : section.bullets.some((bullet) => bullet.status === "beta")
+                ? "beta"
+                : "live";
+
+            return (
+              <li key={section.id} className="flex items-start justify-between gap-2">
+                <span className="font-medium text-white">{section.title}</span>
+                <FeatureStatusChip status={sectionStatus} />
+              </li>
+            );
+          })}
         </ul>
-        <CtaRow location="product_hub" secondaryLabel="Read beta terms" secondaryHref="/beta" />
+        <CtaRow
+          location="product_hub"
+          secondaryLabel="Read beta terms"
+          secondaryHref="/beta"
+        />
       </SectionBlock>
     </PageFrame>
   );

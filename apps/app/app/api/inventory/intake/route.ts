@@ -269,6 +269,26 @@ async function processIntake(
     console.warn("Cost history creation failed (non-critical):", error);
   }
 
+  try {
+    const { error: batchError } = await supabase.from("inventory_batches").insert({
+      business_id,
+      inventory_id,
+      intake_id,
+      original_quantity_grams: total_weight_grams,
+      remaining_quantity_grams: total_weight_grams,
+      unit_cost_per_gram: calculated_cost_per_gram,
+      supplier,
+      received_at: new Date().toISOString(),
+      created_by: user_id,
+    });
+
+    if (batchError) {
+      console.warn("Failed to create inventory batch:", batchError);
+    }
+  } catch (error) {
+    console.warn("Inventory batch creation failed (non-critical):", error);
+  }
+
   // Create inventory log entry for product intake
   try {
     const { error: logError } = await supabase.from("inventory_log").insert({

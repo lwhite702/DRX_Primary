@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { useUser } from "@/lib/adapters/auth/ui";
 import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
@@ -57,65 +57,44 @@ export default function CustomerDetailPage() {
   const customerId = params.id as string;
 
   const { business, loading: businessLoading } = useBusiness();
-  const [customer, setCustomer] = useState<CustomerDetail | null>(null);
+  const { user } = useUser();
+  const [customer, setCustomer] = useState<any>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [user_id, setUser_id] = useState<string>("");
   const [can_apply_changes, setCan_apply_changes] = useState(false);
 
-  const supabase = getSupabaseClient();
-
   useEffect(() => {
     if (!business?.id) return;
 
     const fetchData = async () => {
-      if (!supabase) return;
-
       try {
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
         if (user) {
           setUser_id(user.id);
-          // In a real app, check user role for can_apply_changes
           setCan_apply_changes(true);
         }
 
-        // Fetch customer details
-        const { data: customerData, error: customerError } = await supabase
-          .from("customers")
-          .select("*")
-          .eq("id", customerId)
-          .eq("business_id", business.id)
-          .single();
+        // Fetch customer details via API
+        const res = await fetch(`/api/customers/${customerId}`);
+        if (!res.ok) throw new Error("Failed to load customer");
+        const data = await res.json();
 
-        if (customerError) throw customerError;
-        setCustomer(customerData);
+        setCustomer(data);
 
-        // Fetch credit metrics from view
-        const { data: metricsData, error: metricsError } = await supabase
-          .from("v_credit_analytics")
-          .select(
-            "sales_30d, sales_90d, sales_all_time, credit_issued_30d, credit_issued_90d, current_credit_balance, on_time_repayment_ratio, late_payment_count"
-          )
-          .eq("customer_id", customerId)
-          .single();
-
-        if (!metricsError && metricsData) {
+        if (data.metrics) {
           setMetrics({
-            sales_30d: Number(metricsData.sales_30d || 0),
-            sales_90d: Number(metricsData.sales_90d || 0),
-            sales_all_time: Number(metricsData.sales_all_time || 0),
-            credit_issued_30d: Number(metricsData.credit_issued_30d || 0),
-            credit_issued_90d: Number(metricsData.credit_issued_90d || 0),
+            sales_30d: Number(data.metrics.sales_30d || 0),
+            sales_90d: Number(data.metrics.sales_90d || 0),
+            sales_all_time: Number(data.metrics.sales_all_time || 0),
+            credit_issued_30d: Number(data.metrics.credit_issued_30d || 0),
+            credit_issued_90d: Number(data.metrics.credit_issued_90d || 0),
             current_credit_balance: Number(
-              metricsData.current_credit_balance || 0
+              data.metrics.current_credit_balance || 0,
             ),
             on_time_repayment_ratio: Number(
-              metricsData.on_time_repayment_ratio || 0
+              data.metrics.on_time_repayment_ratio || 0,
             ),
-            late_payment_count: metricsData.late_payment_count || 0,
+            late_payment_count: data.metrics.late_payment_count || 0,
           });
         }
       } catch (error) {
@@ -127,7 +106,7 @@ export default function CustomerDetailPage() {
     };
 
     fetchData();
-  }, [business?.id, customerId, supabase]);
+  }, [business?.id, customerId, user]);
 
   if (businessLoading || loading) {
     return <CustomerDetailSkeleton />;
@@ -152,7 +131,8 @@ export default function CustomerDetailPage() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold break-words">
-              {customer.first_name} {customer.last_name}
+              {customer.firstName || customer.first_name}{" "}
+              {customer.lastName || customer.last_name}
             </h1>
             <p className="text-muted-foreground mt-1 text-xs break-all">
               Customer ID: {customer.id}
@@ -176,12 +156,21 @@ export default function CustomerDetailPage() {
                 <AICreditPanel
                   customer_id={customer.id}
                   business_id={business.id}
-                  current_limit={Number(customer.credit_limit || 0)}
-                  ai_recommended_limit={Number(
-                    customer.credit_limit_ai_recommended || 0
+                  current_limit={Number(
+                    customer.creditLimit || customer.credit_limit || 0,
                   )}
-                  risk_score={Number(customer.credit_risk_score || 0)}
-                  last_reviewed_at={customer.credit_limit_last_reviewed_at}
+                  ai_recommended_limit={Number(
+                    customer.creditLimitAiRecommended ||
+                      customer.credit_limit_ai_recommended ||
+                      0,
+                  )}
+                  risk_score={Number(
+                    customer.creditRiskScore || customer.credit_risk_score || 0,
+                  )}
+                  last_reviewed_at={
+                    customer.creditLimitLastReviewedAt ||
+                    customer.credit_limit_last_reviewed_at
+                  }
                   can_apply={can_apply_changes}
                   user_id={user_id}
                 />
@@ -212,7 +201,9 @@ export default function CustomerDetailPage() {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Phone</p>
-                    <p className="text-sm">{customer.phone_number || "N/A"}</p>
+                    <p className="text-sm">
+                      {customer.phoneNumber || customer.phone_number || "N/A"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -224,7 +215,8 @@ export default function CustomerDetailPage() {
                     {customer.address || "N/A"}
                     {customer.city && `, ${customer.city}`}
                     {customer.state && `, ${customer.state}`}
-                    {customer.zip_code && ` ${customer.zip_code}`}
+                    {(customer.zipCode || customer.zip_code) &&
+                      ` ${customer.zipCode || customer.zip_code}`}
                   </p>
                 </div>
               </div>
@@ -257,7 +249,12 @@ export default function CustomerDetailPage() {
                 <div className="bg-slate-50 p-4 rounded">
                   <p className="text-xs text-muted-foreground">Total Sales</p>
                   <p className="text-xl font-bold">
-                    ${(customer.total_purchases || 0).toFixed(2)}
+                    $
+                    {(
+                      customer.totalPurchases ||
+                      customer.total_purchases ||
+                      0
+                    ).toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded">
@@ -265,7 +262,12 @@ export default function CustomerDetailPage() {
                     Total Credit Used
                   </p>
                   <p className="text-xl font-bold">
-                    ${(customer.total_credit_used || 0).toFixed(2)}
+                    $
+                    {(
+                      customer.totalCreditUsed ||
+                      customer.total_credit_used ||
+                      0
+                    ).toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded">
@@ -293,7 +295,9 @@ export default function CustomerDetailPage() {
               <CardTitle>Credit Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{customer.credit_notes || "No notes"}</p>
+              <p className="text-sm">
+                {customer.notes || customer.credit_notes || "No notes"}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -303,12 +307,21 @@ export default function CustomerDetailPage() {
           <AICreditPanel
             customer_id={customer.id}
             business_id={business.id}
-            current_limit={Number(customer.credit_limit || 0)}
-            ai_recommended_limit={Number(
-              customer.credit_limit_ai_recommended || 0
+            current_limit={Number(
+              customer.creditLimit || customer.credit_limit || 0,
             )}
-            risk_score={Number(customer.credit_risk_score || 0)}
-            last_reviewed_at={customer.credit_limit_last_reviewed_at}
+            ai_recommended_limit={Number(
+              customer.creditLimitAiRecommended ||
+                customer.credit_limit_ai_recommended ||
+                0,
+            )}
+            risk_score={Number(
+              customer.creditRiskScore || customer.credit_risk_score || 0,
+            )}
+            last_reviewed_at={
+              customer.creditLimitLastReviewedAt ||
+              customer.credit_limit_last_reviewed_at
+            }
             can_apply={can_apply_changes}
             user_id={user_id}
           />

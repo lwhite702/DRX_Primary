@@ -10,7 +10,6 @@ import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 // Utils
 import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
@@ -45,7 +44,6 @@ export default function SalesPage() {
   const inventory = useRealtimeInventory(business?.id || null);
   const { customers } = useCustomerContext();
   const { canOverridePrice } = useUserRole(business?.id);
-  const supabase = getSupabaseClient();
 
   // Custom hook for cart logic
   const {
@@ -161,23 +159,24 @@ export default function SalesPage() {
 
   // Load tax settings
   useEffect(() => {
-    if (!business?.id || !supabase) return;
+    if (!business?.id) return;
     const loadTaxSettings = async () => {
-      const { data } = await supabase
-        .from("business_settings")
-        .select("collect_tax, pos_manager_pin")
-        .eq("business_id", business.id)
-        .single();
+      try {
+        const res = await fetch("/api/business/settings");
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
 
-      if (data) {
-        const enabled = data.collect_tax !== false;
-        setTaxEnabledLocal(enabled);
-        setTaxEnabled(enabled);
-        // if (data.pos_manager_pin) setManagerPin(data.pos_manager_pin);
+        if (data) {
+          const enabled = data.collect_tax !== false;
+          setTaxEnabledLocal(enabled);
+          setTaxEnabled(enabled);
+        }
+      } catch (error) {
+        console.error("Error loading tax settings:", error);
       }
     };
     loadTaxSettings();
-  }, [business?.id, supabase, setTaxEnabled]);
+  }, [business?.id, setTaxEnabled]);
 
   // --- Handlers ---
 
@@ -208,7 +207,9 @@ export default function SalesPage() {
     try {
       const result = await applyAIPricing(business.id, rec.id);
       if (result.success) {
-        toast.success(`${drxCopy.pos.cart.priceUpdatedTo} ${result.newPrice?.toFixed(2)}`);
+        toast.success(
+          `${drxCopy.pos.cart.priceUpdatedTo} ${result.newPrice?.toFixed(2)}`,
+        );
         setAiRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
       } else {
         toast.error(result.message || drxCopy.pos.cart.priceApplyFailed);
@@ -244,11 +245,7 @@ export default function SalesPage() {
   if (businessLoading) return <SalesSkeleton />;
 
   if (!business) {
-    return (
-      <div className="p-4 md:p-8">
-        {drxCopy.pos.missingBusiness}
-      </div>
-    );
+    return <div className="p-4 md:p-8">{drxCopy.pos.missingBusiness}</div>;
   }
 
   return (
@@ -260,7 +257,8 @@ export default function SalesPage() {
             {drxCopy.pos.title}
           </h1>
           <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            {drxCopy.pos.subtitlePrefix} {business?.name?.toUpperCase() || "MAIN"} •{" "}
+            {drxCopy.pos.subtitlePrefix}{" "}
+            {business?.name?.toUpperCase() || "MAIN"} •{" "}
             {new Date().toLocaleDateString()}
           </p>
         </div>

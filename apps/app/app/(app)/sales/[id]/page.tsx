@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
-import { getSupabaseClient } from "@/lib/supabase/client";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
@@ -43,7 +42,6 @@ export default function SaleDetailPage() {
   const saleId = params.id as string;
   const { business } = useBusiness();
   const { isManager } = useUserRole(business?.id);
-  const supabase = getSupabaseClient();
 
   const [sale, setSale] = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
@@ -62,35 +60,34 @@ export default function SaleDetailPage() {
   // Initialize edit state when sale loads
   useEffect(() => {
     if (sale) {
-      setNewPaymentMethod(sale.payment_method || "cash");
-      setNewPaymentRef(sale.payment_ref || "");
+      setNewPaymentMethod(sale.paymentMethod || sale.payment_method || "cash");
+      setNewPaymentRef(sale.paymentRef || sale.payment_ref || "");
     }
   }, [sale]);
 
   const handleUpdatePayment = async () => {
-    if (!supabase || !business?.id) return;
+    if (!business?.id) return;
 
     setUpdatingPayment(true);
     try {
-      const { error } = await supabase
-        .from("sales")
-        .update({
-          payment_method: newPaymentMethod,
-          payment_ref: newPaymentMethod === "zelle" ? newPaymentRef : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", saleId)
-        .eq("business_id", business.id);
+      const res = await fetch(`/api/sales/${saleId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentMethod: newPaymentMethod,
+          paymentRef: newPaymentMethod === "zelle" ? newPaymentRef : null,
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error("Failed to update payment");
 
       toast.success("Payment method updated");
 
       // Update local state
       setSale({
         ...sale,
-        payment_method: newPaymentMethod,
-        payment_ref: newPaymentMethod === "zelle" ? newPaymentRef : null,
+        paymentMethod: newPaymentMethod,
+        paymentRef: newPaymentMethod === "zelle" ? newPaymentRef : null,
       });
       setShowPaymentEdit(false);
     } catch (error: any) {
@@ -102,51 +99,17 @@ export default function SaleDetailPage() {
   };
 
   useEffect(() => {
-    if (!saleId || !business?.id || !supabase) return;
+    if (!saleId || !business?.id) return;
 
     const loadSaleDetails = async () => {
       try {
-        // Load sale
-        const { data: saleData, error: saleError } = await supabase
-          .from("sales")
-          .select("*")
-          .eq("id", saleId)
-          .eq("business_id", business.id)
-          .single();
+        const res = await fetch(`/api/sales/${saleId}`);
+        if (!res.ok) throw new Error("Failed to load sale details");
+        const data = await res.json();
 
-        if (saleError) throw saleError;
-        setSale(saleData);
-
-        // Load line items
-        const { data: itemsData, error: itemsError } = await supabase
-          .from("sales_line_items")
-          .select(
-            `
-            *,
-            inventory:inventory_id (
-              product_name,
-              sku
-            )
-          `
-          )
-          .eq("sale_id", saleId);
-
-        if (itemsError) throw itemsError;
-        setLineItems(itemsData || []);
-
-        // Load customer if assigned
-        if (saleData.customer_id) {
-          const { data: customerData } = await supabase
-            .from("customers")
-            .select("*")
-            .eq("id", saleData.customer_id)
-            .single();
-
-          if (customerData) setCustomer(customerData);
-        }
-
-        // Customers are loaded via context
-        // const { data: customersData } = await supabase...
+        setSale(data);
+        setLineItems(data.items || []);
+        if (data.customer) setCustomer(data.customer);
       } catch (error) {
         console.error("Error loading sale details:", error);
         toast.error("Failed to load sale details");
@@ -156,53 +119,43 @@ export default function SaleDetailPage() {
     };
 
     loadSaleDetails();
-  }, [saleId, business?.id, supabase]);
+  }, [saleId, business?.id]);
 
   const handleAssignCustomer = async (customerId: string) => {
-    if (!supabase || !business?.id) return;
+    if (!business?.id) return;
 
     // Check if credit sale requires manager override
-    if (sale?.payment_method === "credit" && !isManager) {
+    const currentPaymentMethod = sale?.paymentMethod || sale?.payment_method;
+    if (currentPaymentMethod === "credit" && !isManager) {
       toast.error("Manager or owner role required to reassign credit sales");
       return;
     }
 
     setAssigning(true);
     try {
-      const { data, error } = await supabase.rpc("assign_customer_to_sale", {
-        p_sale_id: saleId,
-        p_new_customer_id: customerId || null,
-        p_reason: "Customer assigned via sales detail page",
+      const res = await fetch(`/api/sales/${saleId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: customerId || null,
+        }),
       });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error("Failed to assign customer");
+      const data = await res.json();
 
-      if (data && data.length > 0 && data[0].success) {
+      if (data.success) {
         toast.success("Customer assigned successfully!");
 
-        // Reload sale details
-        const { data: saleData } = await supabase
-          .from("sales")
-          .select("*")
-          .eq("id", saleId)
-          .single();
-
-        if (saleData) setSale(saleData);
-
-        // Reload customer
-        if (customerId) {
-          const { data: customerData } = await supabase
-            .from("customers")
-            .select("*")
-            .eq("id", customerId)
-            .single();
-
-          if (customerData) setCustomer(customerData);
-        } else {
-          setCustomer(null);
+        // Reload details
+        const reloadRes = await fetch(`/api/sales/${saleId}`);
+        if (reloadRes.ok) {
+          const updatedData = await reloadRes.json();
+          setSale(updatedData);
+          setCustomer(updatedData.customer);
         }
       } else {
-        toast.error(data?.[0]?.message || "Failed to assign customer");
+        toast.error(data.message || "Failed to assign customer");
       }
     } catch (error: any) {
       console.error("Error assigning customer:", error);
@@ -240,14 +193,18 @@ export default function SaleDetailPage() {
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold">Sale Details</h1>
             <p className="text-muted-foreground mt-1 break-words">
-              Order #{sale.order_number}
+              Order #{sale.orderNumber || sale.order_number}
             </p>
           </div>
         </div>
         <Badge
-          variant={sale.order_status === "completed" ? "default" : "secondary"}
+          variant={
+            (sale.orderStatus || sale.order_status) === "completed"
+              ? "default"
+              : "secondary"
+          }
         >
-          {sale.order_status}
+          {sale.orderStatus || sale.order_status}
         </Badge>
       </div>
 
@@ -266,7 +223,9 @@ export default function SaleDetailPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Date</p>
                     <p className="font-medium">
-                      {new Date(sale.created_at).toLocaleDateString()}
+                      {new Date(
+                        sale.createdAt || sale.created_at,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -278,7 +237,7 @@ export default function SaleDetailPage() {
                     </p>
                     <div className="flex items-center gap-2">
                       <p className="font-medium capitalize">
-                        {sale.payment_method}
+                        {sale.paymentMethod || sale.payment_method}
                       </p>
                       {isManager && (
                         <Button
@@ -288,7 +247,6 @@ export default function SaleDetailPage() {
                           onClick={() => setShowPaymentEdit(true)}
                         >
                           <span className="sr-only">Edit</span>
-                          {/* Edit Icon */}
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="12"
@@ -305,9 +263,9 @@ export default function SaleDetailPage() {
                         </Button>
                       )}
                     </div>
-                    {sale.payment_ref && (
+                    {(sale.paymentRef || sale.payment_ref) && (
                       <p className="text-xs text-muted-foreground">
-                        Ref: {sale.payment_ref}
+                        Ref: {sale.paymentRef || sale.payment_ref}
                       </p>
                     )}
                   </div>
@@ -316,7 +274,9 @@ export default function SaleDetailPage() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Order Type</p>
-                    <p className="font-medium capitalize">{sale.order_type}</p>
+                    <p className="font-medium capitalize">
+                      {sale.orderType || sale.order_type}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -328,18 +288,52 @@ export default function SaleDetailPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax:</span>
-                  <span>${Number(sale.tax_amount || 0).toFixed(2)}</span>
+                  <span>
+                    ${Number(sale.taxAmount || sale.tax_amount || 0).toFixed(2)}
+                  </span>
                 </div>
-                {sale.delivery_price > 0 && (
+                {Number(sale.deliveryPrice || sale.delivery_price || 0) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span>Delivery:</span>
-                    <span>${Number(sale.delivery_price).toFixed(2)}</span>
+                    <span>
+                      $
+                      {Number(
+                        sale.deliveryPrice || sale.delivery_price,
+                      ).toFixed(2)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
                   <span>Total:</span>
-                  <span>${Number(sale.total_amount || 0).toFixed(2)}</span>
+                  <span>
+                    $
+                    {Number(sale.totalAmount || sale.total_amount || 0).toFixed(
+                      2,
+                    )}
+                  </span>
                 </div>
+                {sale.costSummary && (
+                  <>
+                    <div className="flex justify-between text-sm pt-2 border-t">
+                      <span>COGS:</span>
+                      <span>
+                        ${Number(sale.costSummary.costOfGoodsSold || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Gross Profit:</span>
+                      <span>
+                        ${Number(sale.costSummary.grossProfit || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Gross Margin:</span>
+                      <span>
+                        {Number(sale.costSummary.grossMarginPercent || 0).toFixed(2)}%
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -385,7 +379,7 @@ export default function SaleDetailPage() {
                 )}
 
                 {newPaymentMethod === "credit" &&
-                  sale.payment_method !== "credit" && (
+                  (sale.paymentMethod || sale.payment_method) !== "credit" && (
                     <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
                       Warning: Switching to Credit will not automatically update
                       the customer's credit balance. Please ensure you manually
@@ -416,7 +410,6 @@ export default function SaleDetailPage() {
               <CardTitle>Items</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Mobile cards */}
               <div className="md:hidden space-y-3">
                 {lineItems.map((item) => (
                   <Card key={item.id} className="border-border/80">
@@ -424,7 +417,9 @@ export default function SaleDetailPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-medium break-words">
-                            {item.inventory?.product_name || "Unknown Product"}
+                            {item.inventory?.productName ||
+                              item.inventory?.product_name ||
+                              "Unknown Product"}
                           </p>
                           <p className="text-sm text-muted-foreground mt-1">
                             SKU:{" "}
@@ -434,7 +429,8 @@ export default function SaleDetailPage() {
                           </p>
                         </div>
                         <p className="font-bold">
-                          ${Number(item.line_total).toFixed(2)}
+                          $
+                          {Number(item.lineTotal || item.line_total).toFixed(2)}
                         </p>
                       </div>
 
@@ -448,29 +444,18 @@ export default function SaleDetailPage() {
                             Unit Price
                           </p>
                           <p className="font-medium">
-                            ${Number(item.unit_price).toFixed(2)}
+                            $
+                            {Number(item.unitPrice || item.unit_price).toFixed(
+                              2,
+                            )}
                           </p>
-                          {item.overridden_price && item.original_price && (
-                            <p className="text-xs text-muted-foreground line-through">
-                              ${Number(item.original_price).toFixed(2)}
-                            </p>
-                          )}
                         </div>
                       </div>
-
-                      {item.overridden_price && (
-                        <div className="mt-3">
-                          <Badge variant="outline" className="text-xs">
-                            Price Override
-                          </Badge>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              {/* Desktop table */}
               <div className="hidden md:block">
                 <Table>
                   <TableHeader>
@@ -486,27 +471,21 @@ export default function SaleDetailPage() {
                     {lineItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">
-                          {item.inventory?.product_name || "Unknown Product"}
-                          {item.overridden_price && (
-                            <Badge variant="outline" className="ml-2 text-xs">
-                              Price Override
-                            </Badge>
-                          )}
+                          {item.inventory?.productName ||
+                            item.inventory?.product_name ||
+                            "Unknown Product"}
                         </TableCell>
                         <TableCell>{item.inventory?.sku || "N/A"}</TableCell>
                         <TableCell className="text-right">
                           {item.quantity}
                         </TableCell>
                         <TableCell className="text-right">
-                          ${Number(item.unit_price).toFixed(2)}
-                          {item.overridden_price && item.original_price && (
-                            <span className="block text-xs text-muted-foreground line-through">
-                              ${Number(item.original_price).toFixed(2)}
-                            </span>
-                          )}
+                          $
+                          {Number(item.unitPrice || item.unit_price).toFixed(2)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ${Number(item.line_total).toFixed(2)}
+                          $
+                          {Number(item.lineTotal || item.line_total).toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -531,29 +510,22 @@ export default function SaleDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Name</p>
                   <p className="font-medium">
-                    {customer.first_name} {customer.last_name}
+                    {customer.firstName || customer.first_name}{" "}
+                    {customer.lastName || customer.last_name}
                   </p>
                 </div>
-                {customer.phone_number && (
+                {(customer.phoneNumber || customer.phone_number) && (
                   <div>
                     <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{customer.phone_number}</p>
+                    <p className="font-medium">
+                      {customer.phoneNumber || customer.phone_number}
+                    </p>
                   </div>
                 )}
                 {customer.email && (
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
                     <p className="font-medium">{customer.email}</p>
-                  </div>
-                )}
-                {customer.loyalty_tier && customer.loyalty_tier !== "none" && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Loyalty Tier
-                    </p>
-                    <Badge className="capitalize">
-                      {customer.loyalty_tier}
-                    </Badge>
                   </div>
                 )}
                 <Button
@@ -582,7 +554,7 @@ export default function SaleDetailPage() {
               </div>
             )}
 
-            {sale.payment_method === "credit" && (
+            {(sale.paymentMethod || sale.payment_method) === "credit" && (
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-xs text-yellow-800">
                   ⚠️ This is a credit sale. Manager or owner role required to
@@ -594,7 +566,6 @@ export default function SaleDetailPage() {
         </Card>
       </div>
 
-      {/* Customer Selector Modal */}
       <CustomerSelectorModal
         open={showCustomerSelector}
         onOpenChange={setShowCustomerSelector}

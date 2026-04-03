@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-21T04:59:39.196Z",
+  "generatedAt": "2026-03-30T08:36:27.276Z",
   "totals": {
-    "high": 44,
+    "high": 36,
     "medium": 0
   },
   "findings": [
@@ -60,24 +60,6 @@
       "detail": "Runtime mock compatibility surface"
     },
     {
-      "file": "apps/app/app/(app)/customers/[id]/page.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/app/(app)/customers/page.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/app/(app)/dashboard/_hooks/useDashboardData.ts",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
       "file": "apps/app/app/(app)/insights/page.tsx",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
@@ -102,25 +84,7 @@
       "detail": "Runtime mock compatibility surface"
     },
     {
-      "file": "apps/app/app/(app)/sales/[id]/page.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/app/(app)/sales/page.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
       "file": "apps/app/app/(app)/settings/inventory/aliases/page.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/app/(app)/settings/page.tsx",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
       "detail": "Runtime mock compatibility surface"
@@ -139,6 +103,12 @@
     },
     {
       "file": "apps/app/app/api/ai/analyze/route.ts",
+      "severity": "high",
+      "rule": "SEC-MOCK-SUPABASE",
+      "detail": "Runtime mock compatibility surface"
+    },
+    {
+      "file": "apps/app/app/api/credit/intelligence/front-approval/route.ts",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
       "detail": "Runtime mock compatibility surface"
@@ -186,12 +156,6 @@
       "detail": "Unsafe HTML sink detected"
     },
     {
-      "file": "apps/app/components/providers/onboarding-provider.tsx",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
       "file": "apps/app/components/reports/shrinkage-report.tsx",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
@@ -222,19 +186,13 @@
       "detail": "Runtime mock compatibility surface"
     },
     {
-      "file": "apps/app/lib/hooks/use-feature-flag.ts",
+      "file": "apps/app/lib/credit/intelligenceEngine.ts",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
       "detail": "Runtime mock compatibility surface"
     },
     {
       "file": "apps/app/lib/hooks/use-permission.ts",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/lib/hooks/use-realtime.ts",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
       "detail": "Runtime mock compatibility surface"
@@ -253,12 +211,6 @@
     },
     {
       "file": "apps/app/lib/utils/offline-sync.ts",
-      "severity": "high",
-      "rule": "SEC-MOCK-SUPABASE",
-      "detail": "Runtime mock compatibility surface"
-    },
-    {
-      "file": "apps/app/lib/utils/pos-engine.ts",
       "severity": "high",
       "rule": "SEC-MOCK-SUPABASE",
       "detail": "Runtime mock compatibility surface"
