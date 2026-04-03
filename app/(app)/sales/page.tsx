@@ -141,7 +141,7 @@ export default function SalesPage() {
       }
     };
 
-    // Don't check on every render, only on significant events
+checkRandomTrigger().catch(() => {}); // Trigger once on mount; avoid re-running
   }, []);
 
   useEffect(() => {
