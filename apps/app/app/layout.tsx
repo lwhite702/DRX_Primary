@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
+import { ChunkRecoveryProvider } from "@/components/providers/chunk-recovery-provider";
 import { ClerkProvider } from "@/lib/adapters/auth/ui";
 
 const _plusJakartaSans = Plus_Jakarta_Sans({
@@ -102,6 +103,7 @@ export default function RootLayout({
         >
           <GlobalErrorBoundary>
             <PostHogProvider>
+              <ChunkRecoveryProvider />
               <FeaturebaseProvider />
               {children}
               <Toaster position="top-right" />

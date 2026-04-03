@@ -3,7 +3,7 @@ import withPWAInit from "@ducanh2912/next-pwa";
 const withPWA = withPWAInit({
   dest: "public",
   disable: true, // Temporarily disabled for debugging 404
-  register: true,
+  register: false,
   skipWaiting: true,
 });
 
