@@ -2,40 +2,63 @@ import {
   applyAICreditRecommendation,
   overrideCreditLimit,
 } from "@/lib/credit/creditDecisionService";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const ApplyRecommendationSchema = z
+  .object({
+    customer_id: z.string().min(1),
+    action: z.enum(["apply_ai_recommendation", "override"]),
+    new_limit: z.number().finite().optional(),
+    reason: z.string().min(1).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.action === "override" && data.new_limit === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["new_limit"],
+        message: "new_limit is required when action is override",
+      });
+    }
+  });
 
 export async function POST(request: Request) {
   try {
-    const { customer_id, business_id, user_id, action, new_limit, reason } =
-      await request.json();
+    const { businessId, userId } = await resolveAuthContext();
+    if (!businessId || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!customer_id || !business_id || !user_id) {
+    const payload = ApplyRecommendationSchema.safeParse(await request.json());
+    if (!payload.success) {
       return NextResponse.json(
-        { error: "Missing required fields: customer_id, business_id, user_id" },
-        { status: 400 }
+        { error: "Invalid payload", details: payload.error.flatten() },
+        { status: 400 },
       );
     }
 
     let result;
+    const { customer_id, action, new_limit, reason } = payload.data;
 
     if (action === "apply_ai_recommendation") {
       result = await applyAICreditRecommendation(
         customer_id,
-        business_id,
-        user_id
+        businessId,
+        userId,
       );
     } else if (action === "override" && new_limit !== undefined) {
       result = await overrideCreditLimit(
         customer_id,
-        business_id,
+        businessId,
         new_limit,
         reason || "Manual override",
-        user_id
+        userId,
       );
     } else {
       return NextResponse.json(
         { error: "Invalid action or missing parameters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
