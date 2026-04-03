@@ -1,4 +1,3 @@
 {
-  "framework": "nextjs",
-  "installCommand": "ORIG=\"$PWD\"; if [ ! -f pnpm-lock.yaml ]; then cd ../..; fi; corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile; cd \"$ORIG\""
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile"
 }
