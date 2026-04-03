@@ -225,7 +225,7 @@ export function TopNav() {
           )}
 
           <UserButton
-            afterSignOutUrl="/sign-in"
+            afterSignOutUrl="/login"
             appearance={{
               elements: {
                 userButtonAvatarBox: "w-9 h-9",

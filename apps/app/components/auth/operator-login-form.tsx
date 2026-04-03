@@ -22,7 +22,7 @@ export function OperatorLoginForm() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const clerkFallbackUrl = "/login?view=clerk";
+  const clerkFallbackUrl = "/login";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

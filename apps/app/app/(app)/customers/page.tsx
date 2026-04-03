@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ type CustomerRecord = Customer & {
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();
   const [showDialog, setShowDialog] = useState(false);
@@ -163,7 +165,7 @@ export default function CustomersPage() {
           title="No business found"
           description="Complete onboarding first so customer profiles can be attached to a business."
           actionLabel="Go to onboarding"
-          onAction={() => (window.location.href = "/onboarding")}
+          onAction={() => router.push("/onboarding")}
         />
       </div>
     );

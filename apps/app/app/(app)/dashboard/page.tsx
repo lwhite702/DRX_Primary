@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
 import { useDashboardData } from "./_hooks/useDashboardData";
@@ -19,6 +20,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
   const { preferences, saving, setPinnedItemIds } = useDashboardPreferences();
   const {
@@ -36,15 +38,15 @@ export default function DashboardPage() {
 
   if (!business) {
     return (
-      <EmptyState
+        <EmptyState
         icon={PackageOpen}
         title="No Business Found"
         description="You haven't set up a business yet. Create one to get started."
         actionLabel="Create Business"
-        onAction={() => (window.location.href = "/onboarding")}
-        className="m-8"
-      />
-    );
+          onAction={() => router.push("/onboarding")}
+          className="m-8"
+        />
+      );
   }
 
   if (error || !stats) {
