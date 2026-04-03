@@ -54,6 +54,20 @@ type CustomerRecord = Customer & {
   total_credit_used?: number;
 };
 
+type CustomerRecord = Customer & {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  alias?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  total_purchases?: number;
+  total_credit_used?: number;
+};
+
 export default function CustomersPage() {
   const { business, settings, loading: businessLoading } = useBusiness();
   const { customers } = useCustomerContext();

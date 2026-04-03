@@ -293,20 +293,15 @@ export async function getPosBaselineReport(
 
   if (costSaleIds.length) {
     try {
-      const rows = await db.$queryRaw<Array<{ sale_id: string; extended_cost_sum: unknown }>>(
-        Prisma.sql`
-          SELECT sale_id, SUM(extended_cost) AS extended_cost_sum
-          FROM sales_line_item_allocations
-          WHERE sale_id IN (${Prisma.join(costSaleIds)})
-          GROUP BY sale_id
-        `,
-      );
-      saleCosts = rows.map((row) => ({
-        saleId: row.sale_id,
-        _sum: {
-          extendedCost: row.extended_cost_sum,
+      saleCosts = await db.salesLineItemAllocation.groupBy({
+        by: ["saleId"],
+        where: {
+          saleId: { in: costSaleIds },
         },
-      }));
+        _sum: {
+          extendedCost: true,
+        },
+      });
     } catch (error) {
       if (!isMissingTableError(error, "sales_line_item_allocations")) {
         throw error;
