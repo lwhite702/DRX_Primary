@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 
 interface FeaturebaseProviderProps {
   user?: {
@@ -14,12 +15,19 @@ interface FeaturebaseProviderProps {
 
 export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
   const appId = process.env.NEXT_PUBLIC_FEATUREBASE_APP_ID;
+  const pathname = usePathname();
+  const isAuthSurface =
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/sign-in") ||
+    pathname?.startsWith("/sign-up") ||
+    pathname?.startsWith("/waitlist");
 
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch SSO token if user is present
-    if (user) {
+    if (user && !isAuthSurface) {
       fetch("/api/featurebase/auth")
         .then((res) => res.json())
         .then((data) => {
@@ -31,10 +39,10 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
           console.error("Failed to fetch Featurebase token:", err),
         );
     }
-  }, [user]);
+  }, [isAuthSurface, user]);
 
   useEffect(() => {
-    if (!appId) return;
+    if (!appId || isAuthSurface) return;
 
     if (window.Featurebase) {
       // Re-identify if user or token changes
@@ -49,9 +57,9 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
         });
       }
     }
-  }, [user, token, appId]);
+  }, [appId, isAuthSurface, token, user]);
 
-  if (!appId) return null;
+  if (!appId || isAuthSurface) return null;
 
   return (
     <>
