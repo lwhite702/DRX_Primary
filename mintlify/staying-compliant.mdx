@@ -1,43 +1,97 @@
-# Staying compliant
+# Stay audit-ready
 
-Deelrx CRM keeps an operational audit trail with controlled stock actions and documented reasons.
+This page is the operating playbook for clean stock records and clear adjustment history.
 
-## What this does
+## What this page is for
 
-- Logs stock changes in **Inventory Audit Log**
-- Captures reasons on adjustments
-- Supports shrinkage and personal-use logging
-- Runs random inventory check workflows
+Use this guide to keep inventory movement traceable, reduce variance surprises, and keep your team ready for internal or external record review.
 
-## Why this matters
+The focus is practical: intake, adjustment, reason quality, and repeat-variance response.
 
-You need a clean record when totals do not match physical stock.
+## Before you start
 
-## Step-by-step
+- **Recommended role**:
+  - Cashier: view and report issues
+  - Supervisor/manager: adjustments and shrinkage handling
+- **Routes used**:
+  - `/inventory/intake`
+  - `/inventory/adjust`
+  - `/inventory/audit`
+- **Team rule**:
+  - Every stock correction needs a clear reason that another person can understand without extra context.
 
-1. Use **Inventory Intake** for received stock.
-2. Use **Inventory Adjustment** for count corrections.
-3. Enter a clear reason every time.
-4. Record shrinkage from the shrinkage flow when needed.
-5. Review **Inventory Audit Log** regularly.
+## Fast path
 
-## Common mistakes
+1. **Use intake for received stock** (`/inventory/intake`).
+2. **Use adjust for corrections** (`/inventory/adjust`).
+   - Increase, decrease, or set-to with reason.
+3. **Record shrinkage in the right flow**.
+   - Do not hide shrinkage in vague notes.
+4. **Review audit trail daily** (`/inventory/audit`).
+   - Confirm who changed what and why.
+5. **Check repeat variance patterns**.
+   - If the same SKU shows recurring mismatch, escalate to manager review.
 
-- Using vague reasons like "fix" or "update"
-- Delaying shrinkage entries until end of week
-- Skipping audit log review after shift disputes
+## If blocked
 
-## Edge cases
+- **Adjustment rejected**:
+  - Confirm role has inventory-manage scope.
+  - Confirm payload values are valid.
+- **Reason text is too vague**:
+  - Replace generic text with root cause style: what changed, why it changed, who confirmed.
+- **Random check finds mismatch**:
+  - Pause further stock edits on that item.
+  - Recount, correct, and document before normal selling resumes.
+- **Audit trail missing expected entry**:
+  - Recheck business context.
+  - Confirm action completed, not aborted.
 
-- Random check can flag discrepancies and auto-log outcomes.
-- Supervisor PIN can be required for shrinkage flows depending on settings.
+## What is beta here
 
-## Current limitations
-
-- Compliance-specific export workflows are not surfaced as dedicated pages yet.
+- Expanded export/report packaging around audit history is beta-limited.
+- Intake, adjustment, shrinkage capture, and audit trail routes are live.
 
 ## Related docs
 
 - [Your products](/your-products)
+- [Numbers that matter](/numbers-that-matter)
 - [Team access](/team-access)
 - [Fixing issues](/fixing-issues)
+
+## Shift-close audit habit
+
+- Review five recent audit entries for clarity.
+- Confirm each manual correction has a real cause in reason text.
+- Confirm shrinkage entries were not delayed to end of week.
+
+## Escalation trigger
+
+Escalate to manager review when any one of these repeats across shifts:
+
+- Same SKU has recurring variance.
+- Same operator submits vague correction reasons.
+- Intake and actual shelf counts keep diverging.
+
+## Reason text examples
+
+Use these patterns:
+
+- "Count correction after shelf recount, +12g, verified by shift lead"
+- "Breakage during packaging, -3 units, logged same shift"
+- "Intake entry typo corrected to posted invoice value"
+
+Avoid patterns like:
+
+- "fix"
+- "update"
+- "changed"
+
+## New-staff coaching
+
+- Teach adjustment reasons on day one.
+- Teach where to review audit history before making second corrections.
+- Teach when to stop and escalate instead of repeating manual stock edits.
+
+## Daily close note
+
+Write one short line at close describing the largest stock correction driver. This helps managers spot repeat causes across shifts.

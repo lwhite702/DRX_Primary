@@ -144,7 +144,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Mark as approved
+    // 2. Process first; if processing fails, do not mark the intake approved.
+    await processApprovedIntake(supabase, intake, user.id);
+
+    // 3. Mark approved only after successful processing.
     const { error: updateError } = await supabase
       .from("inventory_intakes")
       .update({
@@ -157,13 +160,10 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       return NextResponse.json(
-        { error: "Failed to approve intake" },
+        { error: "Failed to finalize intake approval" },
         { status: 500 }
       );
     }
-
-    // Process the intake
-    await processApprovedIntake(supabase, intake, user.id);
 
     return NextResponse.json({
       success: true,
@@ -197,47 +197,86 @@ async function processApprovedIntake(
     id: intake_id,
   } = intake;
 
-  // Update inventory quantity and unit cost
-  const { error: updateError } = await supabase.rpc(
-    "update_inventory_on_intake",
-    {
-      p_inventory_id: inventory_id,
-      p_weight_grams: total_weight_grams,
-      p_cost_per_gram: calculated_cost_per_gram,
-    }
-  );
+  const nowIso = new Date().toISOString();
+  const { data: createdBatch, error: batchError } = await supabase
+    .from("inventory_batches")
+    .insert({
+      business_id,
+      inventory_id,
+      intake_id,
+      original_quantity_grams: total_weight_grams,
+      remaining_quantity_grams: total_weight_grams,
+      unit_cost_per_gram: calculated_cost_per_gram,
+      supplier,
+      received_at: nowIso,
+      created_by: user_id,
+    })
+    .select("id")
+    .single();
 
-  if (updateError) {
-    // Fallback to direct update if RPC doesn't exist
-    const { error: directUpdateError } = await supabase
-      .from("inventory")
-      .update({
-        quantity_on_hand: supabase.raw(
-          `quantity_on_hand + ${total_weight_grams}`
-        ),
-        unit_cost: calculated_cost_per_gram,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", inventory_id);
-
-    if (directUpdateError) {
-      throw new Error(
-        `Failed to update inventory: ${directUpdateError.message}`
-      );
-    }
+  if (batchError || !createdBatch?.id) {
+    throw new Error(
+      `Failed to create inventory batch during intake approval: ${batchError?.message ?? "Unknown error"}`
+    );
   }
 
-  // Create cost history entry
-  await supabase.from("cost_history").insert({
-    business_id,
-    inventory_id,
-    intake_id,
-    cost_per_gram: calculated_cost_per_gram,
-    total_cost,
-    total_weight_grams,
-    delivery_cost,
-    supplier,
-  });
+  try {
+    // Update inventory quantity and unit cost
+    const { error: updateError } = await supabase.rpc(
+      "update_inventory_on_intake",
+      {
+        p_inventory_id: inventory_id,
+        p_weight_grams: total_weight_grams,
+        p_cost_per_gram: calculated_cost_per_gram,
+      }
+    );
+
+    if (updateError) {
+      // Fallback to direct update if RPC doesn't exist
+      const { data: inventory, error: currentError } = await supabase
+        .from("inventory")
+        .select("quantity_on_hand")
+        .eq("id", inventory_id)
+        .single();
+      if (currentError) {
+        throw new Error(`Failed to load inventory for update: ${currentError.message}`);
+      }
+
+      const { error: directUpdateError } = await supabase
+        .from("inventory")
+        .update({
+          quantity_on_hand: (inventory?.quantity_on_hand || 0) + total_weight_grams,
+          unit_cost: calculated_cost_per_gram,
+          updated_at: nowIso,
+        })
+        .eq("id", inventory_id);
+
+      if (directUpdateError) {
+        throw new Error(
+          `Failed to update inventory: ${directUpdateError.message}`
+        );
+      }
+    }
+
+    // Create cost history entry
+    const { error: costHistoryError } = await supabase.from("cost_history").insert({
+      business_id,
+      inventory_id,
+      intake_id,
+      cost_per_gram: calculated_cost_per_gram,
+      total_cost,
+      total_weight_grams,
+      delivery_cost,
+      supplier,
+    });
+
+    if (costHistoryError) {
+      throw new Error(`Failed to create cost history: ${costHistoryError.message}`);
+    }
+  } catch (error) {
+    await supabase.from("inventory_batches").delete().eq("id", createdBatch.id);
+    throw error;
+  }
 
   try {
     const { error: batchError } = await supabase.from("inventory_batches").insert({
@@ -266,7 +305,7 @@ async function processApprovedIntake(
   }
 
   // Create inventory log entries
-  await supabase.from("inventory_log").insert({
+  const { error: intakeLogError } = await supabase.from("inventory_log").insert({
     inventory_id,
     transaction_type: "intake",
     quantity_change: total_weight_grams,
@@ -280,9 +319,12 @@ async function processApprovedIntake(
       cost_per_gram: calculated_cost_per_gram,
     },
   });
+  if (intakeLogError) {
+    throw new Error(`Failed to create intake inventory log: ${intakeLogError.message}`);
+  }
 
   if (delivery_cost > 0) {
-    await supabase.from("inventory_log").insert({
+    const { error: deliveryLogError } = await supabase.from("inventory_log").insert({
       inventory_id,
       transaction_type: "delivery_cost",
       quantity_change: 0,
@@ -294,5 +336,8 @@ async function processApprovedIntake(
         supplier,
       },
     });
+    if (deliveryLogError) {
+      throw new Error(`Failed to create delivery inventory log: ${deliveryLogError.message}`);
+    }
   }
 }

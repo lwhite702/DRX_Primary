@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { type InventoryForecastResult } from "@/lib/utils/inventory-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 
 interface InventoryForecastCardProps {
   forecast: InventoryForecastResult | null;
@@ -32,7 +32,7 @@ export function InventoryForecastCard({
   onRestock,
 }: InventoryForecastCardProps) {
   const [acknowledging, setAcknowledging] = useState(false);
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   if (!forecast) {
     return null;

@@ -220,17 +220,29 @@ export class POSEngine {
     errors: Array<{ inventory_id: string; message: string }>;
   }> {
     try {
-      const res = await fetch("/api/pos/validate-stock", {
+      const res = await fetch("/api/pos/preflight", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           businessId: business_id,
           items: this.cart.items.map((i) => ({
             inventory_id: i.inventory_id,
             quantity: i.quantity,
+            unit_price: i.unit_price,
+            weight_grams: i.weight_grams,
           })),
         }),
       });
-      return await res.json();
+      const payload = await res.json();
+      return {
+        valid: Boolean(payload?.stock?.valid ?? payload?.valid),
+        errors: Array.isArray(payload?.stock?.errors)
+          ? payload.stock.errors.map((entry: { inventoryId?: string; message: string }) => ({
+              inventory_id: entry.inventoryId ?? "",
+              message: entry.message,
+            }))
+          : [],
+      };
     } catch (e: any) {
       return {
         valid: false,
@@ -254,10 +266,25 @@ export class POSEngine {
     if (!this.cart.customer_id) return { valid: true };
 
     try {
-      const res = await fetch(
-        `/api/pos/validate-credit?businessId=${business_id}&customerId=${this.cart.customer_id}&amount=${this.cart.total}`,
-      );
-      return await res.json();
+      const res = await fetch("/api/pos/preflight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessId: business_id,
+          customerId: this.cart.customer_id,
+          amount: this.cart.total,
+          items: this.cart.items.map((i) => ({
+            inventory_id: i.inventory_id,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+          })),
+        }),
+      });
+      const payload = await res.json();
+      if (payload?.credit) {
+        return payload.credit;
+      }
+      return { valid: true };
     } catch (e: any) {
       console.error("Credit validation error:", e);
       return { valid: true, warning: "Credit validation unavailable" };
@@ -310,10 +337,10 @@ export class POSEngine {
     fees: MiscFee[] = [],
   ): Promise<{
     success: boolean;
-    sale_id?: string;
-    order_number?: string;
-    total_amount?: number;
-    change_amount?: number;
+    saleId?: string;
+    orderNumber?: string;
+    total?: number;
+    changeAmount?: number;
     error?: string;
   }> {
     // Validate stock
@@ -381,11 +408,13 @@ export class POSEngine {
       }
       return {
         success: result.success,
-        sale_id: result.saleId,
-        order_number: result.orderNumber,
-        total_amount: result.total,
-        change_amount: result.changeAmount,
-        error: result.error,
+        saleId: result.saleId ?? null,
+        orderNumber: result.orderNumber ?? null,
+        total: result.totals?.total ?? result.total,
+        changeAmount: result.totals?.changeAmount ?? result.changeAmount,
+        error:
+          result.error ??
+          (Array.isArray(result.errors) ? result.errors.join(", ") : undefined),
       };
     } catch (e: any) {
       return { success: false, error: e.message };

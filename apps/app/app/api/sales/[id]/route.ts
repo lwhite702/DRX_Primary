@@ -150,7 +150,10 @@ async function handleCustomerAssignment(
       if (oldCustomerId) {
         await tx.customers.update({
           where: { id: oldCustomerId },
-          data: { totalCreditUsed: { decrement: sale.totalAmount || 0 } },
+          data: {
+            totalCreditUsed: { decrement: sale.totalAmount || 0 },
+            lastActivityAt: new Date(),
+          },
         });
       }
 
@@ -158,9 +161,17 @@ async function handleCustomerAssignment(
       if (newCustomerId) {
         await tx.customers.update({
           where: { id: newCustomerId },
-          data: { totalCreditUsed: { increment: sale.totalAmount || 0 } },
+          data: {
+            totalCreditUsed: { increment: sale.totalAmount || 0 },
+            lastActivityAt: new Date(),
+          },
         });
       }
+    } else if (newCustomerId) {
+      await tx.customers.update({
+        where: { id: newCustomerId },
+        data: { lastActivityAt: new Date() },
+      });
     }
 
     return NextResponse.json({ success: true, sale: updated });

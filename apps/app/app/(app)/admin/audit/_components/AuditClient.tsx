@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Search, Download, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,7 @@ export function AuditClient() {
   const [selectedBusiness, setSelectedBusiness] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   useEffect(() => {
     if (!supabase) {
@@ -118,7 +118,13 @@ export function AuditClient() {
         log.user_id,
         log.business_id,
       ]);
-      content = [headers, ...rows].map((row) => row.join(",")).join("\n");
+      content = [headers, ...rows]
+        .map((row) =>
+          row
+            .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+            .join(","),
+        )
+        .join("\n");
       mimeType = "text/csv";
       fileName += ".csv";
     } else {

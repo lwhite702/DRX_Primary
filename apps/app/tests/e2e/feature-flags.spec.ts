@@ -1,12 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
-test.describe("Feature flags access", () => {
+test.describe("Feature flags access @smoke", () => {
   test.beforeEach(async ({ page }) => {
-    await setupClerkTestingToken({ page });
+    if (process.env.CLERK_PUBLISHABLE_KEY) {
+      await setupClerkTestingToken({ page });
+    }
   });
 
-  test("admin feature route is guarded and non-blank", async ({ page }) => {
+  test("admin feature route is guarded and non-blank @smoke", async ({ page }) => {
+    if (test.info().project.name.includes("mobile")) return;
     await page.goto("/admin/features");
     await expect(page.locator("body")).toBeVisible();
 

@@ -11,11 +11,13 @@ import {
   ScanLine,
   type LucideIcon,
 } from "lucide-react";
+import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
 
 export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  external?: boolean;
 };
 
 export const primaryNav: NavItem[] = [
@@ -27,6 +29,6 @@ export const primaryNav: NavItem[] = [
   { href: "/credit", label: "Credit", icon: CreditCard },
   { href: "/insights", label: "Operations Insights", icon: TrendingUp },
   { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/help", label: "Help", icon: HelpCircle },
+  { href: featurebaseHelpdeskUrl, label: "Help", icon: HelpCircle, external: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { redis, cache } from "@/lib/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import type { CustomerFeatures, NormalizedFeatures } from "./features";
@@ -30,7 +30,7 @@ interface AIEngineResponse {
 
 async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
   return cache(`business_config:${business_id}`, 300, async () => {
-    const supabase = getSupabaseClient();
+    const supabase = createAppClient();
 
     if (!supabase) {
       return {

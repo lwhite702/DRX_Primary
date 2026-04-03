@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, RotateCcw } from "lucide-react";
 import {
@@ -54,7 +54,7 @@ export default function AliasesSettingsPage() {
     standard_unit: "g",
     quantity: "",
   });
-  const supabase = getSupabaseClient();
+  const supabase = createAppClient();
 
   const fetchAliases = async () => {
     if (!business?.id || !supabase) return;

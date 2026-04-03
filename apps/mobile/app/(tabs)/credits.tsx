@@ -195,17 +195,20 @@ export default function Credits() {
 
   const renderCustomerCredit = ({ item }: { item: Customer }) => {
     const balance = getCustomerBalance(item.id);
+    const customerName =
+      item.alias ||
+      `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+      "Customer";
+    const avatarInitial = customerName.charAt(0) || "C";
 
     return (
       <View style={styles.creditCard}>
         <View style={styles.creditHeader}>
           <View style={styles.customerAvatar}>
-            <Text style={styles.avatarText}>{item.first_name.charAt(0)}</Text>
+            <Text style={styles.avatarText}>{avatarInitial}</Text>
           </View>
           <View style={styles.customerInfo}>
-            <Text style={styles.customerName}>
-              {item.first_name} {item.last_name}
-            </Text>
+            <Text style={styles.customerName}>{customerName}</Text>
             <Text style={styles.creditLimit}>
               Limit: {formatCurrency(item.credit_limit)}
             </Text>
@@ -543,14 +546,22 @@ export default function Credits() {
                   setCustomerSelectionModalVisible(false);
                 }}
               >
-                <View style={styles.customerAvatar}>
-                  <Text style={styles.avatarText}>
-                    {item.first_name.charAt(0)}
-                  </Text>
-                </View>
-                <Text style={styles.customerName}>
-                  {item.first_name} {item.last_name}
-                </Text>
+                {(() => {
+                  const customerName =
+                    item.alias ||
+                    `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+                    "Customer";
+                  return (
+                    <>
+                      <View style={styles.customerAvatar}>
+                        <Text style={styles.avatarText}>
+                          {customerName.charAt(0) || "C"}
+                        </Text>
+                      </View>
+                      <Text style={styles.customerName}>{customerName}</Text>
+                    </>
+                  );
+                })()}
               </TouchableOpacity>
             )}
           />

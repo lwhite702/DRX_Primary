@@ -1,0 +1,182 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "234ad3b232bd93bac42035b8a796e07be47b4d2e",
+  "branch": "codex/pos-checkout-integrity",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1773728087,
+  "message": "chore: apply current workspace changes",
+  "files_changed": [
+    ".claude/skills/documentation-update-automation/SKILL.md",
+    "apps/app/app/(app)/dashboard/_components/DashboardHeader.tsx",
+    "apps/app/app/(app)/dashboard/_components/SystemHealth.tsx",
+    "apps/app/app/(app)/reports/page.tsx",
+    "apps/app/app/actions/beta.ts",
+    "apps/app/app/api/featurebase/auth/route.ts",
+    "apps/app/components/feature-gate.tsx",
+    "apps/app/components/theme-provider.tsx",
+    "apps/app/components/ui/dialog.tsx",
+    "apps/app/components/ui/sheet.tsx",
+    "apps/app/lib/auth/server-guards.ts",
+    "apps/app/lib/hooks/use-feature-flag.ts",
+    "apps/app/lib/quick-pos/selectors.ts",
+    "apps/app/lib/supabase/admin.ts",
+    "apps/app/lib/utils.ts",
+    "apps/app/lib/utils/offline-sync.ts",
+    "apps/app/package.json",
+    "apps/mobile/package.json",
+    "apps/mobile/src/components/Button.tsx",
+    "apps/mobile/src/components/EmptyState.tsx",
+    "docs/testing/DEAD_CODE_AUDIT_2026-03-09.md",
+    "pnpm-lock.yaml"
+  ],
+  "added": 269,
+  "deleted": 650,
+  "file_changes": [
+    {
+      "path": ".claude/skills/documentation-update-automation/SKILL.md",
+      "added": 95,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/dashboard/_components/DashboardHeader.tsx",
+      "added": 0,
+      "deleted": 18,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/dashboard/_components/SystemHealth.tsx",
+      "added": 0,
+      "deleted": 63,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/(app)/reports/page.tsx",
+      "added": 2,
+      "deleted": 5,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/actions/beta.ts",
+      "added": 0,
+      "deleted": 27,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/app/api/featurebase/auth/route.ts",
+      "added": 0,
+      "deleted": 2,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/feature-gate.tsx",
+      "added": 0,
+      "deleted": 34,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/theme-provider.tsx",
+      "added": 0,
+      "deleted": 11,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/ui/dialog.tsx",
+      "added": 2,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/components/ui/sheet.tsx",
+      "added": 2,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/auth/server-guards.ts",
+      "added": 2,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/hooks/use-feature-flag.ts",
+      "added": 0,
+      "deleted": 62,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/quick-pos/selectors.ts",
+      "added": 0,
+      "deleted": 4,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/supabase/admin.ts",
+      "added": 0,
+      "deleted": 2,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/utils.ts",
+      "added": 11,
+      "deleted": 0,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/lib/utils/offline-sync.ts",
+      "added": 1,
+      "deleted": 2,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/app/package.json",
+      "added": 0,
+      "deleted": 4,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "added": 0,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/mobile/src/components/Button.tsx",
+      "added": 0,
+      "deleted": 138,
+      "attribution": "human"
+    },
+    {
+      "path": "apps/mobile/src/components/EmptyState.tsx",
+      "added": 19,
+      "deleted": 3,
+      "attribution": "human"
+    },
+    {
+      "path": "docs/testing/DEAD_CODE_AUDIT_2026-03-09.md",
+      "added": 22,
+      "deleted": 25,
+      "attribution": "human"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "added": 113,
+      "deleted": 249,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 269,
+  "human_deleted": 650,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -1,0 +1,49 @@
+{
+  "oobo_version": "0.1.3",
+  "commit_hash": "6d69a61292aa15cdc490135a54bef7c337941f00",
+  "branch": "codex/ci-node-20-19",
+  "author": "Lee <lee@wrelik.com>",
+  "author_type": "automated",
+  "contributors": [
+    {
+      "name": "Lee <lee@wrelik.com>",
+      "role": "human"
+    }
+  ],
+  "committed_at": 1774855963,
+  "message": "ci: bump workflow node runtime to 20.19.0",
+  "files_changed": [
+    ".github/workflows/ci-gate.yml",
+    ".github/workflows/sentry-release.yml",
+    ".github/workflows/version.yml"
+  ],
+  "added": 14,
+  "deleted": 14,
+  "file_changes": [
+    {
+      "path": ".github/workflows/ci-gate.yml",
+      "added": 12,
+      "deleted": 12,
+      "attribution": "human"
+    },
+    {
+      "path": ".github/workflows/sentry-release.yml",
+      "added": 1,
+      "deleted": 1,
+      "attribution": "human"
+    },
+    {
+      "path": ".github/workflows/version.yml",
+      "added": 1,
+      "deleted": 1,
+      "attribution": "human"
+    }
+  ],
+  "ai_added": 0,
+  "ai_deleted": 0,
+  "human_added": 14,
+  "human_deleted": 14,
+  "ai_percentage": 0.0,
+  "session_ids": [],
+  "transparency_mode": "off"
+}

@@ -44,14 +44,18 @@ export function BottomNav() {
         {navItems.map((item, index) => {
           if (!item) return null;
           const Icon = item.icon;
+          const isExternal = Boolean(item.external);
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            !isExternal &&
+            (pathname === item.href || pathname.startsWith(item.href + "/"));
           const isSales = item.href === "/sales";
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
               className={cn(
                 "flex-1 min-w-0 flex flex-col items-center justify-center gap-1 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95",
                 isSales ? "relative -top-5" : "h-14 px-2",
@@ -114,14 +118,18 @@ export function BottomNav() {
               <div className="space-y-1">
                 {moreNav.map((item) => {
                   const Icon = item.icon;
+                  const isExternal = Boolean(item.external);
                   const isActive =
-                    pathname === item.href ||
-                    pathname.startsWith(item.href + "/");
+                    !isExternal &&
+                    (pathname === item.href ||
+                      pathname.startsWith(item.href + "/"));
 
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
                       onClick={() => setMoreMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium",

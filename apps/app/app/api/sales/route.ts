@@ -15,6 +15,7 @@ import {
   setTaxAmount,
 } from "@/lib/pos/core";
 import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
+import { buildCheckoutFailure, buildCheckoutSuccess } from "@/lib/pos/response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -91,11 +92,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(sale, { status: 201 });
+    return NextResponse.json(
+      buildCheckoutSuccess(result, {
+        sale,
+      }),
+      { status: 201 },
+    );
   } catch (error) {
     const status = error instanceof PosCheckoutError ? error.status : 500;
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal Server Error" },
+      buildCheckoutFailure(
+        error instanceof Error ? error.message : "Internal Server Error",
+      ),
       { status },
     );
   }

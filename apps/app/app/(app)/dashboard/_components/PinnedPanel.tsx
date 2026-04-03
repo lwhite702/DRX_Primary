@@ -10,6 +10,7 @@ import {
   type DashboardViewPreset,
   type PinnedPanelItemId,
 } from "@/lib/auth/dashboard-preferences";
+import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
 
 type PinnedPanelProps = {
   preset: DashboardViewPreset;
@@ -72,7 +73,7 @@ const PIN_ITEMS: Record<PinnedPanelItemId, PinItem> = {
     id: "help",
     label: "Help",
     description: "Support center",
-    href: "/help",
+    href: featurebaseHelpdeskUrl,
   },
   settings: {
     id: "settings",
@@ -155,6 +156,8 @@ export function PinnedPanel({
             <div className="flex items-center justify-between gap-3">
               <Link
                 href={item.href}
+                target={item.id === "help" ? "_blank" : undefined}
+                rel={item.id === "help" ? "noopener noreferrer" : undefined}
                 className="min-w-0 flex-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="truncate text-sm font-semibold text-white">

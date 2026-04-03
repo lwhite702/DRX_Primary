@@ -22,8 +22,8 @@ const createQueryBuilder = () => {
   return builder;
 };
 
-vi.mock('@/lib/supabase/client', () => ({
-  getSupabaseClient: vi.fn(() => ({
+vi.mock('@/lib/data/client/supabase-client', () => ({
+  createAppClient: vi.fn(() => ({
     from: vi.fn(() => createQueryBuilder()),
     auth: {
       getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
@@ -70,8 +70,8 @@ const MockEventDeskPage = () => {
 
     if (!business?.id) return;
     
-    const { getSupabaseClient } = await import('@/lib/supabase/client');
-    const supabase = getSupabaseClient();
+    const { createAppClient } = await import('@/lib/data/client/supabase-client');
+    const supabase = createAppClient();
     if (!supabase) return;
 
     try {
@@ -177,8 +177,8 @@ describe('EventDeskPage Data Fetching', () => {
         }),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const component = MockEventDeskPage();
       await component.loadEventDeskData();
@@ -194,8 +194,8 @@ describe('EventDeskPage Data Fetching', () => {
         from: vi.fn(() => createQueryBuilder()),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const component = MockEventDeskPage();
       await component.loadEventDeskData();
@@ -224,8 +224,8 @@ describe('EventDeskPage Data Fetching', () => {
         }),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const component = MockEventDeskPage();
       await component.loadEventDeskData();
@@ -259,8 +259,8 @@ describe('EventDeskPage Data Fetching', () => {
         }),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const component = MockEventDeskPage();
       await component.loadEventDeskData();
@@ -279,8 +279,8 @@ describe('EventDeskPage Data Fetching', () => {
         }),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -357,8 +357,8 @@ describe('EventDeskPage Data Fetching', () => {
         }),
       };
 
-      const { getSupabaseClient } = await import('@/lib/supabase/client');
-      vi.mocked(getSupabaseClient).mockReturnValue(mockSupabase as any);
+      const { createAppClient } = await import('@/lib/data/client/supabase-client');
+      vi.mocked(createAppClient).mockReturnValue(mockSupabase as any);
 
       const component = MockEventDeskPage();
       

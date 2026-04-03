@@ -594,4 +594,63 @@ describe("pos core", () => {
       }),
     });
   });
+
+  it("fails checkout when FIFO batch inventory is missing for required allocation", async () => {
+    const cart = setPayment(
+      addItem(
+        createCart({
+          businessId: "11111111-1111-4111-8111-111111111111",
+          userId: "user_123",
+          mode: "full",
+          customerId: null,
+        }),
+        {
+          id: "weighted-line",
+          inventoryId: "22222222-2222-4222-8222-222222222222",
+          name: "Weighted Item",
+          unitPrice: 28,
+          qty: 1,
+          source: "inventory",
+          weightGrams: 3.5,
+        },
+      ),
+      {
+        method: "card",
+        receipt: "none",
+        creditConfirmed: false,
+      },
+    );
+
+    mockedDb.$transaction.mockImplementation(async (fn: any) => {
+      const queryRaw = vi.fn().mockImplementation(async (query: unknown) => {
+        const sql = JSON.stringify(query);
+        if (sql.includes("FROM inventory_batches")) {
+          return [];
+        }
+        return [
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            product_name: "Weighted Item",
+            quantity_on_hand: 5,
+            inventory_in_grams: 10,
+            unit_cost: 5,
+            convert_to_grams: 1,
+          },
+        ];
+      });
+
+      return fn(
+        createTxBase({
+          $queryRaw: queryRaw,
+        }),
+      );
+    });
+
+    await expect(
+      checkout(cart, "99999999-9999-4999-8999-999999999999"),
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Missing FIFO batch inventory for item 22222222-2222-4222-8222-222222222222",
+    });
+  });
 });

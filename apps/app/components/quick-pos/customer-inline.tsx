@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import {
+  maskAlias,
+  shouldMaskFromProtocol,
+} from "@/lib/privacy/masking";
 
 interface CustomerItem {
   id: string;
@@ -20,6 +26,34 @@ export function CustomerInline({
   const [alias, setAlias] = useState("");
   const [results, setResults] = useState<CustomerItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
+    useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/business/settings").then((res) => res.json()),
+      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
+    ])
+      .then(([settingsData, preferenceData]) => {
+        setPrivacyProtocol(
+          settingsData.privacy_protocol ||
+            settingsData.privacyProtocol ||
+            getDefaultPrivacyProtocol(),
+        );
+        setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
+      })
+      .catch((error) => {
+        console.error("Failed to load ProteXion settings", error);
+      });
+  }, []);
+
+  const shouldMask = shouldMaskFromProtocol(
+    privacyProtocol,
+    manualScreenPrivacyEnabled,
+    true,
+  );
 
   const lookup = async () => {
     if (!phone.trim()) return;
@@ -86,7 +120,10 @@ export function CustomerInline({
 
       {attached.id ? (
         <p className="mt-2 text-sm font-semibold text-emerald-300">
-          Attached: {attached.alias || attached.phone}
+          Attached:{" "}
+          {shouldMask
+            ? maskAlias(attached.alias || attached.phone)
+            : attached.alias || attached.phone}
         </p>
       ) : null}
 
@@ -98,7 +135,7 @@ export function CustomerInline({
             onClick={() => onAttach(item)}
             className="flex h-12 w-full items-center justify-between rounded-md border border-white/10 bg-black/40 px-3 hover:border-accent/30 hover:bg-accent/5"
           >
-            <span>{item.alias}</span>
+            <span>{shouldMask ? maskAlias(item.alias) : item.alias}</span>
             <span className="text-sm text-muted-foreground">Credit ${item.remainingCredit.toFixed(2)}</span>
           </button>
         ))}
