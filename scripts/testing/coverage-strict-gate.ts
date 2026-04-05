@@ -14,6 +14,7 @@ const requiredTestFiles = [
   "scripts/testing/login-surface-check.ts",
   "scripts/testing/observability-contract-check.ts",
   "scripts/testing/feature-flags-parity-check.ts",
+  "scripts/testing/posthog-flags-parity-check.ts",
 ];
 
 const criticalTargets = [

@@ -1,17 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { db } from "@/lib/db";
 import { validateInventoryAvailability } from "@/lib/pos/core";
 import type { PosCartItem } from "@/lib/pos/types";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+
+const ValidateStockSchema = z.object({
+  items: z.array(z.record(z.string(), z.unknown())),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const { businessId } = await resolveAuthContext();
     if (!businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const { items } = await request.json();
+    const parsed = ValidateStockSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid stock validation payload",
+        400,
+        parsed.error.flatten(),
+      );
+    }
+
+    const { items } = parsed.data;
     const normalizedItems: PosCartItem[] = (Array.isArray(items) ? items : []).map((item) => {
       const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
       return {
@@ -51,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     const result = await validateInventoryAvailability(db, businessId, normalizedItems);
 
-    return NextResponse.json({
+    return successResponse({
       valid: result.valid,
       errors: result.errors.map((error) => ({
         inventory_id: error.inventoryId,
@@ -61,6 +77,6 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Stock Validation Error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse("INTERNAL_ERROR", message, 500);
   }
 }
