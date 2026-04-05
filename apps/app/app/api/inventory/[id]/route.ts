@@ -1,12 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+
+const RouteParamsSchema = z.object({
+  id: z.string().uuid(),
+});
+
+const InventoryUpdateSchema = z
+  .object({
+    product_name: z.string().min(1).optional(),
+    sku: z.string().optional(),
+    category: z.string().optional(),
+    quantity_on_hand: z.number().finite().optional(),
+    reorder_level: z.number().finite().optional(),
+    unit_cost: z.number().finite().optional(),
+    selling_price: z.number().finite().optional(),
+    is_active: z.boolean().optional(),
+  })
+  .strict();
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  _request: NextRequest,
+  { params }: { params: { id: string } },
 ) {
   try {
-    const { id } = await params;
+    const parsedParams = RouteParamsSchema.safeParse(params);
+    if (!parsedParams.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid inventory id",
+        400,
+        parsedParams.error.flatten(),
+      );
+    }
+    const { id } = parsedParams.data;
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -14,7 +43,7 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
     const { data: item, error } = await supabase
@@ -24,24 +53,30 @@ export async function GET(
       .single();
 
     if (error) {
-      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+      return errorResponse("NOT_FOUND", "Item not found", 404);
     }
 
-    return NextResponse.json(item);
+    return successResponse({ data: item });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: string } },
 ) {
   try {
-    const { id } = await params;
+    const parsedParams = RouteParamsSchema.safeParse(params);
+    if (!parsedParams.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid inventory id",
+        400,
+        parsedParams.error.flatten(),
+      );
+    }
+    const { id } = parsedParams.data;
     const supabase = await createClient();
     const {
       data: { user },
@@ -49,13 +84,22 @@ export async function PUT(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const body = await request.json();
+    const parsedPayload = InventoryUpdateSchema.safeParse(await request.json());
+    if (!parsedPayload.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid inventory update payload",
+        400,
+        parsedPayload.error.flatten(),
+      );
+    }
+
     const { data: updatedItem, error } = await supabase
       .from("inventory")
-      .update(body)
+      .update(parsedPayload.data)
       .eq("id", id)
       .select()
       .single();
@@ -63,19 +107,18 @@ export async function PUT(
     if (error) {
       console.error("Update Error:", error);
       if (error.code === "42501") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        return errorResponse("FORBIDDEN", "Forbidden", 403);
       }
-      return NextResponse.json(
-        { error: "Failed to update item", details: error },
-        { status: 500 },
+      return errorResponse(
+        "INTERNAL_ERROR",
+        "Failed to update item",
+        500,
+        error,
       );
     }
 
-    return NextResponse.json(updatedItem);
+    return successResponse({ data: updatedItem });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }

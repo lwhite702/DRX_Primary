@@ -1,25 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "../../pos/_lib/server";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
 
-export async function GET(request: NextRequest) {
+const BusinessProfilePatchSchema = z
+  .object({
+    businessName: z.string().min(1).optional(),
+    business_name: z.string().min(1).optional(),
+    businessType: z.string().optional(),
+    business_type: z.string().optional(),
+    phoneNumber: z.string().optional(),
+    phone_number: z.string().optional(),
+    email: z.string().email().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    zip_code: z.string().optional(),
+  })
+  .strict();
+
+export async function GET(_request: NextRequest) {
   try {
     const { businessId } = await resolveAuthContext();
     if (!businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
     const profile = await db.businessProfile.findUnique({
       where: { id: businessId },
     });
 
-    return NextResponse.json(profile);
+    return successResponse({ data: profile });
   } catch (error) {
     console.error("GET Business Profile Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }
 
@@ -27,10 +43,19 @@ export async function PATCH(request: NextRequest) {
   try {
     const { businessId } = await resolveAuthContext();
     if (!businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const body = await request.json();
+    const parsed = BusinessProfilePatchSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid profile payload",
+        400,
+        parsed.error.flatten(),
+      );
+    }
+    const body = parsed.data;
 
     const updated = await db.businessProfile.update({
       where: { id: businessId },
@@ -46,12 +71,9 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(updated);
+    return successResponse({ data: updated });
   } catch (error) {
     console.error("PATCH Business Profile Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }

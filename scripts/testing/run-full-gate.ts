@@ -59,6 +59,7 @@ const gates: GateDefinition[] = [
       "pnpm test:observability-contract",
       "pnpm test:doppler-sync",
       "pnpm test:feature-flags-contract",
+      "pnpm test:posthog-flags-contract",
       "pnpm test:metadata-contract",
       "pnpm test:login-surfaces",
       "pnpm test:coverage:strict",
