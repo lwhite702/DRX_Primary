@@ -1,17 +1,52 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { auth, clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { hasPermission } from "@/lib/auth/server-guards";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
+
+const AdminUserCreateSchema = z.object({
+  username: z.string().min(1),
+  email: z.string().email(),
+  role: z.string().min(1).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const { userId: actorId } = await auth();
 
     if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const body = await request.json();
-    const { username, email, role } = body;
+    const canManageUsers = await hasPermission("users.manage_all");
+    if (!canManageUsers) {
+      return errorResponse("FORBIDDEN", "Forbidden", 403);
+    }
+
+    const featureEnabled = await ensureServerFlag("feat_admin_user_management", {
+      distinctId: actorId,
+      defaultValue: true,
+    });
+    if (!featureEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Admin user management is temporarily disabled",
+        503,
+      );
+    }
+
+    const payload = AdminUserCreateSchema.safeParse(await request.json());
+    if (!payload.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid payload",
+        400,
+        payload.error.flatten(),
+      );
+    }
+    const { username, email, role } = payload.data;
 
     // 1. Create User in Clerk
     const client = await clerkClient();
@@ -25,9 +60,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!newUser) {
-      return NextResponse.json(
-        { error: "Creation failed (no user returned)" },
-        { status: 500 },
+      return errorResponse(
+        "INTERNAL_ERROR",
+        "Creation failed (no user returned)",
+        500,
       );
     }
 
@@ -64,12 +100,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ id: newUser.id }, { status: 201 });
+    return successResponse({ id: newUser.id }, 201);
   } catch (error) {
     console.error("Create admin user error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Internal Server Error",
+      500,
     );
   }
 }

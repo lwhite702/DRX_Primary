@@ -1,5 +1,9 @@
 import { scheduleNightlyRefresh } from "@/lib/credit/creditScheduler";
-import { NextResponse } from "next/server";
+import { auth } from "@/lib/adapters/auth/server";
+import { hasPermission } from "@/lib/auth/server-guards";
+import { errorResponse, successResponse } from "@/lib/api/response";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
+import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
 
 // This endpoint is called by a cron job to refresh AI credit limits
 // Protected by environment variable auth (configure CRON_SECRET in your environment)
@@ -7,12 +11,29 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   // Verify cron secret
   const cronSecret = request.headers.get("authorization");
-  const expectedSecret = `Bearer ${process.env.CRON_SECRET || "default-secret"}`;
+  const configuredSecret = process.env.CRON_SECRET;
+  if (!configuredSecret) {
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "CRON_SECRET is not configured",
+      500,
+    );
+  }
+  const expectedSecret = `Bearer ${configuredSecret}`;
 
   if (cronSecret !== expectedSecret) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+    return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  }
+
+  const killSwitchEnabled = await ensureServerFlag(
+    OPS_KILL_SWITCH_FLAGS.creditRefreshLimitsCron,
+    { distinctId: "cron-refresh-limits", defaultValue: true },
+  );
+  if (!killSwitchEnabled) {
+    return errorResponse(
+      "FEATURE_DISABLED",
+      "Credit limit refresh is temporarily disabled",
+      503,
     );
   }
 
@@ -20,27 +41,36 @@ export async function POST(request: Request) {
     console.log("Starting scheduled credit limit refresh");
     await scheduleNightlyRefresh();
 
-    return NextResponse.json(
+    return successResponse(
       { message: "Credit limit refresh completed successfully" },
-      { status: 200 }
+      200,
     );
   } catch (error) {
     console.error("Error in credit limit refresh:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to refresh credit limits",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Failed to refresh credit limits",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }
 
 // Allow GET for health checks
-export async function GET(request: Request) {
-  return NextResponse.json(
-    { status: "Credit limit refresh endpoint is running" },
-    { status: 200 }
-  );
+export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  }
+
+  const canViewAudit = await hasPermission("audit.view");
+  if (!canViewAudit) {
+    return errorResponse("FORBIDDEN", "Forbidden", 403);
+  }
+
+  return successResponse({
+    status: "healthy",
+    endpoint: "credit-refresh-limits",
+  });
 }
