@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/admin/audit-logs/route";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { hasPermission } from "@/lib/auth/server-guards";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
 // Mock Clerk auth
 vi.mock("@clerk/nextjs/server", () => ({
@@ -18,20 +21,42 @@ vi.mock("@/lib/db", () => ({
     inventoryLog: {
       findMany: vi.fn(),
     },
+    userRole: {
+      findFirst: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@/lib/auth/server-guards", () => ({
+  hasPermission: vi.fn(),
+}));
+
+vi.mock("@/app/api/pos/_lib/server", () => ({
+  resolveAuthContext: vi.fn(),
+}));
+
+vi.mock("@/lib/posthog/server-flags", () => ({
+  ensureServerFlag: vi.fn(),
 }));
 
 describe("Audit Logs API Integration", () => {
   const mockBusinessId = "test-business-123";
-  const mockUserId = "user-123";
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (hasPermission as any).mockResolvedValue(true);
+    (resolveAuthContext as any).mockResolvedValue({
+      userId: "admin-1",
+      businessId: null,
+    });
+    (ensureServerFlag as any).mockResolvedValue(true);
+    (db.userRole.findFirst as any).mockResolvedValue(null);
   });
 
   it("should allow super_admin (or any authorized user) to fetch latest logs", async () => {
     // Mock Auth
     (auth as any).mockResolvedValue({ userId: "admin-1" });
+    (db.userRole.findFirst as any).mockResolvedValue({ id: "role-1" });
 
     // Mock DB Data
     (db.systemAuditLog.findMany as any).mockResolvedValue([
@@ -49,13 +74,17 @@ describe("Audit Logs API Integration", () => {
       }),
     );
 
-    expect(data).toHaveLength(1);
+    expect(data.items).toHaveLength(1);
     expect(res.status).toBe(200);
   });
 
   it("should filter logs by business_id", async () => {
     // Mock Auth
     (auth as any).mockResolvedValue({ userId: "manager-1" });
+    (resolveAuthContext as any).mockResolvedValue({
+      userId: "manager-1",
+      businessId: mockBusinessId,
+    });
 
     // Mock DB Data
     (db.systemAuditLog.findMany as any).mockResolvedValue([
@@ -73,7 +102,7 @@ describe("Audit Logs API Integration", () => {
         where: { businessId: mockBusinessId },
       }),
     );
-    expect(data[0].id).toBe("scoped-log");
+    expect(data.items[0].id).toBe("scoped-log");
     expect(res.status).toBe(200);
   });
 });

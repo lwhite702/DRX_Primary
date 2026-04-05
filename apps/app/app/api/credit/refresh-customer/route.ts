@@ -1,7 +1,9 @@
 import { refreshAICreditRecommendation } from "@/lib/credit/creditDecisionService";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { NextResponse } from "next/server";
 import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
+import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const RefreshCustomerSchema = z.object({
   customer_id: z.string().min(1),
@@ -9,16 +11,47 @@ const RefreshCustomerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const { businessId } = await resolveAuthContext();
-    if (!businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { businessId, userId } = await resolveAuthContext();
+    if (!businessId || !userId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
+    const killSwitchEnabled = await ensureServerFlag(
+      OPS_KILL_SWITCH_FLAGS.creditRefreshCustomer,
+      {
+        distinctId: userId,
+        personProperties: { business_id: businessId },
+        defaultValue: true,
+      },
+    );
+    if (!killSwitchEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Credit refresh endpoint is temporarily disabled",
+        503,
+      );
+    }
+
+    const featureEnabled = await ensureServerFlag("feat_credit_refresh", {
+      distinctId: userId,
+      personProperties: { business_id: businessId },
+      defaultValue: true,
+    });
+    if (!featureEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Credit refresh feature is temporarily disabled",
+        503,
+      );
     }
 
     const payload = RefreshCustomerSchema.safeParse(await request.json());
     if (!payload.success) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: payload.error.flatten() },
-        { status: 400 },
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid payload",
+        400,
+        payload.error.flatten(),
       );
     }
 
@@ -28,28 +61,28 @@ export async function POST(request: Request) {
     );
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || "Failed to refresh recommendation" },
-        { status: 400 }
+      return errorResponse(
+        "BAD_REQUEST",
+        result.error || "Failed to refresh recommendation",
+        400,
       );
     }
 
-    return NextResponse.json(
+    return successResponse(
       {
         success: true,
         recommendation: result.recommendation,
       },
-      { status: 200 }
+      200,
     );
   } catch (error) {
     console.error("Error in customer credit refresh:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to process request",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Failed to process request",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

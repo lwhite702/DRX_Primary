@@ -68,6 +68,16 @@ export async function requirePermission(permission: Permission) {
   }
 }
 
+export async function requireAnyPermission(permissions: Permission[]) {
+  for (const permission of permissions) {
+    if (await hasPermission(permission)) {
+      return;
+    }
+  }
+
+  throw new Error(`Unauthorized: Missing required permission (${permissions.join(", ")})`);
+}
+
 export async function requireRole(role: Role) {
   const currentRole = await getCurrentUserRole();
   // Super admin check handles hierarchy effectively for now
