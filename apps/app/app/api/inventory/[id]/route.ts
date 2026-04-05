@@ -12,7 +12,8 @@ const InventoryUpdateSchema = z
     product_name: z.string().min(1).optional(),
     sku: z.string().optional(),
     category: z.string().optional(),
-    quantity_on_hand: z.number().finite().optional(),
+```suggestion
+    quantity_on_hand: z.number().finite().int().nonnegative().optional(),
     reorder_level: z.number().finite().optional(),
     unit_cost: z.number().finite().optional(),
     selling_price: z.number().finite().optional(),
