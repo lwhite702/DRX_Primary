@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
+import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const AlertPayloadSchema = z.object({
   userId: z.string().min(1).optional(),
@@ -48,15 +51,42 @@ export async function POST(request: NextRequest) {
   const { userId: actorId } = await auth();
 
   if (!actorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  }
+
+  const killSwitchEnabled = await ensureServerFlag(
+    OPS_KILL_SWITCH_FLAGS.notificationsAlertsWrite,
+    { distinctId: actorId, defaultValue: true },
+  );
+
+  if (!killSwitchEnabled) {
+    return errorResponse(
+      "FEATURE_DISABLED",
+      "Notification alerts writes are temporarily disabled",
+      503,
+    );
+  }
+
+  const featureEnabled = await ensureServerFlag("feat_notifications_alert_write", {
+    distinctId: actorId,
+    defaultValue: true,
+  });
+  if (!featureEnabled) {
+    return errorResponse(
+      "FEATURE_DISABLED",
+      "Notification alert feature is temporarily disabled",
+      503,
+    );
   }
 
   try {
     const payload = AlertPayloadSchema.safeParse(await request.json());
     if (!payload.success) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: payload.error.flatten() },
-        { status: 400 },
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid payload",
+        400,
+        payload.error.flatten(),
       );
     }
 
@@ -96,21 +126,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
+    return successResponse(
       {
         notificationId: notification.id,
         userId: targetUserId,
         message: notification.message,
       },
-      { status: 201 },
+      201,
     );
   } catch (error: unknown) {
     console.error("Create alert error:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Unexpected server error",
-      },
-      { status: 500 },
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Unexpected server error",
+      500,
     );
   }
 }

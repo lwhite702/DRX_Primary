@@ -1,0 +1,296 @@
+export type FlagNamespace = "feat" | "exp" | "beta" | "test" | "ops";
+
+export type FlagManifestItem = {
+  key: string;
+  namespace: FlagNamespace;
+  owner: string;
+  intent: string;
+  defaultEnabled: boolean;
+  rolloutState: "off" | "internal" | "beta" | "percent" | "global";
+  deprecateAfter?: string;
+};
+
+export const FLAG_MANIFEST: FlagManifestItem[] = [
+  // Module-level features
+  {
+    key: "feat_dashboard_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate dashboard module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_inventory_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate inventory module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_customers_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate customers module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_sales_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate sales module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_credit_enabled",
+    namespace: "feat",
+    owner: "platform-credit",
+    intent: "Gate credit module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_reports_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate reports module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_insights_enabled",
+    namespace: "feat",
+    owner: "platform-ai",
+    intent: "Gate insights module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_settings_enabled",
+    namespace: "feat",
+    owner: "platform-app",
+    intent: "Gate settings module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_workspaces_enabled",
+    namespace: "feat",
+    owner: "platform-workspaces",
+    intent: "Gate workspaces module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_admin_enabled",
+    namespace: "feat",
+    owner: "platform-admin",
+    intent: "Gate admin module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_ai_intelligence_enabled",
+    namespace: "feat",
+    owner: "platform-ai",
+    intent: "Gate AI intelligence module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_help_enabled",
+    namespace: "feat",
+    owner: "platform-help",
+    intent: "Gate help module access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+
+  // Critical sub-features
+  {
+    key: "feat_admin_user_management",
+    namespace: "feat",
+    owner: "platform-admin",
+    intent: "Gate admin user management operations",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_admin_audit_access",
+    namespace: "feat",
+    owner: "platform-admin",
+    intent: "Gate audit log access",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_credit_overrides",
+    namespace: "feat",
+    owner: "platform-credit",
+    intent: "Gate credit limit override operations",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_credit_refresh",
+    namespace: "feat",
+    owner: "platform-credit",
+    intent: "Gate credit recommendation refresh operations",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_notifications_alert_write",
+    namespace: "feat",
+    owner: "platform-notifications",
+    intent: "Gate alert creation endpoint",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_notifications_preferences_write",
+    namespace: "feat",
+    owner: "platform-notifications",
+    intent: "Gate notification preferences writes",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+
+  // Ops kill switches
+  {
+    key: "ops_credit_apply_recommendation_kill_switch",
+    namespace: "ops",
+    owner: "platform-credit",
+    intent: "Emergency kill switch for apply recommendation API",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "ops_credit_refresh_customer_kill_switch",
+    namespace: "ops",
+    owner: "platform-credit",
+    intent: "Emergency kill switch for refresh customer API",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "ops_notifications_alerts_write_kill_switch",
+    namespace: "ops",
+    owner: "platform-notifications",
+    intent: "Emergency kill switch for alerts write API",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "ops_notifications_preferences_write_kill_switch",
+    namespace: "ops",
+    owner: "platform-notifications",
+    intent: "Emergency kill switch for preferences write API",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "ops_credit_refresh_limits_cron_kill_switch",
+    namespace: "ops",
+    owner: "platform-credit",
+    intent: "Emergency kill switch for credit refresh cron",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+
+  // Experiments
+  {
+    key: "exp_pos_checkout_flow_v2",
+    namespace: "exp",
+    owner: "platform-pos",
+    intent: "Evaluate conversion impact for POS checkout flow changes",
+    defaultEnabled: false,
+    rolloutState: "internal",
+    deprecateAfter: "2026-09-30",
+  },
+  {
+    key: "exp_credit_limit_strategy_v2",
+    namespace: "exp",
+    owner: "platform-credit",
+    intent: "Experiment with revised credit decision strategy",
+    defaultEnabled: false,
+    rolloutState: "internal",
+    deprecateAfter: "2026-10-31",
+  },
+  {
+    key: "exp_ai_pricing_recommendation_v2",
+    namespace: "exp",
+    owner: "platform-ai",
+    intent: "Experiment with AI pricing recommendation variations",
+    defaultEnabled: false,
+    rolloutState: "internal",
+    deprecateAfter: "2026-10-31",
+  },
+
+  // Beta cohorts
+  {
+    key: "beta_ai_intelligence_cohort",
+    namespace: "beta",
+    owner: "platform-ai",
+    intent: "Enable AI intelligence features for beta cohort",
+    defaultEnabled: false,
+    rolloutState: "beta",
+  },
+  {
+    key: "beta_credit_automation_cohort",
+    namespace: "beta",
+    owner: "platform-credit",
+    intent: "Enable automated credit flows for beta cohort",
+    defaultEnabled: false,
+    rolloutState: "beta",
+  },
+  {
+    key: "beta_workspaces_multi_store",
+    namespace: "beta",
+    owner: "platform-workspaces",
+    intent: "Enable multi-store workspaces rollout for beta cohort",
+    defaultEnabled: false,
+    rolloutState: "beta",
+  },
+
+  // Testing gates
+  {
+    key: "test_enable_mock_pos_data",
+    namespace: "test",
+    owner: "platform-qa",
+    intent: "Enable deterministic POS mocks for test environments",
+    defaultEnabled: false,
+    rolloutState: "internal",
+  },
+  {
+    key: "test_enable_auth_bypass_routes",
+    namespace: "test",
+    owner: "platform-qa",
+    intent: "Enable controlled auth bypass routes for test harness",
+    defaultEnabled: false,
+    rolloutState: "internal",
+  },
+  {
+    key: "test_enable_e2e_shortcuts",
+    namespace: "test",
+    owner: "platform-qa",
+    intent: "Enable non-production E2E shortcuts",
+    defaultEnabled: false,
+    rolloutState: "internal",
+  },
+];
+
+export const FLAG_DEFAULTS = Object.fromEntries(
+  FLAG_MANIFEST.map((flag) => [flag.key, flag.defaultEnabled]),
+) as Record<string, boolean>;
+
+export const OPS_KILL_SWITCH_FLAGS = {
+  creditApplyRecommendation: "ops_credit_apply_recommendation_kill_switch",
+  creditRefreshCustomer: "ops_credit_refresh_customer_kill_switch",
+  notificationsAlertsWrite: "ops_notifications_alerts_write_kill_switch",
+  notificationsPreferencesWrite: "ops_notifications_preferences_write_kill_switch",
+  creditRefreshLimitsCron: "ops_credit_refresh_limits_cron_kill_switch",
+} as const;

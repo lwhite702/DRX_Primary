@@ -1,30 +1,25 @@
 import { getCreditExposureReport } from "@/lib/credit/creditDecisionService";
-import { NextResponse } from "next/server";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { errorResponse, successResponse } from "@/lib/api/response";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const business_id = searchParams.get("business_id");
-
-    if (!business_id) {
-      return NextResponse.json(
-        { error: "Missing business_id parameter" },
-        { status: 400 }
-      );
+    const { businessId } = await resolveAuthContext();
+    if (!businessId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const report = await getCreditExposureReport(business_id);
+    const report = await getCreditExposureReport(businessId);
 
-    return NextResponse.json(report, { status: 200 });
+    return successResponse({ data: report }, 200);
   } catch (error) {
     console.error("Error fetching exposure report:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to fetch report",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Failed to fetch report",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }
