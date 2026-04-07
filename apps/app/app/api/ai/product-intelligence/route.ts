@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     const analysisRequest: ProductAnalysisRequest = {
       businessId: business_id,
       inventoryId: inventory_id,
-      productName: product_name,
-      sku,
+      productName: product_name ?? "",
+      sku: sku ?? "",
       cost: cost ?? 0,
       currentPrice: current_price ?? 0,
       currentStock: current_stock ?? 0,

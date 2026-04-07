@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   transpilePackages: [
     "@wrelik/auth",
     "@wrelik/db",
@@ -20,7 +21,7 @@ const nextConfig = {
     "@wrelik/config",
   ],
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   images: {

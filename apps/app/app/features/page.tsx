@@ -1,15 +1,37 @@
 export default function FeaturesPage() {
-  // For now, redirect to dashboard as a fallback or show a "Coming Soon" message
-  // Given the feedback, we just want to avoid 404s
+  const featureGroups = [
+    {
+      title: "Operations",
+      items: ["Fast POS checkout", "Inventory intake + adjustments", "Reorder awareness"],
+    },
+    {
+      title: "Customer",
+      items: ["Credit profiles", "Risk-aware selling controls", "Order history lookups"],
+    },
+    {
+      title: "Control",
+      items: ["Admin audit visibility", "Feature and rollout gates", "Business-level settings"],
+    },
+  ];
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
       <h1 className="text-4xl font-bold mb-4">Features</h1>
       <p className="text-xl text-muted-foreground mb-8">
-        Detailed feature overview is coming soon.
+        Core capabilities designed for teams running inventory-sensitive operations.
       </p>
-      <a href="/dashboard" className="text-primary hover:underline font-medium">
-        Return to Dashboard
-      </a>
+      <div className="grid w-full max-w-5xl gap-4 md:grid-cols-3 text-left">
+        {featureGroups.map((group) => (
+          <section key={group.title} className="rounded-xl border border-border bg-card p-5">
+            <h2 className="text-lg font-semibold">{group.title}</h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {group.items.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

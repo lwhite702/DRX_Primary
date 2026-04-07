@@ -10,60 +10,69 @@ const NotificationPreferencesSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-  }
+    if (authError || !user) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
 
-  const killSwitchEnabled = await ensureServerFlag(
-    OPS_KILL_SWITCH_FLAGS.notificationsPreferencesWrite,
-    { distinctId: user.id, defaultValue: true },
-  );
-  if (!killSwitchEnabled) {
+    const killSwitchEnabled = await ensureServerFlag(
+      OPS_KILL_SWITCH_FLAGS.notificationsPreferencesWrite,
+      { distinctId: user.id, defaultValue: true },
+    );
+    if (!killSwitchEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Notification preferences writes are temporarily disabled",
+        503,
+      );
+    }
+
+    const featureEnabled = await ensureServerFlag("feat_notifications_preferences_write", {
+      distinctId: user.id,
+      defaultValue: true,
+    });
+    if (!featureEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Notification preferences feature is temporarily disabled",
+        503,
+      );
+    }
+
+    const payload = NotificationPreferencesSchema.safeParse(await request.json());
+    if (!payload.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid preferences payload",
+        400,
+        payload.error.flatten(),
+      );
+    }
+
+    const { error } = await supabase
+      .from("notification_preferences")
+      .upsert({ user_id: user.id, preferences: payload.data.preferences });
+
+    if (error) {
+      return errorResponse("INTERNAL_ERROR", error.message, 500);
+    }
+
+    return successResponse(
+      { userId: user.id, preferences: payload.data.preferences },
+      201,
+    );
+  } catch (error: unknown) {
+    console.error("Notification preferences error:", error);
     return errorResponse(
-      "FEATURE_DISABLED",
-      "Notification preferences writes are temporarily disabled",
-      503,
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Failed to process request",
+      500,
     );
   }
-
-  const featureEnabled = await ensureServerFlag("feat_notifications_preferences_write", {
-    distinctId: user.id,
-    defaultValue: true,
-  });
-  if (!featureEnabled) {
-    return errorResponse(
-      "FEATURE_DISABLED",
-      "Notification preferences feature is temporarily disabled",
-      503,
-    );
-  }
-
-  const payload = NotificationPreferencesSchema.safeParse(await request.json());
-  if (!payload.success) {
-    return errorResponse(
-      "VALIDATION_ERROR",
-      "Invalid preferences payload",
-      400,
-      payload.error.flatten(),
-    );
-  }
-
-  const { error } = await supabase
-    .from("notification_preferences")
-    .upsert({ user_id: user.id, preferences: payload.data.preferences });
-
-  if (error) {
-    return errorResponse("INTERNAL_ERROR", error.message, 500);
-  }
-
-  return successResponse(
-    { userId: user.id, preferences: payload.data.preferences },
-    201,
-  );
 }

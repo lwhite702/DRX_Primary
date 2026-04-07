@@ -44,21 +44,37 @@ export async function GET(request: NextRequest) {
     });
     const isSuperAdmin = Boolean(superAdminRole);
 
-    if (
-      requestedBusinessId &&
-      requestedBusinessId !== actorBusinessId &&
-      !isSuperAdmin
-    ) {
-      return errorResponse("FORBIDDEN", "Forbidden", 403);
-    }
-
     if (!isSuperAdmin && !actorBusinessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const effectiveBusinessId = isSuperAdmin
-      ? requestedBusinessId || actorBusinessId
-      : actorBusinessId;
+    let effectiveBusinessId: string | null = actorBusinessId;
+    if (requestedBusinessId) {
+      if (isSuperAdmin) {
+        effectiveBusinessId = requestedBusinessId;
+      } else {
+        const canAccessRequestedBusiness =
+          requestedBusinessId === actorBusinessId ||
+          Boolean(
+            await db.userRole.findFirst({
+              where: { userId: actorId, businessId: requestedBusinessId },
+              select: { id: true },
+            }),
+          ) ||
+          Boolean(
+            await db.businessProfile.findFirst({
+              where: { id: requestedBusinessId, ownerId: actorId },
+              select: { id: true },
+            }),
+          );
+
+        if (!canAccessRequestedBusiness) {
+          return errorResponse("FORBIDDEN", "Forbidden", 403);
+        }
+
+        effectiveBusinessId = requestedBusinessId;
+      }
+    }
 
     let data: any[] = [];
 

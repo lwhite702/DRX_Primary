@@ -82,7 +82,7 @@ export async function getPosReconciliationReport(
 
   for (const sale of sales) {
     const lineTotalSum = sale.items.reduce(
-      (sum, item) => sum + toNumber(item.lineTotal),
+      (sum: number, item: any) => sum + toNumber(item.lineTotal),
       0,
     );
     const saleTotal = toNumber(sale.totalAmount);
@@ -105,7 +105,7 @@ export async function getPosReconciliationReport(
         ? toNumber(item.weightSoldGrams)
         : item.quantity;
       const actualAllocationQty = item.allocations.reduce(
-        (sum, allocation) => sum + toNumber(allocation.quantityGrams),
+        (sum: number, allocation: any) => sum + toNumber(allocation.quantityGrams),
         0,
       );
 

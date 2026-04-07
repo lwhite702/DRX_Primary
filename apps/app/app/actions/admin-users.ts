@@ -34,7 +34,7 @@ export async function fetchAdminUsers(): Promise<{
       orderBy: { createdAt: "desc" },
     });
 
-    const formatted = roles.map((r) => ({
+    const formatted = roles.map((r: any) => ({
       id: r.id,
       user_id: r.userId,
       role: r.role,

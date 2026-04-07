@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { randomBytes } from "crypto";
 import { auth, clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { hasPermission } from "@/lib/auth/server-guards";
@@ -50,13 +51,12 @@ export async function POST(request: NextRequest) {
 
     // 1. Create User in Clerk
     const client = await clerkClient();
+    const generatedTemporaryPassword = randomBytes(24).toString("base64url");
     const newUser = await client.users.createUser({
       emailAddress: [email],
-      password: "TempPassword123!",
+      password: generatedTemporaryPassword,
       username: username,
       firstName: username, // approximate
-      skipPasswordChecks: true,
-      skipPasswordRequirement: true,
     });
 
     if (!newUser) {

@@ -34,8 +34,8 @@ export async function GET() {
     });
 
     const topInventoryIds = topSellers
-      .map((row) => row.inventoryId)
-      .filter((id): id is string => Boolean(id));
+      .map((row: any) => row.inventoryId)
+      .filter((id: any): id is string => Boolean(id));
 
     const topInventory = topInventoryIds.length
       ? await db.inventory.findMany({
@@ -49,12 +49,12 @@ export async function GET() {
         })
       : [];
 
-    const inventoryById = new Map(topInventory.map((item) => [item.id, item]));
+    const inventoryById = new Map(topInventory.map((item: any) => [item.id, item]));
 
     const favorites = topInventoryIds
-      .map((id) => inventoryById.get(id))
-      .filter(Boolean)
-      .map((item) => ({
+      .map((id: any) => inventoryById.get(id))
+      .filter((item: any) => Boolean(item))
+      .map((item: any) => ({
         id: item!.id,
         name: item!.productName,
         sku: item!.sku,

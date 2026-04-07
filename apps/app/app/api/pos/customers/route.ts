@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const items = customers.map((customer) => {
+    const items = customers.map((customer: any) => {
       const limit = customer.creditLimits[0];
       const remainingCredit = limit
         ? Math.max(0, toNumber(limit.maxCreditLimit) - toNumber(limit.currentBalance))

@@ -101,6 +101,20 @@ export async function getPosBaselineReport(
   businessId: string,
   range?: { from?: Date; to?: Date },
 ): Promise<PosBaselineReport> {
+  type LowStockRow = {
+    id: string;
+    product_name: string;
+    sku: string;
+    quantity_on_hand: number;
+    reorder_level: number;
+  };
+  type LowStockCountRow = { count: bigint | number };
+  type TopInventoryItem = {
+    id: string;
+    productName: string;
+    sku: string | null;
+  };
+
   const now = new Date();
   const hasCustomRange = Boolean(range?.from || range?.to);
   const todayStart = hasCustomRange ? startOfDay(range?.from ?? now) : startOfDay(now);
@@ -222,29 +236,27 @@ export async function getPosBaselineReport(
       },
       take: 5,
     }),
-    db.$queryRaw<
-      Array<{ id: string; product_name: string; sku: string; quantity_on_hand: number; reorder_level: number }>
-    >(Prisma.sql`
+    db.$queryRaw(Prisma.sql`
       SELECT id, product_name, sku, quantity_on_hand, reorder_level
       FROM inventory
       WHERE business_id = ${businessId}
         AND quantity_on_hand <= reorder_level
       ORDER BY (reorder_level - quantity_on_hand) DESC, product_name ASC
       LIMIT 20
-    `),
-    db.$queryRaw<Array<{ count: bigint | number }>>(Prisma.sql`
+    `) as Promise<LowStockRow[]>,
+    db.$queryRaw(Prisma.sql`
       SELECT COUNT(*)::bigint AS count
       FROM inventory
       WHERE business_id = ${businessId}
         AND quantity_on_hand <= reorder_level
-    `),
+    `) as Promise<LowStockCountRow[]>,
   ]);
 
   const topInventoryIds = topProductRows
-    .map((row) => row.inventoryId)
-    .filter((value): value is string => Boolean(value));
+    .map((row: any) => row.inventoryId)
+    .filter((value: any): value is string => Boolean(value));
 
-  const topInventory = topInventoryIds.length
+  const topInventory: TopInventoryItem[] = topInventoryIds.length
     ? await db.inventory.findMany({
         where: {
           businessId,
@@ -261,7 +273,7 @@ export async function getPosBaselineReport(
   const inventoryById = new Map(topInventory.map((item) => [item.id, item]));
 
   const topProducts = topProductRows
-    .map((row) => {
+    .map((row: any) => {
       if (!row.inventoryId) return null;
       const inventory = inventoryById.get(row.inventoryId);
       if (!inventory) return null;
@@ -274,7 +286,7 @@ export async function getPosBaselineReport(
         revenue: toNumber(row._sum.lineTotal),
       };
     })
-    .filter((row): row is NonNullable<typeof row> => Boolean(row));
+    .filter((row: any): row is NonNullable<typeof row> => Boolean(row));
 
   const costSaleIds = Array.from(
     new Set(
@@ -312,26 +324,38 @@ export async function getPosBaselineReport(
     }
   }
 
-  const cogsBySaleId = new Map(
-    saleCosts.map((row) => [row.saleId, toNumber(row._sum.extendedCost)]),
+  const cogsBySaleId = new Map<string, number>(
+    saleCosts.map((row: any) => [row.saleId, toNumber(row._sum.extendedCost)] as const),
   );
   const unallocatedSaleIds = new Set(
     costSaleIds.filter((saleId) => !cogsBySaleId.has(saleId)),
   );
 
-  const todaySalesTotal = todaySales.reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
-  const weekSalesTotal = weekSales.reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
+  const todaySalesTotal = todaySales.reduce(
+    (sum: number, sale: any) => sum + toNumber(sale.totalAmount),
+    0,
+  );
+  const weekSalesTotal = weekSales.reduce(
+    (sum: number, sale: any) => sum + toNumber(sale.totalAmount),
+    0,
+  );
   const previousWeekSalesTotal = previousWeekSales.reduce(
-    (sum, sale) => sum + toNumber(sale.totalAmount),
+    (sum: number, sale: any) => sum + toNumber(sale.totalAmount),
     0,
   );
   const cashCollected = todaySales
-    .filter((sale) => sale.paymentMethod === "cash")
-    .reduce((sum, sale) => sum + toNumber(sale.totalAmount), 0);
-  const todayCogs = todaySales.reduce((sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0), 0);
-  const weekCogs = weekSales.reduce((sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0), 0);
+    .filter((sale: any) => sale.paymentMethod === "cash")
+    .reduce((sum: number, sale: any) => sum + toNumber(sale.totalAmount), 0);
+  const todayCogs = todaySales.reduce(
+    (sum: number, sale: any) => sum + (cogsBySaleId.get(sale.id) ?? 0),
+    0,
+  );
+  const weekCogs = weekSales.reduce(
+    (sum: number, sale: any) => sum + (cogsBySaleId.get(sale.id) ?? 0),
+    0,
+  );
   const previousWeekCogs = previousWeekSales.reduce(
-    (sum, sale) => sum + (cogsBySaleId.get(sale.id) ?? 0),
+    (sum: number, sale: any) => sum + (cogsBySaleId.get(sale.id) ?? 0),
     0,
   );
 
@@ -376,11 +400,13 @@ export async function getPosBaselineReport(
     },
     credit: {
       outstandingBalance: Number(
-        creditBalances.reduce((sum, row) => sum + toNumber(row.currentBalance), 0).toFixed(2),
+        creditBalances
+          .reduce((sum: number, row: any) => sum + toNumber(row.currentBalance), 0)
+          .toFixed(2),
       ),
       activeBalances: creditBalances.length,
     },
-    recentSales: recentSales.map((sale) => ({
+    recentSales: recentSales.map((sale: any) => ({
       id: sale.id,
       total: toNumber(sale.totalAmount),
       costOfGoodsSold: Number((cogsBySaleId.get(sale.id) ?? 0).toFixed(2)),

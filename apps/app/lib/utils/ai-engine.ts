@@ -177,7 +177,7 @@ export class AIEngine {
       });
 
       if (alerts) {
-        result.alerts = alerts.map((alert) => ({
+        result.alerts = alerts.map((alert: any) => ({
           id: alert.id,
           type: alert.alertType,
           severity: alert.severity,

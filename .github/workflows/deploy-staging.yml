@@ -1,0 +1,32 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["CI Gate"]
+    types: [completed]
+    branches: [development]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy preview to Vercel (staging)
+        id: vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+          scope: ${{ secrets.VERCEL_SCOPE }}
+          working-directory: ./apps/app
+      - name: Smoke test health endpoint
+        run: |
+          set -euo pipefail
+          DEPLOY_URL="${{ steps.vercel.outputs.preview-url }}"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Missing preview deployment URL"
+            exit 1
+          fi
+          curl -fsSL "$DEPLOY_URL/api/health"

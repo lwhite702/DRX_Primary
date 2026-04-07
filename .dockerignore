@@ -1,0 +1,12 @@
+.git
+.github
+node_modules
+**/node_modules
+.next
+**/.next
+coverage
+**/coverage
+.env*.local
+**/.env*.local
+dist
+tmp

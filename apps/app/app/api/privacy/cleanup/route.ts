@@ -112,6 +112,10 @@ export async function POST(request: NextRequest) {
       skipped_due_balance: number;
       retention_days: number;
     }> = [];
+    type CustomerWithCreditLinks = {
+      id: string;
+      creditLimits: Array<{ id: string }>;
+    };
 
     for (const settingsRow of settingsRows) {
       const privacy = extractPrivacyProtocol(settingsRow.settingsData);
@@ -144,7 +148,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const ephemeralDeletableIds = ephemeralCandidates
+        const ephemeralDeletableIds = (ephemeralCandidates as CustomerWithCreditLinks[])
           .filter((row) => row.creditLimits.length === 0)
           .map((row) => row.id);
 
@@ -251,7 +255,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const deletableIds = candidates
+      const deletableIds = (candidates as CustomerWithCreditLinks[])
         .filter((row) => row.creditLimits.length === 0)
         .map((row) => row.id);
 

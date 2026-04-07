@@ -1,0 +1,854 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "article",
+      "id": "4751642",
+      "title": "Workspaces and Tenant Context",
+      "description": "Use workspaces to keep businesses separated and avoid cross-tenant mistakes.",
+      "body": "<h2>Workspaces and Tenant Context</h2><p>Use workspaces to keep businesses separated and avoid cross-tenant mistakes.</p><h2>What this does</h2><p>Explains how to confirm and switch workspace context safely.</p><h2>Who can use it</h2><p>Owner, Manager (based on access)</p><h2>Before you start</h2><p>• Ensure your account is mapped to the expected business workspaces.</p><h2>Step-by-step</h2><p>1. Open `Workspaces`.</p><p>2. Confirm current active workspace.</p><p>3. Switch workspace before editing inventory, sales, or settings.</p><p>4. Re-check page headers/context after switching.</p><h2>What happens next</h2><p>All data operations apply to the active workspace only.</p><h2>Tips</h2><p>• Make context checks routine before high-impact actions.</p><h2>Common mistakes</h2><p>• Updating settings in the wrong workspace during multi-business shifts.</p><h2>Troubleshooting</h2><p>• If data looks “missing,” verify you’re in the right workspace first.</p><h2>Related articles</h2><p>• `getting-started-first-week.md`</p><p>• `settings-and-aliases.md`</p><p>• `reports-and-insights.md`</p>",
+      "slug": "4751642-workspaces-and-tenant-context",
+      "icon": null,
+      "parentId": "2241034",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/4751642-workspaces-and-tenant-context",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": 1,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Workspaces and Tenant Context",
+          "description": "Use workspaces to keep businesses separated and avoid cross-tenant mistakes.",
+          "body": "<h2>Workspaces and Tenant Context</h2><p>Use workspaces to keep businesses separated and avoid cross-tenant mistakes.</p><h2>What this does</h2><p>Explains how to confirm and switch workspace context safely.</p><h2>Who can use it</h2><p>Owner, Manager (based on access)</p><h2>Before you start</h2><p>• Ensure your account is mapped to the expected business workspaces.</p><h2>Step-by-step</h2><p>1. Open `Workspaces`.</p><p>2. Confirm current active workspace.</p><p>3. Switch workspace before editing inventory, sales, or settings.</p><p>4. Re-check page headers/context after switching.</p><h2>What happens next</h2><p>All data operations apply to the active workspace only.</p><h2>Tips</h2><p>• Make context checks routine before high-impact actions.</p><h2>Common mistakes</h2><p>• Updating settings in the wrong workspace during multi-business shifts.</p><h2>Troubleshooting</h2><p>• If data looks “missing,” verify you’re in the right workspace first.</p><h2>Related articles</h2><p>• `getting-started-first-week.md`</p><p>• `settings-and-aliases.md`</p><p>• `reports-and-insights.md`</p>",
+          "slug": "4751642-workspaces-and-tenant-context",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/4751642-workspaces-and-tenant-context",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:21.056Z",
+          "updatedAt": "2026-04-03T04:57:21.056Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:21.064Z",
+      "updatedAt": "2026-04-03T04:57:21.080Z",
+      "path": "g2nfnbka46winbit/2241034",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:21.056Z",
+      "translationUpdatedAt": "2026-04-03T04:57:21.056Z"
+    },
+    {
+      "object": "article",
+      "id": "2575724",
+      "title": "Troubleshooting: Fast Fixes First",
+      "description": "When something feels off, run this sequence before deep debugging.",
+      "body": "<h2>Troubleshooting: Fast Fixes First</h2><p>When something feels off, run this sequence before deep debugging.</p><h2>What this does</h2><p>Gives a quick response path for the most common DRX issues.</p><h2>Who can use it</h2><p>All roles (within their access scope)</p><h2>Before you start</h2><p>• Capture what route failed and what action you took right before it.</p><h2>Step-by-step</h2><p>1. Confirm workspace and user role context.</p><p>2. Refresh the route and retry the action once.</p><p>3. Validate source data in supporting pages (sales, inventory, customer).</p><p>4. Check whether issue is permission, data, or flow-state related.</p><p>5. Escalate with exact route + timestamp + user role + action details.</p><h2>What happens next</h2><p>Most issues resolve quickly; escalations become cleaner when needed.</p><h2>Tips</h2><p>• Report with specifics, not “it broke.”</p><h2>Common mistakes</h2><p>• Jumping straight to manual data edits before confirming root cause.</p><h2>Troubleshooting</h2><p>• POS issue: confirm product visibility and session state.</p><p>• Inventory issue: compare intake/adjustments/sales.</p><p>• Access issue: verify role permission mapping.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-audit-fixes.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+      "slug": "2575724-troubleshooting-fast-fixes-first",
+      "icon": null,
+      "parentId": "5925303",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/2575724-troubleshooting-fast-fixes-first",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Troubleshooting: Fast Fixes First",
+          "description": "When something feels off, run this sequence before deep debugging.",
+          "body": "<h2>Troubleshooting: Fast Fixes First</h2><p>When something feels off, run this sequence before deep debugging.</p><h2>What this does</h2><p>Gives a quick response path for the most common DRX issues.</p><h2>Who can use it</h2><p>All roles (within their access scope)</p><h2>Before you start</h2><p>• Capture what route failed and what action you took right before it.</p><h2>Step-by-step</h2><p>1. Confirm workspace and user role context.</p><p>2. Refresh the route and retry the action once.</p><p>3. Validate source data in supporting pages (sales, inventory, customer).</p><p>4. Check whether issue is permission, data, or flow-state related.</p><p>5. Escalate with exact route + timestamp + user role + action details.</p><h2>What happens next</h2><p>Most issues resolve quickly; escalations become cleaner when needed.</p><h2>Tips</h2><p>• Report with specifics, not “it broke.”</p><h2>Common mistakes</h2><p>• Jumping straight to manual data edits before confirming root cause.</p><h2>Troubleshooting</h2><p>• POS issue: confirm product visibility and session state.</p><p>• Inventory issue: compare intake/adjustments/sales.</p><p>• Access issue: verify role permission mapping.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-audit-fixes.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+          "slug": "2575724-troubleshooting-fast-fixes-first",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/2575724-troubleshooting-fast-fixes-first",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:20.780Z",
+          "updatedAt": "2026-04-03T04:57:20.780Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:20.791Z",
+      "updatedAt": "2026-04-03T04:57:20.808Z",
+      "path": "g2nfnbka46winbit/5925303",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:20.780Z",
+      "translationUpdatedAt": "2026-04-03T04:57:20.780Z"
+    },
+    {
+      "object": "article",
+      "id": "2928800",
+      "title": "Settings and Aliases: Keep Workflows Clean",
+      "description": "Settings is where you lock in business config, team setup, and fast product lookup behavior.",
+      "body": "<h2>Settings and Aliases: Keep Workflows Clean</h2><p>Settings is where you lock in business config, team setup, and fast product lookup behavior.</p><h2>What this does</h2><p>Covers key settings routes and alias management.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• Confirm you’re in the correct workspace/business context.</p><h2>Step-by-step</h2><p>1. Open `Settings` for overview.</p><p>2. Update account/business details in `Settings &gt; Profile`.</p><p>3. Manage team in `Settings &gt; Team`.</p><p>4. Set item aliases in `Settings &gt; Inventory &gt; Aliases`.</p><p>5. Test alias behavior in `Quick Sale`.</p><h2>What happens next</h2><p>Cleaner aliases and settings reduce checkout friction and product confusion.</p><h2>Tips</h2><p>• Use alias patterns staff actually type.</p><p>• Keep one naming convention across top sellers.</p><h2>Common mistakes</h2><p>• Creating overlapping aliases for different products.</p><h2>Troubleshooting</h2><p>• If alias lookup is wrong, remove collisions and retest.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-manage-stock.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+      "slug": "2928800-settings-and-aliases-keep-workflows-clean",
+      "icon": null,
+      "parentId": "6854042",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/2928800-settings-and-aliases-keep-workflows-clean",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Settings and Aliases: Keep Workflows Clean",
+          "description": "Settings is where you lock in business config, team setup, and fast product lookup behavior.",
+          "body": "<h2>Settings and Aliases: Keep Workflows Clean</h2><p>Settings is where you lock in business config, team setup, and fast product lookup behavior.</p><h2>What this does</h2><p>Covers key settings routes and alias management.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• Confirm you’re in the correct workspace/business context.</p><h2>Step-by-step</h2><p>1. Open `Settings` for overview.</p><p>2. Update account/business details in `Settings &gt; Profile`.</p><p>3. Manage team in `Settings &gt; Team`.</p><p>4. Set item aliases in `Settings &gt; Inventory &gt; Aliases`.</p><p>5. Test alias behavior in `Quick Sale`.</p><h2>What happens next</h2><p>Cleaner aliases and settings reduce checkout friction and product confusion.</p><h2>Tips</h2><p>• Use alias patterns staff actually type.</p><p>• Keep one naming convention across top sellers.</p><h2>Common mistakes</h2><p>• Creating overlapping aliases for different products.</p><h2>Troubleshooting</h2><p>• If alias lookup is wrong, remove collisions and retest.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-manage-stock.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+          "slug": "2928800-settings-and-aliases-keep-workflows-clean",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/2928800-settings-and-aliases-keep-workflows-clean",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:19.656Z",
+          "updatedAt": "2026-04-03T04:57:19.656Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:19.672Z",
+      "updatedAt": "2026-04-03T04:57:19.688Z",
+      "path": "g2nfnbka46winbit/6854042",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:19.656Z",
+      "translationUpdatedAt": "2026-04-03T04:57:19.656Z"
+    },
+    {
+      "object": "article",
+      "id": "8545428",
+      "title": "Roles and Permissions: Keep Access Tight",
+      "description": "Give people what they need to work, and nothing extra.",
+      "body": "<h2>Roles and Permissions: Keep Access Tight</h2><p>Give people what they need to work, and nothing extra.</p><h2>What this does</h2><p>Explains how to manage staff access safely in DRX.</p><h2>Who can use it</h2><p>Owner, Manager (based on role control permissions)</p><h2>Before you start</h2><p>• Confirm who should be staff vs manager.</p><h2>Step-by-step</h2><p>1. Open `Settings &gt; Team`.</p><p>2. Add or update staff profiles.</p><p>3. Assign the lowest role that still lets them do their job.</p><p>4. Review sensitive-action permissions regularly.</p><p>5. Remove access immediately on offboarding.</p><h2>What happens next</h2><p>Cleaner permissions reduce risk and prevent accidental high-impact actions.</p><h2>Tips</h2><p>• Review access during schedule changes and staffing updates.</p><h2>Common mistakes</h2><p>• Leaving manager access active after role changes.</p><h2>Troubleshooting</h2><p>• If a user can’t open expected pages, verify role mapping and permission checks.</p><p>• If access is too broad, drop role level first, then test.</p><h2>Related articles</h2><p>• `settings-and-aliases.md`</p><p>• `privacy-security-rtbf.md`</p><p>• `admin-tools-overview.md`</p>",
+      "slug": "8545428-roles-and-permissions-keep-access-tight",
+      "icon": null,
+      "parentId": "3562121",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/8545428-roles-and-permissions-keep-access-tight",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Roles and Permissions: Keep Access Tight",
+          "description": "Give people what they need to work, and nothing extra.",
+          "body": "<h2>Roles and Permissions: Keep Access Tight</h2><p>Give people what they need to work, and nothing extra.</p><h2>What this does</h2><p>Explains how to manage staff access safely in DRX.</p><h2>Who can use it</h2><p>Owner, Manager (based on role control permissions)</p><h2>Before you start</h2><p>• Confirm who should be staff vs manager.</p><h2>Step-by-step</h2><p>1. Open `Settings &gt; Team`.</p><p>2. Add or update staff profiles.</p><p>3. Assign the lowest role that still lets them do their job.</p><p>4. Review sensitive-action permissions regularly.</p><p>5. Remove access immediately on offboarding.</p><h2>What happens next</h2><p>Cleaner permissions reduce risk and prevent accidental high-impact actions.</p><h2>Tips</h2><p>• Review access during schedule changes and staffing updates.</p><h2>Common mistakes</h2><p>• Leaving manager access active after role changes.</p><h2>Troubleshooting</h2><p>• If a user can’t open expected pages, verify role mapping and permission checks.</p><p>• If access is too broad, drop role level first, then test.</p><h2>Related articles</h2><p>• `settings-and-aliases.md`</p><p>• `privacy-security-rtbf.md`</p><p>• `admin-tools-overview.md`</p>",
+          "slug": "8545428-roles-and-permissions-keep-access-tight",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/8545428-roles-and-permissions-keep-access-tight",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:18.317Z",
+          "updatedAt": "2026-04-03T04:57:18.317Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:18.328Z",
+      "updatedAt": "2026-04-03T04:57:18.345Z",
+      "path": "g2nfnbka46winbit/3562121",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:18.317Z",
+      "translationUpdatedAt": "2026-04-03T04:57:18.317Z"
+    },
+    {
+      "object": "article",
+      "id": "7021669",
+      "title": "Sales History and Receipt Checks",
+      "description": "This is where you confirm what sold, when it sold, and how the transaction landed.",
+      "body": "<h2>Sales History and Receipt Checks</h2><p>This is where you confirm what sold, when it sold, and how the transaction landed.</p><h2>What this does</h2><p>Explains how to review completed sales and inspect transaction details.</p><h2>Who can use it</h2><p>Staff (own scope), Manager, Owner</p><h2>Before you start</h2><p>• At least one completed sale should exist.</p><h2>Step-by-step</h2><p>1. Open `Sales`.</p><p>2. Filter or search for the transaction.</p><p>3. Open a sale detail view from the list.</p><p>4. Verify line items, totals, and payment details.</p><p>5. Use this view to resolve customer disputes and shift reconciliation issues.</p><h2>What happens next</h2><p>Validated sale data supports reports, inventory movement, and audit checks.</p><h2>Tips</h2><p>• Check sale detail before editing inventory when counts look off.</p><h2>Common mistakes</h2><p>• Attempting to debug stock first without confirming the original sale record.</p><h2>Troubleshooting</h2><p>• If a sale is missing, verify date filters and role scope.</p><p>• If totals mismatch, re-check applied adjustments and payment state.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `reports-and-insights.md`</p><p>• `inventory-audit-fixes.md`</p>",
+      "slug": "7021669-sales-history-and-receipt-checks",
+      "icon": null,
+      "parentId": "5595577",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7021669-sales-history-and-receipt-checks",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Sales History and Receipt Checks",
+          "description": "This is where you confirm what sold, when it sold, and how the transaction landed.",
+          "body": "<h2>Sales History and Receipt Checks</h2><p>This is where you confirm what sold, when it sold, and how the transaction landed.</p><h2>What this does</h2><p>Explains how to review completed sales and inspect transaction details.</p><h2>Who can use it</h2><p>Staff (own scope), Manager, Owner</p><h2>Before you start</h2><p>• At least one completed sale should exist.</p><h2>Step-by-step</h2><p>1. Open `Sales`.</p><p>2. Filter or search for the transaction.</p><p>3. Open a sale detail view from the list.</p><p>4. Verify line items, totals, and payment details.</p><p>5. Use this view to resolve customer disputes and shift reconciliation issues.</p><h2>What happens next</h2><p>Validated sale data supports reports, inventory movement, and audit checks.</p><h2>Tips</h2><p>• Check sale detail before editing inventory when counts look off.</p><h2>Common mistakes</h2><p>• Attempting to debug stock first without confirming the original sale record.</p><h2>Troubleshooting</h2><p>• If a sale is missing, verify date filters and role scope.</p><p>• If totals mismatch, re-check applied adjustments and payment state.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `reports-and-insights.md`</p><p>• `inventory-audit-fixes.md`</p>",
+          "slug": "7021669-sales-history-and-receipt-checks",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7021669-sales-history-and-receipt-checks",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:18.717Z",
+          "updatedAt": "2026-04-03T04:57:18.717Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:18.726Z",
+      "updatedAt": "2026-04-03T04:57:18.739Z",
+      "path": "g2nfnbka46winbit/5595577",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:18.717Z",
+      "translationUpdatedAt": "2026-04-03T04:57:18.717Z"
+    },
+    {
+      "object": "article",
+      "id": "7196078",
+      "title": "Reports and Operations Insights",
+      "description": "Use reports when you need the real numbers, not a quick glance.",
+      "body": "<h2>Reports and Operations Insights</h2><p>Use reports when you need the real numbers, not a quick glance.</p><h2>What this does</h2><p>Shows how to use reporting routes to verify sales, trends, and operational pressure points.</p><h2>Who can use it</h2><p>Manager, Owner</p><h2>Before you start</h2><p>• Make sure the date range and workspace context are correct.</p><h2>Step-by-step</h2><p>1. Open `Reports`.</p><p>2. Set the time window first.</p><p>3. Compare top-line totals against `Sales` when validating.</p><p>4. Check operational signals from `Operations Insights`.</p><p>5. Export/share results where policy allows.</p><h2>What happens next</h2><p>Report findings drive staffing, purchasing, and cleanup actions.</p><h2>Tips</h2><p>• Use the same date window across views when reconciling.</p><h2>Common mistakes</h2><p>• Comparing mismatched ranges and assuming data is wrong.</p><h2>Troubleshooting</h2><p>• If totals look off, verify filters, role scope, and workspace selection.</p><h2>Related articles</h2><p>• `dashboard-daily-check.md`</p><p>• `sales-history-receipts.md`</p><p>• `inventory-audit-fixes.md`</p>",
+      "slug": "7196078-reports-and-operations-insights",
+      "icon": null,
+      "parentId": "5089813",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7196078-reports-and-operations-insights",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Reports and Operations Insights",
+          "description": "Use reports when you need the real numbers, not a quick glance.",
+          "body": "<h2>Reports and Operations Insights</h2><p>Use reports when you need the real numbers, not a quick glance.</p><h2>What this does</h2><p>Shows how to use reporting routes to verify sales, trends, and operational pressure points.</p><h2>Who can use it</h2><p>Manager, Owner</p><h2>Before you start</h2><p>• Make sure the date range and workspace context are correct.</p><h2>Step-by-step</h2><p>1. Open `Reports`.</p><p>2. Set the time window first.</p><p>3. Compare top-line totals against `Sales` when validating.</p><p>4. Check operational signals from `Operations Insights`.</p><p>5. Export/share results where policy allows.</p><h2>What happens next</h2><p>Report findings drive staffing, purchasing, and cleanup actions.</p><h2>Tips</h2><p>• Use the same date window across views when reconciling.</p><h2>Common mistakes</h2><p>• Comparing mismatched ranges and assuming data is wrong.</p><h2>Troubleshooting</h2><p>• If totals look off, verify filters, role scope, and workspace selection.</p><h2>Related articles</h2><p>• `dashboard-daily-check.md`</p><p>• `sales-history-receipts.md`</p><p>• `inventory-audit-fixes.md`</p>",
+          "slug": "7196078-reports-and-operations-insights",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7196078-reports-and-operations-insights",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:18.040Z",
+          "updatedAt": "2026-04-03T04:57:18.040Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:18.049Z",
+      "updatedAt": "2026-04-03T04:57:18.062Z",
+      "path": "g2nfnbka46winbit/5089813",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:18.040Z",
+      "translationUpdatedAt": "2026-04-03T04:57:18.040Z"
+    },
+    {
+      "object": "article",
+      "id": "3332319",
+      "title": "Inventory: Manage Stock Without Guessing",
+      "description": "Track what came in, what went out, and what needs action now.",
+      "body": "<h2>Inventory: Manage Stock Without Guessing</h2><p>Track what came in, what went out, and what needs action now.</p><h2>What this does</h2><p>Covers the main inventory workflow: overview, intake, and adjustment.</p><h2>Who can use it</h2><p>Manager, Owner (staff access depends on permissions)</p><h2>Before you start</h2><p>• Product records and units should be set.</p><h2>Step-by-step</h2><p>1. Open `Inventory` for current stock view.</p><p>2. Use `Inventory &gt; Intake` to add incoming stock.</p><p>3. Use `Inventory &gt; Adjust` for corrections (increase/decrease/set).</p><p>4. Add a clear reason on adjustments to keep traceability.</p><p>5. Re-check affected products in overview.</p><h2>What happens next</h2><p>Inventory updates feed sales availability and reporting accuracy.</p><h2>Tips</h2><p>• Write short but specific adjustment reasons.</p><p>• Intake in small, frequent batches instead of giant catch-up edits.</p><h2>Common mistakes</h2><p>• Using manual set-to adjustments when intake is the right move.</p><p>• Skipping reason fields.</p><h2>Troubleshooting</h2><p>• If counts drift, compare intake + adjustments + recent sales.</p><p>• If an item disappears in POS, verify product status and stock state.</p><h2>Related articles</h2><p>• `inventory-audit-fixes.md`</p><p>• `quick-pos-run-sale.md`</p><p>• `reports-and-insights.md`</p>",
+      "slug": "3332319-inventory-manage-stock-without-guessing",
+      "icon": null,
+      "parentId": "5902160",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3332319-inventory-manage-stock-without-guessing",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": 1,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Inventory: Manage Stock Without Guessing",
+          "description": "Track what came in, what went out, and what needs action now.",
+          "body": "<h2>Inventory: Manage Stock Without Guessing</h2><p>Track what came in, what went out, and what needs action now.</p><h2>What this does</h2><p>Covers the main inventory workflow: overview, intake, and adjustment.</p><h2>Who can use it</h2><p>Manager, Owner (staff access depends on permissions)</p><h2>Before you start</h2><p>• Product records and units should be set.</p><h2>Step-by-step</h2><p>1. Open `Inventory` for current stock view.</p><p>2. Use `Inventory &gt; Intake` to add incoming stock.</p><p>3. Use `Inventory &gt; Adjust` for corrections (increase/decrease/set).</p><p>4. Add a clear reason on adjustments to keep traceability.</p><p>5. Re-check affected products in overview.</p><h2>What happens next</h2><p>Inventory updates feed sales availability and reporting accuracy.</p><h2>Tips</h2><p>• Write short but specific adjustment reasons.</p><p>• Intake in small, frequent batches instead of giant catch-up edits.</p><h2>Common mistakes</h2><p>• Using manual set-to adjustments when intake is the right move.</p><p>• Skipping reason fields.</p><h2>Troubleshooting</h2><p>• If counts drift, compare intake + adjustments + recent sales.</p><p>• If an item disappears in POS, verify product status and stock state.</p><h2>Related articles</h2><p>• `inventory-audit-fixes.md`</p><p>• `quick-pos-run-sale.md`</p><p>• `reports-and-insights.md`</p>",
+          "slug": "3332319-inventory-manage-stock-without-guessing",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3332319-inventory-manage-stock-without-guessing",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:17.023Z",
+          "updatedAt": "2026-04-03T04:57:17.023Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:17.034Z",
+      "updatedAt": "2026-04-03T04:57:17.051Z",
+      "path": "g2nfnbka46winbit/5902160",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:17.023Z",
+      "translationUpdatedAt": "2026-04-03T04:57:17.023Z"
+    },
+    {
+      "object": "article",
+      "id": "3325200",
+      "title": "Privacy and Security: Daily Controls + RTBF",
+      "description": "Privacy in DRX is operational, not decorative. Use these controls to protect customer data and reduce risk.",
+      "body": "<h2>Privacy and Security: Daily Controls + RTBF</h2><p>Privacy in DRX is operational, not decorative. Use these controls to protect customer data and reduce risk.</p><h2>What this does</h2><p>Covers privacy posture in normal usage plus user-deletion (RTBF) workflow.</p><h2>Who can use it</h2><p>Owner, approved admin roles</p><h2>Before you start</h2><p>• Confirm policy for data retention and deletion approvals.</p><h2>Step-by-step</h2><p>1. Review privacy-sensitive access in team/role settings.</p><p>2. Limit exposure of customer and financial data by role.</p><p>3. Use audit/trace surfaces for sensitive action review.</p><p>4. For deletion requests, run the RTBF path with tenant + user checks.</p><p>5. Confirm follow-up validation after deletion actions.</p><h2>What happens next</h2><p>You maintain compliance posture without breaking operator workflows.</p><h2>Tips</h2><p>• Handle deletion actions with a second-person review when possible.</p><h2>Common mistakes</h2><p>• Running deletions without validating tenant/user IDs.</p><h2>Troubleshooting</h2><p>• If deletion fails, verify route parameters and authorization context first.</p><h2>Related articles</h2><p>• `roles-permissions-staff-access.md`</p><p>• `admin-tools-overview.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+      "slug": "3325200-privacy-and-security-daily-controls-rtbf",
+      "icon": null,
+      "parentId": "9474440",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3325200-privacy-and-security-daily-controls-rtbf",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Privacy and Security: Daily Controls + RTBF",
+          "description": "Privacy in DRX is operational, not decorative. Use these controls to protect customer data and reduce risk.",
+          "body": "<h2>Privacy and Security: Daily Controls + RTBF</h2><p>Privacy in DRX is operational, not decorative. Use these controls to protect customer data and reduce risk.</p><h2>What this does</h2><p>Covers privacy posture in normal usage plus user-deletion (RTBF) workflow.</p><h2>Who can use it</h2><p>Owner, approved admin roles</p><h2>Before you start</h2><p>• Confirm policy for data retention and deletion approvals.</p><h2>Step-by-step</h2><p>1. Review privacy-sensitive access in team/role settings.</p><p>2. Limit exposure of customer and financial data by role.</p><p>3. Use audit/trace surfaces for sensitive action review.</p><p>4. For deletion requests, run the RTBF path with tenant + user checks.</p><p>5. Confirm follow-up validation after deletion actions.</p><h2>What happens next</h2><p>You maintain compliance posture without breaking operator workflows.</p><h2>Tips</h2><p>• Handle deletion actions with a second-person review when possible.</p><h2>Common mistakes</h2><p>• Running deletions without validating tenant/user IDs.</p><h2>Troubleshooting</h2><p>• If deletion fails, verify route parameters and authorization context first.</p><h2>Related articles</h2><p>• `roles-permissions-staff-access.md`</p><p>• `admin-tools-overview.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+          "slug": "3325200-privacy-and-security-daily-controls-rtbf",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3325200-privacy-and-security-daily-controls-rtbf",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:17.297Z",
+          "updatedAt": "2026-04-03T04:57:17.297Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:17.306Z",
+      "updatedAt": "2026-04-03T04:57:17.322Z",
+      "path": "g2nfnbka46winbit/9474440",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:17.297Z",
+      "translationUpdatedAt": "2026-04-03T04:57:17.297Z"
+    },
+    {
+      "object": "article",
+      "id": "0437126",
+      "title": "Quick POS: Run a Sale Fast",
+      "description": "Quick POS is for getting in, making the sale, and keeping it moving.",
+      "body": "<h2>Quick POS: Run a Sale Fast</h2><p>Quick POS is for getting in, making the sale, and keeping it moving.</p><h2>What this does</h2><p>Walks through the operator flow from `Quick Sale` to payment completion.</p><h2>Who can use it</h2><p>Staff, Manager, Owner (based on role permissions)</p><h2>Before you start</h2><p>• Product catalog should be active.</p><p>• User needs POS access permission.</p><h2>Step-by-step</h2><p>1. Open `Quick Sale`.</p><p>2. Add items by search or saved aliases.</p><p>3. Confirm quantities and remove mistakes before payment.</p><p>4. Continue to `Payment`.</p><p>5. Select payment method and confirm.</p><p>6. Finish on `Complete` and return for next sale.</p><h2>What happens next</h2><p>The sale posts to history and downstream reporting.</p><h2>Tips</h2><p>• Keep aliases clean for top items.</p><p>• Fix quantity before payment to avoid extra correction work.</p><h2>Common mistakes</h2><p>• Ringing with stale product info.</p><p>• Skipping final total check in rush periods.</p><h2>Troubleshooting</h2><p>• If item lookup is slow, simplify search terms or use aliases.</p><p>• If payment fails to post, confirm route state and session auth.</p><h2>Related articles</h2><p>• `sales-history-receipts.md`</p><p>• `settings-and-aliases.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+      "slug": "0437126-quick-pos-run-a-sale-fast",
+      "icon": null,
+      "parentId": "0659914",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/0437126-quick-pos-run-a-sale-fast",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Quick POS: Run a Sale Fast",
+          "description": "Quick POS is for getting in, making the sale, and keeping it moving.",
+          "body": "<h2>Quick POS: Run a Sale Fast</h2><p>Quick POS is for getting in, making the sale, and keeping it moving.</p><h2>What this does</h2><p>Walks through the operator flow from `Quick Sale` to payment completion.</p><h2>Who can use it</h2><p>Staff, Manager, Owner (based on role permissions)</p><h2>Before you start</h2><p>• Product catalog should be active.</p><p>• User needs POS access permission.</p><h2>Step-by-step</h2><p>1. Open `Quick Sale`.</p><p>2. Add items by search or saved aliases.</p><p>3. Confirm quantities and remove mistakes before payment.</p><p>4. Continue to `Payment`.</p><p>5. Select payment method and confirm.</p><p>6. Finish on `Complete` and return for next sale.</p><h2>What happens next</h2><p>The sale posts to history and downstream reporting.</p><h2>Tips</h2><p>• Keep aliases clean for top items.</p><p>• Fix quantity before payment to avoid extra correction work.</p><h2>Common mistakes</h2><p>• Ringing with stale product info.</p><p>• Skipping final total check in rush periods.</p><h2>Troubleshooting</h2><p>• If item lookup is slow, simplify search terms or use aliases.</p><p>• If payment fails to post, confirm route state and session auth.</p><h2>Related articles</h2><p>• `sales-history-receipts.md`</p><p>• `settings-and-aliases.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+          "slug": "0437126-quick-pos-run-a-sale-fast",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/0437126-quick-pos-run-a-sale-fast",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:17.682Z",
+          "updatedAt": "2026-04-03T04:57:17.682Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:17.728Z",
+      "updatedAt": "2026-04-03T04:57:17.795Z",
+      "path": "g2nfnbka46winbit/0659914",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:17.682Z",
+      "translationUpdatedAt": "2026-04-03T04:57:17.682Z"
+    },
+    {
+      "object": "article",
+      "id": "9933421",
+      "title": "Inventory Audit: Fix Count Problems Fast",
+      "description": "When the numbers feel off, this is the cleanup playbook.",
+      "body": "<h2>Inventory Audit: Fix Count Problems Fast</h2><p>When the numbers feel off, this is the cleanup playbook.</p><h2>What this does</h2><p>Shows how to audit inventory movement and isolate bad counts.</p><h2>Who can use it</h2><p>Manager, Owner</p><h2>Before you start</h2><p>• Have access to inventory history and recent sales.</p><h2>Step-by-step</h2><p>1. Open `Inventory &gt; Audit`.</p><p>2. Identify products with unexpected deltas.</p><p>3. Compare movement against `Sales` history.</p><p>4. Check recent `Intake` and `Adjust` actions.</p><p>5. Apply corrective adjustment with a clear reason.</p><h2>What happens next</h2><p>Corrected counts stabilize POS and restore trust in reports.</p><h2>Tips</h2><p>• Fix high-volume items first.</p><p>• Keep one person accountable for final correction approval per shift.</p><h2>Common mistakes</h2><p>• Editing values without documenting cause.</p><h2>Troubleshooting</h2><p>• If mismatch repeats, verify alias/sku collisions and duplicate product usage.</p><h2>Related articles</h2><p>• `inventory-manage-stock.md`</p><p>• `sales-history-receipts.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+      "slug": "9933421-inventory-audit-fix-count-problems-fast",
+      "icon": null,
+      "parentId": "5902160",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/9933421-inventory-audit-fix-count-problems-fast",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Inventory Audit: Fix Count Problems Fast",
+          "description": "When the numbers feel off, this is the cleanup playbook.",
+          "body": "<h2>Inventory Audit: Fix Count Problems Fast</h2><p>When the numbers feel off, this is the cleanup playbook.</p><h2>What this does</h2><p>Shows how to audit inventory movement and isolate bad counts.</p><h2>Who can use it</h2><p>Manager, Owner</p><h2>Before you start</h2><p>• Have access to inventory history and recent sales.</p><h2>Step-by-step</h2><p>1. Open `Inventory &gt; Audit`.</p><p>2. Identify products with unexpected deltas.</p><p>3. Compare movement against `Sales` history.</p><p>4. Check recent `Intake` and `Adjust` actions.</p><p>5. Apply corrective adjustment with a clear reason.</p><h2>What happens next</h2><p>Corrected counts stabilize POS and restore trust in reports.</p><h2>Tips</h2><p>• Fix high-volume items first.</p><p>• Keep one person accountable for final correction approval per shift.</p><h2>Common mistakes</h2><p>• Editing values without documenting cause.</p><h2>Troubleshooting</h2><p>• If mismatch repeats, verify alias/sku collisions and duplicate product usage.</p><h2>Related articles</h2><p>• `inventory-manage-stock.md`</p><p>• `sales-history-receipts.md`</p><p>• `troubleshooting-fast-fixes.md`</p>",
+          "slug": "9933421-inventory-audit-fix-count-problems-fast",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/9933421-inventory-audit-fix-count-problems-fast",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:16.701Z",
+          "updatedAt": "2026-04-03T04:57:16.701Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:16.729Z",
+      "updatedAt": "2026-04-03T04:57:17.051Z",
+      "path": "g2nfnbka46winbit/5902160",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:16.701Z",
+      "translationUpdatedAt": "2026-04-03T04:57:16.701Z"
+    },
+    {
+      "object": "article",
+      "id": "8714259",
+      "title": "Getting Started: Your First Week in DRX",
+      "description": "DRX is built to help you sell fast, track inventory clean, and keep customer data under control without the noise.",
+      "body": "<h2>Getting Started: Your First Week in DRX</h2><p>DRX is built to help you sell fast, track inventory clean, and keep customer data under control without the noise.</p><h2>What this does</h2><p>This guide gets your shop from fresh setup to daily use with the least friction.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• Make sure your business workspace is created.</p><p>• Confirm owner account access works.</p><p>• Decide who needs manager vs staff access.</p><h2>Step-by-step</h2><p>1. Open `Dashboard` and confirm you can load business data.</p><p>2. Go to `Settings` and verify basic business details.</p><p>3. Open `Settings &gt; Team` and invite staff accounts.</p><p>4. Add products from `Inventory`.</p><p>5. Set alias shortcuts in `Settings &gt; Inventory &gt; Aliases`.</p><p>6. Run a test checkout from `Quick Sale`.</p><p>7. Check `Sales` history to confirm the sale posted.</p><h2>What happens next</h2><p>You move into normal daily flow: Quick Sale, inventory updates, customer lookup, and end-of-day report checks.</p><h2>Tips</h2><p>• Start simple: add your most sold products first.</p><p>• Keep aliases short so staff can move fast on mobile.</p><h2>Common mistakes</h2><p>• Giving everyone manager-level access by default.</p><p>• Skipping test sales before going live.</p><h2>Troubleshooting</h2><p>• If `Quick Sale` won’t start, check auth/session and role access.</p><p>• If products don’t show in sale flow, check product status in `Inventory`.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-manage-stock.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+      "slug": "8714259-getting-started-your-first-week-in-drx",
+      "icon": null,
+      "parentId": "2241034",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/8714259-getting-started-your-first-week-in-drx",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Getting Started: Your First Week in DRX",
+          "description": "DRX is built to help you sell fast, track inventory clean, and keep customer data under control without the noise.",
+          "body": "<h2>Getting Started: Your First Week in DRX</h2><p>DRX is built to help you sell fast, track inventory clean, and keep customer data under control without the noise.</p><h2>What this does</h2><p>This guide gets your shop from fresh setup to daily use with the least friction.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• Make sure your business workspace is created.</p><p>• Confirm owner account access works.</p><p>• Decide who needs manager vs staff access.</p><h2>Step-by-step</h2><p>1. Open `Dashboard` and confirm you can load business data.</p><p>2. Go to `Settings` and verify basic business details.</p><p>3. Open `Settings &gt; Team` and invite staff accounts.</p><p>4. Add products from `Inventory`.</p><p>5. Set alias shortcuts in `Settings &gt; Inventory &gt; Aliases`.</p><p>6. Run a test checkout from `Quick Sale`.</p><p>7. Check `Sales` history to confirm the sale posted.</p><h2>What happens next</h2><p>You move into normal daily flow: Quick Sale, inventory updates, customer lookup, and end-of-day report checks.</p><h2>Tips</h2><p>• Start simple: add your most sold products first.</p><p>• Keep aliases short so staff can move fast on mobile.</p><h2>Common mistakes</h2><p>• Giving everyone manager-level access by default.</p><p>• Skipping test sales before going live.</p><h2>Troubleshooting</h2><p>• If `Quick Sale` won’t start, check auth/session and role access.</p><p>• If products don’t show in sale flow, check product status in `Inventory`.</p><h2>Related articles</h2><p>• `quick-pos-run-sale.md`</p><p>• `inventory-manage-stock.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+          "slug": "8714259-getting-started-your-first-week-in-drx",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/8714259-getting-started-your-first-week-in-drx",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:16.108Z",
+          "updatedAt": "2026-04-03T04:57:16.108Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:16.120Z",
+      "updatedAt": "2026-04-03T04:57:21.080Z",
+      "path": "g2nfnbka46winbit/2241034",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:16.108Z",
+      "translationUpdatedAt": "2026-04-03T04:57:16.108Z"
+    },
+    {
+      "object": "article",
+      "id": "3509274",
+      "title": "Dashboard: Daily Check in 2 Minutes",
+      "description": "Use the dashboard to see what moved today, what needs attention, and what might break your shift later.",
+      "body": "<h2>Dashboard: Daily Check in 2 Minutes</h2><p>Use the dashboard to see what moved today, what needs attention, and what might break your shift later.</p><h2>What this does</h2><p>Gives a fast read on sales flow, inventory pressure, and operation health.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• You need access to the main app dashboard route.</p><p>• Make sure data is syncing from sales and inventory flows.</p><h2>Step-by-step</h2><p>1. Open `Dashboard`.</p><p>2. Check high-level sales activity first.</p><p>3. Review low-stock or risk signals tied to inventory.</p><p>4. Spot-check credit or balance exposure if you run front/balance flows.</p><p>5. Use dashboard findings to decide what to fix next in `Inventory`, `Sales`, or `Reports`.</p><h2>What happens next</h2><p>You jump directly into the right queue instead of chasing problems blind.</p><h2>Tips</h2><p>• Start every shift with dashboard first, reports second.</p><p>• Use dashboard for triage, then verify details in route-specific pages.</p><h2>Common mistakes</h2><p>• Treating dashboard numbers as final audit numbers without checking source pages.</p><h2>Troubleshooting</h2><p>• If numbers look off, compare `Sales` records and inventory change history.</p><p>• If cards are empty, verify role permissions and data ingestion.</p><h2>Related articles</h2><p>• `reports-and-insights.md`</p><p>• `inventory-audit-fixes.md`</p><p>• `sales-history-receipts.md`</p>",
+      "slug": "3509274-dashboard-daily-check-in-2-minutes",
+      "icon": null,
+      "parentId": "1636653",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3509274-dashboard-daily-check-in-2-minutes",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Dashboard: Daily Check in 2 Minutes",
+          "description": "Use the dashboard to see what moved today, what needs attention, and what might break your shift later.",
+          "body": "<h2>Dashboard: Daily Check in 2 Minutes</h2><p>Use the dashboard to see what moved today, what needs attention, and what might break your shift later.</p><h2>What this does</h2><p>Gives a fast read on sales flow, inventory pressure, and operation health.</p><h2>Who can use it</h2><p>Owner, Manager</p><h2>Before you start</h2><p>• You need access to the main app dashboard route.</p><p>• Make sure data is syncing from sales and inventory flows.</p><h2>Step-by-step</h2><p>1. Open `Dashboard`.</p><p>2. Check high-level sales activity first.</p><p>3. Review low-stock or risk signals tied to inventory.</p><p>4. Spot-check credit or balance exposure if you run front/balance flows.</p><p>5. Use dashboard findings to decide what to fix next in `Inventory`, `Sales`, or `Reports`.</p><h2>What happens next</h2><p>You jump directly into the right queue instead of chasing problems blind.</p><h2>Tips</h2><p>• Start every shift with dashboard first, reports second.</p><p>• Use dashboard for triage, then verify details in route-specific pages.</p><h2>Common mistakes</h2><p>• Treating dashboard numbers as final audit numbers without checking source pages.</p><h2>Troubleshooting</h2><p>• If numbers look off, compare `Sales` records and inventory change history.</p><p>• If cards are empty, verify role permissions and data ingestion.</p><h2>Related articles</h2><p>• `reports-and-insights.md`</p><p>• `inventory-audit-fixes.md`</p><p>• `sales-history-receipts.md`</p>",
+          "slug": "3509274-dashboard-daily-check-in-2-minutes",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/3509274-dashboard-daily-check-in-2-minutes",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:15.457Z",
+          "updatedAt": "2026-04-03T04:57:15.457Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:15.486Z",
+      "updatedAt": "2026-04-03T04:57:15.501Z",
+      "path": "g2nfnbka46winbit/1636653",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:15.457Z",
+      "translationUpdatedAt": "2026-04-03T04:57:15.457Z"
+    },
+    {
+      "object": "article",
+      "id": "7834199",
+      "title": "DRX Intelligence: Using AI Support Features",
+      "description": "DRX Intelligence helps surface decisions and risk signals without replacing operator judgment.",
+      "body": "<h2>DRX Intelligence: Using AI Support Features</h2><p>DRX Intelligence helps surface decisions and risk signals without replacing operator judgment.</p><h2>What this does</h2><p>Explains the AI Intelligence page and how to use it safely in daily operations.</p><h2>Who can use it</h2><p>Manager, Owner (or users granted access)</p><h2>Before you start</h2><p>• Confirm feature visibility in your role and environment.</p><h2>Step-by-step</h2><p>1. Open `AI Intelligence`.</p><p>2. Review suggested signals or decisions.</p><p>3. Cross-check with source pages (`Sales`, `Inventory`, `Credit`) before acting.</p><p>4. Apply operational decision and document why when needed.</p><h2>What happens next</h2><p>AI suggestions become decision support, not unverified auto-actions.</p><h2>Tips</h2><p>• Treat AI output as guidance. Verify with route-level data.</p><h2>Common mistakes</h2><p>• Acting on a suggestion without checking current transaction context.</p><h2>Troubleshooting</h2><p>• If AI outputs look stale, refresh and verify underlying source data changed.</p><h2>Related articles</h2><p>• `reports-and-insights.md`</p><p>• `dashboard-daily-check.md`</p><p>• `credit-balances-payments.md`</p>",
+      "slug": "7834199-drx-intelligence-using-ai-support-features",
+      "icon": null,
+      "parentId": "3312590",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7834199-drx-intelligence-using-ai-support-features",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "DRX Intelligence: Using AI Support Features",
+          "description": "DRX Intelligence helps surface decisions and risk signals without replacing operator judgment.",
+          "body": "<h2>DRX Intelligence: Using AI Support Features</h2><p>DRX Intelligence helps surface decisions and risk signals without replacing operator judgment.</p><h2>What this does</h2><p>Explains the AI Intelligence page and how to use it safely in daily operations.</p><h2>Who can use it</h2><p>Manager, Owner (or users granted access)</p><h2>Before you start</h2><p>• Confirm feature visibility in your role and environment.</p><h2>Step-by-step</h2><p>1. Open `AI Intelligence`.</p><p>2. Review suggested signals or decisions.</p><p>3. Cross-check with source pages (`Sales`, `Inventory`, `Credit`) before acting.</p><p>4. Apply operational decision and document why when needed.</p><h2>What happens next</h2><p>AI suggestions become decision support, not unverified auto-actions.</p><h2>Tips</h2><p>• Treat AI output as guidance. Verify with route-level data.</p><h2>Common mistakes</h2><p>• Acting on a suggestion without checking current transaction context.</p><h2>Troubleshooting</h2><p>• If AI outputs look stale, refresh and verify underlying source data changed.</p><h2>Related articles</h2><p>• `reports-and-insights.md`</p><p>• `dashboard-daily-check.md`</p><p>• `credit-balances-payments.md`</p>",
+          "slug": "7834199-drx-intelligence-using-ai-support-features",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7834199-drx-intelligence-using-ai-support-features",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:15.804Z",
+          "updatedAt": "2026-04-03T04:57:15.804Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:15.818Z",
+      "updatedAt": "2026-04-03T04:57:15.838Z",
+      "path": "g2nfnbka46winbit/3312590",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:15.804Z",
+      "translationUpdatedAt": "2026-04-03T04:57:15.804Z"
+    },
+    {
+      "object": "article",
+      "id": "5915437",
+      "title": "Customers: Profiles and History",
+      "description": "Use customer records when you need better service history, balance tracking, or follow-up context.",
+      "body": "<h2>Customers: Profiles and History</h2><p>Use customer records when you need better service history, balance tracking, or follow-up context.</p><h2>What this does</h2><p>Explains add/search/detail flows for customer data.</p><h2>Who can use it</h2><p>Staff, Manager, Owner (scope varies by privacy and role settings)</p><h2>Before you start</h2><p>• Confirm your role can view customer data.</p><h2>Step-by-step</h2><p>1. Open `Customers`.</p><p>2. Search existing profiles first to avoid duplicates.</p><p>3. Add customer with minimal required info when speed matters.</p><p>4. Open detail view to review history and linked transactions.</p><p>5. Update fields only when needed and keep records clean.</p><h2>What happens next</h2><p>Customer history supports credit/balance handling and faster issue resolution.</p><h2>Tips</h2><p>• Minimal profile at counter, full profile later.</p><p>• Keep names and contact format consistent.</p><h2>Common mistakes</h2><p>• Creating duplicate customers during busy shifts.</p><h2>Troubleshooting</h2><p>• If profile search misses obvious records, try alternate phone/name patterns.</p><h2>Related articles</h2><p>• `credit-balances-payments.md`</p><p>• `roles-permissions-staff-access.md`</p><p>• `privacy-security-rtbf.md`</p>",
+      "slug": "5915437-customers-profiles-and-history",
+      "icon": null,
+      "parentId": "7112199",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/5915437-customers-profiles-and-history",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Customers: Profiles and History",
+          "description": "Use customer records when you need better service history, balance tracking, or follow-up context.",
+          "body": "<h2>Customers: Profiles and History</h2><p>Use customer records when you need better service history, balance tracking, or follow-up context.</p><h2>What this does</h2><p>Explains add/search/detail flows for customer data.</p><h2>Who can use it</h2><p>Staff, Manager, Owner (scope varies by privacy and role settings)</p><h2>Before you start</h2><p>• Confirm your role can view customer data.</p><h2>Step-by-step</h2><p>1. Open `Customers`.</p><p>2. Search existing profiles first to avoid duplicates.</p><p>3. Add customer with minimal required info when speed matters.</p><p>4. Open detail view to review history and linked transactions.</p><p>5. Update fields only when needed and keep records clean.</p><h2>What happens next</h2><p>Customer history supports credit/balance handling and faster issue resolution.</p><h2>Tips</h2><p>• Minimal profile at counter, full profile later.</p><p>• Keep names and contact format consistent.</p><h2>Common mistakes</h2><p>• Creating duplicate customers during busy shifts.</p><h2>Troubleshooting</h2><p>• If profile search misses obvious records, try alternate phone/name patterns.</p><h2>Related articles</h2><p>• `credit-balances-payments.md`</p><p>• `roles-permissions-staff-access.md`</p><p>• `privacy-security-rtbf.md`</p>",
+          "slug": "5915437-customers-profiles-and-history",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/5915437-customers-profiles-and-history",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:15.061Z",
+          "updatedAt": "2026-04-03T04:57:15.061Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:15.073Z",
+      "updatedAt": "2026-04-03T04:57:15.092Z",
+      "path": "g2nfnbka46winbit/7112199",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:15.061Z",
+      "translationUpdatedAt": "2026-04-03T04:57:15.061Z"
+    },
+    {
+      "object": "article",
+      "id": "7032351",
+      "title": "Front / Balances: Credit and Payment Workflow",
+      "description": "This is where you track who owes, who paid, and what still needs follow-up.",
+      "body": "<h2>Front / Balances: Credit and Payment Workflow</h2><p>This is where you track who owes, who paid, and what still needs follow-up.</p><h2>What this does</h2><p>Covers credit sale handling, balance tracking, and payment logging.</p><h2>Who can use it</h2><p>Manager, Owner (and staff if explicitly permitted)</p><h2>Before you start</h2><p>• Credit flow must be enabled for your business policy.</p><p>• Customer record should exist for balance tracking.</p><h2>Step-by-step</h2><p>1. Open `Credit`.</p><p>2. Review open balances and overdue accounts.</p><p>3. Record new credit-linked transactions using approved flow.</p><p>4. Record incoming payments against the right customer balance.</p><p>5. Re-check totals after each payment post.</p><h2>What happens next</h2><p>Balances update and become visible for follow-up and reporting.</p><h2>Tips</h2><p>• Verify customer identity before applying payment.</p><p>• Keep payment notes clean for audit trails.</p><h2>Common mistakes</h2><p>• Posting a payment to the wrong customer record.</p><h2>Troubleshooting</h2><p>• If balance doesn’t update, refresh and verify payment route response.</p><p>• If overdue logic looks wrong, validate transaction dates and role visibility scope.</p><h2>Related articles</h2><p>• `customers-profiles-history.md`</p><p>• `reports-and-insights.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+      "slug": "7032351-front-balances-credit-and-payment-workflow",
+      "icon": null,
+      "parentId": "7752792",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7032351-front-balances-credit-and-payment-workflow",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Front / Balances: Credit and Payment Workflow",
+          "description": "This is where you track who owes, who paid, and what still needs follow-up.",
+          "body": "<h2>Front / Balances: Credit and Payment Workflow</h2><p>This is where you track who owes, who paid, and what still needs follow-up.</p><h2>What this does</h2><p>Covers credit sale handling, balance tracking, and payment logging.</p><h2>Who can use it</h2><p>Manager, Owner (and staff if explicitly permitted)</p><h2>Before you start</h2><p>• Credit flow must be enabled for your business policy.</p><p>• Customer record should exist for balance tracking.</p><h2>Step-by-step</h2><p>1. Open `Credit`.</p><p>2. Review open balances and overdue accounts.</p><p>3. Record new credit-linked transactions using approved flow.</p><p>4. Record incoming payments against the right customer balance.</p><p>5. Re-check totals after each payment post.</p><h2>What happens next</h2><p>Balances update and become visible for follow-up and reporting.</p><h2>Tips</h2><p>• Verify customer identity before applying payment.</p><p>• Keep payment notes clean for audit trails.</p><h2>Common mistakes</h2><p>• Posting a payment to the wrong customer record.</p><h2>Troubleshooting</h2><p>• If balance doesn’t update, refresh and verify payment route response.</p><p>• If overdue logic looks wrong, validate transaction dates and role visibility scope.</p><h2>Related articles</h2><p>• `customers-profiles-history.md`</p><p>• `reports-and-insights.md`</p><p>• `roles-permissions-staff-access.md`</p>",
+          "slug": "7032351-front-balances-credit-and-payment-workflow",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/7032351-front-balances-credit-and-payment-workflow",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:14.758Z",
+          "updatedAt": "2026-04-03T04:57:14.758Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:14.775Z",
+      "updatedAt": "2026-04-03T04:57:14.789Z",
+      "path": "g2nfnbka46winbit/7752792",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:14.758Z",
+      "translationUpdatedAt": "2026-04-03T04:57:14.758Z"
+    },
+    {
+      "object": "article",
+      "id": "6950478",
+      "title": "Admin Tools Overview",
+      "description": "Admin routes are for high-impact controls: feature gating, approvals, and system-level visibility.",
+      "body": "<h2>Admin Tools Overview</h2><p>Admin routes are for high-impact controls: feature gating, approvals, and system-level visibility.</p><h2>What this does</h2><p>Summarizes the admin area and when to use each section.</p><h2>Who can use it</h2><p>Admin-authorized users only</p><h2>Before you start</h2><p>• Confirm you have explicit admin route access.</p><h2>Step-by-step</h2><p>1. Open `Admin` dashboard.</p><p>2. Use `Admin &gt; Users` for access-level interventions.</p><p>3. Use `Admin &gt; Features` for feature gate review.</p><p>4. Use `Admin &gt; Approvals` for controlled actions.</p><p>5. Use audit/admin analytics surfaces to trace sensitive changes.</p><h2>What happens next</h2><p>Admin actions affect broad user behavior. Keep logs and change rationale tight.</p><h2>Tips</h2><p>• Treat admin changes like production changes: small, traceable, reversible where possible.</p><h2>Common mistakes</h2><p>• Rolling out feature toggles without a validation pass on target roles.</p><h2>Troubleshooting</h2><p>• If a feature appears missing for users, inspect feature gate + role + tenant context.</p><h2>Related articles</h2><p>• `roles-permissions-staff-access.md`</p><p>• `privacy-security-rtbf.md`</p><p>• `drx-intelligence.md`</p>",
+      "slug": "6950478-admin-tools-overview",
+      "icon": null,
+      "parentId": "0152347",
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "state": "live",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "publishedLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/6950478-admin-tools-overview",
+      "author": {
+        "name": "Lee White",
+        "authorId": "683282448ea2809dba410856",
+        "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+      },
+      "order": null,
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "translations": {
+        "en": {
+          "title": "Admin Tools Overview",
+          "description": "Admin routes are for high-impact controls: feature gating, approvals, and system-level visibility.",
+          "body": "<h2>Admin Tools Overview</h2><p>Admin routes are for high-impact controls: feature gating, approvals, and system-level visibility.</p><h2>What this does</h2><p>Summarizes the admin area and when to use each section.</p><h2>Who can use it</h2><p>Admin-authorized users only</p><h2>Before you start</h2><p>• Confirm you have explicit admin route access.</p><h2>Step-by-step</h2><p>1. Open `Admin` dashboard.</p><p>2. Use `Admin &gt; Users` for access-level interventions.</p><p>3. Use `Admin &gt; Features` for feature gate review.</p><p>4. Use `Admin &gt; Approvals` for controlled actions.</p><p>5. Use audit/admin analytics surfaces to trace sensitive changes.</p><h2>What happens next</h2><p>Admin actions affect broad user behavior. Keep logs and change rationale tight.</p><h2>Tips</h2><p>• Treat admin changes like production changes: small, traceable, reversible where possible.</p><h2>Common mistakes</h2><p>• Rolling out feature toggles without a validation pass on target roles.</p><h2>Troubleshooting</h2><p>• If a feature appears missing for users, inspect feature gate + role + tenant context.</p><h2>Related articles</h2><p>• `roles-permissions-staff-access.md`</p><p>• `privacy-security-rtbf.md`</p><p>• `drx-intelligence.md`</p>",
+          "slug": "6950478-admin-tools-overview",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/articles/6950478-admin-tools-overview",
+          "author": {
+            "name": "Lee White",
+            "authorId": "683282448ea2809dba410856",
+            "avatarUrl": "https://global.featurebase-attachments.com/c/static/0197054c-dce9-7528-89f8-4159e484c619/c0m3t0xl8z.jpeg"
+          },
+          "createdAt": "2026-04-03T04:57:14.491Z",
+          "updatedAt": "2026-04-03T04:57:14.491Z"
+        }
+      },
+      "createdAt": "2026-04-03T04:57:14.501Z",
+      "updatedAt": "2026-04-03T04:57:14.514Z",
+      "path": "g2nfnbka46winbit/0152347",
+      "visibleBy": [
+        "everyone"
+      ],
+      "translationCreatedAt": "2026-04-03T04:57:14.491Z",
+      "translationUpdatedAt": "2026-04-03T04:57:14.491Z"
+    }
+  ],
+  "nextCursor": null
+}

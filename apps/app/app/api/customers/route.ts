@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { decodeCustomerPii, encodeCustomerPii } from "@/lib/privacy/customer-pii";
 import { canWritePrivacyField } from "@/lib/privacy/profiles";
 import { extractPrivacyProtocol } from "@/lib/privacy/settings";
-import { hashLookupValue, sanitizePiiInput } from "@/lib/privacy/crypto";
+import { sanitizePiiInput } from "@/lib/privacy/crypto";
 
 async function resolveBusinessId(userId: string): Promise<string | null> {
   const ownedBusiness = await db.businessProfile.findFirst({
@@ -145,21 +145,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (search) {
-      let searchHash: string | null = null;
-      try {
-        searchHash = await hashLookupValue(search);
-      } catch (error) {
-        console.warn("[privacy] hash lookup unavailable, falling back to plaintext search", error);
-      }
       where.OR = [
-        ...(searchHash
-          ? [
-              { aliasHash: searchHash },
-              { phoneHash: searchHash },
-              { emailHash: searchHash },
-            ]
-          : []),
-        { alias: { contains: search, mode: "insensitive" } },
         { firstName: { contains: search, mode: "insensitive" } },
         { lastName: { contains: search, mode: "insensitive" } },
         { phoneNumber: { contains: search, mode: "insensitive" } },
@@ -177,7 +163,7 @@ export async function GET(request: NextRequest) {
     const privacyProtocol = await getBusinessPrivacyProtocol(businessId);
 
     const mappedCustomers = await Promise.all(
-      customers.map((customer) => mapCustomerForResponse(customer)),
+      customers.map((customer: any) => mapCustomerForResponse(customer)),
     );
 
     return NextResponse.json({ data: mappedCustomers, privacy_protocol: privacyProtocol });

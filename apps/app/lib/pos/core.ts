@@ -480,7 +480,7 @@ export async function checkout(
   const orderNumber = buildOrderNumber(idempotencyKey);
 
   try {
-    return await db.$transaction(async (tx) => {
+    return await db.$transaction(async (tx: any) => {
       const existingSale = await tx.sales.findFirst({
         where: {
           businessId: cart.businessId,

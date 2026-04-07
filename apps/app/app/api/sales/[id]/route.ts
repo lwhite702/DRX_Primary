@@ -48,9 +48,10 @@ export async function GET(
       return NextResponse.json({ error: "Sale not found" }, { status: 404 });
     }
 
-    const costOfGoodsSold = sale.items.reduce((sum, item) => {
+    const costOfGoodsSold = sale.items.reduce((sum: number, item: any) => {
       const allocationCost = (item.allocations ?? []).reduce(
-        (allocationSum, allocation) => allocationSum + toNumber(allocation.extendedCost),
+        (allocationSum: number, allocation: any) =>
+          allocationSum + toNumber(allocation.extendedCost),
         0,
       );
       return sum + allocationCost;
@@ -130,7 +131,7 @@ async function handleCustomerAssignment(
   businessId: string,
   newCustomerId: string | null,
 ) {
-  return await db.$transaction(async (tx) => {
+  return await db.$transaction(async (tx: any) => {
     const sale = await tx.sales.findFirst({
       where: { id: saleId, businessId },
     });

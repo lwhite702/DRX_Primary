@@ -24,6 +24,9 @@ vi.mock("@/lib/db", () => ({
     userRole: {
       findFirst: vi.fn(),
     },
+    businessProfile: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -51,6 +54,7 @@ describe("Audit Logs API Integration", () => {
     });
     (ensureServerFlag as any).mockResolvedValue(true);
     (db.userRole.findFirst as any).mockResolvedValue(null);
+    (db.businessProfile.findFirst as any).mockResolvedValue(null);
   });
 
   it("should allow super_admin (or any authorized user) to fetch latest logs", async () => {

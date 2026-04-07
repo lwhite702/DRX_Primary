@@ -63,9 +63,18 @@ export class InventoryEngine {
         }),
       ]);
 
-      const total7d = sales7d.reduce((sum, item) => sum + item.quantity, 0);
-      const total30d = sales30d.reduce((sum, item) => sum + item.quantity, 0);
-      const total90d = sales90d.reduce((sum, item) => sum + item.quantity, 0);
+      const total7d = sales7d.reduce(
+        (sum: number, item: any) => sum + item.quantity,
+        0,
+      );
+      const total30d = sales30d.reduce(
+        (sum: number, item: any) => sum + item.quantity,
+        0,
+      );
+      const total90d = sales90d.reduce(
+        (sum: number, item: any) => sum + item.quantity,
+        0,
+      );
 
       return {
         velocity7d: total7d / 7,

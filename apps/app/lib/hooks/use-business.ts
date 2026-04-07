@@ -70,6 +70,12 @@ export function useBusiness() {
 
   return {
     business, // Local DB BusinessProfile (with UUID)
+    settings:
+      business &&
+      typeof business === "object" &&
+      "settingsData" in business
+        ? (business as { settingsData?: Record<string, unknown> }).settingsData
+        : null,
     availableBusinesses: authBypassEnabled ? bypassBusinesses : availableBusinesses, // Clerk Organizations (with Clerk IDs)
     loading: loading || !isEssentiallyLoaded,
     needsSetup:

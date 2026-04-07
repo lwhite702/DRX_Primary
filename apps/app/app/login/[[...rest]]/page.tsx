@@ -16,15 +16,8 @@ export const metadata: Metadata = {
   description: "Access your secure workspace.",
 };
 
-type LoginPageProps = {
-  searchParams?:
-    | Promise<Record<string, string | string[] | undefined>>
-    | Record<string, string | string[] | undefined>;
-};
-
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage() {
   const { userId } = await auth();
-  await Promise.resolve(searchParams);
 
   if (userId) {
     redirect("/dashboard");
