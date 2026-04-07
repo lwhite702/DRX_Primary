@@ -13,6 +13,7 @@ const InventoryUpdateSchema = z
     sku: z.string().optional(),
     category: z.string().optional(),
 ```suggestion
+// removed stray suggestion marker
     quantity_on_hand: z.number().finite().int().nonnegative().optional(),
     reorder_level: z.number().finite().optional(),
     unit_cost: z.number().finite().optional(),
