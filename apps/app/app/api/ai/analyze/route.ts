@@ -1,28 +1,31 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { getSupabaseClient } from "@/lib/supabase/client";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+
+const AnalyzePayloadSchema = z.object({
+  business_id: z.string().min(1),
+  analysis_type: z.string().optional(),
+  inventory_id: z.string().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const {
-      business_id,
-      analysis_type = "all",
-      inventory_id,
-    } = await request.json();
-
-    if (!business_id) {
-      return NextResponse.json(
-        { error: "business_id is required" },
-        { status: 400 }
+    const parsed = AnalyzePayloadSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid analysis payload",
+        400,
+        parsed.error.flatten(),
       );
     }
+    const { business_id, analysis_type = "all", inventory_id } = parsed.data;
 
-    const supabase = createAppClient();
+    const supabase = getSupabaseClient();
     if (!supabase) {
-      return NextResponse.json(
-        { error: "Supabase client not available" },
-        { status: 500 }
-      );
+      return errorResponse("INTERNAL_ERROR", "Supabase client not available", 500);
     }
 
     // Get inventory items
@@ -40,9 +43,10 @@ export async function POST(request: NextRequest) {
     const { data: inventoryItems, error: inventoryError } = await query;
 
     if (inventoryError || !inventoryItems) {
-      return NextResponse.json(
-        { error: `Failed to fetch inventory: ${inventoryError?.message}` },
-        { status: 500 }
+      return errorResponse(
+        "INTERNAL_ERROR",
+        `Failed to fetch inventory: ${inventoryError?.message}`,
+        500,
       );
     }
 
@@ -79,19 +83,18 @@ export async function POST(request: NextRequest) {
       error_count: 0,
     };
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       summary,
       timestamp: new Date().toISOString(),
+      analysis_type,
     });
   } catch (error) {
     console.error("AI Analysis Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Unknown error",
+      500,
     );
   }
 }
