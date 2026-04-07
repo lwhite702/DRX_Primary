@@ -1,76 +1,50 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
-import { decodeCustomerPii, getCustomerDisplayName } from "@/lib/privacy/customer-pii";
-import { hashLookupValue } from "@/lib/privacy/crypto";
-
-function cleanPhone(value: string) {
-  return value.replace(/[^0-9]/g, "");
-}
+import { cleanPhone, resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
+import { errorResponse, successResponse } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
-  const { businessId } = await resolveAuthContext();
-
-  if (!businessId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const phoneRaw = new URL(request.url).searchParams.get("phone") || "";
-  const phone = cleanPhone(phoneRaw);
-
-  if (!phone) {
-    return NextResponse.json({ items: [] });
-  }
-
-  let phoneHash: string | null = null;
   try {
-    phoneHash = await hashLookupValue(phone);
-  } catch (error) {
-    console.warn("[privacy] phone hash lookup unavailable", error);
-  }
+    const { businessId } = await resolveAuthContext();
 
-  const customers = await db.customers.findMany({
-    where: {
-      businessId,
-      isActive: true,
-      OR: [
-        ...(phoneHash ? [{ phoneHash }] : []),
-        { phoneNumber: { contains: phone } },
-      ],
-    },
-    take: 10,
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      alias: true,
-      firstName: true,
-      lastName: true,
-      phoneNumber: true,
-      aliasEncrypted: true,
-      firstNameEncrypted: true,
-      phoneEncrypted: true,
-      emailEncrypted: true,
-      addressEncrypted: true,
-      notesEncrypted: true,
-      email: true,
-      address: true,
-      notes: true,
-      creditLimits: {
-        where: { businessId },
-        take: 1,
-        select: {
-          maxCreditLimit: true,
-          currentBalance: true,
+    if (!businessId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
+    const phoneRaw = new URL(request.url).searchParams.get("phone") || "";
+    const phone = cleanPhone(phoneRaw);
+
+    if (!phone) {
+      return successResponse({ items: [], data: [], count: 0 });
+    }
+
+    const customers = await db.customers.findMany({
+      where: {
+        businessId,
+        isActive: true,
+        phoneNumber: { contains: phone },
+      },
+      take: 10,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        creditLimits: {
+          where: { businessId },
+          take: 1,
+          select: {
+            maxCreditLimit: true,
+            currentBalance: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  const items = await Promise.all(
-    customers.map(async (customer) => {
-      const pii = await decodeCustomerPii(customer as unknown as Record<string, unknown>);
+    const items = customers.map((customer) => {
       const limit = customer.creditLimits[0];
       const remainingCredit = limit
         ? Math.max(0, toNumber(limit.maxCreditLimit) - toNumber(limit.currentBalance))
@@ -78,12 +52,20 @@ export async function GET(request: NextRequest) {
 
       return {
         id: customer.id,
-        phone: pii.phone || "",
-        alias: getCustomerDisplayName(pii),
+        phone: customer.phoneNumber || "",
+```suggestion
+        alias: [customer.firstName, customer.lastName].filter(Boolean).join(" "),
         remainingCredit,
       };
-    }),
-  );
+    });
 
-  return NextResponse.json({ items });
+    return successResponse({ items, data: items, count: items.length });
+  } catch (error: unknown) {
+    console.error("POS customers lookup error:", error);
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Unexpected server error",
+      500,
+    );
+  }
 }
