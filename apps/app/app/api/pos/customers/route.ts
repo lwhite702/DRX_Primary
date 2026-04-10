@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       return {
         id: customer.id,
         phone: customer.phoneNumber || "",
-        alias: `${customer.firstName} ${customer.lastName}`.trim(),
+        alias: [customer.firstName, customer.lastName].filter(Boolean).join(" "),
         remainingCredit,
       };
     });
