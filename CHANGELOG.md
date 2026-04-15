@@ -46,6 +46,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Legacy Artifacts**: Removed stale tracked CI/testing artifacts and legacy TestSprite suites from version control.
 
+## [0.5.5] - 2026-04-09
+
+### Changed
+
+- **Analytics Compliance**: Migrated PostHog initialization from direct `posthog-js` SDK to `@wrelik/analytics/client` adapter.
+- **Error Tracking Compliance**: Migrated Sentry initialization from direct `@sentry/nextjs` SDK to `@wrelik/errors/server` and `@wrelik/errors/client` adapters.
+- **Feature Flags**: Migrated feature flag hook from Supabase-based flags to PostHog feature flags via `@wrelik/analytics/client`.
+- **User Identification**: Added automatic user identification in PostHog when users authenticate.
+
+### Added
+
+- **@wrelik/analytics Client Module**: Added `./client` export with browser-side PostHog wrapper including:
+  - `initAnalytics()` - Initialize client-side analytics
+  - `identify()` - Identify authenticated users
+  - `capture()` - Track custom events
+  - `capturePageView()` - Track page views
+  - `isFeatureEnabled()` - Check feature flags
+  - `getFeatureFlag()` - Get multivariate flag values
+  - `onFeatureFlags()` - Subscribe to flag changes
+  - `reset()` - Reset analytics on sign-out
+- **@wrelik/errors Enhanced Config**: Added full configuration options to `initErrors()` for both server and client:
+  - Environment, trace sampling, replay sampling, PII settings
+  - `addBreadcrumb()` and `captureMessage()` functions
+- **Documentation**: Added `docs/@wrelik-kit-usage.md` - Comprehensive guide for using @wrelik/* packages
+- **Documentation**: Added `docs/feature-flags.md` - Feature flag system guide with naming conventions and best practices
+- **Analytics Identity Hook**: Added `useAnalyticsIdentity` hook for manual user identification
+
 ## [0.5.4] - 2026-03-11
 
 ### Fixed

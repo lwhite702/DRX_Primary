@@ -1,5 +1,18 @@
 # @wrelik/analytics
 
+## 0.2.2
+
+### Minor Changes
+
+- Add browser/client support via `./client` export for client-side analytics
+- Add feature flag utilities: `isFeatureEnabled`, `getFeatureFlag`, `onFeatureFlags`, `reloadFeatureFlags`
+- Add `reset()` function for sign-out cleanup
+- Add `setUserProperties()` for additional user traits
+
+### Patch Changes
+
+- Updated package exports to include `./server` alias
+
 ## 0.2.0
 
 ### Minor Changes
