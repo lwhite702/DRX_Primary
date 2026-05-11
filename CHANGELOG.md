@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mobile Sentry Integration**: Added `@sentry/react-native` via `@wrelik/errors/react-native` to mobile app.
+- **Mobile Analytics Dependencies**: Added `@wrelik/analytics` and `@wrelik/errors` workspace packages to mobile app.
+- **Production Launch Checklist**: Added `docs/PRODUCTION_LAUNCH_CHECKLIST.md` with complete launch sequence.
 - **@wrelik/analytics Client Module**: Added `./client` export with browser-side PostHog wrapper including:
   - `initAnalytics()` - Initialize client-side analytics
   - `identify()` - Identify authenticated users
