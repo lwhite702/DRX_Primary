@@ -1,13 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { errorResponse, successResponse } from "@/lib/api/response";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
     const notifications = await db.notification.findMany({
@@ -21,13 +22,14 @@ export async function GET(request: NextRequest) {
       take: 100,
     });
 
-    return NextResponse.json({ notifications });
+    return successResponse({
+      notifications,
+      data: notifications,
+      count: notifications.length,
+    });
   } catch (error) {
     console.error("Fetch notifications error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }
 
@@ -36,7 +38,7 @@ export async function PUT(request: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
     const body = await request.json();
@@ -53,18 +55,16 @@ export async function PUT(request: NextRequest) {
         data: { isRead: true },
       });
     } else {
-      return NextResponse.json(
-        { error: "Missing id or mark_all_read" },
-        { status: 400 },
+      return errorResponse(
+        "BAD_REQUEST",
+        "Missing id or mark_all_read",
+        400,
       );
     }
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
     console.error("Update notification error:", error);
-    return NextResponse.json(
-      { error: "Failed to update notification" },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", "Failed to update notification", 500);
   }
 }

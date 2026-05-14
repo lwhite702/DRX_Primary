@@ -293,9 +293,12 @@ export function AuditClient() {
                                   <CardTitle className="text-lg flex justify-between items-center">
                                     Audit Detail
                                     <button
+                                      type="button"
                                       onClick={(e) => {
-                                        // Use direct DOM manipulation or state to close if needed,
-                                        // but simple details works for now.
+                                        const details = e.currentTarget.closest("details");
+                                        if (details) {
+                                          details.open = false;
+                                        }
                                       }}
                                       className="text-muted-foreground hover:text-foreground"
                                     >
