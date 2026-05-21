@@ -12,7 +12,10 @@ export function useSalesCart(businessId?: string) {
   const [fees, setFees] = useState<MiscFee[]>([]);
   const [processing, setProcessing] = useState(false);
 
-  const refreshCart = useCallback(() => setCart(posEngine.getCart()), [posEngine]);
+  // Refresh cart when engine updates (if needed, though we usually drive this manually)
+  const refreshCart = useCallback(() => {
+    setCart(posEngine.getCart());
+  }, [posEngine]);
 
   // Re-initialize if needed when businessId changes, though POSEngine might be stateless regarding businessId until checkout
   useEffect(() => {
@@ -166,10 +169,13 @@ export function useSalesCart(businessId?: string) {
     return result;
   };
 
-  const setTaxEnabled = (enabled: boolean) => {
-    posEngine.setTaxEnabled(enabled);
-    refreshCart();
-  };
+  const setTaxEnabled = useCallback(
+    (enabled: boolean) => {
+      posEngine.setTaxEnabled(enabled);
+      refreshCart();
+    },
+    [posEngine, refreshCart],
+  );
 
   return {
     posEngine,

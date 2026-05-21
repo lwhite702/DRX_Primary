@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Clock, Database, Smartphone } from "lucide-react";
 import { drxClerkAuthAppearance } from "@/lib/auth/clerk-appearance";
-import { OperatorLoginForm } from "@/components/auth/operator-login-form";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -17,16 +16,8 @@ export const metadata: Metadata = {
   description: "Access your secure workspace.",
 };
 
-type LoginPageProps = {
-  searchParams?:
-    | Promise<Record<string, string | string[] | undefined>>
-    | Record<string, string | string[] | undefined>;
-};
-
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage() {
   const { userId } = await auth();
-  const params = (await Promise.resolve(searchParams)) ?? {};
-  const useClerkWidget = params.view === "clerk";
 
   if (userId) {
     redirect("/dashboard");
@@ -64,33 +55,28 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         {/* Login Card */}
-        {useClerkWidget ? (
-          <div className="bg-[#0A0A0A] border border-white/5 rounded-xl p-1 shadow-2xl overflow-hidden">
-            {/* System Status Badge */}
-            <div className="px-6 pt-6 pb-2 flex justify-between items-center">
-              <div className="inline-flex items-center gap-2 px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] text-primary uppercase font-mono tracking-wider">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                System Online
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                <ShieldCheck className="w-3 h-3" />
-                Encrypted
-              </div>
+        <div className="bg-[#0A0A0A] border border-white/5 rounded-xl p-1 shadow-2xl overflow-hidden">
+          {/* System Status Badge */}
+          <div className="px-6 pt-6 pb-2 flex justify-between items-center">
+            <div className="inline-flex items-center gap-2 px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] text-primary uppercase font-mono tracking-wider">
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+              System Online
             </div>
-            <SignIn
-              routing="path"
-              path="/login"
-              appearance={drxClerkAuthAppearance}
-              forceRedirectUrl="/dashboard"
-              fallbackRedirectUrl="/dashboard"
-            />
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+              <ShieldCheck className="w-3 h-3" />
+              Encrypted
+            </div>
           </div>
-        ) : (
-          <OperatorLoginForm />
-        )}
+          <SignIn
+            routing="path"
+            path="/login"
+            appearance={drxClerkAuthAppearance}
+            forceRedirectUrl="/dashboard"
+            fallbackRedirectUrl="/dashboard"
+          />
+        </div>
 
-        {useClerkWidget ? (
-          <>
+        <>
             <div className="text-center text-xs font-mono text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link
@@ -262,7 +248,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
             </div>
           </>
-        ) : null}
       </div>
     </div>
   );

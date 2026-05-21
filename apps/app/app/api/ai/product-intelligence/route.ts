@@ -1,9 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { z } from "zod";
+import { errorResponse, successResponse } from "@/lib/api/response";
+
+const ProductIntelligenceSchema = z.object({
+  business_id: z.string().min(1),
+  inventory_id: z.string().min(1),
+  product_name: z.string().optional(),
+  sku: z.string().optional(),
+  cost: z.coerce.number().finite().optional(),
+  current_price: z.coerce.number().finite().optional(),
+  current_stock: z.coerce.number().finite().optional(),
+  reorder_level: z.coerce.number().finite().optional(),
+  min_price: z.coerce.number().finite().optional(),
+  max_price: z.coerce.number().finite().optional(),
+  supplier_lead_time_days: z.coerce.number().finite().optional(),
+  restock_cost: z.coerce.number().finite().optional(),
+  margin_requirement: z.coerce.number().finite().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
+    const parsed = ProductIntelligenceSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return errorResponse(
+        "VALIDATION_ERROR",
+        "Invalid product intelligence payload",
+        400,
+        parsed.error.flatten(),
+      );
+    }
+
     const {
       business_id,
       inventory_id,
@@ -18,46 +45,37 @@ export async function POST(request: NextRequest) {
       supplier_lead_time_days = 7,
       restock_cost,
       margin_requirement = 0.3,
-    } = await request.json();
-
-    if (!business_id || !inventory_id) {
-      return NextResponse.json(
-        { error: "business_id and inventory_id are required" },
-        { status: 400 }
-      );
-    }
+    } = parsed.data;
 
     const analysisRequest: ProductAnalysisRequest = {
       businessId: business_id,
       inventoryId: inventory_id,
-      productName: product_name,
-      sku,
-      cost: Number(cost || 0),
-      currentPrice: Number(current_price || 0),
-      currentStock: Number(current_stock || 0),
-      reorderLevel: Number(reorder_level || 10),
-      minPrice: min_price ? Number(min_price) : undefined,
-      maxPrice: max_price ? Number(max_price) : undefined,
-      supplierLeadTimeDays: Number(supplier_lead_time_days),
-      restockCost: restock_cost ? Number(restock_cost) : undefined,
-      marginRequirement: Number(margin_requirement),
+      productName: product_name ?? "",
+      sku: sku ?? "",
+      cost: cost ?? 0,
+      currentPrice: current_price ?? 0,
+      currentStock: current_stock ?? 0,
+      reorderLevel: reorder_level ?? 10,
+      minPrice: min_price,
+      maxPrice: max_price,
+      supplierLeadTimeDays: supplier_lead_time_days,
+      restockCost: restock_cost,
+      marginRequirement: margin_requirement,
     };
 
     const intelligence = await aiEngine.analyzeProduct(analysisRequest);
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: intelligence,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Product Intelligence Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Unknown error",
+      500,
     );
   }
 }
@@ -68,24 +86,22 @@ export async function GET(request: NextRequest) {
     const business_id = searchParams.get("business_id");
 
     if (!business_id) {
-      return NextResponse.json({ error: "business_id is required" }, { status: 400 });
+      return errorResponse("BAD_REQUEST", "business_id is required", 400);
     }
 
     const intelligence = await aiEngine.getBusinessIntelligence(business_id);
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: intelligence,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Business Intelligence Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "INTERNAL_ERROR",
+      error instanceof Error ? error.message : "Unknown error",
+      500,
     );
   }
 }

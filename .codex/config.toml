@@ -1,3 +1,8 @@
 [mcp_servers.vercel]
 type = "http"
 url = "https://mcp.vercel.com"
+
+[mcp_servers.featurebase]
+type = "http"
+url = "https://docs.featurebase.app/mcp"
+

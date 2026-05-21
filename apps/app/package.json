@@ -44,12 +44,14 @@
     "test:e2e:regression": "playwright test tests/e2e/visual-regression.spec.ts",
     "test:e2e:visual:required": "VISUAL_TARGET=public NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=false BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --workers=1 && VISUAL_TARGET=protected NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/visual-regression.spec.ts --workers=1",
     "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
+    "test:flags:parity": "node scripts/verify-posthog-flags.mjs",
+    "verify:migration-rollbacks": "node scripts/verify-migration-rollbacks.mjs",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",
     "test:regression": "vitest run tests/regression",
     "pos:backfill-lineage": "node scripts/backfill-pos-cost-lineage.mjs"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.37.1",
+    "@clerk/nextjs": "^7.0.8",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/adapter-pg": "^7.3.0",

@@ -2,26 +2,79 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const OPENAI_MODEL = Deno.env.get("OPENAI_MODEL") ?? "gpt-5.5";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 interface CashflowRequest {
   business_id: string;
   days?: number; // Default 30
 }
 
+type LogLevel = "info" | "error";
+
+function jsonResponse(payload: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function getMissingRequiredEnv(): string[] {
+  const missing: string[] = [];
+  if (!SUPABASE_URL) missing.push("SUPABASE_URL");
+  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  return missing;
+}
+
+function toErrorContext(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return { message: String(error) };
+}
+
+function log(level: LogLevel, message: string, context: Record<string, unknown> = {}) {
+  const entry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...context,
+  });
+
+  if (level === "error") {
+    console.error(entry);
+    return;
+  }
+
+  console.log(entry);
+}
+
 serve(async (req) => {
+  const requestId = crypto.randomUUID();
+  const missingEnvs = getMissingRequiredEnv();
+  if (missingEnvs.length > 0) {
+    const message = `Missing required environment variables: ${missingEnvs.join(", ")}`;
+    log("error", message, { requestId, missing_envs: missingEnvs });
+    return jsonResponse({ success: false, error: message }, 500);
+  }
+
+  let body: CashflowRequest | null = null;
+
   try {
-    const { business_id, days = 30 }: CashflowRequest = await req.json();
+    body = (await req.json()) as CashflowRequest;
+    const { business_id, days = 30 } = body;
 
     if (!business_id) {
-      return new Response(
-        JSON.stringify({ error: "business_id is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "business_id is required" }, 400);
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     // Fetch sales data
@@ -107,7 +160,7 @@ Focus on cashflow health, payment method trends, and credit risk.`;
               Authorization: `Bearer ${OPENAI_API_KEY}`,
             },
             body: JSON.stringify({
-              model: "gpt-5.1",
+              model: OPENAI_MODEL,
               messages: [
                 {
                   role: "system",
@@ -144,51 +197,57 @@ Focus on cashflow health, payment method trends, and credit risk.`;
           }
         }
       } catch (aiError) {
-        console.error("AI insight generation failed:", aiError);
+        log("error", "Cashflow AI insight generation failed", {
+          requestId,
+          error: toErrorContext(aiError),
+        });
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        metrics: {
-          total_revenue: totalRevenue,
-          cash_revenue: cashRevenue,
-          card_revenue: cardRevenue,
-          credit_payments_received: creditPaymentsReceived,
-          pending_credit: pendingCreditAmount,
-          total_cashflow: totalCashflow,
-          average_daily_revenue: averageDailyRevenue,
-          days_analyzed: days,
-        },
-        sales_count: sales?.length || 0,
-        ai_insight: aiInsight,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      success: true,
+      metrics: {
+        total_revenue: totalRevenue,
+        cash_revenue: cashRevenue,
+        card_revenue: cardRevenue,
+        credit_payments_received: creditPaymentsReceived,
+        pending_credit: pendingCreditAmount,
+        total_cashflow: totalCashflow,
+        average_daily_revenue: averageDailyRevenue,
+        days_analyzed: days,
+      },
+      sales_count: sales?.length || 0,
+      ai_insight: aiInsight,
+    });
   } catch (error) {
-    console.error("Cashflow Error:", error);
+    log("error", "Cashflow function failed", {
+      requestId,
+      error: toErrorContext(error),
+    });
 
     // Log failure
     try {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
       await supabase.from("ai_insights_failures").insert({
-        business_id: (await req.json()).business_id,
+        business_id: body?.business_id ?? null,
         function_name: "cashflow",
         error_message: error instanceof Error ? error.message : String(error),
         error_stack: error instanceof Error ? error.stack : undefined,
-        input_data: await req.json(),
+        input_data: body,
       });
     } catch (logError) {
-      console.error("Failed to log error:", logError);
+      log("error", "Failed to write ai_insights_failures log", {
+        requestId,
+        error: toErrorContext(logError),
+      });
     }
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      },
+      500,
     );
   }
 });

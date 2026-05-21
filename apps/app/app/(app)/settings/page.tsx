@@ -596,7 +596,7 @@ export default function SettingsPage() {
                 maxLength={4}
                 value={posManagerPin}
                 onChange={(e) => setPosManagerPin(e.target.value)}
-                placeholder="1234"
+                placeholder="Set 4-digit PIN"
                 disabled={saving}
               />
               <p className="text-sm text-muted-foreground">

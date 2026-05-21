@@ -185,7 +185,7 @@ async function resetDatabase() {
         currency: "USD",
         timezone: "America/New_York",
         settings_data: {},
-        pos_manager_pin: "1234", // Default PIN
+        pos_manager_pin: null,
       });
 
     if (settingsError) {
@@ -208,7 +208,7 @@ async function resetDatabase() {
     console.log(`   • Business Role: Manager`);
     console.log(`   • System Role: Super Admin`);
     console.log(`   • Tax Rate: 8%`);
-    console.log(`   • Manager PIN: 1234`);
+    console.log(`   • Manager PIN: not configured`);
     console.log("\n🚀 The application is ready for production beta testing.");
     console.log("\n");
   } catch (error) {

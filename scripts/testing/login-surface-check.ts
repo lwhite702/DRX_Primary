@@ -8,7 +8,7 @@ type Check = { file: string; tokens: string[] };
 const checks: Check[] = [
   {
     file: "apps/app/app/login/[[...rest]]/page.tsx",
-    tokens: ["Sign In", "OperatorLoginForm", "export const metadata"],
+    tokens: ["Sign In", "SignIn", "export const metadata"],
   },
   {
     file: "apps/app/app/register/[[...rest]]/page.tsx",
@@ -28,7 +28,7 @@ const checks: Check[] = [
   },
   {
     file: "apps/app/middleware.ts",
-    tokens: ["isAuthEntryPath", "redirectToApp(req, \"/login\")"],
+    tokens: ["isAuthEntryPath", "redirectToApp(req, \"/login\", true)"],
   },
 ];
 

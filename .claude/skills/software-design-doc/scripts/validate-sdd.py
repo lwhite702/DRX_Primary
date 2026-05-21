@@ -25,16 +25,22 @@ def validate_sdd(file_path):
     errors = []
     warnings = []
 
-    # 1. Check for Mandatory Sections
-    mandatory_sections = [
-        "1. Introduction",
-        "2. Design Overview",
-        "3. Design Views",
-        "4. Decisions"
+    # 1. Check for Mandatory Sections (accept optional section numbering)
+    mandatory_section_titles = [
+        "Introduction",
+        "Design Overview",
+        "Design Views",
+        "Decisions",
     ]
-    for section in mandatory_sections:
-        if not re.search(rf"^#+\s*{re.escape(section)}", content, re.MULTILINE | re.IGNORECASE):
-            errors.append(f"Missing mandatory section: {section}")
+    def find_section(title):
+        return re.search(
+            rf"(?im)^#+\s*(?:\d+(?:\.\d+)*\.?\s*)?{re.escape(title)}\s*$",
+            content,
+        )
+
+    for title in mandatory_section_titles:
+        if not find_section(title):
+            errors.append(f"Missing mandatory section: {title}")
 
     # 2. Extract IDs
     # Pattern matches ID: [NNN] or ID: VIEW-001 or ID: DEC-001
@@ -47,26 +53,34 @@ def validate_sdd(file_path):
     decision_ids = set()
     all_defined_ids = {} # ID -> Line Number (approx)
 
-    # We assume standard section ordering: 1: Intro, 2: Overview, 3: Views, 4: Decisions
-    # This is a bit fragile if sections are reordered, so we'll look for headers specifically
-    
-    view_section_match = re.search(r"(?s)#+\s*3\.\s*Design Views(.*?)(?=#+\s*\d|\Z)", content, re.IGNORECASE)
-    if view_section_match:
-        for match in id_pattern.finditer(view_section_match.group(1)):
+    def extract_section_body(title):
+        header_match = find_section(title)
+        if not header_match:
+            return None
+
+        body_start = header_match.end()
+        remaining = content[body_start:]
+        next_header = re.search(r"(?m)^#+\s+", remaining)
+        body_end = body_start + next_header.start() if next_header else len(content)
+        return content[body_start:body_end]
+
+    view_section_body = extract_section_body("Design Views")
+    if view_section_body is not None:
+        for match in id_pattern.finditer(view_section_body):
             id_val = match.group(1).upper()
             if id_val in all_defined_ids:
                 errors.append(f"Duplicate ID found: {id_val}")
             view_ids.add(id_val)
-            all_defined_ids[id_val] = "Section 3"
+            all_defined_ids[id_val] = "Design Views"
 
-    decision_section_match = re.search(r"(?s)#+\s*4\.\s*Decisions(.*?)(?=#+\s*\d|\Z)", content, re.IGNORECASE)
-    if decision_section_match:
-        for match in id_pattern.finditer(decision_section_match.group(1)):
+    decision_section_body = extract_section_body("Decisions")
+    if decision_section_body is not None:
+        for match in id_pattern.finditer(decision_section_body):
             id_val = match.group(1).upper()
             if id_val in all_defined_ids:
                 errors.append(f"Duplicate ID found: {id_val}")
             decision_ids.add(id_val)
-            all_defined_ids[id_val] = "Section 4"
+            all_defined_ids[id_val] = "Decisions"
 
     # 3. Check Cross-references
     # Look for patterns like "DEC-001" or "[001]" inside "More Information" or "Context" blocks
@@ -74,8 +88,8 @@ def validate_sdd(file_path):
     ref_pattern = re.compile(r"(DEC-\d+|VIEW-\d+|\[\d+\])")
     
     # Check Section 3 for references to Section 4
-    if view_section_match:
-        content_to_check = view_section_match.group(1)
+    if view_section_body is not None:
+        content_to_check = view_section_body
         # Remove the actual ID definitions so we only look at references
         content_to_check = id_pattern.sub("", content_to_check)
         
@@ -88,7 +102,11 @@ def validate_sdd(file_path):
                     warnings.append(f"Potential broken reference in Design Views: {ref} (Not found in Decisions)")
 
     # 4. Check for glossary consistency (Bonus)
-    glossary_match = re.search(r"## 1\.3 Definitions.*?\|(.*?)\|", content, re.DOTALL | re.IGNORECASE)
+    glossary_match = re.search(
+        r"(?is)^##\s*(?:\d+(?:\.\d+)*\.?\s*)?Definitions.*?\|(.*?)\|",
+        content,
+        re.MULTILINE,
+    )
     if not glossary_match:
         warnings.append("Glossary (Section 1.3) appears to be empty or missing table structure.")
 

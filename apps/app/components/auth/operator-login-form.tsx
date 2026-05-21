@@ -26,7 +26,7 @@ export function OperatorLoginForm() {
     null,
   );
 
-  const clerkFallbackUrl = "/login?view=clerk";
+  const clerkFallbackUrl = "/login";
 
   const formatLockoutTime = (isoString: string) => {
     const date = new Date(isoString);

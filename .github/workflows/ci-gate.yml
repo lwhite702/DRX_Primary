@@ -49,6 +49,10 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm release:preflight
+      - run: pnpm test:env-contract
+      - run: pnpm test:ai-runtime-contract
+      - run: pnpm --filter deelrxcrm-app test:flags:parity
+      - run: pnpm --filter deelrxcrm-app verify:migration-rollbacks
 
   lint:
     runs-on: ubuntu-latest
@@ -97,7 +101,6 @@ jobs:
 
   unit:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [lint, typecheck]
     strategy:
       fail-fast: true
@@ -164,7 +167,6 @@ jobs:
 
   integration:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -180,6 +182,7 @@ jobs:
 
   e2e-web:
     runs-on: ubuntu-latest
+    # Non-blocking while this suite is being stabilized; required UX gates remain blocking.
     continue-on-error: true
     timeout-minutes: 30
     needs: [build]
@@ -209,6 +212,7 @@ jobs:
 
   a11y:
     runs-on: ubuntu-latest
+    # Non-blocking while this suite is being stabilized; required UX gates remain blocking.
     continue-on-error: true
     needs: [build]
     steps:
@@ -226,6 +230,7 @@ jobs:
 
   auth-e2e:
     runs-on: ubuntu-latest
+    # Non-blocking because it depends on optional secret availability and external auth state.
     continue-on-error: true
     needs: [build]
     if: ${{ secrets.CLERK_TESTING_TOKEN != '' && secrets.CLERK_SECRET_KEY != '' && (secrets.CLERK_PUBLISHABLE_KEY != '' || secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '') }}
@@ -257,7 +262,6 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -278,7 +282,6 @@ jobs:
 
   perf-smoke:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -299,7 +302,6 @@ jobs:
 
   coverage-gate:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [unit]
     steps:
       - uses: actions/checkout@v4

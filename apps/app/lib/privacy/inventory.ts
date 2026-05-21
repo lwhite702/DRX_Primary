@@ -30,9 +30,7 @@ function toNumber(value: unknown): number {
 export async function computePrivacyInventoryCounts(
   businessId: string,
 ): Promise<PrivacyInventoryCounts> {
-  const [row] = await db.$queryRaw<
-    Array<Record<keyof PrivacyInventoryCounts, unknown>>
-  >(Prisma.sql`
+  const rows = (await db.$queryRaw(Prisma.sql`
     SELECT
       COUNT(*) FILTER (
         WHERE COALESCE(alias_encrypted, alias) IS NOT NULL
@@ -51,7 +49,8 @@ export async function computePrivacyInventoryCounts(
       )::int AS notes_count
     FROM customers
     WHERE business_id = ${businessId}::uuid
-  `);
+  `)) as Array<Record<keyof PrivacyInventoryCounts, unknown>>;
+  const [row] = rows;
 
   return {
     alias_count: toNumber(row?.alias_count),

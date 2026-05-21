@@ -24,16 +24,22 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
-  
+  const isAuthSurface =
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/sign-in") ||
+    pathname?.startsWith("/sign-up") ||
+    pathname?.startsWith("/waitlist");
+
   // Get auth state for user identification
   const { isSignedIn, userId, orgId, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
 
   // Initialize analytics
   useEffect(() => {
-    if (!key) return;
+    if (!key || isAuthSurface) return;
     if (analyticsInitialized) return;
-    
+
     initAnalytics({
       apiKey: key,
       host,
@@ -41,19 +47,19 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       persistence: "localStorage+cookie",
       autocapture: true,
     });
-    
+
     analyticsInitialized = true;
-  }, [host, key]);
+  }, [host, isAuthSurface, key]);
 
   // Identify user when authenticated
   useEffect(() => {
     if (!key || !analyticsInitialized) return;
     if (!authLoaded || !userLoaded) return;
-    
+
     if (isSignedIn && userId) {
       // Build user traits
       const traits: Record<string, any> = {};
-      
+
       if (user?.primaryEmailAddress?.emailAddress) {
         traits.email = user.primaryEmailAddress.emailAddress;
       }
@@ -69,7 +75,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       if (orgId) {
         traits.orgId = orgId;
       }
-      
+
       identify(userId, traits);
     } else if (!isSignedIn) {
       // Reset analytics when user signs out
@@ -79,11 +85,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   // Track page views
   useEffect(() => {
-    if (!key || !pathname) return;
+    if (!key || !pathname || isAuthSurface) return;
     const query = searchParams?.toString();
     const url = query ? `${pathname}?${query}` : pathname;
     capturePageView(url, { path: pathname });
-  }, [key, pathname, searchParams]);
+  }, [isAuthSurface, key, pathname, searchParams]);
 
   return <>{children}</>;
 }

@@ -1,0 +1,98 @@
+[
+  {
+    "file": "admin-tools-overview.md",
+    "title": "Admin Tools Overview",
+    "action": "would-update",
+    "parentId": "0152347"
+  },
+  {
+    "file": "credit-balances-payments.md",
+    "title": "Front / Balances: Credit and Payment Workflow",
+    "action": "would-update",
+    "parentId": "7752792"
+  },
+  {
+    "file": "customers-profiles-history.md",
+    "title": "Customers: Profiles and History",
+    "action": "would-update",
+    "parentId": "7112199"
+  },
+  {
+    "file": "dashboard-daily-check.md",
+    "title": "Dashboard: Daily Check in 2 Minutes",
+    "action": "would-update",
+    "parentId": "1636653"
+  },
+  {
+    "file": "drx-intelligence.md",
+    "title": "DRX Intelligence: Using AI Support Features",
+    "action": "would-update",
+    "parentId": "3312590"
+  },
+  {
+    "file": "getting-started-first-week.md",
+    "title": "Getting Started: Your First Week in DRX",
+    "action": "would-update",
+    "parentId": "2241034"
+  },
+  {
+    "file": "inventory-audit-fixes.md",
+    "title": "Inventory Audit: Fix Count Problems Fast",
+    "action": "would-update",
+    "parentId": "5902160"
+  },
+  {
+    "file": "inventory-manage-stock.md",
+    "title": "Inventory: Manage Stock Without Guessing",
+    "action": "would-update",
+    "parentId": "5902160"
+  },
+  {
+    "file": "privacy-security-rtbf.md",
+    "title": "Privacy and Security: Daily Controls + RTBF",
+    "action": "would-update",
+    "parentId": "9474440"
+  },
+  {
+    "file": "quick-pos-run-sale.md",
+    "title": "Quick POS: Run a Sale Fast",
+    "action": "would-update",
+    "parentId": "0659914"
+  },
+  {
+    "file": "reports-and-insights.md",
+    "title": "Reports and Operations Insights",
+    "action": "would-update",
+    "parentId": "5089813"
+  },
+  {
+    "file": "roles-permissions-staff-access.md",
+    "title": "Roles and Permissions: Keep Access Tight",
+    "action": "would-update",
+    "parentId": "3562121"
+  },
+  {
+    "file": "sales-history-receipts.md",
+    "title": "Sales History and Receipt Checks",
+    "action": "would-update",
+    "parentId": "5595577"
+  },
+  {
+    "file": "settings-and-aliases.md",
+    "title": "Settings and Aliases: Keep Workflows Clean",
+    "action": "would-update",
+    "parentId": "6854042"
+  },
+  {
+    "file": "troubleshooting-fast-fixes.md",
+    "title": "Troubleshooting: Fast Fixes First",
+    "action": "would-update",
+    "parentId": "5925303"
+  },
+  {
+    "file": "workspaces-and-tenants.md",
+    "title": "Workspaces and Tenant Context",
+    "action": "would-update",
+    "parentId": "2241034"
+  }
+]

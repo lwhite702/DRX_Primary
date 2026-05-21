@@ -54,8 +54,7 @@ export function ExitPosDialog({
         </p>
         {!bypassMode ? (
           <p className="mt-1 text-xs text-white/60">
-            PIN is managed in Settings {"->"} POS Controls. If no PIN was set yet, the local fallback is{" "}
-            <span className="font-semibold text-white">1234</span>.
+            PIN is managed in Settings {"->"} POS Controls.
           </p>
         ) : null}
 

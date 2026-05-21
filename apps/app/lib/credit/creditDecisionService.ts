@@ -1,4 +1,5 @@
 import { createAppClient } from "@/lib/data/client/supabase-client";
+import { logger } from "@/lib/logging";
 import { computeCustomerFeatures } from "./aiEngine/features";
 import { computeAICreditLimit } from "./aiEngine/limitEngine";
 
@@ -100,10 +101,11 @@ export async function refreshAICreditRecommendation(
       .eq("id", customer_id);
 
     if (updateError) {
-      console.error(
-        "Error updating customer with AI recommendation:",
-        updateError
-      );
+      logger.error("Error updating customer with AI recommendation", {
+        customer_id,
+        business_id,
+        error: updateError,
+      });
     }
 
     return {
@@ -117,7 +119,11 @@ export async function refreshAICreditRecommendation(
       },
     };
   } catch (error) {
-    console.error("Error refreshing AI credit recommendation:", error);
+    logger.error("Error refreshing AI credit recommendation", {
+      customer_id,
+      business_id,
+      error,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -204,7 +210,12 @@ export async function applyAICreditRecommendation(
 
     return { success: true, new_limit };
   } catch (error) {
-    console.error("Error applying AI credit recommendation:", error);
+    logger.error("Error applying AI credit recommendation", {
+      customer_id,
+      business_id,
+      user_id,
+      error,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -286,7 +297,12 @@ export async function overrideCreditLimit(
 
     return { success: true };
   } catch (error) {
-    console.error("Error overriding credit limit:", error);
+    logger.error("Error overriding credit limit", {
+      customer_id,
+      business_id,
+      user_id,
+      error,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -319,13 +335,21 @@ export async function logCreditDecision(decision: CreditDecisionLog): Promise<{
     });
 
     if (error) {
-      console.error("Error logging credit decision:", error);
+      logger.error("Error logging credit decision", {
+        business_id: decision.business_id,
+        customer_id: decision.customer_id,
+        error,
+      });
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error("Error in logCreditDecision:", error);
+    logger.error("Error in logCreditDecision", {
+      business_id: decision.business_id,
+      customer_id: decision.customer_id,
+      error,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -369,7 +393,10 @@ export async function getCreditDecisionHistory(
       created_at: record.created_at,
     }));
   } catch (error) {
-    console.error("Error fetching credit decision history:", error);
+    logger.error("Error fetching credit decision history", {
+      customer_id,
+      error,
+    });
     return [];
   }
 }
@@ -447,7 +474,10 @@ export async function getCreditExposureReport(business_id: string): Promise<{
       customers_reviewed_today,
     };
   } catch (error) {
-    console.error("Error fetching credit exposure report:", error);
+    logger.error("Error fetching credit exposure report", {
+      business_id,
+      error,
+    });
     return {
       total_credit_limits: 0,
       total_credit_balance: 0,

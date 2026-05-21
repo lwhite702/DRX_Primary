@@ -1,0 +1,37 @@
+[
+  {
+    "object": "board",
+    "id": "69cf42dd741c82c3d7b9269e",
+    "name": "Feature Request",
+    "icon": {
+      "type": "emoji",
+      "value": "💡"
+    },
+    "access": {
+      "adminOnly": false,
+      "segments": [],
+      "allowedRoles": [],
+      "deniedRoles": []
+    },
+    "features": {
+      "postingEnabled": true,
+      "commentsEnabled": true,
+      "createdDatesVisible": true
+    },
+    "postDefaults": {
+      "visibility": "public"
+    },
+    "customFields": [],
+    "localization": {
+      "name": {
+        "en": "Feature Request"
+      },
+      "description": null,
+      "formPlaceholder": null,
+      "heroTitle": null,
+      "heroDescription": null,
+      "submitButtonText": null
+    },
+    "createdAt": "2026-04-03T04:32:29.723Z"
+  }
+]

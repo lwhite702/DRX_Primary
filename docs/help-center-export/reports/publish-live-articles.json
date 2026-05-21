@@ -1,0 +1,189 @@
+{
+  "createdCollections": [
+    {
+      "name": "Getting Started",
+      "action": "created",
+      "id": "2241034"
+    },
+    {
+      "name": "Dashboard",
+      "action": "created",
+      "id": "1636653"
+    },
+    {
+      "name": "Quick POS",
+      "action": "created",
+      "id": "0659914"
+    },
+    {
+      "name": "Sales",
+      "action": "created",
+      "id": "5595577"
+    },
+    {
+      "name": "Inventory",
+      "action": "created",
+      "id": "5902160"
+    },
+    {
+      "name": "Customers",
+      "action": "created",
+      "id": "7112199"
+    },
+    {
+      "name": "Front / Balances",
+      "action": "created",
+      "id": "7752792"
+    },
+    {
+      "name": "Reports",
+      "action": "created",
+      "id": "5089813"
+    },
+    {
+      "name": "Roles and Permissions",
+      "action": "created",
+      "id": "3562121"
+    },
+    {
+      "name": "Settings",
+      "action": "created",
+      "id": "6854042"
+    },
+    {
+      "name": "Privacy and Security",
+      "action": "created",
+      "id": "9474440"
+    },
+    {
+      "name": "DRX Intelligence",
+      "action": "created",
+      "id": "3312590"
+    },
+    {
+      "name": "Troubleshooting",
+      "action": "created",
+      "id": "5925303"
+    },
+    {
+      "name": "Admin Tools",
+      "action": "created",
+      "id": "0152347"
+    }
+  ],
+  "articles": [
+    {
+      "file": "admin-tools-overview.md",
+      "title": "Admin Tools Overview",
+      "action": "created",
+      "id": "6950478",
+      "category": "Admin Tools"
+    },
+    {
+      "file": "credit-balances-payments.md",
+      "title": "Front / Balances: Credit and Payment Workflow",
+      "action": "created",
+      "id": "7032351",
+      "category": "Front / Balances"
+    },
+    {
+      "file": "customers-profiles-history.md",
+      "title": "Customers: Profiles and History",
+      "action": "created",
+      "id": "5915437",
+      "category": "Customers"
+    },
+    {
+      "file": "dashboard-daily-check.md",
+      "title": "Dashboard: Daily Check in 2 Minutes",
+      "action": "created",
+      "id": "3509274",
+      "category": "Dashboard"
+    },
+    {
+      "file": "drx-intelligence.md",
+      "title": "DRX Intelligence: Using AI Support Features",
+      "action": "created",
+      "id": "7834199",
+      "category": "DRX Intelligence"
+    },
+    {
+      "file": "getting-started-first-week.md",
+      "title": "Getting Started: Your First Week in DRX",
+      "action": "created",
+      "id": "8714259",
+      "category": "Getting Started"
+    },
+    {
+      "file": "inventory-audit-fixes.md",
+      "title": "Inventory Audit: Fix Count Problems Fast",
+      "action": "created",
+      "id": "9933421",
+      "category": "Inventory"
+    },
+    {
+      "file": "inventory-manage-stock.md",
+      "title": "Inventory: Manage Stock Without Guessing",
+      "action": "created",
+      "id": "3332319",
+      "category": "Inventory"
+    },
+    {
+      "file": "privacy-security-rtbf.md",
+      "title": "Privacy and Security: Daily Controls + RTBF",
+      "action": "created",
+      "id": "3325200",
+      "category": "Privacy and Security"
+    },
+    {
+      "file": "quick-pos-run-sale.md",
+      "title": "Quick POS: Run a Sale Fast",
+      "action": "created",
+      "id": "0437126",
+      "category": "Quick POS"
+    },
+    {
+      "file": "reports-and-insights.md",
+      "title": "Reports and Operations Insights",
+      "action": "created",
+      "id": "7196078",
+      "category": "Reports"
+    },
+    {
+      "file": "roles-permissions-staff-access.md",
+      "title": "Roles and Permissions: Keep Access Tight",
+      "action": "created",
+      "id": "8545428",
+      "category": "Roles and Permissions"
+    },
+    {
+      "file": "sales-history-receipts.md",
+      "title": "Sales History and Receipt Checks",
+      "action": "created",
+      "id": "7021669",
+      "category": "Sales"
+    },
+    {
+      "file": "settings-and-aliases.md",
+      "title": "Settings and Aliases: Keep Workflows Clean",
+      "action": "created",
+      "id": "2928800",
+      "category": "Settings"
+    },
+    {
+      "file": "troubleshooting-fast-fixes.md",
+      "title": "Troubleshooting: Fast Fixes First",
+      "action": "created",
+      "id": "2575724",
+      "category": "Troubleshooting"
+    },
+    {
+      "file": "workspaces-and-tenants.md",
+      "title": "Workspaces and Tenant Context",
+      "action": "created",
+      "id": "4751642",
+      "category": "Getting Started"
+    }
+  ],
+  "errors": []
+}
