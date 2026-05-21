@@ -233,19 +233,37 @@ jobs:
     # Non-blocking because it depends on optional secret availability and external auth state.
     continue-on-error: true
     needs: [build]
-    if: ${{ secrets.CLERK_TESTING_TOKEN != '' && secrets.CLERK_SECRET_KEY != '' && (secrets.CLERK_PUBLISHABLE_KEY != '' || secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '') }}
     steps:
+      - name: Check auth E2E secret availability
+        id: auth_guard
+        env:
+          CLERK_TESTING_TOKEN: ${{ secrets.CLERK_TESTING_TOKEN }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          if [ -n "${CLERK_TESTING_TOKEN}" ] && [ -n "${CLERK_SECRET_KEY}" ] && { [ -n "${CLERK_PUBLISHABLE_KEY}" ] || [ -n "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}" ]; }; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
+        if: steps.auth_guard.outputs.enabled == 'true'
       - uses: pnpm/action-setup@v4
+        if: steps.auth_guard.outputs.enabled == 'true'
         with:
           version: 9.15.9
       - uses: actions/setup-node@v4
+        if: steps.auth_guard.outputs.enabled == 'true'
         with:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: steps.auth_guard.outputs.enabled == 'true'
       - run: npx playwright install --with-deps
+        if: steps.auth_guard.outputs.enabled == 'true'
       - run: pnpm test:e2e:auth
+        if: steps.auth_guard.outputs.enabled == 'true'
         env:
           E2E_REQUIRE_AUTH: "1"
           CLERK_TESTING_TOKEN: ${{ secrets.CLERK_TESTING_TOKEN }}
@@ -253,7 +271,7 @@ jobs:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: steps.auth_guard.outputs.enabled == 'true' && always()
         with:
           name: auth-e2e
           path: |
