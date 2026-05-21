@@ -2,26 +2,79 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const OPENAI_MODEL = Deno.env.get("OPENAI_MODEL") ?? "gpt-5.5";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 interface CreditRiskRequest {
   business_id: string;
   customer_id?: string; // Optional: analyze specific customer
 }
 
+type LogLevel = "info" | "error";
+
+function jsonResponse(payload: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function getMissingRequiredEnv(): string[] {
+  const missing: string[] = [];
+  if (!SUPABASE_URL) missing.push("SUPABASE_URL");
+  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  return missing;
+}
+
+function toErrorContext(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return { message: String(error) };
+}
+
+function log(level: LogLevel, message: string, context: Record<string, unknown> = {}) {
+  const entry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...context,
+  });
+
+  if (level === "error") {
+    console.error(entry);
+    return;
+  }
+
+  console.log(entry);
+}
+
 serve(async (req) => {
+  const requestId = crypto.randomUUID();
+  const missingEnvs = getMissingRequiredEnv();
+  if (missingEnvs.length > 0) {
+    const message = `Missing required environment variables: ${missingEnvs.join(", ")}`;
+    log("error", message, { requestId, missing_envs: missingEnvs });
+    return jsonResponse({ success: false, error: message }, 500);
+  }
+
+  let body: CreditRiskRequest | null = null;
+
   try {
-    const { business_id, customer_id }: CreditRiskRequest = await req.json();
+    body = (await req.json()) as CreditRiskRequest;
+    const { business_id, customer_id } = body;
 
     if (!business_id) {
-      return new Response(
-        JSON.stringify({ error: "business_id is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "business_id is required" }, 400);
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
 
     // Fetch credit data
     let creditQuery = supabase
@@ -222,7 +275,7 @@ Focus on accounts that need immediate attention and collection strategies.`;
               Authorization: `Bearer ${OPENAI_API_KEY}`,
             },
             body: JSON.stringify({
-              model: "gpt-5.1",
+              model: OPENAI_MODEL,
               messages: [
                 {
                   role: "system",
@@ -259,55 +312,61 @@ Focus on accounts that need immediate attention and collection strategies.`;
           }
         }
       } catch (aiError) {
-        console.error("AI insight generation failed:", aiError);
+        log("error", "Credit risk AI insight generation failed", {
+          requestId,
+          error: toErrorContext(aiError),
+        });
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        metrics: {
-          total_delinquent_accounts: delinquentAccounts.length,
-          total_delinquent_amount:
-            agingBuckets["1-7"] +
-            agingBuckets["8-14"] +
-            agingBuckets["15-30"] +
-            agingBuckets["31+"],
-          aging_buckets: agingBuckets,
-        },
-        delinquent_accounts: delinquentAccounts
-          .sort((a, b) => b.total_delinquent - a.total_delinquent)
-          .slice(0, 10),
-        reliability_scores: reliabilityScores.sort(
-          (a, b) => a.reliability_score - b.reliability_score
-        ),
-        ai_insight: aiInsight,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      success: true,
+      metrics: {
+        total_delinquent_accounts: delinquentAccounts.length,
+        total_delinquent_amount:
+          agingBuckets["1-7"] +
+          agingBuckets["8-14"] +
+          agingBuckets["15-30"] +
+          agingBuckets["31+"],
+        aging_buckets: agingBuckets,
+      },
+      delinquent_accounts: delinquentAccounts
+        .sort((a, b) => b.total_delinquent - a.total_delinquent)
+        .slice(0, 10),
+      reliability_scores: reliabilityScores.sort(
+        (a, b) => a.reliability_score - b.reliability_score
+      ),
+      ai_insight: aiInsight,
+    });
   } catch (error) {
-    console.error("Credit Risk Error:", error);
+    log("error", "Credit risk function failed", {
+      requestId,
+      error: toErrorContext(error),
+    });
 
     // Log failure
     try {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
       await supabase.from("ai_insights_failures").insert({
-        business_id: (await req.json()).business_id,
+        business_id: body?.business_id ?? null,
         function_name: "credit_risk",
         error_message: error instanceof Error ? error.message : String(error),
         error_stack: error instanceof Error ? error.stack : undefined,
-        input_data: await req.json(),
+        input_data: body,
       });
     } catch (logError) {
-      console.error("Failed to log error:", logError);
+      log("error", "Failed to write ai_insights_failures log", {
+        requestId,
+        error: toErrorContext(logError),
+      });
     }
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      },
+      500,
     );
   }
 });

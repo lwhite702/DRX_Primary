@@ -1,5 +1,6 @@
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { redis, cache } from "@/lib/redis";
+import { logger } from "@/lib/logging";
 import { Ratelimit } from "@upstash/ratelimit";
 import type { CustomerFeatures, NormalizedFeatures } from "./features";
 import { normalizeFeatures } from "./features";
@@ -69,7 +70,10 @@ async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
         ),
       };
     } catch (error) {
-      console.error("Error fetching business config:", error);
+      logger.error("Error fetching business config", {
+        business_id,
+        error,
+      });
       return {
         global_max_credit_per_customer: 10000,
         global_max_credit_ratio_of_inventory: 0.5,
@@ -86,9 +90,10 @@ async function callAILimitEngine(
   config: AIEngineConfig
 ): Promise<AIEngineResponse | null> {
   const apiKey = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL || "gpt-5.5";
 
   if (!apiKey) {
-    console.warn("OPENAI_API_KEY not configured");
+    logger.warn("OPENAI_API_KEY not configured");
     return null;
   }
 
@@ -107,7 +112,7 @@ async function callAILimitEngine(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-5.1",
+        model,
         messages: [
           {
             role: "system",
@@ -125,14 +130,18 @@ Always return valid JSON with no additional text.`,
     });
 
     if (!response.ok) {
-      console.error("AI API error:", response.statusText);
+      logger.error("AI API error", {
+        status: response.status,
+        status_text: response.statusText,
+        model,
+      });
       return null;
     }
 
     const data = await response.json();
 
     if (!data.choices || !data.choices[0]?.message?.content) {
-      console.error("Unexpected AI response format");
+      logger.error("Unexpected AI response format", { model });
       return null;
     }
 
@@ -160,7 +169,10 @@ Always return valid JSON with no additional text.`,
       ).substring(0, 200),
     };
   } catch (error) {
-    console.error("Error calling AI limit engine:", error);
+    logger.error("Error calling AI limit engine", {
+      model,
+      error,
+    });
     return null;
   }
 }
@@ -432,7 +444,11 @@ export async function computeAICreditLimit(
 
     return finalResult;
   } catch (error) {
-    console.error("Error in computeAICreditLimit:", error);
+    logger.error("Error in computeAICreditLimit", {
+      customer_id,
+      business_id,
+      error,
+    });
 
     // Emergency fallback
     return {

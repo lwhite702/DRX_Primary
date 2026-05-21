@@ -41,6 +41,8 @@
     "test:feature-flags-contract": "pnpm dlx tsx scripts/testing/feature-flags-parity-check.ts",
     "test:posthog-flags-contract": "pnpm dlx tsx scripts/testing/posthog-flags-parity-check.ts",
     "test:metadata-contract": "pnpm dlx tsx scripts/testing/metadata-seo-contract-check.ts",
+    "test:env-contract": "pnpm dlx tsx scripts/testing/env-example-contract-check.ts",
+    "test:ai-runtime-contract": "pnpm dlx tsx scripts/testing/ai-runtime-contract-check.ts",
     "test:login-surfaces": "pnpm dlx tsx scripts/testing/login-surface-check.ts",
     "test:coverage:strict": "pnpm test:matrix && pnpm dlx tsx scripts/testing/coverage-strict-gate.ts",
     "test:feature-freeze": "pnpm dlx tsx scripts/testing/feature-freeze.ts",

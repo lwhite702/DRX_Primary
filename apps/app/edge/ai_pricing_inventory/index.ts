@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 interface AnalysisRequest {
   business_id: string;
@@ -18,25 +18,81 @@ interface VelocityData {
   velocity_90d: number;
 }
 
+type LogLevel = "info" | "error";
+
+function jsonResponse(payload: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function getMissingRequiredEnv(): string[] {
+  const missing: string[] = [];
+  if (!SUPABASE_URL) missing.push("SUPABASE_URL");
+  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  return missing;
+}
+
+function toErrorContext(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return { message: String(error) };
+}
+
+function log(level: LogLevel, message: string, context: Record<string, unknown> = {}) {
+  const entry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...context,
+  });
+
+  if (level === "error") {
+    console.error(entry);
+    return;
+  }
+
+  console.log(entry);
+}
+
 serve(async (req) => {
+  const requestId = crypto.randomUUID();
+  const missingEnvs = getMissingRequiredEnv();
+  if (missingEnvs.length > 0) {
+    const message = `Missing required environment variables: ${missingEnvs.join(", ")}`;
+    log("error", message, { requestId, missing_envs: missingEnvs });
+    return jsonResponse({ success: false, error: message }, 500);
+  }
+
+  let body: AnalysisRequest | null = null;
+
   try {
     if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        { status: 405, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Method not allowed" }, 405);
     }
 
-    const { business_id, analysis_type = "all", inventory_id, margin_requirement = 0.3, supplier_lead_time_days = 7 }: AnalysisRequest = await req.json();
+    body = (await req.json()) as AnalysisRequest;
+    const {
+      business_id,
+      analysis_type = "all",
+      inventory_id,
+      margin_requirement = 0.3,
+      supplier_lead_time_days = 7,
+    } = body;
+    void supplier_lead_time_days;
 
     if (!business_id) {
-      return new Response(
-        JSON.stringify({ error: "business_id is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "business_id is required" }, 400);
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
 
     // Get inventory items
     let query = supabase
@@ -183,7 +239,13 @@ serve(async (req) => {
               status: "pending",
             });
 
-          if (savePricingError) console.error("Error saving pricing rec:", savePricingError);
+          if (savePricingError) {
+            log("error", "Failed to save pricing recommendation", {
+              requestId,
+              inventory_id: item.id,
+              error: toErrorContext(savePricingError),
+            });
+          }
         }
 
         if (forecast) {
@@ -207,7 +269,13 @@ serve(async (req) => {
               forecast_factors: { velocity },
             });
 
-          if (saveForecastError) console.error("Error saving forecast:", saveForecastError);
+          if (saveForecastError) {
+            log("error", "Failed to save inventory forecast", {
+              requestId,
+              inventory_id: item.id,
+              error: toErrorContext(saveForecastError),
+            });
+          }
         }
 
         results.push({
@@ -220,29 +288,35 @@ serve(async (req) => {
 
         processedCount++;
       } catch (itemError) {
-        console.error(`Error processing item ${item.sku}:`, itemError);
+        log("error", "Error processing inventory item", {
+          requestId,
+          sku: item.sku,
+          inventory_id: item.id,
+          error: toErrorContext(itemError),
+        });
         errorCount++;
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        processed_count: processedCount,
-        error_count: errorCount,
-        results,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      success: true,
+      processed_count: processedCount,
+      error_count: errorCount,
+      results,
+    });
   } catch (error) {
-    console.error("AI Pricing Inventory Analysis Error:", error);
+    log("error", "AI pricing inventory analysis failed", {
+      requestId,
+      business_id: body?.business_id ?? null,
+      error: toErrorContext(error),
+    });
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      },
+      500,
     );
   }
 });

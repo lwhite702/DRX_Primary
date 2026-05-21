@@ -49,6 +49,8 @@ jobs:
           node-version: 20.18.0
           cache: pnpm
       - run: pnpm release:preflight
+      - run: pnpm test:env-contract
+      - run: pnpm test:ai-runtime-contract
       - run: pnpm --filter deelrxcrm-app test:flags:parity
       - run: pnpm --filter deelrxcrm-app verify:migration-rollbacks
 

@@ -1,7 +1,18 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { AdminNavShell } from "./_components/AdminNavShell";
+
+const getAdminRole = cache(async (userId: string) => {
+  const adminUser = await db.adminUser.findFirst({
+    where: { userId },
+    select: { role: true },
+  });
+
+  return adminUser?.role ?? null;
+});
+
 export default async function AdminLayout({
   children,
 }: {
@@ -13,12 +24,9 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  const adminUser = await db.adminUser.findFirst({
-    where: { userId },
-    select: { role: true },
-  });
+  const adminRole = await getAdminRole(userId);
 
-  if (adminUser?.role !== "super_admin") {
+  if (adminRole !== "super_admin") {
     redirect("/dashboard");
   }
 

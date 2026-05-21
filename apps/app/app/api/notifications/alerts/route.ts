@@ -69,17 +69,16 @@ export async function POST(request: NextRequest) {
         userId: targetUserId,
         type: payload.data.type,
         message: payload.data.message,
-        title: "Alert", // providing a default title as it's required in schema
+        title: "Alert",
         link: null,
         isRead: false,
       },
     });
 
-    // Audit Log
     await db.systemAuditLog.create({
       data: {
         action: "create_alert",
-        userId: actorId, // Acted by
+        userId: actorId,
         entityType: "notification",
         entityId: notification.id,
         newValues: {
