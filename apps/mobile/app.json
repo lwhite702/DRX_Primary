@@ -32,6 +32,13 @@
     "plugins": [
       "expo-router",
       [
+        "@sentry/react-native/expo",
+        {
+          "organization": "wrelik",
+          "project": "deelrx-mobile"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-image.png",

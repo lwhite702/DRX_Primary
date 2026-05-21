@@ -1,6 +1,6 @@
 {
   "name": "@wrelik/errors",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -13,6 +13,9 @@
       "import": "./dist/node.js",
       "require": "./dist/node.js"
     },
+    "./server": "./dist/node.js",
+    "./client": "./dist/browser.js",
+    "./browser": "./dist/browser.js",
     "./react-native": "./dist/react-native.js"
   },
   "dependencies": {

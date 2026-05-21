@@ -1,16 +1,29 @@
 "use client";
 
-import React from "react";
-import posthog from "posthog-js";
+import React, { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import {
+  initAnalytics,
+  capturePageView,
+  identify,
+  isFeatureEnabled,
+  getFeatureFlag,
+  onFeatureFlags,
+  reloadFeatureFlags,
+  reset,
+} from "@wrelik/analytics/client";
+import { useAuth, useUser } from "@/lib/adapters/auth/ui";
+
+let analyticsInitialized = false;
+
+// Re-export feature flag utilities for consumers
+export { isFeatureEnabled, getFeatureFlag, onFeatureFlags, reloadFeatureFlags };
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
-  const initSignatureRef = useRef<string | null>(null);
   const isAuthSurface =
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
@@ -18,28 +31,74 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     pathname?.startsWith("/sign-up") ||
     pathname?.startsWith("/waitlist");
 
+  // Get auth state for user identification
+  const { isSignedIn, userId, orgId, isLoaded: authLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+
+  // Initialize analytics
   useEffect(() => {
     if (!key || isAuthSurface) return;
-    const signature = `${key}:${host}`;
-    if (initSignatureRef.current === signature) return;
-    posthog.init(key, {
-      api_host: host,
-      capture_pageview: false,
+    if (analyticsInitialized) return;
+
+    initAnalytics({
+      apiKey: key,
+      host,
+      capturePageview: false,
       persistence: "localStorage+cookie",
       autocapture: true,
-      loaded: (instance) => {
-        instance.set_config({ capture_pageleave: true });
-      },
     });
-    initSignatureRef.current = signature;
+
+    analyticsInitialized = true;
   }, [host, isAuthSurface, key]);
 
+  // Identify user when authenticated
+  useEffect(() => {
+    if (!key || !analyticsInitialized) return;
+    if (!authLoaded || !userLoaded) return;
+
+    if (isSignedIn && userId) {
+      // Build user traits
+      const traits: Record<string, any> = {};
+
+      if (user?.primaryEmailAddress?.emailAddress) {
+        traits.email = user.primaryEmailAddress.emailAddress;
+      }
+      if (user?.fullName) {
+        traits.name = user.fullName;
+      }
+      if (user?.firstName) {
+        traits.firstName = user.firstName;
+      }
+      if (user?.lastName) {
+        traits.lastName = user.lastName;
+      }
+      if (orgId) {
+        traits.orgId = orgId;
+      }
+
+      identify(userId, traits);
+    } else if (!isSignedIn) {
+      // Reset analytics when user signs out
+      reset();
+    }
+  }, [key, authLoaded, userLoaded, isSignedIn, userId, orgId, user]);
+
+  // Track page views
   useEffect(() => {
     if (!key || !pathname || isAuthSurface) return;
     const query = searchParams?.toString();
     const url = query ? `${pathname}?${query}` : pathname;
-    posthog.capture("$pageview", { $current_url: url, path: pathname });
+    capturePageView(url, { path: pathname });
   }, [isAuthSurface, key, pathname, searchParams]);
 
   return <>{children}</>;
+}
+
+/**
+ * Identify the current user for analytics tracking
+ * Use this for manual identification if needed
+ */
+export function identifyUser(userId: string, traits?: Record<string, any>) {
+  if (!analyticsInitialized) return;
+  identify(userId, traits);
 }
