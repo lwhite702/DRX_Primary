@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
+import { applyIntakeMutationViaRpc } from "@/lib/inventory/mutations/apply-intake";
 
 interface IntakeRequest {
   inventory_id: string;
@@ -232,47 +233,19 @@ async function processIntake(
   });
 
   try {
-    // Get current inventory quantity first
-    const { data: currentInventory } = await supabase
-      .from("inventory")
-      .select("quantity_on_hand")
-      .eq("id", inventory_id)
-      .single();
-
-    const newQuantity =
-      (currentInventory?.quantity_on_hand || 0) + total_weight_grams;
-
-    // Update inventory quantity and unit cost
-    const { error: updateError } = await supabase
-      .from("inventory")
-      .update({
-        quantity_on_hand: newQuantity,
-        unit_cost: calculated_cost_per_gram,
-        updated_at: nowIso,
-      })
-      .eq("id", inventory_id);
-
-    if (updateError) {
-      throw new Error(`Failed to update inventory: ${updateError.message}`);
-    }
-
-    // Create cost history entry; this is now required for auditability.
-    const { error: costHistoryError } = await supabase
-      .from("cost_history")
-      .insert({
-        business_id,
-        inventory_id,
-        intake_id,
-        cost_per_gram: calculated_cost_per_gram,
-        total_cost,
-        total_weight_grams,
-        delivery_cost,
-        supplier,
-      });
-
-    if (costHistoryError) {
-      throw new Error(`Failed to create cost history: ${costHistoryError.message}`);
-    }
+    await applyIntakeMutationViaRpc({
+      supabase,
+      businessId: business_id,
+      inventoryId: inventory_id,
+      intakeId: intake_id,
+      totalCost: total_cost,
+      totalWeightGrams: total_weight_grams,
+      calculatedCostPerGram: calculated_cost_per_gram,
+      deliveryCost: delivery_cost,
+      supplier,
+      userId: user_id,
+      reasonSuffix: "",
+    });
   } catch (error) {
     // Best-effort compensation only for batches created in this request.
     if (createdNow) {
@@ -283,45 +256,5 @@ async function processIntake(
         .eq("intake_id", intake_id);
     }
     throw error;
-  }
-
-  // Create inventory log entry for product intake
-  const { error: logError } = await supabase.from("inventory_log").insert({
-    inventory_id,
-    transaction_type: "intake",
-    quantity_change: total_weight_grams,
-    reason: supplier ? `Intake from ${supplier}` : "Manual intake",
-    created_by: user_id,
-    metadata: {
-      intake_id,
-      total_cost,
-      cost_per_gram: calculated_cost_per_gram,
-    },
-  });
-
-  if (logError) {
-    throw new Error(`Failed to create inventory log: ${logError.message}`);
-  }
-
-  // Create separate log entry for delivery cost if provided
-  if (delivery_cost > 0) {
-    const { error: deliveryLogError } = await supabase
-      .from("inventory_log")
-      .insert({
-        inventory_id,
-        transaction_type: "delivery_cost",
-        quantity_change: 0,
-        reason: `Delivery cost for intake`,
-        created_by: user_id,
-        metadata: {
-          intake_id,
-          delivery_cost,
-          supplier,
-        },
-      });
-
-    if (deliveryLogError) {
-      throw new Error(`Failed to create delivery cost log: ${deliveryLogError.message}`);
-    }
   }
 }
