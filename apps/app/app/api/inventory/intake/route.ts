@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
 
 interface IntakeRequest {
   inventory_id: string;
@@ -218,27 +219,17 @@ async function processIntake(
 
   const nowIso = new Date().toISOString();
 
-  const { data: createdBatch, error: batchError } = await supabase
-    .from("inventory_batches")
-    .insert({
-      business_id,
-      inventory_id,
-      intake_id,
-      original_quantity_grams: total_weight_grams,
-      remaining_quantity_grams: total_weight_grams,
-      unit_cost_per_gram: calculated_cost_per_gram,
-      supplier,
-      received_at: nowIso,
-      created_by: user_id,
-    })
-    .select("id")
-    .single();
-
-  if (batchError || !createdBatch?.id) {
-    throw new Error(
-      `Failed to create inventory batch ledger entry: ${batchError?.message ?? "Unknown error"}`,
-    );
-  }
+  const { batchId: ensuredBatchId, createdNow } = await ensureInventoryBatchForIntake({
+    supabase,
+    businessId: business_id,
+    inventoryId: inventory_id,
+    intakeId: intake_id,
+    quantityGrams: total_weight_grams,
+    unitCostPerGram: calculated_cost_per_gram,
+    supplier,
+    createdBy: user_id,
+    receivedAtIso: nowIso,
+  });
 
   try {
     // Get current inventory quantity first
@@ -283,32 +274,15 @@ async function processIntake(
       throw new Error(`Failed to create cost history: ${costHistoryError.message}`);
     }
   } catch (error) {
-    // Best-effort compensation so failed intakes don't leave orphan batches.
-    await supabase
-      .from("inventory_batches")
-      .delete()
-      .eq("id", createdBatch.id);
-    throw error;
-  }
-
-  try {
-    const { error: batchError } = await supabase.from("inventory_batches").insert({
-      business_id,
-      inventory_id,
-      intake_id,
-      original_quantity_grams: total_weight_grams,
-      remaining_quantity_grams: total_weight_grams,
-      unit_cost_per_gram: calculated_cost_per_gram,
-      supplier,
-      received_at: new Date().toISOString(),
-      created_by: user_id,
-    });
-
-    if (batchError) {
-      console.warn("Failed to create inventory batch:", batchError);
+    // Best-effort compensation only for batches created in this request.
+    if (createdNow) {
+      await supabase
+        .from("inventory_batches")
+        .delete()
+        .eq("id", ensuredBatchId)
+        .eq("intake_id", intake_id);
     }
-  } catch (error) {
-    console.warn("Inventory batch creation failed (non-critical):", error);
+    throw error;
   }
 
   // Create inventory log entry for product intake

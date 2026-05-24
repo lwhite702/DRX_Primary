@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
 
 interface ApproveIntakeRequest {
   intake_id: string;
@@ -198,64 +199,40 @@ async function processApprovedIntake(
   } = intake;
 
   const nowIso = new Date().toISOString();
-  const { data: createdBatch, error: batchError } = await supabase
-    .from("inventory_batches")
-    .insert({
-      business_id,
-      inventory_id,
-      intake_id,
-      original_quantity_grams: total_weight_grams,
-      remaining_quantity_grams: total_weight_grams,
-      unit_cost_per_gram: calculated_cost_per_gram,
-      supplier,
-      received_at: nowIso,
-      created_by: user_id,
-    })
-    .select("id")
-    .single();
-
-  if (batchError || !createdBatch?.id) {
-    throw new Error(
-      `Failed to create inventory batch during intake approval: ${batchError?.message ?? "Unknown error"}`
-    );
-  }
+  const { batchId: ensuredBatchId, createdNow } = await ensureInventoryBatchForIntake({
+    supabase,
+    businessId: business_id,
+    inventoryId: inventory_id,
+    intakeId: intake_id,
+    quantityGrams: total_weight_grams,
+    unitCostPerGram: calculated_cost_per_gram,
+    supplier,
+    createdBy: user_id,
+    receivedAtIso: nowIso,
+  });
 
   try {
-    // Update inventory quantity and unit cost
-    const { error: updateError } = await supabase.rpc(
-      "update_inventory_on_intake",
-      {
-        p_inventory_id: inventory_id,
-        p_weight_grams: total_weight_grams,
-        p_cost_per_gram: calculated_cost_per_gram,
-      }
-    );
+    // Update inventory quantity and unit cost.
+    const { data: inventory, error: currentError } = await supabase
+      .from("inventory")
+      .select("quantity_on_hand")
+      .eq("id", inventory_id)
+      .single();
+    if (currentError) {
+      throw new Error(`Failed to load inventory for update: ${currentError.message}`);
+    }
 
-    if (updateError) {
-      // Fallback to direct update if RPC doesn't exist
-      const { data: inventory, error: currentError } = await supabase
-        .from("inventory")
-        .select("quantity_on_hand")
-        .eq("id", inventory_id)
-        .single();
-      if (currentError) {
-        throw new Error(`Failed to load inventory for update: ${currentError.message}`);
-      }
+    const { error: directUpdateError } = await supabase
+      .from("inventory")
+      .update({
+        quantity_on_hand: (inventory?.quantity_on_hand || 0) + total_weight_grams,
+        unit_cost: calculated_cost_per_gram,
+        updated_at: nowIso,
+      })
+      .eq("id", inventory_id);
 
-      const { error: directUpdateError } = await supabase
-        .from("inventory")
-        .update({
-          quantity_on_hand: (inventory?.quantity_on_hand || 0) + total_weight_grams,
-          unit_cost: calculated_cost_per_gram,
-          updated_at: nowIso,
-        })
-        .eq("id", inventory_id);
-
-      if (directUpdateError) {
-        throw new Error(
-          `Failed to update inventory: ${directUpdateError.message}`
-        );
-      }
+    if (directUpdateError) {
+      throw new Error(`Failed to update inventory: ${directUpdateError.message}`);
     }
 
     // Create cost history entry
@@ -274,34 +251,14 @@ async function processApprovedIntake(
       throw new Error(`Failed to create cost history: ${costHistoryError.message}`);
     }
   } catch (error) {
-    await supabase.from("inventory_batches").delete().eq("id", createdBatch.id);
-    throw error;
-  }
-
-  try {
-    const { error: batchError } = await supabase.from("inventory_batches").insert({
-      business_id,
-      inventory_id,
-      intake_id,
-      original_quantity_grams: total_weight_grams,
-      remaining_quantity_grams: total_weight_grams,
-      unit_cost_per_gram: calculated_cost_per_gram,
-      supplier,
-      received_at: new Date().toISOString(),
-      created_by: user_id,
-    });
-
-    if (batchError) {
-      console.warn(
-        "Failed to create inventory batch during intake approval:",
-        batchError,
-      );
+    if (createdNow) {
+      await supabase
+        .from("inventory_batches")
+        .delete()
+        .eq("id", ensuredBatchId)
+        .eq("intake_id", intake_id);
     }
-  } catch (error) {
-    console.warn(
-      "Inventory batch creation failed during intake approval (non-critical):",
-      error,
-    );
+    throw error;
   }
 
   // Create inventory log entries

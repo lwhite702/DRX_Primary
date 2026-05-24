@@ -113,8 +113,23 @@ export async function POST(request: NextRequest) {
     });
 
     if (logError) {
-      // Non-critical, but bad for audit.
-      console.error("Failed to log adjustment:", logError);
+      // Best-effort compensation: do not keep stock change without audit record.
+      const { error: rollbackError } = await supabase
+        .from("inventory")
+        .update({
+          quantity_on_hand: item.quantity_on_hand,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", inventory_id);
+
+      if (rollbackError) {
+        console.error("Failed to rollback adjustment after log write failure:", rollbackError);
+      }
+
+      return NextResponse.json(
+        { error: "Failed to write audit log for adjustment" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
