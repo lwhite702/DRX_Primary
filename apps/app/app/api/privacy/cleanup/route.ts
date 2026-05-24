@@ -4,6 +4,18 @@ import { db } from "@/lib/db";
 import { extractPrivacyProtocol, withPrivacyProtocol } from "@/lib/privacy/settings";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
+function isMissingRelationError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("does not exist") ||
+    message.includes("relation") ||
+    message.includes("customer_legal_holds") ||
+    message.includes("customer_cleanup_queue") ||
+    message.includes("customer_retention_events") ||
+    message.includes("customer_deletion_audit")
+  );
+}
+
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.DRX_PRIVACY_CLEANUP_SECRET;
   if (!secret) {
@@ -52,7 +64,7 @@ async function writeCleanupAuditSummary(args: {
   deleted: number;
   ephemeralDeleted: number;
   retentionDeleted: number;
-  skippedDueBalance: number;
+  skippedCount: number;
 }) {
   await db.systemAuditLog.create({
     data: {
@@ -63,11 +75,150 @@ async function writeCleanupAuditSummary(args: {
         deleted_count: args.deleted,
         ephemeral_deleted: args.ephemeralDeleted,
         retention_deleted: args.retentionDeleted,
-        skipped_due_balance: args.skippedDueBalance,
+        skipped_due_balance: args.skippedCount,
         retention_days: args.retentionDays,
       },
     },
   });
+}
+
+async function hasActiveLegalHold(
+  businessId: string,
+  customerId: string,
+): Promise<boolean> {
+  try {
+    const rows = await db.$queryRaw<Array<{ id: string }>>`
+      SELECT id
+      FROM customer_legal_holds
+      WHERE business_id = ${businessId}::uuid
+        AND customer_id = ${customerId}::uuid
+        AND active = true
+      LIMIT 1
+    `;
+    return Array.isArray(rows) && rows.length > 0;
+  } catch (error) {
+    if (isMissingRelationError(error)) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function queueCleanupCandidate(args: {
+  businessId: string;
+  customerId: string;
+  reason: string;
+}) {
+  try {
+    await db.$executeRaw`
+      INSERT INTO customer_cleanup_queue (
+        business_id,
+        customer_id,
+        run_after,
+        status,
+        reason,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${args.businessId}::uuid,
+        ${args.customerId}::uuid,
+        NOW(),
+        'pending',
+        ${args.reason},
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (business_id, customer_id, status)
+      DO NOTHING
+    `;
+  } catch (error) {
+    if (isMissingRelationError(error)) return;
+    throw error;
+  }
+}
+
+async function markCleanupQueueStatus(args: {
+  businessId: string;
+  customerId: string;
+  status: "completed" | "skipped";
+  reason: string;
+}) {
+  try {
+    await db.$executeRaw`
+      UPDATE customer_cleanup_queue
+      SET status = ${args.status},
+          reason = ${args.reason},
+          updated_at = NOW()
+      WHERE business_id = ${args.businessId}::uuid
+        AND customer_id = ${args.customerId}::uuid
+        AND status = 'pending'
+    `;
+  } catch (error) {
+    if (isMissingRelationError(error)) return;
+    throw error;
+  }
+}
+
+async function writeRetentionEvent(args: {
+  businessId: string;
+  customerId: string;
+  eventType: string;
+  reason: string;
+}) {
+  try {
+    await db.$executeRaw`
+      INSERT INTO customer_retention_events (
+        business_id,
+        customer_id,
+        event_type,
+        reason,
+        metadata,
+        created_at
+      )
+      VALUES (
+        ${args.businessId}::uuid,
+        ${args.customerId}::uuid,
+        ${args.eventType},
+        ${args.reason},
+        '{}'::jsonb,
+        NOW()
+      )
+    `;
+  } catch (error) {
+    if (isMissingRelationError(error)) return;
+    throw error;
+  }
+}
+
+async function writeDeletionAudit(args: {
+  businessId: string;
+  customerId: string;
+  reason: string;
+}) {
+  try {
+    await db.$executeRaw`
+      INSERT INTO customer_deletion_audit (
+        business_id,
+        customer_id,
+        delete_mode,
+        reason,
+        metadata,
+        created_at
+      )
+      VALUES (
+        ${args.businessId}::uuid,
+        ${args.customerId}::uuid,
+        'hard_delete',
+        ${args.reason},
+        '{}'::jsonb,
+        NOW()
+      )
+    `;
+  } catch (error) {
+    if (isMissingRelationError(error)) return;
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -124,6 +275,7 @@ export async function POST(request: NextRequest) {
       let ephemeralDeleted = 0;
       let retentionDeleted = 0;
       let skippedDueBalance = 0;
+      let skippedDueLegalHold = 0;
 
       if (ephemeralProfiles.enabled) {
         const now = new Date();
@@ -148,12 +300,51 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const ephemeralDeletableIds = (ephemeralCandidates as CustomerWithCreditLinks[])
-          .filter((row) => row.creditLimits.length === 0)
-          .map((row) => row.id);
+        const ephemeralDeletableIds: string[] = [];
+        for (const row of ephemeralCandidates as CustomerWithCreditLinks[]) {
+          await queueCleanupCandidate({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            reason: "ephemeral_expired",
+          });
 
-        skippedDueBalance +=
-          ephemeralCandidates.length - ephemeralDeletableIds.length;
+          if (row.creditLimits.length > 0) {
+            skippedDueBalance += 1;
+            await markCleanupQueueStatus({
+              businessId: settingsRow.businessId,
+              customerId: row.id,
+              status: "skipped",
+              reason: "active_credit_balance",
+            });
+            await writeRetentionEvent({
+              businessId: settingsRow.businessId,
+              customerId: row.id,
+              eventType: "cleanup_skipped",
+              reason: "active_credit_balance",
+            });
+            continue;
+          }
+
+          const legalHold = await hasActiveLegalHold(settingsRow.businessId, row.id);
+          if (legalHold) {
+            skippedDueLegalHold += 1;
+            await markCleanupQueueStatus({
+              businessId: settingsRow.businessId,
+              customerId: row.id,
+              status: "skipped",
+              reason: "legal_hold_active",
+            });
+            await writeRetentionEvent({
+              businessId: settingsRow.businessId,
+              customerId: row.id,
+              eventType: "cleanup_skipped",
+              reason: "legal_hold_active",
+            });
+            continue;
+          }
+
+          ephemeralDeletableIds.push(row.id);
+        }
 
         if (ephemeralDeletableIds.length > 0) {
           await db.customers.deleteMany({
@@ -161,27 +352,46 @@ export async function POST(request: NextRequest) {
               id: { in: ephemeralDeletableIds },
             },
           });
+          for (const customerId of ephemeralDeletableIds) {
+            await markCleanupQueueStatus({
+              businessId: settingsRow.businessId,
+              customerId,
+              status: "completed",
+              reason: "ephemeral_expired_deleted",
+            });
+            await writeRetentionEvent({
+              businessId: settingsRow.businessId,
+              customerId,
+              eventType: "customer_deleted",
+              reason: "ephemeral_expired",
+            });
+            await writeDeletionAudit({
+              businessId: settingsRow.businessId,
+              customerId,
+              reason: "ephemeral_expired",
+            });
+          }
         }
 
         ephemeralDeleted = ephemeralDeletableIds.length;
       }
 
       if (!retention.enabled || retention.days <= 0 || !retention.hard_delete) {
-        if (ephemeralDeleted > 0 || skippedDueBalance > 0) {
+        if (ephemeralDeleted > 0 || skippedDueBalance > 0 || skippedDueLegalHold > 0) {
           await writeCleanupAuditSummary({
             businessId: settingsRow.businessId,
             retentionDays: retention.days,
             deleted: ephemeralDeleted,
             ephemeralDeleted,
             retentionDeleted,
-            skippedDueBalance,
+            skippedCount: skippedDueBalance + skippedDueLegalHold,
           });
           summary.push({
             business_id: settingsRow.businessId,
             deleted: ephemeralDeleted,
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
-            skipped_due_balance: skippedDueBalance,
+            skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
             retention_days: retention.days,
           });
         }
@@ -192,21 +402,21 @@ export async function POST(request: NextRequest) {
       const currentHour = getCurrentHourInTimezone(timezone);
 
       if (currentHour !== retention.local_hour) {
-        if (ephemeralDeleted > 0 || skippedDueBalance > 0) {
+        if (ephemeralDeleted > 0 || skippedDueBalance > 0 || skippedDueLegalHold > 0) {
           await writeCleanupAuditSummary({
             businessId: settingsRow.businessId,
             retentionDays: retention.days,
             deleted: ephemeralDeleted,
             ephemeralDeleted,
             retentionDeleted,
-            skippedDueBalance,
+            skippedCount: skippedDueBalance + skippedDueLegalHold,
           });
           summary.push({
             business_id: settingsRow.businessId,
             deleted: ephemeralDeleted,
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
-            skipped_due_balance: skippedDueBalance,
+            skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
             retention_days: retention.days,
           });
         }
@@ -214,21 +424,21 @@ export async function POST(request: NextRequest) {
       }
 
       if (!isRetentionRunDue(retention.last_run_at, retention.frequency)) {
-        if (ephemeralDeleted > 0 || skippedDueBalance > 0) {
+        if (ephemeralDeleted > 0 || skippedDueBalance > 0 || skippedDueLegalHold > 0) {
           await writeCleanupAuditSummary({
             businessId: settingsRow.businessId,
             retentionDays: retention.days,
             deleted: ephemeralDeleted,
             ephemeralDeleted,
             retentionDeleted,
-            skippedDueBalance,
+            skippedCount: skippedDueBalance + skippedDueLegalHold,
           });
           summary.push({
             business_id: settingsRow.businessId,
             deleted: ephemeralDeleted,
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
-            skipped_due_balance: skippedDueBalance,
+            skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
             retention_days: retention.days,
           });
         }
@@ -255,11 +465,51 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const deletableIds = (candidates as CustomerWithCreditLinks[])
-        .filter((row) => row.creditLimits.length === 0)
-        .map((row) => row.id);
+      const deletableIds: string[] = [];
+      for (const row of candidates as CustomerWithCreditLinks[]) {
+        await queueCleanupCandidate({
+          businessId: settingsRow.businessId,
+          customerId: row.id,
+          reason: "retention_cutoff",
+        });
 
-      skippedDueBalance += candidates.length - deletableIds.length;
+        if (row.creditLimits.length > 0) {
+          skippedDueBalance += 1;
+          await markCleanupQueueStatus({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            status: "skipped",
+            reason: "active_credit_balance",
+          });
+          await writeRetentionEvent({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            eventType: "cleanup_skipped",
+            reason: "active_credit_balance",
+          });
+          continue;
+        }
+
+        const legalHold = await hasActiveLegalHold(settingsRow.businessId, row.id);
+        if (legalHold) {
+          skippedDueLegalHold += 1;
+          await markCleanupQueueStatus({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            status: "skipped",
+            reason: "legal_hold_active",
+          });
+          await writeRetentionEvent({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            eventType: "cleanup_skipped",
+            reason: "legal_hold_active",
+          });
+          continue;
+        }
+
+        deletableIds.push(row.id);
+      }
 
       if (deletableIds.length > 0) {
         await db.customers.deleteMany({
@@ -267,6 +517,25 @@ export async function POST(request: NextRequest) {
             id: { in: deletableIds },
           },
         });
+        for (const customerId of deletableIds) {
+          await markCleanupQueueStatus({
+            businessId: settingsRow.businessId,
+            customerId,
+            status: "completed",
+            reason: "retention_cutoff_deleted",
+          });
+          await writeRetentionEvent({
+            businessId: settingsRow.businessId,
+            customerId,
+            eventType: "customer_deleted",
+            reason: "retention_cutoff",
+          });
+          await writeDeletionAudit({
+            businessId: settingsRow.businessId,
+            customerId,
+            reason: "retention_cutoff",
+          });
+        }
       }
       retentionDeleted = deletableIds.length;
 
@@ -291,7 +560,7 @@ export async function POST(request: NextRequest) {
         deleted: ephemeralDeleted + retentionDeleted,
         ephemeralDeleted,
         retentionDeleted,
-        skippedDueBalance,
+        skippedCount: skippedDueBalance + skippedDueLegalHold,
       });
 
       await db.systemAuditLog.create({
@@ -311,7 +580,7 @@ export async function POST(request: NextRequest) {
         deleted: ephemeralDeleted + retentionDeleted,
         ephemeral_deleted: ephemeralDeleted,
         retention_deleted: retentionDeleted,
-        skipped_due_balance: skippedDueBalance,
+        skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
         retention_days: retention.days,
       });
     }

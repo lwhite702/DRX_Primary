@@ -56,9 +56,18 @@ export function CustomerInline({
   );
 
   const lookup = async () => {
-    if (!phone.trim()) return;
+    const phoneValue = phone.trim();
+    const aliasValue = alias.trim();
+    const searchValue = aliasValue || phoneValue;
+
+    if (!searchValue) return;
+
     setLoading(true);
-    const res = await fetch(`/api/pos/customers?phone=${encodeURIComponent(phone)}`);
+    const params = new URLSearchParams();
+    params.set("search", searchValue);
+    if (phoneValue) params.set("phone", phoneValue);
+
+    const res = await fetch(`/api/pos/customers?${params.toString()}`);
     const data = (await res.json()) as { items?: CustomerItem[] };
     setResults(data.items || []);
     setLoading(false);

@@ -3,11 +3,11 @@ import {
   encryptPii,
   getPiiEncryptionVersion,
   getVaultRuntimeStatus,
-  hashLookupValue,
   reportVaultError,
   sanitizePiiInput,
 } from "@/lib/privacy/crypto";
 import { logPrivacySecurityEvent } from "@/lib/privacy/security-events";
+import { buildDeterministicLookupHashes } from "@/lib/privacy/pii-hash";
 
 export interface CustomerPiiFields {
   alias: string | null;
@@ -47,6 +47,11 @@ export async function encodeCustomerPii(
   const email = sanitizePiiInput(fields.email);
   const address = sanitizePiiInput(fields.address);
   const notes = sanitizePiiInput(fields.notes);
+  const deterministicHashes = await buildDeterministicLookupHashes({
+    alias,
+    phone,
+    email,
+  });
 
   return {
     aliasEncrypted: await encryptPii(alias),
@@ -55,9 +60,9 @@ export async function encodeCustomerPii(
     emailEncrypted: await encryptPii(email),
     addressEncrypted: await encryptPii(address),
     notesEncrypted: await encryptPii(notes),
-    aliasHash: await hashLookupValue(alias),
-    phoneHash: await hashLookupValue(phone),
-    emailHash: await hashLookupValue(email),
+    aliasHash: deterministicHashes.aliasHash,
+    phoneHash: deterministicHashes.phoneHash,
+    emailHash: deterministicHashes.emailHash,
     piiEncryptionVersion: getPiiEncryptionVersion(),
   };
 }

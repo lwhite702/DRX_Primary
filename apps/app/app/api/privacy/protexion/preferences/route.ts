@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
+import {
+  auth,
+  clerkClient,
+  isAuthBypassEnabled,
+} from "@/lib/adapters/auth/server";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import {
+  getManualScreenPrivacyPreference,
+  setManualScreenPrivacyPreference,
+} from "@/lib/privacy/privacy-resolution";
 
 type ScreenPrivacyMetadata = {
   manual_enabled?: boolean;
@@ -26,52 +35,23 @@ function extractScreenPrivacyPreference(metadata: unknown): ScreenPrivacyMetadat
   };
 }
 
-export async function GET() {
-  const { userId, sessionClaims } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+async function getManualPreferenceFromClerk(userId: string, sessionClaims: unknown) {
   if (isAuthBypassEnabled()) {
     const fallback = extractScreenPrivacyPreference(
       (sessionClaims as { publicMetadata?: unknown } | null)?.publicMetadata ?? {},
     );
-    return NextResponse.json({ manual_enabled: !!fallback.manual_enabled });
+    return !!fallback.manual_enabled;
   }
 
-  try {
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const current = extractScreenPrivacyPreference(user.publicMetadata);
-    return NextResponse.json({ manual_enabled: !!current.manual_enabled });
-  } catch (error) {
-    console.error("[privacy/protexion/preferences][GET]", error);
-    return NextResponse.json(
-      { error: "Failed to load preferences" },
-      { status: 500 },
-    );
-  }
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const current = extractScreenPrivacyPreference(user.publicMetadata);
+  return !!current.manual_enabled;
 }
 
-export async function POST(request: NextRequest) {
-  const { userId, sessionClaims } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await request.json().catch(() => ({}));
-  const manualEnabled = !!body?.manual_enabled;
-
+async function mirrorPreferenceToClerk(userId: string, manualEnabled: boolean) {
   if (isAuthBypassEnabled()) {
-    const fallback = extractScreenPrivacyPreference(
-      (sessionClaims as { publicMetadata?: unknown } | null)?.publicMetadata ?? {},
-    );
-    return NextResponse.json({
-      manual_enabled:
-        typeof body?.manual_enabled === "boolean"
-          ? manualEnabled
-          : !!fallback.manual_enabled,
-    });
+    return;
   }
 
   try {
@@ -95,6 +75,68 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+  } catch (error) {
+    console.warn("[privacy/protexion/preferences] failed to mirror to Clerk", error);
+  }
+}
+
+export async function GET() {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { businessId } = await resolveAuthContext();
+  if (!businessId) {
+    return NextResponse.json({ error: "Business not found" }, { status: 404 });
+  }
+
+  try {
+    const dbPreference = await getManualScreenPrivacyPreference({ businessId, userId });
+    if (dbPreference) {
+      return NextResponse.json({ manual_enabled: !!dbPreference.manual_enabled });
+    }
+
+    const clerkValue = await getManualPreferenceFromClerk(userId, sessionClaims);
+    return NextResponse.json({ manual_enabled: clerkValue });
+  } catch (error) {
+    console.error("[privacy/protexion/preferences][GET]", error);
+    return NextResponse.json(
+      { error: "Failed to load preferences" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { businessId } = await resolveAuthContext();
+  if (!businessId) {
+    return NextResponse.json({ error: "Business not found" }, { status: 404 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const manualEnabled = !!body?.manual_enabled;
+
+  try {
+    const persisted = await setManualScreenPrivacyPreference({
+      businessId,
+      userId,
+      manualEnabled,
+    });
+
+    if (!persisted) {
+      const fallback = await getManualPreferenceFromClerk(userId, sessionClaims);
+      if (typeof body?.manual_enabled !== "boolean") {
+        return NextResponse.json({ manual_enabled: fallback });
+      }
+    }
+
+    await mirrorPreferenceToClerk(userId, manualEnabled);
 
     return NextResponse.json({ manual_enabled: manualEnabled });
   } catch (error) {

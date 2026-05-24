@@ -206,6 +206,38 @@ export const FLAG_MANIFEST: FlagManifestItem[] = [
     defaultEnabled: true,
     rolloutState: "global",
   },
+  {
+    key: "feat_customer_hash_lookup_v2",
+    namespace: "feat",
+    owner: "platform-customers",
+    intent: "Gate deterministic customer hash lookup path",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_pos_customer_lookup_v2",
+    namespace: "feat",
+    owner: "platform-pos",
+    intent: "Gate deterministic POS customer lookup path",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_privacy_settings_v2",
+    namespace: "feat",
+    owner: "platform-privacy",
+    intent: "Gate DB-authoritative privacy settings propagation",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "feat_privacy_cleanup_queue_v2",
+    namespace: "feat",
+    owner: "platform-privacy",
+    intent: "Gate retention queue worker processing endpoint",
+    defaultEnabled: false,
+    rolloutState: "internal",
+  },
 
   // Ops kill switches
   {
@@ -245,6 +277,14 @@ export const FLAG_MANIFEST: FlagManifestItem[] = [
     namespace: "ops",
     owner: "platform-credit",
     intent: "Emergency kill switch for credit refresh cron",
+    defaultEnabled: true,
+    rolloutState: "global",
+  },
+  {
+    key: "ops_privacy_cleanup_queue_kill_switch",
+    namespace: "ops",
+    owner: "platform-privacy",
+    intent: "Emergency kill switch for privacy cleanup queue worker",
     defaultEnabled: true,
     rolloutState: "global",
   },
@@ -433,4 +473,5 @@ export const OPS_KILL_SWITCH_FLAGS = {
   notificationsAlertsWrite: "ops_notifications_alerts_write_kill_switch",
   notificationsPreferencesWrite: "ops_notifications_preferences_write_kill_switch",
   creditRefreshLimitsCron: "ops_credit_refresh_limits_cron_kill_switch",
+  privacyCleanupQueue: "ops_privacy_cleanup_queue_kill_switch",
 } as const;
