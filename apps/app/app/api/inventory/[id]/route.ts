@@ -97,6 +97,21 @@ export async function PUT(
       );
     }
 
+    const { data: currentItem, error: currentItemError } = await supabase
+      .from("inventory")
+      .select("id, quantity_on_hand, business_id, product_name")
+      .eq("id", id)
+      .single();
+
+    if (currentItemError || !currentItem) {
+      return errorResponse("NOT_FOUND", "Item not found", 404);
+    }
+
+    const previousQuantity = Number(currentItem.quantity_on_hand ?? 0);
+    const nextQuantity = parsedPayload.data.quantity_on_hand;
+    const quantityChanged =
+      typeof nextQuantity === "number" && nextQuantity !== previousQuantity;
+
     const { data: updatedItem, error } = await supabase
       .from("inventory")
       .update(parsedPayload.data)
@@ -115,6 +130,48 @@ export async function PUT(
         500,
         error,
       );
+    }
+
+    if (quantityChanged) {
+      const quantityDelta = Number(nextQuantity) - previousQuantity;
+      const { error: logError } = await supabase.from("inventory_log").insert({
+        inventory_id: id,
+        business_id: currentItem.business_id,
+        transaction_type: "adjustment",
+        quantity_change: quantityDelta,
+        reason: "Inventory update via /api/inventory/[id]",
+        created_by: user.id,
+        metadata: {
+          source: "inventory.update.route",
+          previous_quantity: previousQuantity,
+          new_quantity: Number(nextQuantity),
+          product_name: currentItem.product_name ?? null,
+        },
+      });
+
+      if (logError) {
+        const { error: rollbackError } = await supabase
+          .from("inventory")
+          .update({
+            quantity_on_hand: previousQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        if (rollbackError) {
+          console.error(
+            "Rollback failed after inventory update log failure:",
+            rollbackError,
+          );
+        }
+
+        return errorResponse(
+          "INTERNAL_ERROR",
+          "Failed to write inventory audit log",
+          500,
+          logError,
+        );
+      }
     }
 
     return successResponse({ data: updatedItem });
