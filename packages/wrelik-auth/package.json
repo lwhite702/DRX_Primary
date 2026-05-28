@@ -12,7 +12,7 @@
     "./react-native": "./dist/react-native.js"
   },
   "dependencies": {
-    "@clerk/backend": "^0.38.0",
+    "@clerk/backend": "^3.4.14",
     "@wrelik/errors": "workspace:*"
   },
   "peerDependencies": {
