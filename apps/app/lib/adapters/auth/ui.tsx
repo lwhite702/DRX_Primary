@@ -1,7 +1,43 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import * as Clerk from "@clerk/nextjs";
+
+const LazyClerkProvider = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.ClerkProvider),
+  { ssr: false }
+);
+
+const LazySignIn = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignIn),
+  { ssr: false }
+);
+
+const LazySignUp = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignUp),
+  { ssr: false }
+);
+
+const LazyWaitlist = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.Waitlist),
+  { ssr: false }
+);
+
+const LazyOrganizationSwitcher = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.OrganizationSwitcher),
+  { ssr: false }
+);
+
+const LazySignOutButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignOutButton),
+  { ssr: false }
+);
+
+const LazyUserButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.UserButton),
+  { ssr: false }
+);
 import { isAuthBypassEnabledClient } from "@/lib/auth/bypass";
 
 const authBypassEnabled = isAuthBypassEnabledClient();
@@ -54,22 +90,22 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
 
 export function ClerkProvider(props: any) {
   if (shouldStubClerk) return <>{props.children}</>;
-  return <Clerk.ClerkProvider {...props} />;
+  return <LazyClerkProvider {...props} />;
 }
 
 export function SignIn(props: any) {
   if (shouldStubClerk) return <BypassAuthCard mode="sign-in" />;
-  return <Clerk.SignIn {...props} />;
+  return <LazySignIn {...props} />;
 }
 
 export function SignUp(props: any) {
   if (shouldStubClerk) return <BypassAuthCard mode="sign-up" />;
-  return <Clerk.SignUp {...props} />;
+  return <LazySignUp {...props} />;
 }
 
 export function Waitlist(props: any) {
   if (shouldStubClerk) return <BypassAuthCard mode="waitlist" />;
-  return <Clerk.Waitlist {...props} />;
+  return <LazyWaitlist {...props} />;
 }
 
 export function useUser() {
@@ -173,7 +209,7 @@ export const OrganizationSwitcher = ((props: any) => {
       </button>
     );
   }
-  return <Clerk.OrganizationSwitcher {...props} />;
+  return <LazyOrganizationSwitcher {...props} />;
 }) as any;
 
 function BypassSignOutButton({ children, redirectUrl, afterSignOutUrl }: any) {
@@ -204,7 +240,7 @@ function BypassSignOutButton({ children, redirectUrl, afterSignOutUrl }: any) {
 
 export const SignOutButton = ((props: any) => {
   if (shouldStubClerk) return <BypassSignOutButton {...props} />;
-  return <Clerk.SignOutButton {...props} />;
+  return <LazySignOutButton {...props} />;
 }) as any;
 
 const UserButtonImpl: any = (props: any) => {
@@ -220,7 +256,7 @@ const UserButtonImpl: any = (props: any) => {
       </button>
     );
   }
-  return <Clerk.UserButton {...props} />;
+  return <LazyUserButton {...props} />;
 };
 
 UserButtonImpl.MenuItems = (props: any) => {

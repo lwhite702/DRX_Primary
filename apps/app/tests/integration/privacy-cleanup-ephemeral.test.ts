@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
+  ensureServerFlag: vi.fn(),
   db: {
     businessSettings: {
       findMany: vi.fn(),
@@ -15,6 +16,8 @@ const mocks = vi.hoisted(() => ({
     systemAuditLog: {
       create: vi.fn(),
     },
+    $executeRaw: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }));
 
@@ -24,6 +27,10 @@ vi.mock("@/app/api/pos/_lib/server", () => ({
 
 vi.mock("@/lib/db", () => ({
   db: mocks.db,
+}));
+
+vi.mock("@/lib/posthog/server-flags", () => ({
+  ensureServerFlag: mocks.ensureServerFlag,
 }));
 
 import { POST } from "@/app/api/privacy/cleanup/route";
@@ -48,6 +55,9 @@ describe("Privacy cleanup with ephemeral priority", () => {
     mocks.db.customers.deleteMany.mockResolvedValue({ count: 1 });
     mocks.db.businessSettings.update.mockResolvedValue({});
     mocks.db.systemAuditLog.create.mockResolvedValue({});
+    mocks.db.$executeRaw.mockResolvedValue(undefined);
+    mocks.db.$queryRaw.mockResolvedValue([]);
+    mocks.ensureServerFlag.mockResolvedValue(false);
   });
 
   it("deletes due ephemeral customers before retention cleanup", async () => {
@@ -98,6 +108,55 @@ describe("Privacy cleanup with ephemeral priority", () => {
     expect(json.summary[0].ephemeral_deleted).toBe(1);
     expect(json.summary[0].retention_deleted).toBe(1);
     expect(json.summary[0].skipped_due_balance).toBe(1);
+    expect(json.summary[0].queued_count).toBe(0);
     expect(mocks.db.customers.deleteMany).toHaveBeenCalledTimes(2);
+  });
+
+  it("queues cleanup candidates instead of deleting when queue mode flag is enabled", async () => {
+    const localHour = getNewYorkHour();
+    mocks.ensureServerFlag.mockResolvedValue(true);
+
+    mocks.db.businessSettings.findMany.mockResolvedValue([
+      {
+        id: "settings_1",
+        businessId: "biz_1",
+        timezone: "America/New_York",
+        settingsData: {
+          privacy_protocol: {
+            retention: {
+              enabled: true,
+              days: 30,
+              frequency: "daily",
+              local_hour: localHour,
+              hard_delete: true,
+              last_run_at: "2000-01-01T00:00:00.000Z",
+            },
+            ephemeral_profiles: {
+              enabled: true,
+              default_retention_days: 7,
+              allow_in_standard_customer_create: false,
+            },
+          },
+        },
+      },
+    ]);
+
+    mocks.db.customers.findMany
+      .mockResolvedValueOnce([{ id: "ephemeral_1", creditLimits: [] }])
+      .mockResolvedValueOnce([{ id: "retention_1", creditLimits: [] }]);
+
+    const req = new NextRequest("http://localhost:3000/api/privacy/cleanup", {
+      method: "POST",
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+    });
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.ok).toBe(true);
+    expect(json.summary[0].deleted).toBe(0);
+    expect(json.summary[0].queued_count).toBe(2);
+    expect(mocks.db.customers.deleteMany).not.toHaveBeenCalled();
   });
 });

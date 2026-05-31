@@ -1,16 +1,27 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { AdminNavShell } from "./_components/AdminNavShell";
 
-const getAdminRole = cache(async (userId: string) => {
-  const adminUser = await db.adminUser.findFirst({
-    where: { userId },
-    select: { role: true },
-  });
+const getAdminRoleCached = unstable_cache(
+  async (userId: string) => {
+    const startTime = performance.now();
+    const adminUser = await db.adminUser.findFirst({
+      where: { userId },
+      select: { role: true },
+    });
+    const duration = performance.now() - startTime;
+    console.log(`[Admin DB Query] db.adminUser.findFirst took ${duration.toFixed(2)}ms`);
+    return adminUser?.role ?? null;
+  },
+  ["admin-role"],
+  { tags: ["admin-role"], revalidate: 300 }
+);
 
-  return adminUser?.role ?? null;
+const getAdminRole = cache(async (userId: string) => {
+  return getAdminRoleCached(userId);
 });
 
 export default async function AdminLayout({

@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { extractPrivacyProtocol, withPrivacyProtocol } from "@/lib/privacy/settings";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
 function isMissingRelationError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
@@ -65,6 +66,7 @@ async function writeCleanupAuditSummary(args: {
   ephemeralDeleted: number;
   retentionDeleted: number;
   skippedCount: number;
+  queuedCount: number;
 }) {
   await db.systemAuditLog.create({
     data: {
@@ -76,6 +78,7 @@ async function writeCleanupAuditSummary(args: {
         ephemeral_deleted: args.ephemeralDeleted,
         retention_deleted: args.retentionDeleted,
         skipped_due_balance: args.skippedCount,
+        queued_for_worker: args.queuedCount,
         retention_days: args.retentionDays,
       },
     },
@@ -261,6 +264,7 @@ export async function POST(request: NextRequest) {
       ephemeral_deleted: number;
       retention_deleted: number;
       skipped_due_balance: number;
+      queued_count: number;
       retention_days: number;
     }> = [];
     type CustomerWithCreditLinks = {
@@ -276,6 +280,15 @@ export async function POST(request: NextRequest) {
       let retentionDeleted = 0;
       let skippedDueBalance = 0;
       let skippedDueLegalHold = 0;
+      let queuedForWorker = 0;
+      const queueModeEnabled = await ensureServerFlag(
+        "feat_privacy_cleanup_queue_v2",
+        {
+          distinctId: userId ?? settingsRow.businessId,
+          groups: { business: settingsRow.businessId },
+          defaultValue: false,
+        },
+      );
 
       if (ephemeralProfiles.enabled) {
         const now = new Date();
@@ -307,6 +320,17 @@ export async function POST(request: NextRequest) {
             customerId: row.id,
             reason: "ephemeral_expired",
           });
+
+          if (queueModeEnabled) {
+            queuedForWorker += 1;
+            await writeRetentionEvent({
+              businessId: settingsRow.businessId,
+              customerId: row.id,
+              eventType: "cleanup_queued",
+              reason: "ephemeral_expired",
+            });
+            continue;
+          }
 
           if (row.creditLimits.length > 0) {
             skippedDueBalance += 1;
@@ -385,6 +409,7 @@ export async function POST(request: NextRequest) {
             ephemeralDeleted,
             retentionDeleted,
             skippedCount: skippedDueBalance + skippedDueLegalHold,
+            queuedCount: queuedForWorker,
           });
           summary.push({
             business_id: settingsRow.businessId,
@@ -392,6 +417,7 @@ export async function POST(request: NextRequest) {
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
             skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
+            queued_count: queuedForWorker,
             retention_days: retention.days,
           });
         }
@@ -410,6 +436,7 @@ export async function POST(request: NextRequest) {
             ephemeralDeleted,
             retentionDeleted,
             skippedCount: skippedDueBalance + skippedDueLegalHold,
+            queuedCount: queuedForWorker,
           });
           summary.push({
             business_id: settingsRow.businessId,
@@ -417,6 +444,7 @@ export async function POST(request: NextRequest) {
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
             skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
+            queued_count: queuedForWorker,
             retention_days: retention.days,
           });
         }
@@ -432,6 +460,7 @@ export async function POST(request: NextRequest) {
             ephemeralDeleted,
             retentionDeleted,
             skippedCount: skippedDueBalance + skippedDueLegalHold,
+            queuedCount: queuedForWorker,
           });
           summary.push({
             business_id: settingsRow.businessId,
@@ -439,6 +468,7 @@ export async function POST(request: NextRequest) {
             ephemeral_deleted: ephemeralDeleted,
             retention_deleted: retentionDeleted,
             skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
+            queued_count: queuedForWorker,
             retention_days: retention.days,
           });
         }
@@ -472,6 +502,17 @@ export async function POST(request: NextRequest) {
           customerId: row.id,
           reason: "retention_cutoff",
         });
+
+        if (queueModeEnabled) {
+          queuedForWorker += 1;
+          await writeRetentionEvent({
+            businessId: settingsRow.businessId,
+            customerId: row.id,
+            eventType: "cleanup_queued",
+            reason: "retention_cutoff",
+          });
+          continue;
+        }
 
         if (row.creditLimits.length > 0) {
           skippedDueBalance += 1;
@@ -561,6 +602,7 @@ export async function POST(request: NextRequest) {
         ephemeralDeleted,
         retentionDeleted,
         skippedCount: skippedDueBalance + skippedDueLegalHold,
+        queuedCount: queuedForWorker,
       });
 
       await db.systemAuditLog.create({
@@ -581,6 +623,7 @@ export async function POST(request: NextRequest) {
         ephemeral_deleted: ephemeralDeleted,
         retention_deleted: retentionDeleted,
         skipped_due_balance: skippedDueBalance + skippedDueLegalHold,
+        queued_count: queuedForWorker,
         retention_days: retention.days,
       });
     }

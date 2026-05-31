@@ -1,29 +1,33 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { type NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-const OPENAI_MODEL = Deno.env.get("OPENAI_MODEL") ?? "gpt-5.5";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
 interface InventoryHealthRequest {
   business_id: string;
 }
 
-type LogLevel = "info" | "error";
-
-function jsonResponse(payload: Record<string, unknown>, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+interface MappedInventoryItem {
+  id: string;
+  product_name: string;
+  sku: string;
+  quantity_on_hand: number;
+  reorder_level: number;
+  unit_cost: number;
+  selling_price: number;
 }
 
-function getMissingRequiredEnv(): string[] {
-  const missing: string[] = [];
-  if (!SUPABASE_URL) missing.push("SUPABASE_URL");
-  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
-  return missing;
+interface MappedSaleItem {
+  inventory_id: string | null;
+  quantity: number;
+  created_at: string;
+}
+
+type LogLevel = "info" | "error";
+
+function jsonResponse(payload: Record<string, any>, status = 200) {
+  return NextResponse.json(payload, { status });
 }
 
 function toErrorContext(error: unknown) {
@@ -34,11 +38,10 @@ function toErrorContext(error: unknown) {
       stack: error.stack,
     };
   }
-
   return { message: String(error) };
 }
 
-function log(level: LogLevel, message: string, context: Record<string, unknown> = {}) {
+function log(level: LogLevel, message: string, context: Record<string, any> = {}) {
   const entry = JSON.stringify({
     timestamp: new Date().toISOString(),
     level,
@@ -50,19 +53,11 @@ function log(level: LogLevel, message: string, context: Record<string, unknown> 
     console.error(entry);
     return;
   }
-
   console.log(entry);
 }
 
-serve(async (req) => {
+export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const missingEnvs = getMissingRequiredEnv();
-  if (missingEnvs.length > 0) {
-    const message = `Missing required environment variables: ${missingEnvs.join(", ")}`;
-    log("error", message, { requestId, missing_envs: missingEnvs });
-    return jsonResponse({ success: false, error: message }, 500);
-  }
-
   let body: InventoryHealthRequest | null = null;
 
   try {
@@ -73,63 +68,77 @@ serve(async (req) => {
       return jsonResponse({ error: "business_id is required" }, 400);
     }
 
-    const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
-
     // Fetch inventory data
-    const { data: inventory, error: inventoryError } = await supabase
-      .from("inventory")
-      .select(
-        "id, product_name, sku, quantity_on_hand, reorder_level, unit_cost, selling_price"
-      )
-      .eq("business_id", business_id);
+    const inventory = await db.inventory.findMany({
+      where: { businessId: business_id },
+      select: {
+        id: true,
+        productName: true,
+        sku: true,
+        quantityOnHand: true,
+        reorderLevel: true,
+        unitCost: true,
+        sellingPrice: true,
+      },
+    });
 
-    if (inventoryError) throw inventoryError;
+    const mappedInventory: MappedInventoryItem[] = (inventory as any[]).map((item) => ({
+      id: item.id,
+      product_name: item.productName,
+      sku: item.sku,
+      quantity_on_hand: item.quantityOnHand,
+      reorder_level: item.reorderLevel,
+      unit_cost: item.unitCost ? Number(item.unitCost) : 0,
+      selling_price: item.sellingPrice ? Number(item.sellingPrice) : 0,
+    }));
 
     // Fetch recent sales for demand forecasting
-    const { data: recentSales, error: salesError } = await supabase
-      .from("sales_line_items")
-      .select("inventory_id, quantity, created_at")
-      .gte(
-        "created_at",
-        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      )
-      .in(
-        "sale_id",
-        (
-          await supabase
-            .from("sales")
-            .select("id")
-            .eq("business_id", business_id)
-            .gte(
-              "created_at",
-              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-            )
-        ).data?.map((s) => s.id) || []
-      );
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    if (salesError) throw salesError;
+    const recentSales = await db.salesLineItem.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        sale: {
+          businessId: business_id,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      },
+      select: {
+        inventoryId: true,
+        quantity: true,
+        createdAt: true,
+      },
+    });
+
+    const mappedRecentSales: MappedSaleItem[] = (recentSales as any[]).map((item) => ({
+      inventory_id: item.inventoryId,
+      quantity: item.quantity,
+      created_at: item.createdAt.toISOString(),
+    }));
 
     // Calculate metrics
-    const lowStockItems = (inventory || []).filter(
+    const lowStockItems = mappedInventory.filter(
       (item) => item.quantity_on_hand <= item.reorder_level
     );
-    const outOfStockItems = (inventory || []).filter(
+    const outOfStockItems = mappedInventory.filter(
       (item) => item.quantity_on_hand === 0
     );
-    const totalInventoryValue = (inventory || []).reduce(
+    const totalInventoryValue = mappedInventory.reduce(
       (sum, item) => sum + item.quantity_on_hand * Number(item.unit_cost || 0),
       0
     );
 
     // Calculate demand per item
     const demandMap = new Map<string, number>();
-    (recentSales || []).forEach((sale) => {
-      const current = demandMap.get(sale.inventory_id) || 0;
-      demandMap.set(sale.inventory_id, current + sale.quantity);
+    mappedRecentSales.forEach((sale) => {
+      if (sale.inventory_id) {
+        const current = demandMap.get(sale.inventory_id) || 0;
+        demandMap.set(sale.inventory_id, current + sale.quantity);
+      }
     });
 
     // Generate reorder predictions
-    const reorderPredictions = (inventory || []).map((item) => {
+    const reorderPredictions = mappedInventory.map((item) => {
       const demand30Days = demandMap.get(item.id) || 0;
       const dailyDemand = demand30Days / 30;
       const daysUntilReorder =
@@ -156,9 +165,9 @@ serve(async (req) => {
       try {
         const prompt = `Analyze this inventory health data:
 
-Total items: ${inventory?.length || 0}
+Total items: ${mappedInventory.length}
 Low stock items: ${lowStockItems.length}
-Out of stock items: ${outOfStockItems.length}
+OutOfStock items: ${outOfStockItems.length}
 Total inventory value: $${totalInventoryValue.toFixed(2)}
 
 Low stock items:
@@ -211,15 +220,16 @@ Focus on items that need immediate attention.`;
             aiInsight = JSON.parse(jsonMatch ? jsonMatch[1] : content);
 
             // Store insight
-            await supabase.from("ai_insights").insert({
-              business_id,
-              insight_type: "inventory",
-              insight_title:
-                aiInsight.insight_title || "Inventory Health Analysis",
-              insight_content: aiInsight.insight_content || content,
-              priority: aiInsight.priority || "medium",
-              action_recommended: aiInsight.action_recommended || "",
-              status: "pending",
+            await db.aiInsight.create({
+              data: {
+                businessId: business_id,
+                insightType: "inventory",
+                insightTitle: aiInsight.insight_title || "Inventory Health Analysis",
+                insightContent: aiInsight.insight_content || content,
+                priority: aiInsight.priority || "medium",
+                actionRecommended: aiInsight.action_recommended || "",
+                status: "pending",
+              },
             });
           }
         }
@@ -234,7 +244,7 @@ Focus on items that need immediate attention.`;
     return jsonResponse({
       success: true,
       metrics: {
-        total_items: inventory?.length || 0,
+        total_items: mappedInventory.length,
         low_stock_count: lowStockItems.length,
         out_of_stock_count: outOfStockItems.length,
         total_inventory_value: totalInventoryValue,
@@ -256,13 +266,14 @@ Focus on items that need immediate attention.`;
 
     // Log failure
     try {
-      const supabase = createClient(SUPABASE_URL as string, SUPABASE_SERVICE_ROLE_KEY as string);
-      await supabase.from("ai_insights_failures").insert({
-        business_id: body?.business_id ?? null,
-        function_name: "inventory_health",
-        error_message: error instanceof Error ? error.message : String(error),
-        error_stack: error instanceof Error ? error.stack : undefined,
-        input_data: body,
+      await db.aiInsightFailure.create({
+        data: {
+          businessId: body?.business_id ?? null,
+          functionName: "inventory_health",
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          inputData: body as any,
+        },
       });
     } catch (logError) {
       log("error", "Failed to write ai_insights_failures log", {
@@ -276,7 +287,7 @@ Focus on items that need immediate attention.`;
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      500,
+      500
     );
   }
-});
+}

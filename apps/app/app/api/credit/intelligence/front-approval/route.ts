@@ -5,7 +5,7 @@ import {
   getCustomerBehaviorMetrics,
   recommendCreditLimit,
 } from "@/lib/credit/intelligenceEngine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { db } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
@@ -19,13 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = getSupabaseClient();
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "Supabase client not available" },
-        { status: 500 }
-      );
-    }
+
 
     const metrics = await getCustomerBehaviorMetrics(customer_id, business_id);
     if (!metrics) {
@@ -37,25 +31,22 @@ export async function POST(request: Request) {
 
     const trust = computeTrustScore(metrics);
 
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("credit_limit")
-      .eq("id", customer_id)
-      .single();
+    const limitRecord = await db.creditLimit.findFirst({
+      where: { customerId: customer_id, businessId: business_id },
+      select: { maxCreditLimit: true },
+    });
 
-    const current_limit = Number(customer?.credit_limit || 0);
+    const current_limit = Number(limitRecord?.maxCreditLimit || 0);
 
     const recommendation = recommendCreditLimit(trust, metrics, current_limit);
 
-    const { data: inventory } = await supabase
-      .from("inventory")
-      .select("quantity_on_hand, reorder_point")
-      .eq("id", inventory_id)
-      .eq("business_id", business_id)
-      .single();
+    const inventory = await db.inventory.findFirst({
+      where: { id: inventory_id, businessId: business_id },
+      select: { quantityOnHand: true, reorderLevel: true },
+    });
 
-    const quantity = Number(inventory?.quantity_on_hand || 0);
-    const threshold = Number(inventory?.reorder_point || 10);
+    const quantity = Number(inventory?.quantityOnHand || 0);
+    const threshold = Number(inventory?.reorderLevel || 10);
 
     const scarcity_level =
       quantity <= threshold * 0.5 ? "HIGH" : quantity <= threshold * 1.2 ? "MEDIUM" : "LOW";

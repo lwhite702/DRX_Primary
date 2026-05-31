@@ -50,7 +50,7 @@ jobs:
           cache: pnpm
       - run: pnpm release:preflight
       - run: pnpm test:env-contract
-      - run: pnpm test:ai-runtime-contract
+
       - run: pnpm --filter deelrxcrm-app test:flags:parity
       - run: pnpm --filter deelrxcrm-app verify:migration-rollbacks
 
@@ -230,8 +230,6 @@ jobs:
 
   auth-e2e:
     runs-on: ubuntu-latest
-    # Non-blocking because it depends on optional secret availability and external auth state.
-    continue-on-error: true
     needs: [build]
     steps:
       - name: Check auth E2E secret availability

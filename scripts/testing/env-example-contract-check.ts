@@ -9,8 +9,6 @@ const runtimeRoots = [
   "apps/app/app",
   "apps/app/components",
   "apps/app/lib",
-  "apps/app/edge",
-  "apps/app/supabase/functions",
 ];
 
 const runtimeFiles = [

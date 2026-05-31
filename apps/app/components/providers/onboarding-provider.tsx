@@ -1,27 +1,12 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
   type ReactNode,
 } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
-
-export type OnboardingStep = "profile" | "product" | "customer" | "sale";
-
-interface OnboardingState {
-  steps: Record<OnboardingStep, boolean>;
-  isLoading: boolean;
-  progress: number;
-  isComplete: boolean;
-  refreshOnboarding: () => Promise<void>;
-  dismissGuide: () => void;
-  isGuideDismissed: boolean;
-}
-
-const OnboardingContext = createContext<OnboardingState | null>(null);
+import { OnboardingContext, type OnboardingStep } from "./onboarding-context";
 
 function extractRows(payload: unknown): unknown[] {
   if (Array.isArray(payload)) return payload;
@@ -122,12 +107,4 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       {children}
     </OnboardingContext.Provider>
   );
-}
-
-export function useOnboarding() {
-  const context = useContext(OnboardingContext);
-  if (!context) {
-    throw new Error("useOnboarding must be used within an OnboardingProvider");
-  }
-  return context;
 }

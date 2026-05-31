@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   initAnalytics,
@@ -19,9 +19,33 @@ let analyticsInitialized = false;
 // Re-export feature flag utilities for consumers
 export { isFeatureEnabled, getFeatureFlag, onFeatureFlags, reloadFeatureFlags };
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
+  useEffect(() => {
+    if (!key || !pathname) return;
+    
+    const isAuthSurface =
+      pathname?.startsWith("/login") ||
+      pathname?.startsWith("/register") ||
+      pathname?.startsWith("/sign-in") ||
+      pathname?.startsWith("/sign-up") ||
+      pathname?.startsWith("/waitlist");
+
+    if (isAuthSurface) return;
+
+    const query = searchParams?.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    capturePageView(url, { path: pathname });
+  }, [key, pathname, searchParams]);
+
+  return null;
+}
+
+export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
   const isAuthSurface =
@@ -83,15 +107,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
   }, [key, authLoaded, userLoaded, isSignedIn, userId, orgId, user]);
 
-  // Track page views
-  useEffect(() => {
-    if (!key || !pathname || isAuthSurface) return;
-    const query = searchParams?.toString();
-    const url = query ? `${pathname}?${query}` : pathname;
-    capturePageView(url, { path: pathname });
-  }, [isAuthSurface, key, pathname, searchParams]);
-
-  return <>{children}</>;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PostHogPageView />
+      </Suspense>
+      {children}
+    </>
+  );
 }
 
 /**
