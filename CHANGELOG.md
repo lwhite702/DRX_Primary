@@ -7,32 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- **Build System**: Fixed root package.json build script to correctly delegate to apps/app for monorepo builds.
-- **Dependencies**: Updated @wrelik/* packages to use workspace protocol for proper monorepo resolution.
-- **Marketing App**: Added missing UI component re-exports for Button component from @deelrx/ui package.
-- **Versioning**: Synchronized version numbers across VERSION file, root package.json, and apps/app/package.json (0.5.2).
-
-### Changed
-
-- **Build Scripts**: Added `build:marketing` and `build:all` scripts to root package.json for comprehensive build support.
-
-- **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
-- **Sentry Feedback**: Fixed runtime crash on Help page by guarding feedback initialization when Sentry client is unavailable.
-- **Type/Test Stability**: Resolved app typecheck failures and aligned unit/integration tests with current adapter and schema contracts.
+## [0.5.5] - 2026-05-31
 
 ### Added
 
-- **Marketing IA**: Added full marketing route map for product, use-cases, resources, beta, and legal sections.
-- **Marketing Content Model**: Added `marketing.content-map.json` and shared site rendering primitives for page framing and tracked links.
-- **Testing Gate**: Added repository audit, test matrix generation, policy enforcement, data-integrity check, security scan, performance smoke check, and full readiness report generators under `scripts/testing/*`.
+- **Supabase Decommissioning & Native Next.js AI Routes**: Fully decommissioned Supabase Edge Functions and migrated to native Next.js AI route handlers for inventory-health and pricing-inventory.
+- **Inventory Ledger Hardening**: Scaffolded the new inventory mutation engine and implemented transactional, audit-safe ledger updates including unique intake batch mapping for strict FIFO integrity.
+- **Privacy-Native Customer Identity**: Rolled out ephemeral profile support and privacy-native customer cleanup queue routes with PostHog flag parity gates.
+- **Testing & Release Gate**: Added deterministic ownership map (`docs/testing/TEST_OWNERSHIP.json`), matrix validator (`scripts/testing/validate-matrix.ts`), cross-surface smoke checks (`scripts/testing/smoke-surfaces.ts`), and testing governance policy (`docs/testing/TESTING_POLICY.md`).
 - **CI/CD**: Added unified `.github/workflows/ci-gate.yml` fail-fast workflow with artifacts for audit, E2E, security, performance, and readiness reporting.
 - **E2E Coverage**: Added Playwright accessibility and visual regression suites (`apps/app/tests/e2e/a11y.spec.ts`, `apps/app/tests/e2e/visual-regression.spec.ts`).
-- **Testing & Release Gate**: Added deterministic ownership map (`docs/testing/TEST_OWNERSHIP.json`), matrix validator (`scripts/testing/validate-matrix.ts`), cross-surface smoke checks (`scripts/testing/smoke-surfaces.ts`), and testing governance policy (`docs/testing/TESTING_POLICY.md`).
+- **Mobile Sentry Integration**: Added `@sentry/react-native` via `@wrelik/errors/react-native` to mobile app.
+- **Mobile Analytics Dependencies**: Added `@wrelik/analytics` and `@wrelik/errors` workspace packages to mobile app.
+- **Production Launch Checklist**: Added `docs/PRODUCTION_LAUNCH_CHECKLIST.md` with complete launch sequence.
+- **@wrelik/analytics Client Module**: Added client browser-side PostHog wrapper (`initAnalytics`, `identify`, `capture`, etc.).
+- **@wrelik/errors Enhanced Config**: Added full server/client options to `initErrors`.
+- **Analytics Identity Hook**: Added `useAnalyticsIdentity` hook.
+- **Marketing IA & Content Model**: Added full marketing route map and content mapping with shared site rendering primitives.
+
+### Fixed
+
+- **Unit Test Suite Stability**: Fixed pos-baseline and validate-credit unit test failures to ensure all 231 tests pass cleanly.
+- **Build System**: Fixed root package.json build script to correctly delegate to apps/app for monorepo builds.
+- **Dependencies**: Updated @wrelik/* packages to use workspace protocol for proper monorepo resolution.
+- **Marketing App**: Added missing UI component re-exports for Button component from @deelrx/ui package.
+- **Versioning**: Synchronized version numbers across VERSION file, root package.json, and apps/app/package.json (0.5.5).
+- **Dashboard**: Resolved persistent loading spinner by optimizing Clerk organization loading logic in `useBusiness` and `useUserRole` hooks.
+- **Sentry Feedback**: Fixed runtime crash on Help page by guarding feedback initialization when Sentry client is unavailable.
+- **Type/Test Stability**: Resolved app typecheck failures and aligned unit/integration tests with current adapter and schema contracts.
+- **Production Build**: Removed the duplicate `/help` page to avoid Next.js deployment route collision.
+- **Auth Adapter**: Replaced broken `@wrelik/auth/server` dependency path with local Clerk session normalization for successful production compilation.
 
 ### Changed
 
+- **Analytics Compliance**: Migrated PostHog initialization from direct `posthog-js` SDK to `@wrelik/analytics/client` adapter.
+- **Error Tracking Compliance**: Migrated Sentry initialization from direct `@sentry/nextjs` SDK to `@wrelik/errors/server` and `@wrelik/errors/client` adapters.
+- **Feature Flags**: Migrated feature flag hook from Supabase-based flags to PostHog feature flags via `@wrelik/analytics/client`.
+- **User Identification**: Added automatic user identification in PostHog when users authenticate.
+- **Build Scripts**: Added `build:marketing` and `build:all` scripts to root package.json for comprehensive build support.
 - **Marketing Landing**: Refreshed the homepage experience with new landing sections, interactive demo primitives, and updated CTA/layout styling.
 - **Marketing Routing**: Updated legacy `/privacy` and `/terms` paths to align with legal hub routes.
 - **Marketing Trust Copy**: Updated footer/security language to avoid unsupported absolute claims and remove dead-link security route references.
@@ -45,36 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - **Legacy Artifacts**: Removed stale tracked CI/testing artifacts and legacy TestSprite suites from version control.
-
-## [0.5.5] - 2026-04-09
-
-### Changed
-
-- **Analytics Compliance**: Migrated PostHog initialization from direct `posthog-js` SDK to `@wrelik/analytics/client` adapter.
-- **Error Tracking Compliance**: Migrated Sentry initialization from direct `@sentry/nextjs` SDK to `@wrelik/errors/server` and `@wrelik/errors/client` adapters.
-- **Feature Flags**: Migrated feature flag hook from Supabase-based flags to PostHog feature flags via `@wrelik/analytics/client`.
-- **User Identification**: Added automatic user identification in PostHog when users authenticate.
-
-### Added
-
-- **Mobile Sentry Integration**: Added `@sentry/react-native` via `@wrelik/errors/react-native` to mobile app.
-- **Mobile Analytics Dependencies**: Added `@wrelik/analytics` and `@wrelik/errors` workspace packages to mobile app.
-- **Production Launch Checklist**: Added `docs/PRODUCTION_LAUNCH_CHECKLIST.md` with complete launch sequence.
-- **@wrelik/analytics Client Module**: Added `./client` export with browser-side PostHog wrapper including:
-  - `initAnalytics()` - Initialize client-side analytics
-  - `identify()` - Identify authenticated users
-  - `capture()` - Track custom events
-  - `capturePageView()` - Track page views
-  - `isFeatureEnabled()` - Check feature flags
-  - `getFeatureFlag()` - Get multivariate flag values
-  - `onFeatureFlags()` - Subscribe to flag changes
-  - `reset()` - Reset analytics on sign-out
-- **@wrelik/errors Enhanced Config**: Added full configuration options to `initErrors()` for both server and client:
-  - Environment, trace sampling, replay sampling, PII settings
-  - `addBreadcrumb()` and `captureMessage()` functions
-- **Documentation**: Added `docs/@wrelik-kit-usage.md` - Comprehensive guide for using @wrelik/* packages
-- **Documentation**: Added `docs/feature-flags.md` - Feature flag system guide with naming conventions and best practices
-- **Analytics Identity Hook**: Added `useAnalyticsIdentity` hook for manual user identification
 
 ## [0.5.4] - 2026-03-11
 

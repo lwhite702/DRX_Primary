@@ -1,6 +1,6 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "private": true,
   "engines": {
     "node": "20.18.0"
@@ -84,7 +84,6 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@sentry/nextjs": "^10.38.0",
-
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
