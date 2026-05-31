@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const items = products.map((item) => ({
+    const items = products.map((item: any) => ({
       id: item.id,
       name: item.productName,
       sku: item.sku,

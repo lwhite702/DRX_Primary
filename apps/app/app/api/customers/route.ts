@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
-import { decodeCustomerPii, encodeCustomerPii } from "@/lib/privacy/customer-pii";
-import { canWritePrivacyField } from "@/lib/privacy/profiles";
-import { extractPrivacyProtocol } from "@/lib/privacy/settings";
-import { hashLookupValue, sanitizePiiInput } from "@/lib/privacy/crypto";
+import { encodeCustomerPii } from "@/lib/privacy/customer-pii";
+import { canWriteField } from "@/lib/privacy/privacy-policy";
+import { sanitizePiiInput } from "@/lib/privacy/crypto";
+import { findCustomersForSearch } from "@/lib/customers/core/customer-search";
+import { mapOperationalCustomerRecord } from "@/lib/customers/core/customer-identity";
+import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
 async function resolveBusinessId(userId: string): Promise<string | null> {
   const ownedBusiness = await db.businessProfile.findFirst({
@@ -22,15 +24,6 @@ async function resolveBusinessId(userId: string): Promise<string | null> {
   });
 
   return userRole?.businessId ?? null;
-}
-
-async function getBusinessPrivacyProtocol(businessId: string) {
-  const settings = await db.businessSettings.findFirst({
-    where: { businessId },
-    select: { settingsData: true },
-  });
-
-  return extractPrivacyProtocol(settings?.settingsData);
 }
 
 function parseNumeric(value: unknown): number | undefined {
@@ -58,60 +51,26 @@ function buildEphemeralExpiry(days: 1 | 7 | 30): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
-async function mapCustomerForResponse(customer: any) {
-  const pii = await decodeCustomerPii(customer);
-
-  return {
-    id: customer.id,
-    customer_id: customer.id,
-    business_id: customer.businessId,
-    alias: pii.alias || "",
-    first_name: pii.first_name || "",
-    last_name: customer.lastName || "",
-    phone: pii.phone || "",
-    phone_number: pii.phone || "",
-    email: pii.email || "",
-    address: pii.address || "",
-    notes: pii.notes || "",
-    city: customer.city || "",
-    state: customer.state || "",
-    zip_code: customer.zipCode || "",
-    customer_type: customer.customerType || "retail",
-    loyalty_tier: "bronze",
-    loyalty_points: 0,
-    total_purchases: Number(customer.totalPurchases || 0),
-    total_credit_used: Number(customer.totalCreditUsed || 0),
-    fixed_price_per_gram: customer.fixedPricePerGram
-      ? Number(customer.fixedPricePerGram)
-      : null,
-    ephemeral: !!customer.ephemeral,
-    ephemeral_expires_at: customer.ephemeralExpiresAt || null,
-    credit_limit: 0,
-    created_at: customer.createdAt,
-    last_activity_at: customer.lastActivityAt,
-  };
-}
-
 function collectWriteViolations(
-  privacyProtocol: Awaited<ReturnType<typeof getBusinessPrivacyProtocol>>,
+  privacyProtocol: Awaited<ReturnType<typeof resolveBusinessPrivacyPolicy>>,
   values: Record<string, unknown>,
 ): string[] {
-  const fieldMap: Record<string, keyof typeof privacyProtocol.fields> = {
+  const fieldMap = {
     alias: "alias",
     first_name: "first_name",
     phone: "phone",
     email: "email",
     address: "address",
     notes: "notes",
-  };
+  } as const;
 
   const violations: string[] = [];
 
   for (const [field, value] of Object.entries(values)) {
     if (!sanitizePiiInput(value)) continue;
-    const privacyField = fieldMap[field];
+    const privacyField = fieldMap[field as keyof typeof fieldMap];
     if (!privacyField) continue;
-    if (!canWritePrivacyField(privacyProtocol, privacyField)) {
+    if (!canWriteField(privacyProtocol, privacyField)) {
       violations.push(field);
     }
   }
@@ -139,48 +98,53 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    const where: Prisma.CustomersWhereInput = {
-      businessId,
-      isActive: true,
-    };
-
-    if (search) {
-      let searchHash: string | null = null;
-      try {
-        searchHash = await hashLookupValue(search);
-      } catch (error) {
-        console.warn("[privacy] hash lookup unavailable, falling back to plaintext search", error);
-      }
-      where.OR = [
-        ...(searchHash
-          ? [
-              { aliasHash: searchHash },
-              { phoneHash: searchHash },
-              { emailHash: searchHash },
-            ]
-          : []),
-        { alias: { contains: search, mode: "insensitive" } },
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { phoneNumber: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    const customers = await db.customers.findMany({
-      where,
-      take: Number.isFinite(limit) ? Math.max(1, Math.min(limit, 200)) : 50,
-      skip: Number.isFinite(offset) ? Math.max(offset, 0) : 0,
-      orderBy: { createdAt: "desc" },
-    });
-
-    const privacyProtocol = await getBusinessPrivacyProtocol(businessId);
-
-    const mappedCustomers = await Promise.all(
-      customers.map((customer) => mapCustomerForResponse(customer)),
+    const useDeterministicLookup = await ensureServerFlag(
+      "feat_customer_hash_lookup_v2",
+      {
+        distinctId: userId,
+        groups: { business: businessId },
+        defaultValue: true,
+      },
     );
 
-    return NextResponse.json({ data: mappedCustomers, privacy_protocol: privacyProtocol });
+    const [rows, privacyProtocol] = await Promise.all([
+      useDeterministicLookup
+        ? findCustomersForSearch({
+            businessId,
+            search,
+            limit,
+            offset,
+          })
+        : (async () => {
+            const where: any = {
+              businessId,
+              isActive: true,
+            };
+
+            if (search) {
+              where.OR = [
+                { firstName: { contains: search, mode: "insensitive" } },
+                { lastName: { contains: search, mode: "insensitive" } },
+                { phoneNumber: { contains: search, mode: "insensitive" } },
+                { email: { contains: search, mode: "insensitive" } },
+              ];
+            }
+
+            const customers = await db.customers.findMany({
+              where,
+              take: Number.isFinite(limit) ? Math.max(1, Math.min(limit, 200)) : 50,
+              skip: Number.isFinite(offset) ? Math.max(offset, 0) : 0,
+              orderBy: { createdAt: "desc" },
+            });
+
+            return Promise.all(
+              customers.map((customer: any) => mapOperationalCustomerRecord(customer)),
+            );
+          })(),
+      resolveBusinessPrivacyPolicy(businessId),
+    ]);
+
+    return NextResponse.json({ data: rows, privacy_protocol: privacyProtocol });
   } catch (error) {
     console.error("Customers API Error:", error);
     return NextResponse.json(
@@ -206,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const privacyProtocol = await getBusinessPrivacyProtocol(businessId);
+    const privacyProtocol = await resolveBusinessPrivacyPolicy(businessId);
 
     const alias = body.alias;
     const firstName = body.first_name ?? body.firstName;
@@ -298,7 +262,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(await mapCustomerForResponse(newCustomer), {
+    return NextResponse.json(await mapOperationalCustomerRecord(newCustomer), {
       status: 201,
     });
   } catch (error) {

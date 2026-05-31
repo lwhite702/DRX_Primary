@@ -2,63 +2,51 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
 
-const JsonValueSchema: z.ZodType<Prisma.InputJsonValue> = z.lazy(() =>
-  z.union([
-    z.string(),
-    z.number(),
-    z.boolean(),
-    z.null(),
-    z.array(JsonValueSchema),
-    z.record(JsonValueSchema),
-  ]),
-);
-
 const AlertPayloadSchema = z.object({
   userId: z.string().min(1).optional(),
   type: z.string().min(1),
   message: z.string().min(1),
-  metadata: JsonValueSchema.optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function POST(request: NextRequest) {
-  const { userId: actorId } = await auth();
-
-  if (!actorId) {
-    return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-  }
-
-  const killSwitchEnabled = await ensureServerFlag(
-    OPS_KILL_SWITCH_FLAGS.notificationsAlertsWrite,
-    { distinctId: actorId, defaultValue: true },
-  );
-
-  if (!killSwitchEnabled) {
-    return errorResponse(
-      "FEATURE_DISABLED",
-      "Notification alerts writes are temporarily disabled",
-      503,
-    );
-  }
-
-  const featureEnabled = await ensureServerFlag("feat_notifications_alert_write", {
-    distinctId: actorId,
-    defaultValue: true,
-  });
-  if (!featureEnabled) {
-    return errorResponse(
-      "FEATURE_DISABLED",
-      "Notification alert feature is temporarily disabled",
-      503,
-    );
-  }
-
   try {
+    const { userId: actorId } = await auth();
+
+    if (!actorId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
+    const killSwitchEnabled = await ensureServerFlag(
+      OPS_KILL_SWITCH_FLAGS.notificationsAlertsWrite,
+      { distinctId: actorId, defaultValue: true },
+    );
+
+    if (!killSwitchEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Notification alerts writes are temporarily disabled",
+        503,
+      );
+    }
+
+    const featureEnabled = await ensureServerFlag("feat_notifications_alert_write", {
+      distinctId: actorId,
+      defaultValue: true,
+    });
+    if (!featureEnabled) {
+      return errorResponse(
+        "FEATURE_DISABLED",
+        "Notification alert feature is temporarily disabled",
+        503,
+      );
+    }
+
     const payload = AlertPayloadSchema.safeParse(await request.json());
     if (!payload.success) {
       return errorResponse(
@@ -81,17 +69,16 @@ export async function POST(request: NextRequest) {
         userId: targetUserId,
         type: payload.data.type,
         message: payload.data.message,
-        title: "Alert", // providing a default title as it's required in schema
+        title: "Alert",
         link: null,
         isRead: false,
       },
     });
 
-    // Audit Log
     await db.systemAuditLog.create({
       data: {
         action: "create_alert",
-        userId: actorId, // Acted by
+        userId: actorId,
         entityType: "notification",
         entityId: notification.id,
         newValues: {

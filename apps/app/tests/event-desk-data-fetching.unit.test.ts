@@ -299,6 +299,7 @@ describe('EventDeskPage Data Fetching', () => {
       const { useBusiness } = await import('@/lib/hooks/use-business');
       vi.mocked(useBusiness).mockReturnValue({
         business: null, // No business context
+        settings: null,
         loading: false,
         availableBusinesses: [],
         needsSetup: false,

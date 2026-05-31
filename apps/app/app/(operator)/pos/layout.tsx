@@ -1,10 +1,20 @@
-import { QuickPosProvider } from "@/lib/quick-pos/store";
-import { PosShell } from "@/components/quick-pos/pos-shell";
+"use client";
+
+import dynamic from "next/dynamic";
+
+const PosLayoutShell = dynamic(
+  () =>
+    import("@/components/quick-pos/pos-layout-shell").then(
+      (mod) => mod.PosLayoutShell,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen w-full animate-pulse bg-background" />
+    ),
+  },
+);
 
 export default function QuickPosLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <QuickPosProvider>
-      <PosShell>{children}</PosShell>
-    </QuickPosProvider>
-  );
+  return <PosLayoutShell>{children}</PosLayoutShell>;
 }

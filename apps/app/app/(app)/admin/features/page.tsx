@@ -1,6 +1,6 @@
 import { FeaturesClient } from "./_components/FeaturesClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default function FeatureFlagsPage() {
   return <FeaturesClient />;

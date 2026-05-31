@@ -1,6 +1,6 @@
 "use client";
 
-import { useOnboarding } from "@/components/providers/onboarding-provider";
+import { useOnboarding } from "@/components/providers/onboarding-context";
 import {
   Dialog,
   DialogContent,

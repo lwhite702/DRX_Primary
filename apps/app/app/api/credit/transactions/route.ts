@@ -9,7 +9,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { customer_id, amount, transaction_type, description } = body;
+    const { customer_id, amount, description } = body;
+    const rawType =
+      typeof body.transaction_type === "string"
+        ? body.transaction_type.toLowerCase()
+        : "";
+    const transaction_type =
+      rawType === "purchase" || rawType === "credit" || rawType === "extension"
+        ? "extension"
+        : rawType === "payment"
+          ? "payment"
+          : rawType;
     // Note: Mobile sends snake_case probably? apiClient uses `createCreditTransaction`.
     // Let's assume body matches what we want: customer_id, amount, type.
 
@@ -51,11 +61,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Update Balance
-    // transaction_type 'purchase' (credit usage) -> increases currentBalance (debt)
-    // transaction_type 'payment' -> decreases currentBalance (debt)
+    // transaction_type 'extension' increases currentBalance (debt)
+    // transaction_type 'payment' decreases currentBalance (debt)
 
     let newBalance = Number(creditLimit.currentBalance) || 0;
-    if (transaction_type === "purchase" || transaction_type === "credit") {
+    if (transaction_type === "extension") {
       newBalance += Number(amount);
     } else if (transaction_type === "payment") {
       newBalance -= Number(amount);

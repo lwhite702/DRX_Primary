@@ -130,18 +130,10 @@ export default function SalesPage() {
     loadLoyalty();
   }, [selectedCustomer, business?.id]);
 
-  // Random inventory check
-  useEffect(() => {
-    if (!business?.id) return;
-    const checkRandomTrigger = async () => {
-      const result = await posWeightEngine.shouldTriggerRandomCheck(
-        business.id,
-      );
-      if (result.should_check) setShowInventoryCheck(true);
-    };
-    // Initialize check
-    checkRandomTrigger();
-  }, [business?.id]);
+  // NOTE:
+  // Random-check prompts should be tied to successful checkout commits.
+  // This legacy sales page only redirects to /pos checkout, so we avoid
+  // incrementing transaction counters on mere page load here.
 
   // Load delivery options & AI recommendations
   useEffect(() => {

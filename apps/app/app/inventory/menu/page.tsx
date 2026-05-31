@@ -57,7 +57,7 @@ export default function InventoryMenuPage() {
       label: "MORE",
       description: "Additional options",
       icon: MoreHorizontal,
-      href: "/inventory", // Placeholder
+      href: "/inventory/audit",
       color: "text-muted-foreground",
       bg: "bg-muted/10 hover:bg-muted/20",
       borderColor: "border-border",

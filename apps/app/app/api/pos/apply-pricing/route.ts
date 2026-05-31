@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { getRequestId, logger } from "@/lib/logging";
 
 export async function POST(request: NextRequest) {
+  const requestId = getRequestId(request.headers);
+
   try {
     const { businessId } = await resolveAuthContext();
     if (!businessId) {
@@ -39,7 +42,10 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   } catch (error: any) {
-    console.error("Apply AI Pricing Error:", error);
+    logger.error("Apply AI pricing route failed", {
+      requestId,
+      error,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

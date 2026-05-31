@@ -1,0 +1,496 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "collection",
+      "id": "1636653",
+      "name": "Dashboard",
+      "description": "Dashboard articles",
+      "slug": "1636653-dashboard",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/1636653-dashboard",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 12,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Dashboard",
+          "description": "Dashboard articles",
+          "slug": "1636653-dashboard",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/1636653-dashboard",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:09.381Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "5595577",
+      "name": "Sales",
+      "description": "Sales articles",
+      "slug": "5595577-sales",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5595577-sales",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 10,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Sales",
+          "description": "Sales articles",
+          "slug": "5595577-sales",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5595577-sales",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:09.868Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "0659914",
+      "name": "Quick POS",
+      "description": "Quick POS articles",
+      "slug": "0659914-quick-pos",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/0659914-quick-pos",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 11,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Quick POS",
+          "description": "Quick POS articles",
+          "slug": "0659914-quick-pos",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/0659914-quick-pos",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:09.627Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "2241034",
+      "name": "Getting Started",
+      "description": "Getting Started articles",
+      "slug": "2241034-getting-started",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/2241034-getting-started",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 13,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Getting Started",
+          "description": "Getting Started articles",
+          "slug": "2241034-getting-started",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/2241034-getting-started",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:09.124Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "5902160",
+      "name": "Inventory",
+      "description": "Inventory articles",
+      "slug": "5902160-inventory",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5902160-inventory",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 9,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Inventory",
+          "description": "Inventory articles",
+          "slug": "5902160-inventory",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5902160-inventory",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:10.159Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "7752792",
+      "name": "Front / Balances",
+      "description": "Front / Balances articles",
+      "slug": "7752792-front-balances",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/7752792-front-balances",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 7,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Front / Balances",
+          "description": "Front / Balances articles",
+          "slug": "7752792-front-balances",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/7752792-front-balances",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:11.897Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "7112199",
+      "name": "Customers",
+      "description": "Customers articles",
+      "slug": "7112199-customers",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/7112199-customers",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 8,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Customers",
+          "description": "Customers articles",
+          "slug": "7112199-customers",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/7112199-customers",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:11.553Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "3562121",
+      "name": "Roles and Permissions",
+      "description": "Roles and Permissions articles",
+      "slug": "3562121-roles-and-permissions",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/3562121-roles-and-permissions",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 5,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Roles and Permissions",
+          "description": "Roles and Permissions articles",
+          "slug": "3562121-roles-and-permissions",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/3562121-roles-and-permissions",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:12.469Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "5089813",
+      "name": "Reports",
+      "description": "Reports articles",
+      "slug": "5089813-reports",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5089813-reports",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 6,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Reports",
+          "description": "Reports articles",
+          "slug": "5089813-reports",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5089813-reports",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:12.149Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "6854042",
+      "name": "Settings",
+      "description": "Settings articles",
+      "slug": "6854042-settings",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/6854042-settings",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 4,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Settings",
+          "description": "Settings articles",
+          "slug": "6854042-settings",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/6854042-settings",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:12.912Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "9474440",
+      "name": "Privacy and Security",
+      "description": "Privacy and Security articles",
+      "slug": "9474440-privacy-and-security",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/9474440-privacy-and-security",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 3,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Privacy and Security",
+          "description": "Privacy and Security articles",
+          "slug": "9474440-privacy-and-security",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/9474440-privacy-and-security",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:13.147Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "0152347",
+      "name": "Admin Tools",
+      "description": "Admin Tools articles",
+      "slug": "0152347-admin-tools",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/0152347-admin-tools",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": null,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Admin Tools",
+          "description": "Admin Tools articles",
+          "slug": "0152347-admin-tools",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/0152347-admin-tools",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:13.971Z",
+      "updatedAt": "2026-04-03T04:57:13.971Z"
+    },
+    {
+      "object": "collection",
+      "id": "5925303",
+      "name": "Troubleshooting",
+      "description": "Troubleshooting articles",
+      "slug": "5925303-troubleshooting",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5925303-troubleshooting",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 1,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "Troubleshooting",
+          "description": "Troubleshooting articles",
+          "slug": "5925303-troubleshooting",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/5925303-troubleshooting",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:13.684Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    },
+    {
+      "object": "collection",
+      "id": "3312590",
+      "name": "DRX Intelligence",
+      "description": "DRX Intelligence articles",
+      "slug": "3312590-drx-intelligence",
+      "icon": null,
+      "parentId": null,
+      "helpCenterId": "g2nfnbka46winbit",
+      "organization": "69cf42dc741c82c3d7b92696",
+      "defaultLocale": "en",
+      "locale": "en",
+      "availableLocales": [
+        "en"
+      ],
+      "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/3312590-drx-intelligence",
+      "articleCount": 0,
+      "authorCount": 0,
+      "order": 2,
+      "path": "g2nfnbka46winbit",
+      "collapseSidebar": false,
+      "translations": {
+        "en": {
+          "name": "DRX Intelligence",
+          "description": "DRX Intelligence articles",
+          "slug": "3312590-drx-intelligence",
+          "featurebaseUrl": "https://deelrx.featurebase.app/en/help/collections/3312590-drx-intelligence",
+          "articleCount": 0,
+          "authorCount": 0,
+          "authors": []
+        }
+      },
+      "createdAt": "2026-04-03T04:57:13.440Z",
+      "updatedAt": "2026-04-03T04:57:13.981Z"
+    }
+  ],
+  "nextCursor": null
+}

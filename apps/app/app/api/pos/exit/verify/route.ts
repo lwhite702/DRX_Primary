@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { QUICK_POS_EXIT_PIN_FALLBACK } from "@/lib/quick-pos/constants";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
+import { ensureServerFlag } from "@/lib/posthog/server-flags";
 import type { QuickPosExitVerifyRequest, QuickPosExitVerifyResponse } from "@/lib/quick-pos/types";
 
 export async function POST(request: NextRequest) {
@@ -10,10 +10,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
   }
 
-  const { businessId } = await resolveAuthContext();
+  const { businessId, userId } = await resolveAuthContext();
 
-  if (!businessId) {
+  if (!businessId || !userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const pinEnforcementEnabled = await ensureServerFlag("feat_pos_exit_pin_enforcement", {
+    distinctId: userId,
+    personProperties: { business_id: businessId },
+    defaultValue: true,
+  });
+  if (!pinEnforcementEnabled) {
+    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
   }
 
   const body = (await request.json()) as QuickPosExitVerifyRequest;
@@ -24,9 +33,13 @@ export async function POST(request: NextRequest) {
     select: { settingsData: true },
   });
 
-  const configuredPin =
-    (settings?.settingsData as { quick_pos_exit_pin?: string } | null)?.quick_pos_exit_pin ||
-    QUICK_POS_EXIT_PIN_FALLBACK;
+  const configuredPin = (
+    settings?.settingsData as { quick_pos_exit_pin?: string } | null
+  )?.quick_pos_exit_pin?.trim();
+
+  if (!configuredPin) {
+    return NextResponse.json({ allowed: false }, { status: 423 });
+  }
 
   const response: QuickPosExitVerifyResponse = {
     allowed: pin.length > 0 && pin === String(configuredPin),

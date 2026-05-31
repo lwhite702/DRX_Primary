@@ -177,7 +177,6 @@ async function ensureBusinessSettings(businessId) {
       { label: "14g", value: 14, unit: "g", enabled: true },
     ],
     privacy_preset: "balanced",
-    quick_pos_exit_pin: "1234",
     seeded_demo: true,
     seeded_at: new Date().toISOString(),
   };
@@ -306,7 +305,7 @@ async function main() {
   console.log(`Owner (bypass): ${DEMO_OWNER_ID}`);
   console.log(`Products: +${products.created} created, ${products.updated} updated`);
   console.log(`Customers: +${customers.created} created, ${customers.updated} updated`);
-  console.log("Quick Sale exit PIN (demo settings): 1234");
+  console.log("Quick Sale exit PIN (demo settings): not configured");
 }
 
 main()

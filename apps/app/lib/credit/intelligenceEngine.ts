@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { db } from "@/lib/db";
 
 export type FrontSuggestion = "APPROVE" | "CAUTION" | "DENY";
 
@@ -272,96 +272,106 @@ export function evaluateFrontApproval(input: FrontApprovalInput): FrontApprovalD
 }
 
 export async function getCustomerBehaviorMetrics(customer_id: string, business_id: string) {
-  const supabase = getSupabaseClient();
-  if (!supabase) return null;
+  try {
+    const tx = await db.creditTransaction.findMany({
+      where: {
+        customerId: customer_id,
+        businessId: business_id,
+      },
+      select: {
+        transactionType: true,
+        amount: true,
+        status: true,
+        createdAt: true,
+        paidDate: true,
+      },
+    });
 
-  const { data: tx } = await supabase
-    .from("credit_transactions")
-    .select("transaction_type, amount, status, created_at, paid_date")
-    .eq("customer_id", customer_id)
-    .eq("business_id", business_id);
+    const sales = await db.sales.findMany({
+      where: {
+        customerId: customer_id,
+        businessId: business_id,
+      },
+      select: {
+        totalAmount: true,
+        createdAt: true,
+      },
+    });
 
-  const { data: sales } = await supabase
-    .from("sales")
-    .select("total_amount, created_at")
-    .eq("customer_id", customer_id)
-    .eq("business_id", business_id);
+    const limits = await db.creditLimit.findFirst({
+      where: {
+        customerId: customer_id,
+        businessId: business_id,
+      },
+      select: {
+        currentBalance: true,
+      },
+    });
 
-  const { data: limits } = await supabase
-    .from("credit_limits")
-    .select("current_balance")
-    .eq("customer_id", customer_id)
-    .eq("business_id", business_id)
-    .single();
+    const now = Date.now();
 
-  const now = Date.now();
-  type CreditTxRow = {
-    transaction_type: string;
-    amount: number | string | null;
-    status: string | null;
-    created_at: string;
-    paid_date: string | null;
-  };
-  type SaleRow = { total_amount: number | string | null; created_at: string };
+    const creditTx = (tx || []) as any[];
+    const salesRows = (sales || []) as any[];
 
-  const creditTx = (tx || []) as CreditTxRow[];
-  const salesRows = (sales || []) as SaleRow[];
+    const frontTx = creditTx.filter((t) => t.transactionType === "extension");
+    const paymentTx = creditTx.filter((t) => t.transactionType === "payment");
+    const unpaid = frontTx.filter((t) => t.status === "pending").length;
+    const forgiven = creditTx
+      .filter((t) => t.transactionType === "forgiveness")
+      .reduce((sum: number, t) => sum + Number(t.amount || 0), 0);
 
-  const frontTx = creditTx.filter((t) => t.transaction_type === "extension");
-  const paymentTx = creditTx.filter((t) => t.transaction_type === "payment");
-  const unpaid = frontTx.filter((t) => t.status === "pending").length;
-  const forgiven = (tx || [])
-    .filter((t: CreditTxRow) => t.transaction_type === "forgiveness")
-    .reduce((sum: number, t: CreditTxRow) => sum + Number(t.amount || 0), 0);
+    const paymentOnTimeRatio =
+      paymentTx.length === 0
+        ? 0.75
+        : paymentTx.filter((t) => (t.status || "").toLowerCase() === "completed").length /
+          paymentTx.length;
 
-  const paymentOnTimeRatio =
-    paymentTx.length === 0
-      ? 0.75
-      : paymentTx.filter((t) => (t.status || "").toLowerCase() === "completed").length /
-        paymentTx.length;
+    const avgRepaymentDays =
+      paymentTx.length === 0
+        ? 14
+        : paymentTx.reduce((sum: number, t) => {
+            const start = new Date(t.createdAt).getTime();
+            const paid = t.paidDate ? new Date(t.paidDate).getTime() : now;
+            const days = Math.max(1, Math.round((paid - start) / (1000 * 60 * 60 * 24)));
+            return sum + days;
+          }, 0) / paymentTx.length;
 
-  const avgRepaymentDays =
-    paymentTx.length === 0
-      ? 14
-      : paymentTx.reduce((sum: number, t) => {
-          const start = new Date(t.created_at).getTime();
-          const paid = t.paid_date ? new Date(t.paid_date).getTime() : now;
-          const days = Math.max(1, Math.round((paid - start) / (1000 * 60 * 60 * 24)));
-          return sum + days;
-        }, 0) / paymentTx.length;
+    const purchaseFrequency30d = salesRows.filter(
+      (s) => now - new Date(s.createdAt).getTime() <= 1000 * 60 * 60 * 24 * 30
+    ).length;
 
-  const purchaseFrequency30d = salesRows.filter(
-    (s) => now - new Date(s.created_at).getTime() <= 1000 * 60 * 60 * 24 * 30
-  ).length;
+    const firstSale = salesRows.length
+      ? Math.min(...salesRows.map((s) => new Date(s.createdAt).getTime()))
+      : now;
 
-  const firstSale = salesRows.length
-    ? Math.min(...salesRows.map((s) => new Date(s.created_at).getTime()))
-    : now;
+    const avgTransactionSize =
+      salesRows.length > 0
+        ? salesRows.reduce((sum: number, s) => sum + Number(s.totalAmount || 0), 0) /
+          salesRows.length
+        : 0;
 
-  const avgTransactionSize =
-    salesRows.length > 0
-      ? salesRows.reduce((sum: number, s) => sum + Number(s.total_amount || 0), 0) /
-        salesRows.length
-      : 0;
+    const lastPaymentDate = paymentTx.length
+      ? Math.max(...paymentTx.map((t) => new Date(t.createdAt).getTime()))
+      : now;
 
-  const lastPaymentDate = paymentTx.length
-    ? Math.max(...paymentTx.map((t) => new Date(t.created_at).getTime()))
-    : now;
+    const metrics: PaymentBehaviorMetrics = {
+      payments_on_time_ratio: paymentOnTimeRatio,
+      avg_repayment_days: avgRepaymentDays,
+      unpaid_front_count: unpaid,
+      forgiven_balance_total: forgiven,
+      purchase_frequency_30d: purchaseFrequency30d,
+      customer_lifetime_days: Math.max(1, Math.round((now - firstSale) / (1000 * 60 * 60 * 24))),
+      avg_transaction_size: avgTransactionSize,
+      open_balance: Number(limits?.currentBalance || 0),
+      days_since_last_payment: Math.max(
+        0,
+        Math.round((now - lastPaymentDate) / (1000 * 60 * 60 * 24))
+      ),
+    };
 
-  const metrics: PaymentBehaviorMetrics = {
-    payments_on_time_ratio: paymentOnTimeRatio,
-    avg_repayment_days: avgRepaymentDays,
-    unpaid_front_count: unpaid,
-    forgiven_balance_total: forgiven,
-    purchase_frequency_30d: purchaseFrequency30d,
-    customer_lifetime_days: Math.max(1, Math.round((now - firstSale) / (1000 * 60 * 60 * 24))),
-    avg_transaction_size: avgTransactionSize,
-    open_balance: Number(limits?.current_balance || 0),
-    days_since_last_payment: Math.max(
-      0,
-      Math.round((now - lastPaymentDate) / (1000 * 60 * 60 * 24))
-    ),
-  };
-
-  return metrics;
+    return metrics;
+  } catch (error) {
+    console.error("Error getting customer behavior metrics:", error);
+    return null;
+  }
 }

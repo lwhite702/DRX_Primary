@@ -1,0 +1,145 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "changelog",
+      "id": "69cf49cc2dfafafa9e08d513",
+      "title": "v0.5.0: Major DRX App Surface Milestone",
+      "slug": "v050-major-drx-app-surface-milestone",
+      "url": "https://deelrx.featurebase.app/en/changelog/v050-major-drx-app-surface-milestone",
+      "content": "<p>Expanded operational coverage across dashboard, sales, inventory, and reporting foundations.</p>",
+      "markdownContent": "Expanded operational coverage across dashboard, sales, inventory, and reporting foundations.\n",
+      "featuredImage": null,
+      "date": "2026-04-03T05:02:04.027Z",
+      "state": "live",
+      "locale": "en",
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "publishedLocales": [
+        "en"
+      ],
+      "availableLocales": [
+        "en"
+      ],
+      "slugs": {
+        "en": "v050-major-drx-app-surface-milestone"
+      },
+      "commentCount": 0,
+      "categories": [
+        {
+          "id": "69cf42dd741c82c3d7b926a6",
+          "name": "New",
+          "roles": []
+        }
+      ],
+      "organization": "deelrx",
+      "notifications": {
+        "en": {
+          "sendEmailNotification": false,
+          "scheduledDate": null
+        }
+      },
+      "allowedSegmentIds": [],
+      "emailSentToSubscribers": false,
+      "createdAt": "2026-04-03T05:02:04.027Z",
+      "updatedAt": "2026-04-03T05:02:04.027Z"
+    },
+    {
+      "object": "changelog",
+      "id": "69cf49cb4d46f8992fce3aef",
+      "title": "v0.5.3: Route Guard and Operations Stability Improvements",
+      "slug": "v053-route-guard-and-operations-stability-improvements",
+      "url": "https://deelrx.featurebase.app/en/changelog/v053-route-guard-and-operations-stability-improvements",
+      "content": "<p>Auth/route guard behavior is more consistent, and daily operator navigation is smoother across core pages.</p>",
+      "markdownContent": "Auth/route guard behavior is more consistent, and daily operator navigation is smoother across core pages.\n",
+      "featuredImage": null,
+      "date": "2026-04-03T05:02:03.789Z",
+      "state": "live",
+      "locale": "en",
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "publishedLocales": [
+        "en"
+      ],
+      "availableLocales": [
+        "en"
+      ],
+      "slugs": {
+        "en": "v053-route-guard-and-operations-stability-improvements"
+      },
+      "commentCount": 0,
+      "categories": [
+        {
+          "id": "69cf42dd741c82c3d7b926a7",
+          "name": "Improved",
+          "roles": []
+        },
+        {
+          "id": "69cf42dd741c82c3d7b926a8",
+          "name": "Fixed",
+          "roles": []
+        }
+      ],
+      "organization": "deelrx",
+      "notifications": {
+        "en": {
+          "sendEmailNotification": false,
+          "scheduledDate": null
+        }
+      },
+      "allowedSegmentIds": [],
+      "emailSentToSubscribers": false,
+      "createdAt": "2026-04-03T05:02:03.789Z",
+      "updatedAt": "2026-04-03T05:02:03.789Z"
+    },
+    {
+      "object": "changelog",
+      "id": "69cf49c92ff26b229bdcff90",
+      "title": "v0.5.4: Help Center and POS Flow Quality Updates",
+      "slug": "v054-help-center-and-pos-flow-quality-updates",
+      "url": "https://deelrx.featurebase.app/en/changelog/v054-help-center-and-pos-flow-quality-updates",
+      "content": "<p>We tightened Quick POS reliability, improved in-app help coverage, and cleaned up key operator workflow behavior.</p>",
+      "markdownContent": "We tightened Quick POS reliability, improved in-app help coverage, and cleaned up key operator workflow behavior.\n",
+      "featuredImage": null,
+      "date": "2026-04-03T05:02:01.266Z",
+      "state": "live",
+      "locale": "en",
+      "isPublished": true,
+      "isDraftDiffersFromLive": false,
+      "publishedLocales": [
+        "en"
+      ],
+      "availableLocales": [
+        "en"
+      ],
+      "slugs": {
+        "en": "v054-help-center-and-pos-flow-quality-updates"
+      },
+      "commentCount": 0,
+      "categories": [
+        {
+          "id": "69cf42dd741c82c3d7b926a6",
+          "name": "New",
+          "roles": []
+        },
+        {
+          "id": "69cf42dd741c82c3d7b926a7",
+          "name": "Improved",
+          "roles": []
+        }
+      ],
+      "organization": "deelrx",
+      "notifications": {
+        "en": {
+          "sendEmailNotification": false,
+          "scheduledDate": null
+        }
+      },
+      "allowedSegmentIds": [],
+      "emailSentToSubscribers": false,
+      "createdAt": "2026-04-03T05:02:01.266Z",
+      "updatedAt": "2026-04-03T05:02:01.266Z"
+    }
+  ],
+  "nextCursor": null
+}

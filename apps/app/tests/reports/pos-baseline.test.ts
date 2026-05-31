@@ -84,6 +84,12 @@ describe("getPosBaselineReport", () => {
     mockedDb.inventory.findMany.mockResolvedValue([
       { id: "inv_1", productName: "Flower", sku: "FLOW-1" },
     ] as never);
+    mockedDb.salesLineItemAllocation.groupBy.mockResolvedValue([
+      { saleId: "sale_today", _sum: { extendedCost: 40 } },
+      { saleId: "sale_week", _sum: { extendedCost: 30 } },
+      { saleId: "sale_prev", _sum: { extendedCost: 10 } },
+    ] as never);
+
     mockedDb.$queryRaw
       .mockResolvedValueOnce([
         {
@@ -94,12 +100,7 @@ describe("getPosBaselineReport", () => {
           reorder_level: 5,
         },
       ] as never)
-      .mockResolvedValueOnce([{ count: 1 }] as never)
-      .mockResolvedValueOnce([
-        { sale_id: "sale_today", extended_cost_sum: 40 },
-        { sale_id: "sale_week", extended_cost_sum: 30 },
-        { sale_id: "sale_prev", extended_cost_sum: 10 },
-      ] as never);
+      .mockResolvedValueOnce([{ count: 1 }] as never);
   });
 
   it("includes FIFO-backed COGS and gross profit in baseline metrics", async () => {

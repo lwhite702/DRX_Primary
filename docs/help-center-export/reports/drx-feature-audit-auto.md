@@ -1,0 +1,118 @@
+# DRX Feature Audit (Auto)
+
+Generated: 2026-04-03T05:58:57.600Z
+
+Page routes found: 48
+API routes found: 59
+
+## Page routes
+- /app/admin/ai (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/ai/page.tsx)
+- /app/admin/approvals (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/approvals/page.tsx)
+- /app/admin/audit (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/audit/page.tsx)
+- /app/admin/businesses (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/businesses/page.tsx)
+- /app/admin/features (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/features/page.tsx)
+- /app/admin (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/page.tsx)
+- /app/admin/users (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/users/page.tsx)
+- /app/ai-intelligence (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/ai-intelligence/page.tsx)
+- /app/credit (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/credit/page.tsx)
+- /app/customers/[id] (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/customers/[id]/page.tsx)
+- /app/customers (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/customers/page.tsx)
+- /app/dashboard (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/dashboard/page.tsx)
+- /app/demo/mobile-menu (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/demo/mobile-menu/page.tsx)
+- /app/help/library (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/library/page.tsx)
+- /app/help/operations (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/operations/page.tsx)
+- /app/help (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/page.tsx)
+- /app/help/sell (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/sell/page.tsx)
+- /app/help/start (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/start/page.tsx)
+- /app/help/troubleshoot (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/help/troubleshoot/page.tsx)
+- /app/insights (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/insights/page.tsx)
+- /app/inventory/adjust (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/adjust/page.tsx)
+- /app/inventory/audit (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/audit/page.tsx)
+- /app/inventory/intake (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/intake/page.tsx)
+- /app/inventory (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/page.tsx)
+- /app/reports (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/reports/page.tsx)
+- /app/sales/[id] (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/[id]/page.tsx)
+- /app/sales (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/sales/page.tsx)
+- /app/settings/inventory/aliases (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/inventory/aliases/page.tsx)
+- /app/settings (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx)
+- /app/settings/profile (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/profile/page.tsx)
+- /app/settings/team (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/team/page.tsx)
+- /app/workspaces (/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/workspaces/page.tsx)
+- /app/pos/complete (/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/complete/page.tsx)
+- /app/pos (/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/page.tsx)
+- /app/pos/payment (/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx)
+- /app/pos/sale (/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx)
+- /app/contact (/Users/lee/Projects/DRX_Primary/apps/app/app/contact/page.tsx)
+- /app/dashboard/operator (/Users/lee/Projects/DRX_Primary/apps/app/app/dashboard/operator/page.tsx)
+- /app/features (/Users/lee/Projects/DRX_Primary/apps/app/app/features/page.tsx)
+- /app/feedback/[[...slug]] (/Users/lee/Projects/DRX_Primary/apps/app/app/feedback/[[...slug]]/page.tsx)
+- /app/inventory/menu (/Users/lee/Projects/DRX_Primary/apps/app/app/inventory/menu/page.tsx)
+- /app/inventory/search (/Users/lee/Projects/DRX_Primary/apps/app/app/inventory/search/page.tsx)
+- /app/login/[[...rest]] (/Users/lee/Projects/DRX_Primary/apps/app/app/login/[[...rest]]/page.tsx)
+- /app/onboarding (/Users/lee/Projects/DRX_Primary/apps/app/app/onboarding/page.tsx)
+- /app (/Users/lee/Projects/DRX_Primary/apps/app/app/page.tsx)
+- /app/pricing (/Users/lee/Projects/DRX_Primary/apps/app/app/pricing/page.tsx)
+- /app/register/[[...rest]] (/Users/lee/Projects/DRX_Primary/apps/app/app/register/[[...rest]]/page.tsx)
+- /app/waitlist (/Users/lee/Projects/DRX_Primary/apps/app/app/waitlist/page.tsx)
+
+## API routes
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/audit-logs/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/audit-logs/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/businesses/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/user/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/users/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/ai/alerts/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/ai/analyze/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/ai/product-intelligence/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/business/profile/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/business/settings/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/apply-recommendation/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/audit-logs/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/customers/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/customers/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/exposure-report/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/intelligence/front-approval/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/refresh-customer/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/refresh-limits/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/transactions/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/credit/transactions/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/debug-env/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/featurebase/auth/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/inventory/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/inventory/adjust/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/inventory/intake/approve/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/inventory/intake/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/inventory/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/alerts/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/alerts/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/auditlogs/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/preferences/[userId]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/preferences/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/notifications/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/ai-pricing/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/apply-pricing/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/bootstrap/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/checkout-enhanced/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/checkout/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/quick-create/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/delivery-options/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/exit/verify/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/preflight/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/products/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/validate-credit/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/validate-stock/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/reports/pos-baseline/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/reports/pos-reconciliation/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/sales/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/sales/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/team/members/[id]/audit-logs/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/team/members/[id]/role/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/team/members/[id]/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/team/members/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/team/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route.ts
+- /Users/lee/Projects/DRX_Primary/apps/app/app/api/webhooks/clerk/route.ts
+

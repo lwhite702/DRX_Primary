@@ -1,5 +1,15 @@
-import { CreateOrganization } from "@clerk/nextjs";
 import { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+const CreateOrganization = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.CreateOrganization),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full max-w-md animate-pulse rounded-lg border border-white/10 bg-black/30" />
+    ),
+  },
+);
 
 export const metadata: Metadata = {
   title: "Create Organization | DeelRx",

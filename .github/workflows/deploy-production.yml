@@ -1,0 +1,33 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["CI Gate"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy production to Vercel
+        id: vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          scope: ${{ secrets.VERCEL_SCOPE }}
+          working-directory: ./apps/app
+          vercel-args: --prod
+      - name: Smoke test production health endpoint
+        run: |
+          set -euo pipefail
+          HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
+          if [ -z "$HEALTH_URL" ]; then
+            HEALTH_URL="${{ steps.vercel.outputs.preview-url }}/api/health"
+          fi
+          curl -fsSL "$HEALTH_URL"

@@ -2,18 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "../../pos/_lib/server";
 import { decodeCustomerPii, encodeCustomerPii } from "@/lib/privacy/customer-pii";
-import { canWritePrivacyField } from "@/lib/privacy/profiles";
-import { extractPrivacyProtocol } from "@/lib/privacy/settings";
+import { canWriteField } from "@/lib/privacy/privacy-policy";
 import { sanitizePiiInput } from "@/lib/privacy/crypto";
-
-async function getPrivacyProtocol(businessId: string) {
-  const settings = await db.businessSettings.findFirst({
-    where: { businessId },
-    select: { settingsData: true },
-  });
-
-  return extractPrivacyProtocol(settings?.settingsData);
-}
+import { mapCustomerToOperationalModel } from "@/lib/customers/core/customer-normalizer";
+import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
 
 function parseNumeric(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -42,48 +34,18 @@ function buildEphemeralExpiry(days: 1 | 7 | 30): Date {
 
 async function mapResponse(customer: any, metrics?: unknown) {
   const pii = await decodeCustomerPii(customer);
-
   return {
-    id: customer.id,
-    customer_id: customer.id,
-    business_id: customer.businessId,
-    alias: pii.alias || "",
-    first_name: pii.first_name || "",
-    firstName: pii.first_name || "",
-    last_name: customer.lastName || "",
-    lastName: customer.lastName || "",
-    phone: pii.phone || "",
-    phone_number: pii.phone || "",
-    phoneNumber: pii.phone || "",
-    email: pii.email || "",
-    address: pii.address || "",
-    notes: pii.notes || "",
-    city: customer.city || "",
-    state: customer.state || "",
-    zip_code: customer.zipCode || "",
-    zipCode: customer.zipCode || "",
-    customer_type: customer.customerType || "retail",
-    total_purchases: Number(customer.totalPurchases || 0),
-    total_credit_used: Number(customer.totalCreditUsed || 0),
-    fixed_price_per_gram: customer.fixedPricePerGram
-      ? Number(customer.fixedPricePerGram)
-      : null,
-    is_active: customer.isActive,
-    ephemeral: !!customer.ephemeral,
-    ephemeral_expires_at: customer.ephemeralExpiresAt || null,
-    created_at: customer.createdAt,
-    updated_at: customer.updatedAt,
-    last_activity_at: customer.lastActivityAt,
+    ...mapCustomerToOperationalModel(customer, pii),
     metrics,
   };
 }
 
 function blockedByPrivacy(
-  privacyProtocol: Awaited<ReturnType<typeof getPrivacyProtocol>>,
-  field: keyof typeof privacyProtocol.fields,
+  privacyProtocol: Awaited<ReturnType<typeof resolveBusinessPrivacyPolicy>>,
+  field: Parameters<typeof canWriteField>[1],
   value: unknown,
 ) {
-  return !!sanitizePiiInput(value) && !canWritePrivacyField(privacyProtocol, field);
+  return !!sanitizePiiInput(value) && !canWriteField(privacyProtocol, field);
 }
 
 export async function GET(
@@ -173,7 +135,7 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       );
     }
 
-    const privacyProtocol = await getPrivacyProtocol(businessId);
+    const privacyProtocol = await resolveBusinessPrivacyPolicy(businessId);
     const currentPii = await decodeCustomerPii(customer);
 
     const incomingAlias = body.alias;

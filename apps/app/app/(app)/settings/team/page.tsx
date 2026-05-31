@@ -1,6 +1,6 @@
 import TeamClient from "./_components/TeamClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default function TeamSettingsPage() {
   return <TeamClient />;

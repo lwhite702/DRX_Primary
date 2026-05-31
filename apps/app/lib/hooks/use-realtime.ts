@@ -251,21 +251,39 @@ export function useRealtimeCustomers(business_id: string | null) {
         table: "customers",
         filter: `business_id=eq.${business_id}`,
       },
-      (payload: any) => {
+      async (payload: any) => {
         if (payload.eventType === "INSERT") {
-          setCustomers((prev) =>
-            [payload.new, ...prev].sort((a, b) =>
-              (a.first_name || a.alias || "").localeCompare(
-                b.first_name || b.alias || "",
+          try {
+            const id = payload?.new?.id;
+            if (!id) return;
+            const response = await fetch(`/api/customers/${id}`);
+            const normalized = await response.json();
+            if (!response.ok || !normalized?.id) return;
+
+            setCustomers((prev) =>
+              [normalized, ...prev.filter((row) => row.id !== normalized.id)].sort((a, b) =>
+                (a.first_name || a.alias || "").localeCompare(
+                  b.first_name || b.alias || "",
+                ),
               ),
-            ),
-          );
+            );
+          } catch (error) {
+            console.warn("[realtime] customer INSERT normalization failed", error);
+          }
         } else if (payload.eventType === "UPDATE") {
-          setCustomers((prev) =>
-            prev.map((item) =>
-              item.id === payload.new.id ? payload.new : item,
-            ),
-          );
+          try {
+            const id = payload?.new?.id;
+            if (!id) return;
+            const response = await fetch(`/api/customers/${id}`);
+            const normalized = await response.json();
+            if (!response.ok || !normalized?.id) return;
+
+            setCustomers((prev) =>
+              prev.map((item) => (item.id === normalized.id ? normalized : item)),
+            );
+          } catch (error) {
+            console.warn("[realtime] customer UPDATE normalization failed", error);
+          }
         } else if (payload.eventType === "DELETE") {
           setCustomers((prev) =>
             prev.filter((item) => item.id !== payload.old.id),

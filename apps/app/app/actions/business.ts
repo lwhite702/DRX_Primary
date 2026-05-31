@@ -14,7 +14,7 @@ export async function getUserBusinessesAction() {
       select: { businessId: true, role: true },
     });
 
-    const businessIds = roles.map((r) => r.businessId);
+    const businessIds = roles.map((r: any) => r.businessId);
 
     // Fetch owned businesses (if structure allows user to own without explicit role, though role usually tracks this)
     const ownedBusinesses = await db.businessProfile.findMany({
@@ -22,7 +22,7 @@ export async function getUserBusinessesAction() {
       select: { id: true },
     });
 
-    ownedBusinesses.forEach((b) => {
+    ownedBusinesses.forEach((b: any) => {
       if (!businessIds.includes(b.id)) businessIds.push(b.id);
     });
 

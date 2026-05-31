@@ -1,6 +1,6 @@
 import WorkspacesClient from "./_components/WorkspacesClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default function WorkspacesPage() {
   return <WorkspacesClient />;

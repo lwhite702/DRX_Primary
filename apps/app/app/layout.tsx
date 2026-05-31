@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Inter } from "next/font/google";
@@ -77,13 +75,15 @@ export default function RootLayout({
 }) {
   const shouldEnableMeticulous =
     process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
+  const meticulousToken = process.env.NEXT_PUBLIC_METICULOUS_TOKEN;
+  const canLoadMeticulous = shouldEnableMeticulous && Boolean(meticulousToken);
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {shouldEnableMeticulous ? (
+        {canLoadMeticulous ? (
           <script
-            data-recording-token="cRGkJLMiRI2wrAO55KfQl9KZtjVmHSivvTyM80Wy"
+            data-recording-token={meticulousToken}
             data-is-production-environment="false"
             src="https://snippet.meticulous.ai/v1/meticulous.js"
           />
