@@ -79,7 +79,7 @@ describe("GET /api/pos/validate-credit", () => {
     expect(mocks.validateCreditBalance).toHaveBeenCalledWith(
       mocks.db,
       "business_123",
-      "33333333-3333-4333-8333-333333333333",
+      "launch-verify-13",
       25,
     );
     expect(data).toEqual({
