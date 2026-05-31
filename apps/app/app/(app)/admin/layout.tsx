@@ -5,8 +5,8 @@ import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { AdminNavShell } from "./_components/AdminNavShell";
 
-const getAdminRoleCached = unstable_cache(
-  async (userId: string) => {
+const getAdminRoleCached = (userId: string) => unstable_cache(
+  async () => {
     const startTime = performance.now();
     const adminUser = await db.adminUser.findFirst({
       where: { userId },
@@ -16,9 +16,9 @@ const getAdminRoleCached = unstable_cache(
     console.log(`[Admin DB Query] db.adminUser.findFirst took ${duration.toFixed(2)}ms`);
     return adminUser?.role ?? null;
   },
-  ["admin-role"],
+  ["admin-role", userId],
   { tags: ["admin-role"], revalidate: 300 }
-);
+)();
 
 const getAdminRole = cache(async (userId: string) => {
   return getAdminRoleCached(userId);
