@@ -1,7 +1,9 @@
 {
   "extends": "@wrelik/tsconfig/node.json",
   "compilerOptions": {
-    "outDir": "dist", "skipLibCheck": true
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src"]
 }
