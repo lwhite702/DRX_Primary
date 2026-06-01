@@ -106,7 +106,7 @@
     "jsonwebtoken": "^9.0.3",
     "libsodium-wrappers-sumo": "^0.8.2",
     "lucide-react": "^0.454.0",
-    "next": "16.1.7",
+    "next": "16.2.6",
     "pg": "^8.18.0",
     "posthog-js": "^1.310.1",
     "react": "19.2.3",
@@ -155,6 +155,6 @@
     "tw-animate-css": "1.3.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1",
-    "vitest": "^1.0.0"
+    "vitest": "^4.1.0"
   }
 }
