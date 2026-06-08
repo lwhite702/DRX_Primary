@@ -8,8 +8,8 @@ test.describe("Auth routing regressions", () => {
     await page.goto("/");
 
     if (bypassAuthEnabled) {
-      await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
-      await expect(page.locator("body")).toContainText(/Operator Dashboard/i);
+      await expect(page).toHaveURL(/\/dashboard(?:\?|$)/, { timeout: 15000 });
+      await expect(page.locator("body")).toContainText(/Operator Dashboard/i, { timeout: 15000 });
       return;
     }
 

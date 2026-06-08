@@ -28,9 +28,9 @@ export default function InventoryMenuPage() {
       description: "Process sales",
       icon: ShoppingCart,
       href: "/sales",
-      color: "text-[#BFFF00]", // Neon Lime
-      bg: "bg-[#BFFF00]/10 hover:bg-[#BFFF00]/20",
-      borderColor: "border-[#BFFF00]/20",
+      color: "text-[#ccff00]", // Neon Lime
+      bg: "bg-[#ccff00]/10 hover:bg-[#ccff00]/20",
+      borderColor: "border-[#ccff00]/20",
       colSpan: "col-span-1 md:col-span-1",
     },
     {

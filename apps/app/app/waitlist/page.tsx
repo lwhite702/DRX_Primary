@@ -32,7 +32,7 @@ export default async function WaitlistPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] p-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
       <div className="noise-overlay" />
       <div className="ambient-glow left-[15%] top-[12%] h-72 w-72" />
       <div className="ambient-glow bottom-[8%] right-[12%] h-64 w-64" />
@@ -71,13 +71,13 @@ export default async function WaitlistPage() {
                 headerTitle: "hidden",
                 headerSubtitle: "hidden",
                 formButtonPrimary:
-                  "laser-button rounded-full bg-[#BFFF00] text-black font-bold uppercase tracking-wide h-11",
+                  "laser-button rounded-full bg-[#ccff00] text-black font-bold uppercase tracking-wide h-11",
                 formFieldInput:
                   "bg-black/40 border border-white/10 text-white rounded-md",
                 formFieldLabel:
                   "technical-label text-[11px] text-white/60 uppercase tracking-[0.2em]",
                 footerActionLink:
-                  "text-[#BFFF00] hover:text-[#BFFF00] underline-offset-4 hover:underline",
+                  "text-[#ccff00] hover:text-[#ccff00] underline-offset-4 hover:underline",
               },
             }}
           />

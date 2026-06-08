@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 
 export default function OnboardingPage() {
   return (
-    <main className="relative min-h-screen bg-[#050505] px-6 py-14">
+    <main className="relative min-h-screen bg-background px-6 py-14">
       <div className="noise-overlay" />
       <div className="ambient-glow left-[10%] top-[10%] h-72 w-72" />
       <div className="ambient-glow bottom-[8%] right-[8%] h-64 w-64" />
 
       <div className="relative z-10 mx-auto w-full max-w-3xl">
-        <p className="technical-label mb-4 text-[#BFFF00]">{drxCopy.onboarding.page.label}</p>
+        <p className="technical-label mb-4 text-accent">{drxCopy.onboarding.page.label}</p>
         <h1 className="headline-text text-4xl text-white md:text-5xl">
           {drxCopy.onboarding.page.title}
         </h1>
@@ -99,7 +99,7 @@ export default function OnboardingPage() {
 
           <button
             type="submit"
-            className="laser-button mt-2 rounded-full bg-[#BFFF00] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black"
+            className="laser-button mt-2 rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-black"
           >
             {drxCopy.onboarding.page.submit}
           </button>
