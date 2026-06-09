@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
@@ -8,11 +7,20 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
 import { ClerkProvider } from "@/lib/adapters/auth/ui";
 
-const _plusJakartaSans = Plus_Jakarta_Sans({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta-sans",
 });
-const _inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -65,7 +73,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0B0B0C",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -81,6 +89,105 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function ensureVersions(val) {
+                  if (!val || typeof val !== 'object') {
+                    return { versions: { node: '18.0.0' } };
+                  }
+                  
+                  try {
+                    if (val.versions && typeof val.versions === 'object' && val.versions.node) {
+                      return val;
+                    }
+                  } catch (e) {}
+
+                  try {
+                    var wrapper = Object.create(val);
+                    
+                    var targetVersions = null;
+                    try {
+                      targetVersions = val.versions;
+                    } catch (e) {}
+                    
+                    if (targetVersions && typeof targetVersions === 'object') {
+                      var versionsWrapper = Object.create(targetVersions);
+                      Object.defineProperty(versionsWrapper, 'node', {
+                        value: '18.0.0',
+                        writable: true,
+                        configurable: true,
+                        enumerable: true
+                      });
+                      
+                      Object.defineProperty(wrapper, 'versions', {
+                        value: versionsWrapper,
+                        writable: true,
+                        configurable: true,
+                        enumerable: true
+                      });
+                    } else {
+                      Object.defineProperty(wrapper, 'versions', {
+                        value: { node: '18.0.0' },
+                        writable: true,
+                        configurable: true,
+                        enumerable: true
+                      });
+                    }
+                    
+                    return wrapper;
+                  } catch (e) {
+                    return val;
+                  }
+                }
+
+                var currentProcess = ensureVersions(window.process);
+
+                function setupProcess(obj) {
+                  if (!obj) return;
+                  try {
+                    Object.defineProperty(obj, 'process', {
+                      get: function() {
+                        return currentProcess;
+                      },
+                      set: function(val) {
+                        currentProcess = ensureVersions(val);
+                      },
+                      configurable: true,
+                      enumerable: true
+                    });
+                  } catch (e) {
+                    try {
+                      obj.process = currentProcess;
+                    } catch (err) {}
+                  }
+                }
+
+                setupProcess(window);
+                if (typeof globalThis !== 'undefined') setupProcess(globalThis);
+                if (typeof self !== 'undefined') setupProcess(self);
+
+                try {
+                  var origDefineProperty = Object.defineProperty;
+                  Object.defineProperty = function(obj, prop, desc) {
+                    if ((obj === window || (typeof globalThis !== 'undefined' && obj === globalThis) || (typeof self !== 'undefined' && obj === self)) && prop === 'process' && desc) {
+                      if ('value' in desc) {
+                        desc.value = ensureVersions(desc.value);
+                      } else if ('get' in desc) {
+                        var origGet = desc.get;
+                        desc.get = function() {
+                          return ensureVersions(origGet.call(this));
+                        };
+                      }
+                    }
+                    return origDefineProperty.call(Object, obj, prop, desc);
+                  };
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         {canLoadMeticulous ? (
           <script
             data-recording-token={meticulousToken}
@@ -90,7 +197,7 @@ export default function RootLayout({
         ) : null}
       </head>
       <body
-        className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} ${plusJakartaSans.className} bg-background text-foreground antialiased`}
       >
         <ClerkProvider
           signInUrl="/login"

@@ -1,17 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta-sans",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -60,7 +66,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#000000",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -71,7 +77,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-black text-white antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} font-sans bg-background text-foreground antialiased`}
       >
         <div className="min-h-screen flex flex-col">
           <div className="flex-1">{children}</div>

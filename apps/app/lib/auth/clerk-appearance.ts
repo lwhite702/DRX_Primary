@@ -1,6 +1,6 @@
 export const drxClerkAuthAppearance = {
   variables: {
-    colorPrimary: "#BFFF00",
+    colorPrimary: "#ccff00",
     colorText: "#FFFFFF",
     colorTextSecondary: "#A1A1AA",
     colorBackground: "transparent",
@@ -38,7 +38,7 @@ export const drxClerkAuthAppearance = {
       "bg-red-500/10 border border-red-500/20 text-red-100 rounded-md px-3 py-2",
     alertText: "text-[10px] font-mono leading-relaxed",
     formButtonPrimary:
-      "bg-primary text-black hover:bg-primary/90 h-11 rounded-md font-bold tracking-wide uppercase transition-all shadow-[0_0_20px_rgba(191,255,0,0.1)] hover:shadow-[0_0_30px_rgba(191,255,0,0.2)] disabled:opacity-60",
+      "bg-primary text-black hover:bg-primary/90 h-11 rounded-md font-bold tracking-wide uppercase transition-all shadow-[0_0_20px_rgba(204,255,0,0.1)] hover:shadow-[0_0_30px_rgba(204,255,0,0.2)] disabled:opacity-60",
     socialButtonsBlockButton:
       "bg-white/5 border border-white/10 text-white hover:bg-white/10 h-10 rounded-md transition-colors",
     socialButtonsBlockButtonText:

@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-space-grotesk), "Space Grotesk", sans-serif;
-  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-sans: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+  --font-body: var(--font-inter), "Inter", sans-serif;
 
-  --color-background: #000000;
-  --color-foreground: #ffffff;
-  --color-obsidian: #000000;
+  --color-background: #0a0a0a;
+  --color-foreground: #f5f5f5;
+  --color-obsidian: #0a0a0a;
   --color-surface: #0c0c0c;
   --color-surface-elevated: #141414;
 
@@ -14,12 +15,12 @@
   --color-neon-lime: #ccff00;
   --color-support: #10b981;
 
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #a1a1a1;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #9ca3af;
   --color-text-muted: #7a7a7a;
 
-  --color-border: rgba(255, 255, 255, 0.14);
-  --color-input: rgba(255, 255, 255, 0.14);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-input: rgba(255, 255, 255, 0.1);
   --color-ring: #ccff00;
 }
 
@@ -30,7 +31,7 @@
 
   html,
   body {
-    @apply bg-background text-foreground overflow-x-hidden antialiased;
+    @apply bg-background text-foreground overflow-x-hidden antialiased font-body;
   }
 
   h1,
