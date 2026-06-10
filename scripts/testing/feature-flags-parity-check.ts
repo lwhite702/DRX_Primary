@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { FLAG_DEFAULTS, FLAG_MANIFEST } from "../../apps/app/lib/posthog/flags-manifest";
+import { LEGACY_FEATURE_FLAG_MAP } from "../../apps/app/lib/posthog/legacy-feature-flags-map";
 
 type RegistryFlag = {
   id: string;
@@ -13,18 +15,8 @@ type Registry = {
   flags: RegistryFlag[];
 };
 
-type SqlSeedFlag = {
-  id: string;
-  description: string;
-  is_global_enabled: boolean;
-};
-
 const root = process.cwd();
 const registryPath = path.join(root, "scripts/testing/feature-flags.registry.json");
-const migrationPath = path.join(
-  root,
-  "apps/app/supabase/migrations/20251227000001_feature_flags.sql",
-);
 const featuresClientPath = path.join(
   root,
   "apps/app/app/(app)/admin/features/_components/FeaturesClient.tsx",
@@ -44,47 +36,31 @@ function loadRegistry(): Registry {
   return parsed;
 }
 
-function parseSqlSeeds(sql: string): SqlSeedFlag[] {
-  const start = sql.indexOf("INSERT INTO feature_flags");
-  if (start < 0) return [];
-
-  const fragment = sql.slice(start, start + 2500);
-  const rows = [...fragment.matchAll(/\('([^']+)'\s*,\s*'([^']+)'\s*,\s*(TRUE|FALSE)\)/g)];
-
-  return rows.map((m) => ({
-    id: m[1],
-    description: m[2],
-    is_global_enabled: m[3] === "TRUE",
-  }));
-}
-
 function main() {
   const registry = loadRegistry();
+  const registryIds = new Set(registry.flags.map((flag) => flag.id));
+  const manifestKeys = new Set(FLAG_MANIFEST.map((flag) => flag.key));
 
-  if (!fs.existsSync(migrationPath)) fail("Missing feature flag migration");
-  const sql = fs.readFileSync(migrationPath, "utf8");
-  const sqlSeeds = parseSqlSeeds(sql);
+  for (const flag of registry.flags) {
+    const mappedKey =
+      LEGACY_FEATURE_FLAG_MAP[flag.id as keyof typeof LEGACY_FEATURE_FLAG_MAP];
 
-  if (sqlSeeds.length === 0) fail("No feature_flags seed rows found in migration");
-
-  const byRegistry = new Map(registry.flags.map((f) => [f.id, f]));
-  const bySql = new Map(sqlSeeds.map((f) => [f.id, f]));
-
-  for (const id of byRegistry.keys()) {
-    if (!bySql.has(id)) fail(`Registry flag missing from SQL seed: ${id}`);
-  }
-
-  for (const id of bySql.keys()) {
-    if (!byRegistry.has(id)) fail(`SQL seed flag missing from registry: ${id}`);
-  }
-
-  for (const [id, reg] of byRegistry) {
-    const sqlFlag = bySql.get(id)!;
-    if (reg.description !== sqlFlag.description) {
-      fail(`Description mismatch for '${id}'`);
+    if (!mappedKey) {
+      fail(`Registry flag '${flag.id}' is missing a PostHog legacy mapping`);
     }
-    if (reg.defaultGlobalEnabled !== sqlFlag.is_global_enabled) {
-      fail(`defaultGlobalEnabled mismatch for '${id}'`);
+
+    if (!manifestKeys.has(mappedKey)) {
+      fail(`Mapped PostHog flag '${mappedKey}' for registry flag '${flag.id}' is missing`);
+    }
+
+    if (FLAG_DEFAULTS[mappedKey] !== flag.defaultGlobalEnabled) {
+      fail(`defaultGlobalEnabled mismatch for registry flag '${flag.id}'`);
+    }
+  }
+
+  for (const legacyId of Object.keys(LEGACY_FEATURE_FLAG_MAP)) {
+    if (!registryIds.has(legacyId)) {
+      fail(`Legacy feature flag map contains unregistered flag '${legacyId}'`);
     }
   }
 
@@ -95,7 +71,7 @@ function main() {
   }
 
   console.log(
-    `Feature flags parity check passed (${registry.version}) with ${registry.flags.length} flags.`,
+    `Feature flags parity check passed (${registry.version}) with ${registry.flags.length} legacy mappings.`,
   );
 }
 
