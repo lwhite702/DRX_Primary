@@ -27,6 +27,13 @@ function fail(message: string): never {
   process.exit(1);
 }
 
+/**
+ * Load and validate the canonical feature-flag registry from disk.
+ *
+ * Exits the process with an error if the registry file is missing or contains no flags.
+ *
+ * @returns The parsed `Registry` object.
+ */
 function loadRegistry(): Registry {
   if (!fs.existsSync(registryPath)) fail("Missing canonical registry file");
   const parsed = JSON.parse(fs.readFileSync(registryPath, "utf8")) as Registry;
@@ -36,6 +43,18 @@ function loadRegistry(): Registry {
   return parsed;
 }
 
+/**
+ * Validates parity between the canonical feature-flag registry and PostHog legacy mappings and manifest.
+ *
+ * Performs these checks:
+ * - Each registry flag has a legacy PostHog mapping.
+ * - The mapped PostHog key exists in the feature-flag manifest.
+ * - The registry `defaultGlobalEnabled` matches the manifest's default for the mapped key.
+ * - Every key in the legacy mapping is present in the canonical registry.
+ * - The admin FeaturesClient surface file exists and references the `feature_flags` table.
+ *
+ * On any failed check the process is terminated via `fail(...)`; on success a summary is logged.
+ */
 function main() {
   const registry = loadRegistry();
   const registryIds = new Set(registry.flags.map((flag) => flag.id));
