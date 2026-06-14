@@ -8,7 +8,7 @@ import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.DRX_PRIVACY_CLEANUP_SECRET;
   if (!secret) {
-    return true;
+    return false;
   }
 
   const headerSecret = request.headers.get("x-cron-secret");
