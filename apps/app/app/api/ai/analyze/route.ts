@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { db } from "@/lib/db";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 
@@ -9,6 +9,16 @@ const AnalyzePayloadSchema = z.object({
   analysis_type: z.string().optional(),
   inventory_id: z.string().optional(),
 });
+
+type InventoryAnalysisRow = {
+  id: string;
+  sku: string;
+  productName: string;
+  quantityOnHand: number;
+  reorderLevel: number;
+  unitCost: unknown;
+  sellingPrice: unknown;
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,43 +33,32 @@ export async function POST(request: NextRequest) {
     }
     const { business_id, analysis_type = "all", inventory_id } = parsed.data;
 
-    const supabase = getSupabaseClient();
-    if (!supabase) {
-      return errorResponse("INTERNAL_ERROR", "Supabase client not available", 500);
-    }
-
-    // Get inventory items
-    let query = supabase
-      .from("inventory")
-      .select(
-        "id, sku, product_name, quantity_on_hand, reorder_level, unit_cost, selling_price"
-      )
-      .eq("business_id", business_id);
-
-    if (inventory_id) {
-      query = query.eq("id", inventory_id);
-    }
-
-    const { data: inventoryItems, error: inventoryError } = await query;
-
-    if (inventoryError || !inventoryItems) {
-      return errorResponse(
-        "INTERNAL_ERROR",
-        `Failed to fetch inventory: ${inventoryError?.message}`,
-        500,
-      );
-    }
+    const inventoryItems = await db.inventory.findMany({
+      where: {
+        businessId: business_id,
+        ...(inventory_id ? { id: inventory_id } : {}),
+      },
+      select: {
+        id: true,
+        sku: true,
+        productName: true,
+        quantityOnHand: true,
+        reorderLevel: true,
+        unitCost: true,
+        sellingPrice: true,
+      },
+    }) as InventoryAnalysisRow[];
 
     const requests: ProductAnalysisRequest[] = inventoryItems.map(
-      (item: any) => ({
+      (item) => ({
         businessId: business_id,
         inventoryId: item.id,
-        productName: item.product_name,
+        productName: item.productName,
         sku: item.sku,
-        cost: Number(item.unit_cost || 0),
-        currentPrice: Number(item.selling_price || 0),
-        currentStock: item.quantity_on_hand,
-        reorderLevel: item.reorder_level,
+        cost: Number(item.unitCost || 0),
+        currentPrice: Number(item.sellingPrice || 0),
+        currentStock: item.quantityOnHand,
+        reorderLevel: item.reorderLevel,
         marginRequirement: 0.3,
         supplierLeadTimeDays: 7,
       })

@@ -1,70 +1,30 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useBusiness } from "@/lib/hooks/use-business";
-import {
-  isFeatureEnabled,
-  getFeatureFlag,
-  onFeatureFlags,
-  reloadFeatureFlags,
-} from "@wrelik/analytics/client";
+import { useFlag, useFlagValue } from "@/lib/flags/client";
 
 /**
- * Feature flag hook using PostHog via @wrelik/analytics
- * 
+ * Provides a feature-flag hook backed by the internal OpenFeature-compatible flag boundary.
+ *
  * Flag naming convention:
- * - release.{domain}.{feature} - Feature rollout control
- * - beta.{domain}.{feature} - Beta user access gating
- * - exp.{domain}.{feature} - A/B testing experiments
- * - ops.{domain}.{feature} - Kill switches, maintenance mode
- * - ui.{domain}.{feature} - UI variant control
+ * - feat_<module>_<capability> - Feature rollout control
+ * - beta_<surface>_<cohort> - Beta user access gating
+ * - exp_<domain>_<hypothesis> - A/B testing experiments
+ * - ops_<route>_kill_switch - Kill switches, maintenance mode
+ * - test_<surface>_<purpose> - Test-only gates
+ *
+ * @param featureKey - The feature flag key (use the project's naming convention above)
+ * @returns The feature flag state, typically an object containing the flag's enabled value and a loading indicator
  */
 export function useFeatureFlag(featureKey: string) {
-  const { business } = useBusiness();
-  const [isEnabled, setIsEnabled] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
-
-  const checkFeature = useCallback(() => {
-    // Check PostHog feature flag
-    const enabled = isFeatureEnabled(featureKey, false);
-    setIsEnabled(enabled);
-    setLoading(false);
-  }, [featureKey]);
-
-  useEffect(() => {
-    // Initial check
-    checkFeature();
-
-    // Subscribe to feature flag changes
-    onFeatureFlags(() => {
-      checkFeature();
-    });
-
-    // Reload flags when business context changes
-    if (business?.id) {
-      reloadFeatureFlags();
-    }
-  }, [business?.id, featureKey, checkFeature]);
-
-  return { isEnabled, loading };
+  return useFlag(featureKey, false);
 }
 
 /**
- * Get feature flag value (for multivariate flags)
+ * Retrieves the current value and loading state for a multivariate feature flag.
+ *
+ * @param featureKey - The feature flag key to read.
+ * @returns The flag's evaluated `value` (`string`, `boolean`, or `undefined`) and a `loading` boolean indicating whether the value is still being resolved.
  */
 export function useFeatureFlagValue(featureKey: string) {
-  const [value, setValue] = useState<string | boolean | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const flagValue = getFeatureFlag(featureKey);
-    setValue(flagValue);
-    setLoading(false);
-
-    onFeatureFlags(() => {
-      setValue(getFeatureFlag(featureKey));
-    });
-  }, [featureKey]);
-
-  return { value, loading };
+  return useFlagValue(featureKey);
 }
