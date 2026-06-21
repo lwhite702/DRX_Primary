@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-06-21
+
+### Fixed
+
+- **Testing**: Fixed Vitest alias resolution for monorepo root execution by introducing `vitest.workspace.ts`.
+
 ## [0.5.5] - 2026-05-31
 
 ### Added
