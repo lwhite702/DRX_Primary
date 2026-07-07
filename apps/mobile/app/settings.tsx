@@ -63,7 +63,7 @@ export default function Settings() {
               <Ionicons name="person" size={24} color={COLORS.textMuted} />
               <View style={styles.rowContent}>
                 <Text style={styles.label}>Email</Text>
-                <Text style={styles.value}>{user?.email || 'N/A'}</Text>
+                <Text style={styles.value}>{user?.primaryEmailAddress?.emailAddress || 'N/A'}</Text>
               </View>
             </View>
             <View style={[styles.row, { borderTopWidth: 1, borderTopColor: COLORS.borderLight }]}>
