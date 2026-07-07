@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(request.url);
-    const limit = Number(url.searchParams.get("limit")) || 50;
-    const offset = Number(url.searchParams.get("offset")) || 0;
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 100);
+    const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10), 0);
 
     const sales = await db.sales.findMany({
       where: {
