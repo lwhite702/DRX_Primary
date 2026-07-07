@@ -37,9 +37,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { inventoryId, measuredWeightGrams } = body;
 
-    if (!inventoryId || measuredWeightGrams === undefined) {
+    const parsedWeight = Number(measuredWeightGrams);
+    if (!inventoryId || measuredWeightGrams === undefined || isNaN(parsedWeight) || parsedWeight < 0) {
       return NextResponse.json(
-        { error: "inventoryId and measuredWeightGrams are required" },
+        { error: "inventoryId and a valid non-negative measuredWeightGrams are required" },
         { status: 400 }
       );
     }
