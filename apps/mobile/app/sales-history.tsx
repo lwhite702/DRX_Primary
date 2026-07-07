@@ -52,7 +52,7 @@ export default function SalesHistory() {
       <View style={styles.saleHeader}>
         <View style={styles.saleIdContainer}>
           <Ionicons name="receipt" size={16} color={COLORS.accent} />
-          <Text style={styles.saleId}>#{item.id.slice(0, 8)}</Text>
+          <Text style={styles.saleId}>#{item.id?.slice(0, 8) || ""}</Text>
         </View>
         <View style={[
           styles.statusBadge, 
