@@ -60,6 +60,6 @@ function assertRootInstallCommand() {
 assertNodeVersion();
 assertRootInstallCommand();
 run("node", ["scripts/release/normalize-next-env.mjs"]);
-run("pnpm", ["install", "--frozen-lockfile"]);
-run("pnpm", ["version:check"]);
+run("corepack", ["pnpm", "install", "--frozen-lockfile"]);
+run("corepack", ["pnpm", "version:check"]);
 console.log("[preflight] release baseline checks passed");

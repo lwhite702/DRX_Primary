@@ -208,7 +208,7 @@ export default function Credits() {
             <Text style={styles.avatarText}>{avatarInitial}</Text>
           </View>
           <View style={styles.customerInfo}>
-            <Text style={styles.customerName}>{customerName}</Text>
+            <Text style={styles.customerName} numberOfLines={1} ellipsizeMode="tail">{customerName}</Text>
             <Text style={styles.creditLimit}>
               Limit: {formatCurrency(item.credit_limit)}
             </Text>

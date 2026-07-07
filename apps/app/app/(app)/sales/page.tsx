@@ -38,6 +38,7 @@ import { CartTotals } from "./_components/CartTotals";
 import { PaymentSection } from "./_components/PaymentSection";
 import { AdminActions } from "./_components/AdminActions";
 import { drxCopy } from "@/lib/copy/drx";
+import { Tour } from "@/components/ui/tour";
 
 export default function SalesPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -245,25 +246,29 @@ export default function SalesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
         {/* Left Column: Inventory & AI */}
         <div className="lg:col-span-8 space-y-6">
-          <ProductSearch
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            inventory={inventory}
-            onAddToCart={addToCart}
-            onWeightEntry={(item) => {
-              setSelectedProductForWeight(item);
-              setShowWeightEntry(true);
-            }}
-          />
+          <div id="tour-pos-search">
+            <ProductSearch
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              inventory={inventory}
+              onAddToCart={addToCart}
+              onWeightEntry={(item) => {
+                setSelectedProductForWeight(item);
+                setShowWeightEntry(true);
+              }}
+            />
+          </div>
 
-          <AIPricingWidget
-            recommendations={aiRecommendations}
-            onApply={handleApplyAIPricingWrapper}
-          />
+          <div id="tour-pos-ai">
+            <AIPricingWidget
+              recommendations={aiRecommendations}
+              onApply={handleApplyAIPricingWrapper}
+            />
+          </div>
         </div>
 
         {/* Right Column: Cart */}
-        <div className="lg:col-span-4 space-y-4">
+        <div id="tour-pos-cart" className="lg:col-span-4 space-y-4">
           <div className="luminosity-card rounded-xl bg-card border-border h-full flex flex-col shadow-2xl shadow-black/50">
             <div className="p-4 border-b border-white/10 bg-white/5">
               <div className="flex items-center gap-2 text-accent">
@@ -425,6 +430,28 @@ export default function SalesPage() {
           await handleCheckoutWrapper();
           setReviewModalOpen(false);
         }}
+      />
+
+      <Tour
+        tourId="pos_v1"
+        onComplete={() => {}}
+        steps={[
+          {
+            targetId: "tour-pos-search",
+            title: "Find your product.",
+            description: "Search by name or scan a barcode. Tap to add it to the cart.",
+          },
+          {
+            targetId: "tour-pos-ai",
+            title: "AI pricing suggestions.",
+            description: "DRX can suggest price moves based on margin and movement. Apply or skip — your call.",
+          },
+          {
+            targetId: "tour-pos-cart",
+            title: "The cart.",
+            description: "Items stack here. Adjust quantity, override a price if you have permission, then hit checkout.",
+          },
+        ]}
       />
     </div>
   );

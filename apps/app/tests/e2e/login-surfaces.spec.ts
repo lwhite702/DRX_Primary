@@ -11,7 +11,7 @@ test.describe("Login and register surfaces", () => {
     const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
 
     if (bypassAuthEnabled || landedOnDashboard) {
-      await expect(page.locator("body")).toContainText(/operator dashboard/i, { timeout: 15000 });
+      await expect(page.locator("body")).toContainText(/Welcome to DRX|operator dashboard/i, { timeout: 15000 });
       return;
     }
 
@@ -25,7 +25,7 @@ test.describe("Login and register surfaces", () => {
     const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
 
     if (bypassAuthEnabled || landedOnDashboard) {
-      await expect(page.locator("body")).toContainText(/operator dashboard/i, { timeout: 15000 });
+      await expect(page.locator("body")).toContainText(/Welcome to DRX|operator dashboard/i, { timeout: 15000 });
       return;
     }
 

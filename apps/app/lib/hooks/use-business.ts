@@ -18,9 +18,7 @@ export function useBusiness() {
   const [loading, setLoading] = useState(true);
 
   const fetchBusinessProfile = useCallback(async () => {
-    if (!activeOrg && !authBypassEnabled) {
-      setBusiness(null);
-      setLoading(false);
+    if (!isUserLoaded && !authBypassEnabled) {
       return;
     }
 
@@ -33,14 +31,14 @@ export function useBusiness() {
     } finally {
       setLoading(false);
     }
-  }, [activeOrg, authBypassEnabled]);
+  }, [authBypassEnabled, isUserLoaded]);
 
   useEffect(() => {
-    if (isOrgLoaded || authBypassEnabled) {
+    if ((isUserLoaded && isOrgLoaded) || authBypassEnabled) {
       setLoading(true);
       fetchBusinessProfile();
     }
-  }, [fetchBusinessProfile, isOrgLoaded, authBypassEnabled]);
+  }, [fetchBusinessProfile, isOrgLoaded, isUserLoaded, authBypassEnabled]);
 
   // Sync available businesses from Clerk memberships
   const availableBusinesses =

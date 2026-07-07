@@ -82,7 +82,7 @@ export function SearchView() {
           </div>
         </div>
 
-        {/* Filter Pills */}
+        {/* Filter Chips */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {filters.map((filter) => (
             <button
