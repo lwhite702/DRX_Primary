@@ -15,7 +15,7 @@
   "dependencies": {
     "posthog-js": "^1.310.1",
     "posthog-node": "^3.6.3",
-    "posthog-react-native": "^2.10.1",
+    "posthog-react-native": "^4.54.0",
     "@wrelik/errors": "workspace:*"
   },
   "devDependencies": {

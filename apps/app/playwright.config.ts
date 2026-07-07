@@ -47,8 +47,8 @@ export default defineConfig({
   ],
   webServer: {
     command: useWebpackDevServer
-      ? `pnpm exec next dev --webpack --port ${appPort}`
-      : `pnpm exec next dev --port ${appPort}`,
+      ? `corepack pnpm exec next dev --webpack --port ${appPort}`
+      : `corepack pnpm exec next dev --port ${appPort}`,
     url: appBaseUrl,
     // Avoid silently targeting an unrelated local app on the same port.
     // Reuse only when explicitly requested.

@@ -5,16 +5,19 @@ import { useFeatureFlag, useFeatureFlagValue } from "@/lib/hooks/use-feature-fla
 // Capture the onFeatureFlags callback so tests can trigger it manually
 let onFeatureFlagsCallback: (() => void) | null = null;
 
-const mockIsFeatureEnabled = vi.fn(() => false);
-const mockGetFeatureFlag = vi.fn(() => undefined as string | boolean | undefined);
+const mockIsFeatureEnabled = vi.fn((_key?: string, _defaultValue?: boolean) => false);
+const mockGetFeatureFlag = vi.fn(
+  (_key?: string) => undefined as string | boolean | undefined,
+);
 const mockOnFeatureFlags = vi.fn((cb: () => void) => {
   onFeatureFlagsCallback = cb;
 });
 const mockReloadFeatureFlags = vi.fn();
 
 vi.mock("@wrelik/analytics/client", () => ({
-  isFeatureEnabled: (...args: unknown[]) => mockIsFeatureEnabled(...args),
-  getFeatureFlag: (...args: unknown[]) => mockGetFeatureFlag(...args),
+  isFeatureEnabled: (key: string, defaultValue?: boolean) =>
+    mockIsFeatureEnabled(key, defaultValue),
+  getFeatureFlag: (key: string) => mockGetFeatureFlag(key),
   onFeatureFlags: (...args: unknown[]) => mockOnFeatureFlags(...(args as [() => void])),
   reloadFeatureFlags: () => mockReloadFeatureFlags(),
 }));

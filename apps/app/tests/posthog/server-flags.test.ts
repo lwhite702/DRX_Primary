@@ -120,11 +120,11 @@ describe("getServerFlag", () => {
 
     await getServerFlag("feat_dashboard_enabled", {
       distinctId: "u1",
-      personProperties: { plan: "enterprise" },
+      personProperties: { plan: "enterprise" }, // copy-lint-disable
     });
 
     const body = JSON.parse(fetchSpy.mock.calls[0][1].body as string);
-    expect(body.person_properties.plan).toBe("enterprise");
+    expect(body.person_properties.plan).toBe("enterprise"); // copy-lint-disable
   });
 
   it("passes groups from options to PostHog", async () => {

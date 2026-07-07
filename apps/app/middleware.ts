@@ -8,6 +8,13 @@ import {
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
+import {
+  hasCompletedOnboardingClaims,
+  hasOnboardingCompletionCookieFromHeader,
+  isOnboardingCompletionCookieValue,
+  ONBOARDING_COMPLETION_COOKIE,
+  type OnboardingClaims,
+} from "@/lib/auth/onboarding-completion";
 
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
@@ -43,6 +50,21 @@ function getAppOrigin(req: Request, preserveCurrentHost = false) {
 
 function redirectToApp(req: Request, pathname: string, preserveCurrentHost = false) {
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
+}
+
+function hasOnboardingCompletionCookie(
+  req: Request & {
+    cookies?: {
+      get(name: string): { value?: string } | string | undefined;
+    };
+  },
+) {
+  const cookie = req.cookies?.get(ONBOARDING_COMPLETION_COOKIE);
+  const cookieValue = typeof cookie === "string" ? cookie : cookie?.value;
+  return (
+    isOnboardingCompletionCookieValue(cookieValue) ||
+    hasOnboardingCompletionCookieFromHeader(req.headers.get("cookie"))
+  );
 }
 
 function middlewareWithoutClerk(
@@ -137,15 +159,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       const { userId, sessionClaims } = await auth();
-      const claims = sessionClaims as {
-        metadata?: { onboardingComplete?: boolean };
-        publicMetadata?: { onboardingComplete?: boolean };
-        public_metadata?: { onboardingComplete?: boolean };
-      };
+      const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
-        claims?.metadata?.onboardingComplete === true ||
-        claims?.publicMetadata?.onboardingComplete === true ||
-        claims?.public_metadata?.onboardingComplete === true;
+        hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
 
       if (pathname === "/") {
         if (!userId) {
