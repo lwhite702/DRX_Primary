@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { inventoryId, quantityGrams, shrinkageType = "personal_use", note } = body;
 
-    if (!inventoryId || !quantityGrams) {
+    const parsedQuantity = Number(quantityGrams);
+    if (!inventoryId || isNaN(parsedQuantity) || parsedQuantity <= 0) {
       return NextResponse.json(
-        { error: "inventoryId and quantityGrams are required" },
+        { error: "inventoryId and a positive quantityGrams are required" },
         { status: 400 }
       );
     }
