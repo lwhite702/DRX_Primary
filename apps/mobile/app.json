@@ -35,7 +35,7 @@
         "@sentry/react-native/expo",
         {
           "organization": "wrelik-0y",
-          "project": "deelrx-mobile"
+          "project": "deelrx"
         }
       ],
       [

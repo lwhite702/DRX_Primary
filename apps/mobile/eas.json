@@ -9,7 +9,8 @@
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
-        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app",
+        "SENTRY_ALLOW_FAILURE": "true"
       }
     },
     "development-simulator": {
@@ -21,7 +22,8 @@
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
-        "EXPO_PUBLIC_API_URL": "http://localhost:3000"
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000",
+        "SENTRY_ALLOW_FAILURE": "true"
       }
     },
     "preview": {
@@ -29,14 +31,16 @@
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
-        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app",
+        "SENTRY_ALLOW_FAILURE": "true"
       }
     },
     "production": {
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
-        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app",
+        "SENTRY_ALLOW_FAILURE": "true"
       }
     }
   },
