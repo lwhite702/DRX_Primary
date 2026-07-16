@@ -13,6 +13,10 @@ final class AppEnvironment {
     }
 
     static func live() -> AppEnvironment {
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            return preview()
+        }
+
         let baseURL = URL(string: "https://app.deelrx.com")!
         let tokenStore = KeychainTokenStore(service: "com.wrelik.drx")
         let apiClient = URLSessionAPIClient(baseURL: baseURL, tokenStore: tokenStore)
