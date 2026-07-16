@@ -1,0 +1,134 @@
+name: iOS CI
+
+on:
+  pull_request:
+    paths:
+      - "apps/ios/**"
+      - ".github/workflows/ios-ci.yml"
+  push:
+    branches:
+      - main
+      - "feat/native-ios-foundation"
+    paths:
+      - "apps/ios/**"
+      - ".github/workflows/ios-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test native iOS
+    runs-on: macos-15
+    timeout-minutes: 35
+
+    defaults:
+      run:
+        working-directory: apps/ios
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          set -euo pipefail
+          XCODE_PATH=$(find /Applications -maxdepth 1 -type d -name 'Xcode*.app' | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+          swift --version
+
+      - name: Install XcodeGen
+        run: |
+          set -euo pipefail
+          brew update
+          brew install xcodegen
+          xcodegen --version
+
+      - name: Generate Xcode project
+        run: |
+          set -euo pipefail
+          xcodegen generate --spec project.yml
+          test -d DRXApp.xcodeproj
+          xcodebuild -project DRXApp.xcodeproj -list
+
+      - name: Resolve simulator
+        id: simulator
+        run: |
+          set -euo pipefail
+          SIMULATOR_UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          preferred = []
+          fallback = []
+          for runtime, devices in data.get("devices", {}).items():
+              if "iOS" not in runtime:
+                  continue
+              for device in devices:
+                  if not device.get("isAvailable"):
+                      continue
+                  name = device.get("name", "")
+                  udid = device.get("udid")
+                  if not udid or "iPhone" not in name:
+                      continue
+                  fallback.append((runtime, name, udid))
+                  if "Pro" in name:
+                      preferred.append((runtime, name, udid))
+          candidates = preferred or fallback
+          if not candidates:
+              raise SystemExit("No available iPhone simulator found")
+          candidates.sort(reverse=True)
+          print(candidates[0][2])
+          ')
+          echo "udid=$SIMULATOR_UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$SIMULATOR_UDID" || true
+          open -a Simulator || true
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b
+
+      - name: Build app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project DRXApp.xcodeproj \
+            -scheme DRXApp \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Run unit and UI tests
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project DRXApp.xcodeproj \
+            -scheme DRXApp \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/DRXAppTests.xcresult" \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DRXApp-xcresult-${{ github.run_id }}
+          path: ${{ runner.temp }}/DRXAppTests.xcresult
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload derived logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DRXApp-build-logs-${{ github.run_id }}
+          path: ${{ runner.temp }}/DerivedData/Logs
+          if-no-files-found: ignore
+          retention-days: 7
