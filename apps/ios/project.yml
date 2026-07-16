@@ -6,7 +6,6 @@ options:
 settings:
   base:
     SWIFT_VERSION: 6.0
-    PRODUCT_NAME: DRX
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 0.1.0
 targets:
@@ -17,7 +16,9 @@ targets:
       - path: DRXApp
     settings:
       base:
+        PRODUCT_NAME: DRX
         PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx
+        GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: DRX
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
         INFOPLIST_KEY_UILaunchScreen_Generation: true
@@ -31,6 +32,10 @@ targets:
     platform: iOS
     sources:
       - path: DRXAppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx.tests
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: DRXApp
   DRXAppUITests:
@@ -38,5 +43,9 @@ targets:
     platform: iOS
     sources:
       - path: DRXAppUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx.uitests
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: DRXApp
