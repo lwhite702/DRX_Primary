@@ -39,18 +39,45 @@ private struct SignInView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Button("Continue to Sign In") {
+            Button {
                 Task { await environment.session.beginSignIn() }
+            } label: {
+                HStack(spacing: 10) {
+                    if environment.session.isSigningIn {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(environment.session.isSigningIn ? "Signing In…" : "Continue to Sign In")
+                }
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .disabled(environment.session.isSigningIn)
             .accessibilityIdentifier("signInButton")
+
+            if let errorMessage = environment.session.errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .accessibilityIdentifier("signInErrorMessage")
+            }
+
+            #if DEBUG
+            Text("Debug builds use a local demo session until production authentication is connected.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            #endif
         }
         .padding(32)
     }
 }
 
 private struct OperatorTabView: View {
+    @Environment(AppEnvironment.self) private var environment
+
     var body: some View {
         TabView {
             NavigationStack { PlaceholderView(title: "Dashboard", symbol: "gauge.with.dots.needle.67percent") }
@@ -65,8 +92,23 @@ private struct OperatorTabView: View {
             NavigationStack { PlaceholderView(title: "Customers", symbol: "person.2.fill") }
                 .tabItem { Label("Customers", systemImage: "person.2.fill") }
 
-            NavigationStack { PlaceholderView(title: "More", symbol: "ellipsis.circle.fill") }
-                .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
+            NavigationStack {
+                List {
+                    Section("Session") {
+                        if let session = environment.session.operatorSession {
+                            LabeledContent("Operator", value: session.displayName)
+                            LabeledContent("Business", value: session.businessName)
+                        }
+
+                        Button("Sign Out", role: .destructive) {
+                            Task { await environment.session.signOut() }
+                        }
+                        .accessibilityIdentifier("signOutButton")
+                    }
+                }
+                .navigationTitle("More")
+            }
+            .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
         }
     }
 }
