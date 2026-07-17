@@ -186,10 +186,12 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       if (!userId && !isPublicAppPath(pathname)) {
-        const loginUrl = new URL("/login", getAppOrigin(req, true));
-        if (!pathname.startsWith("/api")) {
-          loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
+        if (pathname.startsWith("/api")) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
+        const loginUrl = new URL("/login", getAppOrigin(req, true));
+        loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
         return NextResponse.redirect(loginUrl);
       }
 

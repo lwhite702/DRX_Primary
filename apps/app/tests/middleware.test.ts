@@ -123,10 +123,12 @@ describe("middleware auth and routing", () => {
     );
   });
 
-  it("does not include redirect_url for api routes", async () => {
+  it("returns JSON unauthorized for protected api routes", async () => {
     const req = makeRequest("/api/team", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.status).toBe(401);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    await expect(res.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
   it("passes through public auth-domain routes", async () => {

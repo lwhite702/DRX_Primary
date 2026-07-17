@@ -29,7 +29,8 @@ struct AppConfiguration: Sendable, Equatable {
         }
 
         guard let apiBaseURLValue = Self.value(for: "DRX_API_BASE_URL", in: info),
-              let apiBaseURL = URL(string: apiBaseURLValue),
+              let parsedAPIBaseURL = URL(string: apiBaseURLValue),
+              let apiBaseURL = Self.canonicalAPIBaseURL(parsedAPIBaseURL),
               apiBaseURL.scheme == "https",
               apiBaseURL.host != nil else {
             throw ConfigurationError.missingOrInvalid("DRX_API_BASE_URL")
@@ -54,6 +55,13 @@ struct AppConfiguration: Sendable, Equatable {
         guard let value = value(for: key, in: info) else { return nil }
         return URL(string: value)
     }
+
+    private static func canonicalAPIBaseURL(_ url: URL) -> URL? {
+        guard url.host == "deelrxcrm.app" else { return url }
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        components?.host = "www.deelrxcrm.app"
+        return components?.url
+    }
 }
 
 enum ConfigurationError: LocalizedError, Sendable, Equatable {
@@ -66,4 +74,3 @@ enum ConfigurationError: LocalizedError, Sendable, Equatable {
         }
     }
 }
-

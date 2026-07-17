@@ -42,4 +42,15 @@ struct AppConfigurationTests {
             ])
         }
     }
+
+    @Test
+    func canonicalizesTheProductionAPIHostWithoutAnAuthStrippingRedirect() throws {
+        let configuration = try AppConfiguration(info: [
+            "DRX_APP_ENVIRONMENT": "production",
+            "CLERK_PUBLISHABLE_KEY": "pk_live_example",
+            "DRX_API_BASE_URL": "https://deelrxcrm.app"
+        ])
+
+        #expect(configuration.apiBaseURL == URL(string: "https://www.deelrxcrm.app"))
+    }
 }

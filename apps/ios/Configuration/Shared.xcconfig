@@ -1,6 +1,8 @@
 // Shared, non-secret client configuration.
 // The $()/ segment prevents xcconfig from treating // as a comment.
-DRX_API_BASE_URL = https:/$()/deelrxcrm.app
+// Use the canonical host directly. A cross-host redirect strips the Clerk
+// Authorization header before the native session bootstrap reaches the API.
+DRX_API_BASE_URL = https:/$()/www.deelrxcrm.app
 POSTHOG_HOST = https:/$()/us.i.posthog.com
 POSTHOG_API_KEY =
 SENTRY_DSN =
