@@ -1,7 +1,10 @@
 import SwiftUI
+import ClerkKit
+import ClerkKitUI
 
 struct AppRootView: View {
     @State private var environment: AppEnvironment
+    @Environment(Clerk.self) private var clerk
 
     init(environment: AppEnvironment) {
         _environment = State(initialValue: environment)
@@ -9,67 +12,54 @@ struct AppRootView: View {
 
     var body: some View {
         Group {
-            if environment.session.isAuthenticated {
+            if clerk.user == nil {
+                AuthView(isDismissible: false)
+                    .accessibilityIdentifier("clerkAuthView")
+            } else if environment.session.isAuthenticated {
                 OperatorTabView()
             } else {
-                SignInView()
+                SessionBootstrapView()
             }
         }
         .environment(environment)
-        .task {
+        .task(id: clerk.user?.id) {
+            guard clerk.user != nil else {
+                environment.session.reset()
+                return
+            }
             await environment.session.restore()
         }
     }
 }
 
-private struct SignInView: View {
+private struct SessionBootstrapView: View {
     @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             Image(systemName: "shippingbox.fill")
-                .font(.system(size: 56))
+                .font(.system(size: 52))
                 .accessibilityHidden(true)
 
-            VStack(spacing: 8) {
-                Text("DRX")
-                    .font(.largeTitle.bold())
-                Text("Retail operations, without the desktop drag.")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            Text("Opening DRX")
+                .font(.title2.bold())
 
-            Button {
-                Task { await environment.session.beginSignIn() }
-            } label: {
-                HStack(spacing: 10) {
-                    if environment.session.isSigningIn {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text(environment.session.isSigningIn ? "Signing In…" : "Continue to Sign In")
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(environment.session.isSigningIn)
-            .accessibilityIdentifier("signInButton")
-
-            if let errorMessage = environment.session.errorMessage {
+            if environment.session.isRestoring {
+                ProgressView("Loading your operator access…")
+                    .accessibilityIdentifier("sessionLoadingIndicator")
+            } else if let errorMessage = environment.session.errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                     .font(.footnote)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
-                    .accessibilityIdentifier("signInErrorMessage")
-            }
+                    .accessibilityIdentifier("sessionErrorMessage")
 
-            #if DEBUG
-            Text("Debug builds use a local demo session until production authentication is connected.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            #endif
+                Button("Try Again") {
+                    Task { await environment.session.restore() }
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("retrySessionButton")
+            }
         }
         .padding(32)
     }
@@ -77,6 +67,7 @@ private struct SignInView: View {
 
 private struct OperatorTabView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
 
     var body: some View {
         TabView {
@@ -101,7 +92,10 @@ private struct OperatorTabView: View {
                         }
 
                         Button("Sign Out", role: .destructive) {
-                            Task { await environment.session.signOut() }
+                            Task {
+                                try? await clerk.auth.signOut()
+                                await environment.session.signOut()
+                            }
                         }
                         .accessibilityIdentifier("signOutButton")
                     }
@@ -125,4 +119,7 @@ private struct PlaceholderView: View {
 
 #Preview("Signed Out") {
     AppRootView(environment: .preview())
+        .environment(Clerk.preview { preview in
+            preview.isSignedIn = false
+        })
 }
