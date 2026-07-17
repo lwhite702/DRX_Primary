@@ -15,6 +15,7 @@ struct OperatorSession: Codable, Sendable, Equatable {
 final class SessionStore {
     private(set) var operatorSession: OperatorSession?
     private(set) var isRestoring = false
+    private(set) var isSigningIn = false
     private(set) var errorMessage: String?
 
     private let apiClient: APIClient
@@ -45,7 +46,29 @@ final class SessionStore {
     }
 
     func beginSignIn() async {
-        errorMessage = "Native token exchange is pending the mobile authentication contract."
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+        defer { isSigningIn = false }
+
+        #if DEBUG
+        do {
+            try await Task.sleep(for: .milliseconds(250))
+            let demoSession = OperatorSession(
+                operatorID: "demo-operator",
+                displayName: "Demo Operator",
+                businessID: "demo-business",
+                businessName: "DRX Demo",
+                roles: ["owner", "operator"],
+                permissions: ["pos:checkout", "inventory:read", "customers:read"]
+            )
+            try await completeSignIn(token: "drx-debug-session", session: demoSession)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        #else
+        errorMessage = "Native authentication is not connected yet. The mobile token exchange endpoint must be implemented before production sign-in can continue."
+        #endif
     }
 
     func completeSignIn(token: String, session: OperatorSession) async throws {
