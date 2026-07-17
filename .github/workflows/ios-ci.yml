@@ -23,12 +23,9 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Build, test, and publish native iOS
+    name: Build and test native iOS
     runs-on: macos-15
     timeout-minutes: 40
-    env:
-      APPETIZE_API_TOKEN: ${{ secrets.APPETIZE_API_TOKEN }}
-      APPETIZE_PUBLIC_KEY: ${{ secrets.APPETIZE_PUBLIC_KEY }}
 
     defaults:
       run:
@@ -133,9 +130,7 @@ jobs:
           PACKAGE_PATH="$RUNNER_TEMP/DRXApp-simulator-${GITHUB_SHA::7}.zip"
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$PACKAGE_PATH"
 
-          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
           echo "package_path=$PACKAGE_PATH" >> "$GITHUB_OUTPUT"
-          echo "package_name=$(basename "$PACKAGE_PATH")" >> "$GITHUB_OUTPUT"
           ls -lh "$PACKAGE_PATH"
 
       - name: Upload simulator build artifact
@@ -145,89 +140,6 @@ jobs:
           path: ${{ steps.package.outputs.package_path }}
           if-no-files-found: error
           retention-days: 14
-
-      - name: Upload simulator build to Appetize
-        id: appetize
-        if: >-
-          ${{
-            success() &&
-            env.APPETIZE_API_TOKEN != '' &&
-            (github.event_name != 'pull_request' ||
-             github.event.pull_request.head.repo.full_name == github.repository)
-          }}
-        env:
-          PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
-        run: |
-          set -euo pipefail
-
-          if [ -n "${APPETIZE_PUBLIC_KEY:-}" ]; then
-            ENDPOINT="https://api.appetize.io/v1/apps/${APPETIZE_PUBLIC_KEY}"
-            ACTION="updated"
-          else
-            ENDPOINT="https://api.appetize.io/v1/apps"
-            ACTION="created"
-          fi
-
-          RESPONSE_FILE="$RUNNER_TEMP/appetize-response.json"
-          HTTP_STATUS=$(curl --silent --show-error \
-            --output "$RESPONSE_FILE" \
-            --write-out '%{http_code}' \
-            --request POST "$ENDPOINT" \
-            --header "X-API-KEY: $APPETIZE_API_TOKEN" \
-            --form "file=@${PACKAGE_PATH}" \
-            --form "platform=ios" \
-            --form "note=DRX ${GITHUB_REF_NAME} ${GITHUB_SHA::7} run ${GITHUB_RUN_NUMBER}" \
-            --form "appPermissions.run=authenticated")
-
-          cat "$RESPONSE_FILE"
-          echo
-
-          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
-            echo "Appetize upload failed with HTTP $HTTP_STATUS" >&2
-            exit 1
-          fi
-
-          PUBLIC_KEY=$(python3 - "$RESPONSE_FILE" <<'PY'
-          import json, sys
-          with open(sys.argv[1], encoding="utf-8") as handle:
-              payload = json.load(handle)
-          print(payload.get("publicKey", ""))
-          PY
-          )
-
-          if [ -z "$PUBLIC_KEY" ]; then
-            echo "Appetize response did not include a publicKey" >&2
-            exit 1
-          fi
-
-          APP_URL="https://appetize.io/app/${PUBLIC_KEY}"
-          echo "public_key=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
-          echo "app_url=$APP_URL" >> "$GITHUB_OUTPUT"
-          echo "Appetize app $ACTION: $APP_URL"
-
-          {
-            echo "## Appetize Simulator Build"
-            echo
-            echo "- Status: $ACTION"
-            echo "- Commit: \`${GITHUB_SHA::7}\`"
-            echo "- Launch: $APP_URL"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Explain skipped Appetize upload
-        if: >-
-          ${{
-            success() &&
-            (env.APPETIZE_API_TOKEN == '' ||
-             (github.event_name == 'pull_request' &&
-              github.event.pull_request.head.repo.full_name != github.repository))
-          }}
-        run: |
-          {
-            echo "## Appetize Simulator Build"
-            echo
-            echo "Upload skipped. Configure the repository secret \`APPETIZE_API_TOKEN\`."
-            echo "Optionally configure \`APPETIZE_PUBLIC_KEY\` to update one stable Appetize app instead of creating a new app per upload."
-          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test results
         if: always()
