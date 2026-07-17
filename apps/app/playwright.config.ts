@@ -5,10 +5,21 @@ const appBaseUrl = `http://localhost:${appPort}`;
 const useWebpackDevServer = process.env.PW_NEXT_WEBPACK === "1";
 const skipGlobalSetup = process.env.PW_SKIP_GLOBAL_SETUP === "1";
 const reuseExistingServer = process.env.PW_REUSE_EXISTING_SERVER === "1";
+const betaE2EEnabled = ["1", "true", "yes"].includes(
+  String(process.env.BETA_E2E_ENABLED || "").toLowerCase(),
+);
+const betaE2ERequired = process.env.BETA_E2E_REQUIRED === "1";
+
+if (betaE2ERequired && !betaE2EEnabled) {
+  throw new Error(
+    "Real beta E2E was requested but is disabled. Set BETA_E2E_ENABLED=true and provide the documented Clerk, Supabase, and PII credentials.",
+  );
+}
 
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.spec.ts",
+  testIgnore: betaE2EEnabled ? [] : ["**/beta-real-workflow.spec.ts"],
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}",
   fullyParallel: true,
