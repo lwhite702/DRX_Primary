@@ -1,0 +1,668 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */; };
+		3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B795B70D7DE21081FD179D19 /* SessionStore.swift */; };
+		43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919880B91AF708A0700CAA02 /* AppRootView.swift */; };
+		51C6005114FAA81763D6F0F5 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */; };
+		630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */; };
+		7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73360F1798B2906E00047019 /* AppConfigurationTests.swift */; };
+		84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D387246879C07454D82086A /* ClerkKit */; };
+		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
+		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
+		CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */; };
+		E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0DF65613D95A790A5EFE0755 /* ClerkKitUI */; };
+		F3AEBF21C2E0C526E49BA385 /* DRXAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */; };
+		F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */; };
+		FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		65F53F33434B53E722016897 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4520B45F499DC25F383DD814 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5FC126EB9A548FFF4B531C0F;
+			remoteInfo = DRXApp;
+		};
+		F6678F18B319CCED9A922012 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4520B45F499DC25F383DD814 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5FC126EB9A548FFF4B531C0F;
+			remoteInfo = DRXApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		012054A89298CCFB49931B0E /* DRXApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DRXApp.entitlements; sourceTree = "<group>"; };
+		2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXAppUITests.swift; sourceTree = "<group>"; };
+		415F8ABF72B90D0E13B39A5F /* DRXApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DRXApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
+		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXClerkTheme.swift; sourceTree = "<group>"; };
+		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		73360F1798B2906E00047019 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
+		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		919880B91AF708A0700CAA02 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
+		B795B70D7DE21081FD179D19 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXApp.swift; sourceTree = "<group>"; };
+		E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		91EC3C38EC23479722000485 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */,
+				E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		063C77C3B0452792B45900D7 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				B795B70D7DE21081FD179D19 /* SessionStore.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		0857FE3BA948FD61CB0A7F76 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		1E09FEDA350F1082757A1882 = {
+			isa = PBXGroup;
+			children = (
+				6CA905DCC2DF5FC3507C55AA /* Configuration */,
+				716E47E8C63108F433929A80 /* DRXApp */,
+				3723D5134D0DC66A8ED0395D /* DRXAppTests */,
+				35AB48A3A73EF83116AFADFE /* DRXAppUITests */,
+				4887DBEFDB8A90284B1E8516 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2A89611843A477A9A09A0091 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				0857FE3BA948FD61CB0A7F76 /* API */,
+				063C77C3B0452792B45900D7 /* Auth */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		35AB48A3A73EF83116AFADFE /* DRXAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */,
+			);
+			path = DRXAppUITests;
+			sourceTree = "<group>";
+		};
+		3723D5134D0DC66A8ED0395D /* DRXAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				73360F1798B2906E00047019 /* AppConfigurationTests.swift */,
+				4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */,
+			);
+			path = DRXAppTests;
+			sourceTree = "<group>";
+		};
+		401751AF6890810A66AB6551 /* Tokens */ = {
+			isa = PBXGroup;
+			children = (
+				5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */,
+				A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */,
+			);
+			path = Tokens;
+			sourceTree = "<group>";
+		};
+		4887DBEFDB8A90284B1E8516 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				415F8ABF72B90D0E13B39A5F /* DRXApp.app */,
+				874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */,
+				63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5FE39C6DD701561FBF8AD202 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */,
+				BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */,
+				919880B91AF708A0700CAA02 /* AppRootView.swift */,
+				C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		6CA905DCC2DF5FC3507C55AA /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				9A457BCD7B55819E511BF905 /* Debug.xcconfig */,
+				4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+		716E47E8C63108F433929A80 /* DRXApp */ = {
+			isa = PBXGroup;
+			children = (
+				C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */,
+				012054A89298CCFB49931B0E /* DRXApp.entitlements */,
+				A6359117F941BC2135C420A7 /* Info.plist */,
+				5FE39C6DD701561FBF8AD202 /* App */,
+				2A89611843A477A9A09A0091 /* Core */,
+				93F22C73381EC1FEB39FDBFA /* DesignSystem */,
+			);
+			path = DRXApp;
+			sourceTree = "<group>";
+		};
+		93F22C73381EC1FEB39FDBFA /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				401751AF6890810A66AB6551 /* Tokens */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		005008D9108E0C10FDB31BC7 /* DRXAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6440A9A7A13FA8E0E78F492 /* Build configuration list for PBXNativeTarget "DRXAppTests" */;
+			buildPhases = (
+				EB5EA6E86E1D4F2CD67C4F4C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				04BD0FCA7BD149E1C73286DE /* PBXTargetDependency */,
+			);
+			name = DRXAppTests;
+			packageProductDependencies = (
+			);
+			productName = DRXAppTests;
+			productReference = 874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5FC126EB9A548FFF4B531C0F /* DRXApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D24654A6B88AB6EA62AE619 /* Build configuration list for PBXNativeTarget "DRXApp" */;
+			buildPhases = (
+				8D7CC5B50D4230BEF7BB4E71 /* Sources */,
+				F3EBB3AE961BCD4DABA2CBEB /* Resources */,
+				91EC3C38EC23479722000485 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DRXApp;
+			packageProductDependencies = (
+				4D387246879C07454D82086A /* ClerkKit */,
+				0DF65613D95A790A5EFE0755 /* ClerkKitUI */,
+			);
+			productName = DRXApp;
+			productReference = 415F8ABF72B90D0E13B39A5F /* DRXApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F719BA7B6F64935FE564D7B5 /* DRXAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C82E294EE062D1A1E9E2470 /* Build configuration list for PBXNativeTarget "DRXAppUITests" */;
+			buildPhases = (
+				4BCC59327E9F05F7A3906DAC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				53CFE3A07F21EB57F6AC4157 /* PBXTargetDependency */,
+			);
+			name = DRXAppUITests;
+			packageProductDependencies = (
+			);
+			productName = DRXAppUITests;
+			productReference = 63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4520B45F499DC25F383DD814 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					005008D9108E0C10FDB31BC7 = {
+						DevelopmentTeam = L8R42BJ54K;
+						ProvisioningStyle = Automatic;
+					};
+					5FC126EB9A548FFF4B531C0F = {
+						DevelopmentTeam = L8R42BJ54K;
+						ProvisioningStyle = Automatic;
+					};
+					F719BA7B6F64935FE564D7B5 = {
+						DevelopmentTeam = L8R42BJ54K;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 5FC126EB9A548FFF4B531C0F;
+					};
+				};
+			};
+			buildConfigurationList = B987F8CBA3A921720D07A428 /* Build configuration list for PBXProject "DRXApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1E09FEDA350F1082757A1882;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4887DBEFDB8A90284B1E8516 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5FC126EB9A548FFF4B531C0F /* DRXApp */,
+				005008D9108E0C10FDB31BC7 /* DRXAppTests */,
+				F719BA7B6F64935FE564D7B5 /* DRXAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F3EBB3AE961BCD4DABA2CBEB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4BCC59327E9F05F7A3906DAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3AEBF21C2E0C526E49BA385 /* DRXAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D7CC5B50D4230BEF7BB4E71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */,
+				FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */,
+				9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */,
+				43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */,
+				331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */,
+				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
+				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
+				3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB5EA6E86E1D4F2CD67C4F4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */,
+				51C6005114FAA81763D6F0F5 /* SessionStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		04BD0FCA7BD149E1C73286DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5FC126EB9A548FFF4B531C0F /* DRXApp */;
+			targetProxy = F6678F18B319CCED9A922012 /* PBXContainerItemProxy */;
+		};
+		53CFE3A07F21EB57F6AC4157 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5FC126EB9A548FFF4B531C0F /* DRXApp */;
+			targetProxy = 65F53F33434B53E722016897 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5D22643E774C0B0C43F8F869 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A457BCD7B55819E511BF905 /* Debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DRXApp;
+			};
+			name = Debug;
+		};
+		5F3209F6D7B033436173F7A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A457BCD7B55819E511BF905 /* Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DRXApp/DRXApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DRXApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx;
+				PRODUCT_MODULE_NAME = DRXApp;
+				PRODUCT_NAME = "Deelrx CRM";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		7B74AD17A1E0C09D607F8723 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DRXApp;
+			};
+			name = Release;
+		};
+		BB0A7A4D8F68106A3C745B2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = L8R42BJ54K;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		BCF14574A1BAD07BBD053C9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deelrx CRM.app/Deelrx CRM";
+			};
+			name = Release;
+		};
+		F026C38202D55DF618FFDF2F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DRXApp/DRXApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DRXApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx;
+				PRODUCT_MODULE_NAME = DRXApp;
+				PRODUCT_NAME = "Deelrx CRM";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		F570190562C4E2697231812E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A457BCD7B55819E511BF905 /* Debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deelrx CRM.app/Deelrx CRM";
+			};
+			name = Debug;
+		};
+		FAE1B569A71E110562569D21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = L8R42BJ54K;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3D24654A6B88AB6EA62AE619 /* Build configuration list for PBXNativeTarget "DRXApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F3209F6D7B033436173F7A1 /* Debug */,
+				F026C38202D55DF618FFDF2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6C82E294EE062D1A1E9E2470 /* Build configuration list for PBXNativeTarget "DRXAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D22643E774C0B0C43F8F869 /* Debug */,
+				7B74AD17A1E0C09D607F8723 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B987F8CBA3A921720D07A428 /* Build configuration list for PBXProject "DRXApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB0A7A4D8F68106A3C745B2C /* Debug */,
+				FAE1B569A71E110562569D21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D6440A9A7A13FA8E0E78F492 /* Build configuration list for PBXNativeTarget "DRXAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F570190562C4E2697231812E /* Debug */,
+				BCF14574A1BAD07BBD053C9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/clerk/clerk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0DF65613D95A790A5EFE0755 /* ClerkKitUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKitUI;
+		};
+		4D387246879C07454D82086A /* ClerkKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 4520B45F499DC25F383DD814 /* Project object */;
+}

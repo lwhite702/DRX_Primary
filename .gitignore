@@ -27,8 +27,9 @@ testsprite_tests/
 *.vercel
 android/
 /ios/
-apps/ios/*.xcodeproj/
 apps/ios/DerivedData/
+apps/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+apps/ios/*.xcodeproj/xcuserdata/
 android_backup/
 
 # Misc
