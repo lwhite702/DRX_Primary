@@ -41,8 +41,7 @@ function assertRootInstallCommand() {
 
   const expectedRoot =
     "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile";
-  const expectedApp =
-    "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm --dir ../.. install --frozen-lockfile";
+  const expectedApp = expectedRoot;
 
   if (rootVercel.installCommand !== expectedRoot) {
     console.error("[preflight] Root vercel installCommand is not release-safe.");
