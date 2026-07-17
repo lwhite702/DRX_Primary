@@ -6,7 +6,7 @@
     "node": "20.x"
   },
   "scripts": {
-    "build": "next build --webpack",
+    "build": "prisma generate && next build --webpack",
     "dev": "doppler run -- next dev",
     "dev:bypass": "BYPASS_AUTH_FOR_TESTING=true next dev --turbopack",
     "dev:bypass:webpack": "BYPASS_AUTH_FOR_TESTING=true next dev --webpack",
