@@ -16,19 +16,19 @@ targets:
   DRXApp:
     type: application
     platform: iOS
+    configFiles:
+      Debug: Configuration/Debug.xcconfig
+      Release: Configuration/Release.xcconfig
     sources:
       - path: DRXApp
     settings:
       base:
-        PRODUCT_NAME: DRX
+        PRODUCT_NAME: Deelrx CRM
+        PRODUCT_MODULE_NAME: DRXApp
         PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx
         CODE_SIGN_ENTITLEMENTS: DRXApp/DRXApp.entitlements
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: DRX
-        INFOPLIST_KEY_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
-        INFOPLIST_KEY_UILaunchScreen_Generation: true
-        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleDefault
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: DRXApp/Info.plist
     dependencies:
       - package: Clerk
         product: ClerkKit
@@ -41,17 +41,25 @@ targets:
   DRXAppTests:
     type: bundle.unit-test
     platform: iOS
+    configFiles:
+      Debug: Configuration/Debug.xcconfig
+      Release: Configuration/Release.xcconfig
     sources:
       - path: DRXAppTests
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx.tests
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Deelrx CRM.app/Deelrx CRM
+        BUNDLE_LOADER: $(TEST_HOST)
     dependencies:
       - target: DRXApp
   DRXAppUITests:
     type: bundle.ui-testing
     platform: iOS
+    configFiles:
+      Debug: Configuration/Debug.xcconfig
+      Release: Configuration/Release.xcconfig
     sources:
       - path: DRXAppUITests
     settings:

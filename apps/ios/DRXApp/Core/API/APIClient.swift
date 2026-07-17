@@ -29,14 +29,17 @@ enum HTTPMethod: String, Sendable {
 enum APIError: Error, LocalizedError, Sendable {
     case invalidResponse
     case unauthorized
-    case server(statusCode: Int)
+    case forbidden(message: String)
+    case server(statusCode: Int, message: String?)
     case decoding
 
     var errorDescription: String? {
         switch self {
         case .invalidResponse: "The server returned an invalid response."
         case .unauthorized: "Your session has expired."
-        case .server(let statusCode): "The request failed with status code \(statusCode)."
+        case .forbidden(let message): message
+        case .server(let statusCode, let message):
+            message ?? "The request failed with status code \(statusCode)."
         case .decoding: "The response could not be read."
         }
     }
@@ -67,8 +70,12 @@ struct URLSessionAPIClient: APIClient {
         let (data, response) = try await session.data(for: urlRequest)
         guard let httpResponse = response as? HTTPURLResponse else { throw APIError.invalidResponse }
         if httpResponse.statusCode == 401 { throw APIError.unauthorized }
+        let serverMessage = (try? JSONDecoder().decode(APIErrorResponse.self, from: data))?.error
+        if httpResponse.statusCode == 403 {
+            throw APIError.forbidden(message: serverMessage ?? "This account does not have access to Deelrx CRM.")
+        }
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
+            throw APIError.server(statusCode: httpResponse.statusCode, message: serverMessage)
         }
 
         do {
@@ -81,8 +88,12 @@ struct URLSessionAPIClient: APIClient {
 
 struct MockAPIClient: APIClient {
     func send<Response: Decodable & Sendable>(_ request: APIRequest<Response>) async throws -> Response {
-        throw APIError.server(statusCode: 501)
+        throw APIError.server(statusCode: 501, message: nil)
     }
+}
+
+private struct APIErrorResponse: Decodable {
+    let error: String?
 }
 
 private extension JSONDecoder {

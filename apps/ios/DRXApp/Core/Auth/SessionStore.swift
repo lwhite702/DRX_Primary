@@ -41,7 +41,7 @@ final class SessionStore {
             operatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
         } catch APIError.unauthorized {
             operatorSession = nil
-            errorMessage = "DRX could not authorize this Clerk session. Confirm the mobile session endpoint validates Clerk tokens."
+            errorMessage = "Your Clerk session could not be verified. Sign out, then sign in again."
         } catch {
             operatorSession = nil
             errorMessage = error.localizedDescription

@@ -12,14 +12,13 @@ final class AppEnvironment {
         self.session = session
     }
 
-    static func live() -> AppEnvironment {
+    static func live(configuration: AppConfiguration) -> AppEnvironment {
         if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
             return preview()
         }
 
-        let baseURL = URL(string: "https://app.deelrx.com")!
         let tokenStore = ClerkTokenStore()
-        let apiClient = URLSessionAPIClient(baseURL: baseURL, tokenStore: tokenStore)
+        let apiClient = URLSessionAPIClient(baseURL: configuration.apiBaseURL, tokenStore: tokenStore)
         let session = SessionStore(apiClient: apiClient, tokenStore: tokenStore)
         return AppEnvironment(apiClient: apiClient, session: session)
     }

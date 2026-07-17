@@ -14,6 +14,7 @@ struct AppRootView: View {
         Group {
             if clerk.user == nil {
                 AuthView(isDismissible: false)
+                    .environment(\.clerkTheme, .drx)
                     .accessibilityIdentifier("clerkAuthView")
             } else if environment.session.isAuthenticated {
                 OperatorTabView()
@@ -21,6 +22,7 @@ struct AppRootView: View {
                 SessionBootstrapView()
             }
         }
+        .tint(DRXPalette.accent)
         .environment(environment)
         .task(id: clerk.user?.id) {
             guard clerk.user != nil else {
@@ -34,34 +36,69 @@ struct AppRootView: View {
 
 private struct SessionBootstrapView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "shippingbox.fill")
-                .font(.system(size: 52))
-                .accessibilityHidden(true)
+        ZStack {
+            DRXPalette.canvas.ignoresSafeArea()
 
-            Text("Opening DRX")
-                .font(.title2.bold())
+            VStack(spacing: 24) {
+                Image(systemName: "shippingbox.fill")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(DRXPalette.accent)
+                    .frame(width: 72, height: 72)
+                    .background(DRXPalette.surface, in: RoundedRectangle(cornerRadius: 20))
+                    .accessibilityHidden(true)
 
-            if environment.session.isRestoring {
-                ProgressView("Loading your operator access…")
-                    .accessibilityIdentifier("sessionLoadingIndicator")
-            } else if let errorMessage = environment.session.errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
-                    .accessibilityIdentifier("sessionErrorMessage")
+                VStack(spacing: 8) {
+                    Text("Opening Deelrx CRM")
+                        .font(.title2.bold())
+                        .foregroundStyle(DRXPalette.ink)
 
-                Button("Try Again") {
-                    Task { await environment.session.restore() }
+                    Text("Confirming your operator access")
+                        .font(.subheadline)
+                        .foregroundStyle(DRXPalette.muted)
                 }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("retrySessionButton")
+
+                if environment.session.isRestoring {
+                    ProgressView("Loading your workspace…")
+                        .tint(DRXPalette.ink)
+                        .foregroundStyle(DRXPalette.muted)
+                        .accessibilityIdentifier("sessionLoadingIndicator")
+                } else if let errorMessage = environment.session.errorMessage {
+                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote)
+                        .foregroundStyle(DRXPalette.danger)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("sessionErrorMessage")
+
+                    Button("Try Again") {
+                        Task { await environment.session.restore() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(DRXPalette.accent)
+                    .foregroundStyle(DRXPalette.onAccent)
+                    .accessibilityIdentifier("retrySessionButton")
+
+                    Button("Sign Out", role: .destructive) {
+                        Task {
+                            try? await clerk.auth.signOut()
+                            await environment.session.signOut()
+                        }
+                    }
+                    .accessibilityIdentifier("bootstrapSignOutButton")
+                }
             }
+            .padding(32)
+            .frame(maxWidth: 440)
+            .background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 24))
+            .overlay {
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(DRXPalette.border, lineWidth: 1)
+            }
+            .shadow(color: DRXPalette.ink.opacity(0.08), radius: 24, y: 12)
+            .padding(24)
         }
-        .padding(32)
     }
 }
 
@@ -100,10 +137,16 @@ private struct OperatorTabView: View {
                         .accessibilityIdentifier("signOutButton")
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(DRXPalette.canvas)
                 .navigationTitle("More")
             }
             .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
         }
+        .tint(DRXPalette.accent)
+        .toolbarBackground(DRXPalette.surface, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarColorScheme(.dark, for: .tabBar)
     }
 }
 
@@ -112,8 +155,33 @@ private struct PlaceholderView: View {
     let symbol: String
 
     var body: some View {
-        ContentUnavailableView(title, systemImage: symbol, description: Text("Native feature wiring is in progress."))
-            .navigationTitle(title)
+        ZStack {
+            DRXPalette.canvas.ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                Image(systemName: symbol)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(DRXPalette.accent)
+                    .frame(width: 68, height: 68)
+                    .background(DRXPalette.surface, in: RoundedRectangle(cornerRadius: 18))
+
+                Text(title)
+                    .font(.title2.bold())
+                    .foregroundStyle(DRXPalette.ink)
+
+                Text("Native feature wiring is in progress.")
+                    .font(.subheadline)
+                    .foregroundStyle(DRXPalette.muted)
+            }
+            .padding(32)
+            .frame(maxWidth: 360)
+            .background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 24))
+            .overlay {
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(DRXPalette.border, lineWidth: 1)
+            }
+        }
+        .navigationTitle(title)
     }
 }
 
