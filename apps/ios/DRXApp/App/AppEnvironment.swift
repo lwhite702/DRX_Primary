@@ -18,7 +18,7 @@ final class AppEnvironment {
         }
 
         let baseURL = URL(string: "https://app.deelrx.com")!
-        let tokenStore = KeychainTokenStore(service: "com.wrelik.drx")
+        let tokenStore = ClerkTokenStore()
         let apiClient = URLSessionAPIClient(baseURL: baseURL, tokenStore: tokenStore)
         let session = SessionStore(apiClient: apiClient, tokenStore: tokenStore)
         return AppEnvironment(apiClient: apiClient, session: session)
