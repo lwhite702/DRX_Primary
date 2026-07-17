@@ -18,6 +18,13 @@ export function isOnboardingCompletionCookieValue(value: string | undefined | nu
   return value === "true";
 }
 
+export function hasCompletedOnboardingSettings(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  const settings = value as Record<string, unknown>;
+  return settings.onboarding_completed === true || settings.onboardingComplete === true;
+}
+
 export function hasOnboardingCompletionCookieFromHeader(cookieHeader: string | null | undefined) {
   if (!cookieHeader) return false;
 

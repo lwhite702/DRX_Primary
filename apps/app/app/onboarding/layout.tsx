@@ -5,6 +5,7 @@ import {
   ONBOARDING_COMPLETION_COOKIE,
   type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
+import { getCompletedOnboardingBusinessId } from "@/lib/auth/onboarding-state";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -29,6 +30,13 @@ export default async function OnboardingLayout({
 
   if (onboardingComplete) {
     redirect("/dashboard");
+  }
+
+  // Existing operators may have completed setup before the Clerk metadata gate
+  // was introduced. Reconcile their durable database state instead of trapping
+  // them in onboarding with a stale session claim.
+  if (await getCompletedOnboardingBusinessId(userId)) {
+    redirect("/api/onboarding/reconcile");
   }
 
   return children;
