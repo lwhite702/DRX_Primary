@@ -39,19 +39,20 @@ function assertRootInstallCommand() {
   const rootVercel = JSON.parse(readFileSync(rootVercelPath, "utf8"));
   const appVercel = JSON.parse(readFileSync(appVercelPath, "utf8"));
 
-  const expected =
+  const expectedRoot =
     "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile";
+  const expectedApp = `cd ../.. && ${expectedRoot}`;
 
-  if (rootVercel.installCommand !== expected) {
+  if (rootVercel.installCommand !== expectedRoot) {
     console.error("[preflight] Root vercel installCommand is not release-safe.");
-    console.error(`[preflight] expected: ${expected}`);
+    console.error(`[preflight] expected: ${expectedRoot}`);
     console.error(`[preflight] actual:   ${rootVercel.installCommand}`);
     process.exit(1);
   }
 
-  if (appVercel.installCommand !== expected) {
+  if (appVercel.installCommand !== expectedApp) {
     console.error("[preflight] apps/app vercel installCommand is not release-safe.");
-    console.error(`[preflight] expected: ${expected}`);
+    console.error(`[preflight] expected: ${expectedApp}`);
     console.error(`[preflight] actual:   ${appVercel.installCommand}`);
     process.exit(1);
   }
