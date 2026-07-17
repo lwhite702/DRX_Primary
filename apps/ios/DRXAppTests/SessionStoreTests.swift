@@ -4,7 +4,7 @@ import Testing
 @MainActor
 struct SessionStoreTests {
     @Test
-    func startsSignedOutWithoutStoredToken() async {
+    func startsSignedOutWithoutClerkToken() async {
         let tokenStore = InMemoryTokenStore()
         let store = SessionStore(apiClient: MockAPIClient(), tokenStore: tokenStore)
 
@@ -12,24 +12,20 @@ struct SessionStoreTests {
 
         #expect(store.isAuthenticated == false)
         #expect(store.operatorSession == nil)
+        #expect(store.errorMessage == "Clerk did not provide an active session token.")
     }
 
     @Test
-    func completedSignInPersistsSession() async throws {
+    func resetClearsTransientSessionState() async {
         let tokenStore = InMemoryTokenStore()
         let store = SessionStore(apiClient: MockAPIClient(), tokenStore: tokenStore)
-        let session = OperatorSession(
-            operatorID: "operator-1",
-            displayName: "Test Operator",
-            businessID: "business-1",
-            businessName: "DRX Test",
-            roles: ["operator"],
-            permissions: ["pos:checkout"]
-        )
 
-        try await store.completeSignIn(token: "test-token", session: session)
+        await store.restore()
+        store.reset()
 
-        #expect(store.operatorSession == session)
-        #expect(try await tokenStore.readToken() == "test-token")
+        #expect(store.isAuthenticated == false)
+        #expect(store.operatorSession == nil)
+        #expect(store.errorMessage == nil)
+        #expect(store.isRestoring == false)
     }
 }
