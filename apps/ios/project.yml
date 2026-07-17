@@ -10,6 +10,9 @@ packages:
 settings:
   base:
     SWIFT_VERSION: 6.0
+    DEVELOPMENT_TEAM: L8R42BJ54K
+    CODE_SIGN_STYLE: Automatic
+    VERSIONING_SYSTEM: apple-generic
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 0.1.0
 targets:
@@ -26,7 +29,9 @@ targets:
         PRODUCT_NAME: Deelrx CRM
         PRODUCT_MODULE_NAME: DRXApp
         PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx
+        TARGETED_DEVICE_FAMILY: 1
         CODE_SIGN_ENTITLEMENTS: DRXApp/DRXApp.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: DRXApp/Info.plist
     dependencies:
