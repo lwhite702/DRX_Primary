@@ -5,18 +5,13 @@ import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
-import dynamic from "next/dynamic";
+import ClerkProviderWrapper from "./_components/clerk-provider-wrapper";
 import {
   isAuthBypassEnabledServer,
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
 import Script from 'next/script';
-
-const ClerkProviderWrapper = dynamic(
-  () => import("./_components/clerk-provider-wrapper"),
-  { ssr: false }
-);
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
