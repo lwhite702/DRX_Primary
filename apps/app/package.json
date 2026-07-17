@@ -33,7 +33,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "prisma generate && vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
     "test:e2e:quick-pos-smoke": "BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/quick-pos-required.spec.ts --workers=1",
