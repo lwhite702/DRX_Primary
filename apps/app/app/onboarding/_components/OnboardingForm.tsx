@@ -1,41 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { completeOnboarding } from "../_actions";
 import { drxCopy } from "@/lib/copy/drx";
-import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
-export function OnboardingForm() {
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      
-      // Set the onboarding completion cookie client-side immediately
-      // to ensure the middleware sees it on the next client-side redirect fetch request.
-      const isSecure = window.location.protocol === "https:";
-      document.cookie = `${ONBOARDING_COMPLETION_COOKIE}=true; path=/; max-age=600; SameSite=Lax${
-        isSecure ? "; Secure" : ""
-      }`;
-
-      // Set localStorage flag for layout state syncing
-      window.localStorage.setItem("drx_onboarding_complete", "true");
-
-      await completeOnboarding(formData);
-    } catch (error) {
-      console.error("Onboarding submission failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+function SubmitButton() {
+  const { pending } = useFormStatus();
 
   return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="laser-button mt-2 rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-black disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {pending ? "Submitting..." : drxCopy.onboarding.page.submit}
+    </button>
+  );
+}
+
+export function OnboardingForm() {
+  return (
     <form
-      onSubmit={handleSubmit}
+      action={completeOnboarding}
       className="glass-effect mt-8 space-y-5 rounded-2xl border border-white/10 p-6"
     >
       <label className="grid gap-2">
@@ -109,13 +95,7 @@ export function OnboardingForm() {
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="laser-button mt-2 rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-black disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? "Submitting..." : drxCopy.onboarding.page.submit}
-      </button>
+      <SubmitButton />
     </form>
   );
 }
