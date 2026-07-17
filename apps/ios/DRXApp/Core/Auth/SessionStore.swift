@@ -15,7 +15,6 @@ struct OperatorSession: Codable, Sendable, Equatable {
 final class SessionStore {
     private(set) var operatorSession: OperatorSession?
     private(set) var isRestoring = false
-    private(set) var isSigningIn = false
     private(set) var errorMessage: String?
 
     private let apiClient: APIClient
@@ -31,55 +30,31 @@ final class SessionStore {
     func restore() async {
         guard !isRestoring, operatorSession == nil else { return }
         isRestoring = true
+        errorMessage = nil
         defer { isRestoring = false }
 
         do {
-            guard try await tokenStore.readToken() != nil else { return }
+            guard try await tokenStore.readToken() != nil else {
+                errorMessage = "Clerk did not provide an active session token."
+                return
+            }
             operatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
-            errorMessage = nil
         } catch APIError.unauthorized {
-            try? await tokenStore.deleteToken()
             operatorSession = nil
+            errorMessage = "DRX could not authorize this Clerk session. Confirm the mobile session endpoint validates Clerk tokens."
         } catch {
+            operatorSession = nil
             errorMessage = error.localizedDescription
         }
     }
 
-    func beginSignIn() async {
-        guard !isSigningIn else { return }
-        isSigningIn = true
+    func reset() {
+        operatorSession = nil
         errorMessage = nil
-        defer { isSigningIn = false }
-
-        #if DEBUG
-        do {
-            try await Task.sleep(for: .milliseconds(250))
-            let demoSession = OperatorSession(
-                operatorID: "demo-operator",
-                displayName: "Demo Operator",
-                businessID: "demo-business",
-                businessName: "DRX Demo",
-                roles: ["owner", "operator"],
-                permissions: ["pos:checkout", "inventory:read", "customers:read"]
-            )
-            try await completeSignIn(token: "drx-debug-session", session: demoSession)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        #else
-        errorMessage = "Native authentication is not connected yet. The mobile token exchange endpoint must be implemented before production sign-in can continue."
-        #endif
-    }
-
-    func completeSignIn(token: String, session: OperatorSession) async throws {
-        try await tokenStore.writeToken(token)
-        operatorSession = session
-        errorMessage = nil
+        isRestoring = false
     }
 
     func signOut() async {
-        try? await tokenStore.deleteToken()
-        operatorSession = nil
-        errorMessage = nil
+        reset()
     }
 }
