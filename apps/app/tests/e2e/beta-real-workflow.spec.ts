@@ -146,10 +146,12 @@ test.describe("Stable beta real workflow", () => {
     const searchInput = page.getByPlaceholder(/scan sku/i);
     await searchInput.fill(sku);
     await searchInput.press("Enter");
-    await expect(page.getByText("Beta E2E Test Flower 1g").first()).toBeVisible({
+    const productName = seededProduct?.name || "Beta E2E Test Flower 1g";
+    const productPrice = seededProduct ? `$${seededProduct.price.toFixed(2)}` : "$12.50";
+    await expect(page.getByText(productName).first()).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("$12.50").first()).toBeVisible();
+    await expect(page.getByText(productPrice).first()).toBeVisible();
 
     await page.getByRole("button", { name: /continue to payment/i }).click();
     await expect(page).toHaveURL(/\/pos\/payment(?:\?|$)/, {
