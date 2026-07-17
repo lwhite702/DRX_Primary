@@ -191,7 +191,7 @@ test.describe("Stable beta real workflow", () => {
       quantityBefore - 1,
     );
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toLocaleDateString("en-CA");
     const reconciliation = await appFetch<{
       summary?: { salesChecked: number; discrepancies: number };
       discrepancies?: unknown[];
