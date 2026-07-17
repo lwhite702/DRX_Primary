@@ -26,7 +26,9 @@ testsprite_tests/
 *.tsbuildinfo
 *.vercel
 android/
-ios/
+/ios/
+apps/ios/*.xcodeproj/
+apps/ios/DerivedData/
 android_backup/
 
 # Misc

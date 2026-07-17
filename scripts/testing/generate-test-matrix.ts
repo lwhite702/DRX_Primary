@@ -173,6 +173,22 @@ function main() {
   const audit = readJson<any>(auditPath, null as any);
   if (!audit) throw new Error("Missing docs/testing/REPO_AUDIT.json. Run test:audit first.");
 
+  const routes: Array<{ file: string }> = Array.isArray(audit.routes)
+    ? audit.routes.map((route: string | { file: string }) =>
+        typeof route === "string" ? { file: route } : route,
+      )
+    : Object.values(audit.routes ?? {})
+        .flatMap((group) => (Array.isArray(group) ? group : []))
+        .filter((route): route is string => typeof route === "string")
+        .map((file) => ({ file }));
+
+  const vendors: Array<{ vendor: string }> = (audit.vendors ?? audit.integrations ?? []).map(
+    (vendor: string | { vendor: string }) =>
+      typeof vendor === "string" ? { vendor } : vendor,
+  );
+
+  const normalizedAudit = { ...audit, routes, vendors };
+
   const ownership = readJson<OwnershipMap>(ownershipPath, {
     schemaVersion: "1.0.0",
     routes: {},
@@ -180,14 +196,13 @@ function main() {
   });
 
   const tests = testFiles();
-  const vendors = audit.vendors ?? [];
   const roles: string[] = audit.roles ?? ["cashier", "supervisor", "manager", "super_admin", "owner", "admin", "staff"];
 
   const runtimeMockPresent = fs.existsSync(path.join(root, "apps/app/lib/supabase/client.ts"));
 
   const rows: MatrixRow[] = [];
 
-  for (const route of audit.routes as Array<{ file: string }>) {
+  for (const route of routes) {
     const mapped = ownership.routes[route.file] ?? [];
     const tagged = mapped.length === 0 ? hasTaggedOwnership(route.file, tests) : { matches: [], evidence: [] };
     const owningTests = mapped.length > 0 ? mapped : tagged.matches;
@@ -251,7 +266,7 @@ function main() {
   };
 
   fs.writeFileSync(matrixJsonPath, JSON.stringify(payload, null, 2));
-  fs.writeFileSync(matrixMdPath, toMarkdown(rows, audit));
+  fs.writeFileSync(matrixMdPath, toMarkdown(rows, normalizedAudit));
 
   console.log(`Wrote ${path.relative(root, matrixJsonPath)}`);
   console.log(`Wrote ${path.relative(root, matrixMdPath)}`);
