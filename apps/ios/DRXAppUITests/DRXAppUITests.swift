@@ -5,13 +5,12 @@ final class DRXAppUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testSignedOutShellShowsSignInAction() {
+    func testSignedOutShellShowsClerkAuthentication() {
         let app = XCUIApplication()
         app.launchArguments.append("--ui-testing")
         app.launch()
 
-        let signInButton = app.buttons["signInButton"]
-        XCTAssertTrue(signInButton.waitForExistence(timeout: 10))
-        XCTAssertTrue(signInButton.isHittable)
+        let authView = app.otherElements["clerkAuthView"]
+        XCTAssertTrue(authView.waitForExistence(timeout: 10))
     }
 }
