@@ -8,6 +8,7 @@ struct OperatorSession: Codable, Sendable, Equatable {
     let businessName: String
     let roles: [String]
     let permissions: [String]
+    let email: String?
 }
 
 @MainActor
@@ -38,10 +39,14 @@ final class SessionStore {
                 errorMessage = "Clerk did not provide an active session token."
                 return
             }
-            operatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
+            let restored: OperatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
+            operatorSession = restored
         } catch APIError.unauthorized {
             operatorSession = nil
             errorMessage = "Your Clerk session could not be verified. Sign out, then sign in again."
+        } catch APIError.forbidden(let message) {
+            operatorSession = nil
+            errorMessage = message
         } catch {
             operatorSession = nil
             errorMessage = error.localizedDescription

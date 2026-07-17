@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { useOrganization, useOrganizationList, useUser } from "@/lib/adapters/auth/ui";
+import { useOrganization, useOrganizationList, useUser, useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export function useBusiness() {
-  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const authBypassEnabled = useIsBypassActive();
   const { isLoaded: isUserLoaded } = useUser();
   const { organization: activeOrg, isLoaded: isOrgLoaded } = useOrganization();
   const {

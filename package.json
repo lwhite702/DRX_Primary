@@ -30,7 +30,6 @@
     "verify:tarballs": "cd apps/app && node scripts/verify-tarballs.mjs",
     "wrelik:refresh": "cd apps/app && node scripts/refresh-wrelik.mjs",
     "seed:demo": "corepack pnpm --filter deelrxcrm-app seed:demo",
-    "seed:beta:e2e": "corepack pnpm --filter deelrxcrm-app seed:beta:e2e",
     "start": "corepack pnpm --filter deelrxcrm-app start",
     "test": "vitest",
     "test:repo-hygiene": "pnpm dlx tsx scripts/testing/repo-hygiene-check.ts",

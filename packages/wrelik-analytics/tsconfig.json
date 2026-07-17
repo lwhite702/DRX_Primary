@@ -1,5 +1,5 @@
 {
-  "extends": "@wrelik/tsconfig/node.json",
+  "extends": "../wrelik-tsconfig/node.json",
   "compilerOptions": {
     "outDir": "dist",
     "skipLibCheck": true,

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { createAppClient } from "@/lib/data/client/supabase-client";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { useUserRole } from "./use-user-role";
 
 const getFallbackPermissions = (role: string | null): string[] => {
@@ -43,7 +44,7 @@ const getFallbackPermissions = (role: string | null): string[] => {
 };
 
 export function usePermission(businessId: string | undefined) {
-  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const authBypassEnabled = useIsBypassActive();
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createAppClient();

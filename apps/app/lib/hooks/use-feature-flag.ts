@@ -7,9 +7,8 @@ import { useFlag, useFlagValue } from "@/lib/flags/client";
  *
  * Flag naming convention:
  * - feat_<module>_<capability> - Feature rollout control
- * - beta_<surface>_<cohort> - Beta user access gating
  * - exp_<domain>_<hypothesis> - A/B testing experiments
- * - ops_<route>_kill_switch - Kill switches, maintenance mode
+ * - ops_<route>_enabled - Operational availability controls
  * - test_<surface>_<purpose> - Test-only gates
  *
  * @param featureKey - The feature flag key (use the project's naming convention above)

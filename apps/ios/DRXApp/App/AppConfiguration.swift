@@ -12,6 +12,11 @@ struct AppConfiguration: Sendable, Equatable {
     let sentryDSN: URL?
     let postHogAPIKey: String?
     let postHogHost: URL?
+    let appVersion: String
+    let buildNumber: String
+
+    var releaseName: String { "com.wrelik.drx@\(appVersion)+\(buildNumber)" }
+    var distributionChannel: String { environment == .production ? "testflight" : "development" }
 
     static func live(bundle: Bundle = .main) throws -> AppConfiguration {
         try AppConfiguration(info: bundle.infoDictionary ?? [:])
@@ -39,9 +44,27 @@ struct AppConfiguration: Sendable, Equatable {
         self.environment = environment
         self.clerkPublishableKey = clerkPublishableKey
         self.apiBaseURL = apiBaseURL
-        self.sentryDSN = Self.optionalURL(for: "SENTRY_DSN", in: info)
-        self.postHogAPIKey = Self.value(for: "POSTHOG_API_KEY", in: info)
-        self.postHogHost = Self.optionalURL(for: "POSTHOG_HOST", in: info)
+        let sentryDSN = Self.optionalHTTPSURL(for: "SENTRY_DSN", in: info)
+        let postHogAPIKey = Self.value(for: "POSTHOG_API_KEY", in: info)
+        let postHogHost = Self.optionalHTTPSURL(for: "POSTHOG_HOST", in: info)
+
+        if environment == .production {
+            guard sentryDSN != nil else {
+                throw ConfigurationError.missingOrInvalid("SENTRY_DSN")
+            }
+            guard postHogAPIKey?.hasPrefix("phc_") == true else {
+                throw ConfigurationError.missingOrInvalid("POSTHOG_API_KEY")
+            }
+            guard postHogHost != nil else {
+                throw ConfigurationError.missingOrInvalid("POSTHOG_HOST")
+            }
+        }
+
+        self.sentryDSN = sentryDSN
+        self.postHogAPIKey = postHogAPIKey
+        self.postHogHost = postHogHost
+        self.appVersion = Self.value(for: "CFBundleShortVersionString", in: info) ?? "0.0.0"
+        self.buildNumber = Self.value(for: "CFBundleVersion", in: info) ?? "0"
     }
 
     private static func value(for key: String, in info: [String: Any]) -> String? {
@@ -51,9 +74,10 @@ struct AppConfiguration: Sendable, Equatable {
         return trimmed
     }
 
-    private static func optionalURL(for key: String, in info: [String: Any]) -> URL? {
+    private static func optionalHTTPSURL(for key: String, in info: [String: Any]) -> URL? {
         guard let value = value(for: key, in: info) else { return nil }
-        return URL(string: value)
+        guard let url = URL(string: value), url.scheme == "https", url.host != nil else { return nil }
+        return url
     }
 
     private static func canonicalAPIBaseURL(_ url: URL) -> URL? {

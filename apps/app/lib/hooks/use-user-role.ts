@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@/lib/adapters/auth/ui";
+import { useUser, useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { getUserRoleAction } from "@/app/actions/user-role";
 import { Permission, ROLE_PERMISSIONS } from "@/lib/auth/permissions";
 
@@ -14,7 +14,7 @@ export type UserRole =
   | null;
 
 export function useUserRole(businessId?: string) {
-  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const authBypassEnabled = useIsBypassActive();
   const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);

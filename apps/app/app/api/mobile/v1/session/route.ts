@@ -66,5 +66,6 @@ export async function GET() {
     business_name: business.businessName,
     roles: [role],
     permissions: permissionsFor(role, assignedRole?.permissions),
+    email: user?.email ?? null,
   });
 }

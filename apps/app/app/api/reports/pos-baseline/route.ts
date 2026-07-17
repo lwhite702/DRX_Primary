@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
+import { errorResponse } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   try {
-    const { businessId, userId } = await resolveAuthContext();
+    const { businessId, userId } = await resolveAuthContext(request);
 
     if (!businessId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,14 +36,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(report);
   } catch (error: unknown) {
     console.error("POS baseline report error:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate POS baseline report",
-      },
-      { status: 500 },
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Failed to generate POS baseline report",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

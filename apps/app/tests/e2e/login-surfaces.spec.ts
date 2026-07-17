@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  process.env.BYPASS_AUTH_FOR_TESTING === "true";
 
 test.describe("Login and register surfaces", () => {
   test("/login is accessible", async ({ page }) => {

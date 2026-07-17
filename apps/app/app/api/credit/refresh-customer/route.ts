@@ -3,7 +3,7 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const RefreshCustomerSchema = z.object({
   customer_id: z.string().min(1),
@@ -11,20 +11,20 @@ const RefreshCustomerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const { businessId, userId } = await resolveAuthContext();
+    const { businessId, userId } = await resolveAuthContext(request);
     if (!businessId || !userId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const killSwitchEnabled = await ensureServerFlag(
-      OPS_KILL_SWITCH_FLAGS.creditRefreshCustomer,
+    const availabilityEnabled = await ensureServerFlag(
+      OPS_AVAILABILITY_FLAGS.creditRefreshCustomer,
       {
         distinctId: userId,
         personProperties: { business_id: businessId },
         defaultValue: true,
       },
     );
-    if (!killSwitchEnabled) {
+    if (!availabilityEnabled) {
       return errorResponse(
         "FEATURE_DISABLED",
         "Credit refresh endpoint is temporarily disabled",

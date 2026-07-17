@@ -13,9 +13,10 @@
 - Build number: Xcode Cloud `CI_BUILD_NUMBER`
 
 Xcode Cloud runs the scripts in `apps/ios/ci_scripts`. The post-clone script
-installs XcodeGen when needed, regenerates the project, and resolves Clerk's
-Swift packages. The pre-build script applies Xcode Cloud's unique build number
-and validates the production Clerk and API settings.
+installs XcodeGen when needed, writes an ignored
+`Telemetry.generated.xcconfig` from the build environment, regenerates the
+project, and resolves Swift packages. The pre-build script validates telemetry
+and symbol-upload configuration.
 
 ## One-time App Store Connect setup
 
@@ -44,12 +45,22 @@ Configure the workflow with these values:
 Do not enable automatic external distribution until Beta App Review details,
 privacy answers, export compliance, and tester notes are complete.
 
-## Optional Xcode Cloud environment variables
+## Required Xcode Cloud environment variables
 
-Add these as secret variables only after their SDK integrations are enabled:
+Sync these from Doppler's `drx/prd` configuration and mark them secret:
 
 - `SENTRY_DSN`
+- `SENTRY_AUTH_TOKEN`
+- `SENTRY_ORG`
+- `SENTRY_PROJECT` (must be the project that issued `SENTRY_DSN`)
 - `POSTHOG_API_KEY`
+- `POSTHOG_HOST`
+
+For a local Release build, generate the same ignored file first:
+
+```sh
+doppler run --project drx --config prd -- apps/ios/ci_scripts/sync_telemetry_xcconfig.sh
+```
 
 The Clerk publishable key is public client configuration and is already supplied
 by the Release xcconfig. Never add `CLERK_SECRET_KEY`, database credentials, or

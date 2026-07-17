@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
+import { marketingFeatureSections } from "@/lib/feature-canon";
 import { marketingContent } from "@/lib/marketing-content";
 
 const heroAvatar1 = "https://www.figma.com/api/mcp/asset/eb987189-9d14-4364-af5f-566dc681eb73";
@@ -159,6 +160,9 @@ function BenefitsSection() {
       <div className="mx-auto max-w-3xl text-center">
         <SectionLabel>Core Benefits</SectionLabel>
         <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">Why teams choose DRX</h2>
+        <p className="mt-3 text-sm text-text-muted">
+          {marketingFeatureSections.length} operator workflows in one place.
+        </p>
       </div>
 
       <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -363,11 +367,16 @@ function LandingFooter() {
   );
 }
 
-export function LandingPageSections() {
+export function LandingPageSections({
+  operatorShowcase,
+}: {
+  operatorShowcase?: React.ReactNode;
+}) {
   return (
     <>
       <HeroSection />
       <BenefitsSection />
+      {operatorShowcase}
       <HowItWorksSection />
       <BetaAccessSection />
       <FaqSection />

@@ -7,6 +7,12 @@ packages:
   Clerk:
     url: https://github.com/clerk/clerk-ios
     from: 1.0.0
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios.git
+    exactVersion: 3.64.6
+  Sentry:
+    url: https://github.com/getsentry/sentry-cocoa.git
+    exactVersion: 9.21.0
 settings:
   base:
     SWIFT_VERSION: 6.0
@@ -39,6 +45,10 @@ targets:
         product: ClerkKit
       - package: Clerk
         product: ClerkKitUI
+      - package: PostHog
+        product: PostHog
+      - package: Sentry
+        product: Sentry
     scheme:
       testTargets:
         - DRXAppTests

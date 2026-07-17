@@ -49,7 +49,7 @@ export default async function RegisterPage() {
               Initialize Session
             </h1>
             <p className="text-xs text-muted-foreground">
-              Create your operator credentials to access beta workflows and
+              Create your operator credentials to access Deelrx workflows and
               onboarding.
             </p>
           </div>

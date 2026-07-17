@@ -20,6 +20,7 @@ struct AppConfigurationTests {
         #expect(configuration.sentryDSN == URL(string: "https://public@example.test/1"))
         #expect(configuration.postHogAPIKey == "phc_example")
         #expect(configuration.postHogHost == URL(string: "https://us.i.posthog.com"))
+        #expect(configuration.distributionChannel == "development")
     }
 
     @Test
@@ -48,9 +49,24 @@ struct AppConfigurationTests {
         let configuration = try AppConfiguration(info: [
             "DRX_APP_ENVIRONMENT": "production",
             "CLERK_PUBLISHABLE_KEY": "pk_live_example",
-            "DRX_API_BASE_URL": "https://deelrxcrm.app"
+            "DRX_API_BASE_URL": "https://deelrxcrm.app",
+            "SENTRY_DSN": "https://public@example.test/1",
+            "POSTHOG_API_KEY": "phc_example",
+            "POSTHOG_HOST": "https://us.i.posthog.com"
         ])
 
         #expect(configuration.apiBaseURL == URL(string: "https://www.deelrxcrm.app"))
+        #expect(configuration.distributionChannel == "testflight")
+    }
+
+    @Test
+    func requiresTelemetryForProduction() {
+        #expect(throws: ConfigurationError.missingOrInvalid("SENTRY_DSN")) {
+            try AppConfiguration(info: [
+                "DRX_APP_ENVIRONMENT": "production",
+                "CLERK_PUBLISHABLE_KEY": "pk_live_example",
+                "DRX_API_BASE_URL": "https://www.deelrxcrm.app"
+            ])
+        }
     }
 }
