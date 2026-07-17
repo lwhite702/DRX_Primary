@@ -21,21 +21,26 @@ Set these through the approved secret manager or a local untracked environment f
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `DRX_PII_KEY_CURRENT_B64`
 - `DRX_PII_HASH_KEY_B64`
-- `BETA_E2E_PRODUCT_SKU` for a seeded product with positive inventory
-- `BETA_E2E_CUSTOMER_PHONE` when the default test number is unsuitable
+
+Optional overrides:
+
+- `BETA_E2E_PRODUCT_SKU`; defaults to `DRX-BETA-E2E-001`
+- `BETA_E2E_CUSTOMER_PHONE`; defaults to `5550199001`
 
 Both `BYPASS_AUTH_FOR_TESTING` and `NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING` must remain false.
 
 ## Runbook
 
 1. Confirm the target environment is the dedicated beta environment.
-2. Provision the dedicated test tenant and a product matching `BETA_E2E_PRODUCT_SKU` through the approved beta-environment workflow. Confirm the product has positive inventory and FIFO lineage before running the suite.
+2. Provision the dedicated test tenant and a product matching `BETA_E2E_PRODUCT_SKU` (or its default, `DRX-BETA-E2E-001`) through the approved beta-environment workflow. Confirm the product has positive inventory and FIFO lineage before running the suite.
 
 3. Run the credentialed gate:
 
    ```bash
    pnpm test:e2e:beta
    ```
+
+   The command runs only the desktop `chromium` project with retries disabled so this mutating workflow executes once per invocation.
 
 4. Attach the commit SHA, environment, Playwright report, created sale ID, and sanitized persistence evidence to the relevant Linear `Live E2E` issue.
 
