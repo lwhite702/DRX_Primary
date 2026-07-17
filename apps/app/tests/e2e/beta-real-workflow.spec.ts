@@ -14,7 +14,6 @@ const betaEnabled = ["1", "true", "yes"].includes(
 );
 
 const missingRequirements = [
-  !betaEnabled ? "BETA_E2E_ENABLED=true" : null,
   !hasClerkTestingEnv
     ? "Clerk testing credentials (CLERK_TESTING_TOKEN, CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY)"
     : null,
@@ -34,7 +33,7 @@ const missingRequirements = [
   !process.env.DRX_PII_HASH_KEY_B64 ? "DRX_PII_HASH_KEY_B64" : null,
 ].filter(Boolean);
 
-if (missingRequirements.length > 0) {
+if (betaEnabled && missingRequirements.length > 0) {
   throw new Error(
     `Real beta E2E gate is not configured: ${missingRequirements.join(", ")}`,
   );
@@ -83,6 +82,11 @@ async function appFetch<T>(
 }
 
 test.describe("Stable beta real workflow", () => {
+  test.skip(
+    !betaEnabled,
+    "Set BETA_E2E_ENABLED=true and provide the required Clerk, Supabase, and PII credentials to run the real beta workflow",
+  );
+
   test("operator can complete Quick POS checkout with seeded real data", async ({
     page,
   }) => {
