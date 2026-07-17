@@ -1,4 +1,4 @@
-import { createFunction } from "@wrelik/jobs";
+import { createFunction } from "@/lib/queue";
 import { db } from "@/lib/db";
 
 export const aiPricingInventoryFunction = createFunction(

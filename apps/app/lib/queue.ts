@@ -1,6 +1,11 @@
-import { initJobs, emit } from "@wrelik/jobs";
+import {
+  initJobs,
+  emit,
+  createFunction,
+  inngest,
+} from "@wrelik/jobs";
 
 // Initialize wrelik jobs client with the app ID
-initJobs("deelrx" as any);
+initJobs({ appId: "deelrx" });
 
-export { emit };
+export { emit, createFunction, inngest };
