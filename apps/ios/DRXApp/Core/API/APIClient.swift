@@ -1,6 +1,7 @@
 import Foundation
 import Security
 import Observation
+import ClerkKit
 
 protocol APIClient: Sendable {
     func send<Response: Decodable & Sendable>(_ request: APIRequest<Response>) async throws -> Response
@@ -97,6 +98,15 @@ protocol TokenStore: Sendable {
     func readToken() async throws -> String?
     func writeToken(_ token: String) async throws
     func deleteToken() async throws
+}
+
+struct ClerkTokenStore: TokenStore {
+    func readToken() async throws -> String? {
+        try await Clerk.shared.auth.getToken()
+    }
+
+    func writeToken(_ token: String) async throws {}
+    func deleteToken() async throws {}
 }
 
 actor InMemoryTokenStore: TokenStore {
