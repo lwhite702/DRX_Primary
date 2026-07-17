@@ -12,6 +12,10 @@ struct AppConfiguration: Sendable, Equatable {
     let sentryDSN: URL?
     let postHogAPIKey: String?
     let postHogHost: URL?
+    let appVersion: String
+    let buildNumber: String
+
+    var releaseName: String { "com.wrelik.drx@\(appVersion)+\(buildNumber)" }
 
     static func live(bundle: Bundle = .main) throws -> AppConfiguration {
         try AppConfiguration(info: bundle.infoDictionary ?? [:])
@@ -42,6 +46,8 @@ struct AppConfiguration: Sendable, Equatable {
         self.sentryDSN = Self.optionalURL(for: "SENTRY_DSN", in: info)
         self.postHogAPIKey = Self.value(for: "POSTHOG_API_KEY", in: info)
         self.postHogHost = Self.optionalURL(for: "POSTHOG_HOST", in: info)
+        self.appVersion = Self.value(for: "CFBundleShortVersionString", in: info) ?? "0.0.0"
+        self.buildNumber = Self.value(for: "CFBundleVersion", in: info) ?? "0"
     }
 
     private static func value(for key: String, in info: [String: Any]) -> String? {

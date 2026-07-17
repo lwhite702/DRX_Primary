@@ -2,9 +2,9 @@ import { getCreditExposureReport } from "@/lib/credit/creditDecisionService";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { errorResponse, successResponse } from "@/lib/api/response";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const { businessId } = await resolveAuthContext();
+    const { businessId } = await resolveAuthContext(request);
     if (!businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }

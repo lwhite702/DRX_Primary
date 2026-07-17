@@ -4,6 +4,7 @@ import ClerkKitUI
 
 struct AppRootView: View {
     @State private var environment: AppEnvironment
+    @State private var identifiedUserID: String?
     @Environment(Clerk.self) private var clerk
 
     init(environment: AppEnvironment) {
@@ -25,11 +26,16 @@ struct AppRootView: View {
         .tint(DRXPalette.accent)
         .environment(environment)
         .task(id: clerk.user?.id) {
-            guard clerk.user != nil else {
-                environment.session.reset()
+            guard let userID = clerk.user?.id else {
+                await environment.signOut()
+                identifiedUserID = nil
                 return
             }
-            await environment.session.restore()
+            if let identifiedUserID, identifiedUserID != userID {
+                await environment.signOut()
+            }
+            identifiedUserID = userID
+            await environment.restoreSession()
         }
     }
 }
@@ -73,7 +79,7 @@ private struct SessionBootstrapView: View {
                         .accessibilityIdentifier("sessionErrorMessage")
 
                     Button("Try Again") {
-                        Task { await environment.session.restore() }
+                        Task { await environment.restoreSession() }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DRXPalette.accent)
@@ -83,7 +89,7 @@ private struct SessionBootstrapView: View {
                     Button("Sign Out", role: .destructive) {
                         Task {
                             try? await clerk.auth.signOut()
-                            await environment.session.signOut()
+                            await environment.signOut()
                         }
                     }
                     .accessibilityIdentifier("bootstrapSignOutButton")
@@ -108,13 +114,19 @@ private struct OperatorTabView: View {
 
     var body: some View {
         TabView {
-            NavigationStack { PlaceholderView(title: "Dashboard", symbol: "gauge.with.dots.needle.67percent") }
+            NavigationStack {
+                PlaceholderView(title: "Dashboard", symbol: "gauge.with.dots.needle.67percent")
+            }
                 .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
 
-            NavigationStack { PlaceholderView(title: "POS", symbol: "cart.fill") }
+            NavigationStack {
+                PlaceholderView(title: "POS", symbol: "cart.fill")
+            }
                 .tabItem { Label("POS", systemImage: "cart.fill") }
 
-            NavigationStack { PlaceholderView(title: "Inventory", symbol: "shippingbox.fill") }
+            NavigationStack {
+                PlaceholderView(title: "Inventory", symbol: "shippingbox.fill")
+            }
                 .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
 
             NavigationStack { PlaceholderView(title: "Customers", symbol: "person.2.fill") }
@@ -122,6 +134,13 @@ private struct OperatorTabView: View {
 
             NavigationStack {
                 List {
+                    Section("Modules") {
+                        moduleLink("Credit", symbol: "creditcard.fill")
+                        moduleLink("Reports", symbol: "chart.bar.doc.horizontal.fill")
+                        moduleLink("Workspaces", symbol: "building.2.fill")
+                        moduleLink("AI Intelligence", symbol: "sparkles")
+                    }
+
                     Section("Session") {
                         if let session = environment.session.operatorSession {
                             LabeledContent("Operator", value: session.displayName)
@@ -131,7 +150,7 @@ private struct OperatorTabView: View {
                         Button("Sign Out", role: .destructive) {
                             Task {
                                 try? await clerk.auth.signOut()
-                                await environment.session.signOut()
+                                await environment.signOut()
                             }
                         }
                         .accessibilityIdentifier("signOutButton")
@@ -147,6 +166,15 @@ private struct OperatorTabView: View {
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
+    }
+
+    private func moduleLink(_ title: String, symbol: String) -> some View {
+        NavigationLink {
+            PlaceholderView(title: title, symbol: symbol)
+        } label: {
+            Label(title, systemImage: symbol)
+        }
+        .accessibilityIdentifier("module_\(title.lowercased().replacingOccurrences(of: " ", with: "_"))")
     }
 }
 

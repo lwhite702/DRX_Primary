@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20AE6B5AF941620E240797AA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 56661858B6226FF335EECA30 /* PostHog */; };
 		331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */; };
 		3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B795B70D7DE21081FD179D19 /* SessionStore.swift */; };
 		43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919880B91AF708A0700CAA02 /* AppRootView.swift */; };
@@ -17,7 +18,9 @@
 		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
 		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
 		CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */; };
+		D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA881E95C60310AC4903A0B1 /* TelemetryService.swift */; };
 		E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0DF65613D95A790A5EFE0755 /* ClerkKitUI */; };
+		E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = E90E5E4D4537197DB93C1307 /* Sentry */; };
 		F3AEBF21C2E0C526E49BA385 /* DRXAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */; };
 		F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */; };
 		FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */; };
@@ -55,6 +58,7 @@
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
+		AA881E95C60310AC4903A0B1 /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
 		B795B70D7DE21081FD179D19 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -69,6 +73,8 @@
 			files = (
 				84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */,
 				E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */,
+				20AE6B5AF941620E240797AA /* PostHog in Frameworks */,
+				E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,6 +113,7 @@
 			children = (
 				0857FE3BA948FD61CB0A7F76 /* API */,
 				063C77C3B0452792B45900D7 /* Auth */,
+				69B8C635598725A31F81B33A /* Observability */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -156,6 +163,14 @@
 				C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		69B8C635598725A31F81B33A /* Observability */ = {
+			isa = PBXGroup;
+			children = (
+				AA881E95C60310AC4903A0B1 /* TelemetryService.swift */,
+			);
+			path = Observability;
 			sourceTree = "<group>";
 		};
 		6CA905DCC2DF5FC3507C55AA /* Configuration */ = {
@@ -225,6 +240,8 @@
 			packageProductDependencies = (
 				4D387246879C07454D82086A /* ClerkKit */,
 				0DF65613D95A790A5EFE0755 /* ClerkKitUI */,
+				56661858B6226FF335EECA30 /* PostHog */,
+				E90E5E4D4537197DB93C1307 /* Sentry */,
 			);
 			productName = DRXApp;
 			productReference = 415F8ABF72B90D0E13B39A5F /* DRXApp.app */;
@@ -283,6 +300,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+				378E51EF1E22C276F42AAB1A /* XCRemoteSwiftPackageReference "posthog-ios" */,
+				C3987C277E69B0B18489631A /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4887DBEFDB8A90284B1E8516 /* Products */;
@@ -328,6 +347,7 @@
 				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
 				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
 				3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */,
+				D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -641,12 +661,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		378E51EF1E22C276F42AAB1A /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.64.6;
+			};
+		};
 		9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/clerk/clerk-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;
+			};
+		};
+		C3987C277E69B0B18489631A /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = exactVersion;
+				version = 9.21.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -661,6 +697,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */;
 			productName = ClerkKit;
+		};
+		56661858B6226FF335EECA30 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 378E51EF1E22C276F42AAB1A /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+		E90E5E4D4537197DB93C1307 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3987C277E69B0B18489631A /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -14,6 +14,11 @@ if ! command -v xcodegen >/dev/null 2>&1; then
   brew install xcodegen
 fi
 
+if ! command -v sentry-cli >/dev/null 2>&1; then
+  echo "Installing sentry-cli for release symbol upload"
+  brew install getsentry/tools/sentry-cli
+fi
+
 cd "${IOS_ROOT}"
 xcodegen generate
 

@@ -20,9 +20,6 @@ const missingRequirements = [
   process.env.BYPASS_AUTH_FOR_TESTING === "true"
     ? "BYPASS_AUTH_FOR_TESTING=false"
     : null,
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true"
-    ? "NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=false"
-    : null,
   !process.env.NEXT_PUBLIC_SUPABASE_URL
     ? "NEXT_PUBLIC_SUPABASE_URL"
     : null,

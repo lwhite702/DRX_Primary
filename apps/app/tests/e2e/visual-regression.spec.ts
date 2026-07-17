@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
 const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  process.env.BYPASS_AUTH_FOR_TESTING === "true";
 const hasClerkTestingKeys =
   Boolean(process.env.CLERK_SECRET_KEY) &&
   Boolean(

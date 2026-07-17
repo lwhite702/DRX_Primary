@@ -5,8 +5,18 @@ import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
-import { ClerkProvider } from "@/lib/adapters/auth/ui";
+import dynamic from "next/dynamic";
+import {
+  isAuthBypassEnabledServer,
+  getBypassAuthUserId,
+  getBypassAuthOrgId,
+} from "@/lib/auth/bypass";
 import Script from 'next/script';
+
+const ClerkProviderWrapper = dynamic(
+  () => import("./_components/clerk-provider-wrapper"),
+  { ssr: false }
+);
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -31,7 +41,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   title:
-    process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true"
+    isAuthBypassEnabledServer()
       ? "[BYPASS] Deelrx - Run real transactions. Without the mess."
       : "Deelrx - Run real transactions. Without the mess.",
   description:
@@ -84,8 +94,19 @@ export default function RootLayout({
 }) {
   const shouldEnableMeticulous =
     process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
+
+  /*
+    Justification for NEXT_PUBLIC_METICULOUS_TOKEN: This token is a public recording key
+    used to identify this project when sending session recordings to Meticulous.
+    It does not expose any administrative access or secrets and is designed to run
+    fully client-side in the user's browser, similar to a Sentry DSN or Google Analytics ID.
+  */
   const meticulousToken = process.env.NEXT_PUBLIC_METICULOUS_TOKEN;
   const canLoadMeticulous = shouldEnableMeticulous && Boolean(meticulousToken);
+
+  const isBypassActive = isAuthBypassEnabledServer();
+  const bypassUserId = isBypassActive ? getBypassAuthUserId() : undefined;
+  const bypassOrgId = isBypassActive ? getBypassAuthOrgId() : undefined;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -105,7 +126,10 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} ${plusJakartaSans.className} bg-background text-foreground antialiased`}
       >
-        <ClerkProvider
+        <ClerkProviderWrapper
+          isBypassActive={isBypassActive}
+          bypassUserId={bypassUserId}
+          bypassOrgId={bypassOrgId}
           signInUrl="/login"
           signUpUrl="/register"
           waitlistUrl="/waitlist"
@@ -120,7 +144,7 @@ export default function RootLayout({
               <Toaster position="top-right" />
             </PostHogProvider>
           </GlobalErrorBoundary>
-        </ClerkProvider>
+        </ClerkProviderWrapper>
       </body>
     </html>
   );

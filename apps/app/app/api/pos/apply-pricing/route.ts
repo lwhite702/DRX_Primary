@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { errorResponse } from "@/lib/api/response";
 import { getRequestId, logger } from "@/lib/logging";
 
 export async function POST(request: NextRequest) {
   const requestId = getRequestId(request.headers);
 
   try {
-    const { businessId } = await resolveAuthContext();
+    const { businessId } = await resolveAuthContext(request);
     if (!businessId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -46,6 +47,11 @@ export async function POST(request: NextRequest) {
       requestId,
       error,
     });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Internal Server Error",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
 }

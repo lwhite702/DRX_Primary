@@ -51,7 +51,10 @@ describe("GET /api/mobile/v1/session", () => {
       business_id: "business_1",
       business_name: "Deelrx Demo",
       roles: ["owner"],
+      email: "lee@example.com",
     });
+    expect(body).not.toHaveProperty("beta_access");
+    expect(body).not.toHaveProperty("feature_flags");
     expect(body.permissions).toContain("system.manage");
   });
 

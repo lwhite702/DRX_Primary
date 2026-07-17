@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  process.env.BYPASS_AUTH_FOR_TESTING === "true";
 
 test.describe("Auth routing regressions", () => {
   test("unauthenticated / redirects to /login with a visible form", async ({ page }) => {

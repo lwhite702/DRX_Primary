@@ -15,7 +15,6 @@ import {
   ONBOARDING_COMPLETION_COOKIE,
   type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
-
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
