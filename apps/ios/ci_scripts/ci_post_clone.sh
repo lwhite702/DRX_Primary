@@ -20,6 +20,7 @@ if ! command -v sentry-cli >/dev/null 2>&1; then
 fi
 
 cd "${IOS_ROOT}"
+"${SCRIPT_DIR}/sync_telemetry_xcconfig.sh"
 xcodegen generate
 
 xcodebuild \

@@ -21,7 +21,10 @@ if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
 fi
 
 export SENTRY_ORG="${SENTRY_ORG:-wrelik-0y}"
-export SENTRY_PROJECT="${SENTRY_PROJECT:-deelrx-mobile}"
+if [[ -z "${SENTRY_PROJECT:-}" ]]; then
+  echo "error: SENTRY_PROJECT must match the project that issued SENTRY_DSN"
+  exit 1
+fi
 release="com.wrelik.drx@${MARKETING_VERSION:-0.0.0}+${CURRENT_PROJECT_VERSION:-${CI_BUILD_NUMBER:-0}}"
 
 sentry-cli releases new "${release}" || true

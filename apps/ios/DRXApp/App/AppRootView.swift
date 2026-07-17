@@ -17,6 +17,7 @@ struct AppRootView: View {
                 AuthView(isDismissible: false)
                     .environment(\.clerkTheme, .drx)
                     .accessibilityIdentifier("clerkAuthView")
+                    .onAppear { environment.telemetry.screen("Sign In") }
             } else if environment.session.isAuthenticated {
                 OperatorTabView()
             } else {
@@ -105,6 +106,7 @@ private struct SessionBootstrapView: View {
             .shadow(color: DRXPalette.ink.opacity(0.08), radius: 24, y: 12)
             .padding(24)
         }
+        .onAppear { environment.telemetry.screen("Session Bootstrap") }
     }
 }
 
@@ -161,6 +163,7 @@ private struct OperatorTabView: View {
                 .navigationTitle("More")
             }
             .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
+            .onAppear { environment.telemetry.screen("More") }
         }
         .tint(DRXPalette.accent)
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
@@ -181,6 +184,7 @@ private struct OperatorTabView: View {
 private struct PlaceholderView: View {
     let title: String
     let symbol: String
+    @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
         ZStack {
@@ -210,6 +214,7 @@ private struct PlaceholderView: View {
             }
         }
         .navigationTitle(title)
+        .onAppear { environment.telemetry.screen(title) }
     }
 }
 

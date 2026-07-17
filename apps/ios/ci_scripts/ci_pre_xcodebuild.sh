@@ -7,11 +7,16 @@ if [[ "${CONFIGURATION:-}" != "Release" && "${CI_XCODEBUILD_ACTION:-}" != "archi
 fi
 
 missing=()
-for name in POSTHOG_API_KEY SENTRY_DSN SENTRY_AUTH_TOKEN; do
+for name in SENTRY_AUTH_TOKEN SENTRY_ORG SENTRY_PROJECT; do
   if [[ -z "${(P)name:-}" ]]; then
     missing+=("${name}")
   fi
 done
+
+if [[ ! -s "${CI_PRIMARY_REPOSITORY_PATH:-${PWD}}/apps/ios/Configuration/Telemetry.generated.xcconfig" &&
+      ! -s "${PWD}/Configuration/Telemetry.generated.xcconfig" ]]; then
+  missing+=("Telemetry.generated.xcconfig")
+fi
 
 if (( ${#missing[@]} > 0 )); then
   echo "error: Missing required Xcode Cloud environment variables: ${missing[*]}"

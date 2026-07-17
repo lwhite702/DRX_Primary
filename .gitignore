@@ -94,3 +94,5 @@ credentials.json
 *.pem
 *.key
 .credentials
+# Native iOS telemetry values generated from Doppler/Xcode Cloud.
+apps/ios/Configuration/Telemetry.generated.xcconfig

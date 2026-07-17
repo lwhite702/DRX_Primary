@@ -6,3 +6,7 @@ DRX_API_BASE_URL = https:/$()/www.deelrxcrm.app
 POSTHOG_HOST = https:/$()/us.i.posthog.com
 POSTHOG_API_KEY =
 SENTRY_DSN =
+
+// Generated locally with Doppler or by Xcode Cloud's post-clone action.
+// This file is ignored and intentionally overrides the empty defaults above.
+#include? "Telemetry.generated.xcconfig"

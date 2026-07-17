@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		20AE6B5AF941620E240797AA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 56661858B6226FF335EECA30 /* PostHog */; };
+		2C177692EE1468BD16ECFA2F /* TelemetryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */; };
 		331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */; };
 		3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B795B70D7DE21081FD179D19 /* SessionStore.swift */; };
 		43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919880B91AF708A0700CAA02 /* AppRootView.swift */; };
@@ -58,6 +59,7 @@
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
+		A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryServiceTests.swift; sourceTree = "<group>"; };
 		AA881E95C60310AC4903A0B1 /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
 		B795B70D7DE21081FD179D19 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 			children = (
 				73360F1798B2906E00047019 /* AppConfigurationTests.swift */,
 				4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */,
+				A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */,
 			);
 			path = DRXAppTests;
 			sourceTree = "<group>";
@@ -357,6 +360,7 @@
 			files = (
 				7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */,
 				51C6005114FAA81763D6F0F5 /* SessionStoreTests.swift in Sources */,
+				2C177692EE1468BD16ECFA2F /* TelemetryServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
