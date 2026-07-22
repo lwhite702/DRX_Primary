@@ -56,8 +56,16 @@ vi.mock("next/navigation", () => ({
   redirect: mocks.redirectMock,
 }));
 
-import { completeOnboarding } from "@/app/onboarding/_actions";
+import {
+  completeOnboarding,
+  type OnboardingActionState,
+} from "@/app/onboarding/_actions";
 import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
+
+const initialOnboardingActionState: OnboardingActionState = {
+  status: "idle",
+  error: null,
+};
 
 function form(overrides: Record<string, string> = {}) {
   const formData = new FormData();
@@ -90,8 +98,10 @@ describe("completeOnboarding", () => {
     mocks.dbMock.userRole.findFirst.mockResolvedValue(null);
   });
 
-  it("creates durable business setup before redirecting to dashboard", async () => {
-    await expect(completeOnboarding(form())).rejects.toThrow("NEXT_REDIRECT:/dashboard");
+  it("creates durable business setup before returning navigation success", async () => {
+    await expect(
+      completeOnboarding(initialOnboardingActionState, form()),
+    ).resolves.toEqual({ status: "success", error: null });
 
     expect(mocks.dbMock.businessProfile.create).toHaveBeenCalledWith({
       data: {
@@ -141,7 +151,7 @@ describe("completeOnboarding", () => {
         path: "/",
       }),
     );
-    expect(mocks.redirectMock).toHaveBeenCalledWith("/dashboard");
+    expect(mocks.redirectMock).not.toHaveBeenCalled();
   });
 
   it("reuses an existing active owner business and updates setup state", async () => {
@@ -154,9 +164,12 @@ describe("completeOnboarding", () => {
     });
     mocks.dbMock.userRole.findFirst.mockResolvedValue({ id: "role_existing" });
 
-    await expect(completeOnboarding(form({ businessName: "Updated Market" }))).rejects.toThrow(
-      "NEXT_REDIRECT:/dashboard",
-    );
+    await expect(
+      completeOnboarding(
+        initialOnboardingActionState,
+        form({ businessName: "Updated Market" }),
+      ),
+    ).resolves.toEqual({ status: "success", error: null });
 
     expect(mocks.dbMock.businessProfile.create).not.toHaveBeenCalled();
     expect(mocks.dbMock.businessProfile.update).toHaveBeenCalledWith({

@@ -13,7 +13,14 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function completeOnboarding(formData: FormData) {
+export type OnboardingActionState =
+  | { status: "idle"; error: null }
+  | { status: "success"; error: null };
+
+export async function completeOnboarding(
+  _previousState: OnboardingActionState,
+  formData: FormData,
+): Promise<OnboardingActionState> {
   const { userId, sessionClaims } = await auth();
 
   if (!userId) {
@@ -179,5 +186,8 @@ export async function completeOnboarding(formData: FormData) {
     maxAge: 10 * 60,
   });
 
-  redirect("/dashboard");
+  // Return a success result instead of relying on the server-action redirect
+  // transport. The client performs a full document navigation so the next
+  // request is guaranteed to include the new cookie and refreshed Clerk state.
+  return { status: "success", error: null };
 }
