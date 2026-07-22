@@ -9,6 +9,16 @@ struct OperatorSession: Codable, Sendable, Equatable {
     let roles: [String]
     let permissions: [String]
     let email: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case operatorID = "operatorId"
+        case displayName
+        case businessID = "businessId"
+        case businessName
+        case roles
+        case permissions
+        case email
+    }
 }
 
 @MainActor
