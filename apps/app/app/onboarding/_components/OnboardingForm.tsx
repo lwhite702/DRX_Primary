@@ -10,6 +10,35 @@ const initialOnboardingActionState: OnboardingActionState = {
   error: null,
 };
 
+type OnboardingCompletionRedirectProps = {
+  completed: boolean;
+  storage?: Pick<Storage, "setItem">;
+  navigate?: (path: string) => void;
+};
+
+export function OnboardingCompletionRedirect({
+  completed,
+  storage,
+  navigate,
+}: OnboardingCompletionRedirectProps) {
+  useEffect(() => {
+    if (!completed) {
+      return;
+    }
+
+    try {
+      (storage ?? window.localStorage).setItem("drx_onboarding_complete", "true");
+    } catch {
+      // Browser privacy settings may block storage. Durable server state and
+      // the completion cookie remain authoritative.
+    } finally {
+      (navigate ?? ((path) => window.location.replace(path)))("/dashboard");
+    }
+  }, [completed, navigate, storage]);
+
+  return null;
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -30,94 +59,86 @@ export function OnboardingForm() {
     initialOnboardingActionState,
   );
 
-  useEffect(() => {
-    if (state.status !== "success") {
-      return;
-    }
-
-    // Keep the legacy in-app tour in sync, then force a fresh request so the
-    // dashboard reads the durable completion cookie instead of stale RSC state.
-    window.localStorage.setItem("drx_onboarding_complete", "true");
-    window.location.replace("/dashboard");
-  }, [state.status]);
-
   return (
-    <form
-      action={formAction}
-      className="glass-effect mt-8 space-y-5 rounded-2xl border border-white/10 p-6"
-    >
-      <label className="grid gap-2">
-        <span className="technical-label text-[11px] text-white/70">
-          {drxCopy.onboarding.page.businessName}
-        </span>
-        <input
-          name="businessName"
-          required
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
-        />
-      </label>
+    <>
+      <OnboardingCompletionRedirect completed={state.status === "success"} />
+      <form
+        action={formAction}
+        className="glass-effect mt-8 space-y-5 rounded-2xl border border-white/10 p-6"
+      >
+        <label className="grid gap-2">
+          <span className="technical-label text-[11px] text-white/70">
+            {drxCopy.onboarding.page.businessName}
+          </span>
+          <input
+            name="businessName"
+            required
+            className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+          />
+        </label>
 
-      <label className="grid gap-2">
-        <span className="technical-label text-[11px] text-white/70">
-          {drxCopy.onboarding.page.role}
-        </span>
-        <select
-          name="role"
-          required
-          defaultValue="owner_operator"
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
-        >
-          <option value="owner_operator">Owner / operator</option>
-          <option value="manager">Manager</option>
-          <option value="multi_role">Team lead</option>
-        </select>
-      </label>
+        <label className="grid gap-2">
+          <span className="technical-label text-[11px] text-white/70">
+            {drxCopy.onboarding.page.role}
+          </span>
+          <select
+            name="role"
+            required
+            defaultValue="owner_operator"
+            className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+          >
+            <option value="owner_operator">Owner / operator</option>
+            <option value="manager">Manager</option>
+            <option value="multi_role">Team lead</option>
+          </select>
+        </label>
 
-      <label className="grid gap-2">
-        <span className="technical-label text-[11px] text-white/70">
-          {drxCopy.onboarding.page.teamSize}
-        </span>
-        <select
-          name="teamSize"
-          required
-          defaultValue="1-5"
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
-        >
-          <option value="1-5">1-5</option>
-          <option value="6-15">6-15</option>
-          <option value="16-40">16-40</option>
-          <option value="41+">41+</option>
-        </select>
-      </label>
+        <label className="grid gap-2">
+          <span className="technical-label text-[11px] text-white/70">
+            {drxCopy.onboarding.page.teamSize}
+          </span>
+          <select
+            name="teamSize"
+            required
+            defaultValue="1-5"
+            className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+          >
+            <option value="1-5">1-5</option>
+            <option value="6-15">6-15</option>
+            <option value="16-40">16-40</option>
+            <option value="41+">41+</option>
+          </select>
+        </label>
 
-      <label className="grid gap-2">
-        <span className="technical-label text-[11px] text-white/80">
-          Dashboard View
-        </span>
-        <select
-          name="dashboardPreset"
-          defaultValue="operations"
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
-        >
-          <option value="operations">Operations (balanced daily overview)</option>
-          <option value="checkout">Checkout (front-counter workflow)</option>
-          <option value="inventory">Inventory (stock and replenishment focus)</option>
-        </select>
-      </label>
+        <label className="grid gap-2">
+          <span className="technical-label text-[11px] text-white/80">
+            Dashboard View
+          </span>
+          <select
+            name="dashboardPreset"
+            defaultValue="operations"
+            className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+          >
+            <option value="operations">Operations (balanced daily overview)</option>
+            <option value="checkout">Checkout (front-counter workflow)</option>
+            <option value="inventory">Inventory (stock and replenishment focus)</option>
+          </select>
+        </label>
 
-      <label className="grid gap-2">
-        <span className="technical-label text-[11px] text-white/70">
-          {drxCopy.onboarding.page.tooling}
-        </span>
-        <textarea
-          name="tooling"
-          rows={4}
-          placeholder={drxCopy.onboarding.page.toolingPlaceholder}
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
-        />
-      </label>
+        <label className="grid gap-2">
+          <span className="technical-label text-[11px] text-white/70">
+            {drxCopy.onboarding.page.tooling}
+          </span>
+          <textarea
+            name="tooling"
+            rows={4}
+            placeholder={drxCopy.onboarding.page.toolingPlaceholder}
+            className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
+          />
+        </label>
 
-      <SubmitButton />
-    </form>
+        <SubmitButton />
+      </form>
+    </>
   );
 }
