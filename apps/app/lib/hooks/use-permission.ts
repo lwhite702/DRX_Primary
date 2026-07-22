@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { useCallback, useMemo } from "react";
 import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { useUserRole } from "./use-user-role";
 
@@ -45,62 +44,12 @@ const getFallbackPermissions = (role: string | null): string[] => {
 
 export function usePermission(businessId: string | undefined) {
   const authBypassEnabled = useIsBypassActive();
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const supabase = createAppClient();
-  const { role } = useUserRole(businessId);
-
-  const fetchPermissions = useCallback(async () => {
-    if (authBypassEnabled) {
-      setPermissions(["*"]);
-      setLoading(false);
-      return;
-    }
-
-    if (!businessId || !supabase) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Try to fetch from backend RPC
-      const { data, error } = await supabase.rpc("get_user_permissions", {
-        check_business_id: businessId,
-      });
-
-      if (error || !data) {
-        // If RPC fails or returns no data (mock client), fallback to role-based mapping on client
-        // This ensures the UI doesn't break during migration
-        if (error)
-          console.warn(
-            "Error fetching permissions from RPC, falling back to role map:",
-            error,
-          );
-        setPermissions(getFallbackPermissions(role));
-      } else {
-        setPermissions(data.map((d: any) => d.permission_slug));
-      }
-    } catch (err) {
-      console.error("Error in usePermission:", err);
-      setPermissions(getFallbackPermissions(role));
-    } finally {
-      setLoading(false);
-    }
-  }, [authBypassEnabled, businessId, supabase, role]);
-
-  useEffect(() => {
-    if (authBypassEnabled) {
-      setPermissions(["*"]);
-      setLoading(false);
-      return;
-    }
-
-    if (role) {
-      fetchPermissions();
-    } else {
-      setLoading(false);
-    }
-  }, [authBypassEnabled, fetchPermissions, role]);
+  const { role, loading: roleLoading, refreshRole } = useUserRole(businessId);
+  const permissions = useMemo(
+    () =>
+      authBypassEnabled ? ["*"] : getFallbackPermissions(role),
+    [authBypassEnabled, role],
+  );
 
   const hasPermission = useCallback(
     (requiredPermission: string) => {
@@ -112,8 +61,8 @@ export function usePermission(businessId: string | undefined) {
 
   return {
     permissions,
-    loading,
+    loading: !authBypassEnabled && roleLoading,
     hasPermission,
-    refreshPermissions: fetchPermissions,
+    refreshPermissions: refreshRole,
   };
 }
