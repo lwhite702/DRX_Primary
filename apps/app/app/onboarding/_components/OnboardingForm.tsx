@@ -1,8 +1,14 @@
 "use client";
 
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
-import { completeOnboarding } from "../_actions";
+import { completeOnboarding, type OnboardingActionState } from "../_actions";
 import { drxCopy } from "@/lib/copy/drx";
+
+const initialOnboardingActionState: OnboardingActionState = {
+  status: "idle",
+  error: null,
+};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -19,9 +25,25 @@ function SubmitButton() {
 }
 
 export function OnboardingForm() {
+  const [state, formAction] = useActionState(
+    completeOnboarding,
+    initialOnboardingActionState,
+  );
+
+  useEffect(() => {
+    if (state.status !== "success") {
+      return;
+    }
+
+    // Keep the legacy in-app tour in sync, then force a fresh request so the
+    // dashboard reads the durable completion cookie instead of stale RSC state.
+    window.localStorage.setItem("drx_onboarding_complete", "true");
+    window.location.replace("/dashboard");
+  }, [state.status]);
+
   return (
     <form
-      action={completeOnboarding}
+      action={formAction}
       className="glass-effect mt-8 space-y-5 rounded-2xl border border-white/10 p-6"
     >
       <label className="grid gap-2">

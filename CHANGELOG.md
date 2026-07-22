@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Web Onboarding**: Force a fresh dashboard navigation after durable onboarding completion so production sessions cannot remain stuck on the onboarding page.
+
 ## [0.5.6] - 2026-06-21
 
 ### Fixed
