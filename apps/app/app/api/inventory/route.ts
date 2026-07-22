@@ -1,41 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
       return NextResponse.json(
         { error: "Endpoint GET Unauthorized" },
         { status: 401 },
-      );
-    }
-
-    // Determine business_id
-    // 1. Check if user is an owner
-    const ownedBusiness = await db.businessProfile.findFirst({
-      where: { ownerId: userId },
-      select: { id: true },
-    });
-
-    let businessId = ownedBusiness?.id;
-
-    // 2. If not owner, check roles
-    if (!businessId) {
-      const userRole = await db.userRole.findFirst({
-        where: { userId: userId },
-        select: { businessId: true },
-      });
-      businessId = userRole?.businessId;
-    }
-
-    if (!businessId) {
-      return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
       );
     }
 
@@ -74,41 +48,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
+    const body = await request.json();
+    const { userId, businessId } = await resolveAuthContext(
+      typeof body.business_id === "string" ? body.business_id : request,
+    );
+    if (!userId || !businessId) {
       return NextResponse.json(
         { error: "Endpoint POST Unauthorized" },
         { status: 401 },
       );
     }
-
-    // Determine business_id
-    // 1. Check if user is an owner
-    const ownedBusiness = await db.businessProfile.findFirst({
-      where: { ownerId: userId },
-      select: { id: true },
-    });
-
-    let businessId = ownedBusiness?.id;
-
-    // 2. If not owner, check roles
-    if (!businessId) {
-      const userRole = await db.userRole.findFirst({
-        where: { userId: userId },
-        select: { businessId: true },
-      });
-      businessId = userRole?.businessId;
-    }
-
-    if (!businessId) {
-      return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
-      );
-    }
-
-    const body = await request.json();
     const {
       sku,
       product_name,
@@ -119,6 +68,7 @@ export async function POST(request: NextRequest) {
       unit_cost,
       selling_price,
       supplier_id,
+      unit_of_measure,
     } = body;
 
     // Validation
@@ -142,12 +92,18 @@ export async function POST(request: NextRequest) {
           unitCost: unit_cost,
           sellingPrice: selling_price,
           supplierId: supplier_id,
+          baseUnit: unit_of_measure || "g",
         },
       });
 
       return NextResponse.json(newItem, { status: 201 });
-    } catch (error: any) {
-      if (error.code === "P2002") {
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "P2002"
+      ) {
         // Unique constraint violation (likely SKU)
         return NextResponse.json(
           { error: "SKU already exists for this business" },
