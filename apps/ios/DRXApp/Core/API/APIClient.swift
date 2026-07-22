@@ -96,7 +96,7 @@ private struct APIErrorResponse: Decodable {
     let error: String?
 }
 
-private extension JSONDecoder {
+extension JSONDecoder {
     static var drx: JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
