@@ -1,15 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
-import { useOrganization, useOrganizationList, useUser, useIsBypassActive } from "@/lib/adapters/auth/ui";
+import { useOrganizationList, useUser, useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export function useBusiness() {
   const authBypassEnabled = useIsBypassActive();
   const { isLoaded: isUserLoaded } = useUser();
-  const { organization: activeOrg, isLoaded: isOrgLoaded } = useOrganization();
   const {
     userMemberships,
     setActive,
-    isLoaded: isListLoaded,
   } = useOrganizationList({
     userMemberships: { infinite: true },
   });
@@ -34,11 +32,11 @@ export function useBusiness() {
   }, [authBypassEnabled, isUserLoaded]);
 
   useEffect(() => {
-    if ((isUserLoaded && isOrgLoaded) || authBypassEnabled) {
+    if (isUserLoaded || authBypassEnabled) {
       setLoading(true);
-      fetchBusinessProfile();
+      void fetchBusinessProfile();
     }
-  }, [fetchBusinessProfile, isOrgLoaded, isUserLoaded, authBypassEnabled]);
+  }, [fetchBusinessProfile, isUserLoaded, authBypassEnabled]);
 
   // Sync available businesses from Clerk memberships
   const availableBusinesses =
@@ -59,13 +57,6 @@ export function useBusiness() {
         ]
       : [];
 
-  const isBasicLoaded = isUserLoaded && isOrgLoaded;
-  const isFullLoaded = isBasicLoaded && isListLoaded;
-
-  // We are "loaded" enough if we have the basic user/org info,
-  // or if we're waiting for lists but we already have an active org to work with.
-  const isEssentiallyLoaded = isBasicLoaded && (!!activeOrg || isListLoaded);
-
   return {
     business, // Local DB BusinessProfile (with UUID)
     settings:
@@ -75,13 +66,11 @@ export function useBusiness() {
         ? (business as { settingsData?: Record<string, unknown> }).settingsData
         : null,
     availableBusinesses: authBypassEnabled ? bypassBusinesses : availableBusinesses, // Clerk Organizations (with Clerk IDs)
-    loading: loading || !isEssentiallyLoaded,
-    needsSetup:
-      (authBypassEnabled && !loading && !business) ||
-      (isFullLoaded &&
-        availableBusinesses.length === 0 &&
-        !loading &&
-        !activeOrg),
+    // The database profile is the durable business record created by onboarding.
+    // Clerk organization memberships enhance switching, but must not block the app
+    // or reopen setup for accounts that do not have a Clerk organization.
+    loading: loading || (!isUserLoaded && !authBypassEnabled),
+    needsSetup: !loading && !business,
     refreshBusiness: fetchBusinessProfile,
     switchBusiness: (organizationId: string) => {
       // Expects Clerk Organization ID
