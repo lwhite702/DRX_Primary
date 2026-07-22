@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { errorResponse } from "@/lib/api/response";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
 export async function GET() {
   try {
-    const { businessId } = await resolveAuthContext();
-    if (!businessId) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    const { userId, businessId } = await resolveAuthContext();
+    if (!userId || !businessId) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    if (!(await hasBusinessPermission(userId, businessId, "audit.view"))) {
+      return errorResponse("FORBIDDEN", "Forbidden", 403);
+    }
 
     const logs = await db.inventoryLog.findMany({
       where: { inventory: { businessId } },
