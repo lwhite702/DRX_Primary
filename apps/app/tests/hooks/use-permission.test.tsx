@@ -38,7 +38,8 @@ describe("usePermission", () => {
 
     expect(result.current.loading).toBe(false);
     expect(result.current.hasPermission("sales.create")).toBe(true);
-    expect(result.current.hasPermission("settings.manage")).toBe(true);
+    expect(result.current.hasPermission("settings.configure_pos")).toBe(true);
+    expect(result.current.hasPermission("system.manage")).toBe(true);
     expect(result.current.refreshPermissions).toBe(mocks.refreshRole);
   });
 
@@ -71,7 +72,7 @@ describe("usePermission", () => {
       { initialProps: { businessId: "business-1" } },
     );
 
-    expect(result.current.hasPermission("settings.manage")).toBe(true);
+    expect(result.current.hasPermission("settings.configure_pos")).toBe(true);
 
     rerender({ businessId: "business-2" });
 
@@ -88,6 +89,21 @@ describe("usePermission", () => {
 
     expect(result.current.loading).toBe(false);
     expect(result.current.hasPermission("sales.create")).toBe(true);
-    expect(result.current.hasPermission("settings.manage")).toBe(false);
+    expect(result.current.hasPermission("settings.configure_pos")).toBe(false);
+  });
+
+  it("keeps permissions empty until a business context is available", () => {
+    mocks.useUserRole.mockReturnValue({
+      role: "owner",
+      roleBusinessId: undefined,
+      loading: false,
+      refreshRole: mocks.refreshRole,
+    });
+
+    const { result } = renderHook(() => usePermission(undefined));
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.permissions).toEqual([]);
+    expect(result.current.hasPermission("system.manage")).toBe(false);
   });
 });
