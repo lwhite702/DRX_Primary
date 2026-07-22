@@ -17,12 +17,14 @@ export function useUserRole(businessId?: string) {
   const authBypassEnabled = useIsBypassActive();
   const { user, isLoaded } = useUser();
   const [role, setRole] = useState<UserRole>(null);
+  const [roleBusinessId, setRoleBusinessId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRole = useCallback(async () => {
     if (authBypassEnabled) {
       setRole("super_admin");
+      setRoleBusinessId(businessId);
       setLoading(false);
       setError(null);
       return;
@@ -32,9 +34,14 @@ export function useUserRole(businessId?: string) {
 
     if (!user) {
       setRole(null);
+      setRoleBusinessId(businessId);
       setLoading(false);
       return;
     }
+
+    setRole(null);
+    setLoading(true);
+    setError(null);
 
     try {
       const { role: fetchedRole, error: fetchError } =
@@ -49,6 +56,7 @@ export function useUserRole(businessId?: string) {
       console.error("Error in useUserRole:", err);
       setError("Unknown error");
     } finally {
+      setRoleBusinessId(businessId);
       setLoading(false);
     }
   }, [user, isLoaded, businessId, authBypassEnabled]);
@@ -75,6 +83,7 @@ export function useUserRole(businessId?: string) {
 
   return {
     role,
+    roleBusinessId,
     loading: !isLoaded || loading,
     error,
     isAdmin,
