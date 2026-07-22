@@ -27,6 +27,7 @@ describe("usePermission", () => {
     mocks.useIsBypassActive.mockReturnValue(false);
     mocks.useUserRole.mockReturnValue({
       role: "owner",
+      roleBusinessId: "business-1",
       loading: false,
       refreshRole: mocks.refreshRole,
     });
@@ -44,6 +45,7 @@ describe("usePermission", () => {
   it("keeps permissions hidden while the role is loading", () => {
     mocks.useUserRole.mockReturnValue({
       role: null,
+      roleBusinessId: "business-1",
       loading: true,
       refreshRole: mocks.refreshRole,
     });
@@ -61,5 +63,31 @@ describe("usePermission", () => {
 
     expect(result.current.loading).toBe(false);
     expect(result.current.hasPermission("any.permission")).toBe(true);
+  });
+
+  it("does not retain permissions while switching businesses", () => {
+    const { result, rerender } = renderHook(
+      ({ businessId }) => usePermission(businessId),
+      { initialProps: { businessId: "business-1" } },
+    );
+
+    expect(result.current.hasPermission("settings.manage")).toBe(true);
+
+    rerender({ businessId: "business-2" });
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.permissions).toEqual([]);
+
+    mocks.useUserRole.mockReturnValue({
+      role: "cashier",
+      roleBusinessId: "business-2",
+      loading: false,
+      refreshRole: mocks.refreshRole,
+    });
+    rerender({ businessId: "business-2" });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.hasPermission("sales.create")).toBe(true);
+    expect(result.current.hasPermission("settings.manage")).toBe(false);
   });
 });

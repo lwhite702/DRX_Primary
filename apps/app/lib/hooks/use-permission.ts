@@ -44,11 +44,19 @@ const getFallbackPermissions = (role: string | null): string[] => {
 
 export function usePermission(businessId: string | undefined) {
   const authBypassEnabled = useIsBypassActive();
-  const { role, loading: roleLoading, refreshRole } = useUserRole(businessId);
+  const {
+    role,
+    roleBusinessId,
+    loading: roleLoading,
+    refreshRole,
+  } = useUserRole(businessId);
+  const roleMatchesBusiness = roleBusinessId === businessId;
   const permissions = useMemo(
     () =>
-      authBypassEnabled ? ["*"] : getFallbackPermissions(role),
-    [authBypassEnabled, role],
+      authBypassEnabled
+        ? ["*"]
+        : getFallbackPermissions(roleMatchesBusiness ? role : null),
+    [authBypassEnabled, role, roleMatchesBusiness],
   );
 
   const hasPermission = useCallback(
@@ -61,7 +69,7 @@ export function usePermission(businessId: string | undefined) {
 
   return {
     permissions,
-    loading: !authBypassEnabled && roleLoading,
+    loading: !authBypassEnabled && (roleLoading || !roleMatchesBusiness),
     hasPermission,
     refreshPermissions: refreshRole,
   };
