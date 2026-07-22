@@ -123,12 +123,15 @@ export function useInventoryActions(businessId: string | undefined) {
 
     const promise = async () => {
       if (editingItem && "id" in editingItem && editingItem.id) {
-        const response = await fetch(`/api/inventory/${editingItem.id}`, {
+        const response = await fetch(
+          `/api/inventory/${editingItem.id}?business_id=${encodeURIComponent(businessId)}`,
+          {
           method: "PUT",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        });
+          },
+        );
         const body = await readApiResponse(response);
         const updatedItem = normalizeInventoryItem(body.data ?? data);
         setInventory((prev) =>

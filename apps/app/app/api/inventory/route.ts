@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,6 +12,9 @@ export async function GET(request: NextRequest) {
         { error: "Endpoint GET Unauthorized" },
         { status: 401 },
       );
+    }
+    if (!(await hasBusinessPermission(userId, businessId, "catalog.view"))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -57,6 +61,9 @@ export async function POST(request: NextRequest) {
         { error: "Endpoint POST Unauthorized" },
         { status: 401 },
       );
+    }
+    if (!(await hasBusinessPermission(userId, businessId, "inventory.manage"))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const {
       sku,

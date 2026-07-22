@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { errorResponse } from "@/lib/api/response";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
 const RouteParamsSchema = z.object({ id: z.string().uuid() });
 const InventoryUpdateSchema = z
@@ -25,12 +26,19 @@ const InventoryUpdateSchema = z
 
 type RouteContext = { params: { id: string } };
 
-async function resolveInventory(request: NextRequest, context: RouteContext) {
+async function resolveInventory(
+  request: NextRequest,
+  context: RouteContext,
+  permission: "catalog.view" | "inventory.manage",
+) {
   const parsedParams = RouteParamsSchema.safeParse(context.params);
   if (!parsedParams.success) return { error: "invalid" as const };
 
   const { userId, businessId } = await resolveAuthContext(request);
   if (!userId || !businessId) return { error: "unauthorized" as const };
+  if (!(await hasBusinessPermission(userId, businessId, permission))) {
+    return { error: "forbidden" as const };
+  }
 
   const item = await db.inventory.findFirst({
     where: { id: parsedParams.data.id, businessId },
@@ -41,9 +49,10 @@ async function resolveInventory(request: NextRequest, context: RouteContext) {
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const resolved = await resolveInventory(request, context);
+    const resolved = await resolveInventory(request, context, "catalog.view");
     if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
     if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
     if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
     return NextResponse.json({ data: resolved.item });
   } catch (error) {
@@ -54,9 +63,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const resolved = await resolveInventory(request, context);
+    const resolved = await resolveInventory(request, context, "inventory.manage");
     if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
     if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
     if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
 
     const payload = InventoryUpdateSchema.safeParse(await request.json());
