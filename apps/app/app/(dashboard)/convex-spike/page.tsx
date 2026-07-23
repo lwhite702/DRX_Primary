@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 
 export default function ConvexSpikeDashboard() {
   const products = useQuery(api.products.listProducts, {}) || [];
-  const customers = useQuery(api.customers.listCustomers, {}) || [];
   const sales = useQuery(api.checkout.getSalesHistory, {}) || [];
 
   const createProductMut = useMutation(api.products.createProduct);
@@ -124,7 +123,7 @@ export default function ConvexSpikeDashboard() {
                 onChange={(e) => setSelectedProductId(e.target.value)}
               >
                 <option value="">-- Choose Product --</option>
-                {products.map((p) => (
+                {products.map((p: any) => (
                   <option key={p._id} value={p._id}>
                     {p.productName} ({p.sku}) - Stock: {p.quantityOnHandGrams}g
                   </option>
@@ -198,7 +197,7 @@ export default function ConvexSpikeDashboard() {
                   </td>
                 </tr>
               ) : (
-                sales.map((s) => (
+                sales.map((s: any) => (
                   <tr key={s._id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
                     <td className="p-2 font-mono text-amber-300">{s.orderNumber}</td>
                     <td className="p-2">${(s.subtotalCents / 100).toFixed(2)}</td>
