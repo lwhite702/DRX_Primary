@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		20AE6B5AF941620E240797AA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 56661858B6226FF335EECA30 /* PostHog */; };
+		215E2D1AC86C7087AAC7EA7E /* ConvexMobile in Frameworks */ = {isa = PBXBuildFile; productRef = 171E00CF6A8B5CF2B3E8FDD3 /* ConvexMobile */; };
 		2C177692EE1468BD16ECFA2F /* TelemetryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */; };
 		331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */; };
 		3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B795B70D7DE21081FD179D19 /* SessionStore.swift */; };
@@ -17,6 +18,7 @@
 		7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73360F1798B2906E00047019 /* AppConfigurationTests.swift */; };
 		84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D387246879C07454D82086A /* ClerkKit */; };
 		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
+		A5227AA8785CA7CBF27E8CDB /* DRXConvexBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */; };
 		AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */; };
 		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
 		CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */; };
@@ -50,14 +52,15 @@
 		012054A89298CCFB49931B0E /* DRXApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DRXApp.entitlements; sourceTree = "<group>"; };
 		2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXAppUITests.swift; sourceTree = "<group>"; };
 		36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
-		415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Deelrx CRM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		415F8ABF72B90D0E13B39A5F /* DRXApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DRXApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXClerkTheme.swift; sourceTree = "<group>"; };
-		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXConvexBridge.swift; sourceTree = "<group>"; };
+		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		73360F1798B2906E00047019 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
-		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		919880B91AF708A0700CAA02 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -81,6 +84,7 @@
 				E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */,
 				20AE6B5AF941620E240797AA /* PostHog in Frameworks */,
 				E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */,
+				215E2D1AC86C7087AAC7EA7E /* ConvexMobile in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,7 +158,7 @@
 		4887DBEFDB8A90284B1E8516 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */,
+				415F8ABF72B90D0E13B39A5F /* DRXApp.app */,
 				874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */,
 				63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */,
 			);
@@ -196,6 +200,7 @@
 			children = (
 				C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */,
 				012054A89298CCFB49931B0E /* DRXApp.entitlements */,
+				61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */,
 				A6359117F941BC2135C420A7 /* Info.plist */,
 				5FE39C6DD701561FBF8AD202 /* App */,
 				2A89611843A477A9A09A0091 /* Core */,
@@ -251,9 +256,10 @@
 				0DF65613D95A790A5EFE0755 /* ClerkKitUI */,
 				56661858B6226FF335EECA30 /* PostHog */,
 				E90E5E4D4537197DB93C1307 /* Sentry */,
+				171E00CF6A8B5CF2B3E8FDD3 /* ConvexMobile */,
 			);
 			productName = DRXApp;
-			productReference = 415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */;
+			productReference = 415F8ABF72B90D0E13B39A5F /* DRXApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F719BA7B6F64935FE564D7B5 /* DRXAppUITests */ = {
@@ -281,7 +287,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					005008D9108E0C10FDB31BC7 = {
 						DevelopmentTeam = L8R42BJ54K;
@@ -309,6 +315,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+				77F3AA11CC242E4DA1EF04DC /* XCRemoteSwiftPackageReference "convex-swift" */,
 				378E51EF1E22C276F42AAB1A /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				C3987C277E69B0B18489631A /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
@@ -355,6 +362,7 @@
 				AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */,
 				331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */,
 				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
+				A5227AA8785CA7CBF27E8CDB /* DRXConvexBridge.swift in Sources */,
 				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
 				D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */,
 				3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */,
@@ -485,7 +493,6 @@
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -507,7 +514,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -612,7 +618,6 @@
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -627,7 +632,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -685,6 +689,14 @@
 				version = 3.64.6;
 			};
 		};
+		77F3AA11CC242E4DA1EF04DC /* XCRemoteSwiftPackageReference "convex-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/get-convex/convex-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
 		9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/clerk/clerk-ios";
@@ -708,6 +720,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9C764C70B4D262033475DF53 /* XCRemoteSwiftPackageReference "clerk-ios" */;
 			productName = ClerkKitUI;
+		};
+		171E00CF6A8B5CF2B3E8FDD3 /* ConvexMobile */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 77F3AA11CC242E4DA1EF04DC /* XCRemoteSwiftPackageReference "convex-swift" */;
+			productName = ConvexMobile;
 		};
 		4D387246879C07454D82086A /* ClerkKit */ = {
 			isa = XCSwiftPackageProductDependency;

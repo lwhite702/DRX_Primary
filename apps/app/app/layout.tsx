@@ -6,6 +6,7 @@ import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
 import ClerkProviderWrapper from "./_components/clerk-provider-wrapper";
+import ConvexClientProvider from "./ConvexClientProvider";
 import {
   isAuthBypassEnabledServer,
   getBypassAuthUserId,
@@ -132,13 +133,15 @@ export default function RootLayout({
           signUpFallbackRedirectUrl="/onboarding"
           afterSignOutUrl="/login"
         >
-          <GlobalErrorBoundary>
-            <PostHogProvider>
-              <FeaturebaseProvider />
-              {children}
-              <Toaster position="top-right" />
-            </PostHogProvider>
-          </GlobalErrorBoundary>
+          <ConvexClientProvider>
+            <GlobalErrorBoundary>
+              <PostHogProvider>
+                <FeaturebaseProvider />
+                {children}
+                <Toaster position="top-right" />
+              </PostHogProvider>
+            </GlobalErrorBoundary>
+          </ConvexClientProvider>
         </ClerkProviderWrapper>
       </body>
     </html>
