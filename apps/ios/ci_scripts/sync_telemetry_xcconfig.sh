@@ -16,8 +16,12 @@ missing=()
 [[ -z "${sentry_dsn}" ]] && missing+=("SENTRY_IOS_DSN/SENTRY_DSN")
 
 if (( ${#missing[@]} > 0 )); then
-  echo "error: Missing native telemetry values: ${missing[*]}"
-  exit 1
+  echo "warning: Missing native telemetry env vars: ${missing[*]}"
+  echo "warning: Analytics/crash reporting will be disabled in this build."
+  # Write empty stubs so xcconfig is still valid and the build can proceed
+  posthog_key="${posthog_key:-DISABLED}"
+  posthog_host="${posthog_host:-https://us.i.posthog.com}"
+  sentry_dsn="${sentry_dsn:-}"
 fi
 
 escape_url_for_xcconfig() {
