@@ -67,6 +67,7 @@ See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details
 Policy source of truth is root canonical files:
 
 - `./WRELIK_AGENTS.md`
+- `./AGENTS.md`
 - `./DEVELOPMENT_PROCESS.md`
 - `./RELEASE_POLICY.md`
 - `./VERSIONING_POLICY.md`

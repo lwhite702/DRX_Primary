@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Engineering Team  
-Last Updated: 2026-03-03  
+Last Updated: 2026-07-17
 Applies To: Deelrx CRM
 
 ## Purpose
@@ -21,6 +21,9 @@ Use this checklist before committing code, configuration, or docs that affect be
 
 ## Checklist
 
+- [ ] A non-duplicate Linear issue exists in the **Deelrx CRM** project for this change.
+- [ ] The Linear issue has an owner, priority, current status, acceptance criteria, and applicable Area/milestone/release labels.
+- [ ] The branch references the Linear identifier, and blockers, scope changes, and validation evidence are synchronized.
 - [ ] Linting passes with no blocking errors.
 - [ ] Typecheck passes with no blocking errors.
 - [ ] Relevant tests pass.

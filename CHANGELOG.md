@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.
+- **Testing**: Replaced the skipped real-beta Playwright suite with config-time environment loading, explicit isolation, fail-fast credential checks, single-project mutation safety, and a persistent-data E2E runbook.
+
 ## [0.5.5] - 2026-05-31
 
 ### Added
