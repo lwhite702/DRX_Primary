@@ -7,20 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		019A65EB92DC7C848E6191A0 /* POSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC80B197BB4EAC341A692EC /* POSView.swift */; };
+		0AADB5DAFC4BBA0084676A56 /* IntakeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F3936411D169627BF4D449 /* IntakeSheet.swift */; };
 		20AE6B5AF941620E240797AA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 56661858B6226FF335EECA30 /* PostHog */; };
 		215E2D1AC86C7087AAC7EA7E /* ConvexMobile in Frameworks */ = {isa = PBXBuildFile; productRef = 171E00CF6A8B5CF2B3E8FDD3 /* ConvexMobile */; };
+		24918C4BF72B02AF27FD1CA3 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E94AECC61D710F6F5E1610D /* ReportsView.swift */; };
+		2503056D88C4B08045DC0B8A /* CreditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F617B1A2AB5710EDDA5FB4 /* CreditView.swift */; };
 		2C177692EE1468BD16ECFA2F /* TelemetryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */; };
 		331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */; };
 		3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B795B70D7DE21081FD179D19 /* SessionStore.swift */; };
 		43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919880B91AF708A0700CAA02 /* AppRootView.swift */; };
+		4D3A6F9ECA6E07387C274908 /* RecordPaymentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0B9BED7BD4DC61585B2716 /* RecordPaymentSheet.swift */; };
 		51C6005114FAA81763D6F0F5 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */; };
 		630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */; };
+		65AF809E33BF98A51FA439E4 /* AddProductSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3780799ECBAA9B79650C40FA /* AddProductSheet.swift */; };
+		6766A278E551A074F4DCB164 /* CustomerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 202E319D7D94830BE0B22500 /* CustomerDetailView.swift */; };
+		6DEFF0D49FE138BAB7ACCA9B /* CustomersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A8EDF8E5F5CCCC4336ED53 /* CustomersView.swift */; };
+		6EF4240596511AC9F2E5A7FB /* AIIntelligenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092E8D355A3EE80B14187206 /* AIIntelligenceView.swift */; };
 		7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73360F1798B2906E00047019 /* AppConfigurationTests.swift */; };
 		84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D387246879C07454D82086A /* ClerkKit */; };
+		95A5962CA21D613EFC2A1AB8 /* AddCustomerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3D0F8920A8D613B9E54100 /* AddCustomerSheet.swift */; };
 		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
+		A5071384ADAC519B55FACE1F /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2395234C3E6A101C2D452 /* InventoryView.swift */; };
 		A5227AA8785CA7CBF27E8CDB /* DRXConvexBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */; };
 		AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */; };
 		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
+		BCAA050143D6794DB071711B /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC0CCEEB1F18309178BD8C6 /* DashboardView.swift */; };
+		BEA122DB8F726D4255CDD7D3 /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE87F196C9004F94F3DF00 /* ProductDetailView.swift */; };
+		C86299704C919CF44DEAF3CC /* IssueCreditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953882B6DCDFF21B7675A67D /* IssueCreditSheet.swift */; };
+		CA7389C07640A109D198958B /* CheckoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C6B56CDB918459390B7EA2 /* CheckoutSheet.swift */; };
 		CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */; };
 		D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09C4521D08CF914F8427B58 /* DRXWebView.swift */; };
 		D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA881E95C60310AC4903A0B1 /* TelemetryService.swift */; };
@@ -28,6 +43,8 @@
 		E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = E90E5E4D4537197DB93C1307 /* Sentry */; };
 		F3AEBF21C2E0C526E49BA385 /* DRXAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */; };
 		F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */; };
+		FA7E934C01BDFB3016D2403C /* WorkspacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BEA9B179439627E613F7391 /* WorkspacesView.swift */; };
+		FBB42B9711C18509BF6EC8D5 /* ConvexClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693D7A5E5ECDF586883781CD /* ConvexClient.swift */; };
 		FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,18 +67,33 @@
 
 /* Begin PBXFileReference section */
 		012054A89298CCFB49931B0E /* DRXApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DRXApp.entitlements; sourceTree = "<group>"; };
+		092E8D355A3EE80B14187206 /* AIIntelligenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIIntelligenceView.swift; sourceTree = "<group>"; };
+		202E319D7D94830BE0B22500 /* CustomerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerDetailView.swift; sourceTree = "<group>"; };
 		2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXAppUITests.swift; sourceTree = "<group>"; };
+		2BEA9B179439627E613F7391 /* WorkspacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspacesView.swift; sourceTree = "<group>"; };
+		34CE87F196C9004F94F3DF00 /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
 		36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
+		3780799ECBAA9B79650C40FA /* AddProductSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProductSheet.swift; sourceTree = "<group>"; };
+		3E94AECC61D710F6F5E1610D /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
 		415F8ABF72B90D0E13B39A5F /* DRXApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DRXApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		42F3936411D169627BF4D449 /* IntakeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntakeSheet.swift; sourceTree = "<group>"; };
 		4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXClerkTheme.swift; sourceTree = "<group>"; };
 		61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXConvexBridge.swift; sourceTree = "<group>"; };
 		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		693D7A5E5ECDF586883781CD /* ConvexClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvexClient.swift; sourceTree = "<group>"; };
 		73360F1798B2906E00047019 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
+		75E2395234C3E6A101C2D452 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
+		75F617B1A2AB5710EDDA5FB4 /* CreditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditView.swift; sourceTree = "<group>"; };
+		77A8EDF8E5F5CCCC4336ED53 /* CustomersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomersView.swift; sourceTree = "<group>"; };
+		7F3D0F8920A8D613B9E54100 /* AddCustomerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCustomerSheet.swift; sourceTree = "<group>"; };
 		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8CC80B197BB4EAC341A692EC /* POSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSView.swift; sourceTree = "<group>"; };
+		8EC0CCEEB1F18309178BD8C6 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		919880B91AF708A0700CAA02 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		953882B6DCDFF21B7675A67D /* IssueCreditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueCreditSheet.swift; sourceTree = "<group>"; };
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
@@ -71,8 +103,10 @@
 		BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXApp.swift; sourceTree = "<group>"; };
+		DE0B9BED7BD4DC61585B2716 /* RecordPaymentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordPaymentSheet.swift; sourceTree = "<group>"; };
 		E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		F09C4521D08CF914F8427B58 /* DRXWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXWebView.swift; sourceTree = "<group>"; };
+		F0C6B56CDB918459390B7EA2 /* CheckoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,8 +137,17 @@
 			isa = PBXGroup;
 			children = (
 				E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */,
+				693D7A5E5ECDF586883781CD /* ConvexClient.swift */,
 			);
 			path = API;
+			sourceTree = "<group>";
+		};
+		1ACE7E60D2FEFBDE046427C5 /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				3E94AECC61D710F6F5E1610D /* ReportsView.swift */,
+			);
+			path = Reports;
 			sourceTree = "<group>";
 		};
 		1E09FEDA350F1082757A1882 = {
@@ -116,6 +159,16 @@
 				35AB48A3A73EF83116AFADFE /* DRXAppUITests */,
 				4887DBEFDB8A90284B1E8516 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		22480438509A0997F72CDBD0 /* Credit */ = {
+			isa = PBXGroup;
+			children = (
+				75F617B1A2AB5710EDDA5FB4 /* CreditView.swift */,
+				953882B6DCDFF21B7675A67D /* IssueCreditSheet.swift */,
+				DE0B9BED7BD4DC61585B2716 /* RecordPaymentSheet.swift */,
+			);
+			path = Credit;
 			sourceTree = "<group>";
 		};
 		2A89611843A477A9A09A0091 /* Core */ = {
@@ -165,6 +218,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		493585E1EAFF293AA86F6A9F /* Workspaces */ = {
+			isa = PBXGroup;
+			children = (
+				2BEA9B179439627E613F7391 /* WorkspacesView.swift */,
+			);
+			path = Workspaces;
+			sourceTree = "<group>";
+		};
 		5FE39C6DD701561FBF8AD202 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -186,6 +247,15 @@
 			path = Observability;
 			sourceTree = "<group>";
 		};
+		69C568FA1C93B0A7C4114B26 /* POS */ = {
+			isa = PBXGroup;
+			children = (
+				F0C6B56CDB918459390B7EA2 /* CheckoutSheet.swift */,
+				8CC80B197BB4EAC341A692EC /* POSView.swift */,
+			);
+			path = POS;
+			sourceTree = "<group>";
+		};
 		6CA905DCC2DF5FC3507C55AA /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
@@ -193,6 +263,14 @@
 				4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		7129A72358D6111BDB0D9EC6 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				8EC0CCEEB1F18309178BD8C6 /* DashboardView.swift */,
+			);
+			path = Dashboard;
 			sourceTree = "<group>";
 		};
 		716E47E8C63108F433929A80 /* DRXApp */ = {
@@ -205,8 +283,19 @@
 				5FE39C6DD701561FBF8AD202 /* App */,
 				2A89611843A477A9A09A0091 /* Core */,
 				93F22C73381EC1FEB39FDBFA /* DesignSystem */,
+				AC426B10ED1E7011721CC58D /* Features */,
 			);
 			path = DRXApp;
+			sourceTree = "<group>";
+		};
+		8A6785A1E03B8E63FD0FF1AA /* Customers */ = {
+			isa = PBXGroup;
+			children = (
+				7F3D0F8920A8D613B9E54100 /* AddCustomerSheet.swift */,
+				202E319D7D94830BE0B22500 /* CustomerDetailView.swift */,
+				77A8EDF8E5F5CCCC4336ED53 /* CustomersView.swift */,
+			);
+			path = Customers;
 			sourceTree = "<group>";
 		};
 		93F22C73381EC1FEB39FDBFA /* DesignSystem */ = {
@@ -215,6 +304,40 @@
 				401751AF6890810A66AB6551 /* Tokens */,
 			);
 			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		AC426B10ED1E7011721CC58D /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				E5F7CF25DD8DF523833AB1BA /* AIIntelligence */,
+				22480438509A0997F72CDBD0 /* Credit */,
+				8A6785A1E03B8E63FD0FF1AA /* Customers */,
+				7129A72358D6111BDB0D9EC6 /* Dashboard */,
+				AE531DC5FB17BB2FCCB9502C /* Inventory */,
+				69C568FA1C93B0A7C4114B26 /* POS */,
+				1ACE7E60D2FEFBDE046427C5 /* Reports */,
+				493585E1EAFF293AA86F6A9F /* Workspaces */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		AE531DC5FB17BB2FCCB9502C /* Inventory */ = {
+			isa = PBXGroup;
+			children = (
+				3780799ECBAA9B79650C40FA /* AddProductSheet.swift */,
+				42F3936411D169627BF4D449 /* IntakeSheet.swift */,
+				75E2395234C3E6A101C2D452 /* InventoryView.swift */,
+				34CE87F196C9004F94F3DF00 /* ProductDetailView.swift */,
+			);
+			path = Inventory;
+			sourceTree = "<group>";
+		};
+		E5F7CF25DD8DF523833AB1BA /* AIIntelligence */ = {
+			isa = PBXGroup;
+			children = (
+				092E8D355A3EE80B14187206 /* AIIntelligenceView.swift */,
+			);
+			path = AIIntelligence;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -355,18 +478,35 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EF4240596511AC9F2E5A7FB /* AIIntelligenceView.swift in Sources */,
 				AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */,
+				95A5962CA21D613EFC2A1AB8 /* AddCustomerSheet.swift in Sources */,
+				65AF809E33BF98A51FA439E4 /* AddProductSheet.swift in Sources */,
 				FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */,
 				9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */,
 				43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */,
 				AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */,
+				CA7389C07640A109D198958B /* CheckoutSheet.swift in Sources */,
+				FBB42B9711C18509BF6EC8D5 /* ConvexClient.swift in Sources */,
+				2503056D88C4B08045DC0B8A /* CreditView.swift in Sources */,
+				6766A278E551A074F4DCB164 /* CustomerDetailView.swift in Sources */,
+				6DEFF0D49FE138BAB7ACCA9B /* CustomersView.swift in Sources */,
 				331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */,
 				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
 				A5227AA8785CA7CBF27E8CDB /* DRXConvexBridge.swift in Sources */,
 				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
 				D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */,
+				BCAA050143D6794DB071711B /* DashboardView.swift in Sources */,
+				0AADB5DAFC4BBA0084676A56 /* IntakeSheet.swift in Sources */,
+				A5071384ADAC519B55FACE1F /* InventoryView.swift in Sources */,
+				C86299704C919CF44DEAF3CC /* IssueCreditSheet.swift in Sources */,
+				019A65EB92DC7C848E6191A0 /* POSView.swift in Sources */,
+				BEA122DB8F726D4255CDD7D3 /* ProductDetailView.swift in Sources */,
+				4D3A6F9ECA6E07387C274908 /* RecordPaymentSheet.swift in Sources */,
+				24918C4BF72B02AF27FD1CA3 /* ReportsView.swift in Sources */,
 				3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */,
 				D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */,
+				FA7E934C01BDFB3016D2403C /* WorkspacesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

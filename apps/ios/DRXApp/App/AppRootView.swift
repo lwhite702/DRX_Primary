@@ -117,32 +117,55 @@ private struct OperatorTabView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                AuthenticatedWebView(path: "dashboard", title: "Dashboard")
+                DashboardView()
             }
                 .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
 
             NavigationStack {
-                AuthenticatedWebView(path: "pos", title: "POS")
+                POSView()
             }
                 .tabItem { Label("POS", systemImage: "cart.fill") }
 
             NavigationStack {
-                AuthenticatedWebView(path: "inventory", title: "Inventory")
+                InventoryView()
             }
                 .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
 
             NavigationStack {
-                AuthenticatedWebView(path: "customers", title: "Customers")
+                CustomersView()
             }
                 .tabItem { Label("Customers", systemImage: "person.2.fill") }
 
             NavigationStack {
                 List {
                     Section("Modules") {
-                        moduleLink("Credit", symbol: "creditcard.fill")
-                        moduleLink("Reports", symbol: "chart.bar.doc.horizontal.fill")
-                        moduleLink("Workspaces", symbol: "building.2.fill")
-                        moduleLink("AI Intelligence", symbol: "sparkles")
+                        NavigationLink {
+                            CreditView()
+                        } label: {
+                            Label("Credit", systemImage: "creditcard.fill")
+                        }
+                        .accessibilityIdentifier("module_credit")
+
+                        NavigationLink {
+                            ReportsView()
+                        } label: {
+                            Label("Reports", systemImage: "chart.bar.doc.horizontal.fill")
+                        }
+                        .accessibilityIdentifier("module_reports")
+
+                        NavigationLink {
+                            WorkspacesView()
+                        } label: {
+                            Label("Workspaces", systemImage: "building.2.fill")
+                        }
+                        .accessibilityIdentifier("module_workspaces")
+
+                        NavigationLink {
+                            AIIntelligenceView()
+                        } label: {
+                            Label("AI Intelligence", systemImage: "sparkles")
+                        }
+                        .accessibilityIdentifier("module_ai_intelligence")
                     }
 
                     Section("Session") {
