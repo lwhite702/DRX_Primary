@@ -1,5 +1,5 @@
 {
-  "originHash" : "930b497a7dfcd69137ff845592acc0ef638ab2f3f36c5b9f3f11c9b91ada4545",
+  "originHash" : "2d2e3c72167f679375d308f920819f32ee59d4f4385b28a8664963b4d8333e83",
   "pins" : [
     {
       "identity" : "clerk-ios",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "d41365666ac3be138737a57b33b30b6291b5c65b",
         "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "convex-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/get-convex/convex-swift.git",
+      "state" : {
+        "revision" : "125b71b2f8725931a5b0e8252f0799ef2adad120",
+        "version" : "0.8.1"
       }
     },
     {
