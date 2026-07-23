@@ -77,6 +77,25 @@ export async function resolveAuthContext(request?: Request | string) {
     return { userId, businessId: personalBusiness.id };
   }
 
+  // Fallback: If no personal synthetic workspace, find the first business they own or have access to
+  const ownedBusiness = await db.businessProfile.findFirst({
+    where: { ownerId: userId },
+    select: { id: true },
+    orderBy: { createdAt: "desc" },
+  });
+  if (ownedBusiness) {
+    return { userId, businessId: ownedBusiness.id };
+  }
+
+  const roleBusiness = await db.userRole.findFirst({
+    where: { userId },
+    select: { businessId: true },
+    orderBy: { createdAt: "desc" },
+  });
+  if (roleBusiness) {
+    return { userId, businessId: roleBusiness.businessId };
+  }
+
   // 4. Fallback for testing/development bypass mode ONLY.
   // In production/staging, bypass is false, so it will never fall back to findFirst.
   const bypass = isAuthBypassEnabledServer();
