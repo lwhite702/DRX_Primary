@@ -7,11 +7,13 @@ final class AppEnvironment {
     let apiClient: APIClient
     let session: SessionStore
     let telemetry: TelemetryService
+    let configuration: AppConfiguration
 
-    init(apiClient: APIClient, session: SessionStore, telemetry: TelemetryService) {
+    init(apiClient: APIClient, session: SessionStore, telemetry: TelemetryService, configuration: AppConfiguration) {
         self.apiClient = apiClient
         self.session = session
         self.telemetry = telemetry
+        self.configuration = configuration
     }
 
     static func live(configuration: AppConfiguration) -> AppEnvironment {
@@ -25,7 +27,8 @@ final class AppEnvironment {
         return AppEnvironment(
             apiClient: apiClient,
             session: session,
-            telemetry: TelemetryService(configuration: configuration)
+            telemetry: TelemetryService(configuration: configuration),
+            configuration: configuration
         )
     }
 
@@ -41,7 +44,8 @@ final class AppEnvironment {
         return AppEnvironment(
             apiClient: apiClient,
             session: session,
-            telemetry: TelemetryService(configuration: configuration)
+            telemetry: TelemetryService(configuration: configuration),
+            configuration: configuration
         )
     }
 

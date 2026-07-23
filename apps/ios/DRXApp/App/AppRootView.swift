@@ -117,21 +117,23 @@ private struct OperatorTabView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                PlaceholderView(title: "Dashboard", symbol: "gauge.with.dots.needle.67percent")
+                AuthenticatedWebView(path: "dashboard", title: "Dashboard")
             }
                 .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
 
             NavigationStack {
-                PlaceholderView(title: "POS", symbol: "cart.fill")
+                AuthenticatedWebView(path: "pos", title: "POS")
             }
                 .tabItem { Label("POS", systemImage: "cart.fill") }
 
             NavigationStack {
-                PlaceholderView(title: "Inventory", symbol: "shippingbox.fill")
+                AuthenticatedWebView(path: "inventory", title: "Inventory")
             }
                 .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
 
-            NavigationStack { PlaceholderView(title: "Customers", symbol: "person.2.fill") }
+            NavigationStack {
+                AuthenticatedWebView(path: "customers", title: "Customers")
+            }
                 .tabItem { Label("Customers", systemImage: "person.2.fill") }
 
             NavigationStack {
@@ -173,11 +175,25 @@ private struct OperatorTabView: View {
 
     private func moduleLink(_ title: String, symbol: String) -> some View {
         NavigationLink {
-            PlaceholderView(title: title, symbol: symbol)
+            AuthenticatedWebView(path: path(for: title), title: title)
         } label: {
             Label(title, systemImage: symbol)
         }
         .accessibilityIdentifier("module_\(title.lowercased().replacingOccurrences(of: " ", with: "_"))")
+    }
+
+    private func path(for title: String) -> String {
+        switch title {
+        case "Dashboard": return "dashboard"
+        case "POS": return "pos"
+        case "Inventory": return "inventory"
+        case "Customers": return "customers"
+        case "Credit": return "credit"
+        case "Reports": return "reports"
+        case "Workspaces": return "workspaces"
+        case "AI Intelligence": return "ai-intelligence"
+        default: return "dashboard"
+        }
     }
 }
 

@@ -17,8 +17,10 @@
 		7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73360F1798B2906E00047019 /* AppConfigurationTests.swift */; };
 		84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D387246879C07454D82086A /* ClerkKit */; };
 		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
+		AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */; };
 		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
 		CD11188967C3D19058E2E060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */; };
+		D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09C4521D08CF914F8427B58 /* DRXWebView.swift */; };
 		D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA881E95C60310AC4903A0B1 /* TelemetryService.swift */; };
 		E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0DF65613D95A790A5EFE0755 /* ClerkKitUI */; };
 		E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = E90E5E4D4537197DB93C1307 /* Sentry */; };
@@ -47,6 +49,7 @@
 /* Begin PBXFileReference section */
 		012054A89298CCFB49931B0E /* DRXApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DRXApp.entitlements; sourceTree = "<group>"; };
 		2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXAppUITests.swift; sourceTree = "<group>"; };
+		36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
 		415F8ABF72B90D0E13B39A5F /* DRXApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DRXApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
@@ -66,6 +69,7 @@
 		C70FE7A5F7D2B7AECD423D8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXApp.swift; sourceTree = "<group>"; };
 		E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		F09C4521D08CF914F8427B58 /* DRXWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXWebView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,7 +167,9 @@
 				4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */,
 				BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */,
 				919880B91AF708A0700CAA02 /* AppRootView.swift */,
+				36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */,
 				C8D0CDCA877228F95E32E3C1 /* DRXApp.swift */,
+				F09C4521D08CF914F8427B58 /* DRXWebView.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -346,9 +352,11 @@
 				FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */,
 				9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */,
 				43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */,
+				AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */,
 				331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */,
 				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
 				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
+				D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */,
 				3B9F4D5C3D109246E44C5A0D /* SessionStore.swift in Sources */,
 				D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */,
 			);
