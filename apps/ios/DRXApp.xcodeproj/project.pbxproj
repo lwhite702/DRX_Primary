@@ -50,14 +50,14 @@
 		012054A89298CCFB49931B0E /* DRXApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DRXApp.entitlements; sourceTree = "<group>"; };
 		2A0F6C28389AC51435728A94 /* DRXAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXAppUITests.swift; sourceTree = "<group>"; };
 		36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
-		415F8ABF72B90D0E13B39A5F /* DRXApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DRXApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Deelrx CRM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXClerkTheme.swift; sourceTree = "<group>"; };
-		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		73360F1798B2906E00047019 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
-		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		919880B91AF708A0700CAA02 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -154,7 +154,7 @@
 		4887DBEFDB8A90284B1E8516 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				415F8ABF72B90D0E13B39A5F /* DRXApp.app */,
+				415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */,
 				874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */,
 				63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */,
 			);
@@ -253,7 +253,7 @@
 				E90E5E4D4537197DB93C1307 /* Sentry */,
 			);
 			productName = DRXApp;
-			productReference = 415F8ABF72B90D0E13B39A5F /* DRXApp.app */;
+			productReference = 415F8ABF72B90D0E13B39A5F /* Deelrx CRM.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F719BA7B6F64935FE564D7B5 /* DRXAppUITests */ = {
@@ -281,7 +281,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					005008D9108E0C10FDB31BC7 = {
 						DevelopmentTeam = L8R42BJ54K;
@@ -485,6 +485,7 @@
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -506,6 +507,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -610,6 +612,7 @@
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -624,6 +627,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
