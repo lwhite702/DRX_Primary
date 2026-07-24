@@ -5,13 +5,12 @@ import { requirePermission } from "./helpers/permissions";
 
 export const createCategory = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     name: v.string(),
     description: v.optional(v.string()),
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_PRODUCTS");
 
     const existing = await ctx.db
@@ -38,9 +37,9 @@ export const createCategory = mutation({
 });
 
 export const listCategories = query({
-  args: { clerkUserId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
     const categories = await ctx.db
       .query("categories")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))

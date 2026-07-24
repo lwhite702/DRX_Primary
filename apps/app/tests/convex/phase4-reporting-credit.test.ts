@@ -32,33 +32,29 @@ const modules = {
 describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
   it("computes daily sales aggregates and manages customer credit accounts", async () => {
     const t = convexTest(schema, modules);
+    const tUser = t.withIdentity({ subject: "rep_owner_1", email: "analytics@drx.com" });
 
     // 1. Business Onboarding & Setup
-    await t.mutation(api.onboarding.createBusinessOnboarding, {
-      clerkUserId: "rep_owner_1",
-      email: "analytics@drx.com",
+    await tUser.mutation(api.onboarding.createBusinessOnboarding, {
       businessName: "DRX Analytics Dispensary",
       taxRateBps: 825,
     });
 
-    const productId = await t.mutation(api.products.createProduct, {
-      clerkUserId: "rep_owner_1",
+    const productId = await tUser.mutation(api.products.createProduct, {
       sku: "SKU-REP-1",
       productName: "Reporting Product",
       sellingPriceCents: 5000, // $50.00
       unitCostCents: 2000,
     });
 
-    await t.mutation(api.intake.recordIntake, {
-      clerkUserId: "rep_owner_1",
+    await tUser.mutation(api.intake.recordIntake, {
       productId,
       totalWeightGrams: 100,
       totalCostCents: 200000,
     });
 
     // 2. Execute Checkout
-    await t.mutation(api.checkout.processCheckout, {
-      clerkUserId: "rep_owner_1",
+    await tUser.mutation(api.checkout.processCheckout, {
       orderNumber: "ORD-REP-01",
       items: [{ productId, quantityGrams: 2 }],
       paymentMethod: "cash",
@@ -66,9 +62,7 @@ describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
     });
 
     // 3. Query Daily Sales Aggregate (Requires OWNER/FINANCIALS permission)
-    const report = await t.query(api.reporting.getDailySalesAggregate, {
-      clerkUserId: "rep_owner_1",
-    });
+    const report = await tUser.query(api.reporting.getDailySalesAggregate, {});
 
     expect(report.orderCount).toBe(1);
     expect(report.totalSubtotalCents).toBe(10000); // 2g * $50 = $100 (10000¢)
@@ -76,15 +70,13 @@ describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
     expect(report.totalRevenueCents).toBe(10825); // $108.25
 
     // 4. Customer Credit Management
-    const custId = await t.mutation(api.customers.createCustomer, {
-      clerkUserId: "rep_owner_1",
+    const custId = await tUser.mutation(api.customers.createCustomer, {
       firstName: "Charlie",
       lastName: "Brown",
       creditLimitCents: 50000, // $500.00 limit
     });
 
-    const issueRes = await t.mutation(api.credit.issueCustomerCredit, {
-      clerkUserId: "rep_owner_1",
+    const issueRes = await tUser.mutation(api.credit.issueCustomerCredit, {
       customerId: custId,
       amountCents: 15000, // Issue $150 credit
       description: "Store credit line",
@@ -92,8 +84,7 @@ describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
 
     expect(issueRes.newCreditUsedCents).toBe(15000);
 
-    const payRes = await t.mutation(api.credit.recordCreditPayment, {
-      clerkUserId: "rep_owner_1",
+    const payRes = await tUser.mutation(api.credit.recordCreditPayment, {
       customerId: custId,
       paymentAmountCents: 5000, // Pay $50
     });

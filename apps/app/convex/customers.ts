@@ -1,10 +1,10 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
+import { requirePermission } from "./helpers/permissions";
 
 export const createCustomer = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
@@ -12,7 +12,8 @@ export const createCustomer = mutation({
     creditLimitCents: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_CUSTOMERS");
     const now = Date.now();
 
     const customerId = await ctx.db.insert("customers", {
@@ -50,11 +51,9 @@ export const createCustomer = mutation({
 });
 
 export const listCustomers = query({
-  args: {
-    clerkUserId: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
     const customers = await ctx.db
       .query("customers")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))

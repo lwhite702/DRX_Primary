@@ -71,7 +71,6 @@ struct IssueCreditSheet: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
 
         struct IssueCreditArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let customerId: String
             let amountCents: Int
             let description: String?
@@ -83,7 +82,6 @@ struct IssueCreditSheet: View {
         }
 
         let args = IssueCreditArgs(
-            clerkUserId: userId,
             customerId: customer.id,
             amountCents: amountCents,
             description: description.isEmpty ? nil : description

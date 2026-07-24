@@ -263,3 +263,8 @@ private struct PlaceholderView: View {
             preview.isSignedIn = false
         })
 }
+
+#Preview("Signed In") {
+    AppRootView(environment: .preview())
+        .environment(Clerk.preview())
+}

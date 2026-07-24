@@ -10,18 +10,13 @@ export interface AuthenticatedUser {
 }
 
 export async function requireUserAndBusiness(
-  ctx: QueryCtx | MutationCtx,
-  overrideClerkUserId?: string
+  ctx: QueryCtx | MutationCtx
 ): Promise<AuthenticatedUser> {
-  let clerkUserId = overrideClerkUserId;
-
-  if (!clerkUserId) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("UNAUTHENTICATED: Authentication required");
-    }
-    clerkUserId = identity.subject;
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("UNAUTHENTICATED: Authentication required");
   }
+  const clerkUserId = identity.subject;
 
   // Fetch user record
   const user = await ctx.db

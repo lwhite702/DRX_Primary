@@ -76,7 +76,7 @@ struct CustomersView: View {
         error = nil
         let userId = await MainActor.run { Clerk.shared.user?.id }
         do {
-            customers = try await ConvexClient.shared.query("customers:listCustomers", args: ClerkAuthArgs(clerkUserId: userId))
+            customers = try await ConvexClient.shared.query("customers:listCustomers", args: EmptyConvexArgs())
         } catch {
             self.error = error.localizedDescription
         }

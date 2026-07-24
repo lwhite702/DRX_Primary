@@ -29,10 +29,9 @@ describe("Convex Phase 3 Core Domain Workflows", () => {
   it("executes business settings, product categories, and member invite management", async () => {
     const t = convexTest(schema, modules);
 
-    // 1. Business Onboarding
-    const onboardingRes = await t.mutation(api.onboarding.createBusinessOnboarding, {
-      clerkUserId: "owner_clerk_999",
-      email: "boss@drx.com",
+    // 1. Business Onboarding with authenticated identity
+    const tOwner = t.withIdentity({ subject: "owner_clerk_999", email: "boss@drx.com" });
+    const onboardingRes = await tOwner.mutation(api.onboarding.createBusinessOnboarding, {
       businessName: "DRX Greenfield Store",
       taxRateBps: 825,
     });
@@ -40,45 +39,36 @@ describe("Convex Phase 3 Core Domain Workflows", () => {
     expect(onboardingRes.status).toBe("ONBOARDING_SUCCESS");
 
     // 2. Category Creation
-    const catId = await t.mutation(api.categories.createCategory, {
-      clerkUserId: "owner_clerk_999",
+    const catId = await tOwner.mutation(api.categories.createCategory, {
       name: "Concentrates",
       color: "#10B981",
     });
     expect(catId).toBeDefined();
 
-    const catList = await t.query(api.categories.listCategories, {
-      clerkUserId: "owner_clerk_999",
-    });
+    const catList = await tOwner.query(api.categories.listCategories, {});
     expect(catList).toHaveLength(1);
     expect(catList[0].name).toBe("Concentrates");
 
     // 3. Update Business Settings
-    await t.mutation(api.settings.updateBusinessSettings, {
-      clerkUserId: "owner_clerk_999",
+    await tOwner.mutation(api.settings.updateBusinessSettings, {
       posManagerPin: "9988",
       themePreference: "dark",
       taxRateBps: 900, // Updated to 9.00%
     });
 
-    const settingsRes = await t.query(api.settings.getBusinessSettings, {
-      clerkUserId: "owner_clerk_999",
-    });
+    const settingsRes = await tOwner.query(api.settings.getBusinessSettings, {});
     expect(settingsRes.business.taxRateBps).toBe(900);
-    expect(settingsRes.settings?.posManagerPin).toBe("9988");
+    expect(settingsRes.settings?.posManagerPin).toBe("••••");
 
     // 4. Invite Team Member
-    const inviteRes = await t.mutation(api.members.inviteMember, {
-      clerkUserId: "owner_clerk_999",
+    const inviteRes = await tOwner.mutation(api.members.inviteMember, {
       email: "cashier@drx.com",
       role: "MEMBER",
     });
 
     expect(inviteRes.token).toBeDefined();
 
-    const membersRes = await t.query(api.members.listMembers, {
-      clerkUserId: "owner_clerk_999",
-    });
+    const membersRes = await tOwner.query(api.members.listMembers, {});
     expect(membersRes.invites).toHaveLength(1);
     expect(membersRes.invites[0].email).toBe("cashier@drx.com");
   });

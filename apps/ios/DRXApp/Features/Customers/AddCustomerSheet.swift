@@ -79,7 +79,6 @@ struct AddCustomerSheet: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
 
         struct CreateCustomerArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let firstName: String?
             let lastName: String?
             let phoneNumber: String?
@@ -88,7 +87,6 @@ struct AddCustomerSheet: View {
         }
 
         let args = CreateCustomerArgs(
-            clerkUserId: userId,
             firstName: firstName.isEmpty ? nil : firstName.trimmingCharacters(in: .whitespaces),
             lastName: lastName.isEmpty ? nil : lastName.trimmingCharacters(in: .whitespaces),
             phoneNumber: phoneNumber.isEmpty ? nil : phoneNumber.trimmingCharacters(in: .whitespaces),

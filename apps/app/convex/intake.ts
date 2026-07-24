@@ -1,10 +1,10 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
+import { requirePermission } from "./helpers/permissions";
 
 export const recordIntake = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     productId: v.id("products"),
     totalCostCents: v.number(),
     totalWeightGrams: v.number(),
@@ -12,7 +12,8 @@ export const recordIntake = mutation({
     deliveryCostCents: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_INVENTORY");
     const now = Date.now();
 
     const product = await ctx.db.get(args.productId);
@@ -85,11 +86,10 @@ export const recordIntake = mutation({
 
 export const getProductBatches = query({
   args: {
-    clerkUserId: v.optional(v.string()),
     productId: v.id("products"),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     const batches = await ctx.db
       .query("inventoryBatches")
       .withIndex("by_productId_and_receivedAt", (q) =>

@@ -22,11 +22,10 @@ const modules = {
 describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
   it("executes complete end-to-end business flow with atomic FIFO inventory and integer financial accounting", async () => {
     const t = convexTest(schema, modules);
+    const tUser = t.withIdentity({ subject: "user_test_clerk_123", email: "owner@drx-test.com" });
 
     // 1. Business Onboarding
-    const onboardingRes = await t.mutation(api.onboarding.createBusinessOnboarding, {
-      clerkUserId: "user_test_clerk_123",
-      email: "owner@drx-test.com",
+    const onboardingRes = await tUser.mutation(api.onboarding.createBusinessOnboarding, {
       name: "Owner Test",
       businessName: "DRX Primary Dispensary",
       taxRateBps: 825, // 8.25% tax
@@ -37,8 +36,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(businessId).toBeDefined();
 
     // 2. Product Catalog Creation
-    const productId = await t.mutation(api.products.createProduct, {
-      clerkUserId: "user_test_clerk_123",
+    const productId = await tUser.mutation(api.products.createProduct, {
       sku: "EXT-OG-001",
       productName: "OG Reserve Concentrate",
       sellingPriceCents: 3000, // $30.00 per gram
@@ -49,8 +47,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(productId).toBeDefined();
 
     // 3. Batch 1 Intake (50g @ $10/g = $500 total cost = 50000 cents)
-    const intake1 = await t.mutation(api.intake.recordIntake, {
-      clerkUserId: "user_test_clerk_123",
+    const intake1 = await tUser.mutation(api.intake.recordIntake, {
       productId,
       totalWeightGrams: 50,
       totalCostCents: 50000,
@@ -61,8 +58,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(intake1.batchId).toBeDefined();
 
     // 4. Batch 2 Intake (50g @ $15/g = $750 total cost = 75000 cents)
-    const intake2 = await t.mutation(api.intake.recordIntake, {
-      clerkUserId: "user_test_clerk_123",
+    const intake2 = await tUser.mutation(api.intake.recordIntake, {
       productId,
       totalWeightGrams: 50,
       totalCostCents: 75000,
@@ -72,8 +68,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(intake2.newStock).toBe(100);
 
     // Verify Batches via Query
-    const batches = await t.query(api.intake.getProductBatches, {
-      clerkUserId: "user_test_clerk_123",
+    const batches = await tUser.query(api.intake.getProductBatches, {
       productId,
     });
     expect(batches).toHaveLength(2);
@@ -81,8 +76,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(batches[1].remainingQuantityGrams).toBe(50);
 
     // 5. Customer Registration
-    const customerId = await t.mutation(api.customers.createCustomer, {
-      clerkUserId: "user_test_clerk_123",
+    const customerId = await tUser.mutation(api.customers.createCustomer, {
       firstName: "Jane",
       lastName: "Doe",
       phoneNumber: "555-0199",
@@ -94,8 +88,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     // 70g * $30.00 (3000¢) = $2,100.00 (210000¢ subtotal)
     // Tax @ 8.25% = Math.round(210000 * 825 / 10000) = 17325¢ ($173.25)
     // Total = 227325¢ ($2,273.25)
-    const checkoutRes = await t.mutation(api.checkout.processCheckout, {
-      clerkUserId: "user_test_clerk_123",
+    const checkoutRes = await tUser.mutation(api.checkout.processCheckout, {
       customerId,
       orderNumber: "ORD-DRX-1001",
       items: [{ productId, quantityGrams: 70 }],
@@ -110,8 +103,7 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(checkoutRes.changeAmountCents).toBe(230000 - 227325);
 
     // 7. Verify Inventory Depletion and FIFO Allocation Accuracy
-    const updatedBatches = await t.query(api.intake.getProductBatches, {
-      clerkUserId: "user_test_clerk_123",
+    const updatedBatches = await tUser.query(api.intake.getProductBatches, {
       productId,
     });
 
@@ -122,21 +114,16 @@ describe("Convex Phase 1 Vertical Slice Architecture Spike", () => {
     expect(updatedBatches[1].remainingQuantityGrams).toBe(30);
 
     // Product total stock should now be 30g
-    const products = await t.query(api.products.listProducts, {
-      clerkUserId: "user_test_clerk_123",
-    });
+    const products = await tUser.query(api.products.listProducts, {});
     expect(products[0].quantityOnHandGrams).toBe(30);
 
     // 8. Verify Customer Purchase Totals
-    const customers = await t.query(api.customers.listCustomers, {
-      clerkUserId: "user_test_clerk_123",
-    });
+    const customers = await tUser.query(api.customers.listCustomers, {});
     expect(customers[0].totalPurchasesCents).toBe(227325);
     expect(customers[0].purchaseCount).toBe(1);
 
     // 9. Idempotency Check (Duplicate checkout call with same order number)
-    const duplicateCheckout = await t.mutation(api.checkout.processCheckout, {
-      clerkUserId: "user_test_clerk_123",
+    const duplicateCheckout = await tUser.mutation(api.checkout.processCheckout, {
       customerId,
       orderNumber: "ORD-DRX-1001",
       items: [{ productId, quantityGrams: 70 }],

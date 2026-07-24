@@ -215,7 +215,17 @@ export default function QuickPosSalePage() {
 
         <QuickGrid
           title="Favorite Items"
-          items={bootstrap?.favorites || []}
+          items={
+            convexProducts && convexProducts.length > 0
+              ? convexProducts.slice(0, 8).map((p) => ({
+                  id: p._id,
+                  name: p.productName,
+                  price: p.sellingPriceCents / 100,
+                  quantity_on_hand: p.quantityOnHandGrams,
+                  sku: p.sku,
+                }))
+              : bootstrap?.favorites || []
+          }
           onAdd={addInventoryItem}
         />
 

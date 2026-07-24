@@ -4,9 +4,12 @@ import { requireUserAndBusiness } from "./helpers/auth";
 import { calculateTaxCents } from "./helpers/money";
 import { allocateFifoInventoryBatches } from "./helpers/fifo";
 
+import { requirePermission } from "./helpers/permissions";
+
+const VALID_PAYMENT_METHODS = ["cash", "card", "credit"] as const;
+
 export const processCheckout = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     customerId: v.optional(v.id("customers")),
     orderNumber: v.string(),
     items: v.array(
@@ -19,8 +22,13 @@ export const processCheckout = mutation({
     amountPaidCents: v.number(),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     const now = Date.now();
+
+    if (!VALID_PAYMENT_METHODS.includes(args.paymentMethod as any)) {
+      throw new Error(`INVALID_ARGUMENT: Payment method '${args.paymentMethod}' is not supported. Must be 'cash', 'card', or 'credit'`);
+    }
 
     if (!args.items || args.items.length === 0) {
       throw new Error("INVALID_ARGUMENT: Checkout cart cannot be empty");
@@ -165,12 +173,20 @@ export const processCheckout = mutation({
       }
     }
 
-    // 6. Update Customer Record (if attached)
+    // 6. Update Customer Record & Credit Balance (if attached)
     if (args.customerId) {
       const customer = await ctx.db.get(args.customerId);
       if (customer && customer.businessId === auth.businessId) {
+        let newCreditUsed = customer.totalCreditUsedCents;
+        if (args.paymentMethod === "credit") {
+          newCreditUsed += totalAmountCents;
+          if (customer.creditLimitCents > 0 && newCreditUsed > customer.creditLimitCents) {
+            throw new Error(`CREDIT_LIMIT_EXCEEDED: Transaction total (${totalAmountCents}¢) exceeds available customer credit`);
+          }
+        }
         await ctx.db.patch(args.customerId, {
           totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
+          totalCreditUsedCents: newCreditUsed,
           purchaseCount: customer.purchaseCount + 1,
           updatedAt: now,
         });
@@ -208,11 +224,10 @@ export const processCheckout = mutation({
 });
 
 export const getSalesHistory = query({
-  args: {
-    clerkUserId: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "VIEW_FINANCIALS");
     const sales = await ctx.db
       .query("sales")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))

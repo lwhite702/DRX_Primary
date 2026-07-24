@@ -115,11 +115,11 @@ struct DashboardView: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
         async let aggTask: DRXDailySalesAggregate = ConvexClient.shared.query(
             "reporting:getDailySalesAggregate",
-            args: ClerkAuthArgs(clerkUserId: userId)
+            args: EmptyConvexArgs()
         )
         async let salesTask: [DRXSale] = ConvexClient.shared.query(
             "checkout:getSalesHistory",
-            args: ClerkAuthArgs(clerkUserId: userId)
+            args: EmptyConvexArgs()
         )
         do {
             let (agg, sales) = try await (aggTask, salesTask)

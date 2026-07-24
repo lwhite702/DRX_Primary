@@ -399,7 +399,6 @@ struct CheckoutSheet: View {
         }
         let tendered = paymentMethod == .cash ? amountTenderedCents : store.cartSubtotalCents
         let args = CheckoutArgs(
-            clerkUserId: userId,
             customerId: store.selectedCustomer?.id,
             orderNumber: orderNumber,
             items: items,

@@ -77,7 +77,6 @@ struct RecordPaymentSheet: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
 
         struct RecordPaymentArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let customerId: String
             let paymentAmountCents: Int
         }
@@ -88,7 +87,6 @@ struct RecordPaymentSheet: View {
         }
 
         let args = RecordPaymentArgs(
-            clerkUserId: userId,
             customerId: customer.id,
             paymentAmountCents: paymentAmountCents
         )

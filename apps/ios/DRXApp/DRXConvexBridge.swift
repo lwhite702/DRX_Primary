@@ -199,10 +199,13 @@ struct DRXDailySalesAggregate: Decodable, Sendable {
     var averageOrderFormatted: String { formatCents(averageOrderValueCents) }
 }
 
+// MARK: - Empty Args (for query calls with no parameters)
+
+struct EmptyConvexArgs: Encodable, Sendable {}
+
 // MARK: - Checkout Args/Response
 
 struct CheckoutArgs: Encodable, Sendable {
-    let clerkUserId: String?
     let customerId: String?
     let orderNumber: String
     let items: [CheckoutItem]
@@ -239,10 +242,4 @@ private func formatGrams(_ grams: Double) -> String {
     } else {
         return String(format: "%.1f g", grams)
     }
-}
-
-// MARK: - Sales History Response
-
-struct SalesHistoryArgs: Encodable, Sendable {
-    let clerkUserId: String?
 }

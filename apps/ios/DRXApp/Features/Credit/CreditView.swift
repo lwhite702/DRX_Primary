@@ -73,7 +73,7 @@ struct CreditView: View {
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
                         Text(formatCents(totalCreditLimitCents))
-                            .font(.title3.semibold())
+                            .font(.title3.weight(.semibold))
                             .foregroundStyle(DRXPalette.ink)
                     }
                 }
@@ -104,9 +104,8 @@ struct CreditView: View {
     private func load() async {
         isLoading = true
         error = nil
-        let userId = await MainActor.run { Clerk.shared.user?.id }
         do {
-            customers = try await ConvexClient.shared.query("customers:listCustomers", args: ClerkAuthArgs(clerkUserId: userId))
+            customers = try await ConvexClient.shared.query("customers:listCustomers", args: EmptyConvexArgs())
         } catch {
             self.error = error.localizedDescription
         }

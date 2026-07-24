@@ -90,7 +90,7 @@ struct InventoryView: View {
         error = nil
         let userId = await MainActor.run { Clerk.shared.user?.id }
         do {
-            products = try await ConvexClient.shared.query("products:listProducts", args: ClerkAuthArgs(clerkUserId: userId))
+            products = try await ConvexClient.shared.query("products:listProducts", args: EmptyConvexArgs())
         } catch {
             self.error = error.localizedDescription
         }

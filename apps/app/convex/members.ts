@@ -4,9 +4,9 @@ import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 
 export const listMembers = query({
-  args: { clerkUserId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
     const members = await ctx.db
       .query("users")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
@@ -24,12 +24,11 @@ export const listMembers = query({
 
 export const inviteMember = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     email: v.string(),
     role: v.string(), // "ADMIN" | "MEMBER"
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_MEMBERS");
 
     const now = Date.now();
@@ -53,12 +52,11 @@ export const inviteMember = mutation({
 
 export const updateMemberRole = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     targetUserId: v.id("users"),
     newRole: v.string(), // "ADMIN" | "MEMBER"
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_MEMBERS");
 
     const targetUser = await ctx.db.get(args.targetUserId);

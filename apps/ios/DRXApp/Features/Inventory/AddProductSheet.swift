@@ -96,7 +96,6 @@ struct AddProductSheet: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
 
         struct CreateProductArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let sku: String
             let productName: String
             let description: String?
@@ -107,7 +106,6 @@ struct AddProductSheet: View {
         }
 
         let args = CreateProductArgs(
-            clerkUserId: userId,
             sku: sku.trimmingCharacters(in: .whitespaces).uppercased(),
             productName: productName.trimmingCharacters(in: .whitespaces),
             description: description.isEmpty ? nil : description,

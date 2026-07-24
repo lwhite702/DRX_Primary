@@ -73,6 +73,7 @@ export default function QuickPosPaymentPage() {
 
       if (convexItems.length > 0) {
         const convexRes = await processCheckout({
+          customerId: state.customer.id ? (state.customer.id as any) : undefined,
           orderNumber: idempotencyKey,
           items: convexItems,
           paymentMethod: method,

@@ -3,8 +3,6 @@ import { v } from "convex/values";
 
 export const createBusinessOnboarding = mutation({
   args: {
-    clerkUserId: v.string(),
-    email: v.string(),
     name: v.optional(v.string()),
     businessName: v.string(),
     businessType: v.optional(v.string()),
@@ -14,12 +12,18 @@ export const createBusinessOnboarding = mutation({
     taxRateBps: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("UNAUTHENTICATED: Authentication required to onboard business");
+    }
+    const clerkUserId = identity.subject;
+    const email = identity.email || "";
     const now = Date.now();
 
     // Check if user already exists
     const existingUser = await ctx.db
       .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", args.clerkUserId))
+      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
       .unique();
 
     if (existingUser) {
@@ -35,7 +39,7 @@ export const createBusinessOnboarding = mutation({
       clerkOrgId: args.clerkOrgId,
       name: args.businessName,
       businessType: args.businessType || "Retail POS",
-      ownerId: args.clerkUserId,
+      ownerId: clerkUserId,
       currency: args.currency || "USD",
       timezone: args.timezone || "America/New_York",
       collectTax: true,
@@ -46,8 +50,8 @@ export const createBusinessOnboarding = mutation({
 
     // 2. Create User as OWNER
     const userId = await ctx.db.insert("users", {
-      clerkUserId: args.clerkUserId,
-      email: args.email,
+      clerkUserId,
+      email,
       name: args.name,
       role: "OWNER",
       businessId,
@@ -59,13 +63,13 @@ export const createBusinessOnboarding = mutation({
     // 3. Log Immutable Audit Event
     await ctx.db.insert("auditEvents", {
       businessId,
-      userId: args.clerkUserId,
+      userId: clerkUserId,
       action: "BUSINESS_ONBOARDED",
       entityType: "business",
       entityId: businessId,
       metadata: JSON.stringify({
         businessName: args.businessName,
-        ownerEmail: args.email,
+        ownerEmail: email,
       }),
       timestamp: now,
     });

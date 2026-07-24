@@ -14,7 +14,7 @@ struct WorkspacesView: View {
                 if let session = environment.session.operatorSession {
                     LabeledContent("Business Name", value: session.businessName)
                     LabeledContent("Operator", value: session.displayName)
-                    LabeledContent("User Role", value: session.userRole.capitalized)
+                    LabeledContent("User Role", value: (session.roles.first ?? "operator").capitalized)
                 } else {
                     Text("Session details loading…")
                         .foregroundStyle(DRXPalette.muted)

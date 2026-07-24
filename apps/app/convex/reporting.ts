@@ -4,15 +4,24 @@ import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 
 export const getDailySalesAggregate = query({
-  args: { clerkUserId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
+
+    // Calculate start of today (UTC 00:00:00)
+    const now = new Date();
+    const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).getTime();
 
     const sales = await ctx.db
       .query("sales")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
-      .filter((q) => q.eq(q.field("orderStatus"), "completed"))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("orderStatus"), "completed"),
+          q.gte(q.field("createdAt"), startOfToday)
+        )
+      )
       .collect();
 
     let totalRevenueCents = 0;

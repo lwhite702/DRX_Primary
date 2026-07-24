@@ -71,8 +71,8 @@ final class POSStore {
         error = nil
         let userId = Clerk.shared.user?.id
         do {
-            async let p: [DRXProduct] = ConvexClient.shared.query("products:listProducts", args: ClerkAuthArgs(clerkUserId: userId))
-            async let c: [DRXCustomer] = ConvexClient.shared.query("customers:listCustomers", args: ClerkAuthArgs(clerkUserId: userId))
+            async let p: [DRXProduct] = ConvexClient.shared.query("products:listProducts", args: EmptyConvexArgs())
+            async let c: [DRXCustomer] = ConvexClient.shared.query("customers:listCustomers", args: EmptyConvexArgs())
             let (prods, custs) = try await (p, c)
             products = prods
             customers = custs

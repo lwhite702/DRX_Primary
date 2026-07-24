@@ -98,13 +98,12 @@ struct ProductDetailView: View {
         isLoadingBatches = true
         let userId = await MainActor.run { Clerk.shared.user?.id }
         struct BatchArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let productId: String
         }
         do {
             batches = try await ConvexClient.shared.query(
                 "intake:getProductBatches",
-                args: BatchArgs(clerkUserId: userId, productId: product.id)
+                args: BatchArgs(productId: product.id)
             )
         } catch {
             // Silently fail — batches are supplemental info

@@ -107,7 +107,6 @@ struct IntakeSheet: View {
         let userId = await MainActor.run { Clerk.shared.user?.id }
 
         struct RecordIntakeArgs: Encodable, Sendable {
-            let clerkUserId: String?
             let productId: String
             let totalCostCents: Int
             let totalWeightGrams: Double
@@ -122,7 +121,6 @@ struct IntakeSheet: View {
         }
 
         let args = RecordIntakeArgs(
-            clerkUserId: userId,
             productId: product.id,
             totalCostCents: totalCostCents,
             totalWeightGrams: totalWeightGrams,

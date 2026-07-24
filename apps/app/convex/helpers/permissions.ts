@@ -3,6 +3,8 @@ import { Doc } from "../_generated/dataModel";
 export type Permission =
   | "MANAGE_PRODUCTS"
   | "RECORD_INTAKE"
+  | "MANAGE_INVENTORY"
+  | "MANAGE_CUSTOMERS"
   | "PROCESS_CHECKOUT"
   | "VIEW_FINANCIALS"
   | "MANAGE_MEMBERS"
@@ -12,6 +14,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   OWNER: [
     "MANAGE_PRODUCTS",
     "RECORD_INTAKE",
+    "MANAGE_INVENTORY",
+    "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
     "VIEW_FINANCIALS",
     "MANAGE_MEMBERS",
@@ -20,11 +24,13 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   ADMIN: [
     "MANAGE_PRODUCTS",
     "RECORD_INTAKE",
+    "MANAGE_INVENTORY",
+    "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
     "VIEW_FINANCIALS",
     "VIEW_AUDIT_LOGS",
   ],
-  MEMBER: ["PROCESS_CHECKOUT"],
+  MEMBER: ["PROCESS_CHECKOUT", "MANAGE_CUSTOMERS"],
 };
 
 export function hasPermission(user: Doc<"users">, permission: Permission): boolean {

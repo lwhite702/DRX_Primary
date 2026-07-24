@@ -4,9 +4,9 @@ import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 
 export const getBusinessSettings = query({
-  args: { clerkUserId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const auth = await requireUserAndBusiness(ctx);
     const settings = await ctx.db
       .query("businessSettings")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
@@ -14,14 +14,18 @@ export const getBusinessSettings = query({
 
     return {
       business: auth.businessRecord,
-      settings: settings || null,
+      settings: settings
+        ? {
+            ...settings,
+            posManagerPin: settings.posManagerPin ? "••••" : undefined,
+          }
+        : null,
     };
   },
 });
 
 export const updateBusinessSettings = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     name: v.optional(v.string()),
     taxRateBps: v.optional(v.number()),
     collectTax: v.optional(v.boolean()),
@@ -29,7 +33,7 @@ export const updateBusinessSettings = mutation({
     themePreference: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_MEMBERS");
 
     const now = Date.now();

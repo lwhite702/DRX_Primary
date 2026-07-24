@@ -5,13 +5,12 @@ import { requirePermission } from "./helpers/permissions";
 
 export const issueCustomerCredit = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     customerId: v.id("customers"),
     amountCents: v.number(),
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
 
     const customer = await ctx.db.get(args.customerId);
@@ -51,12 +50,11 @@ export const issueCustomerCredit = mutation({
 
 export const recordCreditPayment = mutation({
   args: {
-    clerkUserId: v.optional(v.string()),
     customerId: v.id("customers"),
     paymentAmountCents: v.number(),
   },
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx, args.clerkUserId);
+    const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
 
     const customer = await ctx.db.get(args.customerId);
