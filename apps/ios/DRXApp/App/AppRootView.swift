@@ -104,7 +104,14 @@ private struct NativeOnboardingView: View {
     private var isValid: Bool {
         !ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        (!collectTax || (Double(taxRate).map { (0...100).contains($0) } ?? false))
+        (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
+    }
+
+    private func parseTaxRate(_ input: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        return formatter.number(from: input)?.doubleValue
     }
 
     var body: some View {
@@ -130,7 +137,7 @@ private struct NativeOnboardingView: View {
                 Section {
                     Button(environment.isSubmittingOnboarding ? "Creating business…" : "Create Business") {
                         Task {
-                            let rate = Int(((Double(taxRate) ?? 0) * 100).rounded())
+                            let rate = Int(((parseTaxRate(taxRate) ?? 0) * 100).rounded())
                             _ = await environment.completeOnboarding(.init(
                                 name: ownerName.trimmingCharacters(in: .whitespacesAndNewlines),
                                 businessName: businessName.trimmingCharacters(in: .whitespacesAndNewlines),

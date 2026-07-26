@@ -54,6 +54,16 @@ struct LiveProvisioningClient: ProvisioningClient {
     }
 }
 
+struct MockProvisioningClient: ProvisioningClient {
+    func status() async throws -> ProvisioningStatus {
+        .needsBusinessOnboarding
+    }
+
+    func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
+        .init(status: "ONBOARDING_SUCCESS")
+    }
+}
+
 @MainActor
 @Observable
 final class AppEnvironment {
@@ -66,6 +76,7 @@ final class AppEnvironment {
     private(set) var provisioningMessage: String?
     private(set) var supportRequestID: String?
     private(set) var isSubmittingOnboarding = false
+    private var provisioningGeneration = 0
 
     init(apiClient: APIClient, session: SessionStore, telemetry: TelemetryService, configuration: AppConfiguration, provisioningClient: any ProvisioningClient = LiveProvisioningClient()) {
         self.apiClient = apiClient
@@ -104,7 +115,8 @@ final class AppEnvironment {
             apiClient: apiClient,
             session: session,
             telemetry: TelemetryService(configuration: configuration),
-            configuration: configuration
+            configuration: configuration,
+            provisioningClient: MockProvisioningClient()
         )
     }
 
@@ -120,16 +132,21 @@ final class AppEnvironment {
     }
 
     func checkProvisioning() async {
+        provisioningGeneration += 1
+        let currentGeneration = provisioningGeneration
         rootState = .checkingProvisioning
         provisioningMessage = nil
         supportRequestID = nil
         do {
-            switch try await provisioningClient.status() {
+            let status = try await provisioningClient.status()
+            guard currentGeneration == provisioningGeneration else { return }
+            switch status {
             case .needsBusinessOnboarding:
                 rootState = .needsOnboarding
             case .ready:
                 rootState = .loadingWorkspace
                 await restoreSession()
+                guard currentGeneration == provisioningGeneration else { return }
                 if session.isAuthenticated {
                     rootState = .ready
                 } else {
@@ -141,6 +158,7 @@ final class AppEnvironment {
                 showRecovery("Your workspace needs attention. Contact support or try again.")
             }
         } catch {
+            guard currentGeneration == provisioningGeneration else { return }
             showRecovery("We couldn't confirm your workspace. Check your connection and try again.", error: error)
         }
     }
