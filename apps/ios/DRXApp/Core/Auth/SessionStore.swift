@@ -56,10 +56,10 @@ final class SessionStore {
             errorMessage = "Your Clerk session could not be verified. Sign out, then sign in again."
         } catch APIError.forbidden(let message) {
             operatorSession = nil
-            errorMessage = message
+            errorMessage = Self.safeMessage(from: message)
         } catch {
             operatorSession = nil
-            errorMessage = error.localizedDescription
+            errorMessage = "We couldn't load your workspace. Please try again."
         }
     }
 
@@ -71,5 +71,13 @@ final class SessionStore {
 
     func signOut() async {
         reset()
+    }
+
+    private static func safeMessage(from backendMessage: String) -> String {
+        let unsafeMarkers = ["clerk", "convex/", ".ts", " at ", "stack", "unauthorized:"]
+        if unsafeMarkers.contains(where: { backendMessage.lowercased().contains($0) }) {
+            return "You don't have access to this workspace."
+        }
+        return backendMessage.count <= 160 ? backendMessage : "You don't have access to this workspace."
     }
 }
