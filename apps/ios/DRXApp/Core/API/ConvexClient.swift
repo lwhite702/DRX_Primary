@@ -132,7 +132,7 @@ enum ConvexError: Error, LocalizedError, Sendable {
 extension JSONEncoder {
     static var convex: JSONEncoder {
         let e = JSONEncoder()
-        e.keyEncodingStrategy = .convertToSnakeCase
+        // Convex function argument names are camelCase and must be sent verbatim.
         return e
     }
 }
