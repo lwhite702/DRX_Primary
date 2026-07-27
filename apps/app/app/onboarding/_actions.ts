@@ -17,6 +17,13 @@ export type OnboardingActionState =
   | { status: "idle"; error: null }
   | { status: "success"; error: null };
 
+/**
+ * Completes onboarding and persists the user's business configuration.
+ *
+ * @param formData - Submitted onboarding values.
+ * @returns The successful onboarding action state.
+ * @throws Error if required onboarding fields are missing or the tax rate is outside 0–100.
+ */
 export async function completeOnboarding(
   _previousState: OnboardingActionState,
   formData: FormData,

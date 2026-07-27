@@ -43,13 +43,18 @@ protocol OnboardingDraftStore {
 
 struct UserDefaultsOnboardingDraftStore: OnboardingDraftStore {
     private let key = "drx.onboarding.draft.v1"
+    /// Loads the saved onboarding draft when it is valid and current.
+    /// - Returns: The decoded onboarding draft, or `nil` when no draft is saved, decoding fails, or the draft version is outdated.
     func load() -> OnboardingDraft? {
         guard let data = UserDefaults.standard.data(forKey: key),
               let draft = try? JSONDecoder().decode(OnboardingDraft.self, from: data), draft.version == OnboardingDraft.currentVersion else { return nil }
         return draft
     }
-    func save(_ draft: OnboardingDraft) { if let data = try? JSONEncoder().encode(draft) { UserDefaults.standard.set(data, forKey: key) } }
-    func clear() { UserDefaults.standard.removeObject(forKey: key) }
+    /// Saves an onboarding draft to persistent user defaults storage.
+/// - Parameter draft: The onboarding draft to save.
+func save(_ draft: OnboardingDraft) { if let data = try? JSONEncoder().encode(draft) { UserDefaults.standard.set(data, forKey: key) } }
+    /// Removes the saved onboarding draft.
+func clear() { UserDefaults.standard.removeObject(forKey: key) }
 }
 
 @MainActor @Observable
@@ -78,6 +83,10 @@ final class OnboardingModel {
         steps.append(.review); return steps
     }
 
+    /// Advances the onboarding flow after validating the current step.
+    ///
+    — Parameters: None
+    /// Updates the draft’s current step, records the save time, and persists the draft when navigation advances.
     func continueForward() {
         guard validate() else { return }
         validationMessage = nil
@@ -97,9 +106,14 @@ final class OnboardingModel {
         }
         draft.lastSavedAt = Date(); store.save(draft)
     }
-    func back() { if let index = visibleSteps.firstIndex(of: draft.currentStep), index > 0 { draft.currentStep = visibleSteps[index - 1]; store.save(draft) } else { draft.currentStep = .welcome } }
-    func clear() { store.clear() }
+    /// Moves the onboarding draft to the previous visible step or resets it to the welcome step.
+/// - Note: Persists the draft when moving to a previous step.
+func back() { if let index = visibleSteps.firstIndex(of: draft.currentStep), index > 0 { draft.currentStep = visibleSteps[index - 1]; store.save(draft) } else { draft.currentStep = .welcome } }
+    /// Clears the persisted onboarding draft.
+func clear() { store.clear() }
     private var nextAfterTax: OnboardingStep { draft.businessType?.tracksProducts == false ? .teamDecision : .inventoryDecision }
+    /// Validates the required onboarding data for the current step.
+    /// - Returns: `true` when the current step is valid; `false` otherwise.
     private func validate() -> Bool {
         switch draft.currentStep {
         case .ownerProfile where draft.ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty: validationMessage = "Enter the name your team should use."

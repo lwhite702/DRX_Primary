@@ -107,6 +107,9 @@ private struct LegacyNativeOnboardingView: View {
         (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
     }
 
+    /// Parses a localized tax rate from the provided text.
+    /// - Parameter input: The text containing the tax rate.
+    /// - Returns: The parsed tax rate, or `nil` when the text cannot be parsed.
     private func parseTaxRate(_ input: String) -> Double? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

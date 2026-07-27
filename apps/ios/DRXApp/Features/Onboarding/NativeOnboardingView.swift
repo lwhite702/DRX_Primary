@@ -81,9 +81,27 @@ struct NativeOnboardingView: View {
             }.buttonStyle(.borderedProminent).disabled(environment.isSubmittingOnboarding).frame(minHeight: 44).accessibilityIdentifier("onboardingContinue")
         }
     }
-    private func prompt(_ title: String, _ body: String) -> some View { VStack(alignment: .leading, spacing: 10) { Text(title).font(.largeTitle.bold()); Text(body).foregroundStyle(DRXPalette.muted) } }
-    private func choice(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View { Button(action: action) { HStack { Text(title).foregroundStyle(DRXPalette.ink); Spacer(); Image(systemName: selected ? "checkmark.circle.fill" : "circle").accessibilityHidden(true) }.padding().frame(minHeight: 56).background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 14)).overlay { RoundedRectangle(cornerRadius: 14).stroke(selected ? DRXPalette.accent : DRXPalette.border) } }.accessibilityAddTraits(selected ? .isSelected : []) }
+    /// Creates a vertically arranged prompt with a title and supporting text.
+/// - Parameters:
+///   - title: The prompt title.
+///   - body: The supporting text.
+private func prompt(_ title: String, _ body: String) -> some View { VStack(alignment: .leading, spacing: 10) { Text(title).font(.largeTitle.bold()); Text(body).foregroundStyle(DRXPalette.muted) } }
+    /// Creates a selectable option button with a title and selection indicator.
+/// - Parameters:
+///   - title: The title displayed for the option.
+///   - selected: A Boolean value indicating whether the option is selected.
+///   - action: The action performed when the option is selected.
+/// - Returns: A styled selectable option button.
+private func choice(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View { Button(action: action) { HStack { Text(title).foregroundStyle(DRXPalette.ink); Spacer(); Image(systemName: selected ? "checkmark.circle.fill" : "circle").accessibilityHidden(true) }.padding().frame(minHeight: 56).background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 14)).overlay { RoundedRectangle(cornerRadius: 14).stroke(selected ? DRXPalette.accent : DRXPalette.border) } }.accessibilityAddTraits(selected ? .isSelected : []) }
     private var review: some View { VStack(alignment: .leading, spacing: 14) { prompt("Review your setup", "Everything here can be changed later in Business Settings."); summary("Owner", model.draft.ownerName); summary("Business", model.draft.businessName); summary("Location", model.draft.locationName); summary("Tax", model.draft.collectsTax == true ? "Enabled at \(model.draft.taxRate)%" : "Not enabled"); summary("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled") } }
-    private func summary(_ title: String, _ value: String) -> some View { LabeledContent(title, value: value).padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
-    private func submit() { let draft = model.draft; Task { let success = await environment.completeOnboarding(.init(name: draft.ownerName.trimmingCharacters(in: .whitespacesAndNewlines), businessName: draft.businessName.trimmingCharacters(in: .whitespacesAndNewlines), businessType: draft.businessType?.rawValue ?? "other", currency: draft.currency, timezone: draft.timezone, collectTax: draft.collectsTax == true, taxRateBps: Int(((Double(draft.taxRate) ?? 0) * 100).rounded()))); if success { model.clear(); UINotificationFeedbackGenerator().notificationOccurred(.success) } } }
+    /// Displays a labeled value in a styled summary card.
+///
+/// - Parameters:
+///   - title: The label for the summary value.
+///   - value: The summary value to display.
+/// - Returns: A styled view containing the label and value.
+private func summary(_ title: String, _ value: String) -> some View { LabeledContent(title, value: value).padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
+    /// Submits the onboarding details to create the workspace.
+/// On success, clears the onboarding state and provides success feedback.
+private func submit() { let draft = model.draft; Task { let success = await environment.completeOnboarding(.init(name: draft.ownerName.trimmingCharacters(in: .whitespacesAndNewlines), businessName: draft.businessName.trimmingCharacters(in: .whitespacesAndNewlines), businessType: draft.businessType?.rawValue ?? "other", currency: draft.currency, timezone: draft.timezone, collectTax: draft.collectsTax == true, taxRateBps: Int(((Double(draft.taxRate) ?? 0) * 100).rounded()))); if success { model.clear(); UINotificationFeedbackGenerator().notificationOccurred(.success) } } }
 }

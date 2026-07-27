@@ -42,6 +42,8 @@ protocol ProvisioningClient: Sendable {
 }
 
 struct LiveProvisioningClient: ProvisioningClient {
+    /// Retrieves the current business provisioning status.
+    /// - Returns: The current provisioning status.
     func status() async throws -> ProvisioningStatus {
         let response: ProvisioningStatusResponse = try await ConvexClient.shared.query(
             "onboarding:getCurrentOnboardingStatus", args: EmptyConvexArgs()
@@ -49,16 +51,26 @@ struct LiveProvisioningClient: ProvisioningClient {
         return response.status
     }
 
+    /// Creates a business onboarding record.
+    ///
+    /// - Parameter input: The business details and onboarding settings.
+    /// - Returns: The onboarding result returned by the provisioning service.
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
         try await ConvexClient.shared.mutation("onboarding:createBusinessOnboarding", args: input)
     }
 }
 
 struct MockProvisioningClient: ProvisioningClient {
+    /// Retrieves the current provisioning status.
+    ///
+    /// - Returns: The provisioning status, always `.needsBusinessOnboarding`.
     func status() async throws -> ProvisioningStatus {
         .needsBusinessOnboarding
     }
 
+    /// Creates a business onboarding record.
+    /// - Parameter input: The business onboarding details.
+    /// - Returns: The onboarding operation status.
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
         .init(status: "ONBOARDING_SUCCESS")
     }
@@ -86,6 +98,9 @@ final class AppEnvironment {
         self.provisioningClient = provisioningClient
     }
 
+    /// Creates a live application environment using the supplied configuration.
+    /// - Parameter configuration: The application configuration used to configure the API client and telemetry service.
+    /// - Returns: A live application environment, or a preview environment when UI testing is enabled.
     static func live(configuration: AppConfiguration) -> AppEnvironment {
         if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
             return preview()
@@ -102,6 +117,7 @@ final class AppEnvironment {
         )
     }
 
+    /// Creates an app environment configured with in-memory services for previews and testing.
     static func preview() -> AppEnvironment {
         let tokenStore = InMemoryTokenStore()
         let apiClient = MockAPIClient()
@@ -120,17 +136,22 @@ final class AppEnvironment {
         )
     }
 
+    /// Restores the current session and identifies the operator when a session is available.
     func restoreSession() async {
         await session.restore()
         guard let operatorSession = session.operatorSession else { return }
         telemetry.identify(operatorSession)
     }
 
+    /// Signs out the current operator and updates the application state to signed out.
     func clerkSignedOut() async {
         await signOut()
         rootState = .signedOut
     }
 
+    /// Checks the current provisioning status and updates the application state accordingly.
+    /// - Updates the root state for onboarding, workspace loading, readiness, or recoverable errors.
+    /// - Clears previous provisioning messages and support request identifiers before checking.
     func checkProvisioning() async {
         provisioningGeneration += 1
         let currentGeneration = provisioningGeneration
@@ -163,6 +184,9 @@ final class AppEnvironment {
         }
     }
 
+    /// Completes business onboarding and advances the application to the ready state when provisioning succeeds.
+    /// - Parameter input: The business details submitted for onboarding.
+    /// - Returns: `true` if onboarding succeeds and the application reaches the ready state, `false` otherwise.
     func completeOnboarding(_ input: BusinessOnboardingInput) async -> Bool {
         guard !isSubmittingOnboarding else { return false }
         isSubmittingOnboarding = true
@@ -182,12 +206,20 @@ final class AppEnvironment {
         }
     }
 
+    /// Presents a recoverable provisioning error with an optional support request identifier.
+    /// - Parameters:
+    ///   - message: The message describing the recovery issue.
+    ///   - error: An optional error from which to extract a support request identifier.
     private func showRecovery(_ message: String, error: Error? = nil) {
         provisioningMessage = message
         supportRequestID = Self.requestID(from: error)
         rootState = .recoverableError
     }
 
+    /// Extracts a request identifier from an error's localized description.
+    ///
+    /// - Parameter error: The error whose localized description may contain a request identifier.
+    /// - Returns: The extracted request identifier, or `nil` if none is found.
     static func requestID(from error: Error?) -> String? {
         guard let text = error?.localizedDescription else { return nil }
         let pattern = #"(?i)(?:request[_ -]?id)[:= ]+([A-Za-z0-9_-]{6,80})"#
@@ -197,6 +229,7 @@ final class AppEnvironment {
         return String(text[range])
     }
 
+    /// Signs out the current session and clears telemetry and provisioning recovery state.
     func signOut() async {
         await session.signOut()
         telemetry.reset()

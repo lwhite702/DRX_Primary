@@ -38,6 +38,9 @@ final class SessionStore {
         self.tokenStore = tokenStore
     }
 
+    /// Restores the operator session from the active authentication token.
+    /// - Updates `operatorSession` on success and sets `errorMessage` when restoration fails.
+    /// - If restoration is already in progress or a session exists, no action is taken.
     func restore() async {
         guard !isRestoring, operatorSession == nil else { return }
         isRestoring = true
@@ -73,6 +76,9 @@ final class SessionStore {
         reset()
     }
 
+    /// Sanitizes a backend error message for safe presentation to the user.
+    /// - Parameter backendMessage: The message received from the backend.
+    /// - Returns: The original message when it is safe and at most 160 characters; otherwise, a generic workspace access message.
     private static func safeMessage(from backendMessage: String) -> String {
         let unsafeMarkers = ["clerk", "convex/", ".ts", " at ", "stack", "unauthorized:"]
         if unsafeMarkers.contains(where: { backendMessage.lowercased().contains($0) }) {

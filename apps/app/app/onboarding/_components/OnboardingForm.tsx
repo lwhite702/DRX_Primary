@@ -12,15 +12,33 @@ const choices: Array<[BusinessType, string, string]> = [
 ];
 const numbered: OnboardingStep[] = ["ownerProfile", "businessName", "businessType", "location", "regionalSettings", "taxDecision", "taxDetails", "inventoryDecision", "teamDecision", "teamInvitation", "review"];
 
+/**
+ * Redirects to the dashboard after onboarding completes and clears the saved onboarding draft.
+ *
+ * @param completed - Whether onboarding has completed.
+ * @param storage - Optional storage target for the completion flag and draft cleanup.
+ * @param navigate - Optional navigation function used to redirect to the dashboard.
+ */
 export function OnboardingCompletionRedirect({ completed, storage, navigate }: { completed: boolean; storage?: Pick<Storage, "setItem"> & { removeItem?: Storage["removeItem"] }; navigate?: (path: string) => void }) {
   useEffect(() => { if (!completed) return; const target = storage ?? window.localStorage; try { target.setItem("drx_onboarding_complete", "true"); target.removeItem?.(ONBOARDING_DRAFT_KEY); } catch { /* Server state and the completion cookie remain authoritative. */ } finally { (navigate ?? ((path) => window.location.replace(path)))("/dashboard"); } }, [completed, navigate, storage]);
   return null;
 }
 
+/**
+ * Renders a selectable button with a title and optional supporting detail.
+ *
+ * @param selected - Whether the option is currently selected.
+ * @param title - The option title.
+ * @param detail - Optional supporting description.
+ * @param onClick - Invoked when the option is pressed.
+ */
 function Card({ selected, title, detail, onClick }: { selected: boolean; title: string; detail?: string; onClick: () => void }) {
   return <button type="button" aria-pressed={selected} onClick={onClick} className={`min-h-16 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${selected ? "border-accent bg-accent/10" : "border-white/15 bg-black/20 hover:border-white/35"}`}><strong className="block text-white">{title}</strong>{detail && <span className="mt-1 block text-sm text-text-secondary">{detail}</span>}</button>;
 }
 
+/**
+ * Renders a multi-step onboarding wizard that collects, saves, validates, and submits business setup details.
+ */
 export function OnboardingForm() {
   const [result, action, pending] = useActionState(completeOnboarding, initialState);
   const [draft, setDraft] = useState(() => createDraft()); const [error, setError] = useState<string | null>(null); const [resumed, setResumed] = useState(false);
@@ -56,8 +74,43 @@ export function OnboardingForm() {
   </section>;
 }
 
+/**
+ * Renders an onboarding heading and supporting description.
+ *
+ * @param title - The heading text.
+ * @param body - The supporting description text.
+ */
 function Intro({title,body}:{title:string;body:string}) { return <><h1 id="onboarding-heading" tabIndex={-1} ref={undefined} className="text-3xl font-semibold text-white">{title}</h1><p className="mt-3 mb-7 text-text-secondary">{body}</p></>; }
+/**
+ * Renders a titled onboarding field section with descriptive text and optional labeling.
+ *
+ * @param title - The section heading.
+ * @param body - The descriptive text below the heading.
+ * @param label - An optional label applied to the child content.
+ * @param children - The section content.
+ */
 function Field({title,body,label,children}:{title:string;body:string;label?:string;children:React.ReactNode}) { return <><h2 id="onboarding-heading" tabIndex={-1} className="text-3xl font-semibold text-white">{title}</h2><p className="mt-3 mb-7 text-text-secondary">{body}</p>{label ? <Labeled label={label}>{children}</Labeled>:children}</>; }
+/**
+ * Renders a styled form label with its associated content.
+ *
+ * @param label - The text displayed for the label
+ * @param children - The form control or content associated with the label
+ */
 function Labeled({label,children}:{label:string;children:React.ReactNode}) { return <label className="grid gap-2 text-sm text-white"><span>{label}</span>{children}</label>; }
+/**
+ * Displays a review summary with an option to edit the corresponding onboarding value.
+ *
+ * @param title - The summary field label
+ * @param value - The summary field value
+ * @param edit - Invoked when the user selects the edit action
+ */
 function Summary({title,value,edit}:{title:string;value:string;edit:()=>void}) { return <div className="rounded-xl border border-white/10 p-4"><div className="flex justify-between"><strong className="text-white">{title}</strong><button type="button" onClick={edit} className="text-sm text-accent">Edit</button></div><p className="mt-2 text-sm text-text-secondary">{value}</p></div>; }
+/**
+ * Renders navigation controls for an onboarding step or submission form.
+ *
+ * @param back - Optional callback invoked when the Back button is pressed.
+ * @param primary - Label for the primary action button.
+ * @param onPrimary - Optional callback for advancing the wizard; when omitted, the primary button submits its form.
+ * @param pending - Whether to disable the primary button and show its pending label.
+ */
 function Navigation({back,primary,onPrimary,pending=false}:{back?:()=>void;primary:string;onPrimary?:()=>void;pending?:boolean}) { return <div className="mt-8 flex items-center justify-between gap-4 border-t border-white/10 pt-6">{back ? <button type="button" onClick={back} className="min-h-11 px-4 text-white">Back</button>:<span/>}<button type={onPrimary ? "button":"submit"} onClick={onPrimary} disabled={pending} className="min-h-11 rounded-full bg-accent px-6 font-semibold text-black disabled:opacity-50">{pending ? "Creating your DRX workspace…":primary}</button></div>; }

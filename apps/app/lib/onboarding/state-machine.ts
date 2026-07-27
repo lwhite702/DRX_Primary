@@ -16,6 +16,12 @@ export type OnboardingDraft = {
   lastSavedAt?: string;
 };
 
+/**
+ * Creates an onboarding draft with default values.
+ *
+ * @param timezone - The timezone to assign to the draft
+ * @returns A new onboarding draft initialized at the welcome step
+ */
 export function createDraft(timezone = "America/New_York"): OnboardingDraft {
   return { version: 1, currentStep: "welcome", ownerName: "", businessName: "", locationName: "Main Location",
     city: "", region: "", country: "US", currency: "USD", timezone, taxRate: "", invitedUserEmail: "", invitedUserRole: "manager" };
@@ -23,6 +29,12 @@ export function createDraft(timezone = "America/New_York"): OnboardingDraft {
 
 export const productBusiness = (type?: BusinessType) => type !== "service";
 
+/**
+ * Determines the next onboarding step based on the current step and draft decisions.
+ *
+ * @param draft - The onboarding draft containing the current step and branching choices
+ * @returns The next onboarding step
+ */
 export function nextStep(draft: OnboardingDraft): OnboardingStep {
   switch (draft.currentStep) {
     case "welcome": return "ownerProfile"; case "ownerProfile": return "businessName";
@@ -37,6 +49,12 @@ export function nextStep(draft: OnboardingDraft): OnboardingStep {
   }
 }
 
+/**
+ * Determines the preceding onboarding step for the current draft.
+ *
+ * @param draft - The onboarding draft whose current step determines the result
+ * @returns The preceding onboarding step, or the current step when no preceding step is defined
+ */
 export function previousStep(draft: OnboardingDraft): OnboardingStep {
   switch (draft.currentStep) {
     case "ownerProfile": return "welcome"; case "businessName": return "ownerProfile";
@@ -51,6 +69,12 @@ export function previousStep(draft: OnboardingDraft): OnboardingStep {
   }
 }
 
+/**
+ * Validates the fields required for the draft's current onboarding step.
+ *
+ * @param draft - The onboarding draft to validate
+ * @returns The first applicable validation message, or `null` when the current step is valid
+ */
 export function validationMessage(draft: OnboardingDraft): string | null {
   if (draft.currentStep === "ownerProfile" && !draft.ownerName.trim()) return "Enter the name your team should use.";
   if (draft.currentStep === "businessName" && !draft.businessName.trim()) return "Enter a business name to continue.";
@@ -63,6 +87,12 @@ export function validationMessage(draft: OnboardingDraft): string | null {
   return null;
 }
 
+/**
+ * Restores an onboarding draft from a serialized value when its version is supported.
+ *
+ * @param value - The serialized onboarding draft
+ * @returns The restored draft, or `null` when the value is missing, invalid, or uses an unsupported version
+ */
 export function restoreDraft(value: string | null): OnboardingDraft | null {
   if (!value) return null;
   try { const parsed = JSON.parse(value) as OnboardingDraft; return parsed.version === ONBOARDING_DRAFT_VERSION ? parsed : null; } catch { return null; }
