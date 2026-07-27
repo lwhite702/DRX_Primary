@@ -91,7 +91,7 @@ private struct SessionBootstrapView: View {
     }
 }
 
-private struct NativeOnboardingView: View {
+private struct LegacyNativeOnboardingView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var ownerName = ""
     @State private var businessName = ""

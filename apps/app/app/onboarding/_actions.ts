@@ -28,16 +28,29 @@ export async function completeOnboarding(
   }
 
   const businessName = String(formData.get("businessName") || "").trim();
-  const role = String(formData.get("role") || "").trim();
-  const teamSize = String(formData.get("teamSize") || "").trim();
+  const role = "owner_operator";
+  const teamSize = "1-5";
   const tooling = String(formData.get("tooling") || "").trim();
+  // Older in-flight sessions did not collect a display name. Keep those
+  // resumable while the progressive client always supplies the owner name.
+  const ownerName = String(formData.get("ownerName") || "Owner").trim();
+  const businessType = String(formData.get("businessType") || "other").trim();
+  const locationName = String(formData.get("locationName") || "Main Location").trim();
+  const city = String(formData.get("city") || "").trim();
+  const region = String(formData.get("region") || "").trim();
+  const country = String(formData.get("country") || "US").trim();
+  const currency = String(formData.get("currency") || "USD").trim();
+  const timezone = String(formData.get("timezone") || "America/New_York").trim();
+  const taxChoice = String(formData.get("taxChoice") || "later");
+  const taxRate = Number(formData.get("taxRate") || 0);
+  const tracksInventory = String(formData.get("tracksInventory")) === "true";
   const dashboardPresetRaw = String(formData.get("dashboardPreset") || "operations").trim();
   const dashboardPreset: DashboardViewPreset =
     dashboardPresetRaw === "checkout" || dashboardPresetRaw === "inventory"
       ? dashboardPresetRaw
       : "operations";
 
-  if (!businessName || !role || !teamSize) {
+  if (!businessName || !ownerName || !Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100) {
     throw new Error("Missing required onboarding fields.");
   }
 
@@ -104,6 +117,11 @@ export async function completeOnboarding(
     role,
     team_size: teamSize,
     tooling,
+    owner_name: ownerName,
+    business_type: businessType,
+    default_location: { name: locationName, city, region, country },
+    tax: { enabled: taxChoice === "yes", rate_bps: Math.round(taxRate * 100) },
+    inventory_tracking: tracksInventory,
     operator_profile: {
       businessName,
       role,
@@ -116,8 +134,8 @@ export async function completeOnboarding(
     await db.businessSettings.update({
       where: { id: existingSettings.id },
       data: {
-        currency: "USD",
-        timezone: "America/New_York",
+        currency,
+        timezone,
         settingsData,
       },
     });
@@ -125,8 +143,8 @@ export async function completeOnboarding(
     await db.businessSettings.create({
       data: {
         businessId: business.id,
-        currency: "USD",
-        timezone: "America/New_York",
+        currency,
+        timezone,
         settingsData,
       },
     });
