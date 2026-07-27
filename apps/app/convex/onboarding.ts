@@ -1,5 +1,32 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+export const getCurrentOnboardingStatus = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("UNAUTHENTICATED");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", identity.subject))
+      .unique();
+
+    if (!user) return { status: "NEEDS_BUSINESS_ONBOARDING" as const };
+    if (user.status !== "ACTIVE") return { status: "INACTIVE" as const };
+
+    const business = await ctx.db.get(user.businessId);
+    if (!business) return { status: "BUSINESS_MISSING" as const };
+
+    return {
+      status: "READY" as const,
+      businessId: business._id,
+      userId: user._id,
+    };
+  },
+});
 
 export const createBusinessOnboarding = mutation({
   args: {
@@ -9,6 +36,7 @@ export const createBusinessOnboarding = mutation({
     clerkOrgId: v.optional(v.string()),
     currency: v.optional(v.string()),
     timezone: v.optional(v.string()),
+    collectTax: v.optional(v.boolean()),
     taxRateBps: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -27,6 +55,14 @@ export const createBusinessOnboarding = mutation({
       .unique();
 
     if (existingUser) {
+      const existingBusiness = await ctx.db.get(existingUser.businessId);
+      if (!existingBusiness) {
+        return {
+          businessId: existingUser.businessId,
+          userId: existingUser._id,
+          status: "BUSINESS_MISSING",
+        };
+      }
       return {
         businessId: existingUser.businessId,
         userId: existingUser._id,
@@ -42,8 +78,8 @@ export const createBusinessOnboarding = mutation({
       ownerId: clerkUserId,
       currency: args.currency || "USD",
       timezone: args.timezone || "America/New_York",
-      collectTax: true,
-      taxRateBps: args.taxRateBps ?? 825, // 8.25% default
+      collectTax: args.collectTax ?? true,
+      taxRateBps: args.collectTax === false ? 0 : (args.taxRateBps ?? 825),
       createdAt: now,
       updatedAt: now,
     });
