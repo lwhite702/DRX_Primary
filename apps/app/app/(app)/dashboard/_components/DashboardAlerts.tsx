@@ -14,7 +14,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
   if (!hasLowStock && !hasOverdue) return null;
 
   return (
-    <section className="space-y-4 rounded-2xl border border-orange-500/15 bg-orange-500/[0.03] p-4 shadow-[0_8px_24px_rgba(249,115,22,0.04)] md:p-5">
+    <section className="space-y-4 rounded-xl border border-warning/15 bg-warning/[0.03] p-4 md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
         SECTION C: ALERTS THAT MATTER
       </div>
@@ -24,21 +24,21 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
 
       <div className="space-y-3">
         {hasLowStock && (
-          <div className="bg-[#2A1C00]/40 border border-[#422D00] p-4 rounded-xl flex items-start gap-4">
-            <div className="bg-orange-500/20 p-2 rounded-lg text-orange-500 shrink-0">
+          <div className="flex items-start gap-4 rounded-lg border border-warning/20 bg-warning/5 p-4">
+            <div className="shrink-0 rounded-md bg-warning/20 p-2 text-warning">
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-orange-500 font-bold text-sm">
+              <h3 className="text-sm font-bold text-warning">
                 Low Stock Threshold Breached
               </h3>
-              <p className="mt-0.5 text-xs text-orange-100/80">
+              <p className="mt-0.5 text-xs text-white/70">
                 {stats.lowStockCount} products are below your configured minimum
                 stock level. Restock recommended to avoid stockouts.
               </p>
               <Link
                 href="/inventory"
-                className="inline-block mt-2 text-[10px] font-bold text-[#FFD600] underline decoration-[#FFD600]/30 hover:decoration-[#FFD600]"
+                className="mt-2 inline-block text-[10px] font-bold text-warning underline decoration-warning/30 hover:decoration-warning"
               >
                 View List
               </Link>
@@ -47,7 +47,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
         )}
 
         {hasOverdue && (
-          <div className="bg-[#2A0505]/40 border border-[#420000] p-4 rounded-xl flex items-start gap-4">
+          <div className="flex items-start gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
             <div className="bg-red-500/20 p-2 rounded-lg text-red-500 shrink-0">
               <AlertCircle className="w-5 h-5" />
             </div>

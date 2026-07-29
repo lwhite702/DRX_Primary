@@ -34,7 +34,7 @@ export default async function RegisterPage() {
         <div className="flex flex-col items-center space-y-6">
           <div className="relative h-12 w-[160px]">
             <Image
-              src="/brand/DRX Wordmark Color.svg"
+              src="/brand/drx-wordmark.svg"
               alt="Deelrx CRM"
               fill
               className="object-contain"

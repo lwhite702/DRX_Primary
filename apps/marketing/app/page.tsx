@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 
 import { LandingPageSections } from "@/components/marketing/landing/sections";
+import { OperatorsShowcaseSection } from "@/components/marketing/landing/operators-showcase";
 import { PageViewTracker } from "@/components/marketing/site/page-view-tracker";
 
 export const metadata: Metadata = {
-  title: "Deelrx CRM (DRX) | Track sales, stock, and customers without confusion",
+  title: "Deelrx CRM | Built for the ones who run it",
   description:
-    "Deelrx CRM (DRX) is a simple system to track sales, stock, and customers without the confusion.",
+    "Fast checkout, real inventory control, clean numbers, and tight permissions for owner-operators.",
 };
 
 export default function LandingPage() {
@@ -15,7 +16,7 @@ export default function LandingPage() {
       <PageViewTracker />
       <div className="page-grid-overlay" />
       <div className="page-glow" />
-      <LandingPageSections />
+      <LandingPageSections operatorShowcase={<OperatorsShowcaseSection />} />
     </main>
   );
 }

@@ -25,13 +25,13 @@ const getIcon = (type: ActivityItem["type"]) => {
 const getColor = (type: ActivityItem["type"]) => {
   switch (type) {
     case "sale":
-      return "bg-[#4ADE80]/10 text-[#4ADE80]";
+      return "bg-success/10 text-success";
     case "intake":
       return "bg-blue-500/10 text-blue-500";
     case "credit":
-      return "bg-orange-500/10 text-orange-500";
+      return "bg-warning/10 text-warning";
     case "customer":
-      return "bg-purple-500/10 text-purple-500";
+      return "bg-info/10 text-info";
     default:
       return "bg-white/10 text-white";
   }

@@ -41,7 +41,7 @@ export default async function WaitlistPage() {
         <div className="space-y-4 text-center">
           <div className="mx-auto h-12 w-[170px]">
             <Image
-              src="/brand/DRX Wordmark Color.svg"
+              src="/brand/drx-wordmark.svg"
               alt="Deelrx CRM"
               width={170}
               height={48}

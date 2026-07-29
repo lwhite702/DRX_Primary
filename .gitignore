@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+node_modules
 /.pnp
 .pnp.js
 
@@ -26,7 +27,7 @@ testsprite_tests/
 *.tsbuildinfo
 *.vercel
 android/
-ios/
+/ios/
 android_backup/
 
 # Misc

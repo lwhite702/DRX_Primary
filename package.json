@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -35,6 +35,7 @@
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
+    "test:brand": "node scripts/testing/brand-contract-check.mjs",
     "test:observability-contract": "pnpm dlx tsx scripts/testing/observability-contract-check.ts",
     "test:doppler-sync": "pnpm dlx tsx scripts/testing/doppler-env-sync-check.ts",
     "doppler:sync:missing": "pnpm dlx tsx scripts/testing/doppler-sync-missing-from-env.ts",

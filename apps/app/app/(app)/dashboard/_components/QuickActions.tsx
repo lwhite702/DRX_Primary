@@ -17,8 +17,8 @@ interface ActionCardProps {
   title: string;
   description: string;
   href: string;
-  color: string; // Tailwind text color class like "text-[#4ADE80]"
-  bgColor: string; // Tailwind bg color class like "bg-[#4ADE80]/10"
+  color: string;
+  bgColor: string;
   compact?: boolean;
 }
 
@@ -35,7 +35,7 @@ function ActionCard({
     <Link
       href={href}
       className={cn(
-        "flex flex-col rounded-xl border border-white/10 bg-[#0A0A0A] transition-all group hover:border-white/20 hover:bg-[#111]",
+        "group flex flex-col rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-white/20 hover:bg-card",
         compact ? "gap-2 p-3" : "gap-3 p-4",
       )}
     >
@@ -90,8 +90,8 @@ export function QuickActions({
           title="Start Sale"
           description="New Transaction"
           href="/sales"
-          color="text-[#4ADE80]"
-          bgColor="bg-[#4ADE80]/10"
+          color="text-accent"
+          bgColor="bg-accent/10"
           compact={compact}
         />
         <ActionCard
@@ -108,8 +108,8 @@ export function QuickActions({
           title="Add Customer"
           description="New Record"
           href="/customers"
-          color="text-purple-500"
-          bgColor="bg-purple-500/10"
+          color="text-info"
+          bgColor="bg-info/10"
           compact={compact}
         />
         <ActionCard
@@ -117,8 +117,8 @@ export function QuickActions({
           title="Extend Credit"
           description="Front Product"
           href="/credit"
-          color="text-orange-500"
-          bgColor="bg-orange-500/10"
+          color="text-warning"
+          bgColor="bg-warning/10"
           compact={compact}
         />
 
@@ -128,8 +128,8 @@ export function QuickActions({
           title="Record Payment"
           description="Settle Balance"
           href="/credit"
-          color="text-[#4ADE80]"
-          bgColor="bg-[#4ADE80]/10"
+          color="text-success"
+          bgColor="bg-success/10"
           compact={compact}
         />
         <ActionCard
@@ -137,8 +137,8 @@ export function QuickActions({
           title="Low Stock List"
           description="View Items"
           href="/inventory"
-          color="text-orange-500"
-          bgColor="bg-orange-500/10"
+          color="text-warning"
+          bgColor="bg-warning/10"
           compact={compact}
         />
         <ActionCard

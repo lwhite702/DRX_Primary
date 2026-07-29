@@ -29,6 +29,7 @@ test.describe("Visual regression", () => {
         ? [
             { name: "dashboard", url: "/dashboard" },
             { name: "pos-sale", url: "/pos/sale" },
+            { name: "inventory", url: "/inventory" },
             { name: "customers", url: "/customers" },
           ]
         : [
@@ -36,18 +37,27 @@ test.describe("Visual regression", () => {
             { name: "register", url: "/register" },
             { name: "dashboard", url: "/dashboard" },
             { name: "pos-sale", url: "/pos/sale" },
+            { name: "inventory", url: "/inventory" },
             { name: "customers", url: "/customers" },
           ];
 
+  const viewports = [
+    { name: "desktop", width: 1440, height: 1024 },
+    { name: "tablet", width: 834, height: 1194 },
+    { name: "mobile", width: 390, height: 844 },
+  ];
+
   for (const pageMeta of pages) {
-    test(`matches baseline: ${pageMeta.name}`, async ({ page }) => {
-      await page.goto(pageMeta.url);
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveScreenshot(`${pageMeta.name}.png`, {
-        fullPage: true,
-        maxDiffPixelRatio: 0.02,
+    for (const viewport of viewports) {
+      test(`matches baseline: ${pageMeta.name} · ${viewport.name}`, async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.goto(pageMeta.url);
+        await page.waitForLoadState("networkidle");
+        await expect(page).toHaveScreenshot(`${pageMeta.name}-${viewport.name}.png`, {
+          fullPage: true,
+          maxDiffPixelRatio: 0.02,
+        });
       });
-    });
+    }
   }
 });

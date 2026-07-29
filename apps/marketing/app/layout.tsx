@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-plus-jakarta",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
   description:
-    "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
+    "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
   icons: {
     icon: "/brand/favicon-32.png",
     apple: "/brand/apple-touch-icon-180.png",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
     description:
-      "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
+      "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
     description:
-      "Deelrx CRM (pronounced Dealers, DRX) is a simple system to track sales, stock, and customers without the confusion.",
+      "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {
@@ -60,7 +60,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#000000",
+  themeColor: "#0A0A0A",
 };
 
 export default function RootLayout({
@@ -71,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-black text-white antialiased`}
+        className={`${plusJakarta.variable} ${geistMono.variable} font-sans bg-background text-foreground antialiased`}
       >
         <div className="min-h-screen flex flex-col">
           <div className="flex-1">{children}</div>

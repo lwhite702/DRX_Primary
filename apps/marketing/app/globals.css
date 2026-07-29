@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-space-grotesk), "Space Grotesk", sans-serif;
-  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace;
 
-  --color-background: #000000;
-  --color-foreground: #ffffff;
-  --color-obsidian: #000000;
-  --color-surface: #0c0c0c;
-  --color-surface-elevated: #141414;
+  --color-background: #0a0a0a;
+  --color-foreground: #f5f5f5;
+  --color-obsidian: #0a0a0a;
+  --color-surface: #121212;
+  --color-surface-elevated: #1a1a1a;
 
   --color-accent: #ccff00;
   --color-neon-lime: #ccff00;
   --color-support: #10b981;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-destructive: #ef4444;
+  --color-info: #3b82f6;
 
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #a1a1a1;
-  --color-text-muted: #7a7a7a;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #a3a3a3;
+  --color-text-muted: #858585;
 
   --color-border: rgba(255, 255, 255, 0.14);
   --color-input: rgba(255, 255, 255, 0.14);
@@ -33,6 +37,10 @@
     @apply bg-background text-foreground overflow-x-hidden antialiased;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   h1,
   h2,
   h3,
@@ -41,6 +49,14 @@
   h6 {
     @apply font-semibold tracking-tight;
   }
+}
+
+.operator-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black 15%, transparent 85%);
 }
 
 .page-grid-overlay {

@@ -102,8 +102,8 @@ export default function InventoryAdjustPage() {
 
         <div className="max-w-2xl luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
           <div className="p-6 border-b border-white/5 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-yellow-500 shadow-[0_0_10px_#EAB308]" />
-            <h2 className="headline-text text-lg tracking-wider text-yellow-500">
+            <div className="h-2 w-2 rounded-full bg-warning" />
+            <h2 className="headline-text text-lg tracking-wider text-warning">
               ADJUSTMENT DETAILS
             </h2>
           </div>
@@ -182,7 +182,7 @@ export default function InventoryAdjustPage() {
             <Button
               onClick={handleAdjust}
               disabled={processing || !selectedProductId}
-              className="w-full h-12 text-lg font-bold tracking-wider uppercase bg-yellow-500 text-black hover:bg-yellow-400"
+              className="h-12 w-full bg-warning text-lg font-bold uppercase tracking-wider text-black hover:brightness-110"
             >
               {processing ? "Updating..." : "Confirm Adjustment"}
             </Button>
