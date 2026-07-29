@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { LandingPageSections } from "@/components/marketing/landing/sections";
-import { OperatorsShowcaseSection } from "@/components/marketing/landing/operators-showcase";
 import { PageViewTracker } from "@/components/marketing/site/page-view-tracker";
 
 export const metadata: Metadata = {
@@ -16,7 +15,7 @@ export default function LandingPage() {
       <PageViewTracker />
       <div className="page-grid-overlay" />
       <div className="page-glow" />
-      <LandingPageSections operatorShowcase={<OperatorsShowcaseSection />} />
+      <LandingPageSections />
     </main>
   );
 }

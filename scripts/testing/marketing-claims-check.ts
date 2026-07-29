@@ -67,10 +67,6 @@ const requiredOperatorShowcaseCardTitles = [
 
 const requiredImports: Array<{ file: string; contains: string[] }> = [
   {
-    file: "apps/marketing/app/page.tsx",
-    contains: ['from "@/components/marketing/landing/operators-showcase"', "<OperatorsShowcaseSection />"],
-  },
-  {
     file: "apps/marketing/components/marketing/features.tsx",
     contains: ['from "@/lib/feature-canon"'],
   },

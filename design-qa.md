@@ -1,49 +1,54 @@
 # DRX Unified Visual Identity — Design QA
 
-**Findings**
+## Result
 
-- [P0] Browser-rendered web comparison is unavailable
-  Location: marketing landing page at `http://127.0.0.1:3200/`.
-  Evidence: the in-app browser rejected the local preview because enterprise network policy blocks local HTTP targets. No browser-rendered implementation screenshot can be captured in the approved browser surface.
-  Impact: typography, responsive spacing, interaction states, and full-page fidelity cannot be approved from a production build alone.
-  Fix: open the running preview in a browser allowed to access the local workspace, capture the three required viewports, and compare each capture with the approved direction board in a single comparison input.
+The selected WRE-25 direction passes visual QA for the public landing page and the signed-out native identity surfaces verified in this branch. The marketing preview matches the approved operator-console direction across desktop, tablet, and phone without horizontal overflow, console warnings, or console errors.
 
-**Open Questions**
+Authenticated Dashboard, POS, Inventory, loading, empty, sheet, and failure-state captures remain a separate release-proof requirement. This report does not upgrade deterministic fixtures, compilation, or signed-out screenshots into authenticated persistent-data proof.
 
-- The approved board presents landing, web Dashboard, and native Dashboard as a composite direction rather than one same-state frame. Final QA needs one implementation capture per matching board region.
-- Authenticated Dashboard, POS, Inventory, sheet, empty, loading, and failure screenshots require the deterministic authenticated fixture or live authenticated workflow to be available in the approved browser/simulator session.
+## Findings
 
-**Implementation Checklist**
+- [P1 — resolved] A redundant legacy “What DRX Does” block remained below the new capability story.
+  - Impact: repeated the same product narrative, reintroduced weaker language, and made the landing page feel assembled from two visual systems.
+  - Fix: removed the legacy showcase from the landing composition and retained the six disciplined capability modules, manifesto, and final beta CTA.
+- No open P0, P1, or P2 visual findings remain on the verified landing page viewports.
 
-- Capture the landing page at 1440×1024, 834×1194, and 390×844.
-- Capture the authenticated web Dashboard, POS, and Inventory at the same responsive viewports.
-- Compare typography, spacing, colors, logo fidelity, copy, and deterministic product proof against the approved board.
-- Capture native Dashboard, POS, Inventory, sheet, empty, loading, and failure states on iPhone 17 Pro and iPad Pro.
-- Re-run this report after any P0/P1/P2 fixes.
+## Verified Surfaces
 
-**Follow-up Polish**
+- Landing page at 1440×1024 CSS viewport.
+- Landing page at 834×1194 CSS viewport.
+- Landing page at 390×844 CSS viewport.
+- Internal “See Deelrx in Action” navigation reaches the product section.
+- Header “Join the Beta” link resolves to the canonical Deelrx app waitlist URL.
+- Header and hero primary actions meet the 44px minimum target height; mobile layout has no horizontal document overflow.
+- Marketing preview console contains no warnings or errors.
+- Native signed-out identity on iPhone 17 Pro and iPad Pro.
+- Native iPad layout fills the native application window rather than running in iPhone compatibility mode.
 
-- Re-evaluate line breaks in the hero headline after the real viewport captures are available.
-- Confirm the lime button appearance in enabled native states; the signed-out capture shows Clerk's disabled-button treatment.
+## Visual Comparison
 
-## Evidence
+- Source visual truth: `/Users/lee/.codex/generated_images/019fab35-0ce8-7f91-98c8-84287c1c0fef/exec-4ba7cf38-4d69-430f-b645-4400693fcc15.png` (1487×1058).
+- Same-input comparison: `docs/design/evidence/wre-25-source-vs-implementation.png`.
+- Desktop implementation: `docs/design/evidence/wre-25-marketing-final-1440x1024.png`.
+- Tablet implementation: `docs/design/evidence/wre-25-marketing-final-834x1194.png`.
+- Phone implementation: `docs/design/evidence/wre-25-marketing-final-390x844.png`.
+- Native implementation: `docs/design/evidence/wre-25-native-auth-iphone.jpg` and `docs/design/evidence/wre-25-native-auth-ipad.jpg`.
 
-- Source visual truth: `/Users/lee/.codex/generated_images/019fab35-0ce8-7f91-98c8-84287c1c0fef/exec-4ba7cf38-4d69-430f-b645-4400693fcc15.png`
-- Source pixels: 1487×1058.
-- Web implementation screenshot: unavailable — blocked by enterprise browser policy.
-- Intended web CSS viewports: 1440×1024, 834×1194, 390×844 at device scale factor 1.
-- Native implementation evidence: `docs/design/evidence/wre-25-native-auth-iphone.jpg` (368×800) and `docs/design/evidence/wre-25-native-auth-ipad.jpg` (600×800).
-- Native state: signed out / Clerk email entry.
-- Full-view comparison evidence: blocked because the matching browser-rendered web artifact is missing.
-- Focused-region comparison evidence: not performed because the required same-state, normalized full-view comparison is unavailable.
-- Primary interactions tested: native application launch and signed-out auth presentation; web interaction testing is blocked.
-- Console errors checked: unavailable for the blocked web preview.
+The implementation preserves the approved direction’s black operator-console canvas, lime action hierarchy, compact mono operational labels, sharp section boundaries, evolved DRX mark, deterministic product proof, and direct operator voice. Responsive layouts intentionally reflow rather than imitating the desktop composition: the tablet stacks the Quick Sale proof below the message, while the phone prioritizes the headline and conversion actions before the proof surface.
 
 ## Comparison History
 
-- Initial implementation: native iPad launched in iPhone compatibility mode.
-- Fix: enabled device families `1,2` in the Xcode source and generated project settings.
-- Post-fix evidence: native iPad capture fills the iPad application window and preserves the dark authentication layout.
-- Remaining blocking finding: browser-rendered landing and authenticated web/app captures are unavailable.
+1. Initial implementation: local web capture was blocked by enterprise browser policy; native iPad launched in iPhone compatibility mode.
+2. Native fix: enabled device families `1,2`; post-fix iPad evidence fills the native application window.
+3. Public preview pass: captured the landing page in the approved browser surface and found the redundant legacy showcase.
+4. Landing fix: removed the showcase, rebuilt, and published a new preview deployment.
+5. Final pass: desktop, tablet, and phone captures match the selected direction; internal navigation works; no preview console issues remain.
 
-final result: blocked
+## Release-Proof Follow-up
+
+- Capture authenticated web Dashboard, POS, and Inventory at the required responsive viewports using the real session and persistent-data workflow.
+- Capture native Dashboard, POS, Inventory, sheet, loading, empty, and failure states on iPhone 17 Pro and iPad Pro.
+- Run the complete accessibility matrix with authenticated content: keyboard focus, zoom/reflow, reduced motion, Dynamic Type, VoiceOver labels, and non-color status communication.
+- The signed-in canonical app destination emitted an existing Supabase client configuration error from the Credit bundle during this smoke check. It did not originate in the marketing preview and should be tracked separately from WRE-25 visual QA.
+
+final result: passed

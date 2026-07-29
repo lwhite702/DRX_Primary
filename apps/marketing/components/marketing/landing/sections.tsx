@@ -308,6 +308,6 @@ function Footer() {
   );
 }
 
-export function LandingPageSections({ operatorShowcase }: { operatorShowcase?: React.ReactNode }) {
-  return <><Header /><Hero /><OperatorStrip /><Capabilities />{operatorShowcase}<Manifesto /><FinalCta /><Footer /></>;
+export function LandingPageSections() {
+  return <><Header /><Hero /><OperatorStrip /><Capabilities /><Manifesto /><FinalCta /><Footer /></>;
 }
