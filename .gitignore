@@ -88,6 +88,8 @@ Thumbs.db
 .env
 .env.*
 *.env
+!.env.example
+!apps/app/.env.example
 credentials.json
 *.pem
 *.key

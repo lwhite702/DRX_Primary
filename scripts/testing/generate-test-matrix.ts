@@ -28,6 +28,44 @@ interface OwnershipMap {
   features: Record<string, string[]>;
 }
 
+interface AuditRoute {
+  file: string;
+}
+
+function normalizeRoutes(routes: unknown): AuditRoute[] {
+  if (Array.isArray(routes)) {
+    return routes
+      .map((route) =>
+        typeof route === "string"
+          ? { file: route }
+          : route && typeof route === "object" && "file" in route && typeof route.file === "string"
+            ? { file: route.file }
+            : null,
+      )
+      .filter((route): route is AuditRoute => route !== null);
+  }
+
+  if (!routes || typeof routes !== "object") return [];
+
+  return Object.values(routes)
+    .flatMap((group) => (Array.isArray(group) ? group : []))
+    .filter((file): file is string => typeof file === "string")
+    .map((file) => ({ file }));
+}
+
+function normalizeVendors(audit: any): Array<{ vendor: string }> {
+  if (Array.isArray(audit.vendors)) {
+    return audit.vendors.filter(
+      (entry: unknown): entry is { vendor: string } =>
+        !!entry && typeof entry === "object" && "vendor" in entry && typeof entry.vendor === "string",
+    );
+  }
+
+  return (Array.isArray(audit.integrations) ? audit.integrations : [])
+    .filter((vendor: unknown): vendor is string => typeof vendor === "string")
+    .map((vendor: string) => ({ vendor }));
+}
+
 const root = process.cwd();
 const docsDir = path.join(root, "docs/testing");
 const auditPath = path.join(docsDir, "REPO_AUDIT.json");
@@ -135,16 +173,18 @@ function summary(rows: MatrixRow[]) {
 function toMarkdown(rows: MatrixRow[], audit: any): string {
   const top = rows.slice(0, 500);
   const sums = summary(rows);
+  const routes = normalizeRoutes(audit.routes);
+  const vendors = normalizeVendors(audit);
   return [
     "# TEST_MATRIX",
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
     "## Scope",
-    `- Routes inventoried: ${audit.routes.length}`,
+    `- Routes inventoried: ${routes.length}`,
     `- Roles: ${audit.roles.join(", ")}`,
     "- Environments: local, staging, production",
-    `- Vendors: ${Array.from(new Set(audit.vendors.map((v: any) => v.vendor))).join(", ")}`,
+    `- Vendors: ${Array.from(new Set(vendors.map((v) => v.vendor))).join(", ")}`,
     "",
     "## Coverage Summary",
     `- Covered: ${sums.coverage.covered}`,
@@ -180,14 +220,15 @@ function main() {
   });
 
   const tests = testFiles();
-  const vendors = audit.vendors ?? [];
+  const routes = normalizeRoutes(audit.routes);
+  const vendors = normalizeVendors(audit);
   const roles: string[] = audit.roles ?? ["cashier", "supervisor", "manager", "super_admin", "owner", "admin", "staff"];
 
   const runtimeMockPresent = fs.existsSync(path.join(root, "apps/app/lib/supabase/client.ts"));
 
   const rows: MatrixRow[] = [];
 
-  for (const route of audit.routes as Array<{ file: string }>) {
+  for (const route of routes) {
     const mapped = ownership.routes[route.file] ?? [];
     const tagged = mapped.length === 0 ? hasTaggedOwnership(route.file, tests) : { matches: [], evidence: [] };
     const owningTests = mapped.length > 0 ? mapped : tagged.matches;

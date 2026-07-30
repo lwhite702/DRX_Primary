@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": "20.18.0"
+    "node": "20.19.0"
   },
   "scripts": {
     "release:preflight": "node scripts/release/preflight.mjs",
@@ -34,6 +34,7 @@
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:repo-hygiene": "git diff --check && pnpm compliance:lockfiles",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
     "test:brand": "node scripts/testing/brand-contract-check.mjs",
     "test:observability-contract": "pnpm dlx tsx scripts/testing/observability-contract-check.ts",
