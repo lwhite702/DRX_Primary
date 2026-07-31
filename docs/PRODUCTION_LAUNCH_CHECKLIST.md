@@ -2,7 +2,7 @@
 
 **Version:** 0.5.5  
 **Date:** 2026-04-09  
-**Status:** READY FOR LAUNCH
+**Status:** RELEASE GATE REMEDIATION IN PROGRESS
 
 ---
 
@@ -16,7 +16,8 @@
 | No direct vendor imports | ✅ PASS | grep verification clean |
 | ESLint passes | ✅ PASS | CI gate 0 |
 | TypeScript strict mode | ✅ PASS | CI gate 0 |
-| Unit test coverage >90% | ✅ PASS | CI gate 1 |
+| Unit tests | ✅ PASS | 231 tests on 2026-07-30 |
+| Unit coverage >90% | ❌ NOT MET | 28.96% lines/statements; see `docs/testing/COVERAGE_RATCHET.md` |
 
 ### 2. Web Application ✅
 

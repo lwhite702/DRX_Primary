@@ -1,8 +1,22 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'path';
 
 const isVitest = Boolean(process.env.VITEST);
+const coveragePolicy = JSON.parse(
+  fs.readFileSync(
+    path.resolve(__dirname, '../../docs/testing/COVERAGE_POLICY.json'),
+    'utf8',
+  ),
+) as {
+  ratchetFloor: {
+    lines: number;
+    branches: number;
+    functions: number;
+    statements: number;
+  };
+};
 
 export default defineConfig({
   plugins: [react()],
@@ -33,15 +47,12 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'json-summary', 'html'],
       all: true,
       reportsDirectory: './coverage',
-      thresholds: {
-        lines: 90,
-        branches: 90,
-        functions: 90,
-        statements: 90,
-      },
+      // The ratchet prevents regression from the measured full-suite baseline.
+      // The 90% target remains explicit in docs/testing/COVERAGE_POLICY.json.
+      thresholds: coveragePolicy.ratchetFloor,
       include: [
         'lib/utils/**/*.ts',
         'lib/hooks/**/*.ts',

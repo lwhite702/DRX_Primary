@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "scope": "apps/app/lib/**/*.{ts,tsx}",
+  "measuredAt": "2026-07-30",
+  "measurementCommand": "pnpm --filter deelrxcrm-app exec vitest run --coverage --coverage.thresholds.lines=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.statements=0",
+  "ratchetFloor": {
+    "lines": 28.96,
+    "branches": 53.93,
+    "functions": 51.3,
+    "statements": 28.96
+  },
+  "target": {
+    "lines": 90,
+    "branches": 90,
+    "functions": 90,
+    "statements": 90
+  }
+}

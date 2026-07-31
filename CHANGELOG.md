@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.
 - **Testing**: Replaced the skipped real-beta Playwright suite with config-time environment loading, explicit isolation, fail-fast credential checks, single-project mutation safety, and a persistent-data E2E runbook.
+- **Coverage**: Replaced the unattained global 90% pass/fail threshold with a measured no-regression ratchet while retaining 90% as the explicit target.
+
+### Fixed
+
+- **Migration Safety**: Added the five enforced rollback migrations, restored the prior transaction-counter function where required, and documented the irreversible duplicate-batch cleanup boundary.
+- **Release Evidence**: Corrected the production launch checklist so it no longer reports the unmet 90% coverage target or overall launch readiness as passing.
 
 ## [0.5.5] - 2026-05-31
 
