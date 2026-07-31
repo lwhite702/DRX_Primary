@@ -46,7 +46,7 @@
     "test:e2e:visual:required": "VISUAL_TARGET=public NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=false BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --workers=1 && VISUAL_TARGET=protected NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/visual-regression.spec.ts --workers=1",
     "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
     "test:flags:parity": "node scripts/verify-posthog-flags.mjs",
-    "verify:migration-rollbacks": "node scripts/verify-migration-rollbacks.mjs",
+    "verify:migration-rollbacks": "node scripts/verify-migration-rollbacks.mjs && node scripts/test-migration-rollbacks.mjs",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",
     "test:regression": "vitest run tests/regression",
     "pos:backfill-lineage": "node scripts/backfill-pos-cost-lineage.mjs"
@@ -126,6 +126,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
     "@clerk/testing": "^1.13.35",
+    "@electric-sql/pglite": "0.3.15",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
