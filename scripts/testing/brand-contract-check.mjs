@@ -17,6 +17,18 @@ const requiredTokens = [
   ["info", "#3B82F6", "59 / 255, green: 130 / 255, blue: 246 / 255"],
 ];
 
+const requiredWebMappings = [
+  ["background", "background"],
+  ["surface", "surface"],
+  ["surface-elevated", "surface-elevated"],
+  ["foreground", "foreground"],
+  ["accent", "accent"],
+  ["success", "success"],
+  ["warning", "warning"],
+  ["destructive", "destructive"],
+  ["info", "info"],
+];
+
 const canonical = read("packages/brand/src/index.ts");
 const brandCss = read("packages/brand/tokens.css").toUpperCase();
 const marketingCss = read("apps/marketing/app/globals.css").toUpperCase();
@@ -32,6 +44,12 @@ for (const [name, hex, swiftTuple] of requiredTokens) {
 for (const [surface, css] of [["marketing", marketingCss], ["web", appCss]]) {
   if (!css.includes('@IMPORT "@DEELRX/BRAND/TOKENS.CSS"')) {
     failures.push(`${surface} does not consume @deelrx/brand/tokens.css`);
+  }
+  for (const [consumerToken, brandToken] of requiredWebMappings) {
+    const mapping = `--COLOR-${consumerToken.toUpperCase()}: VAR(--DRX-COLOR-${brandToken.toUpperCase()})`;
+    if (!css.includes(mapping)) {
+      failures.push(`${surface} token mapping missing: ${mapping}`);
+    }
   }
 }
 

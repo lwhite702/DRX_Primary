@@ -208,7 +208,7 @@
   border-radius: 9999px;
   filter: blur(40px);
   opacity: 0.1;
-  background: var(--color-accent);
+  background: var(--drx-color-accent);
   pointer-events: none;
 }
 
@@ -236,7 +236,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--color-accent) 20%, transparent),
+    color-mix(in srgb, var(--drx-color-accent) 20%, transparent),
     transparent
   );
   transition: left 0.5s ease-in-out;
@@ -256,7 +256,7 @@
 
 .luminosity-card:hover {
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 5%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--drx-color-accent) 5%, transparent);
 }
 
 .luminosity-card::after {
@@ -267,7 +267,7 @@
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--drx-color-accent);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--ease-out);
   pointer-events: none;

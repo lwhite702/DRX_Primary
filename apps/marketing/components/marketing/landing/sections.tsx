@@ -17,11 +17,14 @@ import {
 } from "lucide-react";
 
 import { appLoginUrl, appWaitlistUrl } from "@/lib/app-links";
-import { drxAudience, drxPrivacyProtexion, marketingFeatureSections } from "@/lib/feature-canon";
+import { drxPrivacyProtexion, marketingFeatureSections } from "@/lib/feature-canon";
 import { marketingContent } from "@/lib/marketing-content";
 
 const canonicalPoints = (id: (typeof marketingFeatureSections)[number]["id"], limit = 3) =>
   marketingFeatureSections.find((section) => section.id === id)?.bullets.slice(0, limit).map((bullet) => bullet.text) ?? [];
+
+const canonicalPoint = (id: (typeof marketingFeatureSections)[number]["id"], text: string) =>
+  marketingFeatureSections.find((section) => section.id === id)?.bullets.find((bullet) => bullet.text === text)?.text;
 
 const strongEncryptionPoints =
   drxPrivacyProtexion.blocks.find((block) => block.id === "strong-encryption")?.bullets.slice(0, 1) ?? [];
@@ -67,7 +70,11 @@ const capabilities = [
     kicker: "Security",
     title: "Your operation stays yours.",
     body: "Secure login, controlled privileges, activity logs, and encrypted sensitive fields support a disciplined operating model.",
-    points: [...canonicalPoints("team-control", 6).slice(4), ...strongEncryptionPoints],
+    points: [
+      canonicalPoint("team-control", "Secure login system"),
+      canonicalPoint("team-control", "Activity logs by user"),
+      ...strongEncryptionPoints,
+    ].filter((point): point is string => Boolean(point)),
   },
 ];
 
@@ -196,19 +203,19 @@ function Hero() {
       <div className="operator-grid absolute inset-0 opacity-50" aria-hidden />
       <div className="relative mx-auto grid max-w-[1280px] gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-28">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{drxAudience.eyebrow}</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{marketingContent.hero.preheadline}</p>
           <h1 className="mt-5 max-w-[740px] text-[clamp(3.2rem,7vw,6.7rem)] font-extrabold leading-[0.91] tracking-[-0.06em] text-white">
-            For the ones who run it,<br /><span className="text-accent">not the ones who talk about it.</span>
+            {marketingContent.hero.headline.split(", ")[0]},<br /><span className="text-accent">{marketingContent.hero.headline.split(", ")[1]}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-8 text-white/65">
-            {drxAudience.supportingPromise}
+            {marketingContent.hero.subheadline}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink href={appWaitlistUrl}>Join the Beta <ArrowRight className="size-4" /></PrimaryLink>
-            <SecondaryLink href="#product">See Deelrx in Action</SecondaryLink>
+            <PrimaryLink href={appWaitlistUrl}>{marketingContent.hero.primaryCta.label} <ArrowRight className="size-4" /></PrimaryLink>
+            <SecondaryLink href="#product">{marketingContent.hero.secondaryCta.label}</SecondaryLink>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/45">
-            {drxAudience.proofLabels.map((label) => (
+            {marketingContent.hero.proofLabels.map((label) => (
               <span key={label} className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> {label}</span>
             ))}
           </div>
@@ -220,22 +227,20 @@ function Hero() {
 }
 
 function OperatorStrip() {
-  const items = [
-    [ShoppingCart, "Move the line", "A checkout flow built around speed."],
-    [PackageCheck, "Trust the count", "Inventory changes with every sale."],
-    [CircleDollarSign, "See the numbers", "Sales and adjustments stay legible."],
-    [LockKeyhole, "Control access", "The right tools for the right role."],
-  ] as const;
+  const icons = [ShoppingCart, PackageCheck, CircleDollarSign, LockKeyhole] as const;
   return (
     <section aria-label="Operator benefits" className="border-b border-white/10 bg-[#0D0D0D]">
       <div className="mx-auto grid max-w-[1280px] md:grid-cols-2 lg:grid-cols-4">
-        {items.map(([Icon, title, body]) => (
+        {marketingContent.benefits.map(({ title, body }, index) => {
+          const Icon = icons[index];
+          return (
           <div key={title} className="border-white/10 px-5 py-8 md:px-8 lg:border-r last:border-r-0">
             <Icon className="size-5 text-accent" aria-hidden />
             <h2 className="mt-4 text-base font-bold text-white">{title}</h2>
             <p className="mt-2 text-sm leading-6 text-white/50">{body}</p>
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -316,9 +321,9 @@ function FinalCta() {
       <div className="relative overflow-hidden rounded-[14px] border border-accent/25 bg-[#151515] px-6 py-14 md:px-12 md:py-20">
         <div className="relative z-10 max-w-3xl">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Deelrx CRM beta</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">Run the operation tighter.</h2>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">Join the beta, put Deelrx into a real workflow, and help shape the operator console around the work that matters.</p>
-          <div className="mt-8 flex flex-wrap gap-3"><PrimaryLink href={appWaitlistUrl}>Join the Beta <ArrowRight className="size-4" /></PrimaryLink><SecondaryLink href={appLoginUrl}>Operator login</SecondaryLink></div>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">{marketingContent.betaAccess.title}</h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">{marketingContent.betaAccess.lead}</p>
+          <div className="mt-8 flex flex-wrap gap-3"><PrimaryLink href={appWaitlistUrl}>{marketingContent.betaAccess.cta.label} <ArrowRight className="size-4" /></PrimaryLink><SecondaryLink href={appLoginUrl}>Operator login</SecondaryLink></div>
         </div>
       </div>
     </section>

@@ -121,7 +121,11 @@ const requiredImports: Array<{ file: string; contains: string[] }> = [
   },
   {
     file: landingSectionsPath,
-    contains: ['from "@/lib/feature-canon"', "drxAudience", "Join the Beta"],
+    contains: ['from "@/lib/marketing-content"', "marketingContent", "Join the Beta"],
+  },
+  {
+    file: "apps/marketing/lib/marketing-content.ts",
+    contains: ['from "@/lib/feature-canon"', "drxAudience"],
   },
   {
     file: "apps/marketing/app/product/page.tsx",
@@ -342,6 +346,14 @@ function checkAppStoreCopyContract(failures: Failure[]) {
     failures.push({ file: appStoreMetadataPath, message: "App Store keywords exceed 100 characters" });
   }
 
+  if (appStoreCopy.promotionalText.length > 170) {
+    failures.push({ file: appStoreMetadataPath, message: "App Store promotional text exceeds 170 characters" });
+  }
+
+  if (appStoreCopy.description.length > 4_000) {
+    failures.push({ file: appStoreMetadataPath, message: "App Store description exceeds 4000 characters" });
+  }
+
   for (const [label, url] of [
     ["marketing", appStoreCopy.marketingUrl],
     ["support", appStoreCopy.supportUrl],
@@ -376,12 +388,24 @@ function checkAppStoreCopyContract(failures: Failure[]) {
     }
   }
 
-  if (appStoreCopy.screenshotPlan.length !== requiredScreenshotCaptions.length) {
+  if (
+    appStoreCopy.screenshotPlan.length !== requiredScreenshotCaptions.length ||
+    appStoreCopy.screenshotCaptions.length !== requiredScreenshotCaptions.length
+  ) {
     failures.push({
       file: appStoreMetadataPath,
       message: "App Store screenshot plan and caption count must stay aligned",
     });
   }
+
+  appStoreCopy.screenshotPlan.forEach((screenshot, index) => {
+    if (screenshot.caption !== appStoreCopy.screenshotCaptions[index]) {
+      failures.push({
+        file: appStoreMetadataPath,
+        message: `Screenshot plan caption mismatch at position ${index + 1}`,
+      });
+    }
+  });
 
   for (const screenshot of appStoreCopy.screenshotPlan) {
     if (

@@ -1,7 +1,10 @@
+import { drxAudience } from "@/lib/feature-canon";
+
 export type HeroContent = {
   preheadline: string;
   headline: string;
   subheadline: string;
+  proofLabels: readonly string[];
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
 };
@@ -11,18 +14,9 @@ export type BenefitCard = {
   body: string;
 };
 
-export type HowItWorksStep = {
-  title: string;
-  body: string;
-  cta: { label: string; href: string };
-};
-
 export type BetaAccessSection = {
   title: string;
   lead: string;
-  whatYouGet: string[];
-  whoItsFor: string[];
-  limitedSpots: string;
   cta: { label: string; href: string };
 };
 
@@ -43,12 +37,12 @@ export type FooterContent = {
 
 export const marketingContent = {
   hero: {
-    preheadline: "Built for independent retail.",
-    headline: "For the ones who run it, not the ones who talk about it.",
-    subheadline:
-      "Fast checkout, tighter inventory, clear sales records, and role-based control for independent shops that move fast.",
+    preheadline: drxAudience.eyebrow,
+    headline: drxAudience.headline,
+    subheadline: drxAudience.supportingPromise,
+    proofLabels: drxAudience.proofLabels,
     primaryCta: { label: "Join the Beta", href: "/waitlist" },
-    secondaryCta: { label: "See How It Works", href: "/#how-it-works" },
+    secondaryCta: { label: "See Deelrx in Action", href: "/#product" },
   } satisfies HeroContent,
   benefits: [
     {
@@ -63,41 +57,15 @@ export const marketingContent = {
       title: "See the Shift Clearly",
       body: "Review sales, best sellers, and low-stock signals without reporting theater.",
     },
+    {
+      title: "Control Team Access",
+      body: "Give each operator the tools their role requires and keep sensitive actions attributable.",
+    },
   ] satisfies BenefitCard[],
-  howItWorks: [
-    {
-      title: "Add What You Sell",
-      body: "Add products, prices, stock levels, SKUs, and barcodes to one working catalog.",
-      cta: { label: "Join the Beta", href: "/waitlist" },
-    },
-    {
-      title: "Make the Sale",
-      body: "Complete checkout and review the resulting sale and stock activity.",
-      cta: { label: "Watch Demo", href: "/#demo" },
-    },
-    {
-      title: "Stay in Control",
-      body: "See what's working, what's not, and adjust on the fly.",
-      cta: { label: "Get Early Access", href: "/waitlist" },
-    },
-  ] satisfies HowItWorksStep[],
   betaAccess: {
-    title: "Get in early. Stay ahead.",
+    title: "Run the operation tighter.",
     lead: "We are opening Deelrx CRM beta access to a focused group of operators who want speed, clarity, and control.",
-    whatYouGet: [
-      "Full access to Deelrx CRM (DRX) during beta",
-      "Access to current beta workflows",
-      "No payment required during beta",
-      "Early say in how the product evolves",
-    ],
-    whoItsFor: [
-      "Independent retailers",
-      "Owner-operated shops and pop-ups",
-      "Service businesses that carry inventory",
-    ],
-    limitedSpots:
-      "Access is added in small groups so product feedback and support stay manageable.",
-    cta: { label: "Request Access", href: "/waitlist" },
+    cta: { label: "Join the Beta", href: "/waitlist" },
   } satisfies BetaAccessSection,
   faq: [
     {

@@ -15,7 +15,7 @@ struct RecordPaymentSheet: View {
     private var paymentAmountCents: Int { CurrencyInput.cents(from: paymentAmountString) ?? 0 }
 
     private var isValid: Bool {
-        paymentAmountCents > 0
+        paymentAmountCents > 0 && paymentAmountCents <= customer.totalCreditUsedCents
     }
 
     var body: some View {

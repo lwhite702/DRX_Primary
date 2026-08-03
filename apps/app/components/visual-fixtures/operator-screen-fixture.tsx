@@ -304,7 +304,7 @@ function InventoryFixture() {
       <section className="grid gap-3 sm:grid-cols-3">
         <MetricCard label="Stock value" value="$42,680" detail="At current unit cost" />
         <MetricCard label="Units on hand" value="1,284" detail="Across 147 active SKUs" />
-        <MetricCard label="Low stock" value="03" detail="1 item below reorder point" direction="down" />
+        <MetricCard label="Low stock" value="01" detail="1 item below reorder point" direction="down" />
       </section>
       <section className="overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
         <div className="flex flex-col gap-3 border-b border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -321,7 +321,7 @@ function InventoryFixture() {
             />
           </label>
           <div className="flex gap-2">
-            <StatusPill tone="warning">3 low stock</StatusPill>
+            <StatusPill tone="warning">1 low stock</StatusPill>
             <StatusPill>All locations</StatusPill>
           </div>
         </div>

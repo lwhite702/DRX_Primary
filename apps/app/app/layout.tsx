@@ -73,7 +73,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const useVisualFixtures = process.env.VISUAL_FIXTURES === "true";
   const shouldEnableMeticulous =
     process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
   const meticulousToken = process.env.NEXT_PUBLIC_METICULOUS_TOKEN;
@@ -102,20 +101,16 @@ export default function RootLayout({
       <body
         className={`${_plusJakartaSans.className} ${_inter.className} bg-background text-foreground antialiased`}
       >
-        {useVisualFixtures ? (
-          appContent
-        ) : (
-          <ClerkProvider
-            signInUrl="/login"
-            signUpUrl="/register"
-            waitlistUrl="/waitlist"
-            signInFallbackRedirectUrl="/dashboard"
-            signUpFallbackRedirectUrl="/onboarding"
-            afterSignOutUrl="/login"
-          >
-            {appContent}
-          </ClerkProvider>
-        )}
+        <ClerkProvider
+          signInUrl="/login"
+          signUpUrl="/register"
+          waitlistUrl="/waitlist"
+          signInFallbackRedirectUrl="/dashboard"
+          signUpFallbackRedirectUrl="/onboarding"
+          afterSignOutUrl="/login"
+        >
+          {appContent}
+        </ClerkProvider>
       </body>
     </html>
   );
