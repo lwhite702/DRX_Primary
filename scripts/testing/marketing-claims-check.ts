@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { appStoreCopy } from "../../apps/marketing/lib/app-store-metadata.ts";
+
 type Failure = {
   file: string;
   message: string;
@@ -13,6 +15,9 @@ const claimMatrixPath = "docs/MARKETING_FEATURE_CLAIM_MATRIX.md";
 const canonModulePath = "apps/marketing/lib/feature-canon.ts";
 const privacyComponentPath = "apps/marketing/components/marketing/privacy-protexion.tsx";
 const operatorsShowcaseComponentPath = "apps/marketing/components/marketing/landing/operators-showcase.tsx";
+const landingSectionsPath = "apps/marketing/components/marketing/landing/sections.tsx";
+const appStoreMetadataPath = "apps/marketing/lib/app-store-metadata.ts";
+const contentMapPath = "apps/marketing/marketing.content-map.json";
 
 const requiredCanonicalHeadings = [
   "Fast Point of Sale",
@@ -58,11 +63,47 @@ const bannedPrivacyPhrases = [
 const requiredOperatorShowcaseCardTitles = [
   "Point of Sale",
   "Inventory",
-  "Credit & Fronts",
+  "Customer Store Accounts",
   "Customers",
   "Pricing",
   "Anywhere Access",
-  "Audit & Control",
+  "Activity & Control",
+];
+
+const bannedPublicPhrases = [
+  "independent dispensaries",
+  "street-smart",
+  "street-level",
+  'pronounced "dealers"',
+  "run product",
+  "fast money moves",
+  "every dollar accounted for",
+  "credit & fronts",
+  "who owes what",
+  "audit ready",
+  "always in sync",
+  "full transparency",
+  "operate in the shadows",
+  "end-to-end encryption",
+  "even we can't see",
+  "immutable ledger",
+  "0 data leaks",
+  "100% uptime",
+];
+
+const requiredAudiencePhrases = [
+  "Independent retailers",
+  "Owner-operated shops",
+  "Pop-up retailers",
+  "Inventory-carrying service businesses",
+];
+
+const requiredScreenshotCaptions = [
+  "Keep checkout moving",
+  "Know what's in stock",
+  "See today's numbers",
+  "Control team access",
+  "Review activity history",
 ];
 
 const requiredImports: Array<{ file: string; contains: string[] }> = [
@@ -79,8 +120,8 @@ const requiredImports: Array<{ file: string; contains: string[] }> = [
     contains: ['from "@/lib/feature-canon"', "drxPrivacyProtexion", "showLive"],
   },
   {
-    file: "apps/marketing/components/marketing/landing/sections.tsx",
-    contains: ['from "@/lib/feature-canon"'],
+    file: landingSectionsPath,
+    contains: ['from "@/lib/feature-canon"', "drxAudience", "Join the Beta"],
   },
   {
     file: "apps/marketing/app/product/page.tsx",
@@ -242,6 +283,171 @@ function checkOperatorShowcaseCoverage(moduleText: string, failures: Failure[]) 
   }
 }
 
+function walkPublicCopyFiles(dir: string): string[] {
+  return fs.readdirSync(abs(dir), { withFileTypes: true }).flatMap((entry) => {
+    const relPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      return walkPublicCopyFiles(relPath);
+    }
+
+    return /\.(?:ts|tsx|md)$/.test(entry.name) ? [relPath] : [];
+  });
+}
+
+function checkAudienceAndPublicLanguage(moduleText: string, failures: Failure[]) {
+  for (const phrase of requiredAudiencePhrases) {
+    if (!moduleText.includes(phrase)) {
+      failures.push({
+        file: canonModulePath,
+        message: `Missing independent-retail audience phrase: ${phrase}`,
+      });
+    }
+  }
+
+  const publicCopyFiles = [
+    ...walkPublicCopyFiles("apps/marketing/app"),
+    ...walkPublicCopyFiles("apps/marketing/components"),
+    ...walkPublicCopyFiles("apps/marketing/lib"),
+    canonicalDocPath,
+  ];
+
+  for (const file of publicCopyFiles) {
+    const fileText = readFile(file).toLowerCase();
+    for (const phrase of bannedPublicPhrases) {
+      if (fileText.includes(phrase.toLowerCase())) {
+        failures.push({
+          file,
+          message: `Banned public wording found: ${phrase}`,
+        });
+      }
+    }
+  }
+}
+
+function checkAppStoreCopyContract(failures: Failure[]) {
+  if (appStoreCopy.schemaVersion !== 1) {
+    failures.push({ file: appStoreMetadataPath, message: "Unsupported App Store copy schema" });
+  }
+
+  if (appStoreCopy.name.length > 30) {
+    failures.push({ file: appStoreMetadataPath, message: "App Store name exceeds 30 characters" });
+  }
+
+  if (appStoreCopy.subtitle.length > 30) {
+    failures.push({ file: appStoreMetadataPath, message: "App Store subtitle exceeds 30 characters" });
+  }
+
+  if (appStoreCopy.keywords.length > 100) {
+    failures.push({ file: appStoreMetadataPath, message: "App Store keywords exceed 100 characters" });
+  }
+
+  for (const [label, url] of [
+    ["marketing", appStoreCopy.marketingUrl],
+    ["support", appStoreCopy.supportUrl],
+    ["privacy policy", appStoreCopy.privacyPolicyUrl],
+  ] as const) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:") {
+        throw new Error("URL must use HTTPS");
+      }
+    } catch {
+      failures.push({ file: appStoreMetadataPath, message: `Invalid ${label} URL: ${url}` });
+    }
+  }
+
+  const publicReleaseCopy = [
+    appStoreCopy.promotionalText,
+    appStoreCopy.description,
+    ...appStoreCopy.screenshotCaptions,
+  ].join("\n");
+
+  if (/\bbeta\b/i.test(publicReleaseCopy)) {
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "Public App Store copy must not describe the submitted app as a beta",
+    });
+  }
+
+  for (const caption of requiredScreenshotCaptions) {
+    if (!appStoreCopy.screenshotCaptions.includes(caption)) {
+      failures.push({ file: appStoreMetadataPath, message: `Missing screenshot caption: ${caption}` });
+    }
+  }
+
+  if (appStoreCopy.screenshotPlan.length !== requiredScreenshotCaptions.length) {
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store screenshot plan and caption count must stay aligned",
+    });
+  }
+
+  for (const screenshot of appStoreCopy.screenshotPlan) {
+    if (
+      screenshot.source !== "native_ios" ||
+      screenshot.dataPolicy !== "fictional" ||
+      screenshot.requiredState.trim().length === 0
+    ) {
+      failures.push({
+        file: appStoreMetadataPath,
+        message: `Invalid App Store screenshot plan entry: ${screenshot.caption}`,
+      });
+    }
+  }
+
+  for (const requiredReviewNote of [
+    "physical-goods",
+    "weight-based inventory",
+    "store-account",
+    "TestFlight",
+  ]) {
+    if (!appStoreCopy.reviewNotes.includes(requiredReviewNote)) {
+      failures.push({
+        file: appStoreMetadataPath,
+        message: `Review notes are missing required context: ${requiredReviewNote}`,
+      });
+    }
+  }
+
+  if (
+    appStoreCopy.status === "public_release_ready" &&
+    appStoreCopy.submissionBlockers.length > 0
+  ) {
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store copy cannot be public-release ready while submission blockers remain",
+    });
+  }
+}
+
+function checkStructuredPositioning(failures: Failure[]) {
+  const contentMap = JSON.parse(readFile(contentMapPath)) as {
+    positioning?: {
+      audience?: string;
+      audienceLabel?: string;
+      voice?: string;
+      betaChannel?: string;
+    };
+  };
+
+  if (contentMap.positioning?.audience !== "independent_retail") {
+    failures.push({ file: contentMapPath, message: "Structured audience must be independent_retail" });
+  }
+
+  if (!contentMap.positioning?.audienceLabel?.includes("Independent retailers")) {
+    failures.push({ file: contentMapPath, message: "Structured audience label is missing" });
+  }
+
+  if (contentMap.positioning?.voice !== "operator_direct") {
+    failures.push({ file: contentMapPath, message: "Structured voice must remain operator_direct" });
+  }
+
+  if (contentMap.positioning?.betaChannel !== "TestFlight") {
+    failures.push({ file: contentMapPath, message: "Structured beta channel must be TestFlight" });
+  }
+}
+
 function checkStatusTokens(moduleText: string, failures: Failure[]) {
   const validStatuses = new Set(["live", "beta", "planned"]);
   const statusMatches = [...moduleText.matchAll(/status:\s*"([a-z]+)"/g)].map(
@@ -294,6 +500,8 @@ function main() {
   requireFile(canonModulePath, failures);
   requireFile(privacyComponentPath, failures);
   requireFile(operatorsShowcaseComponentPath, failures);
+  requireFile(appStoreMetadataPath, failures);
+  requireFile(contentMapPath, failures);
 
   if (failures.length > 0) {
     console.error("Marketing claims check failed:");
@@ -311,6 +519,9 @@ function main() {
   checkPrivacySectionCoverage(canonicalDoc, claimMatrix, canonicalModule, failures);
   checkBannedPrivacyLanguage(canonicalModule, failures);
   checkOperatorShowcaseCoverage(canonicalModule, failures);
+  checkAudienceAndPublicLanguage(canonicalModule, failures);
+  checkAppStoreCopyContract(failures);
+  checkStructuredPositioning(failures);
   checkStatusTokens(canonicalModule, failures);
   checkCanonicalConsumption(failures);
 

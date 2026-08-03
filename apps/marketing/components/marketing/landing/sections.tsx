@@ -17,31 +17,35 @@ import {
 } from "lucide-react";
 
 import { appLoginUrl, appWaitlistUrl } from "@/lib/app-links";
-import { marketingFeatureSections } from "@/lib/feature-canon";
+import { drxAudience, drxPrivacyProtexion, marketingFeatureSections } from "@/lib/feature-canon";
+import { marketingContent } from "@/lib/marketing-content";
 
 const canonicalPoints = (id: (typeof marketingFeatureSections)[number]["id"], limit = 3) =>
   marketingFeatureSections.find((section) => section.id === id)?.bullets.slice(0, limit).map((bullet) => bullet.text) ?? [];
+
+const strongEncryptionPoints =
+  drxPrivacyProtexion.blocks.find((block) => block.id === "strong-encryption")?.bullets.slice(0, 1) ?? [];
 
 const capabilities = [
   {
     icon: Zap,
     kicker: "Quick POS",
-    title: "Fast money moves.",
-    body: "Search or scan. Add the item. Take cash or card. Finish the sale without a ten-screen detour.",
+    title: "Keep the line moving.",
+    body: "Search or scan, adjust quantity, choose a tender, and finish the sale without a ten-screen detour.",
     points: canonicalPoints("quick-pos"),
   },
   {
     icon: ReceiptText,
     kicker: "Transactions",
-    title: "Every dollar accounted for.",
-    body: "Keep customer history, controlled discounts, refunds, receipts, and the audit context that explains every adjustment.",
+    title: "Every sale accounted for.",
+    body: "Review sale history, controlled discounts, refund actions, receipts, and the activity context attached to supported adjustments.",
     points: canonicalPoints("fast-pos"),
   },
   {
     icon: PackageCheck,
     kicker: "Inventory",
     title: "Know what is on deck.",
-    body: "Live stock movement, barcode-ready records, low-stock warnings, and activity history replace guesswork with a clean count.",
+    body: "See stock counts, low-stock warnings, SKU and barcode context, intake activity, and logged inventory adjustments.",
     points: canonicalPoints("inventory"),
   },
   {
@@ -54,16 +58,16 @@ const capabilities = [
   {
     icon: BarChart3,
     kicker: "Reporting",
-    title: "Numbers that drive the shift.",
-    body: "See revenue, order volume, top movers, team performance, and stock risk without presentation-theater charts.",
+    title: "Numbers that run the shift.",
+    body: "Review sales windows, best sellers, category context, revenue, and low-stock signals without reporting theater.",
     points: canonicalPoints("reports"),
   },
   {
     icon: ShieldCheck,
     kicker: "Security",
     title: "Your operation stays yours.",
-    body: "Authentication, business-scoped data, controlled privileges, and audit logging are built into the operating model.",
-    points: ["Business-scoped access", "Encrypted connections", "Audit logging"],
+    body: "Secure login, controlled privileges, activity logs, and encrypted sensitive fields support a disciplined operating model.",
+    points: [...canonicalPoints("team-control", 6).slice(4), ...strongEncryptionPoints],
   },
 ];
 
@@ -119,10 +123,10 @@ function Header() {
 
 function QuickSaleProof() {
   return (
-    <div className="overflow-hidden rounded-[14px] border border-white/15 bg-[#121212] shadow-[0_28px_70px_rgba(0,0,0,0.45)]" aria-label="Deterministic Quick Sale product preview">
+    <div id="demo" className="scroll-mt-24 overflow-hidden rounded-[14px] border border-white/15 bg-[#121212] shadow-[0_28px_70px_rgba(0,0,0,0.45)]" aria-label="Deterministic Quick Sale product preview">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-black">Live demo</span>
+          <span className="rounded bg-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-black">Product preview</span>
           <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/55">Quick Sale</span>
         </div>
         <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-400">
@@ -192,21 +196,21 @@ function Hero() {
       <div className="operator-grid absolute inset-0 opacity-50" aria-hidden />
       <div className="relative mx-auto grid max-w-[1280px] gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-28">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Built for the operator</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{drxAudience.eyebrow}</p>
           <h1 className="mt-5 max-w-[740px] text-[clamp(3.2rem,7vw,6.7rem)] font-extrabold leading-[0.91] tracking-[-0.06em] text-white">
             For the ones who run it,<br /><span className="text-accent">not the ones who talk about it.</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-8 text-white/65">
-            Fast checkout. Real inventory control. Clean numbers. Tight permissions. Deelrx CRM keeps the operation moving without making software another job.
+            {drxAudience.supportingPromise}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <PrimaryLink href={appWaitlistUrl}>Join the Beta <ArrowRight className="size-4" /></PrimaryLink>
             <SecondaryLink href="#product">See Deelrx in Action</SecondaryLink>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/45">
-            <span className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> Counter fast</span>
-            <span className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> Audit ready</span>
-            <span className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> Role controlled</span>
+            {drxAudience.proofLabels.map((label) => (
+              <span key={label} className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> {label}</span>
+            ))}
           </div>
         </div>
         <QuickSaleProof />
@@ -219,7 +223,7 @@ function OperatorStrip() {
   const items = [
     [ShoppingCart, "Move the line", "A checkout flow built around speed."],
     [PackageCheck, "Trust the count", "Inventory changes with every sale."],
-    [CircleDollarSign, "See the money", "Revenue and adjustments stay legible."],
+    [CircleDollarSign, "See the numbers", "Sales and adjustments stay legible."],
     [LockKeyhole, "Control access", "The right tools for the right role."],
   ] as const;
   return (
@@ -243,7 +247,7 @@ function Capabilities() {
       <div className="grid gap-10 border-b border-white/10 pb-12 lg:grid-cols-2 lg:items-end">
         <div>
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">What Deelrx actually does</p>
-          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">One system for the work that keeps the doors moving.</h2>
+          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">One system for the work independent retail cannot put off.</h2>
         </div>
         <p className="max-w-xl text-base leading-7 text-white/55 lg:justify-self-end">Desktop stays information-dense. Mobile stays task-focused. The terminology, priorities, states, and controls stay familiar wherever the shift takes you.</p>
       </div>
@@ -275,7 +279,31 @@ function Manifesto() {
         <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Why Deelrx</p>
         <div>
           <h2 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.04em] text-white md:text-6xl">You are building something, scaling something, and protecting something.</h2>
-          <p className="mt-7 max-w-3xl text-lg leading-8 text-white/60">You need speed, control, clean numbers, and inventory discipline. Deelrx is built to respect the pace of an owner-operator—clear enough for the counter and disciplined enough for the books.</p>
+          <p className="mt-7 max-w-3xl text-lg leading-8 text-white/60">You need speed, control, clean numbers, and inventory discipline. Deelrx is built for independent retail—clear enough for the counter and disciplined enough for the back office. No corporate fluff.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  return (
+    <section id="faq" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+      <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Straight answers</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">No fine-print theater.</h2>
+          <p className="mt-5 max-w-md text-sm leading-6 text-white/55">What DRX is, who it is for, and where the current boundaries sit.</p>
+        </div>
+        <div className="divide-y divide-white/10 border-y border-white/10">
+          {marketingContent.faq.map((item) => (
+            <details key={item.question} className="group py-5">
+              <summary className="cursor-pointer list-none pr-8 text-base font-bold text-white marker:hidden">
+                {item.question}
+              </summary>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">{item.answer}</p>
+            </details>
+          ))}
         </div>
       </div>
     </section>
@@ -301,7 +329,7 @@ function Footer() {
   return (
     <footer className="border-t border-white/10">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-8 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
-        <div><BrandLockup /><p className="mt-3 max-w-md text-xs leading-5 text-white/40">Operator-first CRM, POS, inventory, and reporting. Currently in beta.</p></div>
+        <div><BrandLockup /><p className="mt-3 max-w-md text-xs leading-5 text-white/40">Operator-first POS, inventory, customer records, and reporting for independent retail. Currently in beta.</p></div>
         <div className="flex flex-wrap gap-x-5 gap-y-3 text-xs text-white/50"><Link href="/legal/privacy" className="hover:text-white">Privacy</Link><Link href="/legal/terms" className="hover:text-white">Terms</Link><Link href="/legal/regulatory-disclaimer" className="hover:text-white">Regulatory disclaimer</Link></div>
       </div>
     </footer>
@@ -309,5 +337,5 @@ function Footer() {
 }
 
 export function LandingPageSections() {
-  return <><Header /><Hero /><OperatorStrip /><Capabilities /><Manifesto /><FinalCta /><Footer /></>;
+  return <><Header /><Hero /><OperatorStrip /><Capabilities /><Manifesto /><Faq /><FinalCta /><Footer /></>;
 }

@@ -46,7 +46,7 @@ export function TopMovers({ movers, totalRevenue, compact = false }: TopMoversPr
                     : index === 1
                       ? "bg-blue-500"
                       : index === 2
-                        ? "bg-info"
+                        ? "bg-violet-500"
                         : "bg-warning"
                 }`}
               >

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Clock, Database } from "lucide-react";
 import { drxClerkAuthAppearance } from "@/lib/auth/clerk-appearance";
+import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RegisterPage() {
-  const { userId } = await auth();
+  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
+  const userId = useVisualFixture ? null : (await auth()).userId;
 
   if (userId) {
     redirect("/dashboard");
@@ -69,13 +71,17 @@ export default async function RegisterPage() {
             </div>
           </div>
 
-          <SignUp
-            routing="path"
-            path="/register"
-            appearance={drxClerkAuthAppearance}
-            forceRedirectUrl="/onboarding"
-            fallbackRedirectUrl="/onboarding"
-          />
+          {useVisualFixture ? (
+            <AuthVisualFixture mode="sign-up" />
+          ) : (
+            <SignUp
+              routing="path"
+              path="/register"
+              appearance={drxClerkAuthAppearance}
+              forceRedirectUrl="/onboarding"
+              fallbackRedirectUrl="/onboarding"
+            />
+          )}
         </div>
 
         <div className="text-center text-xs font-mono text-muted-foreground">
@@ -102,13 +108,15 @@ export default async function RegisterPage() {
               </div>
               <div className="flex-1 space-y-0.5">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-medium text-white">Auto-Wipe</h3>
+                  <h3 className="text-xs font-medium text-white">
+                    Session Controls
+                  </h3>
                   <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-primary font-mono">
-                    ACTIVE
+                    GUARDED
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Local cache cleared on exit
+                  Authentication safeguards apply before workspace access
                 </p>
               </div>
             </div>
@@ -121,14 +129,14 @@ export default async function RegisterPage() {
               <div className="flex-1 space-y-0.5">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-medium text-white">
-                    Session Guards
+                    Role Checks
                   </h3>
                   <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-accent font-mono uppercase">
-                    ACTIVE
+                    ENABLED
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Role checks and session controls are enforced on sign-up.
+                  Permissions are evaluated for protected operator routes.
                 </p>
               </div>
             </div>
@@ -141,14 +149,14 @@ export default async function RegisterPage() {
               <div className="flex-1 space-y-0.5">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-medium text-white">
-                    No-Log Policy
+                    Audit Context
                   </h3>
                   <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-primary font-mono">
-                    ENFORCED
+                    CAPTURED
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Audit context available in operator workflows
+                  Supported actions retain actor and business context.
                 </p>
               </div>
             </div>

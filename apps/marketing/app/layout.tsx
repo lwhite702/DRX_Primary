@@ -21,26 +21,26 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
+  title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
   description:
-    "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
+    "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
   icons: {
     icon: "/brand/favicon-32.png",
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
+    title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
     description:
-      "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
+      "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx CRM (DRX) - Track sales, stock, and customers without confusion",
+    title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
     description:
-      "Operator-first CRM, POS, inventory, and reporting built for fast checkout, clean numbers, and tight permissions.",
+      "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {

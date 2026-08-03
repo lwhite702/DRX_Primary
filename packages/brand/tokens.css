@@ -1,0 +1,24 @@
+:root {
+  --drx-color-background: #0a0a0a;
+  --drx-color-surface: #121212;
+  --drx-color-surface-elevated: #1a1a1a;
+  --drx-color-foreground: #f5f5f5;
+  --drx-color-muted-foreground: #a3a3a3;
+  --drx-color-border: rgba(255, 255, 255, 0.1);
+  --drx-color-accent: #ccff00;
+  --drx-color-accent-dark: #a3cc00;
+  --drx-color-accent-light: #d9ff4d;
+  --drx-color-success: #10b981;
+  --drx-color-warning: #f59e0b;
+  --drx-color-destructive: #ef4444;
+  --drx-color-info: #3b82f6;
+  --drx-font-sans: "Plus Jakarta Sans", "Geist", system-ui, sans-serif;
+  --drx-font-mono: "Geist Mono", ui-monospace, monospace;
+  --drx-font-body: "Inter", "Geist", system-ui, sans-serif;
+  --drx-radius-control: 6px;
+  --drx-radius-card: 10px;
+  --drx-radius-panel: 14px;
+  --drx-motion-fast: 150ms;
+  --drx-motion-standard: 180ms;
+  --drx-motion-deliberate: 220ms;
+}

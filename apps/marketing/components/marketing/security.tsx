@@ -9,10 +9,10 @@ export function Security() {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-white uppercase">
-            Security Isn't A Feature
+            Security Without Theater
           </h2>
           <p className="text-[#BFFF00] mt-4 font-mono text-sm tracking-widest uppercase">
-            It's the whole point.
+            Clear controls. Bounded claims.
           </p>
         </div>
 
@@ -21,12 +21,12 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <Lock className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                End-to-End Encryption
+                Encrypted Sensitive Fields
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              All data is encrypted in transit and at rest. Even we can't see
-              your transactions.
+              Sensitive customer fields are encrypted and require the configured
+              keys to be read.
             </p>
           </div>
 
@@ -38,8 +38,7 @@ export function Security() {
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              "Privacy Mode" masks sensitive values instantly when others are
-              nearby.
+              ProteXion Mode can mask sensitive customer values on shared screens.
             </p>
           </div>
 
@@ -51,7 +50,7 @@ export function Security() {
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Granular permissions for operators. You control who sees what.
+              Configurable role controls limit access to supported team actions.
             </p>
           </div>
 
@@ -59,11 +58,11 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <FileKey className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                Audit Logs
+                Activity Context
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Every action is logged. Complete accountability for your team.
+              Supported actions retain user context for operational review.
             </p>
           </div>
         </div>
@@ -71,21 +70,21 @@ export function Security() {
         {/* Stats Strip */}
         <div className="mt-20 border-y border-white/10 py-8 flex flex-wrap justify-center gap-12 text-center">
           <div>
-            <p className="text-3xl font-bold text-white font-mono">256</p>
+            <p className="text-3xl font-bold text-white font-mono">PII</p>
             <p className="text-[10px] uppercase tracking-widest text-[#BFFF00] mt-1">
-              Bit Encryption
+              Optional Fields
             </p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-white font-mono">0</p>
+            <p className="text-3xl font-bold text-white font-mono">ROLE</p>
             <p className="text-[10px] uppercase tracking-widest text-[#BFFF00] mt-1">
-              Data Leaks
+              Controlled Access
             </p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-white font-mono">100%</p>
+            <p className="text-3xl font-bold text-white font-mono">LOGS</p>
             <p className="text-[10px] uppercase tracking-widest text-[#BFFF00] mt-1">
-              Uptime
+              User Context
             </p>
           </div>
         </div>

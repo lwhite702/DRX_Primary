@@ -7,7 +7,7 @@ import { CtaRow } from "@/components/marketing/site/cta-row";
 export const metadata: Metadata = {
   title: "Owner/Operator Use Case | Deelrx CRM",
   description:
-    "How DRX supports owner/operators with fast checkout, stock confidence, and tighter credit control.",
+    "How DRX supports independent-retail owner-operators with fast checkout, stock visibility, and clear customer records.",
 };
 
 export default function OwnerOperatorUseCasePage() {
@@ -16,8 +16,8 @@ export default function OwnerOperatorUseCasePage() {
       <h1 className="mb-8 text-4xl font-bold text-white">Owner/operator</h1>
       <SectionBlock title="What this does">
         <p>
-          Gives owner/operators a clear operating loop across sales, stock,
-          customers, and credit.
+          Gives owner-operators a clear working loop across sales, stock,
+          customer records, and team access.
         </p>
       </SectionBlock>
       <SectionBlock title="Why it matters operationally" className="mt-6">
@@ -28,8 +28,8 @@ export default function OwnerOperatorUseCasePage() {
       <SectionBlock title="Proof from live product behavior" className="mt-6">
         <ul className="list-disc space-y-2 pl-5">
           <li>Fast checkout with multiple payment methods.</li>
-          <li>Inventory intake/adjustment/audit flows in dedicated routes.</li>
-          <li>Credit overview with customer-level balances.</li>
+          <li>Inventory intake, adjustment, and activity views in dedicated routes.</li>
+          <li>Customer purchase history and optional store account records.</li>
           <li>Event Desk Board visibility during live operations.</li>
         </ul>
       </SectionBlock>

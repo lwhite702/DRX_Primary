@@ -33,7 +33,7 @@ export default function LegalPrivacyPage() {
       </SectionBlock>
 
       <SectionBlock title="Contact" className="mt-6">
-        <p>Email: privacy@deelrx.com</p>
+        <p>Email: privacy@deelrxcrm.com</p>
       </SectionBlock>
 
       <SectionBlock title="Related" className="mt-6">

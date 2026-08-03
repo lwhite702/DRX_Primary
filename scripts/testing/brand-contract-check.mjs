@@ -18,19 +18,27 @@ const requiredTokens = [
 ];
 
 const canonical = read("packages/brand/src/index.ts");
+const brandCss = read("packages/brand/tokens.css").toUpperCase();
 const marketingCss = read("apps/marketing/app/globals.css").toUpperCase();
 const appCss = read("apps/app/app/globals.css").toUpperCase();
 const swift = read("apps/ios/DRXApp/DesignSystem/Tokens/DRXPalette.swift");
 
 for (const [name, hex, swiftTuple] of requiredTokens) {
   if (!canonical.includes(`${name}: \"${hex}\"`)) failures.push(`canonical token missing: ${name} ${hex}`);
-  if (!["surfaceElevated"].includes(name) && !marketingCss.includes(hex)) failures.push(`marketing token drift: ${hex}`);
-  if (!["surfaceElevated"].includes(name) && !appCss.includes(hex)) failures.push(`web token drift: ${hex}`);
+  if (!brandCss.includes(hex)) failures.push(`generated CSS token drift: ${hex}`);
   if (!swift.includes(swiftTuple)) failures.push(`native token drift: ${name}`);
 }
 
+for (const [surface, css] of [["marketing", marketingCss], ["web", appCss]]) {
+  if (!css.includes('@IMPORT "@DEELRX/BRAND/TOKENS.CSS"')) {
+    failures.push(`${surface} does not consume @deelrx/brand/tokens.css`);
+  }
+}
+
 const brandSvgs = [
+  "apps/marketing/public/brand/drx-mark.svg",
   "apps/marketing/public/brand/drx-wordmark.svg",
+  "apps/app/public/brand/drx-mark.svg",
   "apps/app/public/brand/drx-wordmark.svg",
   "apps/ios/DRXApp/Assets.xcassets/DRXWordmark.imageset/drx-wordmark.svg",
 ];

@@ -8,7 +8,7 @@ import { LegalPageView } from "@/components/marketing/site/legal-page-view";
 export const metadata: Metadata = {
   title: "Lawful Use Policy | Deelrx CRM",
   description:
-    "Lawful-use policy for regulated dispensary operations using DRX.",
+    "Lawful-use policy for independent retailers and other lawful businesses using DRX.",
 };
 
 export default function LawfulUsePage() {
@@ -19,8 +19,8 @@ export default function LawfulUsePage() {
 
       <SectionBlock title="What this does">
         <p>
-          Defines permitted and prohibited use of DRX in regulated business
-          contexts.
+          Defines permitted and prohibited use of DRX for independent retail
+          and other lawful business operations.
         </p>
       </SectionBlock>
 
@@ -39,7 +39,10 @@ export default function LawfulUsePage() {
           </li>
           <li>
             You are responsible for applicable local, state, and federal
-            compliance.
+            requirements.
+          </li>
+          <li>
+            DRX is not legal, tax, lending, financial, or compliance advice.
           </li>
         </ul>
       </SectionBlock>

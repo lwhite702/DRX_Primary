@@ -48,21 +48,21 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
 
         {hasOverdue && (
           <div className="flex items-start gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
-            <div className="bg-red-500/20 p-2 rounded-lg text-red-500 shrink-0">
+            <div className="shrink-0 rounded-md bg-destructive/20 p-2 text-destructive">
               <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-red-500 font-bold text-sm">
+              <h3 className="text-sm font-bold text-destructive">
                 Overdue Credit Balances
               </h3>
-              <p className="mt-0.5 text-xs text-red-100/80">
+              <p className="mt-0.5 text-xs text-white/70">
                 {stats.overdueCount} customers have outstanding balances past
                 due date, totaling ${stats.overdueBalance}. Collection action
                 may be required.
               </p>
               <Link
                 href="/credit"
-                className="inline-block mt-2 text-[10px] font-bold text-red-500 underline decoration-red-500/30 hover:decoration-red-500"
+                className="mt-2 inline-block text-[10px] font-bold text-destructive underline decoration-destructive/30 hover:decoration-destructive"
               >
                 View Accounts
               </Link>

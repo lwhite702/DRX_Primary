@@ -18,11 +18,11 @@ import {
 const iconMap: Record<OperatorShowcaseCardId, LucideIcon> = {
   "point-of-sale": ShoppingCart,
   inventory: PackageCheck,
-  "credit-fronts": BadgeDollarSign,
+  "customer-accounts": BadgeDollarSign,
   customers: UsersRound,
   pricing: Calculator,
   "anywhere-access": Cloud,
-  "audit-control": ClipboardCheck,
+  "activity-control": ClipboardCheck,
 };
 
 export function OperatorsShowcaseSection() {

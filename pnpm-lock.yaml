@@ -343,6 +343,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^7.0.8
         version: 7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@deelrx/brand':
+        specifier: link:../../packages/brand
+        version: link:../../packages/brand
       '@ducanh2912/next-pwa':
         specifier: ^10.2.9
         version: 10.2.9(@types/babel__core@7.20.5)(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(webpack@5.104.1)
