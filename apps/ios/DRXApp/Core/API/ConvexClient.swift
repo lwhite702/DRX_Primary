@@ -12,7 +12,7 @@ struct ConvexClient: Sendable {
     let session: URLSession
 
     init(
-        deploymentURL: URL = URL(string: "https://handsome-llama-678.convex.cloud")!,
+        deploymentURL: URL,
         session: URLSession = .shared
     ) {
         self.deploymentURL = deploymentURL
@@ -50,10 +50,10 @@ struct ConvexClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        // Inject Clerk JWT
-        if let token = try? await Clerk.shared.auth.getToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let token = try? await Clerk.shared.auth.getToken(), !token.isEmpty else {
+            throw ConvexError.unauthenticated
         }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = ConvexRequestBody(path: path, args: args, format: "json")
         request.httpBody = try JSONEncoder.convex.encode(body)
@@ -114,12 +114,14 @@ private struct ConvexErrorBody: Decodable {
 // MARK: - Errors
 
 enum ConvexError: Error, LocalizedError, Sendable {
+    case unauthenticated
     case invalidResponse
     case server(statusCode: Int, message: String?)
     case convexError(message: String)
 
     var errorDescription: String? {
         switch self {
+        case .unauthenticated: "Sign in again to continue."
         case .invalidResponse: "The server returned an invalid response."
         case .server(let code, let msg): msg ?? "Request failed with status \(code)."
         case .convexError(let msg): msg
@@ -131,9 +133,7 @@ enum ConvexError: Error, LocalizedError, Sendable {
 
 extension JSONEncoder {
     static var convex: JSONEncoder {
-        let e = JSONEncoder()
-        e.keyEncodingStrategy = .convertToSnakeCase
-        return e
+        JSONEncoder()
     }
 }
 
@@ -149,5 +149,5 @@ extension JSONDecoder {
 // MARK: - Shared Instance
 
 extension ConvexClient {
-    static let shared = ConvexClient()
+    static let shared = ConvexClient(deploymentURL: try! AppConfiguration.live().convexDeploymentURL)
 }

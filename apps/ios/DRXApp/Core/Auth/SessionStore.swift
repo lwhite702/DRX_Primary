@@ -30,6 +30,7 @@ final class SessionStore {
 
     private let apiClient: APIClient
     private let tokenStore: any TokenStore
+    private var restorationGeneration = 0
 
     var isAuthenticated: Bool { operatorSession != nil }
 
@@ -40,30 +41,43 @@ final class SessionStore {
 
     func restore() async {
         guard !isRestoring, operatorSession == nil else { return }
+        restorationGeneration += 1
+        let generation = restorationGeneration
         isRestoring = true
         errorMessage = nil
-        defer { isRestoring = false }
+        defer {
+            if generation == restorationGeneration {
+                isRestoring = false
+            }
+        }
 
         do {
-            guard try await tokenStore.readToken() != nil else {
+            let token = try await tokenStore.readToken()
+            guard generation == restorationGeneration else { return }
+            guard token != nil else {
                 errorMessage = "Clerk did not provide an active session token."
                 return
             }
             let restored: OperatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
+            guard generation == restorationGeneration else { return }
             operatorSession = restored
         } catch APIError.unauthorized {
+            guard generation == restorationGeneration else { return }
             operatorSession = nil
             errorMessage = "Your Clerk session could not be verified. Sign out, then sign in again."
         } catch APIError.forbidden(let message) {
+            guard generation == restorationGeneration else { return }
             operatorSession = nil
             errorMessage = message
         } catch {
+            guard generation == restorationGeneration else { return }
             operatorSession = nil
             errorMessage = error.localizedDescription
         }
     }
 
     func reset() {
+        restorationGeneration += 1
         operatorSession = nil
         errorMessage = nil
         isRestoring = false

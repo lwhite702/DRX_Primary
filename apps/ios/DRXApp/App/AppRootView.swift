@@ -13,7 +13,10 @@ struct AppRootView: View {
 
     var body: some View {
         Group {
-            if clerk.user == nil {
+            switch environment.rootState {
+            case .initializing, .checkingProvisioning, .loadingWorkspace:
+                SessionBootstrapView()
+            case .signedOut:
                 VStack(spacing: 0) {
                     Image("DRXWordmark")
                         .resizable()
@@ -28,17 +31,19 @@ struct AppRootView: View {
                 }
                 .background(DRXPalette.canvas.ignoresSafeArea())
                 .onAppear { environment.telemetry.screen("Sign In") }
-            } else if environment.session.isAuthenticated {
+            case .needsOnboarding:
+                NativeOnboardingView()
+            case .ready:
                 OperatorTabView()
-            } else {
-                SessionBootstrapView()
+            case .recoverableError:
+                ProvisioningRecoveryView()
             }
         }
         .tint(DRXPalette.accent)
         .environment(environment)
         .task(id: clerk.user?.id) {
             guard let userID = clerk.user?.id else {
-                await environment.signOut()
+                await environment.clerkSignedOut()
                 identifiedUserID = nil
                 return
             }
@@ -46,7 +51,7 @@ struct AppRootView: View {
                 await environment.signOut()
             }
             identifiedUserID = userID
-            await environment.restoreSession()
+            await environment.checkProvisioning()
         }
     }
 }
@@ -76,34 +81,10 @@ private struct SessionBootstrapView: View {
                         .foregroundStyle(DRXPalette.muted)
                 }
 
-                if environment.session.isRestoring {
-                    ProgressView("Loading your workspace…")
+                ProgressView("Loading your workspace…")
                         .tint(DRXPalette.accent)
                         .foregroundStyle(DRXPalette.muted)
                         .accessibilityIdentifier("sessionLoadingIndicator")
-                } else if let errorMessage = environment.session.errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                        .font(.footnote)
-                        .foregroundStyle(DRXPalette.danger)
-                        .multilineTextAlignment(.center)
-                        .accessibilityIdentifier("sessionErrorMessage")
-
-                    Button("Try Again") {
-                        Task { await environment.restoreSession() }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(DRXPalette.accent)
-                    .foregroundStyle(DRXPalette.onAccent)
-                    .accessibilityIdentifier("retrySessionButton")
-
-                    Button("Sign Out", role: .destructive) {
-                        Task {
-                            try? await clerk.auth.signOut()
-                            await environment.signOut()
-                        }
-                    }
-                    .accessibilityIdentifier("bootstrapSignOutButton")
-                }
             }
             .padding(32)
             .frame(maxWidth: 440)
@@ -116,6 +97,96 @@ private struct SessionBootstrapView: View {
             .padding(24)
         }
         .onAppear { environment.telemetry.screen("Session Bootstrap") }
+    }
+}
+
+private struct NativeOnboardingView: View {
+    @Environment(AppEnvironment.self) private var environment
+    @State private var ownerName = ""
+    @State private var businessName = ""
+    @State private var businessType = "Retail POS"
+    @State private var timezone = TimeZone.current.identifier
+    @State private var currency = "USD"
+    @State private var collectTax = true
+    @State private var taxRate = "8.25"
+
+    private var isValid: Bool {
+        !ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
+    }
+
+    private func parseTaxRate(_ input: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        return formatter.number(from: input)?.doubleValue
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Owner") { TextField("Owner name", text: $ownerName).textContentType(.name) }
+                Section("Business") {
+                    TextField("Business name", text: $businessName)
+                    Picker("Business type", selection: $businessType) {
+                        ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
+                    }
+                    TextField("Timezone", text: $timezone).textInputAutocapitalization(.never)
+                    Picker("Currency", selection: $currency) {
+                        ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
+                    }
+                }
+                Section("Tax") {
+                    Toggle("Collect tax", isOn: $collectTax)
+                    if collectTax {
+                        TextField("Tax rate (%)", text: $taxRate).keyboardType(.decimalPad)
+                    }
+                }
+                Section {
+                    Button(environment.isSubmittingOnboarding ? "Creating business…" : "Create Business") {
+                        Task {
+                            let rate = Int(((parseTaxRate(taxRate) ?? 0) * 100).rounded())
+                            _ = await environment.completeOnboarding(.init(
+                                name: ownerName.trimmingCharacters(in: .whitespacesAndNewlines),
+                                businessName: businessName.trimmingCharacters(in: .whitespacesAndNewlines),
+                                businessType: businessType, currency: currency, timezone: timezone,
+                                collectTax: collectTax, taxRateBps: collectTax ? rate : 0
+                            ))
+                        }
+                    }
+                    .disabled(!isValid || environment.isSubmittingOnboarding)
+                    .accessibilityIdentifier("submitOnboardingButton")
+                }
+            }
+            .navigationTitle("Set Up Your Business")
+            .onAppear { environment.telemetry.screen("Business Onboarding") }
+        }
+    }
+}
+
+private struct ProvisioningRecoveryView: View {
+    @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Image(systemName: "exclamationmark.triangle.fill").font(.largeTitle).foregroundStyle(DRXPalette.danger)
+            Text("Workspace Unavailable").font(.title2.bold())
+            Text(environment.provisioningMessage ?? "We couldn't open your workspace.")
+                .multilineTextAlignment(.center).foregroundStyle(DRXPalette.muted)
+                .accessibilityIdentifier("provisioningErrorMessage")
+            Button("Retry") { Task { await environment.checkProvisioning() } }
+                .buttonStyle(.borderedProminent).accessibilityIdentifier("retryProvisioningButton")
+            Button("Sign Out", role: .destructive) {
+                Task { try? await clerk.auth.signOut(); await environment.clerkSignedOut() }
+            }
+            if let requestID = environment.supportRequestID {
+                ShareLink(item: requestID) { Label("Copy Support Details", systemImage: "doc.on.doc") }
+                    .accessibilityIdentifier("supportDetailsButton")
+            }
+        }
+        .padding(32)
     }
 }
 

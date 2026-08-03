@@ -33,6 +33,8 @@
 	<string>$(CLERK_PUBLISHABLE_KEY)</string>
 	<key>DRX_API_BASE_URL</key>
 	<string>$(DRX_API_BASE_URL)</string>
+	<key>DRX_CONVEX_URL</key>
+	<string>$(DRX_CONVEX_URL)</string>
 	<key>DRX_APP_ENVIRONMENT</key>
 	<string>$(DRX_APP_ENVIRONMENT)</string>
 	<key>LSRequiresIPhoneOS</key>

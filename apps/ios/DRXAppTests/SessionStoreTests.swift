@@ -5,6 +5,22 @@ import Testing
 @MainActor
 struct SessionStoreTests {
     @Test
+    func parsesOperatorCurrencyInputInCents() {
+        #expect(CurrencyInput.cents(from: "5") == 500)
+        #expect(CurrencyInput.cents(from: "20.5") == 2_050)
+        #expect(CurrencyInput.cents(from: "1.15") == 115)
+        #expect(CurrencyInput.cents(from: "NaN") == nil)
+        #expect(CurrencyInput.cents(from: "1.234") == nil)
+    }
+
+    @Test
+    func calculatesTaxInclusiveCheckoutTotals() {
+        #expect(CheckoutMath.taxCents(subtotalCents: 1_000, taxRateBps: 825) == 83)
+        #expect(CheckoutMath.totalCents(subtotalCents: 1_000, collectTax: true, taxRateBps: 825) == 1_083)
+        #expect(CheckoutMath.totalCents(subtotalCents: 1_000, collectTax: false, taxRateBps: 825) == 1_000)
+    }
+
+    @Test
     func startsSignedOutWithoutClerkToken() async {
         let tokenStore = InMemoryTokenStore()
         let store = SessionStore(apiClient: MockAPIClient(), tokenStore: tokenStore)

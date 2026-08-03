@@ -2,13 +2,13 @@
 // Native Point-of-Sale — product grid, cart, and checkout flow.
 
 import SwiftUI
-import ClerkKit
 
 @MainActor
 @Observable
 final class POSStore {
     var products: [DRXProduct] = []
     var customers: [DRXCustomer] = []
+    var business: DRXBusiness?
     var cartItems: [CartItem] = []
     var isLoading = false
     var error: String?
@@ -36,6 +36,15 @@ final class POSStore {
     }
 
     var cartSubtotalCents: Int { cartItems.reduce(0) { $0 + $1.lineTotal } }
+    var cartTaxCents: Int {
+        guard let business else { return 0 }
+        return CheckoutMath.taxCents(
+            subtotalCents: cartSubtotalCents,
+            collectTax: business.collectTax,
+            taxRateBps: business.taxRateBps
+        )
+    }
+    var cartTotalCents: Int { cartSubtotalCents + cartTaxCents }
 
     var cartIsEmpty: Bool { cartItems.isEmpty }
 
@@ -69,13 +78,14 @@ final class POSStore {
     func load() async {
         isLoading = true
         error = nil
-        let userId = Clerk.shared.user?.id
         do {
             async let p: [DRXProduct] = ConvexClient.shared.query("products:listProducts", args: EmptyConvexArgs())
             async let c: [DRXCustomer] = ConvexClient.shared.query("customers:listCustomers", args: EmptyConvexArgs())
-            let (prods, custs) = try await (p, c)
+            async let s: BusinessSettingsResponse = ConvexClient.shared.query("settings:getBusinessSettings", args: EmptyConvexArgs())
+            let (prods, custs, settings) = try await (p, c, s)
             products = prods
             customers = custs
+            business = settings.business
         } catch {
             self.error = error.localizedDescription
         }
@@ -297,6 +307,26 @@ struct CartFooter: View {
                 Text(formatCents(store.cartSubtotalCents))
                     .font(.subheadline.bold())
                     .foregroundStyle(DRXPalette.ink)
+            }
+            if store.cartTaxCents > 0 {
+                HStack {
+                    Text("Tax")
+                        .font(.subheadline)
+                        .foregroundStyle(DRXPalette.muted)
+                    Spacer()
+                    Text(formatCents(store.cartTaxCents))
+                        .font(.subheadline.bold())
+                        .foregroundStyle(DRXPalette.ink)
+                }
+                HStack {
+                    Text("Total")
+                        .font(.headline)
+                        .foregroundStyle(DRXPalette.ink)
+                    Spacer()
+                    Text(formatCents(store.cartTotalCents))
+                        .font(.headline.monospacedDigit())
+                        .foregroundStyle(DRXPalette.accent)
+                }
             }
             Button {
                 store.showCheckout = true

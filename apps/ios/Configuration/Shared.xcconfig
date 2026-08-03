@@ -3,6 +3,7 @@
 // Use the canonical host directly. A cross-host redirect strips the Clerk
 // Authorization header before the native session bootstrap reaches the API.
 DRX_API_BASE_URL = https:/$()/www.deelrxcrm.app
+DRX_CONVEX_URL = https:/$()/handsome-llama-678.convex.cloud
 POSTHOG_HOST = https:/$()/us.i.posthog.com
 POSTHOG_API_KEY =
 SENTRY_DSN =

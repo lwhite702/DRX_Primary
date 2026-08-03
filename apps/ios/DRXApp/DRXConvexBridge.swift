@@ -227,7 +227,51 @@ struct CheckoutResponse: Decodable, Sendable {
     var totalFormatted: String { formatCents(totalAmountCents) }
 }
 
+struct BusinessSettingsResponse: Decodable, Sendable {
+    let business: DRXBusiness
+}
+
 // MARK: - Helpers
+
+enum CurrencyInput {
+    static func cents(from input: String) -> Int? {
+        let normalized = input
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        guard !normalized.isEmpty,
+              normalized.range(of: #"^(?:\d+|\d*\.\d{1,2})$"#, options: .regularExpression) != nil,
+              let value = Decimal(string: normalized, locale: Locale(identifier: "en_US_POSIX")),
+              value >= 0 else { return nil }
+
+        var scaled = value * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .plain)
+        let number = NSDecimalNumber(decimal: rounded)
+        guard number != .notANumber,
+              number.compare(NSDecimalNumber(value: Int.max)) != .orderedDescending else { return nil }
+        return number.intValue
+    }
+
+    static func string(fromCents cents: Int) -> String {
+        String(format: "%.2f", Double(cents) / 100.0)
+    }
+}
+
+enum CheckoutMath {
+    static func taxCents(subtotalCents: Int, collectTax: Bool = true, taxRateBps: Int) -> Int {
+        guard collectTax, subtotalCents > 0, taxRateBps > 0 else { return 0 }
+        return (subtotalCents * taxRateBps + 5_000) / 10_000
+    }
+
+    static func totalCents(subtotalCents: Int, collectTax: Bool, taxRateBps: Int) -> Int {
+        subtotalCents + taxCents(
+            subtotalCents: subtotalCents,
+            collectTax: collectTax,
+            taxRateBps: taxRateBps
+        )
+    }
+}
 
 private func formatCents(_ cents: Int) -> String {
     let dollars = Double(cents) / 100.0

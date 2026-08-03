@@ -2,7 +2,6 @@
 // Checkout flow: customer selection, payment method, amount tendered, confirm.
 
 import SwiftUI
-import ClerkKit
 
 struct CheckoutSheet: View {
     @Bindable var store: POSStore
@@ -27,23 +26,21 @@ struct CheckoutSheet: View {
         }
     }
 
-    var amountTenderedCents: Int {
-        Int((Double(amountTenderedString.filter { $0.isNumber }) ?? 0))
-    }
+    var amountTenderedCents: Int { CurrencyInput.cents(from: amountTenderedString) ?? 0 }
 
     var changeCents: Int {
-        max(0, amountTenderedCents - store.cartSubtotalCents)
+        max(0, amountTenderedCents - store.cartTotalCents)
     }
 
     var canConfirm: Bool {
         switch paymentMethod {
         case .cash:
-            return amountTenderedCents >= store.cartSubtotalCents
+            return amountTenderedCents >= store.cartTotalCents
         case .card:
             return true
         case .credit:
             guard let customer = store.selectedCustomer else { return false }
-            return customer.creditAvailableCents >= store.cartSubtotalCents
+            return customer.creditAvailableCents >= store.cartTotalCents
         }
     }
 
@@ -99,7 +96,7 @@ struct CheckoutSheet: View {
                         if isProcessing {
                             ProgressView().tint(.white)
                         } else {
-                            Text("Confirm \(formatCents(store.cartSubtotalCents))")
+                            Text("Confirm \(formatCents(store.cartTotalCents))")
                                 .font(.headline)
                         }
                     }
@@ -146,15 +143,28 @@ struct CheckoutSheet: View {
                 Divider().padding(.leading, 16)
             }
 
-            HStack {
-                Text("Total")
-                    .font(.headline)
-                    .foregroundStyle(DRXPalette.ink)
-                Spacer()
-                Text(formatCents(store.cartSubtotalCents))
-                    .font(.title3.bold())
-                    .foregroundStyle(DRXPalette.accent)
+            VStack(spacing: 8) {
+                HStack {
+                    Text("Subtotal")
+                    Spacer()
+                    Text(formatCents(store.cartSubtotalCents))
+                }
+                if store.cartTaxCents > 0 {
+                    HStack {
+                        Text("Tax")
+                        Spacer()
+                        Text(formatCents(store.cartTaxCents))
+                    }
+                }
+                HStack {
+                    Text("Total").font(.headline)
+                    Spacer()
+                    Text(formatCents(store.cartTotalCents))
+                        .font(.title3.bold())
+                        .foregroundStyle(DRXPalette.accent)
+                }
             }
+            .foregroundStyle(DRXPalette.ink)
             .padding(16)
         }
         .background(DRXPalette.card)
@@ -257,7 +267,7 @@ struct CheckoutSheet: View {
                     .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
                     .padding(.horizontal)
 
-                if amountTenderedCents >= store.cartSubtotalCents && !amountTenderedString.isEmpty {
+                if amountTenderedCents >= store.cartTotalCents && !amountTenderedString.isEmpty {
                     HStack {
                         Text("Change Due")
                             .font(.subheadline)
@@ -274,7 +284,7 @@ struct CheckoutSheet: View {
                 HStack(spacing: 8) {
                     ForEach([5_00, 10_00, 20_00, 50_00], id: \.self) { amount in
                         Button("$\(amount/100)") {
-                            amountTenderedString = String(amount)
+                            amountTenderedString = CurrencyInput.string(fromCents: amount)
                         }
                         .font(.caption.weight(.semibold))
                         .padding(.horizontal, 12)
@@ -301,7 +311,7 @@ struct CheckoutSheet: View {
                             .foregroundStyle(DRXPalette.muted)
                         Text(customer.creditAvailableFormatted)
                             .font(.headline)
-                            .foregroundStyle(customer.creditAvailableCents >= store.cartSubtotalCents ? .green : DRXPalette.danger)
+                            .foregroundStyle(customer.creditAvailableCents >= store.cartTotalCents ? .green : DRXPalette.danger)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
@@ -392,12 +402,19 @@ struct CheckoutSheet: View {
     private func processCheckout() async {
         isProcessing = true
         checkoutError = nil
-        let userId = await MainActor.run { Clerk.shared.user?.id }
-        let orderNumber = "ORD-\(Int(Date().timeIntervalSince1970))"
+        let orderNumber = "ORD-\(UUID().uuidString.uppercased())"
         let items = store.cartItems.map { item in
             CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams)
         }
-        let tendered = paymentMethod == .cash ? amountTenderedCents : store.cartSubtotalCents
+        let tendered: Int
+        switch paymentMethod {
+        case .cash:
+            tendered = amountTenderedCents
+        case .card:
+            tendered = store.cartTotalCents
+        case .credit:
+            tendered = 0
+        }
         let args = CheckoutArgs(
             customerId: store.selectedCustomer?.id,
             orderNumber: orderNumber,

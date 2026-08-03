@@ -2,7 +2,6 @@
 // Record a credit payment received from a customer.
 
 import SwiftUI
-import ClerkKit
 
 struct RecordPaymentSheet: View {
     let customer: DRXCustomer
@@ -13,7 +12,7 @@ struct RecordPaymentSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var paymentAmountCents: Int { Int((Double(paymentAmountString) ?? 0) * 100) }
+    private var paymentAmountCents: Int { CurrencyInput.cents(from: paymentAmountString) ?? 0 }
 
     private var isValid: Bool {
         paymentAmountCents > 0
@@ -74,8 +73,6 @@ struct RecordPaymentSheet: View {
     private func save() async {
         isSaving = true
         saveError = nil
-        let userId = await MainActor.run { Clerk.shared.user?.id }
-
         struct RecordPaymentArgs: Encodable, Sendable {
             let customerId: String
             let paymentAmountCents: Int

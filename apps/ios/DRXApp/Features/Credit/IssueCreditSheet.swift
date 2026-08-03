@@ -2,7 +2,6 @@
 // Issue store credit to a customer account.
 
 import SwiftUI
-import ClerkKit
 
 struct IssueCreditSheet: View {
     let customer: DRXCustomer
@@ -14,7 +13,7 @@ struct IssueCreditSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var amountCents: Int { Int((Double(amountString) ?? 0) * 100) }
+    private var amountCents: Int { CurrencyInput.cents(from: amountString) ?? 0 }
 
     private var isValid: Bool {
         amountCents > 0 &&
@@ -68,8 +67,6 @@ struct IssueCreditSheet: View {
     private func save() async {
         isSaving = true
         saveError = nil
-        let userId = await MainActor.run { Clerk.shared.user?.id }
-
         struct IssueCreditArgs: Encodable, Sendable {
             let customerId: String
             let amountCents: Int
