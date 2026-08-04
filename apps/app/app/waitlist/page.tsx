@@ -4,11 +4,12 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 
 export const metadata: Metadata = {
   title: "Join Beta Waitlist | Deelrx CRM",
   description:
-    "Join the Deelrx CRM beta waitlist. Built for dispensaries all the way down to smaller operators.",
+    "Join the Deelrx CRM beta waitlist. Built for independent retailers and owner-operated shops.",
 };
 
 const marketingUrl =
@@ -16,7 +17,10 @@ const marketingUrl =
   "https://deelrxcrm.com";
 
 export default async function WaitlistPage() {
-  const { userId, sessionClaims } = await auth();
+  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
+  const { userId, sessionClaims } = useVisualFixture
+    ? { userId: null, sessionClaims: null }
+    : await auth();
   const claims = sessionClaims as {
     metadata?: { onboardingComplete?: boolean };
     publicMetadata?: { onboardingComplete?: boolean };
@@ -54,33 +58,37 @@ export default async function WaitlistPage() {
             JOIN THE WAITLIST
           </h1>
           <p className="body-copy text-text-secondary">
-            Deelrx CRM is built for dispensaries all the way down to smaller
-            operators. Request access and we will notify you as invite waves
-            open.
+            Deelrx CRM is built for independent retailers, owner-operated shops,
+            pop-ups, and inventory-carrying service businesses. Request access
+            and we will notify you as invite waves open.
           </p>
         </div>
 
         <div className="glass-effect rounded-2xl border border-white/10 p-6">
-          <Waitlist
-            afterJoinWaitlistUrl="/login"
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                cardBox: "w-full bg-transparent border-none shadow-none p-0",
-                card: "bg-transparent border-none shadow-none p-0",
-                headerTitle: "hidden",
-                headerSubtitle: "hidden",
-                formButtonPrimary:
-                  "laser-button rounded-full bg-[#BFFF00] text-black font-bold uppercase tracking-wide h-11",
-                formFieldInput:
-                  "bg-black/40 border border-white/10 text-white rounded-md",
-                formFieldLabel:
-                  "technical-label text-[11px] text-white/60 uppercase tracking-[0.2em]",
-                footerActionLink:
-                  "text-[#BFFF00] hover:text-[#BFFF00] underline-offset-4 hover:underline",
-              },
-            }}
-          />
+          {useVisualFixture ? (
+            <AuthVisualFixture mode="sign-up" />
+          ) : (
+            <Waitlist
+              afterJoinWaitlistUrl="/login"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  cardBox: "w-full bg-transparent border-none shadow-none p-0",
+                  card: "bg-transparent border-none shadow-none p-0",
+                  headerTitle: "hidden",
+                  headerSubtitle: "hidden",
+                  formButtonPrimary:
+                    "laser-button rounded-full bg-[#BFFF00] text-black font-bold uppercase tracking-wide h-11",
+                  formFieldInput:
+                    "bg-black/40 border border-white/10 text-white rounded-md",
+                  formFieldLabel:
+                    "technical-label text-[11px] text-white/60 uppercase tracking-[0.2em]",
+                  footerActionLink:
+                    "text-[#BFFF00] hover:text-[#BFFF00] underline-offset-4 hover:underline",
+                },
+              }}
+            />
+          )}
         </div>
 
         <div className="text-center text-[11px] text-white/50">
