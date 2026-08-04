@@ -16,6 +16,7 @@ describe("route classification", () => {
     expect(classifyDrxHost("deelrxcrm.app")).toBe("app");
     expect(classifyDrxHost("www.deelrxcrm.app")).toBe("app");
     expect(classifyDrxHost("preview.deelrxcrm.app")).toBe("app");
+    expect(classifyDrxHost("drx-feature-wrelik.vercel.app")).toBe("app");
     expect(classifyDrxHost("localhost:3000")).toBe("app");
     expect(classifyDrxHost("clerk.deelrxcrm.app")).toBe("auth");
     expect(classifyDrxHost("accounts.deelrxcrm.app")).toBe("auth");

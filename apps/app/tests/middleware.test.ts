@@ -108,10 +108,11 @@ describe("middleware auth and routing", () => {
     );
   });
 
-  it("does not include redirect_url for api routes", async () => {
+  it("returns 401 for protected API routes", async () => {
     const req = makeRequest("/api/team", "www.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/login");
+    expect(res.status).toBe(401);
+    await expect(res.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
   it("passes through public auth-domain routes", async () => {
@@ -126,14 +127,19 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it.each(["/privacy", "/privacy-policy", "/terms", "/legal/privacy", "/legal/terms", "/support"])(
-    "passes through public policy route %s without auth redirect",
-    async (pathname) => {
-      const req = makeRequest(pathname, "www.deelrxcrm.app");
-      const res = await runMiddleware(req, { userId: null });
-      expect(res.headers.get("x-middleware-next")).toBe("1");
-    },
-  );
+  it.each([
+    ["/privacy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/privacy-policy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/legal/privacy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/terms", "https://www.deelrxcrm.com/legal/terms"],
+    ["/legal/terms", "https://www.deelrxcrm.com/legal/terms"],
+    ["/support", "https://www.deelrxcrm.com/support"],
+  ])("redirects public policy route %s to %s", async (pathname, target) => {
+    const req = makeRequest(pathname, "www.deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.status).toBe(308);
+    expect(res.headers.get("location")).toBe(target);
+  });
 
   it("passes through Next.js internal assets", async () => {
     const req = makeRequest("/_next/static/chunks/main.js", "www.deelrxcrm.app");

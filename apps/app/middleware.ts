@@ -9,6 +9,15 @@ import {
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
 
+const PUBLIC_APP_REDIRECTS: Readonly<Record<string, string>> = {
+  "/privacy": "https://www.deelrxcrm.com/legal/privacy",
+  "/privacy-policy": "https://www.deelrxcrm.com/legal/privacy",
+  "/legal/privacy": "https://www.deelrxcrm.com/legal/privacy",
+  "/terms": "https://www.deelrxcrm.com/legal/terms",
+  "/legal/terms": "https://www.deelrxcrm.com/legal/terms",
+  "/support": "https://www.deelrxcrm.com/support",
+};
+
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
@@ -45,6 +54,11 @@ function redirectToApp(req: Request, pathname: string, preserveCurrentHost = fal
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
 }
 
+function redirectPublicAppPath(pathname: string) {
+  const target = PUBLIC_APP_REDIRECTS[pathname];
+  return target ? NextResponse.redirect(target, 308) : null;
+}
+
 function middlewareWithoutClerk(
   reqOrAuth: Request | unknown,
   maybeReq?: Request,
@@ -79,6 +93,9 @@ function middlewareWithoutClerk(
     return NextResponse.next();
   }
 
+  const publicRedirect = redirectPublicAppPath(pathname);
+  if (publicRedirect) return publicRedirect;
+
   if (isAuthBypassEnabled()) {
     if (pathname === "/" || isAuthEntryPath(pathname) || pathname === "/waitlist") {
       return redirectToApp(req, "/dashboard", true);
@@ -90,7 +107,11 @@ function middlewareWithoutClerk(
     return redirectToApp(req, "/waitlist", true);
   }
 
-  if (!isPublicAppPath(pathname) && !pathname.startsWith("/api")) {
+  if (!isPublicAppPath(pathname) && pathname.startsWith("/api")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isPublicAppPath(pathname)) {
     return redirectToApp(req, "/waitlist", true);
   }
 
@@ -136,6 +157,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         return NextResponse.next();
       }
 
+      const publicRedirect = redirectPublicAppPath(pathname);
+      if (publicRedirect) return publicRedirect;
+
       const { userId, sessionClaims } = await auth();
       const claims = sessionClaims as {
         metadata?: { onboardingComplete?: boolean };
@@ -170,10 +194,12 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       if (!userId && !isPublicAppPath(pathname)) {
-        const loginUrl = new URL("/login", getAppOrigin(req, true));
-        if (!pathname.startsWith("/api")) {
-          loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
+        if (pathname.startsWith("/api")) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
+        const loginUrl = new URL("/login", getAppOrigin(req, true));
+        loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
         return NextResponse.redirect(loginUrl);
       }
 

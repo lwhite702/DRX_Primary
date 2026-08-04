@@ -90,6 +90,7 @@ export function classifyDrxHost(hostname: string | null | undefined): DrxHostKin
   if (
     host === "deelrxcrm.app" ||
     host.endsWith(".deelrxcrm.app") ||
+    host.endsWith(".vercel.app") ||
     host.includes("localhost")
   ) {
     return "app";
