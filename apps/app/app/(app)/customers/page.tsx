@@ -109,13 +109,13 @@ export default function CustomersPage() {
 
     toast.promise(promise(), {
       loading: editingCustomer ? "Updating customer..." : "Adding customer...",
-      success: (message) => {
+      success: (message: string) => {
         setShowDialog(false);
         setEditingCustomer(null);
         reset();
         return message;
       },
-      error: (error) => {
+      error: (error: unknown) => {
         return error instanceof Error
           ? error.message
           : "Failed to save customer";

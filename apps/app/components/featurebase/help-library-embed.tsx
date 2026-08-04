@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
+import type { ComponentProps } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { useFeaturebaseHelpEmbed } from "@/lib/hooks/use-featurebase-help-embed";
@@ -38,6 +39,12 @@ export function HelpLibraryEmbed() {
     path: pathParam || context.path,
     filters: context.filters,
   });
+
+  const featurebaseScriptProps = {
+    id: "featurebase-sdk-help-library",
+    src: "https://do.featurebase.app/js/sdk.js",
+    onLoad: () => initEmbed(true),
+  } as ComponentProps<typeof Script>;
 
   return (
     <div className="space-y-4">
@@ -93,13 +100,7 @@ export function HelpLibraryEmbed() {
         </button>
       </div>
 
-      <Script
-        id="featurebase-sdk-help-library"
-        src="https://do.featurebase.app/js/sdk.js"
-        onLoad={() => {
-          initEmbed(true);
-        }}
-      />
+      <Script {...featurebaseScriptProps} />
     </div>
   );
 }
