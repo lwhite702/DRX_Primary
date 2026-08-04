@@ -73,6 +73,14 @@ test.describe("Visual regression", () => {
         // host before capture so dev controls never become part of a baseline.
         await page.evaluate(() => {
           document.querySelectorAll("nextjs-portal").forEach((portal) => portal.remove());
+          return Promise.all(
+            Array.from(document.images).map((image) =>
+              image.complete ? image.decode().catch(() => undefined) : new Promise<void>((resolve) => {
+                image.addEventListener("load", () => resolve(), { once: true });
+                image.addEventListener("error", () => resolve(), { once: true });
+              }),
+            ),
+          );
         });
         await page.addStyleTag({
           content: `
@@ -85,7 +93,10 @@ test.describe("Visual regression", () => {
         await expect(page).toHaveScreenshot(`${pageMeta.name}-${viewport.name}.png`, {
           fullPage: false,
           animations: "allow",
-          maxDiffPixelRatio: 0.02,
+          // Chromium's Linux and macOS text rasterizers differ slightly even
+          // after web fonts settle. Keep the allowance narrow enough to catch
+          // layout regressions while avoiding platform-only glyph noise.
+          maxDiffPixelRatio: 0.025,
         });
       });
     }
