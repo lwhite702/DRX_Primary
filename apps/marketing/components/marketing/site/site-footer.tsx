@@ -39,7 +39,9 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-white/10 pt-5 text-xs text-text-secondary">
-          <span>{footer.contact}</span>
+          <a href={`mailto:${footer.contact}`} className="hover:text-accent">
+            {footer.contact}
+          </a>
           {footer.legalLinks.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-accent">
               {link.label}

@@ -32,6 +32,7 @@ export default function LegalHubPage() {
           <Link href="/legal/terms" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Terms</Link>
           <Link href="/legal/lawful-use" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Lawful use</Link>
           <Link href="/legal/regulatory-disclaimer" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Regulatory disclaimer</Link>
+          <Link href="/support" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Support</Link>
         </div>
       </SectionBlock>
 

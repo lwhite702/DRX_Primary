@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Legal and App Store**: Published the shared Wrelik Privacy Policy and Terms of Use with DRX-specific controller, business-data, regulated-retail, and AI-assisted operations addenda.
+- **Support**: Added a public support route and exposed working Privacy Policy, Terms of Use, and Support destinations from the marketing footer and legal hub.
+
 ### Changed
 
 - **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.

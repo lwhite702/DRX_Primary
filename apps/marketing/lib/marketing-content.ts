@@ -136,7 +136,7 @@ export const marketingContent = {
     resourceLinks: [
       { label: "Getting Started", href: "/resources/guides" },
       { label: "Product Updates", href: "/resources/changelog" },
-      { label: "Support Center", href: "/resources" },
+      { label: "Support Center", href: "/support" },
     ],
     contact: "support@deelrxcrm.com",
     legalLinks: [

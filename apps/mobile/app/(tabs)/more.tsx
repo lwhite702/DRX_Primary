@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -76,6 +77,14 @@ export default function More() {
         { icon: "help-circle-outline", label: "Help", disabled: true },
       ],
     },
+    {
+      title: "Legal & Support",
+      items: [
+        { icon: "hand-left-outline", label: "Privacy Policy", url: "https://drx-web.vercel.app/legal/privacy", disabled: false },
+        { icon: "document-text-outline", label: "Terms of Use", url: "https://drx-web.vercel.app/legal/terms", disabled: false },
+        { icon: "help-circle-outline", label: "Support", url: "https://drx-web.vercel.app/support", disabled: false },
+      ],
+    },
   ];
 
   return (
@@ -127,6 +136,8 @@ export default function More() {
                   onPress={() => {
                     if (item.route) {
                       router.push(item.route as any);
+                    } else if (item.url) {
+                      void Linking.openURL(item.url);
                     }
                   }}
                 >
