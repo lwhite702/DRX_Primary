@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://deelrxcrm.com",
+    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://www.deelrxcrm.com",
   ),
   alternates: {
     canonical: "/",

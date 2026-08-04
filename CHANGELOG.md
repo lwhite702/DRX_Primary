@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Production Domain Contract**: Standardized DRX marketing on `www.deelrxcrm.com`, the application on `www.deelrxcrm.app`, and the authentication host on `clerk.deelrxcrm.app`; added public legal/support aliases and canonical cross-domain redirects.
 - **Unified Visual Identity**: Introduced the production DRX white-and-lime slash mark, canonical operator-console tokens, Plus Jakarta Sans and Geist Mono hierarchy, compact radii, semantic status colors, and automated web-to-Swift drift checks.
 - **Marketing Landing**: Rebuilt the public landing page around the operator-first promise, deterministic Quick Sale product proof, truthful canonical capability evidence, and beta conversion without placeholder testimonials, ratings, or partner logos.
 - **Web Product UI**: Aligned authentication, navigation branding, Dashboard, POS, and Inventory surfaces to the shared dark-first system and removed unrelated page-specific accent colors.

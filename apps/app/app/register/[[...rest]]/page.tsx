@@ -10,7 +10,7 @@ import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
-  "https://deelrxcrm.com";
+  "https://www.deelrxcrm.com";
 
 export const metadata: Metadata = {
   title: "Register | Deelrx CRM",

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
-  "https://deelrxcrm.com";
+  "https://www.deelrxcrm.com";
 
 export default async function WaitlistPage() {
   const useVisualFixture = process.env.VISUAL_FIXTURES === "true";

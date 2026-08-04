@@ -25,12 +25,12 @@ function getCurrentOrigin(req: Request) {
   const protocol =
     forwardedProto ||
     (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-  return `${protocol}://${host || "deelrxcrm.app"}`;
+  return `${protocol}://${host || "www.deelrxcrm.app"}`;
 }
 
 function getConfiguredAppOrigin() {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
-  return configured ? configured.replace(/\/$/, "") : "https://deelrxcrm.app";
+  return configured ? configured.replace(/\/$/, "") : "https://www.deelrxcrm.app";
 }
 
 function getAppOrigin(req: Request, preserveCurrentHost = false) {
