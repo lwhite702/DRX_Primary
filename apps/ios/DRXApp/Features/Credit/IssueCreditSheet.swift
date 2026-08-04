@@ -17,7 +17,7 @@ struct IssueCreditSheet: View {
 
     private var isValid: Bool {
         amountCents > 0 &&
-        (customer.creditLimitCents == 0 || customer.totalCreditUsedCents + amountCents <= customer.creditLimitCents)
+        customer.canChargeStoreAccount(amountCents)
     }
 
     var body: some View {
@@ -26,7 +26,10 @@ struct IssueCreditSheet: View {
                 Section("Customer") {
                     LabeledContent("Name", value: customer.displayName)
                     LabeledContent("Current Credit Used", value: customer.creditUsedFormatted)
-                    LabeledContent("Available Credit", value: customer.creditAvailableFormatted)
+                    LabeledContent(
+                        "Available Credit",
+                        value: customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditAvailableFormatted
+                    )
                 }
 
                 Section("Issue Credit") {

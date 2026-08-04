@@ -94,6 +94,8 @@ export const drxAudience = {
     "Inventory-carrying service businesses",
   ],
   eyebrow: "Built for independent retail",
+  headlineLead: "For the ones who run it,",
+  headlineAccent: "not the ones who talk about it.",
   headline: "For the ones who run it, not the ones who talk about it.",
   supportingPromise:
     "Fast checkout, tighter inventory, clear sales records, and role-based control for independent shops that move fast.",

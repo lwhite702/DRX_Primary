@@ -113,6 +113,7 @@ private struct NativeOnboardingView: View {
     private var isValid: Bool {
         !ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        TimeZone(identifier: timezone) != nil &&
         (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
     }
 
@@ -168,6 +169,7 @@ private struct NativeOnboardingView: View {
 private struct ProvisioningRecoveryView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @State private var signOutError: String?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -179,7 +181,14 @@ private struct ProvisioningRecoveryView: View {
             Button("Retry") { Task { await environment.checkProvisioning() } }
                 .buttonStyle(.borderedProminent).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
-                Task { try? await clerk.auth.signOut(); await environment.clerkSignedOut() }
+                Task {
+                    do {
+                        try await clerk.auth.signOut()
+                        await environment.clerkSignedOut()
+                    } catch {
+                        signOutError = "We couldn't sign you out. Check your connection and try again."
+                    }
+                }
             }
             if let requestID = environment.supportRequestID {
                 ShareLink(item: requestID) { Label("Copy Support Details", systemImage: "doc.on.doc") }
@@ -187,12 +196,21 @@ private struct ProvisioningRecoveryView: View {
             }
         }
         .padding(32)
+        .alert("Sign Out Failed", isPresented: .init(
+            get: { signOutError != nil },
+            set: { if !$0 { signOutError = nil } }
+        )) {
+            Button("OK", role: .cancel) { signOutError = nil }
+        } message: {
+            Text(signOutError ?? "")
+        }
     }
 }
 
 private struct OperatorTabView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @State private var signOutError: String?
 
     var body: some View {
         TabView {
@@ -256,8 +274,12 @@ private struct OperatorTabView: View {
 
                         Button("Sign Out", role: .destructive) {
                             Task {
-                                try? await clerk.auth.signOut()
-                                await environment.signOut()
+                                do {
+                                    try await clerk.auth.signOut()
+                                    await environment.signOut()
+                                } catch {
+                                    signOutError = "We couldn't sign you out. Check your connection and try again."
+                                }
                             }
                         }
                         .accessibilityIdentifier("signOutButton")
@@ -274,28 +296,13 @@ private struct OperatorTabView: View {
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
-    }
-
-    private func moduleLink(_ title: String, symbol: String) -> some View {
-        NavigationLink {
-            AuthenticatedWebView(path: path(for: title), title: title)
-        } label: {
-            Label(title, systemImage: symbol)
-        }
-        .accessibilityIdentifier("module_\(title.lowercased().replacingOccurrences(of: " ", with: "_"))")
-    }
-
-    private func path(for title: String) -> String {
-        switch title {
-        case "Dashboard": return "dashboard"
-        case "POS": return "pos"
-        case "Inventory": return "inventory"
-        case "Customers": return "customers"
-        case "Credit": return "credit"
-        case "Reports": return "reports"
-        case "Workspaces": return "workspaces"
-        case "AI Intelligence": return "ai-intelligence"
-        default: return "dashboard"
+        .alert("Sign Out Failed", isPresented: .init(
+            get: { signOutError != nil },
+            set: { if !$0 { signOutError = nil } }
+        )) {
+            Button("OK", role: .cancel) { signOutError = nil }
+        } message: {
+            Text(signOutError ?? "")
         }
     }
 }

@@ -199,6 +199,7 @@ final class AppEnvironment {
     }
 
     func signOut() async {
+        provisioningGeneration += 1
         await session.signOut()
         telemetry.reset()
         provisioningMessage = nil

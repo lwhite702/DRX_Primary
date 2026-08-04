@@ -22,17 +22,20 @@ settings:
     DEVELOPMENT_TEAM: L8R42BJ54K
     CODE_SIGN_STYLE: Automatic
     VERSIONING_SYSTEM: apple-generic
-    CURRENT_PROJECT_VERSION: 1
+    CURRENT_PROJECT_VERSION: 17
     MARKETING_VERSION: 0.5.6
 targets:
   DRXApp:
     type: application
     platform: iOS
+    productName: Deelrx CRM
     configFiles:
       Debug: Configuration/Debug.xcconfig
       Release: Configuration/Release.xcconfig
     sources:
       - path: DRXApp
+        excludes:
+          - ClerkEnvironment.json
     settings:
       base:
         PRODUCT_NAME: Deelrx CRM

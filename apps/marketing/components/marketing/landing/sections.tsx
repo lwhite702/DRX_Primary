@@ -205,7 +205,7 @@ function Hero() {
         <div>
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{marketingContent.hero.preheadline}</p>
           <h1 className="mt-5 max-w-[740px] text-[clamp(3.2rem,7vw,6.7rem)] font-extrabold leading-[0.91] tracking-[-0.06em] text-white">
-            {marketingContent.hero.headline.split(", ")[0]},<br /><span className="text-accent">{marketingContent.hero.headline.split(", ")[1]}</span>
+            {marketingContent.hero.headlineLead}<br /><span className="text-accent">{marketingContent.hero.headlineAccent}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-8 text-white/65">
             {marketingContent.hero.subheadline}
@@ -227,12 +227,17 @@ function Hero() {
 }
 
 function OperatorStrip() {
-  const icons = [ShoppingCart, PackageCheck, CircleDollarSign, LockKeyhole] as const;
+  const icons = {
+    checkout: ShoppingCart,
+    inventory: PackageCheck,
+    reporting: CircleDollarSign,
+    access: LockKeyhole,
+  } as const;
   return (
     <section aria-label="Operator benefits" className="border-b border-white/10 bg-[#0D0D0D]">
       <div className="mx-auto grid max-w-[1280px] md:grid-cols-2 lg:grid-cols-4">
-        {marketingContent.benefits.map(({ title, body }, index) => {
-          const Icon = icons[index];
+        {marketingContent.benefits.map(({ id, title, body }) => {
+          const Icon = icons[id];
           return (
           <div key={title} className="border-white/10 px-5 py-8 md:px-8 lg:border-r last:border-r-0">
             <Icon className="size-5 text-accent" aria-hidden />

@@ -31,8 +31,8 @@ const requiredWebMappings = [
 
 const canonical = read("packages/brand/src/index.ts");
 const brandCss = read("packages/brand/tokens.css").toUpperCase();
-const marketingCss = read("apps/marketing/app/globals.css").toUpperCase();
-const appCss = read("apps/app/app/globals.css").toUpperCase();
+const marketingCss = read("apps/marketing/app/globals.css");
+const appCss = read("apps/app/app/globals.css");
 const swift = read("apps/ios/DRXApp/DesignSystem/Tokens/DRXPalette.swift");
 
 for (const [name, hex, swiftTuple] of requiredTokens) {
@@ -42,11 +42,11 @@ for (const [name, hex, swiftTuple] of requiredTokens) {
 }
 
 for (const [surface, css] of [["marketing", marketingCss], ["web", appCss]]) {
-  if (!css.includes('@IMPORT "@DEELRX/BRAND/TOKENS.CSS"')) {
+  if (!css.includes('@import "@deelrx/brand/tokens.css"')) {
     failures.push(`${surface} does not consume @deelrx/brand/tokens.css`);
   }
   for (const [consumerToken, brandToken] of requiredWebMappings) {
-    const mapping = `--COLOR-${consumerToken.toUpperCase()}: VAR(--DRX-COLOR-${brandToken.toUpperCase()})`;
+    const mapping = `--color-${consumerToken}: var(--drx-color-${brandToken})`;
     if (!css.includes(mapping)) {
       failures.push(`${surface} token mapping missing: ${mapping}`);
     }

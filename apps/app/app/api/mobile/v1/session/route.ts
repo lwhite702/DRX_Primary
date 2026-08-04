@@ -27,27 +27,20 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [ownedBusiness, assignedRole, user] = await Promise.all([
-    db.businessProfile.findFirst({
-      where: { ownerId: userId, isActive: true },
-      select: { id: true, businessName: true },
-    }),
-    db.userRole.findFirst({
-      where: { userId, business: { isActive: true } },
-      select: {
-        role: true,
-        permissions: true,
-        business: { select: { id: true, businessName: true } },
+  const user = await db.user.findFirst({
+    where: { clerkUserId: userId },
+    select: {
+      name: true,
+      email: true,
+      role: true,
+      status: true,
+      tenant: {
+        select: { id: true, businessName: true, ownerId: true, isActive: true },
       },
-    }),
-    db.user.findFirst({
-      where: { clerkUserId: userId, status: "ACTIVE" },
-      select: { name: true, email: true },
-    }),
-  ]);
+    },
+  });
 
-  const business = ownedBusiness ?? assignedRole?.business;
-  if (!business) {
+  if (!user) {
     return NextResponse.json(
       {
         error: "Account is not provisioned for Deelrx CRM",
@@ -57,7 +50,30 @@ export async function GET() {
     );
   }
 
-  const role = ownedBusiness ? "owner" : (assignedRole?.role?.toLowerCase() ?? "staff");
+  if (user.status !== "ACTIVE" || !user.tenant.isActive) {
+    return NextResponse.json(
+      {
+        error: "Account is inactive",
+        code: "MOBILE_ACCOUNT_INACTIVE",
+      },
+      { status: 403 },
+    );
+  }
+
+  const business = user.tenant;
+  const isOwner = business.ownerId === userId;
+  const assignedRole = isOwner
+    ? null
+    : await db.userRole.findFirst({
+        where: { userId, businessId: business.id },
+        select: { role: true, permissions: true },
+      });
+  const requestedRole = assignedRole?.role?.toLowerCase() ?? user.role.toLowerCase();
+  const role = isOwner || requestedRole === "owner"
+    ? "owner"
+    : requestedRole in ROLE_PERMISSIONS
+      ? requestedRole
+      : "staff";
 
   return NextResponse.json({
     operator_id: userId,
@@ -65,7 +81,7 @@ export async function GET() {
     business_id: business.id,
     business_name: business.businessName,
     roles: [role],
-    permissions: permissionsFor(role, assignedRole?.permissions),
+    permissions: permissionsFor(role, isOwner ? null : assignedRole?.permissions),
     email: user?.email ?? null,
   });
 }

@@ -399,7 +399,10 @@ function checkAppStoreCopyContract(failures: Failure[]) {
   }
 
   appStoreCopy.screenshotPlan.forEach((screenshot, index) => {
-    if (screenshot.caption !== appStoreCopy.screenshotCaptions[index]) {
+    if (
+      screenshot.caption !== requiredScreenshotCaptions[index] ||
+      appStoreCopy.screenshotCaptions[index] !== requiredScreenshotCaptions[index]
+    ) {
       failures.push({
         file: appStoreMetadataPath,
         message: `Screenshot plan caption mismatch at position ${index + 1}`,

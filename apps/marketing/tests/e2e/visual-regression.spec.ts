@@ -15,17 +15,24 @@ const routeCases = [
 
 async function waitForVisualAssets(page: import("@playwright/test").Page) {
   await page.evaluate(async () => {
-    await document.fonts.ready;
-    await Promise.all(
-      Array.from(document.images, (image) =>
-        image.complete
-          ? Promise.resolve()
-          : new Promise<void>((resolve) => {
-              image.addEventListener("load", () => resolve(), { once: true });
-              image.addEventListener("error", () => resolve(), { once: true });
-            }),
-      ),
-    );
+    const assetsReady = async () => {
+      await document.fonts.ready;
+      await Promise.all(
+        Array.from(document.images, (image) =>
+          image.complete
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+                image.addEventListener("load", () => resolve(), { once: true });
+                image.addEventListener("error", () => resolve(), { once: true });
+              }),
+        ),
+      );
+    };
+
+    await Promise.race([
+      assetsReady(),
+      new Promise<void>((resolve) => window.setTimeout(resolve, 3_000)),
+    ]);
   });
 }
 

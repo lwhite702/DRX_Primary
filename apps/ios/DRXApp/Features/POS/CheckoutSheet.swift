@@ -13,6 +13,7 @@ struct CheckoutSheet: View {
     @State private var checkoutError: String?
     @State private var completedSale: CheckoutResponse?
     @State private var showCustomerPicker = false
+    @State private var orderNumber = "ORD-\(UUID().uuidString.uppercased())"
 
     enum PaymentMethod: String, CaseIterable {
         case cash, card, credit
@@ -40,7 +41,7 @@ struct CheckoutSheet: View {
             return true
         case .credit:
             guard let customer = store.selectedCustomer else { return false }
-            return customer.creditAvailableCents >= store.cartTotalCents
+            return customer.canChargeStoreAccount(store.cartTotalCents)
         }
     }
 
@@ -309,16 +310,16 @@ struct CheckoutSheet: View {
                         Text("Credit Available")
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
-                        Text(customer.creditAvailableFormatted)
+                        Text(customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditAvailableFormatted)
                             .font(.headline)
-                            .foregroundStyle(customer.creditAvailableCents >= store.cartTotalCents ? .green : DRXPalette.danger)
+                            .foregroundStyle(customer.canChargeStoreAccount(store.cartTotalCents) ? .green : DRXPalette.danger)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("Credit Limit")
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
-                        Text(customer.creditLimitFormatted)
+                        Text(customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditLimitFormatted)
                             .font(.subheadline)
                             .foregroundStyle(DRXPalette.ink)
                     }
@@ -402,7 +403,6 @@ struct CheckoutSheet: View {
     private func processCheckout() async {
         isProcessing = true
         checkoutError = nil
-        let orderNumber = "ORD-\(UUID().uuidString.uppercased())"
         let items = store.cartItems.map { item in
             CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams)
         }

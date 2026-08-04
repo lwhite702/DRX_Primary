@@ -2,7 +2,8 @@ import { drxAudience } from "@/lib/feature-canon";
 
 export type HeroContent = {
   preheadline: string;
-  headline: string;
+  headlineLead: string;
+  headlineAccent: string;
   subheadline: string;
   proofLabels: readonly string[];
   primaryCta: { label: string; href: string };
@@ -10,6 +11,7 @@ export type HeroContent = {
 };
 
 export type BenefitCard = {
+  id: "checkout" | "inventory" | "reporting" | "access";
   title: string;
   body: string;
 };
@@ -38,7 +40,8 @@ export type FooterContent = {
 export const marketingContent = {
   hero: {
     preheadline: drxAudience.eyebrow,
-    headline: drxAudience.headline,
+    headlineLead: drxAudience.headlineLead,
+    headlineAccent: drxAudience.headlineAccent,
     subheadline: drxAudience.supportingPromise,
     proofLabels: drxAudience.proofLabels,
     primaryCta: { label: "Join the Beta", href: "/waitlist" },
@@ -46,18 +49,22 @@ export const marketingContent = {
   } satisfies HeroContent,
   benefits: [
     {
+      id: "checkout",
       title: "Keep the Line Moving",
       body: "Search, scan, adjust, and finish checkout in one focused flow.",
     },
     {
+      id: "inventory",
       title: "Know What's on Deck",
       body: "See what sold, what is on hand, and what is running low.",
     },
     {
+      id: "reporting",
       title: "See the Shift Clearly",
       body: "Review sales, best sellers, and low-stock signals without reporting theater.",
     },
     {
+      id: "access",
       title: "Control Team Access",
       body: "Give each operator the tools their role requires and keep sensitive actions attributable.",
     },

@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   db: {
-    businessProfile: { findFirst: vi.fn() },
     userRole: { findFirst: vi.fn() },
     user: { findFirst: vi.fn() },
   },
@@ -17,7 +16,6 @@ import { GET } from "@/app/api/mobile/v1/session/route";
 describe("GET /api/mobile/v1/session", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.db.businessProfile.findFirst.mockResolvedValue(null);
     mocks.db.userRole.findFirst.mockResolvedValue(null);
     mocks.db.user.findFirst.mockResolvedValue(null);
   });
@@ -32,13 +30,17 @@ describe("GET /api/mobile/v1/session", () => {
 
   it("returns the owner workspace and role permissions", async () => {
     mocks.auth.mockResolvedValue({ userId: "user_owner" });
-    mocks.db.businessProfile.findFirst.mockResolvedValue({
-      id: "business_1",
-      businessName: "Deelrx Demo",
-    });
     mocks.db.user.findFirst.mockResolvedValue({
       name: "Lee",
       email: "lee@example.com",
+      role: "OWNER",
+      status: "ACTIVE",
+      tenant: {
+        id: "business_1",
+        businessName: "Deelrx Demo",
+        ownerId: "user_owner",
+        isActive: true,
+      },
     });
 
     const response = await GET();
@@ -60,10 +62,21 @@ describe("GET /api/mobile/v1/session", () => {
 
   it("returns an assigned operator role and merges explicit permissions", async () => {
     mocks.auth.mockResolvedValue({ userId: "user_cashier" });
+    mocks.db.user.findFirst.mockResolvedValue({
+      name: "Cashier",
+      email: "cashier@example.com",
+      role: "MEMBER",
+      status: "ACTIVE",
+      tenant: {
+        id: "business_2",
+        businessName: "Deelrx Store",
+        ownerId: "user_owner",
+        isActive: true,
+      },
+    });
     mocks.db.userRole.findFirst.mockResolvedValue({
       role: "cashier",
       permissions: { "inventory.manage": true, "reports.view_all": false },
-      business: { id: "business_2", businessName: "Deelrx Store" },
     });
 
     const response = await GET();
@@ -84,5 +97,51 @@ describe("GET /api/mobile/v1/session", () => {
 
     expect(response.status).toBe(403);
     expect(body.code).toBe("MOBILE_ACCOUNT_NOT_PROVISIONED");
+  });
+
+  it("blocks a suspended local operator before returning tenant data", async () => {
+    mocks.auth.mockResolvedValue({ userId: "user_suspended" });
+    mocks.db.user.findFirst.mockResolvedValue({
+      name: "Suspended Operator",
+      email: "suspended@example.com",
+      role: "MEMBER",
+      status: "SUSPENDED",
+      tenant: {
+        id: "business_3",
+        businessName: "Private Store",
+        ownerId: "user_owner",
+        isActive: true,
+      },
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.code).toBe("MOBILE_ACCOUNT_INACTIVE");
+    expect(mocks.db.userRole.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("does not merge permissions from another tenant into an owner session", async () => {
+    mocks.auth.mockResolvedValue({ userId: "user_owner" });
+    mocks.db.user.findFirst.mockResolvedValue({
+      name: "Owner",
+      email: "owner@example.com",
+      role: "OWNER",
+      status: "ACTIVE",
+      tenant: {
+        id: "business_1",
+        businessName: "Owner Store",
+        ownerId: "user_owner",
+        isActive: true,
+      },
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.roles).toEqual(["owner"]);
+    expect(mocks.db.userRole.findFirst).not.toHaveBeenCalled();
   });
 });

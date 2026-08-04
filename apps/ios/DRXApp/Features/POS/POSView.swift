@@ -22,8 +22,13 @@ final class POSStore {
         var quantityGrams: Double
 
         var lineTotal: Int {
-            let units = quantityGrams / 1.0
-            return Int((units / 1.0) * Double(product.sellingPriceCents))
+            guard quantityGrams.isFinite, quantityGrams > 0, product.sellingPriceCents >= 0 else { return 0 }
+            let number = NSDecimalNumber(decimal: Decimal(quantityGrams) * Decimal(product.sellingPriceCents))
+            guard number != .notANumber,
+                  number.compare(NSDecimalNumber(value: CurrencyInput.maximumTransactionCents)) != .orderedDescending else {
+                return CurrencyInput.maximumTransactionCents
+            }
+            return number.intValue
         }
     }
 
@@ -35,7 +40,11 @@ final class POSStore {
         }
     }
 
-    var cartSubtotalCents: Int { cartItems.reduce(0) { $0 + $1.lineTotal } }
+    var cartSubtotalCents: Int {
+        cartItems.reduce(0) { subtotal, item in
+            min(CurrencyInput.maximumTransactionCents, subtotal + min(item.lineTotal, CurrencyInput.maximumTransactionCents - subtotal))
+        }
+    }
     var cartTaxCents: Int {
         guard let business else { return 0 }
         return CheckoutMath.taxCents(
@@ -44,7 +53,13 @@ final class POSStore {
             taxRateBps: business.taxRateBps
         )
     }
-    var cartTotalCents: Int { cartSubtotalCents + cartTaxCents }
+    var cartTotalCents: Int {
+        CheckoutMath.totalCents(
+            subtotalCents: cartSubtotalCents,
+            collectTax: business?.collectTax ?? false,
+            taxRateBps: business?.taxRateBps ?? 0
+        )
+    }
 
     var cartIsEmpty: Bool { cartItems.isEmpty }
 
@@ -96,6 +111,7 @@ final class POSStore {
 struct POSView: View {
     @State private var store = POSStore()
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         HStack(spacing: 0) {
@@ -104,7 +120,7 @@ struct POSView: View {
                 .frame(maxWidth: .infinity)
 
             // Cart sidebar (iPad) or bottom bar (iPhone)
-            if !store.cartIsEmpty {
+            if horizontalSizeClass == .regular && !store.cartIsEmpty {
                 Divider()
                 cartPanel
                     .frame(width: 300)
@@ -112,6 +128,11 @@ struct POSView: View {
             }
         }
         .background(DRXPalette.canvas)
+        .safeAreaInset(edge: .bottom) {
+            if horizontalSizeClass != .regular && !store.cartIsEmpty {
+                CompactCartBar(store: store)
+            }
+        }
         .navigationTitle("POS")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { cartButton }
@@ -318,15 +339,15 @@ struct CartFooter: View {
                         .font(.subheadline.bold())
                         .foregroundStyle(DRXPalette.ink)
                 }
-                HStack {
-                    Text("Total")
-                        .font(.headline)
-                        .foregroundStyle(DRXPalette.ink)
-                    Spacer()
-                    Text(formatCents(store.cartTotalCents))
-                        .font(.headline.monospacedDigit())
-                        .foregroundStyle(DRXPalette.accent)
-                }
+            }
+            HStack {
+                Text("Total")
+                    .font(.headline)
+                    .foregroundStyle(DRXPalette.ink)
+                Spacer()
+                Text(formatCents(store.cartTotalCents))
+                    .font(.headline.monospacedDigit())
+                    .foregroundStyle(DRXPalette.accent)
             }
             Button {
                 store.showCheckout = true
@@ -339,6 +360,37 @@ struct CartFooter: View {
             .tint(DRXPalette.accent)
         }
         .padding(16)
+    }
+}
+
+private struct CompactCartBar: View {
+    @Bindable var store: POSStore
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(store.cartItems.count) cart item\(store.cartItems.count == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(DRXPalette.muted)
+                Text(formatCents(store.cartTotalCents))
+                    .font(.headline.monospacedDigit())
+                    .foregroundStyle(DRXPalette.ink)
+            }
+            Spacer()
+            Button {
+                store.showCheckout = true
+            } label: {
+                Label("Checkout", systemImage: "arrow.right.circle.fill")
+                    .font(.headline)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(DRXPalette.accent)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) { Divider() }
     }
 }
 
