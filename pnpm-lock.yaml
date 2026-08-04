@@ -8,8 +8,8 @@ overrides:
   '@wrelik/auth': file:packages/wrelik-auth-0.2.2.tgz
   '@wrelik/db': file:packages/wrelik-db-0.1.3.tgz
   '@wrelik/storage': file:packages/wrelik-storage-0.2.1.tgz
-  '@wrelik/analytics': file:packages/wrelik-analytics-0.2.1.tgz
-  '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz
+  '@wrelik/analytics': file:packages/wrelik-analytics-0.2.2.tgz
+  '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz
   '@wrelik/email': file:packages/wrelik-email-0.1.3.tgz
   '@wrelik/jobs': file:packages/wrelik-jobs-0.1.2.tgz
   '@wrelik/config': file:packages/wrelik-config-0.2.0.tgz
@@ -122,10 +122,10 @@ importers:
         version: 10.38.0(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(webpack@5.104.1)
       '@supabase/ssr':
         specifier: latest
-        version: 0.10.0(@supabase/supabase-js@2.101.1(bufferutil@4.1.0))
+        version: 0.12.4(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js':
         specifier: latest
-        version: 2.101.1(bufferutil@4.1.0)
+        version: 2.112.0(@opentelemetry/api@1.9.1)
       '@types/pg':
         specifier: ^8.16.0
         version: 8.16.0
@@ -136,8 +136,8 @@ importers:
         specifier: ^1.35.8
         version: 1.35.8
       '@wrelik/analytics':
-        specifier: file:packages/wrelik-analytics-0.2.1.tgz
-        version: file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+        specifier: file:packages/wrelik-analytics-0.2.2.tgz
+        version: file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
       '@wrelik/auth':
         specifier: file:packages/wrelik-auth-0.2.2.tgz
         version: file:packages/wrelik-auth-0.2.2.tgz(@clerk/nextjs@6.39.1(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
@@ -151,8 +151,8 @@ importers:
         specifier: file:packages/wrelik-email-0.1.3.tgz
         version: file:packages/wrelik-email-0.1.3.tgz(expo@54.0.33)(react-dom@19.2.1(react@19.2.1))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
       '@wrelik/errors':
-        specifier: file:packages/wrelik-errors-0.2.1.tgz
-        version: file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+        specifier: file:packages/wrelik-errors-0.2.2.tgz
+        version: file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
       '@wrelik/jobs':
         specifier: file:packages/wrelik-jobs-0.1.2.tgz
         version: file:packages/wrelik-jobs-0.1.2.tgz(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(express@5.2.1)(hono@4.11.4)(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(typescript@5.9.3)(zod@3.25.76)
@@ -343,6 +343,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^7.0.8
         version: 7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@deelrx/brand':
+        specifier: link:../../packages/brand
+        version: link:../../packages/brand
       '@ducanh2912/next-pwa':
         specifier: ^10.2.9
         version: 10.2.9(@types/babel__core@7.20.5)(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(webpack@5.104.1)
@@ -449,8 +452,8 @@ importers:
         specifier: ^1.35.8
         version: 1.35.8
       '@wrelik/analytics':
-        specifier: file:../../packages/wrelik-analytics-0.2.1.tgz
-        version: file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+        specifier: file:../../packages/wrelik-analytics-0.2.2.tgz
+        version: file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
       '@wrelik/auth':
         specifier: file:../../packages/wrelik-auth-0.2.2.tgz
         version: file:packages/wrelik-auth-0.2.2.tgz(@clerk/nextjs@7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
@@ -464,8 +467,8 @@ importers:
         specifier: file:../../packages/wrelik-email-0.1.3.tgz
         version: file:packages/wrelik-email-0.1.3.tgz(expo@54.0.33)(react-dom@19.2.3(react@19.2.3))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
       '@wrelik/errors':
-        specifier: file:../../packages/wrelik-errors-0.2.1.tgz
-        version: file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+        specifier: file:../../packages/wrelik-errors-0.2.2.tgz
+        version: file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
       '@wrelik/jobs':
         specifier: file:../../packages/wrelik-jobs-0.1.2.tgz
         version: file:packages/wrelik-jobs-0.1.2.tgz(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))(express@5.2.1)(hono@4.11.4)(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)(zod@3.25.76)
@@ -742,14 +745,14 @@ importers:
         specifier: ^5.19.0
         version: 5.36.0(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       '@wrelik/analytics':
-        specifier: file:../../packages/wrelik-analytics-0.2.1.tgz
-        version: file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
+        specifier: file:../../packages/wrelik-analytics-0.2.2.tgz
+        version: file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       '@wrelik/auth':
         specifier: file:../../packages/wrelik-auth-0.2.2.tgz
         version: file:packages/wrelik-auth-0.2.2.tgz(@clerk/nextjs@7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       '@wrelik/errors':
-        specifier: file:../../packages/wrelik-errors-0.2.1.tgz
-        version: file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
+        specifier: file:../../packages/wrelik-errors-0.2.2.tgz
+        version: file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       axios:
         specifier: ^1.13.5
         version: 1.13.5
@@ -2428,7 +2431,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {'0': node >=0.10.0}
+    engines: {node: '>=0.10.0'}
 
   '@expo/cli@54.0.23':
     resolution: {integrity: sha512-km0h72SFfQCmVycH/JtPFTVy69w6Lx1cHNDmfLfQqgKFYeeHTjx7LVDP4POHCtNxFP2UeRazrygJhlh4zz498g==}
@@ -5689,37 +5692,42 @@ packages:
     resolution: {integrity: sha512-w8CEY73X/7tw2KKlL3iOk679V9bWseE4GzNz3zlaYxcTjmcmWOathRb0emgo/QQ3eoNzmq68+2Y2gxluAv3xGw==}
     engines: {node: '>=12.16'}
 
-  '@supabase/auth-js@2.101.1':
-    resolution: {integrity: sha512-Kd0Wey+RkFHgyVep7adS6UOE2pN6MJ3mZ32PAXSvfw6IjUkFRC7IQpdZZjUOcUe5pXr1ejufCRgF6lsGINe4Tw==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/auth-js@2.112.0':
+    resolution: {integrity: sha512-8qAdObNQHKbSeVBLmf2WLNT7+bCE8zBofpCFiNUqGBAl5qw9VagSvcmPXlh78McAU7iHrGik1oeJxiB2A6B29w==}
+    engines: {node: '>=22.0.0'}
 
-  '@supabase/functions-js@2.101.1':
-    resolution: {integrity: sha512-OZWU7YtaG+NNNFZK8p/FuJ6gpq7pFyrG2fLOopP73HAIDHDGpOttPJapvO8ADu3RkqfQfkwrB354vPkSBbZ20A==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/functions-js@2.112.0':
+    resolution: {integrity: sha512-2DdaEZs0vq86orMIZBO+eM5w5/UxZb1EZyg2JraBKS4W9BzfFO+fOFD6YStmZ7iAOWvxNTGPjPNItsofpGgTCA==}
+    engines: {node: '>=22.0.0'}
 
-  '@supabase/phoenix@0.4.0':
-    resolution: {integrity: sha512-RHSx8bHS02xwfHdAbX5Lpbo6PXbgyf7lTaXTlwtFDPwOIw64NnVRwFAXGojHhjtVYI+PEPNSWwkL90f4agN3bw==}
+  '@supabase/phoenix@0.4.5':
+    resolution: {integrity: sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==}
 
-  '@supabase/postgrest-js@2.101.1':
-    resolution: {integrity: sha512-UW1RajH5jbZoK+ldAJ1I6VZ+HWwZ2oaKjEQ6Gn+AQ67CHQVxGl8wNQoLYyumbyaExm41I+wn7arulcY1eHeZJw==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/postgrest-js@2.112.0':
+    resolution: {integrity: sha512-4HKCVq32Jlk/wS8Ud8QgaAuQ4u6w1hZfw/gS5IcIN7wYddElMj4kfiCZpHMPfncomMnYzAKBUhwBZPpRcTH2Yw==}
+    engines: {node: '>=22.0.0'}
 
-  '@supabase/realtime-js@2.101.1':
-    resolution: {integrity: sha512-Oa6dno0OB9I+hv5do5zsZHbFu41ViZnE9IWjmkeeF/8fPmB5fWoHGqeTYEC3/0DAgtpUoFJa4FpvzFH0SBHo1Q==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/realtime-js@2.112.0':
+    resolution: {integrity: sha512-McFFP+ivFDMTaCEh8JDpG+sPEmv5IjKvrP0uTH3Lbsriai4KbxB8ycY8TqPQnbjhOVjEifQm1q0y2tL1CUw9Zg==}
+    engines: {node: '>=22.0.0'}
 
-  '@supabase/ssr@0.10.0':
-    resolution: {integrity: sha512-36jIu+DuKzg5EgA3fnH+zHvwASvpKcL4zPgmHoZaULroS5Q4mzeHcM69zJ0sXUHddO5IcHjQNZJ9Vyhl/DdbRw==}
+  '@supabase/ssr@0.12.4':
+    resolution: {integrity: sha512-xHzcgI8cC1TpBKSwJcR5Yd8CCwfIq0SBc5yb4yz/YFw5tbCrEQ0QT3a+2jymCxHgQWLfzwN93HZ6eRbcoMkOlA==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.100.1
+      '@supabase/supabase-js': ^2.111.0
 
-  '@supabase/storage-js@2.101.1':
-    resolution: {integrity: sha512-WhTaUOBgeEvnKLy95Cdlp6+D5igSF/65yC727w1olxbet5nzUvMlajKUWyzNtQu2efrz2cQ7FcdVBdQqgT9YKQ==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/storage-js@2.112.0':
+    resolution: {integrity: sha512-X44Bl045X/e5e2tJqWsY+JmQvgtm04BJuijiWprIWYLn0mDvGnu8hLdzPOPcTVji7wlqbt2ZUHttsv+rGKQYXw==}
+    engines: {node: '>=22.0.0'}
 
-  '@supabase/supabase-js@2.101.1':
-    resolution: {integrity: sha512-Jnhm3LfuACwjIzvk2pfUbGQn7pa7hi6MFzfSyPrRYWVCCu69RPLCFyHSBl7HSBwadbQ3UZOznnD3gPca3ePrRA==}
-    engines: {node: '>=20.0.0'}
+  '@supabase/supabase-js@2.112.0':
+    resolution: {integrity: sha512-dHVOgog58GOagtrZuPxJYg/R45ZV2U0qqgXffH+lMlt1OS+267Pw4g7bw3iXCGxN85OufiE0nI1baxDXlgEyfQ==}
+    engines: {node: '>=22.0.0'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
@@ -6126,6 +6134,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -6354,14 +6363,9 @@ packages:
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
 
-  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.1.tgz':
-    resolution: {integrity: sha512-H72yCbeyR7ZvxIWFHlwFOwrQ/jnHlUaGPdpmZ7RAJ0VgplUsRyYAyD0cP/yIqCqKmht20x3tHin8itSgB+F3iw==, tarball: file:packages/wrelik-analytics-0.2.1.tgz}
-    version: 0.2.1
-    peerDependencies:
-      react-native: '>=0.70.0'
-    peerDependenciesMeta:
-      react-native:
-        optional: true
+  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.2.tgz':
+    resolution: {integrity: sha512-E7hiWp/puFsDVTZrpRAk9S8NOscSmvQb44PuEFJHqlqz1x/zvNlG2g7zubdwpALl54lDMwr3+VPrGoBb7mRJpA==, tarball: file:packages/wrelik-analytics-0.2.2.tgz}
+    version: 0.2.2
 
   '@wrelik/auth@file:packages/wrelik-auth-0.2.2.tgz':
     resolution: {integrity: sha512-fr5X4HwxL1CskdxVIOHYbrmzlkgcnjPEsCVq6rvpREKOUAL/qfM4IHFeuv1Y722Rhx9oXGpC4Y33OzJ0wEM6QA==, tarball: file:packages/wrelik-auth-0.2.2.tgz}
@@ -6381,9 +6385,9 @@ packages:
     resolution: {integrity: sha512-Y0E1JXNjso6UDTkmOsrMSqaL+uFHVtEcfXy3aEKVoDwQxH/ACjYtlhIRZSzz817D7bCRx4NVAOU2vgbVqpllYw==, tarball: file:packages/wrelik-email-0.1.3.tgz}
     version: 0.1.3
 
-  '@wrelik/errors@file:packages/wrelik-errors-0.2.1.tgz':
-    resolution: {integrity: sha512-eB3oY9O3qx2ib4m7pAPWuakVG1xOFKL1cvHqa2JAX4e2gZe3dg+Z821jUDZfvmExl0QSdxTkGV814Aa0tEeP0A==, tarball: file:packages/wrelik-errors-0.2.1.tgz}
-    version: 0.2.1
+  '@wrelik/errors@file:packages/wrelik-errors-0.2.2.tgz':
+    resolution: {integrity: sha512-yMyJXULf9tmaa2LoieOE4nLkOHskSzA0DOOwegY+zVUU/J25KjfknClauIZpv4SqQMAeKQ0LxueyfdIoZGzHzw==, tarball: file:packages/wrelik-errors-0.2.2.tgz}
+    version: 0.2.2
 
   '@wrelik/jobs@file:packages/wrelik-jobs-0.1.2.tgz':
     resolution: {integrity: sha512-I4FQRET60aYRIg+UTWKZ8w2IR7aDkUvN9Be3ju2sXCYha6fKIxTbEGeMS08k76JU66uNONihrMyVimHQnEZltA==, tarball: file:packages/wrelik-jobs-0.1.2.tgz}
@@ -10731,6 +10735,7 @@ packages:
   recharts@2.15.4:
     resolution: {integrity: sha512-UT/q6fwS3c1dHbXv2uFgYJ9BMFHu3fwnd7AYZaEQhXuYQ4hgsxLvsUXzGdKeZrW5xopzDCvuA2N41WJ88I7zIw==}
     engines: {node: '>=14'}
+    deprecated: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -11777,6 +11782,7 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@11.1.0:
@@ -11785,19 +11791,22 @@ packages:
 
   uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -15311,7 +15320,7 @@ snapshots:
       metro-babel-transformer: 0.83.3
       metro-cache: 0.83.3
       metro-cache-key: 0.83.3
-      metro-config: 0.83.3(bufferutil@4.1.0)
+      metro-config: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       metro-core: 0.83.3
       metro-file-map: 0.83.3
       metro-minify-terser: 0.83.3
@@ -19201,7 +19210,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       invariant: 2.2.4
       metro: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      metro-config: 0.83.3(bufferutil@4.1.0)
+      metro-config: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       metro-core: 0.83.3
       semver: 7.7.3
     transitivePeerDependencies:
@@ -20745,50 +20754,44 @@ snapshots:
 
   '@stripe/stripe-js@5.6.0': {}
 
-  '@supabase/auth-js@2.101.1':
+  '@supabase/auth-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/functions-js@2.101.1':
+  '@supabase/functions-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/phoenix@0.4.0': {}
+  '@supabase/phoenix@0.4.5': {}
 
-  '@supabase/postgrest-js@2.101.1':
+  '@supabase/postgrest-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.101.1(bufferutil@4.1.0)':
+  '@supabase/realtime-js@2.112.0':
     dependencies:
-      '@supabase/phoenix': 0.4.0
-      '@types/ws': 8.18.1
+      '@supabase/phoenix': 0.4.5
       tslib: 2.8.1
-      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
-  '@supabase/ssr@0.10.0(@supabase/supabase-js@2.101.1(bufferutil@4.1.0))':
+  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))':
     dependencies:
-      '@supabase/supabase-js': 2.101.1(bufferutil@4.1.0)
+      '@supabase/supabase-js': 2.112.0(@opentelemetry/api@1.9.1)
       cookie: 1.0.2
 
-  '@supabase/storage-js@2.101.1':
+  '@supabase/storage-js@2.112.0':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.101.1(bufferutil@4.1.0)':
+  '@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@supabase/auth-js': 2.101.1
-      '@supabase/functions-js': 2.101.1
-      '@supabase/postgrest-js': 2.101.1
-      '@supabase/realtime-js': 2.101.1(bufferutil@4.1.0)
-      '@supabase/storage-js': 2.101.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      '@supabase/auth-js': 2.112.0
+      '@supabase/functions-js': 2.112.0
+      '@supabase/postgrest-js': 2.112.0
+      '@supabase/realtime-js': 2.112.0
+      '@supabase/storage-js': 2.112.0
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     dependencies:
@@ -21562,14 +21565,12 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
 
-  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
+  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       posthog-js: 1.310.1
       posthog-node: 3.6.3
       posthog-react-native: 2.11.6(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)))
-    optionalDependencies:
-      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
       - '@react-navigation/native'
@@ -21581,18 +21582,17 @@ snapshots:
       - expo-file-system
       - expo-localization
       - react
+      - react-native
       - react-native-device-info
       - react-native-navigation
       - supports-color
 
-  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
+  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
       posthog-js: 1.310.1
       posthog-node: 3.6.3
       posthog-react-native: 2.11.6(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)))
-    optionalDependencies:
-      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1)
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
       - '@react-navigation/native'
@@ -21604,18 +21604,17 @@ snapshots:
       - expo-file-system
       - expo-localization
       - react
+      - react-native
       - react-native-device-info
       - react-native-navigation
       - supports-color
 
-  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.1.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
+  '@wrelik/analytics@file:packages/wrelik-analytics-0.2.2.tgz(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
       posthog-js: 1.310.1
       posthog-node: 3.6.3
       posthog-react-native: 2.11.6(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))(@react-navigation/native@7.1.28(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3))(expo-application@7.0.8(expo@54.0.33))(expo-file-system@19.0.21(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)))
-    optionalDependencies:
-      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3)
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
       - '@react-navigation/native'
@@ -21627,6 +21626,7 @@ snapshots:
       - expo-file-system
       - expo-localization
       - react
+      - react-native
       - react-native-device-info
       - react-native-navigation
       - supports-color
@@ -21635,7 +21635,7 @@ snapshots:
     dependencies:
       '@clerk/backend': 0.38.15(react@19.2.1)
       '@clerk/nextjs': 6.39.1(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21647,7 +21647,7 @@ snapshots:
     dependencies:
       '@clerk/backend': 0.38.15(react@19.1.0)
       '@clerk/nextjs': 7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21659,7 +21659,7 @@ snapshots:
     dependencies:
       '@clerk/backend': 0.38.15(react@19.2.3)
       '@clerk/nextjs': 7.0.8(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21674,7 +21674,7 @@ snapshots:
 
   '@wrelik/db@file:packages/wrelik-db-0.1.3.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21684,7 +21684,7 @@ snapshots:
 
   '@wrelik/db@file:packages/wrelik-db-0.1.3.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21694,7 +21694,7 @@ snapshots:
 
   '@wrelik/email@file:packages/wrelik-email-0.1.3.tgz(expo@54.0.33)(react-dom@19.2.1(react@19.2.1))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
       resend: 3.5.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
     transitivePeerDependencies:
       - encoding
@@ -21706,7 +21706,7 @@ snapshots:
 
   '@wrelik/email@file:packages/wrelik-email-0.1.3.tgz(expo@54.0.33)(react-dom@19.2.3(react@19.2.3))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
       resend: 3.5.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
     transitivePeerDependencies:
       - encoding
@@ -21716,7 +21716,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@wrelik/errors@file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
+  '@wrelik/errors@file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
     dependencies:
       '@sentry/browser': 10.55.0
       '@sentry/node': 7.120.4
@@ -21728,7 +21728,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@wrelik/errors@file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
+  '@wrelik/errors@file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)':
     dependencies:
       '@sentry/browser': 10.55.0
       '@sentry/node': 7.120.4
@@ -21740,7 +21740,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@wrelik/errors@file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
+  '@wrelik/errors@file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@sentry/browser': 10.55.0
       '@sentry/node': 7.120.4
@@ -21794,7 +21794,7 @@ snapshots:
     dependencies:
       '@aws-sdk/client-s3': 3.1057.0
       '@aws-sdk/s3-request-presigner': 3.1057.0
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.1))(react@19.2.1)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -21806,7 +21806,7 @@ snapshots:
     dependencies:
       '@aws-sdk/client-s3': 3.1057.0
       '@aws-sdk/s3-request-presigner': 3.1057.0
-      '@wrelik/errors': file:packages/wrelik-errors-0.2.1.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
+      '@wrelik/errors': file:packages/wrelik-errors-0.2.2.tgz(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.2.10)(bufferutil@4.1.0)(react@19.2.3))(react@19.2.3)
     transitivePeerDependencies:
       - encoding
       - expo
@@ -23440,7 +23440,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -23471,7 +23471,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -25844,6 +25844,21 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  metro-config@0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    dependencies:
+      connect: 3.7.0
+      flow-enums-runtime: 0.0.6
+      jest-validate: 29.7.0
+      metro: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-cache: 0.83.3
+      metro-core: 0.83.3
+      metro-runtime: 0.83.3
+      yaml: 2.8.2
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   metro-core@0.83.3:
     dependencies:
       flow-enums-runtime: 0.0.6
@@ -26028,7 +26043,7 @@ snapshots:
       metro-babel-transformer: 0.83.3
       metro-cache: 0.83.3
       metro-cache-key: 0.83.3
-      metro-config: 0.83.3(bufferutil@4.1.0)
+      metro-config: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       metro-core: 0.83.3
       metro-file-map: 0.83.3
       metro-resolver: 0.83.3

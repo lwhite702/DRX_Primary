@@ -8,12 +8,12 @@ Last Updated: 2026-03-04
 
 DRX
 
-Deelrx CRM. Built for operators who run real businesses.
+Deelrx CRM. Built for independent retail.
 
-DRX is a fast, no-nonsense POS and customer system made for independent dispensaries and street-smart entrepreneurs. It keeps sales tight, inventory accurate, and teams accountable without corporate-software friction.
+DRX is a fast, no-nonsense POS, inventory, and customer system for independent retailers, owner-operated shops, pop-ups, and service businesses that carry stock. It keeps checkout moving, inventory legible, and team access controlled without corporate-software friction.
 
 No bloated menus.  
-No complicated setup.  
+No setup theater.
 No enterprise energy.
 
 Just tools that help operators sell, track, and grow.

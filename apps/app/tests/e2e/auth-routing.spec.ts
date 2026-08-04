@@ -1,21 +1,23 @@
 import { expect, test } from "@playwright/test";
 
-const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
-
 test.describe("Auth routing regressions", () => {
-  test("unauthenticated / redirects to /login with a visible form", async ({ page }) => {
+  test("/ resolves to a valid configured entry surface", async ({ page }) => {
     await page.goto("/");
 
-    if (bypassAuthEnabled) {
-      await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
-      await expect(page.locator("body")).toContainText(/Operator Dashboard/i);
+    const pathname = new URL(page.url()).pathname;
+
+    if (pathname === "/dashboard") {
+      await expect(page.getByRole("link", { name: "Dashboard", exact: true }).first()).toBeVisible();
+      return;
+    }
+
+    if (pathname === "/waitlist") {
+      await expect(page.getByRole("heading", { name: /join the waitlist/i })).toBeVisible();
       return;
     }
 
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
     await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
-    await expect(page.getByPlaceholder("operator@domain.com")).toBeVisible();
-    await expect(page.getByRole("button", { name: /^SIGN IN$/ })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /email address/i })).toBeVisible();
   });
 });

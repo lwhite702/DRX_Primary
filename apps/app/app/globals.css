@@ -1,16 +1,19 @@
 @import "tailwindcss";
+@import "@deelrx/brand/tokens.css";
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  --font-body: "Inter", "Geist", "Geist Fallback";
+  --font-sans: var(--drx-font-sans);
+  --font-mono: var(--drx-font-mono);
+  --font-body: var(--drx-font-body);
 
-  /* Neon Velocity - DRX Street Cut Color System */
-  --color-background: #050505;
-  --color-foreground: #f5f5f5;
-  --color-accent: #bfff00;
-  --color-accent-dark: #a3cc00;
-  --color-accent-light: #d9ff4d;
+  /* DRX Operator Console */
+  --color-background: var(--drx-color-background);
+  --color-foreground: var(--drx-color-foreground);
+  --color-surface: var(--drx-color-surface);
+  --color-surface-elevated: var(--drx-color-surface-elevated);
+  --color-accent: var(--drx-color-accent);
+  --color-accent-dark: var(--drx-color-accent-dark);
+  --color-accent-light: var(--drx-color-accent-light);
 
   /* Text colors */
   --color-text-primary: #f5f5f5;
@@ -18,29 +21,29 @@
   --color-text-meta: #9ca3af;
 
   /* Borders */
-  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border: var(--drx-color-border);
   --color-border-hover: rgba(255, 255, 255, 0.2);
 
   /* Neutral grays */
   --color-muted: #0c0c0c;
   --color-muted-foreground: #9ca3af;
   --color-input: #1a1a1a;
-  --color-ring: #bfff00;
+  --color-ring: var(--drx-color-accent);
 
   /* Semantic colors */
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #f5f5f5;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  --color-destructive: var(--drx-color-destructive);
+  --color-destructive-foreground: var(--drx-color-foreground);
+  --color-success: var(--drx-color-success);
+  --color-warning: var(--drx-color-warning);
+  --color-info: var(--drx-color-info);
 
   /* Shadcn standard colors */
-  --color-popover: #050505;
+  --color-popover: #121212;
   --color-popover-foreground: #f5f5f5;
-  --color-card: #0c0c0c;
+  --color-card: #121212;
   --color-card-foreground: #f5f5f5;
-  --color-primary: #bfff00;
-  --color-primary-foreground: #050505;
+  --color-primary: #ccff00;
+  --color-primary-foreground: #0a0a0a;
   --color-secondary: #1a1a1a;
   --color-secondary-foreground: #f5f5f5;
 
@@ -49,9 +52,9 @@
   --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
   --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
 
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
+  --duration-fast: var(--drx-motion-fast);
+  --duration-normal: var(--drx-motion-standard);
+  --duration-slow: var(--drx-motion-deliberate);
 }
 
 @layer base {
@@ -205,7 +208,7 @@
   border-radius: 9999px;
   filter: blur(40px);
   opacity: 0.1;
-  background: var(--color-accent);
+  background: var(--drx-color-accent);
   pointer-events: none;
 }
 
@@ -233,7 +236,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(191, 255, 0, 0.2),
+    color-mix(in srgb, var(--drx-color-accent) 20%, transparent),
     transparent
   );
   transition: left 0.5s ease-in-out;
@@ -253,7 +256,7 @@
 
 .luminosity-card:hover {
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 20px rgba(191, 255, 0, 0.05);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--drx-color-accent) 5%, transparent);
 }
 
 .luminosity-card::after {
@@ -264,7 +267,7 @@
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--drx-color-accent);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--ease-out);
   pointer-events: none;

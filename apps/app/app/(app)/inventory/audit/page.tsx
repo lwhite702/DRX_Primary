@@ -99,7 +99,7 @@ export default function InventoryAuditPage() {
 
         <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
           <div className="p-6 border-b border-white/5 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3B82F6]" />
+            <div className="h-2 w-2 rounded-full bg-info" />
             <h2 className="headline-text text-lg tracking-wider text-blue-500">
               RECENT ACTIVITY
             </h2>
@@ -135,8 +135,8 @@ export default function InventoryAuditPage() {
                           variant="outline"
                           className={`
                              uppercase text-[10px] tracking-wider border-0
-                             ${log.transaction_type === "intake" ? "bg-green-500/10 text-green-500" : ""}
-                             ${log.transaction_type === "adjustment" ? "bg-yellow-500/10 text-yellow-500" : ""}
+                             ${log.transaction_type === "intake" ? "bg-success/10 text-success" : ""}
+                             ${log.transaction_type === "adjustment" ? "bg-warning/10 text-warning" : ""}
                              ${log.transaction_type === "sale" ? "bg-blue-500/10 text-blue-500" : ""}
                            `}
                         >
@@ -154,7 +154,7 @@ export default function InventoryAuditPage() {
                         </div>
                       </TableCell>
                       <TableCell
-                        className={`text-right font-mono font-bold ${log.quantity_change > 0 ? "text-green-500" : "text-red-500"}`}
+                        className={`text-right font-mono font-bold ${log.quantity_change > 0 ? "text-success" : "text-destructive"}`}
                       >
                         {log.quantity_change > 0 ? "+" : ""}
                         {log.quantity_change}

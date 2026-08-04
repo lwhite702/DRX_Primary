@@ -24,19 +24,19 @@ interface InventoryListProps {
 const getProductIcon = (category?: string) => {
   const cat = category?.toLowerCase() || "";
   if (cat.includes("flower"))
-    return <Flower className="w-5 h-5 text-purple-400" />;
+    return <Flower className="h-5 w-5 text-accent" />;
   if (cat.includes("concentrate") || cat.includes("wax"))
-    return <Droplets className="w-5 h-5 text-yellow-400" />;
+    return <Droplets className="h-5 w-5 text-info" />;
   if (cat.includes("cartridge") || cat.includes("vape"))
-    return <Zap className="w-5 h-5 text-orange-400" />;
+    return <Zap className="h-5 w-5 text-warning" />;
   return <Box className="w-5 h-5 text-blue-400" />;
 };
 
 const getCategoryColor = (category?: string) => {
   const cat = category?.toLowerCase() || "";
-  if (cat.includes("flower")) return "bg-purple-500/10 text-purple-400";
-  if (cat.includes("concentrate")) return "bg-yellow-500/10 text-yellow-400";
-  if (cat.includes("cartridge")) return "bg-orange-500/10 text-orange-400";
+  if (cat.includes("flower")) return "bg-accent/10 text-accent";
+  if (cat.includes("concentrate")) return "bg-info/10 text-info";
+  if (cat.includes("cartridge")) return "bg-warning/10 text-warning";
   return "bg-blue-500/10 text-blue-400";
 };
 

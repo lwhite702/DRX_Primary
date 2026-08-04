@@ -1,4 +1,10 @@
 {
+  "positioning": {
+    "audience": "independent_retail",
+    "audienceLabel": "Independent retailers, owner-operated shops, pop-ups, and inventory-carrying service businesses",
+    "voice": "operator_direct",
+    "betaChannel": "TestFlight"
+  },
   "topLevelNav": [
     "/",
     "/product",

@@ -77,6 +77,15 @@ export default function RootLayout({
     process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
   const meticulousToken = process.env.NEXT_PUBLIC_METICULOUS_TOKEN;
   const canLoadMeticulous = shouldEnableMeticulous && Boolean(meticulousToken);
+  const appContent = (
+    <GlobalErrorBoundary>
+      <PostHogProvider>
+        <FeaturebaseProvider />
+        {children}
+        <Toaster position="top-right" />
+      </PostHogProvider>
+    </GlobalErrorBoundary>
+  );
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -100,13 +109,7 @@ export default function RootLayout({
           signUpFallbackRedirectUrl="/onboarding"
           afterSignOutUrl="/login"
         >
-          <GlobalErrorBoundary>
-            <PostHogProvider>
-              <FeaturebaseProvider />
-              {children}
-              <Toaster position="top-right" />
-            </PostHogProvider>
-          </GlobalErrorBoundary>
+          {appContent}
         </ClerkProvider>
       </body>
     </html>

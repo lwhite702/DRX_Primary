@@ -206,8 +206,8 @@ export default function InventoryIntakePage() {
           {/* Intake Form */}
           <div className="lg:col-span-2 luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
             <div className="p-6 border-b border-white/5 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
-              <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
+              <div className="h-2 w-2 rounded-full bg-accent" />
+              <h2 className="headline-text text-lg tracking-wider text-accent">
                 INTAKE DETAILS
               </h2>
             </div>
@@ -351,7 +351,7 @@ export default function InventoryIntakePage() {
 
               <Button
                 onClick={handleOpenConfirmModal}
-                className="w-full h-12 text-lg laser-button bg-[#FF0099] text-white hover:bg-[#FF0099]/90 shadow-[0_0_20px_rgba(255,0,153,0.3)] border-none font-bold tracking-wider uppercase"
+                className="laser-button h-12 w-full border-none bg-accent text-lg font-bold uppercase tracking-wider text-black hover:bg-accent-light"
                 disabled={processing}
                 size="lg"
               >
@@ -364,8 +364,8 @@ export default function InventoryIntakePage() {
           {/* Intake Summary */}
           <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border h-fit">
             <div className="p-6 border-b border-white/5 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
-              <h2 className="headline-text text-lg tracking-wider text-[#00F0FF]">
+              <div className="h-2 w-2 rounded-full bg-info" />
+              <h2 className="headline-text text-lg tracking-wider text-info">
                 SUMMARY
               </h2>
             </div>

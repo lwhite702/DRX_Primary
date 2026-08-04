@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+node_modules
 /.pnp
 .pnp.js
 
@@ -26,7 +27,7 @@ testsprite_tests/
 *.tsbuildinfo
 *.vercel
 android/
-ios/
+/ios/
 android_backup/
 
 # Misc
@@ -76,6 +77,7 @@ Thumbs.db
 
 # Sentry Config File
 .env.sentry-build-plugin
+apps/ios/Configuration/Telemetry.generated.xcconfig
 
 /lib/generated/prisma
 
@@ -87,6 +89,8 @@ Thumbs.db
 .env
 .env.*
 *.env
+!.env.example
+!apps/app/.env.example
 credentials.json
 *.pem
 *.key

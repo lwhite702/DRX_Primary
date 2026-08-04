@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Clock, Database, Smartphone } from "lucide-react";
 import { drxClerkAuthAppearance } from "@/lib/auth/clerk-appearance";
+import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
-  const { userId } = await auth();
+  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
+  const userId = useVisualFixture ? null : (await auth()).userId;
 
   if (userId) {
     redirect("/dashboard");
@@ -34,7 +36,7 @@ export default async function LoginPage() {
         <div className="flex flex-col items-center space-y-6">
           <div className="relative h-12 w-[160px]">
             <Image
-              src="/brand/DRX Wordmark Color.svg"
+              src="/brand/drx-wordmark.svg"
               alt="Deelrx CRM"
               fill
               className="object-contain"
@@ -67,13 +69,17 @@ export default async function LoginPage() {
               Encrypted
             </div>
           </div>
-          <SignIn
-            routing="path"
-            path="/login"
-            appearance={drxClerkAuthAppearance}
-            forceRedirectUrl="/dashboard"
-            fallbackRedirectUrl="/dashboard"
-          />
+          {useVisualFixture ? (
+            <AuthVisualFixture mode="sign-in" />
+          ) : (
+            <SignIn
+              routing="path"
+              path="/login"
+              appearance={drxClerkAuthAppearance}
+              forceRedirectUrl="/dashboard"
+              fallbackRedirectUrl="/dashboard"
+            />
+          )}
         </div>
 
         <>
@@ -101,13 +107,15 @@ export default async function LoginPage() {
                   </div>
                   <div className="flex-1 space-y-0.5">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-xs font-medium text-white">Auto-Wipe</h3>
+                      <h3 className="text-xs font-medium text-white">
+                        Session Controls
+                      </h3>
                       <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-primary font-mono">
-                        ACTIVE
+                        GUARDED
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">
-                      Local cache cleared on exit
+                      Authentication safeguards apply before workspace access
                     </p>
                   </div>
                 </div>
@@ -120,14 +128,14 @@ export default async function LoginPage() {
                   <div className="flex-1 space-y-0.5">
                     <div className="flex justify-between items-center">
                       <h3 className="text-xs font-medium text-white">
-                        Session Guards
+                        Role Checks
                       </h3>
                       <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-accent font-mono uppercase">
-                        ACTIVE
+                        ENABLED
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">
-                      Role checks and session controls are enforced on sign-in.
+                      Permissions are evaluated for protected operator routes.
                     </p>
                   </div>
                 </div>
@@ -140,14 +148,14 @@ export default async function LoginPage() {
                   <div className="flex-1 space-y-0.5">
                     <div className="flex justify-between items-center">
                       <h3 className="text-xs font-medium text-white">
-                        No-Log Policy
+                        Audit Context
                       </h3>
                       <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-primary font-mono">
-                        ENFORCED
+                        CAPTURED
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">
-                      Audit context available in operator workflows
+                      Supported actions retain actor and business context.
                     </p>
                   </div>
                 </div>
@@ -163,12 +171,11 @@ export default async function LoginPage() {
                 <div className="space-y-4 flex-1">
                   <div className="space-y-1">
                     <h3 className="text-xs font-medium text-white">
-                      Session Context Checks
+                      Sign-in Protection
                     </h3>
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Device and session checks run after sign-in. If risk is
-                      detected, we ask for additional verification before
-                      dashboard access.
+                      Authentication, route, and authorization controls work
+                      together before the operator console is available.
                     </p>
                   </div>
 
@@ -177,21 +184,21 @@ export default async function LoginPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">SESSION MODE</span>
                       <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
-                        SECURE
+                        PROTECTED
                       </span>
                     </div>
                     <div className="h-px bg-white/5 my-2" />
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Token Rotation</span>
-                      <span className="text-white">Enabled</span>
+                      <span className="text-white">Managed</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Route Guards</span>
-                      <span className="text-white">Enforced</span>
+                      <span className="text-white">Configured</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Audit Context</span>
-                      <span className="text-white">Captured</span>
+                      <span className="text-white">Workflow-based</span>
                     </div>
                   </div>
                 </div>

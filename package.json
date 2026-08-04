@@ -1,12 +1,13 @@
 {
   "name": "deelrx-crm",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": "20.18.0"
+    "node": "20.19.0"
   },
   "scripts": {
+    "postinstall": "pnpm --filter deelrxcrm-app exec prisma generate --schema prisma/schema.prisma",
     "release:preflight": "node scripts/release/preflight.mjs",
     "normalize:next-env": "node scripts/release/normalize-next-env.mjs",
     "build": "pnpm --filter deelrxcrm-app build && pnpm --filter deelrxcrm-marketing build",
@@ -34,7 +35,9 @@
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:repo-hygiene": "git diff --check && pnpm compliance:lockfiles",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
+    "test:brand": "node scripts/testing/brand-contract-check.mjs",
     "test:observability-contract": "pnpm dlx tsx scripts/testing/observability-contract-check.ts",
     "test:doppler-sync": "pnpm dlx tsx scripts/testing/doppler-env-sync-check.ts",
     "doppler:sync:missing": "pnpm dlx tsx scripts/testing/doppler-sync-missing-from-env.ts",
@@ -43,11 +46,11 @@
     "test:metadata-contract": "pnpm dlx tsx scripts/testing/metadata-seo-contract-check.ts",
     "test:env-contract": "pnpm dlx tsx scripts/testing/env-example-contract-check.ts",
     "test:login-surfaces": "pnpm dlx tsx scripts/testing/login-surface-check.ts",
-    "test:coverage:strict": "pnpm test:matrix && pnpm dlx tsx scripts/testing/coverage-strict-gate.ts",
+    "test:coverage:strict": "pnpm --filter deelrxcrm-app test:coverage",
     "test:feature-freeze": "pnpm dlx tsx scripts/testing/feature-freeze.ts",
     "test:feature-freeze:write": "pnpm dlx tsx scripts/testing/feature-freeze.ts --write-baseline",
     "test:feature-lock": "pnpm dlx tsx scripts/testing/feature-lock.ts",
-    "test:unit": "pnpm --filter deelrxcrm-app test:coverage",
+    "test:unit": "pnpm --filter deelrxcrm-app test:run",
     "test:integration": "pnpm --filter deelrxcrm-app test:integration",
     "test:e2e:web": "pnpm --filter deelrxcrm-app test:e2e",
     "test:e2e:required": "pnpm --filter deelrxcrm-app test:e2e:required",
@@ -192,8 +195,8 @@
       "@wrelik/auth": "file:packages/wrelik-auth-0.2.2.tgz",
       "@wrelik/db": "file:packages/wrelik-db-0.1.3.tgz",
       "@wrelik/storage": "file:packages/wrelik-storage-0.2.1.tgz",
-      "@wrelik/analytics": "file:packages/wrelik-analytics-0.2.1.tgz",
-      "@wrelik/errors": "file:packages/wrelik-errors-0.2.1.tgz",
+      "@wrelik/analytics": "file:packages/wrelik-analytics-0.2.2.tgz",
+      "@wrelik/errors": "file:packages/wrelik-errors-0.2.2.tgz",
       "@wrelik/email": "file:packages/wrelik-email-0.1.3.tgz",
       "@wrelik/jobs": "file:packages/wrelik-jobs-0.1.2.tgz",
       "@wrelik/config": "file:packages/wrelik-config-0.2.0.tgz"

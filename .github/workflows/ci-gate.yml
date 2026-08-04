@@ -20,7 +20,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:matrix
@@ -46,7 +46,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm release:preflight
       - run: pnpm test:env-contract
@@ -64,7 +64,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -79,7 +79,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
@@ -94,7 +94,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -113,16 +113,10 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:unit
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: unit-${{ matrix.shard }}
-          path: |
-            apps/app/coverage
+      - run: pnpm --filter deelrxcrm-app exec vitest run --shard=${{ matrix.shard }}/2
 
   required-auth-data:
     runs-on: ubuntu-latest
@@ -134,7 +128,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter deelrxcrm-app test:required:auth-data
@@ -150,7 +144,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
@@ -175,7 +169,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:integration
@@ -197,7 +191,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
@@ -222,7 +216,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
@@ -254,7 +248,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.auth_guard.outputs.enabled == 'true'
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
         if: steps.auth_guard.outputs.enabled == 'true'
@@ -286,7 +280,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:security
@@ -306,7 +300,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:perf
@@ -326,10 +320,10 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter deelrxcrm-app test:coverage
+      - run: pnpm test:coverage:strict
 
   report:
     runs-on: ubuntu-latest
@@ -342,7 +336,7 @@ jobs:
           version: 9.15.9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:readiness

@@ -23,11 +23,11 @@ export function Shortcuts({ compact = false }: { compact?: boolean }) {
         <Link
           href="/pos/sale"
           className={cn(
-            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0A0A0A] transition-all hover:bg-[#111] hover:border-[#4ADE80]/30",
+            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-accent/30 hover:bg-card",
             compact ? "gap-1.5 p-3" : "gap-2 p-4",
           )}
         >
-          <div className="text-[#4ADE80] group-hover:scale-110 transition-transform">
+          <div className="text-accent transition-transform group-hover:scale-105">
             <Calculator className="w-6 h-6" />
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-white">
@@ -37,7 +37,7 @@ export function Shortcuts({ compact = false }: { compact?: boolean }) {
         <Link
           href="/inventory"
           className={cn(
-            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0A0A0A] transition-all hover:bg-[#111] hover:border-blue-500/30",
+            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-info/30 hover:bg-card",
             compact ? "gap-1.5 p-3" : "gap-2 p-4",
           )}
         >
@@ -51,11 +51,11 @@ export function Shortcuts({ compact = false }: { compact?: boolean }) {
         <Link
           href="/credit"
           className={cn(
-            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0A0A0A] transition-all hover:bg-[#111] hover:border-orange-500/30",
+            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-warning/30 hover:bg-card",
             compact ? "gap-1.5 p-3" : "gap-2 p-4",
           )}
         >
-          <div className="text-orange-500 group-hover:scale-110 transition-transform">
+          <div className="text-warning transition-transform group-hover:scale-105">
             <CreditCard className="w-6 h-6" />
           </div>
           <span className="text-[10px] font-bold text-white uppercase tracking-wider">
@@ -65,7 +65,7 @@ export function Shortcuts({ compact = false }: { compact?: boolean }) {
         <Link
           href="/settings"
           className={cn(
-            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0A0A0A] transition-all hover:bg-[#111] hover:border-gray-500/30",
+            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-white/30 hover:bg-card",
             compact ? "gap-1.5 p-3" : "gap-2 p-4",
           )}
         >
@@ -79,11 +79,11 @@ export function Shortcuts({ compact = false }: { compact?: boolean }) {
         <Link
           href="/reports"
           className={cn(
-            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0A0A0A] transition-all hover:bg-[#111] hover:border-purple-500/30",
+            "group flex flex-col items-center justify-center rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-accent/30 hover:bg-card",
             compact ? "gap-1.5 p-3" : "gap-2 p-4",
           )}
         >
-          <div className="text-purple-500 group-hover:scale-110 transition-transform">
+          <div className="text-accent transition-transform group-hover:scale-105">
             <BarChart className="w-6 h-6" />
           </div>
           <span className="text-[10px] font-bold text-white uppercase tracking-wider">

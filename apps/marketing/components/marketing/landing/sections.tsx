@@ -1,378 +1,351 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  ChevronRight,
+  CircleDollarSign,
+  LockKeyhole,
+  PackageCheck,
+  ReceiptText,
+  Search,
+  ShieldCheck,
+  ShoppingCart,
+  UsersRound,
+  Zap,
+} from "lucide-react";
 
+import { appLoginUrl, appWaitlistUrl } from "@/lib/app-links";
+import { drxPrivacyProtexion, marketingFeatureSections } from "@/lib/feature-canon";
 import { marketingContent } from "@/lib/marketing-content";
 
-const heroAvatar1 = "https://www.figma.com/api/mcp/asset/eb987189-9d14-4364-af5f-566dc681eb73";
-const heroAvatar2 = "https://www.figma.com/api/mcp/asset/638bbcbb-8ddc-4dee-ba40-76c2239a540f";
+const canonicalPoints = (id: (typeof marketingFeatureSections)[number]["id"], limit = 3) =>
+  marketingFeatureSections.find((section) => section.id === id)?.bullets.slice(0, limit).map((bullet) => bullet.text) ?? [];
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+const canonicalPoint = (id: (typeof marketingFeatureSections)[number]["id"], text: string) =>
+  marketingFeatureSections.find((section) => section.id === id)?.bullets.find((bullet) => bullet.text === text)?.text;
+
+const strongEncryptionPoints =
+  drxPrivacyProtexion.blocks.find((block) => block.id === "strong-encryption")?.bullets.slice(0, 1) ?? [];
+
+const capabilities = [
+  {
+    icon: Zap,
+    kicker: "Quick POS",
+    title: "Keep the line moving.",
+    body: "Search or scan, adjust quantity, choose a tender, and finish the sale without a ten-screen detour.",
+    points: canonicalPoints("quick-pos"),
+  },
+  {
+    icon: ReceiptText,
+    kicker: "Transactions",
+    title: "Every sale accounted for.",
+    body: "Review sale history, controlled discounts, refund actions, receipts, and the activity context attached to supported adjustments.",
+    points: canonicalPoints("fast-pos"),
+  },
+  {
+    icon: PackageCheck,
+    kicker: "Inventory",
+    title: "Know what is on deck.",
+    body: "See stock counts, low-stock warnings, SKU and barcode context, intake activity, and logged inventory adjustments.",
+    points: canonicalPoints("inventory"),
+  },
+  {
+    icon: UsersRound,
+    kicker: "Roles",
+    title: "Access stays tight.",
+    body: "Operators get the tools they need. Admin controls stay protected. Sensitive actions keep an attributable record.",
+    points: canonicalPoints("team-control"),
+  },
+  {
+    icon: BarChart3,
+    kicker: "Reporting",
+    title: "Numbers that run the shift.",
+    body: "Review sales windows, best sellers, category context, revenue, and low-stock signals without reporting theater.",
+    points: canonicalPoints("reports"),
+  },
+  {
+    icon: ShieldCheck,
+    kicker: "Security",
+    title: "Your operation stays yours.",
+    body: "Secure login, controlled privileges, activity logs, and encrypted sensitive fields support a disciplined operating model.",
+    points: [
+      canonicalPoint("team-control", "Secure login system"),
+      canonicalPoint("team-control", "Activity logs by user"),
+      ...strongEncryptionPoints,
+    ].filter((point): point is string => Boolean(point)),
+  },
+];
+
+function BrandLockup() {
   return (
-    <p className="inline-flex rounded-full border border-white/15 bg-surface-elevated px-4 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent">
-      {children}
-    </p>
+    <span className="inline-flex items-center gap-3">
+      <Image src="/brand/drx-wordmark.svg" alt="DRX" width={92} height={64} className="h-9 w-auto" priority />
+      <span className="hidden border-l border-white/15 pl-3 font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-white/70 sm:block">
+        Deelrx CRM
+      </span>
+    </span>
   );
 }
 
-function HeroNavbar() {
+function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-[1240px] rounded-[20px] border border-white/15 bg-[#171717]/90 p-2 shadow-[0_8px_20px_rgba(0,0,0,0.35)] backdrop-blur-md">
-      <div className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2 rounded-xl px-3 py-2">
-          <Image
-            src="/brand/drx-wordmark-color.svg"
-            alt="Deelrx CRM"
-            width={116}
-            height={24}
-            className="h-6 w-auto"
-          />
-        </Link>
+    <Link
+      href={href}
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition duration-200 hover:bg-[#d7ff33] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+    >
+      {children}
+    </Link>
+  );
+}
 
-        <nav className="hidden items-center gap-7 text-sm text-white/90 md:flex">
-          <Link href="/#features" className="transition hover:text-accent">
-            Benefits
-          </Link>
-          <Link href="/#how-it-works" className="transition hover:text-accent">
-            How-it-Works
-          </Link>
-          <Link href="/#beta-access" className="transition hover:text-accent">
-            Beta Access
-          </Link>
-          <Link href="/#docs" className="transition hover:text-accent">
-            FAQ
-          </Link>
+function SecondaryLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/20 bg-white/[0.03] px-5 py-3 text-sm font-bold text-white transition duration-200 hover:border-white/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function Header() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-background/90 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-16 max-w-[1280px] items-center justify-between gap-5 px-5 md:px-8">
+        <Link href="/" aria-label="Deelrx CRM home"><BrandLockup /></Link>
+        <nav aria-label="Primary navigation" className="hidden items-center gap-7 text-sm text-white/65 md:flex">
+          <Link href="#product" className="hover:text-white">Product</Link>
+          <Link href="#control" className="hover:text-white">Control</Link>
+          <Link href="#security" className="hover:text-white">Security</Link>
+          <Link href={appLoginUrl} className="hover:text-white">Operator login</Link>
         </nav>
-
-        <Link
-          href="/waitlist"
-          className="inline-flex h-10 items-center justify-center rounded-2xl border border-accent/40 bg-accent px-5 text-sm font-bold text-black shadow-[0_10px_22px_rgba(204,255,0,0.2)] transition hover:brightness-95"
-        >
-          Take the first step
-        </Link>
+        <PrimaryLink href={appWaitlistUrl}>Join the Beta</PrimaryLink>
       </div>
+    </header>
+  );
+}
+
+function QuickSaleProof() {
+  return (
+    <div id="demo" className="scroll-mt-24 overflow-hidden rounded-[14px] border border-white/15 bg-[#121212] shadow-[0_28px_70px_rgba(0,0,0,0.45)]" aria-label="Deterministic Quick Sale product preview">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="rounded bg-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-black">Product preview</span>
+          <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/55">Quick Sale</span>
+        </div>
+        <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-400">
+          <span className="size-1.5 rounded-full bg-emerald-400" /> Register ready
+        </span>
+      </div>
+
+      <div className="grid min-h-[420px] lg:grid-cols-[1fr_220px]">
+        <div className="border-white/10 p-4 lg:border-r">
+          <label className="flex min-h-11 items-center gap-3 rounded-md border border-white/15 bg-[#0A0A0A] px-3 text-white/50">
+            <Search className="size-4" aria-hidden />
+            <span className="text-sm">Search product, SKU, or barcode</span>
+          </label>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {[
+              ["HOOD-BLK-M", "Core Hoodie", "$68.00", "14 in stock"],
+              ["TEE-WHT-L", "Heavyweight Tee", "$34.00", "22 in stock"],
+              ["CAP-GRN", "Operator Cap", "$28.00", "8 in stock"],
+              ["BAG-BLK", "Utility Bag", "$46.00", "Low: 3 left"],
+            ].map(([sku, name, price, stock], index) => (
+              <button key={sku} className="min-h-32 rounded-lg border border-white/10 bg-[#1A1A1A] p-3 text-left transition hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/45">{sku}</span>
+                <span className="mt-6 block text-sm font-bold text-white">{name}</span>
+                <span className="mt-2 flex items-center justify-between gap-2">
+                  <span className="font-mono text-sm font-bold text-accent">{price}</span>
+                  <span className={index === 3 ? "text-[10px] text-amber-400" : "text-[10px] text-white/45"}>{stock}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col bg-[#0D0D0D]">
+          <div className="flex items-center justify-between border-b border-white/10 p-4">
+            <span className="text-sm font-bold text-white">Current order</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">2 items</span>
+          </div>
+          <div className="flex-1 space-y-3 p-4">
+            <div className="rounded-md border border-white/10 bg-[#171717] p-3">
+              <p className="text-sm font-semibold text-white">Core Hoodie</p>
+              <p className="mt-1 font-mono text-xs text-white/45">1 × $68.00</p>
+            </div>
+            <div className="rounded-md border border-white/10 bg-[#171717] p-3">
+              <p className="text-sm font-semibold text-white">Operator Cap</p>
+              <p className="mt-1 font-mono text-xs text-white/45">1 × $28.00</p>
+            </div>
+          </div>
+          <div className="border-t border-white/10 p-4">
+            <div className="flex items-end justify-between">
+              <span className="text-xs uppercase tracking-[0.12em] text-white/50">Total</span>
+              <span className="font-mono text-2xl font-bold text-white">$96.00</span>
+            </div>
+            <button className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-accent text-sm font-black uppercase tracking-[0.1em] text-black">
+              Charge <ChevronRight className="size-4" aria-hidden />
+            </button>
+          </div>
+        </div>
+      </div>
+      <p className="border-t border-white/10 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">Illustrative product data · real DRX workflow</p>
     </div>
   );
 }
 
-function LimeButton({ href, label }: { href: string; label: string }) {
+function Hero() {
   return (
-    <Link
-      href={href}
-      className="inline-flex h-11 items-center justify-center rounded-2xl border border-accent/40 bg-accent px-6 text-sm font-bold uppercase tracking-wide text-black shadow-[0_16px_30px_rgba(204,255,0,0.22)] transition hover:brightness-95"
-    >
-      {label}
-    </Link>
-  );
-}
-
-function GhostButton({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex h-11 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.02] px-6 text-sm font-semibold uppercase tracking-wide text-white transition hover:border-accent/60 hover:text-accent"
-    >
-      {label}
-    </Link>
-  );
-}
-
-function HeroSection() {
-  const { hero } = marketingContent;
-
-  return (
-    <section className="relative mx-auto w-full max-w-[1280px] overflow-hidden px-6 pb-20 pt-8 md:pb-24 md:pt-10">
-      <div className="pointer-events-none absolute inset-0 opacity-25">
-        <div className="h-full w-full bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:92px_92px]" />
-      </div>
-      <div className="pointer-events-none absolute left-[-140px] top-[-120px] size-[280px] rounded-full bg-accent/15 blur-[80px]" />
-      <div className="pointer-events-none absolute right-[-160px] top-[-100px] size-[320px] rounded-full bg-support/20 blur-[90px]" />
-      <div className="pointer-events-none absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
-
-      <HeroNavbar />
-
-      <article className="absolute left-[-10px] top-[360px] z-10 hidden w-[250px] rotate-12 rounded-[24px] border border-white/15 bg-gradient-to-br from-[#1e1e1e] to-[#141414] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.35)] lg:block lg:left-[-18px] lg:w-[300px]">
-        <p className="text-[11px] leading-relaxed text-text-secondary">
-          DRX helped us stop chasing spreadsheets and move faster every shift.
-        </p>
-        <div className="mt-3 border-t border-white/10 pt-3">
-          <div className="flex items-center gap-2">
-            <img src={heroAvatar1} alt="" className="size-9 rounded-full border border-white/20 object-cover" />
-            <div>
-              <p className="text-xs font-semibold text-white">Alex M., Operator</p>
-              <p className="text-[11px] text-accent">★★★★★</p>
-            </div>
+    <section className="relative overflow-hidden border-b border-white/10">
+      <div className="operator-grid absolute inset-0 opacity-50" aria-hidden />
+      <div className="relative mx-auto grid max-w-[1280px] gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-28">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{marketingContent.hero.preheadline}</p>
+          <h1 className="mt-5 max-w-[740px] text-[clamp(3.2rem,7vw,6.7rem)] font-extrabold leading-[0.91] tracking-[-0.06em] text-white">
+            {marketingContent.hero.headlineLead}<br /><span className="text-accent">{marketingContent.hero.headlineAccent}</span>
+          </h1>
+          <p className="mt-7 max-w-xl text-lg leading-8 text-white/65">
+            {marketingContent.hero.subheadline}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <PrimaryLink href={appWaitlistUrl}>{marketingContent.hero.primaryCta.label} <ArrowRight className="size-4" /></PrimaryLink>
+            <SecondaryLink href="#product">{marketingContent.hero.secondaryCta.label}</SecondaryLink>
           </div>
-        </div>
-      </article>
-
-      <article className="absolute right-[-20px] top-[300px] z-10 hidden w-[270px] -rotate-12 rounded-[24px] border border-white/15 bg-gradient-to-br from-[#1e1e1e] to-[#141414] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.35)] lg:block lg:w-[330px]">
-        <p className="text-sm leading-relaxed text-text-secondary">
-          We now know what is moving, what is low, and what needs action before problems stack up.
-        </p>
-        <div className="mt-3 border-t border-white/10 pt-3">
-          <div className="flex items-center gap-2">
-            <img src={heroAvatar2} alt="" className="size-11 rounded-full border border-white/20 object-cover" />
-            <div>
-              <p className="text-sm font-semibold text-white">Jamie T., Store Lead</p>
-              <p className="text-xs text-accent">★★★★★</p>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <div className="relative z-20 mx-auto max-w-[980px] pt-12 text-center md:pt-16">
-        <SectionLabel>{hero.preheadline}</SectionLabel>
-        <h1 className="mt-6 text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-white md:text-[76px]">
-          {hero.headline}
-        </h1>
-        <p className="mx-auto mt-5 max-w-[860px] text-base text-text-secondary md:text-xl md:leading-[1.35]">
-          {hero.subheadline}
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <LimeButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
-          <GhostButton href={hero.secondaryCta.href} label={hero.secondaryCta.label} />
-        </div>
-
-        <p className="mt-3 text-xs uppercase tracking-[0.2em] text-text-muted">No credit card required</p>
-
-        <div id="demo" className="mt-5 flex items-center justify-center gap-2 text-xs text-text-muted">
-          <span className="text-accent">★★★★★</span>
-          <span>1k+ rating from early users</span>
-        </div>
-      </div>
-
-      <div className="relative z-20 mx-auto mt-16 grid max-w-[1140px] grid-cols-2 gap-4 opacity-40 md:grid-cols-4">
-        {["Aplux Studio", "Aplux Studio", "Aplux Studio", "Aplux Studio"].map((logo, index) => (
-          <div key={index} className="flex items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-3 py-4">
-            <span className="text-lg font-semibold text-white/65">{logo}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BenefitsSection() {
-  return (
-    <section id="features" className="mx-auto w-full max-w-[1280px] px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-3xl text-center">
-        <SectionLabel>Core Benefits</SectionLabel>
-        <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">Why teams choose DRX</h2>
-      </div>
-
-      <div className="mt-10 grid gap-4 md:grid-cols-3">
-        {marketingContent.benefits.map((benefit) => (
-          <article
-            key={benefit.title}
-            className="rounded-[26px] border border-white/15 bg-gradient-to-b from-surface-elevated to-surface px-5 pb-6 pt-5"
-          >
-            <div className="mb-4 inline-flex size-9 items-center justify-center rounded-full bg-accent/10 text-accent">
-              +
-            </div>
-            <h3 className="text-lg font-semibold text-white">{benefit.title}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-text-secondary">{benefit.body}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function HowItWorksSection() {
-  return (
-    <section id="how-it-works" className="mx-auto w-full max-w-[1280px] px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-3xl text-center">
-        <SectionLabel>How It Works</SectionLabel>
-        <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">Simple setup. Real control.</h2>
-      </div>
-
-      <div className="mt-10 space-y-4">
-        {marketingContent.howItWorks.map((step, index) => (
-          <article
-            key={step.title}
-            className="grid gap-4 rounded-[28px] border border-white/15 bg-gradient-to-b from-surface-elevated to-surface p-5 md:grid-cols-2 md:p-7"
-          >
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">Step {index + 1}</p>
-              <h3 className="mt-2 text-3xl font-semibold text-white">{step.title}</h3>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-secondary">{step.body}</p>
-              <div className="mt-5">
-                <LimeButton href={step.cta.href} label={step.cta.label} />
-              </div>
-            </div>
-
-            <div className="rounded-[22px] border border-white/10 bg-black/35 p-5">
-              <div className="space-y-3">
-                <div className="h-2.5 w-4/5 rounded-full bg-white/15" />
-                <div className="h-2.5 w-3/5 rounded-full bg-white/10" />
-                <div className="h-2.5 w-2/5 rounded-full bg-accent/40" />
-              </div>
-              <div className="mt-6 h-32 rounded-2xl border border-white/10 bg-gradient-to-br from-accent/15 to-transparent" />
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BetaAccessSection() {
-  const section = marketingContent.betaAccess;
-
-  return (
-    <section id="beta-access" className="mx-auto w-full max-w-[1280px] px-6 py-14 md:py-20">
-      <div className="rounded-[36px] border border-white/15 bg-gradient-to-b from-surface-elevated to-surface p-7 md:p-10">
-        <div className="text-center">
-          <SectionLabel>Beta Access</SectionLabel>
-          <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">{section.title}</h2>
-          <p className="mx-auto mt-4 max-w-3xl text-text-secondary">{section.lead}</p>
-        </div>
-
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
-          <article className="rounded-2xl border border-white/10 bg-black/35 p-5">
-            <h3 className="text-xl font-semibold text-white">What you get</h3>
-            <ul className="mt-4 space-y-2 text-sm text-text-secondary">
-              {section.whatYouGet.map((item) => (
-                <li key={item}>- {item}</li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-2xl border border-white/10 bg-black/35 p-5">
-            <h3 className="text-xl font-semibold text-white">Who it is for</h3>
-            <ul className="mt-4 space-y-2 text-sm text-text-secondary">
-              {section.whoItsFor.map((item) => (
-                <li key={item}>- {item}</li>
-              ))}
-            </ul>
-          </article>
-        </div>
-
-        <p className="mt-6 text-center text-sm text-text-secondary">{section.limitedSpots}</p>
-
-        <div className="mt-6 flex justify-center">
-          <LimeButton href={section.cta.href} label={section.cta.label} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FaqSection() {
-  return (
-    <section id="docs" className="mx-auto w-full max-w-[840px] px-6 py-14 md:py-20">
-      <div className="text-center">
-        <SectionLabel>Frequently Asked Questions</SectionLabel>
-        <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">Answers without the runaround</h2>
-      </div>
-
-      <div className="mt-10 space-y-3">
-        {marketingContent.faq.map((item) => (
-          <details
-            key={item.question}
-            className="group rounded-2xl border border-white/15 bg-gradient-to-b from-surface-elevated to-surface p-5"
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-white md:text-lg">
-              <span>{item.question}</span>
-              <span className="inline-flex size-7 items-center justify-center rounded-full bg-accent/10 text-accent">+</span>
-            </summary>
-            <p className="mt-3 border-t border-white/10 pt-3 text-sm leading-relaxed text-text-secondary">
-              {item.answer}
-            </p>
-          </details>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ClosingCtaSection() {
-  return (
-    <section className="mx-auto w-full max-w-[1280px] px-6 py-14 md:py-20">
-      <div className="rounded-[36px] border border-white/15 bg-gradient-to-b from-surface-elevated to-surface px-6 py-12 text-center md:px-12">
-        <SectionLabel>Take The First Step</SectionLabel>
-        <h2 className="mt-4 text-[34px] font-bold text-white md:text-[52px]">Ready to run tighter every day?</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-text-secondary">
-          Join the beta and shape the tool with us while access is still open.
-        </p>
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <LimeButton href="/waitlist" label="Join the Beta" />
-          <GhostButton href="/#docs" label="Read the FAQ" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LandingFooter() {
-  const footer = marketingContent.footer;
-
-  return (
-    <footer className="mx-auto w-full max-w-[1280px] px-6 pb-16 pt-8">
-      <div className="rounded-[32px] border border-white/15 bg-gradient-to-b from-[#111] to-[#0a0a0a] p-7 md:p-9">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div className="md:col-span-2">
-            <p className="text-xl font-bold text-white">Deelrx CRM</p>
-            <p className="mt-3 max-w-xl text-sm text-text-secondary">{footer.about}</p>
-            <p className="mt-4 text-sm text-text-muted">{footer.disclaimer}</p>
-          </div>
-
-          <div>
-            <p className="text-xs font-mono uppercase tracking-[0.22em] text-accent">Menu</p>
-            <div className="mt-3 space-y-2 text-sm">
-              {footer.menuLinks.map((link) => (
-                <Link key={link.label} href={link.href} className="block text-text-secondary hover:text-accent">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-mono uppercase tracking-[0.22em] text-accent">Resources</p>
-            <div className="mt-3 space-y-2 text-sm">
-              {footer.resourceLinks.map((link) => (
-                <Link key={link.label} href={link.href} className="block text-text-secondary hover:text-accent">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-5 border-t border-white/10 pt-6 md:grid-cols-3">
-          <div className="text-sm text-text-secondary">{footer.contact}</div>
-          <div className="flex flex-wrap gap-4 text-sm">
-            {footer.legalLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="text-text-secondary hover:text-accent">
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-wrap justify-start gap-4 text-sm md:justify-end">
-            {footer.socialLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="text-text-secondary hover:text-accent">
-                {link.label}
-              </Link>
+          <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/45">
+            {marketingContent.hero.proofLabels.map((label) => (
+              <span key={label} className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> {label}</span>
             ))}
           </div>
         </div>
+        <QuickSaleProof />
+      </div>
+    </section>
+  );
+}
+
+function OperatorStrip() {
+  const icons = {
+    checkout: ShoppingCart,
+    inventory: PackageCheck,
+    reporting: CircleDollarSign,
+    access: LockKeyhole,
+  } as const;
+  return (
+    <section aria-label="Operator benefits" className="border-b border-white/10 bg-[#0D0D0D]">
+      <div className="mx-auto grid max-w-[1280px] md:grid-cols-2 lg:grid-cols-4">
+        {marketingContent.benefits.map(({ id, title, body }) => {
+          const Icon = icons[id];
+          return (
+          <div key={title} className="border-white/10 px-5 py-8 md:px-8 lg:border-r last:border-r-0">
+            <Icon className="size-5 text-accent" aria-hidden />
+            <h2 className="mt-4 text-base font-bold text-white">{title}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/50">{body}</p>
+          </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Capabilities() {
+  return (
+    <section id="product" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+      <div className="grid gap-10 border-b border-white/10 pb-12 lg:grid-cols-2 lg:items-end">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">What Deelrx actually does</p>
+          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">One system for the work independent retail cannot put off.</h2>
+        </div>
+        <p className="max-w-xl text-base leading-7 text-white/55 lg:justify-self-end">Desktop stays information-dense. Mobile stays task-focused. The terminology, priorities, states, and controls stay familiar wherever the shift takes you.</p>
+      </div>
+
+      <div id="control" className="grid md:grid-cols-2 lg:grid-cols-3">
+        {capabilities.map(({ icon: Icon, kicker, title, body, points }, index) => (
+          <article key={title} id={kicker === "Security" ? "security" : undefined} className="border-b border-white/10 px-0 py-10 md:px-7 lg:min-h-[360px] lg:border-r lg:nth-[3n]:border-r-0">
+            <div className="flex items-center justify-between">
+              <span className="flex size-11 items-center justify-center rounded-md border border-accent/25 bg-accent/10 text-accent"><Icon className="size-5" aria-hidden /></span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/30">0{index + 1}</span>
+            </div>
+            <p className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">{kicker}</p>
+            <h3 className="mt-3 text-2xl font-bold tracking-[-0.02em] text-white">{title}</h3>
+            <p className="mt-4 text-sm leading-6 text-white/55">{body}</p>
+            <ul className="mt-6 space-y-2">
+              {points.map((point) => <li key={point} className="flex items-center gap-2 text-xs text-white/65"><Check className="size-3.5 text-accent" aria-hidden />{point}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Manifesto() {
+  return (
+    <section className="border-y border-white/10 bg-[#121212]">
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[0.7fr_1.3fr]">
+        <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Why Deelrx</p>
+        <div>
+          <h2 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.04em] text-white md:text-6xl">You are building something, scaling something, and protecting something.</h2>
+          <p className="mt-7 max-w-3xl text-lg leading-8 text-white/60">You need speed, control, clean numbers, and inventory discipline. Deelrx is built for independent retail—clear enough for the counter and disciplined enough for the back office. No corporate fluff.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  return (
+    <section id="faq" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+      <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Straight answers</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">No fine-print theater.</h2>
+          <p className="mt-5 max-w-md text-sm leading-6 text-white/55">What DRX is, who it is for, and where the current boundaries sit.</p>
+        </div>
+        <div className="divide-y divide-white/10 border-y border-white/10">
+          {marketingContent.faq.map((item) => (
+            <details key={item.question} className="group py-5">
+              <summary className="cursor-pointer list-none pr-8 text-base font-bold text-white marker:hidden">
+                {item.question}
+              </summary>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCta() {
+  return (
+    <section id="beta-access" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+      <div className="relative overflow-hidden rounded-[14px] border border-accent/25 bg-[#151515] px-6 py-14 md:px-12 md:py-20">
+        <div className="relative z-10 max-w-3xl">
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Deelrx CRM beta</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">{marketingContent.betaAccess.title}</h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">{marketingContent.betaAccess.lead}</p>
+          <div className="mt-8 flex flex-wrap gap-3"><PrimaryLink href={appWaitlistUrl}>{marketingContent.betaAccess.cta.label} <ArrowRight className="size-4" /></PrimaryLink><SecondaryLink href={appLoginUrl}>Operator login</SecondaryLink></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-white/10">
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-8 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
+        <div><BrandLockup /><p className="mt-3 max-w-md text-xs leading-5 text-white/40">Operator-first POS, inventory, customer records, and reporting for independent retail. Currently in beta.</p></div>
+        <div className="flex flex-wrap gap-x-5 gap-y-3 text-xs text-white/50"><Link href="/legal/privacy" className="hover:text-white">Privacy</Link><Link href="/legal/terms" className="hover:text-white">Terms</Link><Link href="/legal/regulatory-disclaimer" className="hover:text-white">Regulatory disclaimer</Link></div>
       </div>
     </footer>
   );
 }
 
 export function LandingPageSections() {
-  return (
-    <>
-      <HeroSection />
-      <BenefitsSection />
-      <HowItWorksSection />
-      <BetaAccessSection />
-      <FaqSection />
-      <ClosingCtaSection />
-      <LandingFooter />
-    </>
-  );
+  return <><Header /><Hero /><OperatorStrip /><Capabilities /><Manifesto /><Faq /><FinalCta /><Footer /></>;
 }
