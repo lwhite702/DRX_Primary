@@ -15,7 +15,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: unknown) => handler,
 }));
 
-import middleware from "@/middleware";
+import { proxy } from "@/proxy";
 import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
@@ -41,14 +41,14 @@ function makeRequest(pathname: string, host: string, search = "", cookie = "") {
 }
 
 async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: AuthResult) {
-  const handler = middleware as unknown as (
+  const handler = proxy as unknown as (
     auth: () => Promise<AuthResult>,
     request: ReturnType<typeof makeRequest>,
   ) => Promise<Response>;
   return handler(async () => authResult, req);
 }
 
-describe("middleware auth and routing", () => {
+describe("proxy auth and routing", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });

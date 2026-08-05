@@ -16,6 +16,13 @@ export { clerkClient, clerkMiddleware, createRouteMatcher };
 export type WebhookEvent = ClerkWebhookEvent;
 export const isAuthBypassEnabled = isAuthBypassEnabledServer;
 
+export function hasClerkServerEnv() {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY &&
+      (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY),
+  );
+}
+
 function fromClerkAuth(
   authState: Awaited<ReturnType<typeof clerkAuth>>,
 ): WorkflowSession {
@@ -49,11 +56,25 @@ function getBypassAuthState() {
   };
 }
 
+function getSignedOutAuthState() {
+  return {
+    userId: null,
+    orgId: null,
+    sessionId: null,
+    sessionClaims: null,
+    getToken: async () => null,
+    has: () => false,
+  };
+}
+
 // Transitional Clerk-compatible adapter surface for existing server code.
 // New business logic should prefer workflow sessions over raw Clerk objects.
 export async function auth() {
   if (isAuthBypassEnabled()) {
     return getBypassAuthState() as never;
+  }
+  if (process.env.NODE_ENV !== "test" && !hasClerkServerEnv()) {
+    return getSignedOutAuthState() as never;
   }
   return clerkAuth();
 }

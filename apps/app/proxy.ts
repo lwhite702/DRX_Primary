@@ -1,4 +1,8 @@
-import { clerkMiddleware, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
+import {
+  clerkMiddleware,
+  hasClerkServerEnv,
+  isAuthBypassEnabled,
+} from "@/lib/adapters/auth/server";
 import {
   classifyDrxHost,
   isAuthEntryPath,
@@ -19,11 +23,7 @@ import {
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
   !isAuthBypassEnabled() &&
-  (process.env.NODE_ENV === "test" ||
-    (Boolean(process.env.CLERK_SECRET_KEY) &&
-      Boolean(
-        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY,
-      )));
+  (process.env.NODE_ENV === "test" || hasClerkServerEnv());
 
 function getCurrentOrigin(req: Request) {
   const host = req.headers.get("host") ?? "";
@@ -70,7 +70,11 @@ function middlewareWithoutClerk(
   reqOrAuth: Request | unknown,
   maybeReq?: Request,
 ) {
-  const req = (maybeReq ?? reqOrAuth) as Request & {
+  const isDirectRequest =
+    typeof reqOrAuth === "object" &&
+    reqOrAuth !== null &&
+    ("nextUrl" in reqOrAuth || "url" in reqOrAuth);
+  const req = (isDirectRequest ? reqOrAuth : maybeReq) as Request & {
     nextUrl?: { pathname: string; search: string };
     url?: string;
   };
@@ -198,7 +202,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
     })
   : null;
 
-export default (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
+export const proxy = (
+  hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk
+)!;
 
 export const config = {
   matcher: [

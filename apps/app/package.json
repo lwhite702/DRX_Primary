@@ -38,7 +38,7 @@
     "test:run": "vitest run",
     "test:coverage": "prisma generate && vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
+    "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_ux BYPASS_AUTH_ORG_ID=org_required_ux playwright test tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
     "test:e2e:quick-pos-smoke": "BYPASS_AUTH_FOR_TESTING=true playwright test tests/e2e/quick-pos-required.spec.ts --workers=1",
     "test:e2e:auth": "E2E_REQUIRE_AUTH=1 playwright test tests/e2e/auth-routing-authenticated.spec.ts --workers=1",
     "test:e2e:testsprite": "BYPASS_AUTH_FOR_TESTING=true playwright test -c playwright.testsprite.local.config.ts --timeout=20000",
