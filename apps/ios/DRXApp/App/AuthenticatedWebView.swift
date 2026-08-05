@@ -4,14 +4,14 @@ import ClerkKit
 struct AuthenticatedWebView: View {
     let path: String
     let title: String
-    
+
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
-    
+
     @State private var token: String?
     @State private var isLoadingToken = true
     @State private var loadError: String?
-    
+
     var body: some View {
         Group {
             if isLoadingToken {
@@ -53,11 +53,11 @@ struct AuthenticatedWebView: View {
             loadSessionToken()
         }
     }
-    
+
     private func loadSessionToken() {
         isLoadingToken = true
         loadError = nil
-        
+
         Task {
             do {
                 if let sessionToken = try await Clerk.shared.auth.getToken() {

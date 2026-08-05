@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 
 const BANNED_TERMS = [
-  'drug', 'dealer', 'stash', 'trap', 'coke', 'pills', 'weed', 
-  'cops', 'police', 'feds', 'law enforcement', 'get caught', 
+  'drug', 'dealer', 'stash', 'trap', 'coke', 'pills', 'weed',
+  'cops', 'police', 'feds', 'law enforcement', 'get caught',
   'hide your', 'evade', 'subpoena-proof'
 ];
 
 const JARGON_TERMS = [
-  'enterprise', 'synergy', 'robust', 'scalable', 'methodology', 
+  'enterprise', 'synergy', 'robust', 'scalable', 'methodology',
   'authenticate', 'immutable', 'omnichannel', 'leverage'
 ];
 

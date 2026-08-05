@@ -8,14 +8,14 @@ import { CtaRow } from "@/components/marketing/site/cta-row";
 export const metadata: Metadata = {
   title: "Use Cases | Deelrx CRM",
   description:
-    "Use-case paths for owner/operators, store managers, and multi-role teams in DRX.",
+    "Independent-retail use cases for owner-operators, store managers, and multi-role teams in DRX.",
 };
 
 const useCases = [
   {
     href: "/use-cases/owner-operator",
     title: "Owner/operator",
-    desc: "Line speed, stock confidence, credit visibility, and control.",
+    desc: "Line speed, stock visibility, customer records, and control.",
   },
   {
     href: "/use-cases/store-manager",
@@ -25,7 +25,7 @@ const useCases = [
   {
     href: "/use-cases/multi-role-teams",
     title: "Multi-role teams",
-    desc: "Permission clarity, consistency, and auditable execution.",
+    desc: "Permission clarity, consistent workflows, and reviewable activity.",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function UseCasesHubPage() {
 
       <SectionBlock title="What this does">
         <p>
-          Maps DRX workflows to the teams that run them day to day.
+          Maps DRX workflows to the independent-retail teams that run them day to day.
         </p>
       </SectionBlock>
 

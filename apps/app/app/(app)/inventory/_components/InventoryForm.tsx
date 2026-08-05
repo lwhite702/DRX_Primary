@@ -70,7 +70,7 @@ export function InventoryForm({
     if (wizardStep === 0) {
       fieldsToValidate = ["sku", "product_name"];
     }
-    
+
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       setWizardStep((prev) => prev + 1);
@@ -368,4 +368,3 @@ export function InventoryForm({
     </form>
   );
 }
-

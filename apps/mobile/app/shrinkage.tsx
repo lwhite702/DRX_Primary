@@ -20,10 +20,10 @@ export default function Shrinkage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { getToken } = useAuth();
-  
+
   const [loading, setLoading] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
-  
+
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState("");
   const [reason, setReason] = useState("personal_use");
@@ -107,7 +107,7 @@ export default function Shrinkage() {
         <Text style={styles.label}>Reason</Text>
         <View style={styles.reasonRow}>
           {["personal_use", "damage", "spillage"].map(r => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={r}
               style={[styles.reasonBtn, reason === r && styles.reasonBtnSelected]}
               onPress={() => setReason(r)}
@@ -129,8 +129,8 @@ export default function Shrinkage() {
           onChangeText={setNote}
         />
 
-        <TouchableOpacity 
-          style={styles.actionBtn} 
+        <TouchableOpacity
+          style={styles.actionBtn}
           onPress={handleSubmit}
           disabled={loading || !selectedItemId || !quantity}
         >
@@ -162,11 +162,11 @@ const styles = StyleSheet.create({
   label: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: SPACING.xs, marginTop: SPACING.lg },
   selectedLabel: { color: COLORS.accent, fontSize: FONT_SIZES.sm, marginTop: SPACING.sm, fontWeight: "600" },
   pickerContainer: { flexDirection: "row", marginTop: SPACING.xs },
-  chip: { 
-    backgroundColor: COLORS.surface, 
-    paddingHorizontal: SPACING.md, 
-    paddingVertical: SPACING.sm, 
-    borderRadius: BORDER_RADIUS.full, 
+  chip: {
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
     marginRight: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.borderLight

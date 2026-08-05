@@ -1,28 +1,24 @@
+import { drxAudience } from "@/lib/feature-canon";
+
 export type HeroContent = {
   preheadline: string;
-  headline: string;
+  headlineLead: string;
+  headlineAccent: string;
   subheadline: string;
+  proofLabels: readonly string[];
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
 };
 
 export type BenefitCard = {
+  id: "checkout" | "inventory" | "reporting" | "access";
   title: string;
   body: string;
-};
-
-export type HowItWorksStep = {
-  title: string;
-  body: string;
-  cta: { label: string; href: string };
 };
 
 export type BetaAccessSection = {
   title: string;
   lead: string;
-  whatYouGet: string[];
-  whoItsFor: string[];
-  limitedSpots: string;
   cta: { label: string; href: string };
 };
 
@@ -43,95 +39,76 @@ export type FooterContent = {
 
 export const marketingContent = {
   hero: {
-    preheadline: "Simple. Fast. Clear.",
-    headline: "Built for people who actually run product.",
-    subheadline:
-      "Deelrx CRM (DRX) keeps your sales, inventory, and customers tight in one place. No spreadsheets, no guessing, no slowdown.",
+    preheadline: drxAudience.eyebrow,
+    headlineLead: drxAudience.headlineLead,
+    headlineAccent: drxAudience.headlineAccent,
+    subheadline: drxAudience.supportingPromise,
+    proofLabels: drxAudience.proofLabels,
     primaryCta: { label: "Join the Beta", href: "/waitlist" },
-    secondaryCta: { label: "See How It Works", href: "/#how-it-works" },
+    secondaryCta: { label: "See Deelrx in Action", href: "/#product" },
   } satisfies HeroContent,
   benefits: [
     {
-      title: "Move Faster",
-      body: "Handle sales in seconds. No extra steps, no waiting around.",
+      id: "checkout",
+      title: "Keep the Line Moving",
+      body: "Search, scan, adjust, and finish checkout in one focused flow.",
     },
     {
-      title: "Always Know What You Have",
-      body: "See what's selling, what's low, and what's just sitting. All updated automatically.",
+      id: "inventory",
+      title: "Know What's on Deck",
+      body: "See what sold, what is on hand, and what is running low.",
     },
     {
-      title: "DRX Intelligence Has Your Back",
-      body: "Get simple insights on what's making money and what needs attention so you can make better moves.",
+      id: "reporting",
+      title: "See the Shift Clearly",
+      body: "Review sales, best sellers, and low-stock signals without reporting theater.",
+    },
+    {
+      id: "access",
+      title: "Control Team Access",
+      body: "Give each operator the tools their role requires and keep sensitive actions attributable.",
     },
   ] satisfies BenefitCard[],
-  howItWorks: [
-    {
-      title: "Add What You Sell",
-      body: "Put in your items, prices, and amounts. DRX organizes everything for you.",
-      cta: { label: "Join the Beta", href: "/waitlist" },
-    },
-    {
-      title: "Make the Sale",
-      body: "Log each sale quickly. Your numbers and stock update instantly.",
-      cta: { label: "Watch Demo", href: "/#demo" },
-    },
-    {
-      title: "Stay in Control",
-      body: "See what's working, what's not, and adjust on the fly.",
-      cta: { label: "Get Early Access", href: "/waitlist" },
-    },
-  ] satisfies HowItWorksStep[],
   betaAccess: {
-    title: "Get in early. Stay ahead.",
+    title: "Run the operation tighter.",
     lead: "We are opening Deelrx CRM beta access to a focused group of operators who want speed, clarity, and control.",
-    whatYouGet: [
-      "Full access to Deelrx CRM (DRX) during beta",
-      "All features unlocked",
-      "No payment required during beta",
-      "Early say in how the product evolves",
-    ],
-    whoItsFor: [
-      "Independent sellers",
-      "Small operators",
-      "Anyone tired of tracking everything manually",
-    ],
-    limitedSpots:
-      "We're letting in a small group at a time to keep things running smooth. Once it fills up, access closes.",
-    cta: { label: "Request Access", href: "/waitlist" },
+    cta: { label: "Join the Beta", href: "/waitlist" },
   } satisfies BetaAccessSection,
   faq: [
     {
       question: "What is Deelrx CRM (DRX)?",
       answer:
-        "Deelrx CRM (pronounced \"Dealers\") is a system that helps you track sales, inventory, and customers in one place.",
+        "Deelrx CRM, also known as DRX, helps independent retailers track sales, inventory, customer records, and team access in one place.",
     },
     {
-      question: "What is DRX Intelligence?",
+      question: "Who is DRX built for?",
       answer:
-        "It's the smart layer that shows you what's selling, what's making money, and what needs attention.",
+        "Independent retailers, owner-operated shops, pop-ups, and service businesses that carry inventory and need the floor to keep moving.",
     },
     {
-      question: "Is it hard to use?",
-      answer: "No. It's built to be simple. You'll understand it within minutes.",
-    },
-    {
-      question: "Do I have to pay?",
-      answer: "No. During beta, access is free once you're approved.",
-    },
-    {
-      question: "What happens after beta?",
+      question: "What is a customer store account?",
       answer:
-        "You'll get early user benefits and priority access when pricing is introduced.",
+        "It is an optional merchant record for purchases, payments, and account balances. DRX does not present itself as a lender, payment network, or debt collector.",
+    },
+    {
+      question: "Is the beta available through the public App Store?",
+      answer:
+        "Beta access uses the waitlist and TestFlight. Public App Store copy is reserved for a complete release that matches the submitted app.",
+    },
+    {
+      question: "Does DRX provide legal or compliance advice?",
+      answer:
+        "No. DRX supports business operations. Each business remains responsible for its laws, licenses, taxes, reporting, and customer account policies.",
     },
   ] satisfies FaqItem[],
   footer: {
     about:
-      "Deelrx CRM (DRX) is built for independent operators who want speed, clarity, and control without complicated tools.",
+      "Deelrx CRM (DRX) is built for independent retailers who want speed, clarity, and control without complicated tools.",
     menuLinks: [
       { label: "Home", href: "/" },
-      { label: "Features", href: "/#features" },
+      { label: "Product", href: "/#product" },
       { label: "Demo", href: "/#demo" },
-      { label: "Docs", href: "/#docs" },
+      { label: "Resources", href: "/resources" },
     ],
     resourceLinks: [
       { label: "Getting Started", href: "/resources/guides" },

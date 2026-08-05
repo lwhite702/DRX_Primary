@@ -83,13 +83,13 @@ export default function DashboardPage() {
   const alerts = showAlerts ? <DashboardAlerts stats={stats} /> : null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 font-sans selection:bg-[#4ADE80] selection:text-black">
-      <div className="max-w-[1600px] mx-auto space-y-12">
+    <div className="min-h-screen bg-background p-4 font-sans text-foreground selection:bg-accent selection:text-black md:p-8">
+      <div className="mx-auto max-w-[1600px] space-y-8">
         <SetupGuide />
 
         <PageHeader
           title="Operator Dashboard"
-          description="A functional operator workspace with configurable views and pinned tools."
+          description="Revenue, stock risk, and the next actions that keep the shift moving."
         />
 
         {preset === "checkout" ? (

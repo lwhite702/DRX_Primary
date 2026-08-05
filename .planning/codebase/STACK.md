@@ -15,7 +15,7 @@
 ## Runtime
 
 **Environment:**
-- Node.js `20.18.0` required via `package.json` engines and `.nvmrc`
+- Node.js `20.19.0` required via `package.json` engines and `.nvmrc`
 - React 19 runtime in Next.js apps (`apps/app`, `apps/marketing`)
 - Deno runtime for Supabase Edge Functions in `apps/app/supabase/functions/`
 

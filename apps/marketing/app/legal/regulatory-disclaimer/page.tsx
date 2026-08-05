@@ -8,7 +8,7 @@ import { LegalPageView } from "@/components/marketing/site/legal-page-view";
 export const metadata: Metadata = {
   title: "Regulatory Disclaimer | Deelrx CRM",
   description:
-    "Regulatory disclaimer for dispensary operations and legal responsibility when using DRX.",
+    "Regulatory and legal-responsibility boundaries for businesses using DRX.",
 };
 
 export default function RegulatoryDisclaimerPage() {
@@ -19,15 +19,15 @@ export default function RegulatoryDisclaimerPage() {
 
       <SectionBlock title="What this does">
         <p>
-          Clarifies legal responsibility and risk boundaries for regulated-use
-          environments.
+          Clarifies legal, tax, financial, and operational responsibility when
+          a business uses DRX.
         </p>
       </SectionBlock>
 
       <SectionBlock title="Why it matters operationally" className="mt-6">
         <p>
-          Software supports operations but does not substitute for legal or
-          regulatory judgment.
+          Software supports daily operations but does not replace professional
+          advice or business judgment.
         </p>
       </SectionBlock>
 
@@ -35,12 +35,16 @@ export default function RegulatoryDisclaimerPage() {
         <ul className="list-disc space-y-2 pl-5">
           <li>DRX is an operational system, not legal advice.</li>
           <li>
-            Audit records are operational evidence and do not override regulator
-            direction.
+            Activity records provide operational context and are not certified
+            legal, accounting, or regulatory records.
           </li>
           <li>
-            Operators remain responsible for licensing, reporting, and lawful
-            business conduct.
+            Businesses remain responsible for licensing, taxes, reporting,
+            customer account policies, and lawful conduct.
+          </li>
+          <li>
+            DRX is not a lender, payment network, debt collector, or legal,
+            tax, financial, or compliance advisor.
           </li>
         </ul>
       </SectionBlock>

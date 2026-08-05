@@ -8,7 +8,7 @@ import { TrackedLink } from "@/components/marketing/site/tracked-link";
 export const metadata: Metadata = {
   title: "Guides | Deelrx CRM",
   description:
-    "Operational guides for inventory, credit, payments, privacy presets, and team roles in DRX.",
+    "Operational guides for inventory, checkout, customer store accounts, privacy presets, and team roles in DRX.",
 };
 
 export default function GuidesHubPage() {
@@ -40,7 +40,7 @@ export default function GuidesHubPage() {
             payload={{ href: "/resources/guides/credit-and-payments" }}
             className="rounded-xl border border-border p-4 hover:border-neon-lime/40"
           >
-            Credit and payments
+            Store accounts and payments
           </TrackedLink>
           <TrackedLink
             href="/resources/guides/privacy-presets-and-team-roles"
