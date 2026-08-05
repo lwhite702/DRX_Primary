@@ -1,4 +1,4 @@
--- Remove the uniqueness guard. Duplicate rows removed by the up migration
--- cannot be reconstructed automatically.
+-- The deduplication performed by the up migration is intentionally irreversible.
+-- Removing the index restores the prior ability to store multiple batches per intake.
 
 DROP INDEX IF EXISTS idx_inventory_batches_business_intake_unique;

@@ -7,8 +7,8 @@ import {
 import type { WebhookEvent as ClerkWebhookEvent } from "@clerk/nextjs/server";
 import type { WorkflowSession } from "@wrelik/auth/shared";
 import {
-  BYPASS_AUTH_ORG_ID,
-  BYPASS_AUTH_USER_ID,
+  getBypassAuthOrgId,
+  getBypassAuthUserId,
   isAuthBypassEnabledServer,
 } from "@/lib/auth/bypass";
 
@@ -36,8 +36,8 @@ function fromClerkAuth(
 
 function getBypassAuthState() {
   return {
-    userId: BYPASS_AUTH_USER_ID,
-    orgId: BYPASS_AUTH_ORG_ID,
+    userId: getBypassAuthUserId(),
+    orgId: getBypassAuthOrgId(),
     sessionId: "bypass-session",
     sessionClaims: {
       metadata: { onboardingComplete: true },
@@ -61,9 +61,9 @@ export async function auth() {
 export async function getWorkflowSession(): Promise<WorkflowSession> {
   if (isAuthBypassEnabled()) {
     return {
-      userId: BYPASS_AUTH_USER_ID,
-      tenantId: BYPASS_AUTH_ORG_ID,
-      orgId: BYPASS_AUTH_ORG_ID,
+      userId: getBypassAuthUserId(),
+      tenantId: getBypassAuthOrgId(),
+      orgId: getBypassAuthOrgId(),
       roles: ["super_admin"],
       permissions: ["*"],
     } as WorkflowSession;

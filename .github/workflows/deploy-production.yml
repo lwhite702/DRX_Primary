@@ -13,6 +13,12 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Deploy Convex functions to Production
+        working-directory: ./apps/app
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: npx convex deploy
+
       - name: Deploy production to Vercel
         id: vercel
         uses: amondnet/vercel-action@v25

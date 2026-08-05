@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -346,6 +347,6 @@ function Footer() {
   );
 }
 
-export function LandingPageSections() {
-  return <><Header /><Hero /><OperatorStrip /><Capabilities /><Manifesto /><Faq /><FinalCta /><Footer /></>;
+export function LandingPageSections({ operatorShowcase }: { operatorShowcase?: ReactNode }) {
+  return <><Header /><Hero /><OperatorStrip />{operatorShowcase}<Capabilities /><Manifesto /><Faq /><FinalCta /><Footer /></>;
 }

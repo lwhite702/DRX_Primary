@@ -3,12 +3,12 @@ import { db } from "@/lib/db";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.DRX_PRIVACY_CLEANUP_SECRET;
   if (!secret) {
-    return true;
+    return false;
   }
 
   const headerSecret = request.headers.get("x-cron-secret");
@@ -217,15 +217,15 @@ export async function POST(request: NextRequest) {
     return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
   }
 
-  const killSwitchEnabled = await ensureServerFlag(
-    OPS_KILL_SWITCH_FLAGS.privacyCleanupQueue,
+  const availabilityEnabled = await ensureServerFlag(
+    OPS_AVAILABILITY_FLAGS.privacyCleanupQueue,
     {
       distinctId: userId ?? "cron-cleanup-queue",
       defaultValue: true,
       groups: authBusinessId ? { business: authBusinessId } : undefined,
     },
   );
-  if (!killSwitchEnabled) {
+  if (!availabilityEnabled) {
     return errorResponse(
       "FEATURE_DISABLED",
       "Privacy cleanup queue worker is temporarily disabled",

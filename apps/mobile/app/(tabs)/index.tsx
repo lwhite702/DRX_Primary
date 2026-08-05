@@ -1319,7 +1319,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 4,
-    height: 40,
+    minHeight: 40,
   },
   productPrice: {
     color: COLORS.accent,

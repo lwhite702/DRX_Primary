@@ -6,7 +6,7 @@ import { errorResponse, successResponse } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   try {
-    const { businessId } = await resolveAuthContext();
+    const { businessId } = await resolveAuthContext(request);
     if (!businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
@@ -36,8 +36,12 @@ export async function GET(request: NextRequest) {
       warning: result.warning,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Credit Validation Error:", error);
-    return errorResponse("INTERNAL_ERROR", message, 500);
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Internal Server Error",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
 }

@@ -1,4 +1,4 @@
--- Remove the deterministic intake-to-batch helper and its lookup index.
+-- Roll back deterministic intake-to-batch lookup support.
 
 DROP FUNCTION IF EXISTS ensure_inventory_batch_for_intake(
   UUID,

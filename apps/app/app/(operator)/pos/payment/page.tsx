@@ -9,8 +9,11 @@ import { useQuickPosStore } from "@/lib/quick-pos/store";
 import { canUseCredit } from "@/lib/quick-pos/selectors";
 import type { QuickPosCheckoutResponse, QuickPosPaymentMethod } from "@/lib/quick-pos/types";
 
+import { useDRXCheckout } from "@/lib/convex-hooks";
+
 export default function QuickPosPaymentPage() {
   const router = useRouter();
+  const { processCheckout } = useDRXCheckout();
   const {
     state,
     total,
@@ -60,6 +63,36 @@ export default function QuickPosPaymentPage() {
     }
 
     try {
+      // 1. Attempt authoritative Convex checkout mutation
+      const convexItems = state.cartItems
+        .filter((item) => item.inventoryId)
+        .map((item) => ({
+          productId: item.inventoryId as any,
+          quantityGrams: item.qty,
+        }));
+
+      if (convexItems.length > 0) {
+        const convexRes = await processCheckout({
+          customerId: state.customer.id ? (state.customer.id as any) : undefined,
+          orderNumber: idempotencyKey,
+          items: convexItems,
+          paymentMethod: method,
+          amountPaidCents: Math.round(total * 100),
+        });
+
+        if (convexRes && convexRes.saleId) {
+          markCompleted({
+            saleId: convexRes.saleId,
+            total: convexRes.totalAmountCents / 100,
+            receipt: state.payment.receipt,
+          });
+          setSuccess("Sale completed via Convex");
+          router.replace("/pos/complete");
+          return;
+        }
+      }
+
+      // Fallback to API route if non-catalog item
       const res = await fetch("/api/pos/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,8 +118,8 @@ export default function QuickPosPaymentPage() {
       });
       setSuccess("Sale completed");
       router.replace("/pos/complete");
-    } catch {
-      setError("Payment failed");
+    } catch (err: any) {
+      setError(err?.message || "Payment failed");
     } finally {
       setProcessing(false);
     }

@@ -2,6 +2,12 @@
 
 This repo uses PostHog as the runtime source of truth for feature flags.
 
+Application code should treat `apps/app/lib/flags` as the internal flag boundary.
+That API is intentionally OpenFeature-compatible in shape: callers provide a flag
+key, default value, and evaluation context, while the current provider continues
+to evaluate through PostHog. Do not import PostHog feature-flag APIs directly
+outside the analytics/flags adapter layer.
+
 ## Naming convention
 
 - `feat_<module>_<capability>`
@@ -59,6 +65,7 @@ During incidents, disable affected routes by toggling corresponding `ops_*` flag
 
 - Internal DB registry parity: `pnpm test:feature-flags-contract`
 - PostHog manifest parity: `pnpm test:posthog-flags-contract`
+- App flag boundary checks: `pnpm --filter deelrxcrm-app test:run tests/flags/server.test.ts`
 
 For CI parity checks, configure:
 

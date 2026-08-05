@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isAuthBypassEnabledClient } from "@/lib/auth/bypass";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 import {
   DASHBOARD_PREFS_LOCAL_STORAGE_KEY,
   extractDashboardPreferencesFromMetadata,
@@ -43,7 +43,7 @@ function writePrefsToLocalStorage(preferences: DashboardPreferences) {
 }
 
 export function useDashboardPreferences() {
-  const authBypassEnabled = isAuthBypassEnabledClient();
+  const authBypassEnabled = useIsBypassActive();
 
   const [preferences, setPreferences] = useState<DashboardPreferences>(() =>
     getDefaultDashboardPreferences(),

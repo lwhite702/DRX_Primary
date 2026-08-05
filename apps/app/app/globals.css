@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@clerk/ui/themes/shadcn.css";
 @import "@deelrx/brand/tokens.css";
 
 @theme inline {

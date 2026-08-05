@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -69,9 +70,15 @@ export default function Login() {
         {/* Logo/Brand */}
         <View style={styles.brandContainer}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>DRX</Text>
+            <Image
+              source={require("../assets/images/drx-wordmark.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+              accessible
+              accessibilityLabel="DRX logo"
+            />
           </View>
-          <Text style={styles.tagline}>Precision Retail OS</Text>
+          <Text style={styles.tagline}>Your front. Your numbers. Locked.</Text>
         </View>
 
         {/* Login Form */}
@@ -132,13 +139,13 @@ export default function Login() {
             disabled={loading}
             testID="login-button"
             accessibilityRole="button"
-            accessibilityLabel="Authenticate"
+            accessibilityLabel="Sign In"
           >
             {loading ? (
               <ActivityIndicator color={COLORS.background} />
             ) : (
               <>
-                <Text style={styles.loginButtonText}>AUTHENTICATE</Text>
+                <Text style={styles.loginButtonText}>SIGN IN</Text>
                 <Ionicons
                   name="finger-print-outline"
                   size={20}
@@ -174,24 +181,21 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xxl,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: BORDER_RADIUS.xl,
-    backgroundColor: COLORS.accent,
+    width: 240,
+    height: 80,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: SPACING.md,
   },
-  logoText: {
-    fontSize: FONT_SIZES.xxxl,
-    fontWeight: "900",
-    color: COLORS.background,
-    letterSpacing: 2,
+  logoImage: {
+    width: 240,
+    height: 80,
   },
   tagline: {
     color: COLORS.textSecondary,
-    fontSize: FONT_SIZES.md,
-    letterSpacing: 1,
+    fontSize: FONT_SIZES.sm,
+    letterSpacing: 2,
+    textTransform: "uppercase",
   },
   formContainer: {
     backgroundColor: COLORS.surface,

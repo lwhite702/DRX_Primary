@@ -17,6 +17,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import { drxCopy } from "@/lib/copy/drx";
+import { Tour } from "@/components/ui/tour";
 
 export default function InventoryPage() {
   const router = useRouter();
@@ -43,21 +44,27 @@ export default function InventoryPage() {
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 page-transition">
-      <PageHeader title={drxCopy.inventory.title} description={drxCopy.inventory.description} />
+      <div id="tour-inventory-header">
+        <PageHeader title={drxCopy.inventory.title} description={drxCopy.inventory.description} />
+      </div>
 
-      <InventoryHeader
-        onIntake={() => router.push("/inventory/intake")}
-        onAdjustment={() => router.push("/inventory/adjust")}
-        onAudit={() => router.push("/inventory/audit")}
-      />
+      <div id="tour-inventory-ops">
+        <InventoryHeader
+          onIntake={() => router.push("/inventory/intake")}
+          onAdjustment={() => router.push("/inventory/adjust")}
+          onAudit={() => router.push("/inventory/audit")}
+        />
+      </div>
 
-      <InventoryList
-        inventory={inventory}
-        onAddItem={handleAdd}
-        onEdit={handleEdit}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-      />
+      <div id="tour-inventory-list">
+        <InventoryList
+          inventory={inventory}
+          onAddItem={handleAdd}
+          onEdit={handleEdit}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
+      </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-xl bg-[#1a1a1a] border-white/10 text-foreground">
@@ -74,9 +81,32 @@ export default function InventoryPage() {
             onSuccess={handleSave}
             onCancel={() => setShowDialog(false)}
             businessId={business?.id || ""}
+            isFirstProduct={inventory.length === 0}
           />
         </DialogContent>
       </Dialog>
+
+      <Tour
+        tourId="inventory_v1"
+        onComplete={() => {}}
+        steps={[
+          {
+            targetId: "tour-inventory-header",
+            title: "Your inventory.",
+            description: "Track what you have, what moved, and what needs a reup. All in one place.",
+          },
+          {
+            targetId: "tour-inventory-ops",
+            title: "Stock operations.",
+            description: "Intake new stock, fix counts with an adjustment, or pull up the audit log to see every change.",
+          },
+          {
+            targetId: "tour-inventory-list",
+            title: "Your products.",
+            description: "Every product lives here. Search by name or SKU. Low stock gets flagged automatically.",
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/login", "/register", "/waitlist"];
 const protectedRoutes = ["/pos/sale", "/settings"];
 const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  process.env.BYPASS_AUTH_FOR_TESTING === "true";
 const target = process.env.A11Y_TARGET || "all";
 const hasClerkTestingKeys =
   Boolean(process.env.CLERK_TESTING_TOKEN) &&
@@ -43,10 +43,7 @@ test.describe("Accessibility", () => {
       await expect(page.locator("body")).toBeVisible();
 
       const results = (await Promise.race([
-        new AxeBuilder({ page })
-          .disableRules(["color-contrast"])
-          .exclude("iframe")
-          .analyze(),
+        new AxeBuilder({ page }).exclude("iframe").analyze(),
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error(`Timed out running axe on ${route} after 15s`)),

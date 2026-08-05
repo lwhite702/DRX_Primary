@@ -1,181 +1,121 @@
-import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { errorResponse, successResponse } from "@/lib/api/response";
+import type { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { errorResponse } from "@/lib/api/response";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
-const RouteParamsSchema = z.object({
-  id: z.string().uuid(),
-});
-
+const RouteParamsSchema = z.object({ id: z.string().uuid() });
 const InventoryUpdateSchema = z
   .object({
     product_name: z.string().min(1).optional(),
-    sku: z.string().optional(),
+    sku: z.string().min(1).optional(),
+    description: z.string().optional(),
     category: z.string().optional(),
-    quantity_on_hand: z.number().finite().int().nonnegative().optional(),
-    reorder_level: z.number().finite().int().nonnegative().optional(),
-    unit_cost: z.number().finite().optional(),
-    selling_price: z.number().finite().optional(),
-    is_active: z.boolean().optional(),
+    unit_of_measure: z.enum(["g", "oz", "lb", "L", "ml"]).optional(),
+    quantity_on_hand: z.number().int().nonnegative().optional(),
+    reorder_level: z.number().int().nonnegative().optional(),
+    unit_cost: z.number().nonnegative().optional(),
+    selling_price: z.number().nonnegative().optional(),
+    supplier_id: z.string().uuid().optional(),
+    business_id: z.string().uuid().optional(),
+    id: z.string().uuid().optional(),
   })
   .strict();
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } },
+type RouteContext = { params: { id: string } };
+
+async function resolveInventory(
+  request: NextRequest,
+  context: RouteContext,
+  permission: "catalog.view" | "inventory.manage",
 ) {
+  const parsedParams = RouteParamsSchema.safeParse(context.params);
+  if (!parsedParams.success) return { error: "invalid" as const };
+
+  const { userId, businessId } = await resolveAuthContext(request);
+  if (!userId || !businessId) return { error: "unauthorized" as const };
+  if (!(await hasBusinessPermission(userId, businessId, permission))) {
+    return { error: "forbidden" as const };
+  }
+
+  const item = await db.inventory.findFirst({
+    where: { id: parsedParams.data.id, businessId },
+  });
+  if (!item) return { error: "missing" as const };
+  return { item, userId, businessId };
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const parsedParams = RouteParamsSchema.safeParse(params);
-    if (!parsedParams.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid inventory id",
-        400,
-        parsedParams.error.flatten(),
-      );
-    }
-    const { id } = parsedParams.data;
-
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const { data: item, error } = await supabase
-      .from("inventory")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      return errorResponse("NOT_FOUND", "Item not found", 404);
-    }
-
-    return successResponse({ data: item });
+    const resolved = await resolveInventory(request, context, "catalog.view");
+    if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
+    if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
+    if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
+    return NextResponse.json({ data: resolved.item });
   } catch (error) {
+    console.error("Inventory item lookup error", error);
     return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const parsedParams = RouteParamsSchema.safeParse(params);
-    if (!parsedParams.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid inventory id",
-        400,
-        parsedParams.error.flatten(),
-      );
-    }
-    const { id } = parsedParams.data;
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const resolved = await resolveInventory(request, context, "inventory.manage");
+    if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
+    if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
+    if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
 
-    if (userError || !user) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    const payload = InventoryUpdateSchema.safeParse(await request.json());
+    if (!payload.success) {
+      return errorResponse("VALIDATION_ERROR", "Invalid inventory update payload", 400, payload.error.flatten());
     }
 
-    const parsedPayload = InventoryUpdateSchema.safeParse(await request.json());
-    if (!parsedPayload.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid inventory update payload",
-        400,
-        parsedPayload.error.flatten(),
-      );
-    }
-
-    const { data: currentItem, error: currentItemError } = await supabase
-      .from("inventory")
-      .select("id, quantity_on_hand, business_id, product_name")
-      .eq("id", id)
-      .single();
-
-    if (currentItemError || !currentItem) {
-      return errorResponse("NOT_FOUND", "Item not found", 404);
-    }
-
-    const previousQuantity = Number(currentItem.quantity_on_hand ?? 0);
-    const nextQuantity = parsedPayload.data.quantity_on_hand;
+    const input = payload.data;
     const quantityChanged =
-      typeof nextQuantity === "number" && nextQuantity !== previousQuantity;
+      input.quantity_on_hand !== undefined &&
+      input.quantity_on_hand !== resolved.item.quantityOnHand;
 
-    const { data: updatedItem, error } = await supabase
-      .from("inventory")
-      .update(parsedPayload.data)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Update Error:", error);
-      if (error.code === "42501") {
-        return errorResponse("FORBIDDEN", "Forbidden", 403);
-      }
-      return errorResponse(
-        "INTERNAL_ERROR",
-        "Failed to update item",
-        500,
-        error,
-      );
-    }
-
-    if (quantityChanged) {
-      const quantityDelta = Number(nextQuantity) - previousQuantity;
-      const { error: logError } = await supabase.from("inventory_log").insert({
-        inventory_id: id,
-        business_id: currentItem.business_id,
-        transaction_type: "adjustment",
-        quantity_change: quantityDelta,
-        reason: "Inventory update via /api/inventory/[id]",
-        created_by: user.id,
-        metadata: {
-          source: "inventory.update.route",
-          previous_quantity: previousQuantity,
-          new_quantity: Number(nextQuantity),
-          product_name: currentItem.product_name ?? null,
+    const updatedItem = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      const updated = await tx.inventory.update({
+        where: { id: resolved.item.id },
+        data: {
+          ...(input.product_name !== undefined ? { productName: input.product_name } : {}),
+          ...(input.sku !== undefined ? { sku: input.sku } : {}),
+          ...(input.description !== undefined ? { description: input.description } : {}),
+          ...(input.category !== undefined ? { category: input.category } : {}),
+          ...(input.unit_of_measure !== undefined ? { baseUnit: input.unit_of_measure } : {}),
+          ...(input.quantity_on_hand !== undefined ? { quantityOnHand: input.quantity_on_hand } : {}),
+          ...(input.reorder_level !== undefined ? { reorderLevel: input.reorder_level } : {}),
+          ...(input.unit_cost !== undefined ? { unitCost: input.unit_cost } : {}),
+          ...(input.selling_price !== undefined ? { sellingPrice: input.selling_price } : {}),
+          ...(input.supplier_id !== undefined ? { supplierId: input.supplier_id } : {}),
         },
       });
 
-      if (logError) {
-        const { error: rollbackError } = await supabase
-          .from("inventory")
-          .update({
-            quantity_on_hand: previousQuantity,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id);
-
-        if (rollbackError) {
-          console.error(
-            "Rollback failed after inventory update log failure:",
-            rollbackError,
-          );
-        }
-
-        return errorResponse(
-          "INTERNAL_ERROR",
-          "Failed to write inventory audit log",
-          500,
-          logError,
-        );
+      if (quantityChanged) {
+        await tx.inventoryLog.create({
+          data: {
+            inventoryId: resolved.item.id,
+            transactionType: "adjustment",
+            quantityChange: input.quantity_on_hand! - resolved.item.quantityOnHand,
+            reason: "Inventory update via /api/inventory/[id]",
+            createdBy: resolved.userId,
+          },
+        });
       }
-    }
+      return updated;
+    });
 
-    return successResponse({ data: updatedItem });
-  } catch (error) {
-    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
+    return NextResponse.json({ data: updatedItem });
+  } catch (error: unknown) {
+    console.error("Inventory item update error", error);
+    if (typeof error === "object" && error && "code" in error && error.code === "P2002") {
+      return errorResponse("BAD_REQUEST", "SKU already exists for this business", 409);
+    }
+    return errorResponse("INTERNAL_ERROR", "Failed to update item", 500);
   }
 }

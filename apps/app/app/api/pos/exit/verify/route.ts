@@ -30,12 +30,13 @@ export async function POST(request: NextRequest) {
 
   const settings = await db.businessSettings.findFirst({
     where: { businessId },
-    select: { settingsData: true },
+    select: { settingsData: true, posManagerPin: true },
   });
 
   const configuredPin = (
-    settings?.settingsData as { quick_pos_exit_pin?: string } | null
-  )?.quick_pos_exit_pin?.trim();
+    settings?.posManagerPin ||
+    (settings?.settingsData as { quick_pos_exit_pin?: string } | null)?.quick_pos_exit_pin
+  )?.trim();
 
   if (!configuredPin) {
     return NextResponse.json({ allowed: false }, { status: 423 });
