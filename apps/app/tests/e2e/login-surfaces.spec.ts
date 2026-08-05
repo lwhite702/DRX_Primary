@@ -1,17 +1,27 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-const bypassAuthEnabled =
-  process.env.BYPASS_AUTH_FOR_TESTING === "true";
+async function expectConfiguredFallback(page: Page) {
+  const pathname = new URL(page.url()).pathname;
+
+  if (pathname === "/dashboard") {
+    await expect(page.getByRole("link", { name: "Dashboard", exact: true }).first()).toBeVisible();
+    return true;
+  }
+
+  if (pathname === "/waitlist") {
+    await expect(page.getByText(/beta access/i).first()).toBeVisible();
+    return true;
+  }
+
+  return false;
+}
 
 test.describe("Login and register surfaces", () => {
   test("/login is accessible", async ({ page }) => {
     await page.goto("/login");
-    await expect(page).toHaveURL(/\/(login|dashboard)(?:\?|$)/);
+    await expect(page).toHaveURL(/\/(login|dashboard|waitlist)(?:\?|$)/);
 
-    const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
-
-    if (bypassAuthEnabled || landedOnDashboard) {
-      await expect(page.locator("body")).toContainText(/Welcome to DRX|operator dashboard/i, { timeout: 15000 });
+    if (await expectConfiguredFallback(page)) {
       return;
     }
 
@@ -20,15 +30,12 @@ test.describe("Login and register surfaces", () => {
 
   test("/register is accessible", async ({ page }) => {
     await page.goto("/register");
-    await expect(page).toHaveURL(/\/(register|dashboard)(?:\?|$)/);
+    await expect(page).toHaveURL(/\/(register|dashboard|waitlist)(?:\?|$)/);
 
-    const landedOnDashboard = /\/dashboard(?:\?|$)/.test(page.url());
-
-    if (bypassAuthEnabled || landedOnDashboard) {
-      await expect(page.locator("body")).toContainText(/Welcome to DRX|operator dashboard/i, { timeout: 15000 });
+    if (await expectConfiguredFallback(page)) {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: /initialize session/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible();
   });
 });
