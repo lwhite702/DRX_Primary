@@ -9,7 +9,7 @@ import { productDetailCanon } from "@/lib/feature-canon";
 const content = productDetailCanon["customers-credit"];
 
 export const metadata: Metadata = {
-  title: "Customers & Credit | DRX",
+  title: "Customers & Store Accounts | DRX",
   description: content.metaDescription,
 };
 

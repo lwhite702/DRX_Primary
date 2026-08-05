@@ -8,16 +8,16 @@ struct DRXWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         // Create custom configuration
         let configuration = WKWebViewConfiguration()
-        
+
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
-        
+
         // Allow bounces
         webView.scrollView.bounces = true
-        
+
         // Initial load
         loadRequest(in: webView)
-        
+
         return webView
     }
 
@@ -33,7 +33,7 @@ struct DRXWebView: UIViewRepresentable {
             let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
             let domain = url.host ?? ""
             let isSecure = url.scheme == "https"
-            
+
             if let token = token, !token.isEmpty {
                 // Set __session cookie
                 let sessionCookie = HTTPCookie(properties: [
@@ -43,7 +43,7 @@ struct DRXWebView: UIViewRepresentable {
                     .path: "/",
                     .secure: isSecure
                 ])
-                
+
                 // Set __client_uat cookie
                 let uat = String(Int(Date().timeIntervalSince1970))
                 let uatCookie = HTTPCookie(properties: [
@@ -53,7 +53,7 @@ struct DRXWebView: UIViewRepresentable {
                     .path: "/",
                     .secure: isSecure
                 ])
-                
+
                 if let sessionCookie {
                     await cookieStore.setCookie(sessionCookie)
                 }
@@ -61,7 +61,7 @@ struct DRXWebView: UIViewRepresentable {
                     await cookieStore.setCookie(uatCookie)
                 }
             }
-            
+
             let request = URLRequest(url: url)
             webView.load(request)
         }

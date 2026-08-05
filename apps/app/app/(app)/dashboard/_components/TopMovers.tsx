@@ -42,12 +42,12 @@ export function TopMovers({ movers, totalRevenue, compact = false }: TopMoversPr
               <div
                 className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold text-black ${
                   index === 0
-                    ? "bg-[#4ADE80]"
+                    ? "bg-accent"
                     : index === 1
                       ? "bg-blue-500"
                       : index === 2
-                        ? "bg-purple-500"
-                        : "bg-orange-500"
+                        ? "bg-violet-500"
+                        : "bg-warning"
                 }`}
               >
                 {index + 1}

@@ -2,12 +2,12 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Auth routing regressions", () => {
   test("/ resolves to a valid configured entry surface", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const pathname = new URL(page.url()).pathname;
 
     if (pathname === "/dashboard") {
-      await expect(page.getByRole("main")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Dashboard", exact: true }).first()).toBeVisible();
       return;
     }
 
@@ -17,7 +17,7 @@ test.describe("Auth routing regressions", () => {
     }
 
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
-    await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
     await expect(page.getByRole("textbox", { name: /email address/i })).toBeVisible();
   });
 });

@@ -83,8 +83,7 @@ final class TelemetryService {
 
     func identify(_ session: OperatorSession) {
         let role = session.roles.first ?? "operator"
-        var properties: [String: Any] = [
-            "name": session.displayName,
+        let properties: [String: Any] = [
             "business_id": session.businessID,
             "role": role,
             "platform": "ios",
@@ -92,7 +91,6 @@ final class TelemetryService {
             "build": configuration.buildNumber,
             "distribution_channel": configuration.distributionChannel,
         ]
-        if let email = session.email { properties["email"] = email }
         if postHogConfigured {
             PostHogSDK.shared.identify(session.operatorID, userProperties: properties)
             PostHogSDK.shared.capture("ios_session_identified", properties: [
@@ -103,8 +101,6 @@ final class TelemetryService {
 
         if sentryConfigured {
             let user = User(userId: session.operatorID)
-            user.email = session.email
-            user.name = session.displayName
             user.data = ["business_id": session.businessID, "role": role]
             SentrySDK.setUser(user)
             SentrySDK.configureScope { scope in
@@ -170,11 +166,19 @@ final class TelemetryService {
                 result[key] = "[Filtered]"
             } else if let nested = value as? [String: Any] {
                 result[key] = scrub(nested)
-            } else if let nested = value as? [[String: Any]] {
-                result[key] = nested.map { scrub($0) ?? [:] }
             } else {
-                result[key] = value
+                result[key] = scrubValue(value)
             }
         }
+    }
+
+    private nonisolated static func scrubValue(_ value: Any) -> Any {
+        if let nested = value as? [String: Any] {
+            return scrub(nested) ?? [:]
+        }
+        if let array = value as? [Any] {
+            return array.map(scrubValue)
+        }
+        return value
     }
 }

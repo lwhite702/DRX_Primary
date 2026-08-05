@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await posWeightEngine.getRandomCheckProduct(businessId);
-    
+
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }

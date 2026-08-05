@@ -18,7 +18,7 @@ export default function SalesHistory() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { businessId, getToken } = useAuth();
-  
+
   const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +41,7 @@ export default function SalesHistory() {
   }, [fetchSales]);
 
   const formatCurrency = (value: number) => `$${(value || 0).toFixed(2)}`;
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -55,7 +55,7 @@ export default function SalesHistory() {
           <Text style={styles.saleId}>#{item.id?.slice(0, 8) || ""}</Text>
         </View>
         <View style={[
-          styles.statusBadge, 
+          styles.statusBadge,
           { backgroundColor: item.status === 'completed' ? COLORS.success + '20' : COLORS.warning + '20' }
         ]}>
           <Text style={[
@@ -64,12 +64,12 @@ export default function SalesHistory() {
           ]}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
-      
+
       <View style={styles.saleDetails}>
         <Text style={styles.saleDate}>{formatDate(item.created_at)}</Text>
         <Text style={styles.saleTotal}>{formatCurrency(item.total_amount)}</Text>
       </View>
-      
+
       <View style={styles.saleFooter}>
         <Text style={styles.paymentMethod}>
           Payment: <Text style={{ color: COLORS.text }}>{item.payment_method || 'cash'}</Text>

@@ -22,13 +22,13 @@ export function InventoryHeader({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/inventory/intake" className="block group">
-          <Card className="bg-[#1a1a1a] border-white/5 hover:border-[#4ADE80]/50 transition-all duration-300 relative overflow-hidden group-hover:bg-[#4ADE80]/5 h-full">
+          <Card className="relative h-full overflow-hidden border-white/5 bg-card transition-all duration-200 hover:border-accent/50 group-hover:bg-accent/5">
             <CardContent className="p-6 flex flex-col items-start justify-between h-full">
-              <div className="h-8 w-8 rounded-full bg-[#4ADE80]/20 flex items-center justify-center mb-3 text-[#4ADE80] group-hover:scale-110 transition-transform">
+              <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-accent/20 text-accent transition-transform group-hover:scale-105">
                 <ArrowUp className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-[#4ADE80] font-bold tracking-wide text-sm">
+                <h3 className="text-sm font-bold tracking-wide text-accent">
                   {drxCopy.inventory.cards.intake.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -36,7 +36,7 @@ export function InventoryHeader({
                 </p>
               </div>
             </CardContent>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#4ADE80]/0 to-[#4ADE80]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/0 to-accent/5 opacity-0 transition-opacity group-hover:opacity-100" />
           </Card>
         </Link>
 
@@ -44,9 +44,9 @@ export function InventoryHeader({
           onClick={onAdjustment}
           className="block w-full text-left group h-full"
         >
-          <Card className="bg-[#1a1a1a] border-white/5 hover:border-[#3B82F6]/50 transition-all duration-300 relative overflow-hidden group-hover:bg-[#3B82F6]/5 h-full">
+          <Card className="relative h-full overflow-hidden border-white/5 bg-card transition-all duration-200 hover:border-info/50 group-hover:bg-info/5">
             <CardContent className="p-6 flex flex-col items-start justify-between h-full">
-              <div className="h-8 w-8 rounded-full bg-[#3B82F6]/20 flex items-center justify-center mb-3 text-[#3B82F6] group-hover:scale-110 transition-transform">
+              <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-info/20 text-info transition-transform group-hover:scale-105">
                 <PenLine className="w-5 h-5" />
               </div>
               <div>
@@ -58,7 +58,7 @@ export function InventoryHeader({
                 </p>
               </div>
             </CardContent>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6]/0 to-[#3B82F6]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-info/0 to-info/5 opacity-0 transition-opacity group-hover:opacity-100" />
           </Card>
         </button>
 
@@ -66,9 +66,9 @@ export function InventoryHeader({
           onClick={onAudit}
           className="block w-full text-left group h-full"
         >
-          <Card className="bg-[#1a1a1a] border-white/5 hover:border-purple-500/50 transition-all duration-300 relative overflow-hidden group-hover:bg-purple-500/5 h-full">
+          <Card className="relative h-full overflow-hidden border-white/5 bg-card transition-all duration-200 hover:border-warning/50 group-hover:bg-warning/5">
             <CardContent className="p-6 flex flex-col items-start justify-between h-full">
-              <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center mb-3 text-purple-500 group-hover:scale-110 transition-transform">
+              <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-warning/20 text-warning transition-transform group-hover:scale-105">
                 <ScrollText className="w-5 h-5" />
               </div>
               <div>
@@ -80,7 +80,7 @@ export function InventoryHeader({
                 </p>
               </div>
             </CardContent>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-warning/0 to-warning/5 opacity-0 transition-opacity group-hover:opacity-100" />
           </Card>
         </button>
       </div>

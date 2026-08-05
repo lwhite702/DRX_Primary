@@ -53,9 +53,9 @@ export default function NoSale() {
         <Text style={styles.instruction}>
           Use this action to record a &quot;No Sale&quot; event and open the cash drawer for change or cash drops.
         </Text>
-        
-        <TouchableOpacity 
-          style={styles.actionBtn} 
+
+        <TouchableOpacity
+          style={styles.actionBtn}
           onPress={handleOpenDrawer}
           disabled={loading}
         >

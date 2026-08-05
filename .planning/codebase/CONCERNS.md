@@ -19,7 +19,7 @@
 ## Known Bugs
 
 **Potential environment mismatch in local tooling:**
-- Symptoms: scripts warn on Node version mismatch (`20.18.0` required, different local runtime used).
+- Symptoms: scripts warn on Node version mismatch (`20.19.0` required, different local runtime used).
 - Trigger: Running commands under non-policy Node version.
 - Workaround: switch runtime to `.nvmrc` target before gates.
 - Root cause: local shell/runtime drift.

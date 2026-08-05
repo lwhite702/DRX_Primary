@@ -22,7 +22,7 @@ Use this checklist before promoting `staging` to `main`.
 ## Checklist
 
 - [ ] Version artifacts are complete (`CHANGELOG.md`, `VERSION`, root/app version consistency).
-- [ ] `pnpm release:preflight` passes on Node `20.18.0`.
+- [ ] `pnpm release:preflight` passes on Node `20.19.0`.
 - [ ] `pnpm version:check` passes.
 - [ ] Release notes reflect shipped behavior.
 - [ ] Environment matrix documentation matches deployed config/secrets.
