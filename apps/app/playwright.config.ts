@@ -58,7 +58,11 @@ export default defineConfig({
     command: useWebpackDevServer
       ? `pnpm exec next dev --webpack --port ${appPort}`
       : `pnpm exec next dev --port ${appPort}`,
-    url: appBaseUrl,
+    // Probe a public, database-independent asset. In bypass mode `/` redirects
+    // to the dashboard, while signed-out app pages can redirect to Clerk UI;
+    // either can make Playwright wait on application data before the server is
+    // considered ready.
+    url: `${appBaseUrl}/brand/favicon-16.png`,
     // Avoid silently targeting an unrelated local app on the same port.
     // Reuse only when explicitly requested.
     reuseExistingServer,

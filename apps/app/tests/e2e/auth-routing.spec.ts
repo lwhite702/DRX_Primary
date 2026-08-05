@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Auth routing regressions", () => {
   test("/ resolves to a valid configured entry surface", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const pathname = new URL(page.url()).pathname;
 
