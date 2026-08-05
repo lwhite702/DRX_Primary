@@ -64,7 +64,7 @@ export function AuthShell({
             </p>
             <h1
               id="auth-brand-heading"
-              className="mt-3 max-w-[14ch] text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
+              className="mt-3 max-w-[14ch] text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:max-w-[20ch] sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
             >
               Run the day. Keep the operation moving.
             </h1>
