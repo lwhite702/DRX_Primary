@@ -6,6 +6,7 @@ import { auth } from "@/lib/adapters/auth/server";
 import { drxClerkAuthAppearance } from "@/components/auth/clerk-appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
+import { authVisualFixturesEnabled } from "@/components/auth/visual-fixture-guard";
 
 export const metadata: Metadata = {
   title: "Sign in | Deelrx CRM",
@@ -13,8 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
-  const useVisualFixture =
-    process.env.NODE_ENV !== "production" && process.env.VISUAL_FIXTURES === "true";
   const { userId } = await auth();
 
   if (userId) redirect("/dashboard");
@@ -32,7 +31,7 @@ export default async function LoginPage() {
         </p>
       }
     >
-      {useVisualFixture ? (
+      {authVisualFixturesEnabled ? (
         <AuthVisualFixture mode="sign-in" />
       ) : (
         <SignIn

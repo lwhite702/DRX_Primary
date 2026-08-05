@@ -14,6 +14,9 @@ const productSignals = [
   { label: "Role-based access", icon: UsersRound },
 ];
 
+const footerLinkClassName =
+  "inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
+
 interface AuthShellProps {
   children: ReactNode;
   eyebrow: string;
@@ -86,12 +89,12 @@ export function AuthShell({
         <section className="w-full self-center" aria-labelledby="auth-form-heading">
           <div className="rounded-[14px] border border-white/10 bg-[#121212]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.42)] sm:p-8">
             <div className="mb-7">
-              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-accent">
+              <h2 id="auth-form-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-accent">
                 {eyebrow}
-              </p>
-              <h2 id="auth-form-heading" className="mt-2 text-base font-medium leading-6 text-[#D1D1D1]">
-                {description}
               </h2>
+              <p className="mt-2 text-base font-medium leading-6 text-[#D1D1D1]">
+                {description}
+              </p>
             </div>
 
             {children}
@@ -103,13 +106,13 @@ export function AuthShell({
             aria-label="Legal and support links"
             className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
           >
-            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/privacy`}>
+            <Link className={footerLinkClassName} href={`${marketingUrl}/legal/privacy`}>
               Privacy
             </Link>
-            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/terms`}>
+            <Link className={footerLinkClassName} href={`${marketingUrl}/legal/terms`}>
               Terms
             </Link>
-            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={featurebaseHelpdeskUrl}>
+            <Link className={footerLinkClassName} href={featurebaseHelpdeskUrl}>
               Support
             </Link>
           </nav>

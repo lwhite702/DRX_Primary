@@ -1,11 +1,11 @@
 export const drxClerkAuthAppearance = {
   variables: {
     colorPrimary: "#CCFF00",
-    colorText: "#F5F5F5",
-    colorTextSecondary: "#C7C7C7",
+    colorForeground: "#F5F5F5",
+    colorMutedForeground: "#C7C7C7",
     colorBackground: "transparent",
-    colorInputBackground: "#1A1A1A",
-    colorInputText: "#F5F5F5",
+    colorInput: "#1A1A1A",
+    colorInputForeground: "#F5F5F5",
     colorDanger: "#F87171",
     colorSuccess: "#34D399",
     colorWarning: "#FBBF24",
@@ -63,5 +63,13 @@ export const drxClerkAuthAppearance = {
     backLink:
       "min-h-11 text-sm font-semibold text-[#CCFF00] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]",
     captchaBox: "rounded-lg border border-white/15 bg-[#1A1A1A] p-2",
+  },
+} as const;
+
+export const drxClerkWaitlistAppearance = {
+  ...drxClerkAuthAppearance,
+  elements: {
+    ...drxClerkAuthAppearance.elements,
+    header: "hidden",
   },
 } as const;

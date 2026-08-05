@@ -37,6 +37,9 @@ export function AuthVisualFixture({ mode }: AuthVisualFixtureProps) {
             id={`${mode}-email`}
             type="email"
             inputMode="email"
+            readOnly
+            autoComplete="off"
+            tabIndex={-1}
             placeholder="operator@example.com"
             className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#8A8A8A]"
           />
@@ -53,6 +56,9 @@ export function AuthVisualFixture({ mode }: AuthVisualFixtureProps) {
             <input
               id={`${mode}-password`}
               type="password"
+              readOnly
+              autoComplete="off"
+              tabIndex={-1}
               placeholder="••••••••••••"
               className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#8A8A8A]"
             />

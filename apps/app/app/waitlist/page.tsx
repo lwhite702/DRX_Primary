@@ -3,9 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Waitlist } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
-import { drxClerkAuthAppearance } from "@/components/auth/clerk-appearance";
+import { drxClerkWaitlistAppearance } from "@/components/auth/clerk-appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
+import { authVisualFixturesEnabled } from "@/components/auth/visual-fixture-guard";
 
 export const metadata: Metadata = {
   title: "Join the beta | Deelrx CRM",
@@ -13,8 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function WaitlistPage() {
-  const useVisualFixture =
-    process.env.NODE_ENV !== "production" && process.env.VISUAL_FIXTURES === "true";
   const { userId, sessionClaims } = await auth();
   const claims = sessionClaims as {
     metadata?: { onboardingComplete?: boolean };
@@ -41,18 +40,12 @@ export default async function WaitlistPage() {
         </p>
       }
     >
-      {useVisualFixture ? (
+      {authVisualFixturesEnabled ? (
         <AuthVisualFixture mode="waitlist" />
       ) : (
         <Waitlist
           afterJoinWaitlistUrl="/login"
-          appearance={{
-            ...drxClerkAuthAppearance,
-            elements: {
-              ...drxClerkAuthAppearance.elements,
-              header: "hidden",
-            },
-          }}
+          appearance={drxClerkWaitlistAppearance}
         />
       )}
     </AuthShell>

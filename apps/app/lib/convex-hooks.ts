@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 export function useDRXProducts() {
   try {
@@ -14,11 +15,15 @@ export function useDRXProducts() {
 }
 
 export function useDRXCheckout() {
+  const isBypassActive = useIsBypassActive();
   try {
     const processCheckout = useMutation(api.checkout.processCheckout);
     const sales = useQuery(api.checkout.getSalesHistory, {}) || [];
 
-    return { processCheckout, sales };
+    return {
+      processCheckout: isBypassActive ? async () => undefined : processCheckout,
+      sales,
+    };
   } catch {
     return { processCheckout: async () => {}, sales: [] };
   }
