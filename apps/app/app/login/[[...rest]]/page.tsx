@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignIn } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
-import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
+import { drxClerkAuthAppearance } from "@/components/auth/clerk-appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 

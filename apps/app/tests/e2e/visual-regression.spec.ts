@@ -12,8 +12,6 @@ const hasClerkTestingKeys =
     process.env.CLERK_PUBLISHABLE_KEY ||
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   );
-const visualFixturesEnabled = process.env.VISUAL_FIXTURES === "true";
-
 test.describe("Visual regression", () => {
   test.beforeEach(async ({ page }) => {
     if (bypassAuthEnabled || !hasClerkTestingKeys) {
@@ -32,19 +30,19 @@ test.describe("Visual regression", () => {
         ]
       : visualTarget === "protected"
         ? [
-            { name: "dashboard", url: visualFixturesEnabled ? "/visual-fixtures/dashboard" : "/dashboard", heading: "Operator dashboard" },
-            { name: "pos-sale", url: visualFixturesEnabled ? "/visual-fixtures/pos-sale" : "/pos/sale", heading: "Quick sale" },
-            { name: "inventory", url: visualFixturesEnabled ? "/visual-fixtures/inventory" : "/inventory", heading: "Inventory" },
-            { name: "customers", url: visualFixturesEnabled ? "/visual-fixtures/customers" : "/customers", heading: "Customers" },
+            { name: "dashboard", url: "/dashboard", heading: "Operator dashboard" },
+            { name: "pos-sale", url: "/pos/sale", heading: "Quick sale" },
+            { name: "inventory", url: "/inventory", heading: "Inventory" },
+            { name: "customers", url: "/customers", heading: "Customers" },
           ]
         : [
             { name: "login", url: "/login", heading: "Sign in" },
             { name: "register", url: "/register", heading: "Create account" },
             { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
-            { name: "dashboard", url: visualFixturesEnabled ? "/visual-fixtures/dashboard" : "/dashboard", heading: "Operator dashboard" },
-            { name: "pos-sale", url: visualFixturesEnabled ? "/visual-fixtures/pos-sale" : "/pos/sale", heading: "Quick sale" },
-            { name: "inventory", url: visualFixturesEnabled ? "/visual-fixtures/inventory" : "/inventory", heading: "Inventory" },
-            { name: "customers", url: visualFixturesEnabled ? "/visual-fixtures/customers" : "/customers", heading: "Customers" },
+            { name: "dashboard", url: "/dashboard", heading: "Operator dashboard" },
+            { name: "pos-sale", url: "/pos/sale", heading: "Quick sale" },
+            { name: "inventory", url: "/inventory", heading: "Inventory" },
+            { name: "customers", url: "/customers", heading: "Customers" },
           ];
 
   const viewports = [
