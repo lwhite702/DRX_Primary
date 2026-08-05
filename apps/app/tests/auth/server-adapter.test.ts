@@ -40,7 +40,7 @@ describe("server auth adapter", () => {
   });
 
   it("returns an anonymous auth state when Clerk is not configured", async () => {
-    const state = (await auth()) as {
+    const state = (await auth()) as unknown as {
       userId: string | null;
       orgId: string | null;
       getToken: () => Promise<string | null>;
@@ -57,7 +57,7 @@ describe("server auth adapter", () => {
   it("uses the test-only bypass identity when explicitly enabled", async () => {
     vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "true");
 
-    const state = (await auth()) as {
+    const state = (await auth()) as unknown as {
       userId: string;
       orgId: string;
       getToken: () => Promise<string>;
