@@ -41,39 +41,41 @@ export default function More() {
     {
       title: "POS Actions",
       items: [
-        { icon: "receipt-outline", label: "Sales History", disabled: true },
+        { icon: "receipt-outline", label: "Sales History", route: "/sales-history", disabled: false },
         {
           icon: "cash-outline",
           label: "No Sale / Open Drawer",
-          disabled: true,
+          route: "/no-sale",
+          disabled: false,
         },
         {
           icon: "leaf-outline",
           label: "Personal Use / Shrinkage",
-          disabled: true,
+          route: "/shrinkage",
+          disabled: false,
         },
-        { icon: "clipboard-outline", label: "Inventory Check", disabled: true },
+        { icon: "clipboard-outline", label: "Inventory Check", route: "/inventory-check", disabled: false },
       ],
     },
     {
       title: "Reports",
       items: [
-        { icon: "stats-chart-outline", label: "Daily Summary", disabled: true },
-        { icon: "calendar-outline", label: "End of Shift", disabled: true },
+        { icon: "stats-chart-outline", label: "Daily Summary", route: "/daily-summary", disabled: false },
+        { icon: "calendar-outline", label: "End of Shift", route: "/end-of-shift", disabled: false },
       ],
     },
     {
       title: "Account",
       items: [
-        { icon: "person-outline", label: "Profile", disabled: true },
-        { icon: "settings-outline", label: "Settings", disabled: true },
+        { icon: "person-outline", label: "Profile", route: "/settings", disabled: false },
+        { icon: "settings-outline", label: "Settings", route: "/settings", disabled: false },
         {
           icon: "chatbubbles-outline",
           label: "Feedback & Roadmap",
           route: "/feedback",
           disabled: false,
         },
-        { icon: "help-circle-outline", label: "Help", disabled: true },
+        { icon: "help-circle-outline", label: "Help", route: "/help", disabled: false },
       ],
     },
   ];

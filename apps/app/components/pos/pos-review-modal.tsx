@@ -84,15 +84,15 @@ export function POSReviewModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[800px] bg-background border-border p-0 gap-0 overflow-hidden sm:rounded-xl">
         {/* Header - Neon Green Bar */}
-        <div className="bg-[#BFFF00]/10 border-b border-[#BFFF00]/20 p-6 flex items-start gap-4">
-          <div className="p-2 bg-[#BFFF00]/20 rounded-full text-[#BFFF00]">
+        <div className="bg-[#ccff00]/10 border-b border-[#ccff00]/20 p-6 flex items-start gap-4">
+          <div className="p-2 bg-[#ccff00]/20 rounded-full text-[#ccff00]">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-[#BFFF00] tracking-tight">
+            <h2 className="text-xl font-bold text-[#ccff00] tracking-tight">
               Review Before Finalizing
             </h2>
-            <p className="text-[#BFFF00]/70 text-sm mt-1">
+            <p className="text-[#ccff00]/70 text-sm mt-1">
               This action is{" "}
               <span className="font-bold underline">irreversible</span>. Verify
               all line items, quantities, conversions, payment method, and
@@ -165,7 +165,7 @@ export function POSReviewModal({
               </div>
               <div className="flex justify-between items-end pt-2">
                 <span className="text-lg font-bold">Total Due</span>
-                <span className="text-4xl font-bold text-[#BFFF00] font-mono tracking-tight">
+                <span className="text-4xl font-bold text-[#ccff00] font-mono tracking-tight">
                   ${total.toFixed(2)}
                 </span>
               </div>
@@ -181,7 +181,7 @@ export function POSReviewModal({
                   Payment Method
                 </p>
                 <div className="p-4 rounded-lg bg-secondary/30 border border-border flex items-center gap-3">
-                  <div className="p-2 bg-[#BFFF00]/10 rounded-full text-[#BFFF00]">
+                  <div className="p-2 bg-[#ccff00]/10 rounded-full text-[#ccff00]">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div>
@@ -272,7 +272,7 @@ export function POSReviewModal({
         {/* Footer Actions */}
         <div className="p-6 bg-background border-t border-border flex flex-col gap-3">
           <Button
-            className="w-full h-14 text-lg font-bold bg-[#BFFF00] text-black hover:bg-[#BFFF00]/90 shadow-[0_0_20px_rgba(191,255,0,0.3)] transition-all"
+            className="w-full h-14 text-lg font-bold bg-[#ccff00] text-black hover:bg-[#ccff00]/90 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all"
             onClick={onConfirm}
             disabled={isProcessing}
           >

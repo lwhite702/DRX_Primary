@@ -85,11 +85,28 @@ export function shouldRedirectMarketingToApp(pathname: string) {
 export function classifyDrxHost(hostname: string | null | undefined): DrxHostKind {
   const host = (hostname ?? "").toLowerCase();
   if (!host) return "other";
-  if (host === "deelrxcrm.com" || host.endsWith(".deelrxcrm.com")) return "marketing";
-  if (host === "clerk.deelrxcrm.app" || host === "accounts.deelrxcrm.app") return "auth";
+  if (
+    host === "deelrxcrm.com" ||
+    host.endsWith(".deelrxcrm.com") ||
+    host === "deelrx.com" ||
+    host.endsWith(".deelrx.com")
+  ) {
+    return "marketing";
+  }
+  if (
+    host === "clerk.deelrxcrm.app" ||
+    host === "accounts.deelrxcrm.app" ||
+    host.endsWith(".accounts.deelrxcrm.app") ||
+    host === "accounts.deelrx.app" ||
+    host.endsWith(".accounts.deelrx.app")
+  ) {
+    return "auth";
+  }
   if (
     host === "deelrxcrm.app" ||
     host.endsWith(".deelrxcrm.app") ||
+    host === "deelrx.app" ||
+    host.endsWith(".deelrx.app") ||
     host.endsWith(".vercel.app") ||
     host.includes("localhost")
   ) {

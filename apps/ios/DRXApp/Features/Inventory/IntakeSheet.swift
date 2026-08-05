@@ -2,6 +2,7 @@
 // Record an inventory intake for a product (adds FIFO batch and updates stock).
 
 import SwiftUI
+import ClerkKit
 
 struct IntakeSheet: View {
     let product: DRXProduct
@@ -15,8 +16,8 @@ struct IntakeSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var totalCostCents: Int { CurrencyInput.cents(from: totalCostString) ?? 0 }
-    private var deliveryCostCents: Int { CurrencyInput.cents(from: deliveryCostString) ?? 0 }
+    private var totalCostCents: Int { Int((Double(totalCostString) ?? 0) * 100) }
+    private var deliveryCostCents: Int { Int((Double(deliveryCostString) ?? 0) * 100) }
     private var totalWeightGrams: Double { Double(totalWeightString) ?? 0 }
 
     private var calculatedCostPerGramCents: Double {
@@ -103,6 +104,8 @@ struct IntakeSheet: View {
     private func save() async {
         isSaving = true
         saveError = nil
+        let userId = await MainActor.run { Clerk.shared.user?.id }
+
         struct RecordIntakeArgs: Encodable, Sendable {
             let productId: String
             let totalCostCents: Int

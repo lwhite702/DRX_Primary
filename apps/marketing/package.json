@@ -3,15 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No unit tests for marketing app\"",
-    "test:e2e:visual": "playwright test tests/e2e/visual-regression.spec.ts"
+    "test": "echo \"No tests for marketing app\""
   },
   "dependencies": {
     "@deelrx/brand": "link:../../packages/brand",

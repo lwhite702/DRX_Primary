@@ -7,26 +7,17 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
+process.env.NEXT_PUBLIC_SUPABASE_URL ??= process.env.SUPABASE_URL;
+
 const appPort = Number(process.env.PLAYWRIGHT_APP_PORT || 3000);
 const appBaseUrl = `http://localhost:${appPort}`;
 const useWebpackDevServer = process.env.PW_NEXT_WEBPACK === "1";
 const skipGlobalSetup = process.env.PW_SKIP_GLOBAL_SETUP === "1";
 const reuseExistingServer = process.env.PW_REUSE_EXISTING_SERVER === "1";
-const betaE2EEnabled = ["1", "true", "yes"].includes(
-  String(process.env.BETA_E2E_ENABLED || "").toLowerCase(),
-);
-const betaE2ERequired = process.env.BETA_E2E_REQUIRED === "1";
-
-if (betaE2ERequired && !betaE2EEnabled) {
-  throw new Error(
-    "Real beta E2E was requested but is disabled. Set BETA_E2E_ENABLED=true and provide the documented Clerk, Supabase, and PII credentials.",
-  );
-}
 
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.spec.ts",
-  testIgnore: betaE2EEnabled ? [] : ["**/beta-real-workflow.spec.ts"],
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}",
   fullyParallel: true,
@@ -56,8 +47,8 @@ export default defineConfig({
   ],
   webServer: {
     command: useWebpackDevServer
-      ? `pnpm exec next dev --webpack --port ${appPort}`
-      : `pnpm exec next dev --port ${appPort}`,
+      ? `corepack pnpm exec next dev --webpack --port ${appPort}`
+      : `corepack pnpm exec next dev --port ${appPort}`,
     url: appBaseUrl,
     // Avoid silently targeting an unrelated local app on the same port.
     // Reuse only when explicitly requested.

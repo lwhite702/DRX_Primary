@@ -7,8 +7,8 @@ import {
 import type { WebhookEvent as ClerkWebhookEvent } from "@clerk/nextjs/server";
 import type { WorkflowSession } from "@wrelik/auth/shared";
 import {
-  BYPASS_AUTH_ORG_ID,
-  BYPASS_AUTH_USER_ID,
+  getBypassAuthOrgId,
+  getBypassAuthUserId,
   isAuthBypassEnabledServer,
 } from "@/lib/auth/bypass";
 
@@ -17,22 +17,15 @@ export type WebhookEvent = ClerkWebhookEvent;
 export const isAuthBypassEnabled = isAuthBypassEnabledServer;
 
 export function isClerkServerConfigured() {
-  return Boolean(
-    process.env.CLERK_SECRET_KEY &&
-      (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-        process.env.CLERK_PUBLISHABLE_KEY),
-  );
-}
+  // Unit tests mock Clerk's server API directly and must exercise that mock.
+  if (process.env.NODE_ENV === "test") return true;
 
-function getAnonymousAuthState() {
-  return {
-    userId: null,
-    orgId: null,
-    sessionId: null,
-    sessionClaims: null,
-    getToken: async () => null,
-    has: () => false,
-  };
+  const configured = Boolean(process.env.CLERK_SECRET_KEY);
+  const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+  if (!configured && process.env.NODE_ENV === "production" && !isProductionBuild) {
+    throw new Error("[auth] CLERK_SECRET_KEY is required in production.");
+  }
+  return configured;
 }
 
 function fromClerkAuth(
@@ -55,8 +48,8 @@ function fromClerkAuth(
 
 function getBypassAuthState() {
   return {
-    userId: BYPASS_AUTH_USER_ID,
-    orgId: BYPASS_AUTH_ORG_ID,
+    userId: getBypassAuthUserId(),
+    orgId: getBypassAuthOrgId(),
     sessionId: "bypass-session",
     sessionClaims: {
       metadata: { onboardingComplete: true },
@@ -65,6 +58,17 @@ function getBypassAuthState() {
     },
     getToken: async () => "bypass-token",
     has: () => true,
+  };
+}
+
+function getAnonymousAuthState() {
+  return {
+    userId: null,
+    orgId: null,
+    sessionId: null,
+    sessionClaims: null,
+    getToken: async () => null,
+    has: () => false,
   };
 }
 
@@ -83,9 +87,9 @@ export async function auth() {
 export async function getWorkflowSession(): Promise<WorkflowSession> {
   if (isAuthBypassEnabled()) {
     return {
-      userId: BYPASS_AUTH_USER_ID,
-      tenantId: BYPASS_AUTH_ORG_ID,
-      orgId: BYPASS_AUTH_ORG_ID,
+      userId: getBypassAuthUserId(),
+      tenantId: getBypassAuthOrgId(),
+      orgId: getBypassAuthOrgId(),
       roles: ["super_admin"],
       permissions: ["*"],
     } as WorkflowSession;

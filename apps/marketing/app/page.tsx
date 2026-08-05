@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { OperatorsShowcaseSection } from "@/components/marketing/landing/operators-showcase";
 import { LandingPageSections } from "@/components/marketing/landing/sections";
 import { PageViewTracker } from "@/components/marketing/site/page-view-tracker";
 
@@ -15,7 +16,7 @@ export default function LandingPage() {
       <PageViewTracker />
       <div className="page-grid-overlay" />
       <div className="page-glow" />
-      <LandingPageSections />
+      <LandingPageSections operatorShowcase={<OperatorsShowcaseSection />} />
     </main>
   );
 }

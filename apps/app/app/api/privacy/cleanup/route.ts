@@ -20,7 +20,7 @@ function isMissingRelationError(error: unknown): boolean {
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.DRX_PRIVACY_CLEANUP_SECRET;
   if (!secret) {
-    return true;
+    return false;
   }
 
   const headerSecret = request.headers.get("x-cron-secret");
@@ -37,7 +37,7 @@ function getCurrentHourInTimezone(timezone: string): number {
   }).formatToParts(new Date());
 
   const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
-  return Number.isFinite(hour) ? hour : 0;
+  return Number.isFinite(hour) ? hour % 24 : 0;
 }
 
 function isRetentionRunDue(

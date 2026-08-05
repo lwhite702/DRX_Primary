@@ -36,7 +36,6 @@ struct DRXApp: App {
                     )
                 }
             }
-            .preferredColorScheme(.dark)
         }
     }
 }

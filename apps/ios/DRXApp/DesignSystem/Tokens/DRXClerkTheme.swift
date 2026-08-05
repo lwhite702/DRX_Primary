@@ -9,8 +9,8 @@ extension ClerkTheme {
             background: DRXPalette.canvas,
             input: DRXPalette.card,
             danger: DRXPalette.danger,
-            success: DRXPalette.success,
-            warning: DRXPalette.warning,
+            success: DRXPalette.accent,
+            warning: .orange,
             foreground: DRXPalette.ink,
             mutedForeground: DRXPalette.muted,
             primaryForeground: DRXPalette.onAccent,
@@ -23,6 +23,7 @@ extension ClerkTheme {
             shadow: DRXPalette.ink,
             border: DRXPalette.muted
         ),
-        design: .init(borderRadius: DRXRadius.card)
+        design: .init(borderRadius: 12)
     )
 }
+

@@ -2,6 +2,7 @@
 // Create a new product in the catalog.
 
 import SwiftUI
+import ClerkKit
 
 struct AddProductSheet: View {
     let onSaved: () async -> Void
@@ -17,8 +18,8 @@ struct AddProductSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var sellingPriceCents: Int { CurrencyInput.cents(from: sellingPriceString) ?? 0 }
-    private var unitCostCents: Int { CurrencyInput.cents(from: unitCostString) ?? 0 }
+    private var sellingPriceCents: Int { Int((Double(sellingPriceString) ?? 0) * 100) }
+    private var unitCostCents: Int { Int((Double(unitCostString) ?? 0) * 100) }
     private var reorderLevelGrams: Double { Double(reorderLevelString) ?? 10 }
 
     private var isValid: Bool {
@@ -92,6 +93,8 @@ struct AddProductSheet: View {
     private func save() async {
         isSaving = true
         saveError = nil
+        let userId = await MainActor.run { Clerk.shared.user?.id }
+
         struct CreateProductArgs: Encodable, Sendable {
             let sku: String
             let productName: String

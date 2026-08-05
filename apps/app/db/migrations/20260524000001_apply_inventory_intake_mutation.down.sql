@@ -1,4 +1,4 @@
--- Remove the centralized intake mutation helper.
+-- Roll back the centralized inventory intake mutation RPC.
 
 DROP FUNCTION IF EXISTS apply_inventory_intake_mutation(
   UUID,

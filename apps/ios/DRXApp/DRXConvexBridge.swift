@@ -91,10 +91,6 @@ struct DRXCustomer: Decodable, Identifiable, Sendable {
         return full.isEmpty ? (phoneNumber ?? "Guest") : full
     }
     var creditAvailableCents: Int { max(0, creditLimitCents - totalCreditUsedCents) }
-    var hasUnlimitedStoreAccount: Bool { creditLimitCents == 0 }
-    func canChargeStoreAccount(_ amountCents: Int) -> Bool {
-        amountCents >= 0 && (hasUnlimitedStoreAccount || creditAvailableCents >= amountCents)
-    }
     var totalPurchasesFormatted: String { formatCents(totalPurchasesCents) }
     var creditUsedFormatted: String { formatCents(totalCreditUsedCents) }
     var creditLimitFormatted: String { formatCents(creditLimitCents) }
@@ -231,70 +227,7 @@ struct CheckoutResponse: Decodable, Sendable {
     var totalFormatted: String { formatCents(totalAmountCents) }
 }
 
-struct BusinessSettingsResponse: Decodable, Sendable {
-    let business: DRXBusiness
-}
-
 // MARK: - Helpers
-
-enum CurrencyInput {
-    static let maximumTransactionCents = 10_000_000_000
-
-    static func cents(from input: String) -> Int? {
-        let normalized = input
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "$", with: "")
-        guard !normalized.isEmpty,
-              normalized.range(of: #"^(?:(?:\d+)|(?:\d{1,3}(?:,\d{3})+))(?:\.\d{1,2})?$"#, options: .regularExpression) != nil,
-              let value = Decimal(
-                string: normalized.replacingOccurrences(of: ",", with: ""),
-                locale: Locale(identifier: "en_US_POSIX")
-              ),
-              value >= 0 else { return nil }
-
-        var scaled = value * 100
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &scaled, 0, .plain)
-        let number = NSDecimalNumber(decimal: rounded)
-        guard number != .notANumber,
-              number.compare(NSDecimalNumber(value: maximumTransactionCents)) != .orderedDescending else { return nil }
-        return number.intValue
-    }
-
-    static func string(fromCents cents: Int) -> String {
-        String(format: "%.2f", Double(cents) / 100.0)
-    }
-}
-
-enum CheckoutMath {
-    static func taxCents(subtotalCents: Int, collectTax: Bool = true, taxRateBps: Int) -> Int {
-        guard collectTax, subtotalCents > 0, taxRateBps > 0 else { return 0 }
-        guard subtotalCents <= CurrencyInput.maximumTransactionCents,
-              taxRateBps <= 10_000 else { return CurrencyInput.maximumTransactionCents }
-
-        var tax = Decimal(subtotalCents) * Decimal(taxRateBps) / Decimal(10_000)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &tax, 0, .plain)
-        let number = NSDecimalNumber(decimal: rounded)
-        guard number != .notANumber,
-              number.compare(NSDecimalNumber(value: CurrencyInput.maximumTransactionCents)) != .orderedDescending else {
-            return CurrencyInput.maximumTransactionCents
-        }
-        return number.intValue
-    }
-
-    static func totalCents(subtotalCents: Int, collectTax: Bool, taxRateBps: Int) -> Int {
-        let tax = taxCents(
-            subtotalCents: subtotalCents,
-            collectTax: collectTax,
-            taxRateBps: taxRateBps
-        )
-        guard subtotalCents <= CurrencyInput.maximumTransactionCents - tax else {
-            return CurrencyInput.maximumTransactionCents
-        }
-        return subtotalCents + tax
-    }
-}
 
 private func formatCents(_ cents: Int) -> String {
     let dollars = Double(cents) / 100.0

@@ -1,9 +1,7 @@
-import { Waitlist } from "@/lib/adapters/auth/ui";
-import { auth } from "@/lib/adapters/auth/server";
-import { Metadata } from "next";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+<<<<<<< HEAD
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 
 export const metadata: Metadata = {
@@ -16,6 +14,20 @@ const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
   "https://www.deelrxcrm.com";
 
+=======
+import { Waitlist } from "@/lib/adapters/auth/ui";
+import { auth } from "@/lib/adapters/auth/server";
+import { drxClerkWaitlistAppearance } from "@/components/auth/clerk-appearance";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
+import { authVisualFixturesEnabled } from "@/components/auth/visual-fixture-guard";
+
+export const metadata: Metadata = {
+  title: "Join the beta | Deelrx CRM",
+  description: "Request access to Deelrx CRM for your independent retail operation.",
+};
+
+>>>>>>> origin/main
 export default async function WaitlistPage() {
   const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
   const { userId, sessionClaims } = useVisualFixture
@@ -31,11 +43,10 @@ export default async function WaitlistPage() {
     claims?.publicMetadata?.onboardingComplete === true ||
     claims?.public_metadata?.onboardingComplete === true;
 
-  if (userId) {
-    redirect(onboardingComplete ? "/dashboard" : "/onboarding");
-  }
+  if (userId) redirect(onboardingComplete ? "/dashboard" : "/onboarding");
 
   return (
+<<<<<<< HEAD
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] p-4">
       <div className="noise-overlay" />
       <div className="ambient-glow left-[15%] top-[12%] h-72 w-72" />
@@ -94,17 +105,28 @@ export default async function WaitlistPage() {
         <div className="text-center text-[11px] text-white/50">
           <Link href={`${marketingUrl}/legal/privacy`} className="hover:text-white">
             Privacy
+=======
+    <AuthShell
+      eyebrow="Beta access"
+      description="Request access for your independent shop. We’ll email you when an invite is available."
+      footer={
+        <p className="text-center text-sm leading-6 text-[#B8B8B8]">
+          Already have access?{" "}
+          <Link className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href="/login">
+            Sign in
+>>>>>>> origin/main
           </Link>
-          <span className="mx-2">•</span>
-          <Link href={`${marketingUrl}/legal/terms`} className="hover:text-white">
-            Terms
-          </Link>
-          <span className="mx-2">•</span>
-          <Link href={`${marketingUrl}/beta`} className="hover:text-white">
-            Beta details
-          </Link>
-        </div>
-      </div>
-    </div>
+        </p>
+      }
+    >
+      {authVisualFixturesEnabled ? (
+        <AuthVisualFixture mode="waitlist" />
+      ) : (
+        <Waitlist
+          afterJoinWaitlistUrl="/login"
+          appearance={drxClerkWaitlistAppearance}
+        />
+      )}
+    </AuthShell>
   );
 }

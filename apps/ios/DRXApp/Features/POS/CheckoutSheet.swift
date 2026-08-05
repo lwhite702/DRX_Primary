@@ -2,6 +2,7 @@
 // Checkout flow: customer selection, payment method, amount tendered, confirm.
 
 import SwiftUI
+import ClerkKit
 
 struct CheckoutSheet: View {
     @Bindable var store: POSStore
@@ -13,7 +14,6 @@ struct CheckoutSheet: View {
     @State private var checkoutError: String?
     @State private var completedSale: CheckoutResponse?
     @State private var showCustomerPicker = false
-    @State private var orderNumber = "ORD-\(UUID().uuidString.uppercased())"
 
     enum PaymentMethod: String, CaseIterable {
         case cash, card, credit
@@ -27,21 +27,23 @@ struct CheckoutSheet: View {
         }
     }
 
-    var amountTenderedCents: Int { CurrencyInput.cents(from: amountTenderedString) ?? 0 }
+    var amountTenderedCents: Int {
+        Int((Double(amountTenderedString.filter { $0.isNumber }) ?? 0))
+    }
 
     var changeCents: Int {
-        max(0, amountTenderedCents - store.cartTotalCents)
+        max(0, amountTenderedCents - store.cartSubtotalCents)
     }
 
     var canConfirm: Bool {
         switch paymentMethod {
         case .cash:
-            return amountTenderedCents >= store.cartTotalCents
+            return amountTenderedCents >= store.cartSubtotalCents
         case .card:
             return true
         case .credit:
             guard let customer = store.selectedCustomer else { return false }
-            return customer.canChargeStoreAccount(store.cartTotalCents)
+            return customer.creditAvailableCents >= store.cartSubtotalCents
         }
     }
 
@@ -97,7 +99,7 @@ struct CheckoutSheet: View {
                         if isProcessing {
                             ProgressView().tint(.white)
                         } else {
-                            Text("Confirm \(formatCents(store.cartTotalCents))")
+                            Text("Confirm \(formatCents(store.cartSubtotalCents))")
                                 .font(.headline)
                         }
                     }
@@ -144,28 +146,15 @@ struct CheckoutSheet: View {
                 Divider().padding(.leading, 16)
             }
 
-            VStack(spacing: 8) {
-                HStack {
-                    Text("Subtotal")
-                    Spacer()
-                    Text(formatCents(store.cartSubtotalCents))
-                }
-                if store.cartTaxCents > 0 {
-                    HStack {
-                        Text("Tax")
-                        Spacer()
-                        Text(formatCents(store.cartTaxCents))
-                    }
-                }
-                HStack {
-                    Text("Total").font(.headline)
-                    Spacer()
-                    Text(formatCents(store.cartTotalCents))
-                        .font(.title3.bold())
-                        .foregroundStyle(DRXPalette.accent)
-                }
+            HStack {
+                Text("Total")
+                    .font(.headline)
+                    .foregroundStyle(DRXPalette.ink)
+                Spacer()
+                Text(formatCents(store.cartSubtotalCents))
+                    .font(.title3.bold())
+                    .foregroundStyle(DRXPalette.accent)
             }
-            .foregroundStyle(DRXPalette.ink)
             .padding(16)
         }
         .background(DRXPalette.card)
@@ -268,7 +257,7 @@ struct CheckoutSheet: View {
                     .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
                     .padding(.horizontal)
 
-                if amountTenderedCents >= store.cartTotalCents && !amountTenderedString.isEmpty {
+                if amountTenderedCents >= store.cartSubtotalCents && !amountTenderedString.isEmpty {
                     HStack {
                         Text("Change Due")
                             .font(.subheadline)
@@ -285,7 +274,7 @@ struct CheckoutSheet: View {
                 HStack(spacing: 8) {
                     ForEach([5_00, 10_00, 20_00, 50_00], id: \.self) { amount in
                         Button("$\(amount/100)") {
-                            amountTenderedString = CurrencyInput.string(fromCents: amount)
+                            amountTenderedString = String(amount)
                         }
                         .font(.caption.weight(.semibold))
                         .padding(.horizontal, 12)
@@ -310,16 +299,16 @@ struct CheckoutSheet: View {
                         Text("Credit Available")
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
-                        Text(customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditAvailableFormatted)
+                        Text(customer.creditAvailableFormatted)
                             .font(.headline)
-                            .foregroundStyle(customer.canChargeStoreAccount(store.cartTotalCents) ? .green : DRXPalette.danger)
+                            .foregroundStyle(customer.creditAvailableCents >= store.cartSubtotalCents ? .green : DRXPalette.danger)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("Credit Limit")
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
-                        Text(customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditLimitFormatted)
+                        Text(customer.creditLimitFormatted)
                             .font(.subheadline)
                             .foregroundStyle(DRXPalette.ink)
                     }
@@ -403,18 +392,12 @@ struct CheckoutSheet: View {
     private func processCheckout() async {
         isProcessing = true
         checkoutError = nil
+        let userId = await MainActor.run { Clerk.shared.user?.id }
+        let orderNumber = "ORD-\(Int(Date().timeIntervalSince1970))"
         let items = store.cartItems.map { item in
             CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams)
         }
-        let tendered: Int
-        switch paymentMethod {
-        case .cash:
-            tendered = amountTenderedCents
-        case .card:
-            tendered = store.cartTotalCents
-        case .credit:
-            tendered = 0
-        }
+        let tendered = paymentMethod == .cash ? amountTenderedCents : store.cartSubtotalCents
         let args = CheckoutArgs(
             customerId: store.selectedCustomer?.id,
             orderNumber: orderNumber,

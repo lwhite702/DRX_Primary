@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SignIn } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
+<<<<<<< HEAD
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import Image from "next/image";
@@ -11,21 +15,26 @@ import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
   "https://www.deelrxcrm.com";
+=======
+import { drxClerkAuthAppearance } from "@/components/auth/clerk-appearance";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
+import { authVisualFixturesEnabled } from "@/components/auth/visual-fixture-guard";
+>>>>>>> origin/main
 
 export const metadata: Metadata = {
-  title: "Login | Deelrx CRM",
-  description: "Access your secure workspace.",
+  title: "Sign in | Deelrx CRM",
+  description: "Sign in to your Deelrx CRM retail operations workspace.",
 };
 
 export default async function LoginPage() {
   const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
   const userId = useVisualFixture ? null : (await auth()).userId;
 
-  if (userId) {
-    redirect("/dashboard");
-  }
+  if (userId) redirect("/dashboard");
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-gray-400">
       {/* Background Noise/Grid */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px] pointer-events-none" />
@@ -257,5 +266,31 @@ export default async function LoginPage() {
           </>
       </div>
     </div>
+=======
+    <AuthShell
+      eyebrow="Operator access"
+      description="Sign in to continue to your workspace."
+      footer={
+        <p className="text-center text-sm leading-6 text-[#B8B8B8]">
+          New to Deelrx?{" "}
+          <Link className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href="/waitlist">
+            Join the beta
+          </Link>
+        </p>
+      }
+    >
+      {authVisualFixturesEnabled ? (
+        <AuthVisualFixture mode="sign-in" />
+      ) : (
+        <SignIn
+          routing="path"
+          path="/login"
+          appearance={drxClerkAuthAppearance}
+          forceRedirectUrl="/dashboard"
+          fallbackRedirectUrl="/dashboard"
+        />
+      )}
+    </AuthShell>
+>>>>>>> origin/main
   );
 }

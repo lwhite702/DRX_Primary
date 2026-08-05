@@ -5,7 +5,8 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const REQUIRED_NODE = "22.23.1";
+const REQUIRED_NODE_MAJOR = 20;
+const REQUIRED_NODE_MINOR = 19;
 
 function run(command, args) {
   const result = spawnSync(command, args, {
@@ -21,9 +22,10 @@ function run(command, args) {
 
 function assertNodeVersion() {
   const actual = process.versions.node;
-  if (actual !== REQUIRED_NODE) {
+  const [major, minor] = actual.split(".").map(Number);
+  if (major !== REQUIRED_NODE_MAJOR || minor < REQUIRED_NODE_MINOR) {
     console.error(
-      `[preflight] Node.js ${REQUIRED_NODE} is required, current is ${actual}. Run \`nvm use\` before release checks.`,
+      `[preflight] Node.js ${REQUIRED_NODE_MAJOR}.${REQUIRED_NODE_MINOR}+ is required within major ${REQUIRED_NODE_MAJOR}; current is ${actual}. Run \`nvm use\` before release checks.`,
     );
     process.exit(1);
   }
@@ -37,19 +39,20 @@ function assertRootInstallCommand() {
   const rootVercel = JSON.parse(readFileSync(rootVercelPath, "utf8"));
   const appVercel = JSON.parse(readFileSync(appVercelPath, "utf8"));
 
-  const expected =
+  const expectedRoot =
     "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile";
+  const expectedApp = expectedRoot;
 
-  if (rootVercel.installCommand !== expected) {
+  if (rootVercel.installCommand !== expectedRoot) {
     console.error("[preflight] Root vercel installCommand is not release-safe.");
-    console.error(`[preflight] expected: ${expected}`);
+    console.error(`[preflight] expected: ${expectedRoot}`);
     console.error(`[preflight] actual:   ${rootVercel.installCommand}`);
     process.exit(1);
   }
 
-  if (appVercel.installCommand !== expected) {
+  if (appVercel.installCommand !== expectedApp) {
     console.error("[preflight] apps/app vercel installCommand is not release-safe.");
-    console.error(`[preflight] expected: ${expected}`);
+    console.error(`[preflight] expected: ${expectedApp}`);
     console.error(`[preflight] actual:   ${appVercel.installCommand}`);
     process.exit(1);
   }
@@ -60,6 +63,6 @@ function assertRootInstallCommand() {
 assertNodeVersion();
 assertRootInstallCommand();
 run("node", ["scripts/release/normalize-next-env.mjs"]);
-run("pnpm", ["install", "--frozen-lockfile"]);
-run("pnpm", ["version:check"]);
+run("corepack", ["pnpm", "install", "--frozen-lockfile"]);
+run("corepack", ["pnpm", "version:check"]);
 console.log("[preflight] release baseline checks passed");

@@ -8,6 +8,13 @@ import {
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
+import {
+  hasCompletedOnboardingClaims,
+  hasOnboardingCompletionCookieFromHeader,
+  isOnboardingCompletionCookieValue,
+  ONBOARDING_COMPLETION_COOKIE,
+  type OnboardingClaims,
+} from "@/lib/auth/onboarding-completion";
 
 const PUBLIC_APP_REDIRECTS: Readonly<Record<string, string>> = {
   "/privacy": "https://www.deelrxcrm.com/legal/privacy",
@@ -57,6 +64,21 @@ function redirectToApp(req: Request, pathname: string, preserveCurrentHost = fal
 function redirectPublicAppPath(pathname: string) {
   const target = PUBLIC_APP_REDIRECTS[pathname];
   return target ? NextResponse.redirect(target, 308) : null;
+}
+
+function hasOnboardingCompletionCookie(
+  req: Request & {
+    cookies?: {
+      get(name: string): { value?: string } | string | undefined;
+    };
+  },
+) {
+  const cookie = req.cookies?.get(ONBOARDING_COMPLETION_COOKIE);
+  const cookieValue = typeof cookie === "string" ? cookie : cookie?.value;
+  return (
+    isOnboardingCompletionCookieValue(cookieValue) ||
+    hasOnboardingCompletionCookieFromHeader(req.headers.get("cookie"))
+  );
 }
 
 function middlewareWithoutClerk(
@@ -166,15 +188,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       if (publicRedirect) return publicRedirect;
 
       const { userId, sessionClaims } = await auth();
-      const claims = sessionClaims as {
-        metadata?: { onboardingComplete?: boolean };
-        publicMetadata?: { onboardingComplete?: boolean };
-        public_metadata?: { onboardingComplete?: boolean };
-      };
+      const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
-        claims?.metadata?.onboardingComplete === true ||
-        claims?.publicMetadata?.onboardingComplete === true ||
-        claims?.public_metadata?.onboardingComplete === true;
+        hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
 
       if (pathname === "/") {
         if (!userId) {

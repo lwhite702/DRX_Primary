@@ -2,6 +2,7 @@
 // Register a new customer record.
 
 import SwiftUI
+import ClerkKit
 
 struct AddCustomerSheet: View {
     let onSaved: () async -> Void
@@ -15,13 +16,12 @@ struct AddCustomerSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var creditLimitCents: Int { CurrencyInput.cents(from: creditLimitString) ?? 0 }
+    private var creditLimitCents: Int { Int((Double(creditLimitString) ?? 0) * 100) }
 
     private var isValid: Bool {
-        (!firstName.trimmingCharacters(in: .whitespaces).isEmpty ||
+        !firstName.trimmingCharacters(in: .whitespaces).isEmpty ||
         !lastName.trimmingCharacters(in: .whitespaces).isEmpty ||
-        !phoneNumber.trimmingCharacters(in: .whitespaces).isEmpty) &&
-        CurrencyInput.cents(from: creditLimitString) != nil
+        !phoneNumber.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     var body: some View {
@@ -76,6 +76,8 @@ struct AddCustomerSheet: View {
     private func save() async {
         isSaving = true
         saveError = nil
+        let userId = await MainActor.run { Clerk.shared.user?.id }
+
         struct CreateCustomerArgs: Encodable, Sendable {
             let firstName: String?
             let lastName: String?

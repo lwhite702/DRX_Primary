@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const checks = [
+<<<<<<< HEAD
   { route: "/dashboard", text: /Operator Dashboard|No Business Found/i },
+=======
+  { route: "/dashboard", text: /Welcome to DRX|Operator Dashboard/i },
+>>>>>>> origin/main
   { route: "/customers", text: /CUSTOMERS/i },
   { route: "/pos/sale", text: /Continue to Payment/i },
   { route: "/help", text: /Support Center/i },

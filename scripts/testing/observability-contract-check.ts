@@ -6,7 +6,7 @@ const root = process.cwd();
 const checks: Array<{ file: string; tokens: string[] }> = [
   {
     file: "apps/app/components/providers/posthog-provider.tsx",
-    tokens: ["posthog.init", "posthog.capture(\"$pageview\"", "NEXT_PUBLIC_POSTHOG_KEY"],
+    tokens: ["initAnalytics", "capturePageView", "NEXT_PUBLIC_POSTHOG_KEY"],
   },
   {
     file: "apps/app/instrumentation.ts",

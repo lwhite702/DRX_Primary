@@ -108,3 +108,38 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { userId, businessId } = await resolveAuthContext();
+    if (!userId || !businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 100);
+    const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10), 0);
+
+    const sales = await db.sales.findMany({
+      where: {
+        businessId,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+      take: limit,
+      skip: offset,
+      include: {
+        items: true,
+      },
+    });
+
+    return NextResponse.json({ data: sales });
+  } catch (error) {
+    console.error("Failed to fetch sales:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch sales" },
+      { status: 500 },
+    );
+  }
+}

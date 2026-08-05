@@ -1,6 +1,7 @@
 name: Deploy to Production
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["CI Gate"]
     types: [completed]
@@ -8,11 +9,18 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
+      - name: Deploy Convex functions to Production
+        if: ${{ github.event_name != 'workflow_dispatch' || env.CONVEX_DEPLOY_KEY != '' }}
+        working-directory: ./apps/app
+        run: npx convex deploy
+
       - name: Deploy production to Vercel
         id: vercel
         uses: amondnet/vercel-action@v25

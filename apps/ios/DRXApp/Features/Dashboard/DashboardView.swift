@@ -33,20 +33,17 @@ struct DashboardView: View {
 
     private var content: some View {
         LazyVStack(spacing: 0, pinnedViews: []) {
-            if let agg = aggregate {
-                RevenueHero(value: agg.totalRevenueFormatted, orderCount: agg.orderCount)
-                    .padding(.horizontal, DRXSpacing.lg)
-                    .padding(.top, DRXSpacing.lg)
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DRXSpacing.md) {
-                    KPICard(title: "Orders", value: "\(agg.orderCount)", symbol: "cart.fill", color: DRXPalette.info)
-                    KPICard(title: "Avg Order", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
-                    KPICard(title: "Tax", value: agg.totalTaxFormatted, symbol: "percent", color: DRXPalette.warning)
-                    KPICard(title: "Register", value: "Ready", symbol: "checkmark.shield.fill", color: DRXPalette.accent)
+            // KPI Cards
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                if let agg = aggregate {
+                    KPICard(title: "Revenue", value: agg.totalRevenueFormatted, symbol: "banknote.fill", color: .green)
+                    KPICard(title: "Orders", value: "\(agg.orderCount)", symbol: "cart.fill", color: .blue)
+                    KPICard(title: "Avg Order", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: .purple)
+                    KPICard(title: "Tax", value: agg.totalTaxFormatted, symbol: "percent", color: .orange)
                 }
-                .padding(.horizontal, DRXSpacing.lg)
-                .padding(.top, DRXSpacing.md)
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
 
             // Recent Sales Header
             sectionHeader("Recent Sales")
@@ -164,43 +161,8 @@ private struct KPICard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(DRXPalette.card)
-        .clipShape(RoundedRectangle(cornerRadius: DRXRadius.card))
-        .overlay { RoundedRectangle(cornerRadius: DRXRadius.card).stroke(DRXPalette.border, lineWidth: 1) }
-    }
-}
-
-private struct RevenueHero: View {
-    let value: String
-    let orderCount: Int
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DRXSpacing.sm) {
-            HStack {
-                Text("TODAY'S REVENUE")
-                    .font(.caption2.monospaced().weight(.semibold))
-                    .tracking(1.4)
-                    .foregroundStyle(DRXPalette.muted)
-                Spacer()
-                Label("Live", systemImage: "circle.fill")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(DRXPalette.success)
-            }
-            Text(value)
-                .font(.system(size: 42, weight: .bold, design: .monospaced))
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
-                .foregroundStyle(DRXPalette.ink)
-            Text("\(orderCount) completed orders")
-                .font(.subheadline)
-                .foregroundStyle(DRXPalette.muted)
-        }
-        .padding(DRXSpacing.xl)
-        .background(DRXPalette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: DRXRadius.panel))
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(DRXPalette.accent).frame(height: 2)
-        }
-        .overlay { RoundedRectangle(cornerRadius: DRXRadius.panel).stroke(DRXPalette.border, lineWidth: 1) }
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
     }
 }
 
@@ -243,10 +205,10 @@ struct SaleRowView: View {
 
     private var paymentColor: Color {
         switch sale.paymentMethod {
-        case "cash": return DRXPalette.success
-        case "card": return DRXPalette.info
-        case "credit": return DRXPalette.accent
-        default: return DRXPalette.muted
+        case "cash": return .green
+        case "card": return .blue
+        case "credit": return .purple
+        default: return .gray
         }
     }
 }
