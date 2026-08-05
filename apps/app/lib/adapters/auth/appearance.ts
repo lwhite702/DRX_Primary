@@ -1,7 +1,4 @@
-import { shadcn } from "@clerk/ui/themes";
-
 export const drxClerkAuthAppearance = {
-  theme: shadcn,
   variables: {
     colorPrimary: "#CCFF00",
     colorText: "#F5F5F5",
@@ -17,7 +14,7 @@ export const drxClerkAuthAppearance = {
     fontFamily: "var(--font-plus-jakarta-sans), var(--font-inter), sans-serif",
     fontFamilyButtons: "var(--font-plus-jakarta-sans), var(--font-inter), sans-serif",
   },
-  options: {
+  layout: {
     socialButtonsPlacement: "bottom",
     showOptionalFields: false,
     socialButtonsVariant: "blockButton",

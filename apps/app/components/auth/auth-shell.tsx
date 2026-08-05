@@ -27,7 +27,7 @@ export function AuthShell({
   footer,
 }: AuthShellProps) {
   return (
-    <main className="relative min-h-dvh overflow-x-hidden bg-background text-foreground">
+    <main className="relative min-h-dvh overflow-x-hidden bg-background font-sans text-foreground">
       <div
         className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:32px_32px]"
         aria-hidden="true"
@@ -73,7 +73,7 @@ export function AuthShell({
             {productSignals.map(({ label, icon: Icon }) => (
               <li
                 key={label}
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-surface px-3.5 text-sm font-semibold text-[#E7E7E7]"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-[#121212] px-3.5 text-sm font-semibold text-[#E7E7E7]"
               >
                 <Icon className="size-4 text-accent" strokeWidth={1.8} aria-hidden="true" />
                 {label}
