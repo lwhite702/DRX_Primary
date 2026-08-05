@@ -50,8 +50,8 @@ struct ConvexClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        guard let token = try? await Clerk.shared.auth.getToken(), !token.isEmpty else {
-            throw ConvexError.unauthenticated
+        guard let token = try await Clerk.shared.auth.getToken(.init(template: "convex")) else {
+            throw ConvexError.missingAuthenticationToken
         }
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -114,14 +114,14 @@ private struct ConvexErrorBody: Decodable {
 // MARK: - Errors
 
 enum ConvexError: Error, LocalizedError, Sendable {
-    case unauthenticated
+    case missingAuthenticationToken
     case invalidResponse
     case server(statusCode: Int, message: String?)
     case convexError(message: String)
 
     var errorDescription: String? {
         switch self {
-        case .unauthenticated: "Sign in again to continue."
+        case .missingAuthenticationToken: "No authenticated Convex session is available."
         case .invalidResponse: "The server returned an invalid response."
         case .server(let code, let msg): msg ?? "Request failed with status \(code)."
         case .convexError(let msg): msg
@@ -149,5 +149,13 @@ extension JSONDecoder {
 // MARK: - Shared Instance
 
 extension ConvexClient {
-    static let shared = ConvexClient(deploymentURL: try! AppConfiguration.live().convexDeploymentURL)
+    static let shared: ConvexClient = {
+        guard let rawURL = Bundle.main.object(forInfoDictionaryKey: "DRX_CONVEX_URL") as? String,
+              let deploymentURL = URL(string: rawURL),
+              deploymentURL.scheme == "https",
+              deploymentURL.host?.hasSuffix(".convex.cloud") == true else {
+            preconditionFailure("DRX_CONVEX_URL must contain a valid Convex deployment URL")
+        }
+        return ConvexClient(deploymentURL: deploymentURL)
+    }()
 }

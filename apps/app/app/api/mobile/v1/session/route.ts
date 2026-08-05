@@ -69,11 +69,12 @@ export async function GET() {
         select: { role: true, permissions: true },
       });
   const requestedRole = assignedRole?.role?.toLowerCase() ?? user.role.toLowerCase();
-  const role = isOwner || requestedRole === "owner"
-    ? "owner"
-    : requestedRole in ROLE_PERMISSIONS
-      ? requestedRole
-      : "staff";
+  const role =
+    isOwner || requestedRole === "owner"
+      ? "owner"
+      : requestedRole in ROLE_PERMISSIONS
+        ? requestedRole
+        : "staff";
 
   return NextResponse.json({
     operator_id: userId,

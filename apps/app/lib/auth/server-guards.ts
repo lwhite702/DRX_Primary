@@ -1,6 +1,6 @@
 import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
-import { Permission, Role } from "./permissions";
+import { Permission, Role, ROLE_PERMISSIONS } from "./permissions";
 import { redirect } from "next/navigation";
 
 export async function getCurrentUserRole(
@@ -57,6 +57,32 @@ export async function hasPermission(
   const perms = userRole.permissions as Record<string, boolean>;
 
   return !!perms?.[permission];
+}
+
+export async function hasBusinessPermission(
+  userId: string,
+  businessId: string,
+  permission: Permission,
+): Promise<boolean> {
+  if (isAuthBypassEnabled()) return true;
+
+  const ownedBusiness = await db.businessProfile.findFirst({
+    where: { id: businessId, ownerId: userId },
+    select: { id: true },
+  });
+  if (ownedBusiness) return true;
+
+  const userRole = await db.userRole.findFirst({
+    where: { userId, businessId },
+    select: { permissions: true, role: true },
+  });
+  if (!userRole) return false;
+
+  const explicitPermissions = userRole.permissions as Record<string, boolean> | null;
+  if (explicitPermissions?.[permission]) return true;
+
+  const role = userRole.role as Role | null;
+  return role ? (ROLE_PERMISSIONS[role] ?? []).includes(permission) : false;
 }
 
 // These guard helpers are kept as route-level building blocks even when

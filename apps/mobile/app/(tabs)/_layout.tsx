@@ -17,50 +17,14 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: "POS",
-          tabBarIcon: ({ focused, size }) => (
-            <View
-              style={[
-                styles.posIconContainer,
-                focused && styles.posIconContainerFocused,
-              ]}
-            >
-              <Ionicons
-                name={focused ? "cart" : "cart-outline"}
-                size={18}
-                color={COLORS.background}
-              />
-            </View>
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="customers"
         options={{
           title: "Customers",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="inventory"
-        options={{
-          title: "Inventory",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube-outline" size={size} color={color} />
-          ),
-          href: "/inventory",
-        }}
-      />
-      <Tabs.Screen
-        name="credits"
-        options={{
-          title: "Store Credit",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="wallet-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={styles.iconWrapper}>
+              <Ionicons name={focused ? "people" : "people-outline"} size={22} color={color} />
+              {focused && <View style={styles.activeDot} />}
+            </View>
           ),
         }}
       />
@@ -68,9 +32,58 @@ export default function TabLayout() {
         name="more"
         options={{
           title: "More",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="menu-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={styles.iconWrapper}>
+              <Ionicons name={focused ? "menu" : "menu-outline"} size={22} color={color} />
+              {focused && <View style={styles.activeDot} />}
+            </View>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "POS",
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={[
+                styles.posIconContainer,
+                focused && styles.posIconContainerFocused,
+              ]}
+              accessibilityLabel="POS Cart"
+            >
+              <Ionicons
+                name={focused ? "cart" : "cart-outline"}
+                size={22}
+                color={COLORS.background}
+              />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="credits"
+        options={{
+          title: "Credit",
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={styles.iconWrapper}>
+              <Ionicons name={focused ? "wallet" : "wallet-outline"} size={22} color={color} />
+              {focused && <View style={styles.activeDot} />}
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="inventory"
+        options={{
+          title: "Inventory",
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={styles.iconWrapper}>
+              <Ionicons name={focused ? "cube" : "cube-outline"} size={22} color={color} />
+              {focused && <View style={styles.activeDot} />}
+            </View>
+          ),
+          href: "/inventory",
         }}
       />
       <Tabs.Screen
@@ -85,39 +98,71 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.surface,
-    borderTopColor: COLORS.border,
-    borderTopWidth: 1,
-    height: Platform.OS === "ios" ? 88 : 64,
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 24 : 16,
+    left: 16,
+    right: 16,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: "rgba(12, 12, 12, 0.96)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
     paddingTop: 8,
-    paddingBottom: Platform.OS === "ios" ? 24 : 8,
+    paddingBottom: 8,
   },
   tabBarLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
+    fontSize: 10,
+    fontWeight: "700",
+    marginTop: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   tabBarIcon: {
-    marginBottom: -2,
+    marginBottom: 0,
+  },
+  iconWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 28,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.accent,
+    marginTop: 4,
+    shadowColor: COLORS.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
   },
   posIconContainer: {
     backgroundColor: COLORS.accent,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 4,
+    marginTop: -22, // Pops out above tab bar
+    borderWidth: 3,
+    borderColor: "#0c0c0c",
     shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
   posIconContainerFocused: {
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+    transform: [{ scale: 1.05 }],
   },
 });

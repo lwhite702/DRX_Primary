@@ -12,7 +12,7 @@ const runtimeRoots = [
 ];
 
 const runtimeFiles = [
-  "apps/app/middleware.ts",
+  "apps/app/proxy.ts",
   "apps/app/instrumentation.ts",
   "apps/app/instrumentation-client.ts",
   "apps/app/sentry.client.config.ts",
@@ -161,4 +161,3 @@ if (
 console.log(
   `Env example contract check passed. Runtime keys verified: ${runtimeEnvKeys.size}`,
 );
-

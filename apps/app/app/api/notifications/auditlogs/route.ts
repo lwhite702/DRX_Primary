@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       return errorResponse("FORBIDDEN", "Forbidden", 403);
     }
 
-    const { businessId } = await resolveAuthContext();
+    const { businessId } = await resolveAuthContext(request);
     if (!businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
     console.error("Fetch notification audit logs error:", error);
     return errorResponse(
       "INTERNAL_ERROR",
-      error instanceof Error ? error.message : "Unexpected server error",
+      "Internal Server Error",
       500,
+      error instanceof Error ? error.message : "Unexpected server error",
     );
   }
 }

@@ -38,7 +38,7 @@ export function TopNav() {
 
     switch (item.href) {
       case "/settings":
-        return hasPermission("settings.manage");
+        return hasPermission("settings.configure_pos");
       case "/reports":
         return (
           hasPermission("reports.view_daily") ||
@@ -47,7 +47,7 @@ export function TopNav() {
       case "/inventory":
         return hasPermission("catalog.view");
       case "/sales":
-        return hasPermission("sales.create") || hasPermission("sales.view_all");
+        return hasPermission("sales.create");
       case "/customers":
         return hasPermission("customers.view");
       default:

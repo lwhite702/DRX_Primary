@@ -2,3 +2,4 @@
 
 DRX_APP_ENVIRONMENT = production
 CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ
+DRX_CONVEX_URL = https:/$()/brainy-mouse-884.convex.cloud

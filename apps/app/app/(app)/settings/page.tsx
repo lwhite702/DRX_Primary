@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
+import { Tour } from "@/components/ui/tour";
 import {
   getDefaultPrivacyProtocol,
   PRIVACY_PROFILE_OPTIONS,
@@ -442,7 +443,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <Card className={mobileStep === 1 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-profile" className={mobileStep === 1 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle>Business Profile</CardTitle>
           </CardHeader>
@@ -606,7 +607,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-privacy" className={mobileStep === 2 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
@@ -1048,7 +1049,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-sessions" className={mobileStep === 2 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
@@ -1133,6 +1134,28 @@ export default function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Tour
+        tourId="settings_v1"
+        onComplete={() => {}}
+        steps={[
+          {
+            targetId: "tour-settings-profile",
+            title: "Your business.",
+            description: "Update your name, contact info, and address. This shows up on receipts and reports.",
+          },
+          {
+            targetId: "tour-settings-privacy",
+            title: "Privacy controls.",
+            description: "Set how customer data is collected and masked. Alias-only mode keeps it tight.",
+          },
+          {
+            targetId: "tour-settings-sessions",
+            title: "Active sessions.",
+            description: "See every device logged in. Revoke anything you don't recognize.",
+          },
+        ]}
+      />
     </div>
   );
 }

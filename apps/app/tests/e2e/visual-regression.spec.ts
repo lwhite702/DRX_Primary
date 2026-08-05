@@ -1,8 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
+// @target:apps/app/app/login/[[...rest]]/page.tsx
+// @target:apps/app/app/register/[[...rest]]/page.tsx
+
 const bypassAuthEnabled =
-  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  process.env.BYPASS_AUTH_FOR_TESTING === "true";
 const hasClerkTestingKeys =
   Boolean(process.env.CLERK_SECRET_KEY) &&
   Boolean(
@@ -23,8 +26,9 @@ test.describe("Visual regression", () => {
   const pages =
     visualTarget === "public"
       ? [
-          { name: "login", url: "/login", heading: "Sign In" },
-          { name: "register", url: "/register", heading: "Initialize Session" },
+          { name: "login", url: "/login", heading: "Sign in" },
+          { name: "register", url: "/register", heading: "Create account" },
+          { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
         ]
       : visualTarget === "protected"
         ? [
@@ -34,8 +38,9 @@ test.describe("Visual regression", () => {
             { name: "customers", url: visualFixturesEnabled ? "/visual-fixtures/customers" : "/customers", heading: "Customers" },
           ]
         : [
-            { name: "login", url: "/login", heading: "Sign In" },
-            { name: "register", url: "/register", heading: "Initialize Session" },
+            { name: "login", url: "/login", heading: "Sign in" },
+            { name: "register", url: "/register", heading: "Create account" },
+            { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
             { name: "dashboard", url: visualFixturesEnabled ? "/visual-fixtures/dashboard" : "/dashboard", heading: "Operator dashboard" },
             { name: "pos-sale", url: visualFixturesEnabled ? "/visual-fixtures/pos-sale" : "/pos/sale", heading: "Quick sale" },
             { name: "inventory", url: visualFixturesEnabled ? "/visual-fixtures/inventory" : "/inventory", heading: "Inventory" },

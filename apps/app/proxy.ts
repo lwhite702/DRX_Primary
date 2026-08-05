@@ -1,4 +1,8 @@
-import { clerkMiddleware, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
+import {
+  clerkMiddleware,
+  hasClerkServerEnv,
+  isAuthBypassEnabled,
+} from "@/lib/adapters/auth/server";
 import {
   classifyDrxHost,
   isAuthEntryPath,
@@ -8,16 +12,19 @@ import {
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
-
+import {
+  hasCompletedOnboardingClaims,
+  hasOnboardingCompletionCookieFromHeader,
+  isOnboardingCompletionCookieValue,
+  ONBOARDING_COMPLETION_COOKIE,
+  type OnboardingClaims,
+} from "@/lib/auth/onboarding-completion";
+import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
   !isAuthBypassEnabled() &&
-  (process.env.NODE_ENV === "test" ||
-    (Boolean(process.env.CLERK_SECRET_KEY) &&
-      Boolean(
-        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY,
-      )));
+  (process.env.NODE_ENV === "test" || hasClerkServerEnv());
 
 function getCurrentOrigin(req: Request) {
   const host = req.headers.get("host") ?? "";
@@ -45,11 +52,37 @@ function redirectToApp(req: Request, pathname: string, preserveCurrentHost = fal
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
 }
 
+function shouldServeVisualFixture(pathname: string) {
+  return (
+    isAuthVisualFixtureEnabled() &&
+    (isClerkUiPath(pathname) || pathname.startsWith("/visual-fixtures/"))
+  );
+}
+
+function hasOnboardingCompletionCookie(
+  req: Request & {
+    cookies?: {
+      get(name: string): { value?: string } | string | undefined;
+    };
+  },
+) {
+  const cookie = req.cookies?.get(ONBOARDING_COMPLETION_COOKIE);
+  const cookieValue = typeof cookie === "string" ? cookie : cookie?.value;
+  return (
+    isOnboardingCompletionCookieValue(cookieValue) ||
+    hasOnboardingCompletionCookieFromHeader(req.headers.get("cookie"))
+  );
+}
+
 function middlewareWithoutClerk(
   reqOrAuth: Request | unknown,
   maybeReq?: Request,
 ) {
-  const req = (maybeReq ?? reqOrAuth) as Request & {
+  const isDirectRequest =
+    typeof reqOrAuth === "object" &&
+    reqOrAuth !== null &&
+    ("nextUrl" in reqOrAuth || "url" in reqOrAuth);
+  const req = (isDirectRequest ? reqOrAuth : maybeReq) as Request & {
     nextUrl?: { pathname: string; search: string };
     url?: string;
   };
@@ -76,6 +109,10 @@ function middlewareWithoutClerk(
   }
 
   if (hostKind !== "app") {
+    return NextResponse.next();
+  }
+
+  if (shouldServeVisualFixture(pathname)) {
     return NextResponse.next();
   }
 
@@ -136,16 +173,14 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         return NextResponse.next();
       }
 
+      if (shouldServeVisualFixture(pathname)) {
+        return NextResponse.next();
+      }
+
       const { userId, sessionClaims } = await auth();
-      const claims = sessionClaims as {
-        metadata?: { onboardingComplete?: boolean };
-        publicMetadata?: { onboardingComplete?: boolean };
-        public_metadata?: { onboardingComplete?: boolean };
-      };
+      const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
-        claims?.metadata?.onboardingComplete === true ||
-        claims?.publicMetadata?.onboardingComplete === true ||
-        claims?.public_metadata?.onboardingComplete === true;
+        hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
 
       if (pathname === "/") {
         if (!userId) {
@@ -170,10 +205,12 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       if (!userId && !isPublicAppPath(pathname)) {
-        const loginUrl = new URL("/login", getAppOrigin(req, true));
-        if (!pathname.startsWith("/api")) {
-          loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
+        if (pathname.startsWith("/api")) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
+        const loginUrl = new URL("/login", getAppOrigin(req, true));
+        loginUrl.searchParams.set("redirect_url", `${pathname}${url.search}`);
         return NextResponse.redirect(loginUrl);
       }
 
@@ -181,7 +218,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
     })
   : null;
 
-export default (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
+export const proxy = (
+  hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk
+)!;
 
 export const config = {
   matcher: [

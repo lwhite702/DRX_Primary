@@ -54,10 +54,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const { isSignedIn, userId, signOut, getToken, isLoaded } = useClerkAuth();
   const { user } = useUser();
-  const { signIn } = useSignIn();
+  const { signIn: clerkSignIn, setActive, isLoaded: isSignInLoaded } = useSignIn();
   const [businessId, setBusinessId] = useState<string | null>(null);
 
-  // Fetch business ID from backend when user loads
+  const signIn = async (email?: string, password?: string) => {
+    if (!isSignInLoaded || !clerkSignIn) {
+      return { error: new Error("Auth is still loading") };
+    }
+    try {
+      const result = await clerkSignIn.create({
+        identifier: email || "",
+        password,
+      });
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        return { error: null };
+      } else {
+        return { error: new Error("Sign in requires further verification") };
+      }
+    } catch (err: any) {
+      const msg = err.errors?.[0]?.message || err.message || "Failed to sign in";
+      return { error: new Error(msg) };
+    }
+  };
   useEffect(() => {
     if (isSignedIn && userId) {
       // In a real implementation, you might fetch this from your API

@@ -13,10 +13,15 @@ describe("route classification", () => {
   it("classifies DRX hosts", () => {
     expect(classifyDrxHost("deelrxcrm.com")).toBe("marketing");
     expect(classifyDrxHost("www.deelrxcrm.com")).toBe("marketing");
+    expect(classifyDrxHost("deelrx.com")).toBe("marketing");
+    expect(classifyDrxHost("www.deelrx.com")).toBe("marketing");
     expect(classifyDrxHost("deelrxcrm.app")).toBe("app");
     expect(classifyDrxHost("preview.deelrxcrm.app")).toBe("app");
+    expect(classifyDrxHost("deelrx.app")).toBe("app");
+    expect(classifyDrxHost("preview.deelrx.app")).toBe("app");
     expect(classifyDrxHost("localhost:3000")).toBe("app");
     expect(classifyDrxHost("accounts.deelrxcrm.app")).toBe("auth");
+    expect(classifyDrxHost("accounts.deelrx.app")).toBe("auth");
     expect(classifyDrxHost("api.example.com")).toBe("other");
   });
 

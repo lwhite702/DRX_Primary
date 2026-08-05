@@ -10,6 +10,7 @@ import { CustomerInline } from "@/components/quick-pos/customer-inline";
 import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
+import { useDRXProducts } from "@/lib/convex-hooks";
 
 interface ProductResult {
   id: string;
@@ -64,10 +65,30 @@ export default function QuickPosSalePage() {
     load();
   }, [setCreditPolicy, setError]);
 
+  const { products: convexProducts } = useDRXProducts();
+
   useEffect(() => {
-    const search = state.ui.search.trim();
+    const search = state.ui.search.trim().toLowerCase();
     if (!search) {
       setResults([]);
+      return;
+    }
+
+    if (convexProducts && convexProducts.length > 0) {
+      const filtered = convexProducts
+        .filter(
+          (p) =>
+            p.productName.toLowerCase().includes(search) ||
+            p.sku.toLowerCase().includes(search)
+        )
+        .map((p) => ({
+          id: p._id,
+          name: p.productName,
+          price: p.sellingPriceCents / 100,
+          quantity_on_hand: p.quantityOnHandGrams,
+          sku: p.sku,
+        }));
+      setResults(filtered);
       return;
     }
 
@@ -90,7 +111,7 @@ export default function QuickPosSalePage() {
     }, 150);
 
     return () => window.clearTimeout(timer);
-  }, [state.ui.search]);
+  }, [state.ui.search, convexProducts, setError]);
 
   const submitSearch = async () => {
     const search = state.ui.search.trim();
@@ -194,7 +215,17 @@ export default function QuickPosSalePage() {
 
         <QuickGrid
           title="Favorite Items"
-          items={bootstrap?.favorites || []}
+          items={
+            convexProducts && convexProducts.length > 0
+              ? convexProducts.slice(0, 8).map((p) => ({
+                  id: p._id,
+                  name: p.productName,
+                  price: p.sellingPriceCents / 100,
+                  quantity_on_hand: p.quantityOnHandGrams,
+                  sku: p.sku,
+                }))
+              : bootstrap?.favorites || []
+          }
           onAdd={addInventoryItem}
         />
 

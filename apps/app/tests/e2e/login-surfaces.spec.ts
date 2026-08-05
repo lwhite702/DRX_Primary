@@ -9,7 +9,7 @@ async function expectConfiguredFallback(page: Page) {
   }
 
   if (pathname === "/waitlist") {
-    await expect(page.getByRole("heading", { name: /join the waitlist/i })).toBeVisible();
+    await expect(page.getByText(/beta access/i).first()).toBeVisible();
     return true;
   }
 
@@ -36,6 +36,6 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: /initialize session/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible();
   });
 });

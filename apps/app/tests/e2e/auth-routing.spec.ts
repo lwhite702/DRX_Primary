@@ -12,12 +12,12 @@ test.describe("Auth routing regressions", () => {
     }
 
     if (pathname === "/waitlist") {
-      await expect(page.getByRole("heading", { name: /join the waitlist/i })).toBeVisible();
+      await expect(page.getByText(/beta access/i).first()).toBeVisible();
       return;
     }
 
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
-    await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
     await expect(page.getByRole("textbox", { name: /email address/i })).toBeVisible();
   });
 });

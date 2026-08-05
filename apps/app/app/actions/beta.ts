@@ -7,13 +7,16 @@ const ticketSchema = z.object({
   subject: z.string().min(5),
   message: z.string().min(10),
   priority: z.enum(["low", "normal", "high", "critical"]).default("normal"),
-});
+}).strict();
 
-export async function submitSupportTicket(data: any) {
+export async function submitSupportTicket(data: unknown) {
   const result = ticketSchema.safeParse(data);
 
   if (!result.success) {
-    return { error: "Invalid ticket data" };
+    return {
+      error: "Invalid ticket data",
+      validationErrors: result.error.flatten().fieldErrors,
+    };
   }
 
   const supabase = await createClient();

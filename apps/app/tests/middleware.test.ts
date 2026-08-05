@@ -15,7 +15,8 @@ vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: unknown) => handler,
 }));
 
-import middleware from "@/middleware";
+import { proxy } from "@/proxy";
+import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
   userId: string | null;
@@ -26,28 +27,28 @@ type AuthResult = {
   };
 };
 
-function makeRequest(pathname: string, host: string, search = "") {
+function makeRequest(pathname: string, host: string, search = "", cookie = "") {
   return {
     nextUrl: {
       pathname,
       search,
     },
     method: "GET",
-    headers: new Headers({ host }),
+    headers: new Headers(cookie ? { host, cookie } : { host }),
   } as unknown as Request & {
     nextUrl: { pathname: string; search: string };
   };
 }
 
 async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: AuthResult) {
-  const handler = middleware as unknown as (
+  const handler = proxy as unknown as (
     auth: () => Promise<AuthResult>,
     request: ReturnType<typeof makeRequest>,
   ) => Promise<Response>;
   return handler(async () => authResult, req);
 }
 
-describe("middleware auth and routing", () => {
+describe("proxy auth and routing", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });
@@ -91,6 +92,20 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
+  it("allows protected routes when the completion cookie is set but Clerk claims are stale", async () => {
+    const req = makeRequest(
+      "/dashboard",
+      "deelrxcrm.app",
+      "",
+      `${ONBOARDING_COMPLETION_COOKIE}=true`,
+    );
+    const res = await runMiddleware(req, {
+      userId: "u_123",
+      sessionClaims: { metadata: { onboardingComplete: false } },
+    });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
   it("redirects signed in users from onboarding to dashboard when onboarding is complete", async () => {
     const req = makeRequest("/onboarding", "deelrxcrm.app");
     const res = await runMiddleware(req, {
@@ -108,16 +123,35 @@ describe("middleware auth and routing", () => {
     );
   });
 
-  it("does not include redirect_url for api routes", async () => {
+  it("returns JSON unauthorized for protected api routes", async () => {
     const req = makeRequest("/api/team", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.status).toBe(401);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    await expect(res.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
   it("passes through public auth-domain routes", async () => {
     const req = makeRequest("/sign-in", "accounts.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("passes through deterministic auth fixtures outside production", async () => {
+    const previousVisualFixtures = process.env.VISUAL_FIXTURES;
+    process.env.VISUAL_FIXTURES = "true";
+
+    try {
+      const req = makeRequest("/login", "deelrxcrm.app");
+      const res = await runMiddleware(req, { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+    } finally {
+      if (previousVisualFixtures === undefined) {
+        delete process.env.VISUAL_FIXTURES;
+      } else {
+        process.env.VISUAL_FIXTURES = previousVisualFixtures;
+      }
+    }
   });
 
   it("passes through /api/public routes without auth redirect", async () => {

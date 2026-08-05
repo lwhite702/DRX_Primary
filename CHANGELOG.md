@@ -7,15 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
-- **Unified Visual Identity**: Introduced the production DRX white-and-lime slash mark, canonical operator-console tokens, Plus Jakarta Sans and Geist Mono hierarchy, compact radii, semantic status colors, and automated web-to-Swift drift checks.
-- **Marketing Landing**: Rebuilt the public landing page around the operator-first promise, deterministic Quick Sale product proof, truthful canonical capability evidence, and beta conversion without placeholder testimonials, ratings, or partner logos.
-- **Web Product UI**: Aligned authentication, navigation branding, Dashboard, POS, and Inventory surfaces to the shared dark-first system and removed unrelated page-specific accent colors.
-- **Native iOS**: Added a larger branded authentication header, dark-first Clerk and product themes, a revenue-first Dashboard, semantic status treatments, a checkerboard-free opaque app icon, and full iPhone/iPad device-family support.
-- **Visual Regression**: Expanded web snapshots to desktop, tablet, and mobile viewports and added landing-page visual coverage plus asset-contract validation.
-- **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.
-- **Testing**: Replaced the skipped real-beta Playwright suite with config-time environment loading, explicit isolation, fail-fast credential checks, single-project mutation safety, and a persistent-data E2E runbook.
+- **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
+
+## [0.5.7] - 2026-07-22
+
+### Fixed
+
+- **Web Onboarding**: Force a fresh dashboard navigation after durable onboarding completion so production sessions cannot remain stuck on the onboarding page.
+
+## [0.5.6] - 2026-06-21
+
+### Fixed
+
+- **Testing**: Fixed Vitest alias resolution for monorepo root execution by introducing `vitest.workspace.ts`.
 
 ## [0.5.5] - 2026-05-31
 

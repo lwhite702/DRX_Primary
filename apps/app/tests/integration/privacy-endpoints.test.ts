@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
   },
 }));
 
@@ -53,6 +55,8 @@ import {
 describe("Privacy endpoints", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.$queryRaw.mockRejectedValue(new Error('relation "privacy_preferences" does not exist'));
+    mocks.db.$executeRaw.mockRejectedValue(new Error('relation "privacy_preferences" does not exist'));
   });
 
   it("returns vault status for authorized user", async () => {

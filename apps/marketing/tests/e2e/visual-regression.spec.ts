@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+// @target:apps/marketing/app/page.tsx
+
 const viewports = [
   { name: "desktop", width: 1440, height: 1024 },
   { name: "tablet", width: 834, height: 1194 },

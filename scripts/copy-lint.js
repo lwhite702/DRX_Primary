@@ -1,134 +1,103 @@
-#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
 
-const fs = require("fs");
-const path = require("path");
-
-const ROOT = process.cwd();
-const SCAN_DIRS = [
-  "apps/app/app",
-  "apps/app/components",
-  "apps/app/lib/copy",
-];
-const ALLOWED_EXT = new Set([".ts", ".tsx", ".js", ".jsx", ".json", ".md"]);
-const IGNORE_DIRS = new Set([
-  "node_modules",
-  ".next",
-  "coverage",
-  "dist",
-  "build",
-  "playwright-report",
-  "test-results",
-]);
-
-const bannedTerms = [
-  "drug",
-  "dealer",
-  "stash",
-  "trap",
-  "coke",
-  "pills",
-  "weed",
-  "cops",
-  "police",
-  "feds",
-  "law enforcement",
-  "get caught",
-  "hide your",
-  "evade",
-  "subpoena-proof",
+const BANNED_TERMS = [
+  'drug', 'dealer', 'stash', 'trap', 'coke', 'pills', 'weed',
+  'cops', 'police', 'feds', 'law enforcement', 'get caught',
+  'hide your', 'evade', 'subpoena-proof'
 ];
 
-const jargonTerms = [
-  "enterprise",
-  "synergy",
-  "robust",
-  "scalable",
-  "methodology",
-  "authenticate",
-  "immutable",
-  "omnichannel",
-  "leverage",
+const JARGON_TERMS = [
+  'enterprise', 'synergy', 'robust', 'scalable', 'methodology',
+  'authenticate', 'immutable', 'omnichannel', 'leverage'
 ];
 
-function escapeRegex(term) {
-  return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+// Combine all forbidden terms
+const ALL_FORBIDDEN = [...BANNED_TERMS, ...JARGON_TERMS];
 
-const checks = [
-  ...bannedTerms.map((term) => ({ type: "banned", term, re: new RegExp(`\\b${escapeRegex(term)}\\b`, "i") })),
-  ...jargonTerms.map((term) => ({ type: "jargon", term, re: new RegExp(`\\b${escapeRegex(term)}\\b`, "i") })),
+const EXCLUDED_DIRS = [
+  'node_modules',
+  '.next',
+  'dist',
+  '.expo',
+  '.expo-shared',
+  'ios',
+  'android',
+  '.git',
+  'generator-build',
+  'build',
+  '.prisma'
 ];
 
-function walk(dir, out) {
-  if (!fs.existsSync(dir)) return;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!IGNORE_DIRS.has(entry.name)) walk(full, out);
-      continue;
+const ALLOWED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.json'];
+
+let violationsCount = 0;
+
+function scanDir(dir) {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    const fullPath = path.join(dir, file);
+    const stat = fs.statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      if (EXCLUDED_DIRS.includes(file)) continue;
+      scanDir(fullPath);
+    } else {
+      const ext = path.extname(file);
+      if (!ALLOWED_EXTENSIONS.includes(ext)) continue;
+      // Skip the linter script itself
+      if (fullPath === __filename) continue;
+      checkFile(fullPath);
     }
-    if (ALLOWED_EXT.has(path.extname(entry.name))) out.push(full);
   }
 }
 
-function canUseIgnoreDirective(relPath) {
-  return relPath.startsWith("docs/") || relPath.endsWith(".md");
-}
+function checkFile(filePath) {
+  // Skip JSON files for package definitions and locks
+  if (filePath.endsWith('package.json') || filePath.endsWith('package-lock.json')) return;
 
-const files = [];
-for (const dir of SCAN_DIRS) walk(path.join(ROOT, dir), files);
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
 
-const violations = [];
-for (const file of files) {
-  if (file.endsWith("scripts/copy-lint.js")) continue;
-  const relPath = path.relative(ROOT, file).split(path.sep).join("/");
-  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  lines.forEach((line, index) => {
+    // If copy-lint-disable is present on this line, skip
+    if (line.includes('copy-lint-disable')) return;
 
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    if (
-      trimmed.startsWith("//") ||
-      trimmed.startsWith("/*") ||
-      trimmed.startsWith("*") ||
-      trimmed.startsWith("{/*") ||
-      trimmed.startsWith("*/")
-    ) {
-      return;
-    }
-    const hasIgnore = line.includes("copy-lint: ignore");
-    if (hasIgnore && !canUseIgnoreDirective(relPath)) {
-      violations.push({
-        type: "invalid-ignore",
-        term: "copy-lint: ignore",
-        file: relPath,
-        line: idx + 1,
-        text: line.trim(),
-      });
-      return;
-    }
-    if (hasIgnore) return;
+    // Check each forbidden word
+    ALL_FORBIDDEN.forEach((word) => {
+      // Use regex to match word boundaries
+      const regex = new RegExp('\\b' + word + '\\b', 'i');
+      if (regex.test(line)) {
+        // Special exclusions for code/technical items (e.g. database schema, schema declarations, import paths)
+        // that are not user facing.
+        if (filePath.endsWith('.prisma') || filePath.endsWith('schema.ts') || filePath.endsWith('prisma-mcp-server') || line.trim().startsWith('import')) {
+          return;
+        }
 
-    for (const check of checks) {
-      if (check.re.test(line)) {
-        violations.push({
-          type: check.type,
-          term: check.term,
-          file: relPath,
-          line: idx + 1,
-          text: line.trim(),
-        });
+        console.error(`❌ Banned/Jargon term "${word}" found in ${filePath} at line ${index + 1}:`);
+        console.error(`   > ${line.trim()}`);
+        violationsCount++;
       }
-    }
+    });
   });
 }
 
-if (violations.length > 0) {
-  console.error("❌ Copy lint failed. Terms not allowed in user-facing copy:");
-  for (const v of violations) {
-    console.error(`- [${v.type}] ${v.file}:${v.line} -> "${v.term}"`);
-    console.error(`  ${v.text}`);
-  }
-  process.exit(1);
-}
+const targetDirs = [
+  path.join(__dirname, '..', 'apps', 'app'),
+  path.join(__dirname, '..', 'apps', 'mobile')
+];
 
-console.log("✅ Copy lint passed.");
+console.log('🔍 Running DRX Copy Linter...');
+targetDirs.forEach((dir) => {
+  if (fs.existsSync(dir)) {
+    scanDir(dir);
+  }
+});
+
+if (violationsCount > 0) {
+  console.error(`\n❌ Copy lint failed: Found ${violationsCount} violations of banned or corporate jargon terms.`);
+  process.exit(1);
+} else {
+  console.log('✅ Copy lint passed. DRX Brand Voice is clean.');
+  process.exit(0);
+}

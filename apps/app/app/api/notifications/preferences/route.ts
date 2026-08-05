@@ -3,7 +3,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const NotificationPreferencesSchema = z.object({
   preferences: z.record(z.string(), z.unknown()),
@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const killSwitchEnabled = await ensureServerFlag(
-      OPS_KILL_SWITCH_FLAGS.notificationsPreferencesWrite,
+    const availabilityEnabled = await ensureServerFlag(
+      OPS_AVAILABILITY_FLAGS.notificationsPreferencesWrite,
       { distinctId: user.id, defaultValue: true },
     );
-    if (!killSwitchEnabled) {
+    if (!availabilityEnabled) {
       return errorResponse(
         "FEATURE_DISABLED",
         "Notification preferences writes are temporarily disabled",

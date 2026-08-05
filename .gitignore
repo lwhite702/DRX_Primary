@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-node_modules
 /.pnp
 .pnp.js
 
@@ -28,6 +27,9 @@ testsprite_tests/
 *.vercel
 android/
 /ios/
+apps/ios/DerivedData/
+apps/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+apps/ios/*.xcodeproj/xcuserdata/
 android_backup/
 
 # Misc
@@ -77,7 +79,6 @@ Thumbs.db
 
 # Sentry Config File
 .env.sentry-build-plugin
-apps/ios/Configuration/Telemetry.generated.xcconfig
 
 /lib/generated/prisma
 
@@ -89,9 +90,9 @@ apps/ios/Configuration/Telemetry.generated.xcconfig
 .env
 .env.*
 *.env
-!.env.example
-!apps/app/.env.example
 credentials.json
 *.pem
 *.key
 .credentials
+# Native iOS telemetry values generated from Doppler/Xcode Cloud.
+apps/ios/Configuration/Telemetry.generated.xcconfig
