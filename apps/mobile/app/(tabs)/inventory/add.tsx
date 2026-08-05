@@ -259,7 +259,7 @@ export default function AddProductScreen() {
       >
         <ScrollView contentContainerStyle={styles.content}>
           {/* Web Onboarding Recommendation Tip */}
-          <View 
+          <View
             accessible={true}
             accessibilityLabel="First Time Setup suggestion card. For a step-by-step guided onboarding experience to configure your first product, we recommend using the web dashboard."
             style={{

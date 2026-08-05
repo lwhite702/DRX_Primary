@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
+// @target:apps/app/app/(app)/admin/features/page.tsx
+
 test.describe("Feature flags access @smoke", () => {
   test.beforeEach(async ({ page }) => {
     if (process.env.CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) {

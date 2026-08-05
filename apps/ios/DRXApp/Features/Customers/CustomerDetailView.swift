@@ -47,14 +47,17 @@ struct CustomerDetailView: View {
 
                 // Credit Account
                 Section("Store Credit") {
-                    LabeledContent("Credit Limit", value: customer.creditLimitFormatted)
+                    LabeledContent(
+                        "Credit Limit",
+                        value: customer.creditLimitCents == 0 ? "Unlimited" : customer.creditLimitFormatted
+                    )
                     LabeledContent("Used Balance", value: customer.creditUsedFormatted)
                     HStack {
                         Text("Available Credit")
                         Spacer()
-                        Text(customer.creditAvailableFormatted)
+                        Text(customer.creditLimitCents == 0 ? "Unlimited" : customer.creditAvailableFormatted)
                             .font(.subheadline.bold())
-                            .foregroundStyle(customer.creditAvailableCents > 0 ? .green : DRXPalette.muted)
+                            .foregroundStyle(customer.creditLimitCents == 0 || customer.creditAvailableCents > 0 ? .green : DRXPalette.muted)
                     }
 
                     HStack(spacing: 12) {

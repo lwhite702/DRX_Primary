@@ -19,7 +19,7 @@ export default function InventoryCheck() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { getToken } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [product, setProduct] = useState<any>(null);
@@ -55,9 +55,9 @@ export default function InventoryCheck() {
       setSubmitting(true);
       const token = await getToken();
       const res = await recordInventoryCheck(token, product.inventory_id, Number(measuredWeight));
-      
-      const discrepancyMsg = res.discrepancy_flagged 
-        ? `Discrepancy flagged! Difference: ${res.delta_grams}g (${res.delta_percentage}%)` 
+
+      const discrepancyMsg = res.discrepancy_flagged
+        ? `Discrepancy flagged! Difference: ${res.delta_grams}g (${res.delta_percentage}%)`
         : `Check successful! Inventory matches expected weight.`;
 
       Alert.alert("Inventory Check Logged", discrepancyMsg, [
@@ -115,8 +115,8 @@ export default function InventoryCheck() {
               autoFocus
             />
 
-            <TouchableOpacity 
-              style={styles.actionBtn} 
+            <TouchableOpacity
+              style={styles.actionBtn}
               onPress={handleSubmit}
               disabled={submitting || !measuredWeight}
             >

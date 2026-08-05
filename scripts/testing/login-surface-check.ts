@@ -27,7 +27,7 @@ const checks: Check[] = [
     tokens: ["/login", "/register", "/sign-in", "/sign-up"],
   },
   {
-    file: "apps/app/middleware.ts",
+    file: "apps/app/proxy.ts",
     tokens: ["isAuthEntryPath", "redirectToApp(req, \"/login\", true)"],
   },
 ];

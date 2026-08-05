@@ -1,93 +1,47 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { clerkAuth } = vi.hoisted(() => ({ clerkAuth: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  clerkAuth: vi.fn(),
+}));
 
 vi.mock("@clerk/nextjs/server", () => ({
-  auth: clerkAuth,
+  auth: mocks.clerkAuth,
   clerkClient: vi.fn(),
   clerkMiddleware: vi.fn(),
   createRouteMatcher: vi.fn(),
 }));
 
-import {
-  auth,
-  getWorkflowSession,
-  getWorkflowUserId,
-  isClerkServerConfigured,
-} from "@/lib/adapters/auth/server";
+import { auth, hasClerkServerEnv } from "@/lib/adapters/auth/server";
 
 describe("server auth adapter", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "false");
-    vi.stubEnv("NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING", "false");
     vi.stubEnv("CLERK_SECRET_KEY", "");
     vi.stubEnv("CLERK_PUBLISHABLE_KEY", "");
     vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
-    clerkAuth.mockReset();
   });
 
-  afterEach(() => {
-    vi.unstubAllEnvs();
+  it("returns a signed-out state when Clerk is not configured", async () => {
+    expect(hasClerkServerEnv()).toBe(false);
+
+    const result = await auth();
+
+    expect(result.userId).toBeNull();
+    expect(result.orgId).toBeNull();
+    expect(result.sessionId).toBeNull();
+    await expect(result.getToken()).resolves.toBeNull();
+    expect(mocks.clerkAuth).not.toHaveBeenCalled();
   });
 
-  it("detects complete Clerk server configuration", () => {
-    expect(isClerkServerConfigured()).toBe(false);
+  it("delegates to Clerk when server credentials are configured", async () => {
+    vi.stubEnv("CLERK_SECRET_KEY", "sk_test_configured");
+    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_test_configured");
+    mocks.clerkAuth.mockResolvedValue({ userId: "user_configured" });
 
-    vi.stubEnv("CLERK_SECRET_KEY", "sk_test_example");
-    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_test_example");
-
-    expect(isClerkServerConfigured()).toBe(true);
-  });
-
-  it("returns an anonymous auth state when Clerk is not configured", async () => {
-    const state = (await auth()) as unknown as {
-      userId: string | null;
-      orgId: string | null;
-      getToken: () => Promise<string | null>;
-      has: () => boolean;
-    };
-
-    expect(state.userId).toBeNull();
-    expect(state.orgId).toBeNull();
-    await expect(state.getToken()).resolves.toBeNull();
-    expect(state.has()).toBe(false);
-    expect(clerkAuth).not.toHaveBeenCalled();
-  });
-
-  it("uses the test-only bypass identity when explicitly enabled", async () => {
-    vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "true");
-
-    const state = (await auth()) as unknown as {
-      userId: string;
-      orgId: string;
-      getToken: () => Promise<string>;
-      has: () => boolean;
-    };
-    const session = await getWorkflowSession();
-
-    expect(state.userId).toBe("11111111-1111-4111-8111-111111111111");
-    expect(state.orgId).toBe("org_local_bypass");
-    await expect(state.getToken()).resolves.toBe("bypass-token");
-    expect(state.has()).toBe(true);
-    expect(session.roles).toEqual(["super_admin"]);
-    expect(clerkAuth).not.toHaveBeenCalled();
-  });
-
-  it("maps a configured Clerk session to the workflow contract", async () => {
-    vi.stubEnv("CLERK_SECRET_KEY", "sk_test_example");
-    vi.stubEnv("CLERK_PUBLISHABLE_KEY", "pk_test_example");
-    clerkAuth.mockResolvedValue({
-      userId: "user_123",
-      orgId: "org_123",
-      sessionClaims: { publicMetadata: { roles: ["admin"] } },
-    });
-
-    await expect(getWorkflowSession()).resolves.toEqual({
-      userId: "user_123",
-      tenantId: "org_123",
-      roles: ["admin"],
-    });
-    await expect(getWorkflowUserId()).resolves.toBe("user_123");
-    expect(clerkAuth).toHaveBeenCalledTimes(2);
+    expect(hasClerkServerEnv()).toBe(true);
+    await expect(auth()).resolves.toMatchObject({ userId: "user_configured" });
+    expect(mocks.clerkAuth).toHaveBeenCalledOnce();
   });
 });

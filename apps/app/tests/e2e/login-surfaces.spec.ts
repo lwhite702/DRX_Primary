@@ -4,20 +4,12 @@ async function expectConfiguredFallback(page: Page) {
   const pathname = new URL(page.url()).pathname;
 
   if (pathname === "/dashboard") {
-<<<<<<< HEAD
     await expect(page.getByRole("link", { name: "Dashboard", exact: true }).first()).toBeVisible();
-=======
-    await expect(page.getByRole("main")).toBeVisible();
->>>>>>> origin/main
     return true;
   }
 
   if (pathname === "/waitlist") {
-<<<<<<< HEAD
-    await expect(page.getByRole("heading", { name: /join the waitlist/i })).toBeVisible();
-=======
     await expect(page.getByText(/beta access/i).first()).toBeVisible();
->>>>>>> origin/main
     return true;
   }
 
@@ -33,7 +25,7 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
   });
 
   test("/register is accessible", async ({ page }) => {

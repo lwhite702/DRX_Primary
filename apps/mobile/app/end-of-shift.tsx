@@ -18,7 +18,7 @@ export default function EndOfShift() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { getToken } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<any>(null);
 
@@ -26,13 +26,13 @@ export default function EndOfShift() {
     try {
       setLoading(true);
       const token = await getToken();
-      
+
       // Load today's reconciliation report
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
-      
+
       const data = await getPosReconciliation(token, startOfDay.toISOString(), endOfDay.toISOString());
       setReport(data);
     } catch (error) {
@@ -80,7 +80,7 @@ export default function EndOfShift() {
                 {hasDiscrepancies ? "Discrepancies Found" : "All Clear"}
               </Text>
               <Text style={styles.summarySubtitle}>
-                {hasDiscrepancies 
+                {hasDiscrepancies
                   ? "There are mismatches between recorded sales and inventory changes for this shift."
                   : "Sales and inventory changes match perfectly for this shift."}
               </Text>

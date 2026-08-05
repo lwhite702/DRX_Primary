@@ -15,7 +15,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: unknown) => handler,
 }));
 
-import middleware from "@/middleware";
+import { proxy } from "@/proxy";
 import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
@@ -41,14 +41,14 @@ function makeRequest(pathname: string, host: string, search = "", cookie = "") {
 }
 
 async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: AuthResult) {
-  const handler = middleware as unknown as (
+  const handler = proxy as unknown as (
     auth: () => Promise<AuthResult>,
     request: ReturnType<typeof makeRequest>,
   ) => Promise<Response>;
   return handler(async () => authResult, req);
 }
 
-describe("middleware auth and routing", () => {
+describe("proxy auth and routing", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://www.deelrxcrm.app";
   });
@@ -135,6 +135,23 @@ describe("middleware auth and routing", () => {
     const req = makeRequest("/sign-in", "clerk.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("passes through deterministic auth fixtures outside production", async () => {
+    const previousVisualFixtures = process.env.VISUAL_FIXTURES;
+    process.env.VISUAL_FIXTURES = "true";
+
+    try {
+      const req = makeRequest("/login", "deelrxcrm.app");
+      const res = await runMiddleware(req, { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+    } finally {
+      if (previousVisualFixtures === undefined) {
+        delete process.env.VISUAL_FIXTURES;
+      } else {
+        process.env.VISUAL_FIXTURES = previousVisualFixtures;
+      }
+    }
   });
 
   it("passes through /api/public routes without auth redirect", async () => {

@@ -31,7 +31,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.deelrxcrm.app",
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app",
   ),
   alternates: {
     canonical: "/",
@@ -99,15 +99,6 @@ export default function RootLayout({
   */
   const meticulousToken = process.env.NEXT_PUBLIC_METICULOUS_TOKEN;
   const canLoadMeticulous = shouldEnableMeticulous && Boolean(meticulousToken);
-  const appContent = (
-    <GlobalErrorBoundary>
-      <PostHogProvider>
-        <FeaturebaseProvider />
-        {children}
-        <Toaster position="top-right" />
-      </PostHogProvider>
-    </GlobalErrorBoundary>
-  );
 
   const isBypassActive = isAuthBypassEnabledServer();
   const bypassUserId = isBypassActive ? getBypassAuthUserId() : undefined;
@@ -142,10 +133,6 @@ export default function RootLayout({
           signUpFallbackRedirectUrl="/onboarding"
           afterSignOutUrl="/login"
         >
-<<<<<<< HEAD
-          {appContent}
-        </ClerkProvider>
-=======
           <ConvexClientProvider>
             <GlobalErrorBoundary>
               <PostHogProvider>
@@ -156,7 +143,6 @@ export default function RootLayout({
             </GlobalErrorBoundary>
           </ConvexClientProvider>
         </ClerkProviderWrapper>
->>>>>>> origin/main
       </body>
     </html>
   );

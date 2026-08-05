@@ -47,8 +47,9 @@ test.describe("Visual regression", () => {
     visualTarget === "public"
 <<<<<<< HEAD
       ? [
-          { name: "login", url: "/login", heading: "Sign In" },
-          { name: "register", url: "/register", heading: "Initialize Session" },
+          { name: "login", url: "/login", heading: "Sign in" },
+          { name: "register", url: "/register", heading: "Create account" },
+          { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
         ]
       : visualTarget === "protected"
         ? [
@@ -58,8 +59,9 @@ test.describe("Visual regression", () => {
             { name: "customers", url: visualFixturesEnabled ? "/visual-fixtures/customers" : "/customers", heading: "Customers" },
           ]
         : [
-            { name: "login", url: "/login", heading: "Sign In" },
-            { name: "register", url: "/register", heading: "Initialize Session" },
+            { name: "login", url: "/login", heading: "Sign in" },
+            { name: "register", url: "/register", heading: "Create account" },
+            { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
             { name: "dashboard", url: visualFixturesEnabled ? "/visual-fixtures/dashboard" : "/dashboard", heading: "Operator dashboard" },
             { name: "pos-sale", url: visualFixturesEnabled ? "/visual-fixtures/pos-sale" : "/pos/sale", heading: "Quick sale" },
             { name: "inventory", url: visualFixturesEnabled ? "/visual-fixtures/inventory" : "/inventory", heading: "Inventory" },

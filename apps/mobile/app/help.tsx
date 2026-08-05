@@ -44,7 +44,7 @@ export default function Help() {
         </View>
 
         <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
-        
+
         <View style={styles.faqItem}>
           <Text style={styles.faqQuestion}>How do I record a No Sale?</Text>
           <Text style={styles.faqAnswer}>

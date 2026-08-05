@@ -24,5 +24,3 @@ export function getBypassAuthOrgId(): string {
   }
   return id;
 }
-
-

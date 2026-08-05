@@ -18,9 +18,12 @@ export function AppLogo({
       className={
         "flex min-w-0 items-center gap-3 " + (isSidebar ? "w-full" : "")
       }
-      aria-label="DRX — Home"
+      aria-label="Deelrx CRM Home"
     >
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/development
       <div
         className={
           "relative shrink-0 " +
@@ -35,6 +38,7 @@ export function AppLogo({
           priority
         />
       </div>
+<<<<<<< HEAD
 =======
       {isSidebar ? (
         /* Sidebar: mark icon + wordmark side by side */
@@ -72,13 +76,15 @@ export function AppLogo({
       )}
 
 >>>>>>> origin/main
+=======
+>>>>>>> origin/development
       <div className="min-w-0 sr-only">
         <div className="text-base font-bold text-accent leading-none truncate">
           Deelrx CRM
         </div>
         {showTagline && (
           <div className="text-[11px] text-muted-foreground truncate mt-1">
-            Your front. Your numbers. Locked.
+            Deelrx Point of Sale
           </div>
         )}
       </div>

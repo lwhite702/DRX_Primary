@@ -193,7 +193,7 @@ export const processCheckout = mutation({
       }
     }
 
-    // 7. Insert Immutable Audit Log Event
+    // 7. Insert the audit log event
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,
       userId: auth.userId,
