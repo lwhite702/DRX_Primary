@@ -12,12 +12,13 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy Convex functions to Production
+        if: ${{ github.event_name != 'workflow_dispatch' || env.CONVEX_DEPLOY_KEY != '' }}
         working-directory: ./apps/app
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         run: npx convex deploy
 
       - name: Deploy production to Vercel
