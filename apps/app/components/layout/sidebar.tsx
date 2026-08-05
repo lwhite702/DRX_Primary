@@ -26,7 +26,7 @@ export function Sidebar() {
 
     switch (item.href) {
       case "/settings":
-        return hasPermission("settings.manage");
+        return hasPermission("settings.configure_pos");
       case "/reports":
         // Cashier cannot access reports (per prompt)
         return (
@@ -36,7 +36,7 @@ export function Sidebar() {
       case "/inventory":
         return hasPermission("catalog.view");
       case "/sales":
-        return hasPermission("sales.create") || hasPermission("sales.view_all");
+        return hasPermission("sales.create");
       case "/pos/sale":
         return hasPermission("sales.create");
       case "/customers":

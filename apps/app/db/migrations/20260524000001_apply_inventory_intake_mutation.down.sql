@@ -1,18 +1,14 @@
--- Remove the centralized intake mutation RPC introduced by this migration.
-
-BEGIN;
+-- Roll back the centralized inventory intake mutation RPC.
 
 DROP FUNCTION IF EXISTS apply_inventory_intake_mutation(
   UUID,
   UUID,
   UUID,
-  NUMERIC,
-  NUMERIC,
-  NUMERIC,
-  NUMERIC,
+  DECIMAL,
+  DECIMAL,
+  DECIMAL,
+  DECIMAL,
   VARCHAR,
   UUID,
   TEXT
 );
-
-COMMIT;

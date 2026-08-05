@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { ExitPosDialog } from "@/components/quick-pos/exit-pos-dialog";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 export function PosShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { state, setExitOpen } = useQuickPosStore();
-  const bypassMode = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const bypassMode = useIsBypassActive();
 
   return (
     <div className="min-h-screen bg-[#070809] text-white">

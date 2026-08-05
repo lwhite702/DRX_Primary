@@ -7,13 +7,14 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { Footer } from "@/components/layout/footer";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 const publicRoutes = ["/login", "/privacy", "/terms", "/accessibility"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublic = publicRoutes.some((route) => pathname.startsWith(route));
-  const authBypassEnabled = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const authBypassEnabled = useIsBypassActive();
 
   if (isPublic) {
     return <>{children}</>;

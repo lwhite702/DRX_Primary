@@ -1,6 +1,4 @@
--- Restore the counter implementation replaced by the atomic safety migration.
-
-BEGIN;
+-- Restore the pre-atomic random inventory check counter implementation.
 
 CREATE OR REPLACE FUNCTION increment_transaction_counter(
   p_business_id UUID
@@ -14,7 +12,8 @@ DECLARE
   v_current_count INTEGER;
   v_check_frequency INTEGER;
 BEGIN
-  SELECT COALESCE(transaction_count, 0), COALESCE(random_inventory_check_frequency, 15)
+  SELECT COALESCE(transaction_count, 0),
+         COALESCE(random_inventory_check_frequency, 15)
   INTO v_current_count, v_check_frequency
   FROM business_settings
   WHERE business_id = p_business_id;
@@ -33,7 +32,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-COMMENT ON FUNCTION increment_transaction_counter IS
-  'Legacy non-atomic transaction counter restored by rollback of migration 20260523000002.';
-
-COMMIT;
+COMMENT ON FUNCTION increment_transaction_counter(UUID) IS NULL;

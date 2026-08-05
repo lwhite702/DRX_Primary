@@ -23,10 +23,11 @@ export function errorResponse(
   details?: unknown,
 ) {
   void code;
+  const isDev = process.env.NODE_ENV === "development";
   return NextResponse.json(
     {
       error: message,
-      ...(details !== undefined ? { details } : {}),
+      ...(details !== undefined && isDev ? { details } : {}),
     },
     { status },
   );

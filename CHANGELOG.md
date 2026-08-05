@@ -7,16 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
-- **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.
-- **Testing**: Replaced the skipped real-beta Playwright suite with config-time environment loading, explicit isolation, fail-fast credential checks, single-project mutation safety, and a persistent-data E2E runbook.
-- **Coverage**: Replaced the unattained global 90% pass/fail threshold with a measured no-regression ratchet while retaining 90% as the explicit target.
+- **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
+
+## [0.5.7] - 2026-07-22
 
 ### Fixed
 
-- **Migration Safety**: Added the five enforced rollback migrations, restored the prior transaction-counter function where required, and documented the irreversible duplicate-batch cleanup boundary.
-- **Release Evidence**: Corrected the production launch checklist so it no longer reports the unmet 90% coverage target or overall launch readiness as passing.
+- **Web Onboarding**: Force a fresh dashboard navigation after durable onboarding completion so production sessions cannot remain stuck on the onboarding page.
+
+## [0.5.6] - 2026-06-21
+
+### Fixed
+
+- **Testing**: Fixed Vitest alias resolution for monorepo root execution by introducing `vitest.workspace.ts`.
 
 ## [0.5.5] - 2026-05-31
 

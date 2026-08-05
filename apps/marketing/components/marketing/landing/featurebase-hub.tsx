@@ -64,7 +64,7 @@ export function FeaturebaseHub() {
     }
 
     if (embedContainerRef.current) {
-      embedContainerRef.current.innerHTML = "";
+      embedContainerRef.current.replaceChildren();
     }
 
     win.Featurebase("init_embed_widget", {

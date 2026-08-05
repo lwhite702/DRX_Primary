@@ -19,6 +19,7 @@ import { PaymentDialog } from "./_components/PaymentDialog";
 
 // Hook
 import { useCreditManager } from "./_hooks/useCreditManager";
+import { Tour } from "@/components/ui/tour";
 
 export default function CreditPage() {
   const { business, loading: businessLoading } = useBusiness();
@@ -105,25 +106,29 @@ export default function CreditPage() {
         title="Credit Management"
         description="Track credit transactions and fronts."
       >
-        <CreditHeader
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onOpenPayment={() => setShowPaymentDialog(true)}
-          onOpenExtension={() => setShowExtensionDialog(true)}
-        />
+        <div id="tour-credit-extension">
+          <CreditHeader
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onOpenPayment={() => setShowPaymentDialog(true)}
+            onOpenExtension={() => setShowExtensionDialog(true)}
+          />
+        </div>
       </PageHeader>
 
       <CreditExposureDashboard business_id={business.id} />
 
-      <CreditStats
-        totalOutstanding={totalOutstanding}
-        customerCount={agingData.length}
-        overdueBalance={overdueBalance}
-        overdueCount={delinquentCount}
-        totalLimit={totalLimit}
-      />
+      <div id="tour-credit-stats">
+        <CreditStats
+          totalOutstanding={totalOutstanding}
+          customerCount={agingData.length}
+          overdueBalance={overdueBalance}
+          overdueCount={delinquentCount}
+          totalLimit={totalLimit}
+        />
+      </div>
 
-      <div className="space-y-4">
+      <div id="tour-credit-list" className="space-y-4">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
           Accounts Overview
         </h2>
@@ -190,6 +195,28 @@ export default function CreditPage() {
         onOpenChange={setShowPaymentDialog}
         customers={customers}
         onSubmit={handlePayment}
+      />
+
+      <Tour
+        tourId="credit_v1"
+        onComplete={() => {}}
+        steps={[
+          {
+            targetId: "tour-credit-stats",
+            title: "What’s owed.",
+            description: "See total outstanding balance and how much is overdue. Keeps your front tight.",
+          },
+          {
+            targetId: "tour-credit-list",
+            title: "Account view.",
+            description: "Every customer with an open tab is listed here. Check aging and balances at a glance.",
+          },
+          {
+            targetId: "tour-credit-extension",
+            title: "Extend or collect.",
+            description: "Front new credit or log a payment. Every action gets recorded.",
+          },
+        ]}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 export function ExitPosDialog({
   open,
@@ -11,7 +12,7 @@ export function ExitPosDialog({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const bypassMode = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const bypassMode = useIsBypassActive();
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);

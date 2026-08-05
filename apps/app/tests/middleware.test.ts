@@ -16,6 +16,7 @@ vi.mock("@clerk/nextjs/server", () => ({
 }));
 
 import middleware from "@/middleware";
+import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
   userId: string | null;
@@ -26,14 +27,14 @@ type AuthResult = {
   };
 };
 
-function makeRequest(pathname: string, host: string, search = "") {
+function makeRequest(pathname: string, host: string, search = "", cookie = "") {
   return {
     nextUrl: {
       pathname,
       search,
     },
     method: "GET",
-    headers: new Headers({ host }),
+    headers: new Headers(cookie ? { host, cookie } : { host }),
   } as unknown as Request & {
     nextUrl: { pathname: string; search: string };
   };
@@ -91,6 +92,20 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
+  it("allows protected routes when the completion cookie is set but Clerk claims are stale", async () => {
+    const req = makeRequest(
+      "/dashboard",
+      "deelrxcrm.app",
+      "",
+      `${ONBOARDING_COMPLETION_COOKIE}=true`,
+    );
+    const res = await runMiddleware(req, {
+      userId: "u_123",
+      sessionClaims: { metadata: { onboardingComplete: false } },
+    });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
   it("redirects signed in users from onboarding to dashboard when onboarding is complete", async () => {
     const req = makeRequest("/onboarding", "deelrxcrm.app");
     const res = await runMiddleware(req, {
@@ -108,10 +123,12 @@ describe("middleware auth and routing", () => {
     );
   });
 
-  it("does not include redirect_url for api routes", async () => {
+  it("returns JSON unauthorized for protected api routes", async () => {
     const req = makeRequest("/api/team", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.status).toBe(401);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    await expect(res.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
   it("passes through public auth-domain routes", async () => {

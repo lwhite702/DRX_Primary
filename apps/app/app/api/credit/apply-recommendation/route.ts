@@ -6,7 +6,7 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const ApplyRecommendationSchema = z
   .object({
@@ -32,15 +32,15 @@ export async function POST(request: Request) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const killSwitchEnabled = await ensureServerFlag(
-      OPS_KILL_SWITCH_FLAGS.creditApplyRecommendation,
+    const availabilityEnabled = await ensureServerFlag(
+      OPS_AVAILABILITY_FLAGS.creditApplyRecommendation,
       {
         distinctId: userId,
         personProperties: { business_id: businessId },
         defaultValue: true,
       },
     );
-    if (!killSwitchEnabled) {
+    if (!availabilityEnabled) {
       return errorResponse(
         "FEATURE_DISABLED",
         "Credit apply recommendation endpoint is temporarily disabled",
