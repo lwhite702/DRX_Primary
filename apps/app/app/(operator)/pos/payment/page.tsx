@@ -13,7 +13,7 @@ import { useDRXCheckout } from "@/lib/convex-hooks";
 
 export default function QuickPosPaymentPage() {
   const router = useRouter();
-  const { processCheckout } = useDRXCheckout();
+  const { processCheckout, isConfigured: isConvexConfigured } = useDRXCheckout();
   const {
     state,
     total,
@@ -71,7 +71,7 @@ export default function QuickPosPaymentPage() {
           quantityGrams: item.qty,
         }));
 
-      if (convexItems.length > 0) {
+      if (isConvexConfigured && convexItems.length > 0) {
         const convexRes = await processCheckout({
           customerId: state.customer.id ? (state.customer.id as any) : undefined,
           orderNumber: idempotencyKey,
