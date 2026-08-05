@@ -84,18 +84,10 @@ jobs:
         run: pnpm --filter deelrxcrm-app exec playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm --filter deelrxcrm-app test:e2e
+        run: pnpm --filter deelrxcrm-app test:e2e:required
         env:
           CI: true
           NODE_ENV: development
-          # Public auth routes use deterministic, non-production fixtures while
-          # protected product routes use the explicit signed test identity.
-          # Without both modes this workflow exercises unauthenticated redirects
-          # instead of the surfaces its broad Playwright suite asserts.
-          VISUAL_FIXTURES: "true"
-          BYPASS_AUTH_FOR_TESTING: "true"
-          BYPASS_AUTH_USER_ID: "user_e2e_workflow"
-          BYPASS_AUTH_ORG_ID: "org_e2e_workflow"
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
           SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w"
