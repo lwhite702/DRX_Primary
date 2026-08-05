@@ -4,7 +4,22 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
-export default function ConvexSpikeDashboard() {
+export default function ConvexSpikePage() {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return (
+      <div className="mx-auto max-w-2xl p-8 text-slate-100">
+        <h1 className="text-2xl font-bold">Convex spike unavailable</h1>
+        <p className="mt-3 text-slate-400">
+          Configure NEXT_PUBLIC_CONVEX_URL to use this internal development route.
+        </p>
+      </div>
+    );
+  }
+
+  return <ConvexSpikeDashboard />;
+}
+
+function ConvexSpikeDashboard() {
   const products = useQuery(api.products.listProducts, {}) || [];
   const sales = useQuery(api.checkout.getSalesHistory, {}) || [];
 

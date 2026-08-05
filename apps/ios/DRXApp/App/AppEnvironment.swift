@@ -11,6 +11,8 @@ enum RootApplicationState: Equatable {
     case recoverableError
 }
 
+enum WorkspaceTab: Hashable { case dashboard, pos, inventory, customers, more }
+
 enum ProvisioningStatus: String, Decodable, Sendable {
     case needsBusinessOnboarding = "NEEDS_BUSINESS_ONBOARDING"
     case ready = "READY"
@@ -20,6 +22,7 @@ enum ProvisioningStatus: String, Decodable, Sendable {
 
 struct ProvisioningStatusResponse: Decodable, Sendable {
     let status: ProvisioningStatus
+    let session: OperatorSession?
 }
 
 struct BusinessOnboardingInput: Encodable, Sendable {
@@ -37,49 +40,61 @@ struct BusinessOnboardingResponse: Decodable, Sendable {
 }
 
 protocol ProvisioningClient: Sendable {
-    func status() async throws -> ProvisioningStatus
+    func status() async throws -> ProvisioningStatusResponse
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse
 }
 
 struct LiveProvisioningClient: ProvisioningClient {
-    /// Retrieves the current business provisioning status.
-    /// - Returns: The current provisioning status.
-    func status() async throws -> ProvisioningStatus {
-        let response: ProvisioningStatusResponse = try await ConvexClient.shared.query(
-            "onboarding:getCurrentOnboardingStatus", args: EmptyConvexArgs()
-        )
-        return response.status
+    let client: ConvexClient
+
+    init(client: ConvexClient = .shared) {
+        self.client = client
     }
 
-    /// Creates a business onboarding record.
-    ///
-    /// - Parameter input: The business details and onboarding settings.
-    /// - Returns: The onboarding result returned by the provisioning service.
+    func status() async throws -> ProvisioningStatusResponse {
+        try await client.query("onboarding:getCurrentOnboardingStatus", args: EmptyConvexArgs())
+    }
+
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        try await ConvexClient.shared.mutation("onboarding:createBusinessOnboarding", args: input)
+        try await client.mutation("onboarding:createBusinessOnboarding", args: input)
     }
 }
 
-struct MockProvisioningClient: ProvisioningClient {
-    /// Retrieves the current provisioning status.
-    ///
-    /// - Returns: The provisioning status, always `.needsBusinessOnboarding`.
-    func status() async throws -> ProvisioningStatus {
-        .needsBusinessOnboarding
+struct PreviewProvisioningClient: ProvisioningClient {
+    func status() async throws -> ProvisioningStatusResponse {
+        ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil)
     }
 
-    /// Creates a business onboarding record.
-    /// - Parameter input: The business onboarding details.
-    /// - Returns: The onboarding operation status.
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        .init(status: "ONBOARDING_SUCCESS")
+        BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
+    }
+}
+
+private enum WorkspaceProvisioningFailure: String, Error, LocalizedError, Sendable {
+    case authentication
+    case network
+    case service
+    case invalidResponse
+    case inactiveAccount
+    case missingBusiness
+    case unknown
+
+    var errorDescription: String? {
+        switch self {
+        case .authentication: "Native workspace authentication failed."
+        case .network: "Native workspace provisioning could not reach the service."
+        case .service: "Native workspace provisioning service failed."
+        case .invalidResponse: "Native workspace provisioning returned an invalid response."
+        case .inactiveAccount: "Native workspace provisioning found an inactive account."
+        case .missingBusiness: "Native workspace provisioning found a missing business."
+        case .unknown: "Native workspace provisioning failed."
+        }
     }
 }
 
 @MainActor
 @Observable
 final class AppEnvironment {
-    let apiClient: APIClient
     let session: SessionStore
     let telemetry: TelemetryService
     let configuration: AppConfiguration
@@ -88,138 +103,200 @@ final class AppEnvironment {
     private(set) var provisioningMessage: String?
     private(set) var supportRequestID: String?
     private(set) var isSubmittingOnboarding = false
+    private(set) var nextWorkspaceTab: WorkspaceTab = .dashboard
     private var provisioningGeneration = 0
 
-    init(apiClient: APIClient, session: SessionStore, telemetry: TelemetryService, configuration: AppConfiguration, provisioningClient: any ProvisioningClient = LiveProvisioningClient()) {
-        self.apiClient = apiClient
+    init(
+        session: SessionStore,
+        telemetry: TelemetryService,
+        configuration: AppConfiguration,
+        provisioningClient: any ProvisioningClient = LiveProvisioningClient()
+    ) {
         self.session = session
         self.telemetry = telemetry
         self.configuration = configuration
         self.provisioningClient = provisioningClient
     }
 
-    /// Creates a live application environment using the supplied configuration.
-    /// - Parameter configuration: The application configuration used to configure the API client and telemetry service.
-    /// - Returns: A live application environment, or a preview environment when UI testing is enabled.
     static func live(configuration: AppConfiguration) -> AppEnvironment {
         if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
             return preview()
         }
 
-        let tokenStore = ClerkTokenStore()
-        let apiClient = URLSessionAPIClient(baseURL: configuration.apiBaseURL, tokenStore: tokenStore)
-        let session = SessionStore(apiClient: apiClient, tokenStore: tokenStore)
         return AppEnvironment(
-            apiClient: apiClient,
-            session: session,
+            session: SessionStore(),
             telemetry: TelemetryService(configuration: configuration),
-            configuration: configuration
+            configuration: configuration,
+            provisioningClient: LiveProvisioningClient(
+                client: ConvexClient(deploymentURL: configuration.convexDeploymentURL)
+            )
         )
     }
 
-    /// Creates an app environment configured with in-memory services for previews and testing.
     static func preview() -> AppEnvironment {
-        let tokenStore = InMemoryTokenStore()
-        let apiClient = MockAPIClient()
-        let session = SessionStore(apiClient: apiClient, tokenStore: tokenStore)
         let configuration = try! AppConfiguration(info: [
             "DRX_APP_ENVIRONMENT": "development",
             "CLERK_PUBLISHABLE_KEY": "pk_test_preview",
             "DRX_API_BASE_URL": "https://example.test",
+            "DRX_CONVEX_URL": "https://example.convex.cloud",
         ])
         return AppEnvironment(
-            apiClient: apiClient,
-            session: session,
+            session: SessionStore(),
             telemetry: TelemetryService(configuration: configuration),
             configuration: configuration,
-            provisioningClient: MockProvisioningClient()
+            provisioningClient: PreviewProvisioningClient()
         )
     }
 
-    /// Restores the current session and identifies the operator when a session is available.
-    func restoreSession() async {
-        await session.restore()
-        guard let operatorSession = session.operatorSession else { return }
-        telemetry.identify(operatorSession)
-    }
-
-    /// Signs out the current operator and updates the application state to signed out.
     func clerkSignedOut() async {
         await signOut()
-        rootState = .signedOut
     }
 
-    /// Checks the current provisioning status and updates the application state accordingly.
-    /// - Updates the root state for onboarding, workspace loading, readiness, or recoverable errors.
-    /// - Clears previous provisioning messages and support request identifiers before checking.
     func checkProvisioning() async {
         provisioningGeneration += 1
-        let currentGeneration = provisioningGeneration
+        let generation = provisioningGeneration
         rootState = .checkingProvisioning
         provisioningMessage = nil
         supportRequestID = nil
+
         do {
-            let status = try await provisioningClient.status()
-            guard currentGeneration == provisioningGeneration else { return }
-            switch status {
+            let response = try await provisioningClient.status()
+            guard isCurrent(generation) else { return }
+
+            switch response.status {
             case .needsBusinessOnboarding:
+                session.reset()
                 rootState = .needsOnboarding
             case .ready:
                 rootState = .loadingWorkspace
-                await restoreSession()
-                guard currentGeneration == provisioningGeneration else { return }
-                if session.isAuthenticated {
-                    rootState = .ready
-                } else {
-                    showRecovery("We couldn't load your workspace. Please try again.")
+                guard let operatorSession = response.session else {
+                    showRecovery(
+                        "We couldn't read your workspace details. Please try again.",
+                        failure: .invalidResponse
+                    )
+                    return
                 }
+                session.restore(operatorSession)
+                telemetry.identify(operatorSession)
+                rootState = .ready
             case .inactive:
-                showRecovery("This account is inactive. Contact your administrator for access.")
+                showRecovery(
+                    "This account is inactive. Contact your administrator for access.",
+                    failure: .inactiveAccount
+                )
             case .businessMissing:
-                showRecovery("Your workspace needs attention. Contact support or try again.")
+                showRecovery(
+                    "Your workspace needs attention. Contact support or try again.",
+                    failure: .missingBusiness
+                )
             }
+        } catch is CancellationError {
+            return
         } catch {
-            guard currentGeneration == provisioningGeneration else { return }
-            showRecovery("We couldn't confirm your workspace. Check your connection and try again.", error: error)
+            guard isCurrent(generation) else { return }
+            let failure = Self.failure(from: error)
+            showRecovery(Self.recoveryMessage(for: failure), failure: failure, sourceError: error)
         }
     }
 
-    /// Completes business onboarding and advances the application to the ready state when provisioning succeeds.
-    /// - Parameter input: The business details submitted for onboarding.
-    /// - Returns: `true` if onboarding succeeds and the application reaches the ready state, `false` otherwise.
     func completeOnboarding(_ input: BusinessOnboardingInput) async -> Bool {
         guard !isSubmittingOnboarding else { return false }
         isSubmittingOnboarding = true
         defer { isSubmittingOnboarding = false }
+
         do {
             let response = try await provisioningClient.createBusiness(input)
+            guard !Task.isCancelled else { return false }
             guard response.status == "ONBOARDING_SUCCESS" || response.status == "ALREADY_ONBOARDED" else {
-                showRecovery("We couldn't finish setting up your business. Please try again.")
+                showRecovery(
+                    "We couldn't finish setting up your business. Please try again.",
+                    failure: response.status == "BUSINESS_MISSING" ? .missingBusiness : .service
+                )
                 return false
             }
             session.reset()
             await checkProvisioning()
             return rootState == .ready
+        } catch is CancellationError {
+            return false
         } catch {
-            showRecovery("We couldn't finish setting up your business. Please try again.", error: error)
+            guard !Task.isCancelled else { return false }
+            let failure = Self.failure(from: error)
+            showRecovery(
+                "We couldn't finish setting up your business. Please try again.",
+                failure: failure,
+                sourceError: error
+            )
             return false
         }
     }
 
-    /// Presents a recoverable provisioning error with an optional support request identifier.
-    /// - Parameters:
-    ///   - message: The message describing the recovery issue.
-    ///   - error: An optional error from which to extract a support request identifier.
-    private func showRecovery(_ message: String, error: Error? = nil) {
+    func openWorkspace(at tab: WorkspaceTab) async {
+        nextWorkspaceTab = tab
+        await checkProvisioning()
+    }
+
+    private func isCurrent(_ generation: Int) -> Bool {
+        generation == provisioningGeneration && !Task.isCancelled
+    }
+
+    private func showRecovery(
+        _ message: String,
+        failure: WorkspaceProvisioningFailure,
+        sourceError: Error? = nil
+    ) {
+        let requestID = Self.requestID(from: sourceError)
+        var context = [
+            "stage": "native_workspace_provisioning",
+            "failure_category": failure.rawValue,
+            "distribution_channel": configuration.distributionChannel,
+        ]
+        if let requestID {
+            context["request_id"] = requestID
+        }
+        telemetry.capture(error: failure, context: context)
         provisioningMessage = message
-        supportRequestID = Self.requestID(from: error)
+        supportRequestID = requestID
         rootState = .recoverableError
     }
 
-    /// Extracts a request identifier from an error's localized description.
-    ///
-    /// - Parameter error: The error whose localized description may contain a request identifier.
-    /// - Returns: The extracted request identifier, or `nil` if none is found.
+    private static func failure(from error: Error) -> WorkspaceProvisioningFailure {
+        if error is DecodingError {
+            return .invalidResponse
+        }
+        if let urlError = error as? URLError {
+            return urlError.code == .userAuthenticationRequired ? .authentication : .network
+        }
+        if let convexError = error as? ConvexError {
+            switch convexError {
+            case .missingAuthenticationToken:
+                return .authentication
+            case .invalidResponse:
+                return .invalidResponse
+            case .server(let statusCode, _):
+                return statusCode == 401 || statusCode == 403 ? .authentication : .service
+            case .convexError(let message):
+                return message.localizedCaseInsensitiveContains("UNAUTHENTICATED")
+                    ? .authentication
+                    : .service
+            }
+        }
+        return .unknown
+    }
+
+    private static func recoveryMessage(for failure: WorkspaceProvisioningFailure) -> String {
+        switch failure {
+        case .authentication:
+            "We couldn't verify your session. Sign out, then sign in again."
+        case .network:
+            "We couldn't reach your workspace. Check your connection and try again."
+        case .invalidResponse:
+            "We couldn't read your workspace details. Please try again."
+        default:
+            "We couldn't confirm your workspace. Please try again."
+        }
+    }
+
     static func requestID(from error: Error?) -> String? {
         guard let text = error?.localizedDescription else { return nil }
         let pattern = #"(?i)(?:request[_ -]?id)[:= ]+([A-Za-z0-9_-]{6,80})"#
@@ -229,11 +306,12 @@ final class AppEnvironment {
         return String(text[range])
     }
 
-    /// Signs out the current session and clears telemetry and provisioning recovery state.
     func signOut() async {
-        await session.signOut()
+        provisioningGeneration += 1
+        session.reset()
         telemetry.reset()
         provisioningMessage = nil
         supportRequestID = nil
+        rootState = .signedOut
     }
 }

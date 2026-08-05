@@ -25,65 +25,14 @@ struct OperatorSession: Codable, Sendable, Equatable {
 @Observable
 final class SessionStore {
     private(set) var operatorSession: OperatorSession?
-    private(set) var isRestoring = false
-    private(set) var errorMessage: String?
-
-    private let apiClient: APIClient
-    private let tokenStore: any TokenStore
 
     var isAuthenticated: Bool { operatorSession != nil }
 
-    init(apiClient: APIClient, tokenStore: any TokenStore) {
-        self.apiClient = apiClient
-        self.tokenStore = tokenStore
-    }
-
-    /// Restores the operator session from the active authentication token.
-    /// - Updates `operatorSession` on success and sets `errorMessage` when restoration fails.
-    /// - If restoration is already in progress or a session exists, no action is taken.
-    func restore() async {
-        guard !isRestoring, operatorSession == nil else { return }
-        isRestoring = true
-        errorMessage = nil
-        defer { isRestoring = false }
-
-        do {
-            guard try await tokenStore.readToken() != nil else {
-                errorMessage = "Clerk did not provide an active session token."
-                return
-            }
-            let restored: OperatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
-            operatorSession = restored
-        } catch APIError.unauthorized {
-            operatorSession = nil
-            errorMessage = "Your Clerk session could not be verified. Sign out, then sign in again."
-        } catch APIError.forbidden(let message) {
-            operatorSession = nil
-            errorMessage = Self.safeMessage(from: message)
-        } catch {
-            operatorSession = nil
-            errorMessage = "We couldn't load your workspace. Please try again."
-        }
+    func restore(_ operatorSession: OperatorSession) {
+        self.operatorSession = operatorSession
     }
 
     func reset() {
         operatorSession = nil
-        errorMessage = nil
-        isRestoring = false
-    }
-
-    func signOut() async {
-        reset()
-    }
-
-    /// Sanitizes a backend error message for safe presentation to the user.
-    /// - Parameter backendMessage: The message received from the backend.
-    /// - Returns: The original message when it is safe and at most 160 characters; otherwise, a generic workspace access message.
-    private static func safeMessage(from backendMessage: String) -> String {
-        let unsafeMarkers = ["clerk", "convex/", ".ts", " at ", "stack", "unauthorized:"]
-        if unsafeMarkers.contains(where: { backendMessage.lowercased().contains($0) }) {
-            return "You don't have access to this workspace."
-        }
-        return backendMessage.count <= 160 ? backendMessage : "You don't have access to this workspace."
     }
 }
