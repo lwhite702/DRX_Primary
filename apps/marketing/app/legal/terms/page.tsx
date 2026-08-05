@@ -23,7 +23,7 @@ export default function LegalTermsPage() {
       </p>
       <h1 className="mt-3 text-4xl font-bold text-white">Terms of Use</h1>
       <p className="mt-4 text-sm text-text-secondary">
-        Effective August 2, 2026 · Last updated August 2, 2026
+        Effective August 2, 2026 · Last updated August 4, 2026
       </p>
       <p className="mt-3 text-sm text-text-secondary">
         These Terms include the DRX / Deelrx CRM Terms Addendum below. The addendum forms part of

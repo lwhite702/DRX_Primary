@@ -24,7 +24,7 @@ export default function LegalPrivacyPage() {
       </p>
       <h1 className="mt-3 text-4xl font-bold text-white">Privacy Policy</h1>
       <p className="mt-4 text-sm text-text-secondary">
-        Effective August 2, 2026 · Last updated August 2, 2026
+        Effective August 2, 2026 · Last updated August 4, 2026
       </p>
       <p className="mt-3 text-sm text-text-secondary">
         This Privacy Policy includes the DRX / Deelrx CRM Privacy Addendum below. The addendum
@@ -155,8 +155,8 @@ export default function LegalPrivacyPage() {
             communications, customer support, app distribution, payment processing, content
             processing, and AI infrastructure. Depending on the App and feature, these providers
             may include Apple, Google, Expo, Vercel, Convex, Neon, Supabase, Clerk or another
-            configured authentication provider, PostHog, Sentry, Resend, and configured AI model
-            providers.
+            configured authentication provider, PostHog, Sentry, Resend, Help Scout for
+            user-initiated customer support, and configured AI model providers.
           </li>
           <li>
             <strong className="text-white">At your or your organization&apos;s direction,</strong>{" "}
@@ -245,6 +245,7 @@ export default function LegalPrivacyPage() {
         </p>
       </SectionBlock>
 
+      <div id="privacy-rights" className="scroll-mt-24" />
       <SectionBlock title="9. Your privacy rights and choices" className={sectionClassName}>
         <p>Depending on where you live and how Wrelik processes your information, you may have the right to:</p>
         <ul className={listClassName}>

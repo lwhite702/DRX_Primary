@@ -28,8 +28,8 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Email</h3>
                 <p className="text-base">
-                  <a href="mailto:support@deelrx.com" className="text-blue-600 hover:text-blue-800 transition-colors">
-                    support@deelrx.com
+                  <a href="mailto:support@deelrxcrm.com" className="text-blue-600 hover:text-blue-800 transition-colors">
+                    support@deelrxcrm.com
                   </a>
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -40,8 +40,8 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Privacy Inquiries</h3>
                 <p className="text-base">
-                  <a href="mailto:privacy@deelrx.com" className="text-blue-600 hover:text-blue-800 transition-colors">
-                    privacy@deelrx.com
+                  <a href="mailto:legal@wrelik.com" className="text-blue-600 hover:text-blue-800 transition-colors">
+                    legal@wrelik.com
                   </a>
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -103,7 +103,7 @@ export default function ContactPage() {
 
           <section>
             <p className="text-sm text-muted-foreground text-center mt-12 pt-8 border-t border-border">
-              © {new Date().getFullYear()} DeelRx Corporation. All rights reserved.
+              © {new Date().getFullYear()} Wrelik Brands LLC. All rights reserved.
             </p>
           </section>
         </div>

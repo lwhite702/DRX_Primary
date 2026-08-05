@@ -15,9 +15,9 @@ export default function SupportPage() {
       <p className="font-mono text-xs uppercase tracking-[0.22em] text-neon-lime">DRX support</p>
       <h1 className="mt-3 text-4xl font-bold text-white">Get help with Deelrx CRM</h1>
       <p className="mt-4 max-w-3xl text-text-secondary">
-        Email the DRX team for product support, account access, privacy requests, or legal questions.
-        Include your organization name, app version, and a short description of the issue. Do not
-        send passwords, payment-card numbers, or other sensitive information.
+        Email the DRX team for product support and account-access help. Include your organization
+        name, app version, and a short description of the issue. Do not send passwords,
+        payment-card numbers, or other sensitive information.
       </p>
 
       <SectionBlock title="Email support" className="mt-8">
@@ -27,11 +27,27 @@ export default function SupportPage() {
           </a>
         </p>
         <p>
-          Privacy and legal requests may also be sent to{" "}
+          We generally respond within two business days.
+        </p>
+      </SectionBlock>
+
+      <SectionBlock title="Privacy and legal" className="mt-6">
+        <p>
+          Privacy requests, deletion escalations, legal notices, disputes, and regulatory matters
+          must be sent separately to{" "}
           <a className="text-neon-lime hover:underline" href="mailto:legal@wrelik.com">
             legal@wrelik.com
           </a>.
         </p>
+      </SectionBlock>
+
+      <SectionBlock title="Business address" className="mt-6">
+        <address className="not-italic">
+          <strong className="text-white">Wrelik Brands LLC</strong><br />
+          Attn: DRX Support<br />
+          1700 Northside Drive<br />
+          Atlanta, GA 30318, United States
+        </address>
       </SectionBlock>
 
       <SectionBlock title="Policies" className="mt-6">
