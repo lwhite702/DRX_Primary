@@ -60,9 +60,20 @@ export function AuthShell({
             </p>
             <h1
               id="auth-brand-heading"
-              className="mt-3 max-w-[14ch] text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
+              aria-label="Run the day. Keep the operation moving."
+              className="mt-3 max-w-[14ch] text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:max-w-none sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
             >
-              Run the day. Keep the operation moving.
+              <span className="sm:hidden" aria-hidden="true">
+                Run the day. Keep the operation moving.
+              </span>
+              <span className="hidden sm:inline lg:hidden" aria-hidden="true">
+                Run the day. Keep the
+                <br />
+                operation moving.
+              </span>
+              <span className="hidden lg:inline" aria-hidden="true">
+                Run the day. Keep the operation moving.
+              </span>
             </h1>
             <p className="mt-5 hidden max-w-[54ch] text-base leading-7 text-[#C7C7C7] sm:block sm:text-lg">
               Manage checkout, inventory, customers, and daily reporting from one focused workspace.
