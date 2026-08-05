@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.19.0"
+          node-version: 22.23.1
           cache: "pnpm"
 
       - name: Install dependencies
@@ -88,6 +88,8 @@ jobs:
         env:
           CI: true
           NODE_ENV: development
+          BYPASS_AUTH_FOR_TESTING: "true"
+          NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING: "true"
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
           SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w"

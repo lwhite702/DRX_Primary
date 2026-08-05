@@ -104,7 +104,10 @@ function middlewareWithoutClerk(
   }
 
   if (pathname === "/" || isClerkUiPath(pathname)) {
-    return redirectToApp(req, "/waitlist", true);
+    if (isClerkUiPath(pathname)) {
+      return NextResponse.next();
+    }
+    return redirectToApp(req, "/login", true);
   }
 
   if (!isPublicAppPath(pathname) && pathname.startsWith("/api")) {
@@ -112,7 +115,9 @@ function middlewareWithoutClerk(
   }
 
   if (!isPublicAppPath(pathname)) {
-    return redirectToApp(req, "/waitlist", true);
+    const loginUrl = new URL("/login", getAppOrigin(req, true));
+    loginUrl.searchParams.set("redirect_url", `${pathname}${nextUrlLike.search}`);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
