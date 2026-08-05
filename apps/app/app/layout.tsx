@@ -38,19 +38,19 @@ export const metadata: Metadata = {
   },
   title:
     isAuthBypassEnabledServer()
-      ? "[BYPASS] Deelrx - Run real transactions. Without the mess."
-      : "Deelrx - Run real transactions. Without the mess.",
+      ? "[BYPASS] Deelrx CRM - POS and inventory for retail"
+      : "Deelrx CRM - POS and inventory for retail",
   description:
-    "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+    "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
   icons: {
     icon: "/brand/favicon-32.png",
 
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx - Run real transactions. Without the mess.",
+    title: "Deelrx CRM - POS and inventory for retail",
     description:
-      "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
     type: "website",
     locale: "en_US",
     url: "/",
@@ -58,9 +58,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx - Run real transactions. Without the mess.",
+    title: "Deelrx CRM - POS and inventory for retail",
     description:
-      "Deelrx is a privacy-first CRM and POS built for cash-heavy, inventory-sensitive businesses that don't operate on neat timelines.",
+      "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {

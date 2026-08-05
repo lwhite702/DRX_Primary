@@ -37,7 +37,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.111.0
 
       - name: Setup Supabase project config
         run: |
@@ -84,7 +84,7 @@ jobs:
         run: pnpm --filter deelrxcrm-app exec playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm --filter deelrxcrm-app test:e2e
+        run: pnpm --filter deelrxcrm-app test:e2e:required
         env:
           CI: true
           NODE_ENV: development

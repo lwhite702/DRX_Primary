@@ -25,44 +25,14 @@ struct OperatorSession: Codable, Sendable, Equatable {
 @Observable
 final class SessionStore {
     private(set) var operatorSession: OperatorSession?
-    private(set) var isRestoring = false
-
-    private let apiClient: APIClient
-    private let tokenStore: any TokenStore
 
     var isAuthenticated: Bool { operatorSession != nil }
 
-    init(apiClient: APIClient, tokenStore: any TokenStore) {
-        self.apiClient = apiClient
-        self.tokenStore = tokenStore
-    }
-
-    func restore() async {
-        guard !isRestoring, operatorSession == nil else { return }
-        isRestoring = true
-        defer { isRestoring = false }
-
-        do {
-            guard try await tokenStore.readToken() != nil else {
-                return
-            }
-            let restored: OperatorSession = try await apiClient.send(APIRequest(path: "/api/mobile/v1/session"))
-            operatorSession = restored
-        } catch APIError.unauthorized {
-            operatorSession = nil
-        } catch APIError.forbidden {
-            operatorSession = nil
-        } catch {
-            operatorSession = nil
-        }
+    func restore(_ operatorSession: OperatorSession) {
+        self.operatorSession = operatorSession
     }
 
     func reset() {
         operatorSession = nil
-        isRestoring = false
-    }
-
-    func signOut() async {
-        reset()
     }
 }

@@ -22,9 +22,9 @@ struct AppRootView: View {
                     .accessibilityIdentifier("clerkAuthView")
                     .onAppear { environment.telemetry.screen("Sign In") }
             case .needsOnboarding:
-                if clerk.user != nil { NativeOnboardingView() } else { AuthView(isDismissible: false) }
+                NativeOnboardingView()
             case .ready:
-                if clerk.user != nil { OperatorTabView() } else { AuthView(isDismissible: false) }
+                OperatorTabView()
             case .recoverableError:
                 ProvisioningRecoveryView()
             }
@@ -93,7 +93,6 @@ private struct SessionBootstrapView: View {
 
 private struct NativeOnboardingView: View {
     @Environment(AppEnvironment.self) private var environment
-    @Environment(Clerk.self) private var clerk
     @State private var ownerName = ""
     @State private var businessName = ""
     @State private var businessType = "Retail POS"
@@ -105,38 +104,56 @@ private struct NativeOnboardingView: View {
     private var isValid: Bool {
         !ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        (!collectTax || (parsedTaxRate.map { (0...100).contains($0) } ?? false))
+        (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
     }
 
-    private var parsedTaxRate: Decimal? {
-        Decimal(string: taxRate, locale: Locale.current)
+    private func parseTaxRate(_ input: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        return formatter.number(from: input)?.doubleValue
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Owner") { TextField("Owner name", text: $ownerName).textContentType(.name) }
-                Section("Business") {
-                    TextField("Business name", text: $businessName)
-                    Picker("Business type", selection: $businessType) {
-                        ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    GroupBox("Owner") {
+                        TextField("Owner name", text: $ownerName)
+                            .textContentType(.name)
+                            .textFieldStyle(.roundedBorder)
                     }
-                    TextField("Timezone", text: $timezone).textInputAutocapitalization(.never)
-                    Picker("Currency", selection: $currency) {
-                        ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
+
+                    GroupBox("Business") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            TextField("Business name", text: $businessName)
+                                .textFieldStyle(.roundedBorder)
+                            Picker("Business type", selection: $businessType) {
+                                ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
+                            }
+                            TextField("Timezone", text: $timezone)
+                                .textInputAutocapitalization(.never)
+                                .textFieldStyle(.roundedBorder)
+                            Picker("Currency", selection: $currency) {
+                                ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
+                            }
+                        }
                     }
-                }
-                Section("Tax") {
-                    Toggle("Collect tax", isOn: $collectTax)
-                    if collectTax {
-                        TextField("Tax rate (%)", text: $taxRate).keyboardType(.decimalPad)
+
+                    GroupBox("Tax") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Toggle("Collect tax", isOn: $collectTax)
+                            if collectTax {
+                                TextField("Tax rate (%)", text: $taxRate)
+                                    .keyboardType(.decimalPad)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
                     }
-                }
-                Section {
+
                     Button(environment.isSubmittingOnboarding ? "Creating business…" : "Create Business") {
                         Task {
-                            let decimalRate = parsedTaxRate ?? 0
-                            let rate = NSDecimalNumber(decimal: decimalRate * 100).intValue
+                            let rate = Int(((parseTaxRate(taxRate) ?? 0) * 100).rounded())
                             _ = await environment.completeOnboarding(.init(
                                 name: ownerName.trimmingCharacters(in: .whitespacesAndNewlines),
                                 businessName: businessName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -145,19 +162,14 @@ private struct NativeOnboardingView: View {
                             ))
                         }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity)
                     .disabled(!isValid || environment.isSubmittingOnboarding)
                     .accessibilityIdentifier("submitOnboardingButton")
                 }
+                .padding(20)
             }
             .navigationTitle("Set Up Your Business")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Sign Out", role: .destructive) {
-                        Task { try? await clerk.auth.signOut(); await environment.signOut() }
-                    }
-                    .accessibilityIdentifier("onboardingSignOutButton")
-                }
-            }
             .onAppear { environment.telemetry.screen("Business Onboarding") }
         }
     }

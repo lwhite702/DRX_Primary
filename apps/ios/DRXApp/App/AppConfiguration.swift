@@ -9,6 +9,7 @@ struct AppConfiguration: Sendable, Equatable {
     let environment: Environment
     let clerkPublishableKey: String
     let apiBaseURL: URL
+    let convexDeploymentURL: URL
     let sentryDSN: URL?
     let postHogAPIKey: String?
     let postHogHost: URL?
@@ -41,9 +42,15 @@ struct AppConfiguration: Sendable, Equatable {
             throw ConfigurationError.missingOrInvalid("DRX_API_BASE_URL")
         }
 
+        guard let convexDeploymentURL = Self.optionalHTTPSURL(for: "DRX_CONVEX_URL", in: info),
+              convexDeploymentURL.host?.hasSuffix(".convex.cloud") == true else {
+            throw ConfigurationError.missingOrInvalid("DRX_CONVEX_URL")
+        }
+
         self.environment = environment
         self.clerkPublishableKey = clerkPublishableKey
         self.apiBaseURL = apiBaseURL
+        self.convexDeploymentURL = convexDeploymentURL
         let sentryDSN = Self.optionalHTTPSURL(for: "SENTRY_DSN", in: info)
         let postHogAPIKey = Self.value(for: "POSTHOG_API_KEY", in: info)
         let postHogHost = Self.optionalHTTPSURL(for: "POSTHOG_HOST", in: info)

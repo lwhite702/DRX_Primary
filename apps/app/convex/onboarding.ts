@@ -1,8 +1,47 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+const operatorSessionValidator = v.object({
+  operatorId: v.string(),
+  displayName: v.string(),
+  businessId: v.id("businesses"),
+  businessName: v.string(),
+  roles: v.array(v.string()),
+  permissions: v.array(v.string()),
+  email: v.union(v.string(), v.null()),
+});
+
+const onboardingStatusValidator = v.union(
+  v.object({ status: v.literal("NEEDS_BUSINESS_ONBOARDING") }),
+  v.object({ status: v.literal("INACTIVE") }),
+  v.object({ status: v.literal("BUSINESS_MISSING") }),
+  v.object({
+    status: v.literal("READY"),
+    session: operatorSessionValidator,
+  }),
+);
+
+const onboardingMutationResultValidator = v.union(
+  v.object({
+    businessId: v.id("businesses"),
+    userId: v.id("users"),
+    status: v.literal("BUSINESS_MISSING"),
+  }),
+  v.object({
+    businessId: v.id("businesses"),
+    userId: v.id("users"),
+    status: v.literal("ALREADY_ONBOARDED"),
+  }),
+  v.object({
+    businessId: v.id("businesses"),
+    userId: v.id("users"),
+    status: v.literal("ONBOARDING_SUCCESS"),
+  }),
+);
+
 export const getCurrentOnboardingStatus = query({
   args: {},
+  returns: onboardingStatusValidator,
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -22,8 +61,15 @@ export const getCurrentOnboardingStatus = query({
 
     return {
       status: "READY" as const,
-      businessId: business._id,
-      userId: user._id,
+      session: {
+        operatorId: identity.subject,
+        displayName: user.name || user.email || "DRX Operator",
+        businessId: business._id,
+        businessName: business.name,
+        roles: [user.role.toLowerCase()],
+        permissions: user.role === "OWNER" ? ["*"] : [],
+        email: user.email || null,
+      },
     };
   },
 });
@@ -39,6 +85,7 @@ export const createBusinessOnboarding = mutation({
     collectTax: v.optional(v.boolean()),
     taxRateBps: v.optional(v.number()),
   },
+  returns: onboardingMutationResultValidator,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -60,13 +107,17 @@ export const createBusinessOnboarding = mutation({
         return {
           businessId: existingUser.businessId,
           userId: existingUser._id,
+<<<<<<< HEAD
           status: "BUSINESS_MISSING",
+=======
+          status: "BUSINESS_MISSING" as const,
+>>>>>>> origin/main
         };
       }
       return {
         businessId: existingUser.businessId,
         userId: existingUser._id,
-        status: "ALREADY_ONBOARDED",
+        status: "ALREADY_ONBOARDED" as const,
       };
     }
 
@@ -113,7 +164,7 @@ export const createBusinessOnboarding = mutation({
     return {
       businessId,
       userId,
-      status: "ONBOARDING_SUCCESS",
+      status: "ONBOARDING_SUCCESS" as const,
     };
   },
 });

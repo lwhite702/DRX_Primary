@@ -5,4 +5,4 @@ DRX_APP_ENVIRONMENT = development
 // Replace with a pk_test_ key when a separate Clerk development instance is available.
 // Clerk publishable keys are public client identifiers and are embedded in the app bundle.
 CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ
-
+DRX_CONVEX_URL = https:/$()/handsome-llama-678.convex.cloud

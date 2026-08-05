@@ -28,11 +28,24 @@ describe("native provisioning contract", () => {
     const records = await t.run(async (ctx) => ({
       businesses: await ctx.db.query("businesses").collect(),
       users: await ctx.db.query("users").collect(),
+      audits: await ctx.db.query("auditEvents").collect(),
     }));
     expect(records.businesses).toHaveLength(1);
     expect(records.users).toHaveLength(1);
+    expect(records.audits).toHaveLength(1);
     expect(records.users[0]).toMatchObject({ role: "OWNER", businessId: first.businessId });
-    expect(await authenticated.query(api.onboarding.getCurrentOnboardingStatus, {})).toMatchObject({ status: "READY" });
+    expect(await authenticated.query(api.onboarding.getCurrentOnboardingStatus, {})).toEqual({
+      status: "READY",
+      session: {
+        operatorId: "new_clerk_identity",
+        displayName: "New Owner",
+        businessId: first.businessId,
+        businessName: "New Store",
+        roles: ["owner"],
+        permissions: ["*"],
+        email: "new@example.com",
+      },
+    });
   });
 
   it("returns controlled inactive and missing-business states", async () => {
