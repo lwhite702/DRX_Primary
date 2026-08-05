@@ -81,7 +81,7 @@ jobs:
           SUPABASE_DB_PASSWORD: "admin"
 
       - name: Apply Prisma schema
-        run: pnpm --filter deelrxcrm-app exec prisma db push --schema prisma/schema.prisma --skip-generate
+        run: pnpm --filter deelrxcrm-app exec prisma db push --schema prisma/schema.prisma
         env:
           DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:54322/postgres"
 
