@@ -126,25 +126,41 @@ private struct NativeOnboardingView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Owner") { TextField("Owner name", text: $ownerName).textContentType(.name) }
-                Section("Business") {
-                    TextField("Business name", text: $businessName)
-                    Picker("Business type", selection: $businessType) {
-                        ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    GroupBox("Owner") {
+                        TextField("Owner name", text: $ownerName)
+                            .textContentType(.name)
+                            .textFieldStyle(.roundedBorder)
                     }
-                    TextField("Timezone", text: $timezone).textInputAutocapitalization(.never)
-                    Picker("Currency", selection: $currency) {
-                        ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
+
+                    GroupBox("Business") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            TextField("Business name", text: $businessName)
+                                .textFieldStyle(.roundedBorder)
+                            Picker("Business type", selection: $businessType) {
+                                ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
+                            }
+                            TextField("Timezone", text: $timezone)
+                                .textInputAutocapitalization(.never)
+                                .textFieldStyle(.roundedBorder)
+                            Picker("Currency", selection: $currency) {
+                                ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
+                            }
+                        }
                     }
-                }
-                Section("Tax") {
-                    Toggle("Collect tax", isOn: $collectTax)
-                    if collectTax {
-                        TextField("Tax rate (%)", text: $taxRate).keyboardType(.decimalPad)
+
+                    GroupBox("Tax") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Toggle("Collect tax", isOn: $collectTax)
+                            if collectTax {
+                                TextField("Tax rate (%)", text: $taxRate)
+                                    .keyboardType(.decimalPad)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
                     }
-                }
-                Section {
+
                     Button(environment.isSubmittingOnboarding ? "Creating business…" : "Create Business") {
                         Task {
                             let rate = Int(((parseTaxRate(taxRate) ?? 0) * 100).rounded())
@@ -156,9 +172,12 @@ private struct NativeOnboardingView: View {
                             ))
                         }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity)
                     .disabled(!isValid || environment.isSubmittingOnboarding)
                     .accessibilityIdentifier("submitOnboardingButton")
                 }
+                .padding(20)
             }
             .navigationTitle("Set Up Your Business")
             .onAppear { environment.telemetry.screen("Business Onboarding") }

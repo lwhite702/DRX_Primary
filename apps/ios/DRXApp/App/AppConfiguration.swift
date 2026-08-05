@@ -42,10 +42,8 @@ struct AppConfiguration: Sendable, Equatable {
             throw ConfigurationError.missingOrInvalid("DRX_API_BASE_URL")
         }
 
-        guard let convexDeploymentURLValue = Self.value(for: "DRX_CONVEX_URL", in: info),
-              let convexDeploymentURL = URL(string: convexDeploymentURLValue),
-              convexDeploymentURL.scheme == "https",
-              convexDeploymentURL.host != nil else {
+        guard let convexDeploymentURL = Self.optionalHTTPSURL(for: "DRX_CONVEX_URL", in: info),
+              convexDeploymentURL.host?.hasSuffix(".convex.cloud") == true else {
             throw ConfigurationError.missingOrInvalid("DRX_CONVEX_URL")
         }
 

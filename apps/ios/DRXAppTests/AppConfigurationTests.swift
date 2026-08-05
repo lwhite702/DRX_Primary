@@ -52,14 +52,27 @@ struct AppConfigurationTests {
             "DRX_APP_ENVIRONMENT": "production",
             "CLERK_PUBLISHABLE_KEY": "pk_live_example",
             "DRX_API_BASE_URL": "https://deelrxcrm.app",
-            "DRX_CONVEX_URL": "https://example.convex.cloud",
+            "DRX_CONVEX_URL": "https://brainy-mouse-884.convex.cloud",
             "SENTRY_DSN": "https://public@example.test/1",
             "POSTHOG_API_KEY": "phc_example",
             "POSTHOG_HOST": "https://us.i.posthog.com"
         ])
 
         #expect(configuration.apiBaseURL == URL(string: "https://www.deelrxcrm.app"))
+        #expect(configuration.convexDeploymentURL == URL(string: "https://brainy-mouse-884.convex.cloud"))
         #expect(configuration.distributionChannel == "testflight")
+    }
+
+    @Test
+    func requiresAConvexCloudDeployment() {
+        #expect(throws: ConfigurationError.missingOrInvalid("DRX_CONVEX_URL")) {
+            try AppConfiguration(info: [
+                "DRX_APP_ENVIRONMENT": "development",
+                "CLERK_PUBLISHABLE_KEY": "pk_test_example",
+                "DRX_API_BASE_URL": "https://example.test",
+                "DRX_CONVEX_URL": "https://example.test",
+            ])
+        }
     }
 
     @Test
@@ -69,7 +82,7 @@ struct AppConfigurationTests {
                 "DRX_APP_ENVIRONMENT": "production",
                 "CLERK_PUBLISHABLE_KEY": "pk_live_example",
                 "DRX_API_BASE_URL": "https://www.deelrxcrm.app",
-                "DRX_CONVEX_URL": "https://example.convex.cloud"
+                "DRX_CONVEX_URL": "https://brainy-mouse-884.convex.cloud"
             ])
         }
     }
