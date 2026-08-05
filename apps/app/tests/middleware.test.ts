@@ -137,6 +137,23 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("passes through deterministic auth fixtures outside production", async () => {
+    const previousVisualFixtures = process.env.VISUAL_FIXTURES;
+    process.env.VISUAL_FIXTURES = "true";
+
+    try {
+      const req = makeRequest("/login", "deelrxcrm.app");
+      const res = await runMiddleware(req, { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+    } finally {
+      if (previousVisualFixtures === undefined) {
+        delete process.env.VISUAL_FIXTURES;
+      } else {
+        process.env.VISUAL_FIXTURES = previousVisualFixtures;
+      }
+    }
+  });
+
   it("passes through /api/public routes without auth redirect", async () => {
     const req = makeRequest("/api/public/health", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });

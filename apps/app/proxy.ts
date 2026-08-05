@@ -19,6 +19,7 @@ import {
   ONBOARDING_COMPLETION_COOKIE,
   type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
+import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
@@ -49,6 +50,13 @@ function getAppOrigin(req: Request, preserveCurrentHost = false) {
 
 function redirectToApp(req: Request, pathname: string, preserveCurrentHost = false) {
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
+}
+
+function shouldServeVisualFixture(pathname: string) {
+  return (
+    isAuthVisualFixtureEnabled() &&
+    (isClerkUiPath(pathname) || pathname.startsWith("/visual-fixtures/"))
+  );
 }
 
 function hasOnboardingCompletionCookie(
@@ -101,6 +109,10 @@ function middlewareWithoutClerk(
   }
 
   if (hostKind !== "app") {
+    return NextResponse.next();
+  }
+
+  if (shouldServeVisualFixture(pathname)) {
     return NextResponse.next();
   }
 
@@ -158,6 +170,10 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       if (hostKind !== "app") {
+        return NextResponse.next();
+      }
+
+      if (shouldServeVisualFixture(pathname)) {
         return NextResponse.next();
       }
 

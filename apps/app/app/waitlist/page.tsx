@@ -6,6 +6,7 @@ import { auth } from "@/lib/adapters/auth/server";
 import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
+import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 
 export const metadata: Metadata = {
   title: "Join the beta | Deelrx CRM",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function WaitlistPage() {
-  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
+  const useVisualFixture = isAuthVisualFixtureEnabled();
   const { userId, sessionClaims } = useVisualFixture
     ? { userId: null, sessionClaims: null }
     : await auth();
