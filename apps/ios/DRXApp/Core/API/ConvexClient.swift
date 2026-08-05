@@ -12,7 +12,7 @@ struct ConvexClient: Sendable {
     let session: URLSession
 
     init(
-        deploymentURL: URL = URL(string: "https://handsome-llama-678.convex.cloud")!,
+        deploymentURL: URL,
         session: URLSession = .shared
     ) {
         self.deploymentURL = deploymentURL
@@ -50,10 +50,10 @@ struct ConvexClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        // Inject Clerk JWT
-        if let token = try? await Clerk.shared.auth.getToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let token = try await Clerk.shared.auth.getToken(.init(template: "convex")) else {
+            throw ConvexError.missingAuthenticationToken
         }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = ConvexRequestBody(path: path, args: args, format: "json")
         request.httpBody = try JSONEncoder.convex.encode(body)
@@ -114,12 +114,14 @@ private struct ConvexErrorBody: Decodable {
 // MARK: - Errors
 
 enum ConvexError: Error, LocalizedError, Sendable {
+    case missingAuthenticationToken
     case invalidResponse
     case server(statusCode: Int, message: String?)
     case convexError(message: String)
 
     var errorDescription: String? {
         switch self {
+        case .missingAuthenticationToken: "No authenticated Convex session is available."
         case .invalidResponse: "The server returned an invalid response."
         case .server(let code, let msg): msg ?? "Request failed with status \(code)."
         case .convexError(let msg): msg
@@ -149,5 +151,13 @@ extension JSONDecoder {
 // MARK: - Shared Instance
 
 extension ConvexClient {
-    static let shared = ConvexClient()
+    static let shared: ConvexClient = {
+        guard let rawURL = Bundle.main.object(forInfoDictionaryKey: "DRX_CONVEX_URL") as? String,
+              let deploymentURL = URL(string: rawURL),
+              deploymentURL.scheme == "https",
+              deploymentURL.host?.hasSuffix(".convex.cloud") == true else {
+            preconditionFailure("DRX_CONVEX_URL must contain a valid Convex deployment URL")
+        }
+        return ConvexClient(deploymentURL: deploymentURL)
+    }()
 }
