@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
+// @target:apps/app/app/login/[[...rest]]/page.tsx
+// @target:apps/app/app/register/[[...rest]]/page.tsx
+
 const bypassAuthEnabled =
   process.env.BYPASS_AUTH_FOR_TESTING === "true";
 const hasClerkTestingKeys =

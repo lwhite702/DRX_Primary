@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+// @target:apps/app/app/login/[[...rest]]/page.tsx
+// @target:apps/app/app/register/[[...rest]]/page.tsx
+
 const publicRoutes = ["/login", "/register", "/waitlist"];
 const protectedRoutes = ["/pos/sale", "/settings"];
 const bypassAuthEnabled =
