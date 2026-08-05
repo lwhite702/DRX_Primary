@@ -12,6 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Deploy Convex functions to Staging
+        working-directory: ./apps/app
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_STAGING || secrets.CONVEX_DEPLOY_KEY }}
+        run: npx convex deploy
+
       - name: Deploy preview to Vercel (staging)
         id: vercel
         uses: amondnet/vercel-action@v25

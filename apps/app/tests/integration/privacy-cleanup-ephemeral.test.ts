@@ -42,7 +42,7 @@ function getNewYorkHour() {
     hour12: false,
   }).formatToParts(new Date());
   const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
-  return Number.isFinite(hour) ? hour : 0;
+  return Number.isFinite(hour) ? hour % 24 : 0;
 }
 
 describe("Privacy cleanup with ephemeral priority", () => {

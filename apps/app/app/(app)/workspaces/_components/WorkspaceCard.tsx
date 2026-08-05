@@ -69,7 +69,8 @@ export function WorkspaceCard({
           {/* Avatar */}
           <div
             className={cn(
-              "h-12 w-12 rounded-lg flex items-center justify-center text-lg font-bold text-white",
+              "h-12 w-12 rounded-lg flex items-center justify-center text-lg font-bold",
+              color.includes("green") || color.includes("accent") ? "text-black" : "text-white",
               color,
             )}
           >

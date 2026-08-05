@@ -34,13 +34,27 @@ import { POST } from "@/app/api/privacy/cleanup/queue/route";
 describe("privacy cleanup queue worker route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.DRX_PRIVACY_CLEANUP_SECRET;
+    process.env.DRX_PRIVACY_CLEANUP_SECRET = "test-cleanup-secret";
     mocks.resolveAuthContext.mockResolvedValue({ userId: null, businessId: null });
     mocks.ensureServerFlag.mockResolvedValue(true);
     mocks.db.$executeRaw.mockResolvedValue(undefined);
     mocks.db.creditLimit.findFirst.mockResolvedValue(null);
     mocks.db.customers.findFirst.mockResolvedValue({ id: "cust_1" });
     mocks.db.customers.delete.mockResolvedValue({ id: "cust_1" });
+  });
+
+  it("rejects unauthenticated requests when cleanup secret is unset", async () => {
+    delete process.env.DRX_PRIVACY_CLEANUP_SECRET;
+
+    const req = new NextRequest("http://localhost:3000/api/privacy/cleanup/queue", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+    expect(mocks.db.customers.delete).not.toHaveBeenCalled();
   });
 
   it("returns 503 when feature flag is disabled", async () => {
@@ -50,7 +64,10 @@ describe("privacy cleanup queue worker route", () => {
 
     const req = new NextRequest("http://localhost:3000/api/privacy/cleanup/queue", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-cron-secret": "test-cleanup-secret",
+      },
       body: JSON.stringify({}),
     });
 
@@ -74,7 +91,10 @@ describe("privacy cleanup queue worker route", () => {
 
     const req = new NextRequest("http://localhost:3000/api/privacy/cleanup/queue", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-cron-secret": "test-cleanup-secret",
+      },
       body: JSON.stringify({ limit: 10 }),
     });
 

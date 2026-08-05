@@ -8,6 +8,7 @@ export function initAnalytics(apiKey: string, host = 'https://app.posthog.com') 
 }
 
 export function identify(userId: string, traits?: Record<string, any>) {
+  // @ts-ignore
   PostHog.identify(userId, traits);
 }
 
@@ -24,6 +25,7 @@ export function capture(
     // Optional: re-identify? No, usually not done on every capture unless user switched
   }
 
+  // @ts-ignore
   PostHog.capture(event, properties);
 }
 

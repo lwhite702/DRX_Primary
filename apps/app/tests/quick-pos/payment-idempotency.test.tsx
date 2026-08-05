@@ -119,7 +119,11 @@ describe("quick pos payment idempotency", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.click(completeButton);
+    await screen.findByText("Payment failed");
+    const retryButton = await screen.findByRole("button", { name: "Complete Sale" });
+    expect(retryButton).not.toBeDisabled();
+
+    fireEvent.click(retryButton);
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(2);

@@ -1,12 +1,13 @@
 // metro.config.js
-const { getDefaultConfig } = require("expo/metro-config");
+const { getPostHogExpoConfig } = require("posthog-react-native/metro");
 const path = require("path");
 const { FileStore } = require("metro-cache");
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
 
-const config = getDefaultConfig(projectRoot);
+// Get default config wrapped with PostHog's serializers
+const config = getPostHogExpoConfig(projectRoot);
 
 // Turn on checking for hoisting to workspace root
 config.watchFolders = [workspaceRoot];

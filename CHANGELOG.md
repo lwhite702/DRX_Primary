@@ -7,15 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Fixed
 
-- **Legal and App Store**: Published the shared Wrelik Privacy Policy and Terms of Use with DRX-specific controller, business-data, regulated-retail, and AI-assisted operations addenda.
-- **Support**: Added a public support route and exposed working Privacy Policy, Terms of Use, and Support destinations from the marketing footer and legal hub.
+- **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
 
-### Changed
+## [0.5.7] - 2026-07-22
 
-- **Governance**: Added a root `AGENTS.md` entrypoint and enforced Linear-first work logging, issue synchronization, branch/PR linkage, and pre-commit verification for every repository change.
-- **Testing**: Replaced the skipped real-beta Playwright suite with config-time environment loading, explicit isolation, fail-fast credential checks, single-project mutation safety, and a persistent-data E2E runbook.
+### Fixed
+
+- **Web Onboarding**: Force a fresh dashboard navigation after durable onboarding completion so production sessions cannot remain stuck on the onboarding page.
+
+## [0.5.6] - 2026-06-21
+
+### Fixed
+
+- **Testing**: Fixed Vitest alias resolution for monorepo root execution by introducing `vitest.workspace.ts`.
 
 ## [0.5.5] - 2026-05-31
 

@@ -23,7 +23,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { createAppClient } from "@/lib/data/client/supabase-client";
 import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -56,8 +55,6 @@ export default function InventoryIntakePage() {
     delivery_cost: "0",
     supplier: "",
   });
-
-  const supabase = createAppClient();
 
   // Calculate cost per gram
   const costPerUnit =
@@ -109,7 +106,7 @@ export default function InventoryIntakePage() {
   };
 
   const handleProcessIntake = async () => {
-    if (!business?.id || !supabase) {
+    if (!business?.id) {
       toast.error("Business not found");
       return;
     }

@@ -7,8 +7,5 @@ export async function register() {
   }
 }
 
-export const onRequestError = (err: any, request: Request, context: any) => {
-  void request;
-  void context;
-  console.error("Request Error:", err);
-};
+export const onRequestError = Sentry.captureRequestError;
+import * as Sentry from "@sentry/nextjs";

@@ -246,7 +246,7 @@ export default function Customers() {
           <View style={styles.customerInfo}>
             <View style={styles.headerRow}>
               <View style={styles.nameRow}>
-                <Text style={styles.customerName}>{visibleName}</Text>
+                <Text style={styles.customerName} numberOfLines={1} ellipsizeMode="tail">{visibleName}</Text>
                 <View
                   style={[
                     styles.tierBadge,
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   customerInfo: { flex: 1 },
-  nameRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm, flex: 1, flexShrink: 1 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -630,6 +630,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: FONT_SIZES.lg,
     fontWeight: "600",
+    flexShrink: 1,
   },
   tierBadge: {
     flexDirection: "row",
