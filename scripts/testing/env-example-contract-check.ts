@@ -25,6 +25,7 @@ const runtimeFiles = [
 const codeExts = new Set([".ts", ".tsx", ".js", ".mjs"]);
 const ignoredRuntimeKeys = new Set([
   "CI",
+  "NEXT_PHASE",
   "NEXT_RUNTIME",
   "NODE_ENV",
   "PLAYWRIGHT_APP_PORT",
@@ -161,4 +162,3 @@ if (
 console.log(
   `Env example contract check passed. Runtime keys verified: ${runtimeEnvKeys.size}`,
 );
-
