@@ -13,10 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function WaitlistPage() {
-  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
-  const { userId, sessionClaims } = useVisualFixture
-    ? { userId: null, sessionClaims: null }
-    : await auth();
+  const useVisualFixture =
+    process.env.NODE_ENV !== "production" && process.env.VISUAL_FIXTURES === "true";
+  const { userId, sessionClaims } = await auth();
   const claims = sessionClaims as {
     metadata?: { onboardingComplete?: boolean };
     publicMetadata?: { onboardingComplete?: boolean };
@@ -47,7 +46,13 @@ export default async function WaitlistPage() {
       ) : (
         <Waitlist
           afterJoinWaitlistUrl="/login"
-          appearance={drxClerkAuthAppearance}
+          appearance={{
+            ...drxClerkAuthAppearance,
+            elements: {
+              ...drxClerkAuthAppearance.elements,
+              header: "hidden",
+            },
+          }}
         />
       )}
     </AuthShell>

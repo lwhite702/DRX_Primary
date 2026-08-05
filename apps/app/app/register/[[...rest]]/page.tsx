@@ -13,8 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RegisterPage() {
-  const useVisualFixture = process.env.VISUAL_FIXTURES === "true";
-  const userId = useVisualFixture ? null : (await auth()).userId;
+  const useVisualFixture =
+    process.env.NODE_ENV !== "production" && process.env.VISUAL_FIXTURES === "true";
+  const { userId } = await auth();
 
   if (userId) redirect("/dashboard");
 

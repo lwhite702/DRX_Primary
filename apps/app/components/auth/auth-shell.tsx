@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Boxes, Gauge, UsersRound } from "lucide-react";
 import type { ReactNode } from "react";
+import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -99,16 +100,16 @@ export function AuthShell({
           </div>
 
           <nav
-            aria-label="Legal links"
+            aria-label="Legal and support links"
             className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
           >
-            <Link className="underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/privacy`}>
+            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/privacy`}>
               Privacy
             </Link>
-            <Link className="underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/terms`}>
+            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/legal/terms`}>
               Terms
             </Link>
-            <Link className="underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={`${marketingUrl}/support`}>
+            <Link className="inline-flex min-h-11 items-center underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href={featurebaseHelpdeskUrl}>
               Support
             </Link>
           </nav>
