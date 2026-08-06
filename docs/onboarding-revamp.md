@@ -51,7 +51,7 @@ flowchart TD
 
 ## State and persistence model
 
-Both clients use the same named typed states: `welcome`, `ownerProfile`, `businessName`, `businessType`, `location`, `regionalSettings`, `taxDecision`, `taxDetails`, `inventoryDecision`, `teamDecision`, `teamInvitation`, `review`, `submitting`, `completed`, and `recoverableError`. A transition function owns forward/back branching rather than unrelated booleans. Review edits change only the chosen state. The version-1 draft saves every valid transition to UserDefaults on iOS and localStorage on web, never stores tokens, ignores unknown versions, survives refresh/relaunch, remains after recoverable failure, and clears only after confirmed completion.
+Both clients use the same named typed states for draft navigation: `welcome`, `ownerProfile`, `businessName`, `businessType`, `location`, `regionalSettings`, `taxDecision`, `taxDetails`, `inventoryDecision`, `teamDecision`, `teamInvitation`, `review`, `submitting`, and `completed`. A transition function owns forward/back branching rather than unrelated booleans. Review edits change only the chosen state. The version-1 draft saves every valid transition to UserDefaults on iOS and localStorage on web, never stores tokens, ignores unknown versions, survives refresh/relaunch, and clears only after confirmed completion. Provisioning recovery (`recoverableError`) is handled separately as an `AppEnvironment.rootState` outcome produced by `checkProvisioning`, not as part of the draft-navigation state machine.
 
 ## Before and after
 

@@ -70,6 +70,16 @@ final class OnboardingModel {
         else { draft = OnboardingDraft(); resumed = false }
     }
 
+    /// Parses a tax rate string using locale-aware number formatting.
+    /// - Parameter input: The tax rate string to parse
+    /// - Returns: The parsed tax rate as a Double, or nil if parsing fails
+    static func parseTaxRate(_ input: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        return formatter.number(from: input)?.doubleValue
+    }
+
     var progress: (Int, Int) {
         let steps = visibleSteps
         return ((steps.firstIndex(of: draft.currentStep) ?? 0) + 1, steps.count)
@@ -108,7 +118,7 @@ final class OnboardingModel {
     }
     /// Moves the onboarding draft to the previous visible step or resets it to the welcome step.
 /// - Note: Persists the draft when moving to a previous step.
-func back() { if let index = visibleSteps.firstIndex(of: draft.currentStep), index > 0 { draft.currentStep = visibleSteps[index - 1]; store.save(draft) } else { draft.currentStep = .welcome } }
+func back() { validationMessage = nil; if let index = visibleSteps.firstIndex(of: draft.currentStep), index > 0 { draft.currentStep = visibleSteps[index - 1]; store.save(draft) } else { draft.currentStep = .welcome } }
     /// Clears the persisted onboarding draft.
 func clear() { store.clear() }
     private var nextAfterTax: OnboardingStep { draft.businessType?.tracksProducts == false ? .teamDecision : .inventoryDecision }
@@ -120,10 +130,10 @@ func clear() { store.clear() }
         case .businessName where draft.businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty: validationMessage = "Enter a business name to continue."
         case .businessType where draft.businessType == nil: validationMessage = "Choose the option that fits best for now."
         case .taxDecision where draft.collectsTax == nil: validationMessage = "Choose an option to continue."
-        case .taxDetails where Double(draft.taxRate).map({ !(0...100).contains($0) }) ?? true: validationMessage = "Enter a tax rate from 0% to 100%."
+        case .taxDetails where Self.parseTaxRate(draft.taxRate).map({ !(0...100).contains($0) }) ?? true: validationMessage = "Enter a tax rate from 0% to 100%."
         case .inventoryDecision where draft.tracksInventory == nil: validationMessage = "Choose whether to track inventory."
         case .teamDecision where draft.inviteTeam == nil: validationMessage = "Choose whether to invite someone now."
-        case .teamInvitation where !draft.invitedUserEmail.contains("@"): validationMessage = "Enter a valid email address."
+        case .teamInvitation where !draft.invitedUserEmail.range(of: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", options: .regularExpression).map({ _ in true }) ?? false: validationMessage = "Enter a valid email address."
         default: return true
         }
         return false

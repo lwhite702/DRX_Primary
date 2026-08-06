@@ -80,7 +80,7 @@ export function validationMessage(draft: OnboardingDraft): string | null {
   if (draft.currentStep === "businessName" && !draft.businessName.trim()) return "Enter a business name to continue.";
   if (draft.currentStep === "businessType" && !draft.businessType) return "Choose the option that fits best for now.";
   if (draft.currentStep === "taxDecision" && !draft.taxChoice) return "Choose an option to continue.";
-  if (draft.currentStep === "taxDetails" && (!Number.isFinite(Number(draft.taxRate)) || Number(draft.taxRate) < 0 || Number(draft.taxRate) > 100)) return "Enter a tax rate from 0% to 100%.";
+  if (draft.currentStep === "taxDetails" && (draft.taxRate.trim() === "" || !Number.isFinite(Number(draft.taxRate)) || Number(draft.taxRate) < 0 || Number(draft.taxRate) > 100)) return "Enter a tax rate from 0% to 100%.";
   if (draft.currentStep === "inventoryDecision" && draft.tracksInventory === undefined) return "Choose whether to track inventory.";
   if (draft.currentStep === "teamDecision" && draft.inviteTeam === undefined) return "Choose whether to invite someone now.";
   if (draft.currentStep === "teamInvitation" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.invitedUserEmail)) return "Enter a valid email address.";

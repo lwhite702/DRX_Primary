@@ -49,7 +49,8 @@ export async function completeOnboarding(
   const currency = String(formData.get("currency") || "USD").trim();
   const timezone = String(formData.get("timezone") || "America/New_York").trim();
   const taxChoice = String(formData.get("taxChoice") || "later");
-  const taxRate = Number(formData.get("taxRate") || 0);
+  const rawTaxRate = String(formData.get("taxRate") || "").trim();
+  const taxRate = rawTaxRate === "" ? (taxChoice === "yes" ? NaN : 0) : Number(rawTaxRate);
   const tracksInventory = String(formData.get("tracksInventory")) === "true";
   const dashboardPresetRaw = String(formData.get("dashboardPreset") || "operations").trim();
   const dashboardPreset: DashboardViewPreset =

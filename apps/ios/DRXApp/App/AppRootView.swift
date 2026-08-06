@@ -189,7 +189,14 @@ private struct ProvisioningRecoveryView: View {
             Button("Retry") { Task { await environment.checkProvisioning() } }
                 .buttonStyle(.borderedProminent).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
-                Task { try? await clerk.auth.signOut(); await environment.clerkSignedOut() }
+                Task {
+                    do {
+                        try await clerk.auth.signOut()
+                        await environment.clerkSignedOut()
+                    } catch {
+                        // Sign out failed; preserve existing session state
+                    }
+                }
             }
             if let requestID = environment.supportRequestID {
                 ShareLink(item: requestID) { Label("Copy Support Details", systemImage: "doc.on.doc") }

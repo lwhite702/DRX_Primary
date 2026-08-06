@@ -43,13 +43,14 @@ export function OnboardingForm() {
   const [result, action, pending] = useActionState(completeOnboarding, initialState);
   const [draft, setDraft] = useState(() => createDraft()); const [error, setError] = useState<string | null>(null); const [resumed, setResumed] = useState(false);
   useEffect(() => { const saved = restoreDraft(localStorage.getItem(ONBOARDING_DRAFT_KEY)); if (saved) { setDraft(saved); setResumed(saved.currentStep !== "welcome"); } }, []);
-  useEffect(() => { if (draft.currentStep !== "completed") localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({ ...draft, lastSavedAt: new Date().toISOString() })); document.querySelector<HTMLElement>("#onboarding-heading")?.focus(); }, [draft]);
+  useEffect(() => { if (draft.currentStep !== "completed") localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({ ...draft, lastSavedAt: new Date().toISOString() })); }, [draft]);
   const patch = (value: Partial<OnboardingDraft>) => setDraft((current) => ({ ...current, ...value }));
   const advance = () => { const message = validationMessage(draft); if (message) return setError(message); setError(null); patch({ currentStep: nextStep(draft) }); };
   const back = () => { setError(null); patch({ currentStep: previousStep(draft) }); };
   const edit = (step: OnboardingStep) => patch({ currentStep: step });
   const step = draft.currentStep; const visibleSteps = numbered.filter((item) => item !== "taxDetails" || draft.taxChoice === "yes").filter((item) => item !== "inventoryDecision" || productBusiness(draft.businessType)).filter((item) => item !== "teamInvitation" || draft.inviteTeam);
   const position = Math.max(1, visibleSteps.indexOf(step) + 1);
+  useEffect(() => { document.querySelector<HTMLElement>("#onboarding-heading")?.focus(); }, [step]);
 
   return <section className="mx-auto mt-8 max-w-2xl rounded-3xl border border-white/10 bg-black/30 p-6 shadow-2xl backdrop-blur md:p-10" aria-labelledby="onboarding-heading">
     <OnboardingCompletionRedirect completed={result.status === "success"} />
