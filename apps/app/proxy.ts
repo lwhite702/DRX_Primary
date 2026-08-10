@@ -9,6 +9,7 @@ import {
   isClerkUiPath,
   isOnboardingPath,
   isPublicAppPath,
+  isStaticAssetPath,
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
@@ -59,6 +60,10 @@ function shouldServeVisualFixture(pathname: string) {
   );
 }
 
+function isNestedAuthAssetPath(pathname: string) {
+  return isAuthEntryPath(pathname) && isStaticAssetPath(pathname);
+}
+
 function hasOnboardingCompletionCookie(
   req: Request & {
     cookies?: {
@@ -93,6 +98,10 @@ function middlewareWithoutClerk(
   const pathname = nextUrlLike.pathname;
   const hostname = req.headers.get("host") || "";
   const hostKind = classifyDrxHost(hostname);
+
+  if (isNestedAuthAssetPath(pathname)) {
+    return new NextResponse(null, { status: 404 });
+  }
 
   if (hostKind === "marketing") {
     if (shouldRedirectMarketingToApp(pathname)) {
@@ -140,6 +149,10 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       const pathname = url.pathname;
       const hostname = req.headers.get("host") || "";
       const hostKind = classifyDrxHost(hostname);
+
+      if (isNestedAuthAssetPath(pathname)) {
+        return new NextResponse(null, { status: 404 });
+      }
 
       // Always allow webhook ingestion without redirect logic.
       if (pathname.startsWith("/api/webhooks")) {
@@ -224,6 +237,7 @@ export const proxy = (
 
 export const config = {
   matcher: [
+    "/(login|register|sign-in|sign-up|sso-callback)(.*)",
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
