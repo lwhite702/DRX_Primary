@@ -325,7 +325,24 @@ jobs:
   report:
     runs-on: ubuntu-latest
     if: always()
-    needs: [repo-audit, preflight, lint, typecheck, build, required-auth-data, required-ux, unit, integration, e2e-web, a11y, auth-e2e, security, perf-smoke, coverage-gate]
+    needs:
+      [
+        repo-audit,
+        preflight,
+        lint,
+        typecheck,
+        build,
+        required-auth-data,
+        required-ux,
+        unit,
+        integration,
+        e2e-web,
+        a11y,
+        auth-e2e,
+        security,
+        perf-smoke,
+        coverage-gate,
+      ]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -336,13 +353,14 @@ jobs:
           node-version: 20.19.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:readiness
+      - name: Aggregate required CI job results
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: node scripts/testing/ci-aggregate-report.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: readiness-report
           path: |
-            docs/testing/PRODUCTION_READINESS_REPORT.md
-            docs/testing/SUMMARY.md
-            docs/testing/BETA_LAUNCH_CHECKLIST.md
-            docs/testing/FULL_GATE_RESULTS.json
+            docs/testing/CI_AGGREGATE_REPORT.md
+            docs/testing/CI_AGGREGATE_REPORT.json
