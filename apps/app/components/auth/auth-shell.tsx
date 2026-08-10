@@ -115,7 +115,7 @@ export function AuthShell({
 
           <nav
             aria-label="Legal and support links"
-            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
+            className="mt-0 flex translate-y-3 flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
           >
             <Link className={footerLinkClassName} href={`${marketingUrl}/legal/privacy`}>
               Privacy

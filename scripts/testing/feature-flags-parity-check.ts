@@ -17,9 +17,9 @@ type Registry = {
 
 const root = process.cwd();
 const registryPath = path.join(root, "scripts/testing/feature-flags.registry.json");
-const featuresClientPath = path.join(
+const featuresPagePath = path.join(
   root,
-  "apps/app/app/(app)/admin/features/_components/FeaturesClient.tsx",
+  "apps/app/app/(app)/admin/features/page.tsx",
 );
 
 function fail(message: string): never {
@@ -51,7 +51,8 @@ function loadRegistry(): Registry {
  * - The mapped PostHog key exists in the feature-flag manifest.
  * - The registry `defaultGlobalEnabled` matches the manifest's default for the mapped key.
  * - Every key in the legacy mapping is present in the canonical registry.
- * - The admin FeaturesClient surface file exists and references the `feature_flags` table.
+ * - The read-only admin surface renders the canonical PostHog manifest and
+ *   identifies PostHog as the sole runtime authority.
  *
  * On any failed check the process is terminated via `fail(...)`; on success a summary is logged.
  */
@@ -83,10 +84,13 @@ function main() {
     }
   }
 
-  if (!fs.existsSync(featuresClientPath)) fail("Missing admin FeaturesClient surface");
-  const featuresClient = fs.readFileSync(featuresClientPath, "utf8");
-  if (!featuresClient.includes("feature_flags")) {
-    fail("Admin FeaturesClient does not reference feature_flags table");
+  if (!fs.existsSync(featuresPagePath)) fail("Missing admin feature-flags surface");
+  const featuresPage = fs.readFileSync(featuresPagePath, "utf8");
+  if (!featuresPage.includes("FLAG_MANIFEST")) {
+    fail("Admin feature-flags surface does not render FLAG_MANIFEST");
+  }
+  if (!featuresPage.includes("sole runtime authority")) {
+    fail("Admin feature-flags surface does not identify the runtime authority");
   }
 
   console.log(
