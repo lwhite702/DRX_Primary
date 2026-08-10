@@ -32,9 +32,9 @@ struct AppRootView: View {
                 .background(DRXPalette.canvas.ignoresSafeArea())
                 .onAppear { environment.telemetry.screen("Sign In") }
             case .needsOnboarding:
-                NativeOnboardingView()
+                if clerk.user != nil { NativeOnboardingView() } else { AuthView(isDismissible: false) }
             case .ready:
-                OperatorTabView()
+                if clerk.user != nil { OperatorTabView() } else { AuthView(isDismissible: false) }
             case .recoverableError:
                 ProvisioningRecoveryView()
             }
@@ -144,29 +144,34 @@ private struct ProvisioningRecoveryView: View {
 private struct OperatorTabView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @State private var selection: WorkspaceTab = .dashboard
     @State private var signOutError: String?
 
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             NavigationStack {
                 DashboardView()
             }
                 .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
+                .tag(WorkspaceTab.dashboard)
 
             NavigationStack {
                 POSView()
             }
                 .tabItem { Label("POS", systemImage: "cart.fill") }
+                .tag(WorkspaceTab.pos)
 
             NavigationStack {
                 InventoryView()
             }
                 .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+                .tag(WorkspaceTab.inventory)
 
             NavigationStack {
                 CustomersView()
             }
                 .tabItem { Label("Customers", systemImage: "person.2.fill") }
+                .tag(WorkspaceTab.customers)
 
             NavigationStack {
                 List {
@@ -218,18 +223,29 @@ private struct OperatorTabView: View {
                         }
                         .accessibilityIdentifier("signOutButton")
                     }
+
+                    Section("Help & Legal") {
+                        NavigationLink {
+                            AccountAndLegalView()
+                        } label: {
+                            Label("Help, Legal & Account", systemImage: "person.crop.circle.badge.questionmark")
+                        }
+                        .accessibilityIdentifier("helpLegalAccountButton")
+                    }
                 }
                 .scrollContentBackground(.hidden)
                 .background(DRXPalette.canvas)
                 .navigationTitle("More")
             }
             .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
+            .tag(WorkspaceTab.more)
             .onAppear { environment.telemetry.screen("More") }
         }
         .tint(DRXPalette.accent)
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
+        .onAppear { selection = environment.nextWorkspaceTab }
         .alert("Sign Out Failed", isPresented: .init(
             get: { signOutError != nil },
             set: { if !$0 { signOutError = nil } }
@@ -237,6 +253,29 @@ private struct OperatorTabView: View {
             Button("OK", role: .cancel) { signOutError = nil }
         } message: {
             Text(signOutError ?? "")
+        }
+    }
+
+    private func moduleLink(_ title: String, symbol: String) -> some View {
+        NavigationLink {
+            AuthenticatedWebView(path: path(for: title), title: title)
+        } label: {
+            Label(title, systemImage: symbol)
+        }
+        .accessibilityIdentifier("module_\(title.lowercased().replacingOccurrences(of: " ", with: "_"))")
+    }
+
+    private func path(for title: String) -> String {
+        switch title {
+        case "Dashboard": return "dashboard"
+        case "POS": return "pos"
+        case "Inventory": return "inventory"
+        case "Customers": return "customers"
+        case "Credit": return "credit"
+        case "Reports": return "reports"
+        case "Workspaces": return "workspaces"
+        case "AI Intelligence": return "ai-intelligence"
+        default: return "dashboard"
         }
     }
 }

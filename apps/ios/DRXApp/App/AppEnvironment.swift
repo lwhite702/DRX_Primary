@@ -33,6 +33,14 @@ struct BusinessOnboardingInput: Encodable, Sendable {
     let timezone: String
     let collectTax: Bool
     let taxRateBps: Int
+    let locationName: String
+    let city: String?
+    let region: String?
+    let country: String
+    let tracksInventory: Bool
+    let invitedUserEmail: String?
+    let invitedUserRole: String?
+    let invitationToken: String?
 }
 
 struct BusinessOnboardingResponse: Decodable, Sendable {
