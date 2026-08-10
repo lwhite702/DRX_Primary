@@ -3,6 +3,13 @@ import Testing
 
 struct TelemetryServiceTests {
     @Test
+    func keepsNativeSessionReplayDisabled() {
+        #expect(TelemetryService.sessionReplayEnabled == false)
+        #expect(TelemetryService.sentryReplaySampleRate == 0)
+        #expect(TelemetryService.sentryReplayOnErrorSampleRate == 0)
+    }
+
+    @Test
     func scrubsSensitiveNestedTelemetryValues() {
         let scrubbed = TelemetryService.scrub([
             "workflow": "checkout",
