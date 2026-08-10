@@ -25,7 +25,7 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
   });
 
   test("/register is accessible", async ({ page }) => {

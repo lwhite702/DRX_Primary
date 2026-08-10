@@ -23,6 +23,15 @@ export function hasClerkServerEnv() {
   );
 }
 
+function isClerkServerConfigured() {
+  const configured = hasClerkServerEnv();
+  const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+  if (!configured && process.env.NODE_ENV === "production" && !isProductionBuild) {
+    throw new Error("[auth] Clerk server and publishable keys are required in production.");
+  }
+  return configured;
+}
+
 function fromClerkAuth(
   authState: Awaited<ReturnType<typeof clerkAuth>>,
 ): WorkflowSession {
@@ -56,7 +65,7 @@ function getBypassAuthState() {
   };
 }
 
-function getSignedOutAuthState() {
+function getAnonymousAuthState() {
   return {
     userId: null,
     orgId: null,
@@ -73,8 +82,8 @@ export async function auth() {
   if (isAuthBypassEnabled()) {
     return getBypassAuthState() as never;
   }
-  if (process.env.NODE_ENV !== "test" && !hasClerkServerEnv()) {
-    return getSignedOutAuthState() as never;
+  if (!isClerkServerConfigured()) {
+    return getAnonymousAuthState() as never;
   }
   return clerkAuth();
 }
@@ -88,6 +97,9 @@ export async function getWorkflowSession(): Promise<WorkflowSession> {
       roles: ["super_admin"],
       permissions: ["*"],
     } as WorkflowSession;
+  }
+  if (!isClerkServerConfigured()) {
+    return { userId: null, tenantId: null, roles: [] };
   }
   // Clerk v6 returns a richer auth object shape than the current @wrelik/auth type surface expects.
   return fromClerkAuth((await clerkAuth()) as never);

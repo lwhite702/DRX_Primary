@@ -70,8 +70,11 @@ export default function QuickPosPaymentPage() {
           productId: item.inventoryId as any,
           quantityGrams: item.qty,
         }));
+      const bypassAuthActive =
+        typeof window !== "undefined" &&
+        Boolean((window as Window & { __BYPASS_ACTIVE__?: boolean }).__BYPASS_ACTIVE__);
 
-      if (isConvexConfigured && convexItems.length > 0) {
+      if (isConvexConfigured && convexItems.length > 0 && !bypassAuthActive) {
         const convexRes = await processCheckout({
           customerId: state.customer.id ? (state.customer.id as any) : undefined,
           orderNumber: idempotencyKey,
