@@ -113,6 +113,14 @@ function middlewareWithoutClerk(
     return new NextResponse(null, { status: 404 });
   }
 
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.VISUAL_FIXTURES === "true" &&
+    (isClerkUiPath(pathname) || pathname === "/waitlist")
+  ) {
+    return NextResponse.next();
+  }
+
   if (isAuthBypassEnabled()) {
     if (pathname === "/" || isAuthEntryPath(pathname) || pathname === "/waitlist") {
       return redirectToApp(req, "/dashboard", true);
