@@ -7,6 +7,7 @@
     "node": "20.x"
   },
   "scripts": {
+    "postinstall": "pnpm --filter deelrxcrm-app exec prisma generate --schema prisma/schema.prisma",
     "release:preflight": "node scripts/release/preflight.mjs",
     "normalize:next-env": "node scripts/release/normalize-next-env.mjs",
     "build": "corepack pnpm --filter deelrxcrm-app build && corepack pnpm --filter deelrxcrm-marketing build",

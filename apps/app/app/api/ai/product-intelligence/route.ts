@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 const ProductIntelligenceSchema = z.object({
   business_id: z.string().min(1),
@@ -21,6 +22,11 @@ const ProductIntelligenceSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
     const parsed = ProductIntelligenceSchema.safeParse(await request.json());
     if (!parsed.success) {
       return errorResponse(
@@ -47,8 +53,12 @@ export async function POST(request: NextRequest) {
       margin_requirement = 0.3,
     } = parsed.data;
 
+    if (business_id !== businessId) {
+      return errorResponse("FORBIDDEN", "Forbidden", 403);
+    }
+
     const analysisRequest: ProductAnalysisRequest = {
-      businessId: business_id,
+      businessId,
       inventoryId: inventory_id,
       productName: product_name ?? "",
       sku: sku ?? "",
@@ -82,6 +92,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const business_id = searchParams.get("business_id");
 
@@ -89,7 +104,11 @@ export async function GET(request: NextRequest) {
       return errorResponse("BAD_REQUEST", "business_id is required", 400);
     }
 
-    const intelligence = await aiEngine.getBusinessIntelligence(business_id);
+    if (business_id !== businessId) {
+      return errorResponse("FORBIDDEN", "Forbidden", 403);
+    }
+
+    const intelligence = await aiEngine.getBusinessIntelligence(businessId);
 
     return successResponse({
       success: true,

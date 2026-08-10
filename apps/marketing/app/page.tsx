@@ -5,9 +5,9 @@ import { LandingPageSections } from "@/components/marketing/landing/sections";
 import { PageViewTracker } from "@/components/marketing/site/page-view-tracker";
 
 export const metadata: Metadata = {
-  title: "Deelrx CRM (DRX) | Track sales, stock, and customers without confusion",
+  title: "Deelrx CRM | Built for the ones who run it",
   description:
-    "Deelrx CRM (DRX) is a simple system to track sales, stock, and customers without the confusion.",
+    "Fast checkout, tighter inventory, clear sales records, and role-based control for independent retailers.",
 };
 
 export default function LandingPage() {

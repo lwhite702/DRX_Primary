@@ -64,9 +64,20 @@ export function AuthShell({
             </p>
             <h1
               id="auth-brand-heading"
-              className="mt-3 max-w-[14ch] text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:max-w-[20ch] sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
+              aria-label="Run the day. Keep the operation moving."
+              className="mt-3 max-w-[14ch] text-2xl font-extrabold leading-[1.05] tracking-[-0.04em] text-foreground sm:max-w-none sm:text-4xl lg:mt-4 lg:max-w-[12ch] lg:text-6xl"
             >
-              Run the day. Keep the operation moving.
+              <span className="sm:hidden" aria-hidden="true">
+                Run the day. Keep the operation moving.
+              </span>
+              <span className="hidden sm:inline lg:hidden" aria-hidden="true">
+                Run the day. Keep the
+                <br />
+                operation moving.
+              </span>
+              <span className="hidden lg:inline" aria-hidden="true">
+                Run the day. Keep the operation moving.
+              </span>
             </h1>
             <p className="mt-5 hidden max-w-[54ch] text-base leading-7 text-[#C7C7C7] sm:block sm:text-lg">
               Manage checkout, inventory, customers, and daily reporting from one focused workspace.
@@ -77,7 +88,7 @@ export function AuthShell({
             {productSignals.map(({ label, icon: Icon }) => (
               <li
                 key={label}
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-[#121212] px-3.5 text-sm font-semibold text-[#E7E7E7]"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-surface px-3.5 text-sm font-semibold text-[#E7E7E7]"
               >
                 <Icon className="size-4 text-accent" strokeWidth={1.8} aria-hidden="true" />
                 {label}
@@ -104,7 +115,7 @@ export function AuthShell({
 
           <nav
             aria-label="Legal and support links"
-            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
+            className="mt-0 flex translate-y-3 flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#AFAFAF]"
           >
             <Link className={footerLinkClassName} href={`${marketingUrl}/legal/privacy`}>
               Privacy

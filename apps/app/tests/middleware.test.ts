@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 
 vi.mock("@clerk/nextjs/server", () => ({
   createRouteMatcher: (patterns: string[]) => {
@@ -15,7 +16,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: unknown) => handler,
 }));
 
-import middleware from "@/middleware";
+import { config, proxy } from "@/proxy";
 import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
@@ -41,14 +42,14 @@ function makeRequest(pathname: string, host: string, search = "", cookie = "") {
 }
 
 async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: AuthResult) {
-  const handler = middleware as unknown as (
+  const handler = proxy as unknown as (
     auth: () => Promise<AuthResult>,
     request: ReturnType<typeof makeRequest>,
   ) => Promise<Response>;
   return handler(async () => authResult, req);
 }
 
-describe("middleware auth and routing", () => {
+describe("proxy auth and routing", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });
@@ -137,6 +138,23 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("passes through deterministic auth fixtures outside production", async () => {
+    const previousVisualFixtures = process.env.VISUAL_FIXTURES;
+    process.env.VISUAL_FIXTURES = "true";
+
+    try {
+      const req = makeRequest("/login", "deelrxcrm.app");
+      const res = await runMiddleware(req, { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+    } finally {
+      if (previousVisualFixtures === undefined) {
+        delete process.env.VISUAL_FIXTURES;
+      } else {
+        process.env.VISUAL_FIXTURES = previousVisualFixtures;
+      }
+    }
+  });
+
   it("passes through /api/public routes without auth redirect", async () => {
     const req = makeRequest("/api/public/health", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
@@ -149,9 +167,56 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it.each(["deelrxcrm.app", "accounts.deelrxcrm.app", "deelrxcrm.com"])(
+    "rejects nested auth assets on %s before authentication",
+    async (host) => {
+      const req = makeRequest("/login/favicon.ico", host);
+      const authenticate = vi.fn(async () => ({ userId: null }));
+      const handler = proxy as unknown as (
+        auth: () => Promise<AuthResult>,
+        request: ReturnType<typeof makeRequest>,
+      ) => Promise<Response>;
+      const res = await handler(authenticate, req);
+
+      expect(res.status).toBe(404);
+      expect(authenticate).not.toHaveBeenCalled();
+    },
+  );
+
   it("redirects marketing sign-in route to app sign-in", async () => {
     const req = makeRequest("/sign-in", "deelrxcrm.com");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/sign-in");
+  });
+});
+
+describe("middleware matcher", () => {
+  it.each([
+    "/login/favicon.ico",
+    "/register/logo.png",
+    "/sign-in/favicon.ico",
+    "/sign-up/logo.png",
+    "/sso-callback/favicon.ico",
+  ])(
+    "runs Clerk middleware for nested auth asset path %s",
+    (pathname) => {
+      expect(
+        unstable_doesMiddlewareMatch({
+          config,
+          nextConfig: {},
+          url: `https://www.deelrxcrm.app${pathname}`,
+        }),
+      ).toBe(true);
+    },
+  );
+
+  it("continues to skip real public static assets", () => {
+    expect(
+      unstable_doesMiddlewareMatch({
+        config,
+        nextConfig: {},
+        url: "https://www.deelrxcrm.app/brand/favicon-32.png",
+      }),
+    ).toBe(false);
   });
 });

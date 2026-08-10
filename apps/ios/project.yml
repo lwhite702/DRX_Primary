@@ -22,23 +22,26 @@ settings:
     DEVELOPMENT_TEAM: L8R42BJ54K
     CODE_SIGN_STYLE: Automatic
     VERSIONING_SYSTEM: apple-generic
-    CURRENT_PROJECT_VERSION: 20260804
-    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 19
+    MARKETING_VERSION: 0.5.7
 targets:
   DRXApp:
     type: application
     platform: iOS
+    productName: Deelrx CRM
     configFiles:
       Debug: Configuration/Debug.xcconfig
       Release: Configuration/Release.xcconfig
     sources:
       - path: DRXApp
+        excludes:
+          - ClerkEnvironment.json
     settings:
       base:
         PRODUCT_NAME: Deelrx CRM
         PRODUCT_MODULE_NAME: DRXApp
         PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx
-        TARGETED_DEVICE_FAMILY: 1
+        TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_ENTITLEMENTS: DRXApp/DRXApp.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO

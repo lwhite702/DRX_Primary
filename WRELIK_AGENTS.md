@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Engineering Team  
-Last Updated: 2026-03-03  
+Last Updated: 2026-07-17
 Applies To: Deelrx CRM
 
 ## Purpose
@@ -38,6 +38,14 @@ This policy applies to all repository changes made by:
 
 ## Requirements
 
+- Every repository change MUST be backed by a Linear issue in the Wrelik team's **Deelrx CRM** project before editing begins.
+- Contributors MUST search Linear and reuse an existing issue before creating a new one.
+- The Linear issue MUST define the outcome and acceptance criteria and MUST have an owner, priority, status, and exactly one Area label whenever an Area applies.
+- Release-bound work MUST include the applicable milestone and `Release Gate`; real authenticated or persistent-data validation MUST also include `Live E2E`.
+- Contributors MUST keep Linear synchronized: `Todo` before commitment, `In Progress` during implementation, `In Review` during PR/QA review, and `Done` only after acceptance criteria and required evidence are complete.
+- Branches and PRs MUST reference the Linear identifier. The preferred branch pattern is `feature/WRE-123-short-description`; production hotfixes MAY use `hotfix/WRE-123-short-description`.
+- Blockers, scope changes, validation evidence, and follow-up work MUST be recorded on or linked from the Linear issue.
+- Automated agents MUST report the Linear issue link in their final handoff.
 - Contributors MUST use established repo conventions before creating new patterns.
 - Contributors MUST use available repository context before implementation.
 - Contributors MUST produce readable, reviewable diffs with clear intent.
@@ -47,13 +55,16 @@ This policy applies to all repository changes made by:
 
 ## Procedure
 
-1. Create or select a feature branch from `development`.
-2. Implement one logical change at a time.
-3. Run required checks (`lint`, `typecheck`, `test`, `build`, `test:policy`, and other scoped checks).
-4. Update release artifacts required by repo workflow.
-5. Open PR to `development` with change summary, rationale, and rollback notes.
-6. Promote `development` to `staging` only after checks pass.
-7. Promote `staging` to `main` only after staging verification and required approvals.
+1. Search Linear and select the existing Deelrx CRM issue, or create one if none covers the work.
+2. Confirm the issue scope, acceptance criteria, owner, priority, Area label, milestone, and dependencies; move it to `In Progress`.
+3. Create or select a feature branch from `development` that references the Linear identifier.
+4. Implement one logical change at a time and keep blockers or scope changes synchronized to Linear.
+5. Run required checks (`lint`, `typecheck`, `test`, `build`, `test:policy`, and other scoped checks).
+6. Update release artifacts required by repo workflow and attach validation evidence to Linear.
+7. Open PR to `development` with the Linear identifier, change summary, rationale, validation evidence, and rollback notes; move the issue to `In Review`.
+8. Move the issue to `Done` only after its acceptance criteria are met and the change is accepted or merged.
+9. Promote `development` to `staging` only after checks pass.
+10. Promote `staging` to `main` only after staging verification and required approvals.
 
 ## Exceptions
 
@@ -63,6 +74,9 @@ Emergency production mitigations MAY bypass parts of this procedure only when:
 - A follow-up remediation PR is filed immediately.
 - The fix is back-ported to `development` right after `main` mitigation.
 - The exception and rationale are documented in incident notes.
+- A Linear incident/remediation issue is created or updated immediately after containment and linked to the mitigation.
+
+Read-only questions and investigations MAY proceed without a Linear issue only while they make no repository or external-system changes. If implementation begins, the issue MUST exist before the first edit.
 
 ## References
 
@@ -72,3 +86,4 @@ Emergency production mitigations MAY bypass parts of this procedure only when:
 - `./VERSIONING_POLICY.md`
 - `./VERSION_MANAGEMENT_POLICY.md`
 - `./RELEASE_POLICY.md`
+- `./AGENTS.md`

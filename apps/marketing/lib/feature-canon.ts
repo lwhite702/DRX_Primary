@@ -45,11 +45,11 @@ export interface PrivacyProtexionBlock {
 export type OperatorShowcaseCardId =
   | "point-of-sale"
   | "inventory"
-  | "credit-fronts"
+  | "customer-accounts"
   | "customers"
   | "pricing"
   | "anywhere-access"
-  | "audit-control";
+  | "activity-control";
 
 export interface OperatorShowcaseCard {
   id: OperatorShowcaseCardId;
@@ -86,14 +86,30 @@ export const featureStatusLabels: Record<FeatureStatus, string> = {
   planned: "Planned",
 };
 
+export const drxAudience = {
+  primary: "Independent retailers",
+  includes: [
+    "Owner-operated shops",
+    "Pop-up retailers",
+    "Inventory-carrying service businesses",
+  ],
+  eyebrow: "Built for independent retail",
+  headlineLead: "For the ones who run it,",
+  headlineAccent: "not the ones who talk about it.",
+  headline: "For the ones who run it, not the ones who talk about it.",
+  supportingPromise:
+    "Fast checkout, tighter inventory, clear sales records, and role-based control for independent shops that move fast.",
+  proofLabels: ["Fast checkout", "Stock visibility", "Role-based access"],
+} as const;
+
 export const drxPositioning = {
   brand: "DRX",
-  headline: "Deelrx CRM. Built for operators who run real businesses.",
+  headline: "Deelrx CRM. Built for independent retail.",
   summary:
-    "DRX is a fast, no-nonsense POS and customer system made for independent dispensaries and street-smart entrepreneurs. It keeps your sales tight, your inventory accurate, and your team accountable without feeling like corporate software.",
+    "DRX is a fast, no-nonsense POS, inventory, and customer system for independent retailers, owner-operated shops, pop-ups, and service businesses that carry stock. It keeps checkout moving, inventory legible, and team access controlled without feeling like corporate software.",
   punchlines: [
     "No bloated menus.",
-    "No complicated setup.",
+    "No setup theater.",
     'No "enterprise" energy.',
     "Just tools that help you sell, track, and grow.",
   ],
@@ -207,7 +223,7 @@ export const marketingFeatureSections: FeatureSection[] = [
   {
     id: "desktop-mobile",
     title: "Works on Desktop and Mobile",
-    intro: "Run your shop from the counter or from the car.",
+    intro: "Run the floor from the counter and check the operation from supported mobile clients.",
     bullets: [
       { text: "Full dashboard on desktop", status: "live" },
       { text: "Mobile-friendly checkout", status: "live" },
@@ -345,7 +361,7 @@ export const operatorShowcaseCanon: OperatorShowcaseSection = {
   eyebrow: "What DRX Does",
   heading: "Built for operators.",
   supportingLines: [
-    "Serious tools for street-level business.",
+    "Serious tools for independent retail.",
     "No fluff. No corporate nonsense. Just control.",
   ],
   cards: [
@@ -362,9 +378,9 @@ export const operatorShowcaseCanon: OperatorShowcaseSection = {
       status: "live",
     },
     {
-      id: "credit-fronts",
-      title: "Credit & Fronts",
-      subtitle: "Track who owes what without spreadsheets.",
+      id: "customer-accounts",
+      title: "Customer Store Accounts",
+      subtitle: "Record purchases, payments, and account balances.",
       status: "live",
     },
     {
@@ -376,19 +392,19 @@ export const operatorShowcaseCanon: OperatorShowcaseSection = {
     {
       id: "pricing",
       title: "Pricing",
-      subtitle: "Calculate margins instantly. No guesswork.",
+      subtitle: "Review price, cost, and margin context in one place.",
       status: "live",
     },
     {
       id: "anywhere-access",
       title: "Anywhere Access",
-      subtitle: "Desktop, mobile, tablet. Always in sync.",
+      subtitle: "Authenticated access from supported desktop and mobile clients.",
       status: "live",
     },
     {
-      id: "audit-control",
-      title: "Audit & Control",
-      subtitle: "Every action logged. Full transparency.",
+      id: "activity-control",
+      title: "Activity & Control",
+      subtitle: "Supported actions keep user context for review.",
       status: "live",
     },
   ],
@@ -399,9 +415,9 @@ export const productDetailCanon: Record<ProductDetailContent["slug"], ProductDet
     slug: "sales-checkout",
     title: "Sales and checkout",
     metaDescription:
-      "Fast POS flow for real operators: scan, search, discounts, payments, customer lookup, and transaction visibility.",
+      "Fast POS flow for independent retail: scan, search, discounts, multiple tender types, customer lookup, and sale history.",
     what:
-      "You ring it. You collect. You move. DRX keeps checkout fast when the line is building.",
+      "Search, scan, adjust, and finish the sale. DRX keeps checkout moving when the line is building.",
     why:
       "Checkout touches stock, money, and customer context at the same time. Speed without control costs you twice.",
     proof: marketingFeatureSections.find((s) => s.id === "fast-pos")!.bullets,
@@ -416,7 +432,7 @@ export const productDetailCanon: Record<ProductDetailContent["slug"], ProductDet
     metaDescription:
       "Live stock visibility, intake and adjustment logging, SKU/barcode support, and practical inventory operations.",
     what:
-      "You always know what is moving and what is running low. No guessing.",
+      "See what sold, what is on hand, and what is running low without chasing separate spreadsheets.",
     why:
       "Bad inventory data slows checkout, hurts margin, and creates shift conflict.",
     proof: marketingFeatureSections.find((s) => s.id === "inventory")!.bullets,
@@ -427,17 +443,17 @@ export const productDetailCanon: Record<ProductDetailContent["slug"], ProductDet
   },
   "customers-credit": {
     slug: "customers-credit",
-    title: "Customers and credit",
+    title: "Customers and store accounts",
     metaDescription:
-      "Customer profiles, purchase history, credit context, and practical customer workflows built for speed.",
+      "Customer profiles, purchase history, and optional merchant-managed store account records built for independent retail.",
     what:
-      "Keep it organized. Keep it personal. Stay in control.",
+      "Keep customer history and optional store account records connected to the work at the counter.",
     why:
-      "Disconnected customer records turn follow-up and credit discipline into guesswork.",
+      "Disconnected customer records make follow-up, purchase history, and account reconciliation harder than they need to be.",
     proof: marketingFeatureSections.find((s) => s.id === "customers")!.bullets,
     limitations: [
       { text: "Notes/tags and loyalty support are beta-scoped claims", status: "beta" },
-      { text: "Avoid enterprise CRM automation claims", status: "beta" },
+      { text: "Store accounts are merchant recordkeeping, not a consumer financial product", status: "beta" },
     ],
   },
   "operations-visibility": {

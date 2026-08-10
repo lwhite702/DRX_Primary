@@ -1,34 +1,42 @@
-import fs from "node:fs";
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-type DopplerSecrets = Record<string, unknown>;
-
 const root = process.cwd();
-const envExamplePath = path.join(root, "apps/app/.env.example");
-const defaultConfigs = ["dev"];
+const defaultProject = "drx";
+const defaultConfigs = ["prd"];
+
+// Doppler owns deploy-time secrets and stable runtime configuration. Vercel
+// metadata, test-only switches, and optional integrations remain documented in
+// .env.example but are intentionally outside this production sync contract.
+const requiredDopplerKeys = [
+  "CLERK_SECRET_KEY",
+  "DATABASE_URL",
+  "DRX_PII_HASH_KEY_B64",
+  "DRX_PII_KEY_CURRENT_B64",
+  "DRX_PRIVACY_CLEANUP_SECRET",
+  "INNGEST_EVENT_KEY",
+  "INNGEST_SIGNING_KEY",
+  "KV_REST_API_TOKEN",
+  "KV_REST_API_URL",
+  "NEXT_PUBLIC_APP_URL",
+  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+  "NEXT_PUBLIC_MARKETING_URL",
+  "NEXT_PUBLIC_POSTHOG_HOST",
+  "NEXT_PUBLIC_POSTHOG_KEY",
+  "NEXT_PUBLIC_SENTRY_DSN",
+  "R2_ACCESS_KEY_ID",
+  "R2_ACCOUNT_ID",
+  "R2_BUCKET_NAME",
+  "R2_SECRET_ACCESS_KEY",
+  "RESEND_API_KEY",
+  "SENTRY_AUTH_TOKEN",
+  "SENTRY_DSN",
+  "SENTRY_ORG",
+  "SENTRY_PROJECT",
+] as const;
 
 function fail(message: string): never {
   console.error(`Doppler sync check failed: ${message}`);
   process.exit(1);
-}
-
-function parseRequiredKeys(filePath: string): string[] {
-  if (!fs.existsSync(filePath)) {
-    fail(`Missing env template: ${path.relative(root, filePath)}`);
-  }
-
-  const text = fs.readFileSync(filePath, "utf8");
-  return Array.from(
-    new Set(
-      text
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0 && !line.startsWith("#"))
-        .map((line) => line.match(/^([A-Z0-9_]+)\s*=/)?.[1])
-        .filter((key): key is string => Boolean(key)),
-    ),
-  );
 }
 
 function parseConfigs(raw: string | undefined): string[] {
@@ -51,11 +59,16 @@ function ensureDopplerAvailable() {
   }
 }
 
-function fetchSecrets(config: string, project?: string): DopplerSecrets {
-  const args = ["secrets", "download", "--no-file", "--format", "json", "--config", config];
-  if (project) {
-    args.push("--project", project);
-  }
+function fetchSecretNames(config: string, project: string): Set<string> {
+  const args = [
+    "secrets",
+    "--only-names",
+    "--json",
+    "--config",
+    config,
+    "--project",
+    project,
+  ];
 
   const proc = spawnSync("doppler", args, {
     cwd: root,
@@ -69,16 +82,16 @@ function fetchSecrets(config: string, project?: string): DopplerSecrets {
   }
 
   try {
-    const parsed = JSON.parse(proc.stdout || "{}") as DopplerSecrets;
-    return parsed;
+    const parsed = JSON.parse(proc.stdout || "{}") as Record<string, unknown>;
+    return new Set(Object.keys(parsed));
   } catch (error) {
-    fail(`Invalid JSON returned by Doppler for config '${config}'. ${(error as Error).message}`);
+    fail(`Invalid secret-name JSON returned by Doppler for config '${config}'. ${(error as Error).message}`);
   }
 }
 
-function checkConfig(config: string, requiredKeys: string[], project?: string) {
-  const secrets = fetchSecrets(config, project);
-  const missing = requiredKeys.filter((key) => !(key in secrets));
+function checkConfig(config: string, project: string) {
+  const secretNames = fetchSecretNames(config, project);
+  const missing = requiredDopplerKeys.filter((key) => !secretNames.has(key));
 
   if (missing.length > 0) {
     fail(
@@ -86,22 +99,19 @@ function checkConfig(config: string, requiredKeys: string[], project?: string) {
     );
   }
 
-  console.log(`Doppler config '${config}' includes all ${requiredKeys.length} required key(s).`);
+  console.log(
+    `Doppler project '${project}' config '${config}' includes all ${requiredDopplerKeys.length} required key(s).`,
+  );
 }
 
 function main() {
   ensureDopplerAvailable();
 
-  const requiredKeys = parseRequiredKeys(envExamplePath);
-  if (requiredKeys.length === 0) {
-    fail("No required keys found in apps/app/.env.example");
-  }
-
-  const project = process.env.DOPPLER_PROJECT?.trim() || undefined;
+  const project = process.env.DOPPLER_PROJECT?.trim() || defaultProject;
   const configs = parseConfigs(process.env.DOPPLER_CONFIGS);
 
   for (const config of configs) {
-    checkConfig(config, requiredKeys, project);
+    checkConfig(config, project);
   }
 
   console.log("Doppler env sync check passed.");

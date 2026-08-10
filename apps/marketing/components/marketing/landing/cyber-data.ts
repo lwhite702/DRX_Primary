@@ -143,7 +143,7 @@ export const cyberRingConfig: OrbitRing[] = [
     nodes: [
       { id: "barcode", label: "Barcode", icon: QrCode },
       { id: "scan", label: "Scan", icon: ScanLine },
-      { id: "credit", label: "Credit", icon: HandCoins },
+      { id: "credit", label: "Store Accounts", icon: HandCoins },
       { id: "cash", label: "Cashflow", icon: Landmark },
       { id: "lists", label: "Task Lists", icon: ListChecks },
       { id: "logs", label: "Logs", icon: FileSearch },
@@ -162,8 +162,8 @@ export const cyberContrastSteps: ContrastStep[] = [
   },
   {
     id: "step-2",
-    title: "Track Stock In Real Time",
-    body: "Every sale updates inventory so counts stay reliable.",
+    title: "Track Stock as Sales Post",
+    body: "Completed sales update inventory records so teams can review current counts.",
   },
   {
     id: "step-3",
@@ -172,8 +172,8 @@ export const cyberContrastSteps: ContrastStep[] = [
   },
   {
     id: "step-4",
-    title: "Close With Audit-Ready Records",
-    body: "Roles and logs show exactly who changed what and when.",
+    title: "Close With Reviewable Activity",
+    body: "Roles and activity context show who handled supported changes and when.",
   },
 ];
 

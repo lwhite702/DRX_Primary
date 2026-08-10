@@ -13,6 +13,7 @@ struct TelemetryServiceTests {
             ],
             "items": [
                 ["sku": "safe", "card_number": "4242"],
+                ["nested", ["session_token": "secret"]] as [Any],
             ],
         ])
 
@@ -23,8 +24,12 @@ struct TelemetryServiceTests {
         #expect(profile?["email"] as? String == "operator@example.test")
         #expect(profile?["customer_record"] as? String == "[Filtered]")
 
-        let items = scrubbed?["items"] as? [[String: Any]]
-        #expect(items?.first?["sku"] as? String == "safe")
-        #expect(items?.first?["card_number"] as? String == "[Filtered]")
+        let items = scrubbed?["items"] as? [Any]
+        let firstItem = items?.first as? [String: Any]
+        #expect(firstItem?["sku"] as? String == "safe")
+        #expect(firstItem?["card_number"] as? String == "[Filtered]")
+        let heterogeneousItem = items?[1] as? [Any]
+        let nestedSecret = heterogeneousItem?[1] as? [String: Any]
+        #expect(nestedSecret?["session_token"] as? String == "[Filtered]")
     }
 }

@@ -16,14 +16,18 @@ export { clerkClient, clerkMiddleware, createRouteMatcher };
 export type WebhookEvent = ClerkWebhookEvent;
 export const isAuthBypassEnabled = isAuthBypassEnabledServer;
 
-function isClerkServerConfigured() {
-  // Unit tests mock Clerk's server API directly and must exercise that mock.
-  if (process.env.NODE_ENV === "test") return true;
+export function hasClerkServerEnv() {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY &&
+      (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY),
+  );
+}
 
-  const configured = Boolean(process.env.CLERK_SECRET_KEY);
+function isClerkServerConfigured() {
+  const configured = hasClerkServerEnv();
   const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
   if (!configured && process.env.NODE_ENV === "production" && !isProductionBuild) {
-    throw new Error("[auth] CLERK_SECRET_KEY is required in production.");
+    throw new Error("[auth] Clerk server and publishable keys are required in production.");
   }
   return configured;
 }

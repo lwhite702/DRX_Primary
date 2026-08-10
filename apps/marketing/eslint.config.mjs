@@ -31,7 +31,10 @@ const enhancedConfig = baseConfig.map((config) => {
     return config;
   }
 
-  const [level, options] = config.rules["no-restricted-imports"];
+  const restriction = config.rules["no-restricted-imports"];
+  const [level, options] = Array.isArray(restriction)
+    ? restriction
+    : [restriction, undefined];
   const existingPatterns = options?.patterns ?? [];
   const existingPaths = options?.paths ?? [];
 

@@ -23,6 +23,8 @@ Last Updated: 2026-03-03
 
 ## DRX Adaptations
 
+- Added root `AGENTS.md` as the discoverable agent entrypoint while preserving `WRELIK_AGENTS.md` as canonical governance.
+- Added a DRX-specific Linear-first change-control requirement: every repository edit must map to a synchronized issue in the Wrelik team's **Deelrx CRM** project.
 - Branch governance adapted to DRX promotion path:
 - `feature/*` -> `development` -> `staging` -> `main`
 - Direct pushes disallowed for `main` and `staging`.

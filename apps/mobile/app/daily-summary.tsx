@@ -18,7 +18,7 @@ export default function DailySummary() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { businessId, getToken } = useAuth();
-  
+
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,12 +58,12 @@ export default function DailySummary() {
         </View>
       ) : summary ? (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          
+
           <View style={styles.summaryCard}>
             <Text style={styles.cardTitle}>Total Sales</Text>
             <Text style={styles.cardValue}>{formatCurrency(summary.totalGrossSales)}</Text>
           </View>
-          
+
           <View style={styles.row}>
             <View style={[styles.summaryCard, { flex: 1, marginRight: SPACING.sm }]}>
               <Text style={styles.cardTitle}>Transactions</Text>

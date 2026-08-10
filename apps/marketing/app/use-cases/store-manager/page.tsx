@@ -16,21 +16,21 @@ export default function StoreManagerUseCasePage() {
       <h1 className="mb-8 text-4xl font-bold text-white">Store manager</h1>
       <SectionBlock title="What this does">
         <p>
-          Supports shift-level oversight where managers approve risk-heavy actions
-          and keep records clean.
+          Supports shift-level oversight where managers handle sensitive actions
+          and keep operating records clear.
         </p>
       </SectionBlock>
       <SectionBlock title="Why it matters operationally" className="mt-6">
         <p>
-          Manager bottlenecks usually come from unclear permissions and weak log
-          discipline.
+          Manager bottlenecks usually come from unclear permissions and weak
+          activity review.
         </p>
       </SectionBlock>
       <SectionBlock title="Proof from live product behavior" className="mt-6">
         <ul className="list-disc space-y-2 pl-5">
           <li>Team management route with role-change controls.</li>
-          <li>Permission-gated inventory and audit actions.</li>
-          <li>Credit dialogs and transaction visibility for follow-up.</li>
+          <li>Permission-gated inventory and adjustment actions.</li>
+          <li>Sale history and optional customer account records for follow-up.</li>
         </ul>
       </SectionBlock>
       <SectionBlock title="What's in beta / current limitations" className="mt-6">

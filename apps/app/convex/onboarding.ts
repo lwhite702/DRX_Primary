@@ -143,7 +143,7 @@ export const createBusinessOnboarding = mutation({
       updatedAt: now,
     });
 
-    // 3. Log Immutable Audit Event
+    // 3. Log the audit event
     await ctx.db.insert("auditEvents", {
       businessId,
       userId: clerkUserId,

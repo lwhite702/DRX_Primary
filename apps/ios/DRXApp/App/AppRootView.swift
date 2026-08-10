@@ -17,14 +17,24 @@ struct AppRootView: View {
             case .initializing, .checkingProvisioning, .loadingWorkspace:
                 SessionBootstrapView()
             case .signedOut:
-                AuthView(isDismissible: false)
-                    .environment(\.clerkTheme, .drx)
-                    .accessibilityIdentifier("clerkAuthView")
-                    .onAppear { environment.telemetry.screen("Sign In") }
+                VStack(spacing: 0) {
+                    Image("DRXWordmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 176, height: 88)
+                        .accessibilityLabel("Deelrx CRM")
+                        .padding(.top, DRXSpacing.xl)
+
+                    AuthView(isDismissible: false)
+                        .environment(\.clerkTheme, .drx)
+                        .accessibilityIdentifier("clerkAuthView")
+                }
+                .background(DRXPalette.canvas.ignoresSafeArea())
+                .onAppear { environment.telemetry.screen("Sign In") }
             case .needsOnboarding:
-                NativeOnboardingView()
+                if clerk.user != nil { NativeOnboardingView() } else { AuthView(isDismissible: false) }
             case .ready:
-                OperatorTabView()
+                if clerk.user != nil { OperatorTabView() } else { AuthView(isDismissible: false) }
             case .recoverableError:
                 ProvisioningRecoveryView()
             }
@@ -55,12 +65,11 @@ private struct SessionBootstrapView: View {
             DRXPalette.canvas.ignoresSafeArea()
 
             VStack(spacing: 24) {
-                Image(systemName: "shippingbox.fill")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(DRXPalette.accent)
-                    .frame(width: 72, height: 72)
-                    .background(DRXPalette.surface, in: RoundedRectangle(cornerRadius: 20))
-                    .accessibilityHidden(true)
+                Image("DRXWordmark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 184, height: 96)
+                    .accessibilityLabel("Deelrx CRM")
 
                 VStack(spacing: 8) {
                     Text("Opening Deelrx CRM")
@@ -73,111 +82,28 @@ private struct SessionBootstrapView: View {
                 }
 
                 ProgressView("Loading your workspace…")
-                        .tint(DRXPalette.ink)
+                        .tint(DRXPalette.accent)
                         .foregroundStyle(DRXPalette.muted)
                         .accessibilityIdentifier("sessionLoadingIndicator")
             }
             .padding(32)
             .frame(maxWidth: 440)
-            .background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 24))
+            .background(DRXPalette.card, in: RoundedRectangle(cornerRadius: DRXRadius.panel))
             .overlay {
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: DRXRadius.panel)
                     .stroke(DRXPalette.border, lineWidth: 1)
             }
-            .shadow(color: DRXPalette.ink.opacity(0.08), radius: 24, y: 12)
+            .shadow(color: .black.opacity(0.35), radius: 24, y: 12)
             .padding(24)
         }
         .onAppear { environment.telemetry.screen("Session Bootstrap") }
     }
 }
 
-private struct NativeOnboardingView: View {
-    @Environment(AppEnvironment.self) private var environment
-    @State private var ownerName = ""
-    @State private var businessName = ""
-    @State private var businessType = "Retail POS"
-    @State private var timezone = TimeZone.current.identifier
-    @State private var currency = "USD"
-    @State private var collectTax = true
-    @State private var taxRate = "8.25"
-
-    private var isValid: Bool {
-        !ownerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !businessName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        (!collectTax || (parseTaxRate(taxRate).map { (0...100).contains($0) } ?? false))
-    }
-
-    private func parseTaxRate(_ input: String) -> Double? {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        return formatter.number(from: input)?.doubleValue
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    GroupBox("Owner") {
-                        TextField("Owner name", text: $ownerName)
-                            .textContentType(.name)
-                            .textFieldStyle(.roundedBorder)
-                    }
-
-                    GroupBox("Business") {
-                        VStack(alignment: .leading, spacing: 12) {
-                            TextField("Business name", text: $businessName)
-                                .textFieldStyle(.roundedBorder)
-                            Picker("Business type", selection: $businessType) {
-                                ForEach(["Retail POS", "Wholesale", "Services", "Other"], id: \.self) { Text($0) }
-                            }
-                            TextField("Timezone", text: $timezone)
-                                .textInputAutocapitalization(.never)
-                                .textFieldStyle(.roundedBorder)
-                            Picker("Currency", selection: $currency) {
-                                ForEach(["USD", "CAD", "GBP", "EUR"], id: \.self) { Text($0) }
-                            }
-                        }
-                    }
-
-                    GroupBox("Tax") {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Toggle("Collect tax", isOn: $collectTax)
-                            if collectTax {
-                                TextField("Tax rate (%)", text: $taxRate)
-                                    .keyboardType(.decimalPad)
-                                    .textFieldStyle(.roundedBorder)
-                            }
-                        }
-                    }
-
-                    Button(environment.isSubmittingOnboarding ? "Creating business…" : "Create Business") {
-                        Task {
-                            let rate = Int(((parseTaxRate(taxRate) ?? 0) * 100).rounded())
-                            _ = await environment.completeOnboarding(.init(
-                                name: ownerName.trimmingCharacters(in: .whitespacesAndNewlines),
-                                businessName: businessName.trimmingCharacters(in: .whitespacesAndNewlines),
-                                businessType: businessType, currency: currency, timezone: timezone,
-                                collectTax: collectTax, taxRateBps: collectTax ? rate : 0
-                            ))
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .frame(maxWidth: .infinity)
-                    .disabled(!isValid || environment.isSubmittingOnboarding)
-                    .accessibilityIdentifier("submitOnboardingButton")
-                }
-                .padding(20)
-            }
-            .navigationTitle("Set Up Your Business")
-            .onAppear { environment.telemetry.screen("Business Onboarding") }
-        }
-    }
-}
-
 private struct ProvisioningRecoveryView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @State private var signOutError: String?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -189,7 +115,14 @@ private struct ProvisioningRecoveryView: View {
             Button("Retry") { Task { await environment.checkProvisioning() } }
                 .buttonStyle(.borderedProminent).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
-                Task { try? await clerk.auth.signOut(); await environment.clerkSignedOut() }
+                Task {
+                    do {
+                        try await clerk.auth.signOut()
+                        await environment.clerkSignedOut()
+                    } catch {
+                        signOutError = "We couldn't sign you out. Check your connection and try again."
+                    }
+                }
             }
             if let requestID = environment.supportRequestID {
                 ShareLink(item: requestID) { Label("Copy Support Details", systemImage: "doc.on.doc") }
@@ -197,34 +130,48 @@ private struct ProvisioningRecoveryView: View {
             }
         }
         .padding(32)
+        .alert("Sign Out Failed", isPresented: .init(
+            get: { signOutError != nil },
+            set: { if !$0 { signOutError = nil } }
+        )) {
+            Button("OK", role: .cancel) { signOutError = nil }
+        } message: {
+            Text(signOutError ?? "")
+        }
     }
 }
 
 private struct OperatorTabView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @State private var selection: WorkspaceTab = .dashboard
+    @State private var signOutError: String?
 
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             NavigationStack {
                 DashboardView()
             }
                 .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
+                .tag(WorkspaceTab.dashboard)
 
             NavigationStack {
                 POSView()
             }
                 .tabItem { Label("POS", systemImage: "cart.fill") }
+                .tag(WorkspaceTab.pos)
 
             NavigationStack {
                 InventoryView()
             }
                 .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+                .tag(WorkspaceTab.inventory)
 
             NavigationStack {
                 CustomersView()
             }
                 .tabItem { Label("Customers", systemImage: "person.2.fill") }
+                .tag(WorkspaceTab.customers)
 
             NavigationStack {
                 List {
@@ -266,11 +213,24 @@ private struct OperatorTabView: View {
 
                         Button("Sign Out", role: .destructive) {
                             Task {
-                                try? await clerk.auth.signOut()
-                                await environment.signOut()
+                                do {
+                                    try await clerk.auth.signOut()
+                                    await environment.signOut()
+                                } catch {
+                                    signOutError = "We couldn't sign you out. Check your connection and try again."
+                                }
                             }
                         }
                         .accessibilityIdentifier("signOutButton")
+                    }
+
+                    Section("Help & Legal") {
+                        NavigationLink {
+                            AccountAndLegalView()
+                        } label: {
+                            Label("Help, Legal & Account", systemImage: "person.crop.circle.badge.questionmark")
+                        }
+                        .accessibilityIdentifier("helpLegalAccountButton")
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -278,12 +238,22 @@ private struct OperatorTabView: View {
                 .navigationTitle("More")
             }
             .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
+            .tag(WorkspaceTab.more)
             .onAppear { environment.telemetry.screen("More") }
         }
         .tint(DRXPalette.accent)
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
+        .onAppear { selection = environment.nextWorkspaceTab }
+        .alert("Sign Out Failed", isPresented: .init(
+            get: { signOutError != nil },
+            set: { if !$0 { signOutError = nil } }
+        )) {
+            Button("OK", role: .cancel) { signOutError = nil }
+        } message: {
+            Text(signOutError ?? "")
+        }
     }
 
     private func moduleLink(_ title: String, symbol: String) -> some View {

@@ -3,6 +3,7 @@ import { aiEngine, type ProductAnalysisRequest } from "@/lib/utils/ai-engine";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 const AnalyzePayloadSchema = z.object({
   business_id: z.string().min(1),
@@ -22,6 +23,11 @@ type InventoryAnalysisRow = {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
     const parsed = AnalyzePayloadSchema.safeParse(await request.json());
     if (!parsed.success) {
       return errorResponse(
@@ -32,10 +38,13 @@ export async function POST(request: NextRequest) {
       );
     }
     const { business_id, analysis_type = "all", inventory_id } = parsed.data;
+    if (business_id !== businessId) {
+      return errorResponse("FORBIDDEN", "Forbidden", 403);
+    }
 
     const inventoryItems = await db.inventory.findMany({
       where: {
-        businessId: business_id,
+        businessId,
         ...(inventory_id ? { id: inventory_id } : {}),
       },
       select: {
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     const requests: ProductAnalysisRequest[] = inventoryItems.map(
       (item) => ({
-        businessId: business_id,
+        businessId,
         inventoryId: item.id,
         productName: item.productName,
         sku: item.sku,

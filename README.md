@@ -15,7 +15,7 @@ This repository is a **pnpm monorepo**. Product ownership is explicit:
 
 ### Node Version Policy
 
-- **Required Node.js:** `20.18.0` (exact)
+- **Required Node.js:** `20.19.0` (exact)
 - **Package manager:** `pnpm@9.15.9`
 - CI and local policy are aligned (`.nvmrc`, `.node-version`, package `engines`)
 
@@ -67,6 +67,7 @@ See `/Users/lee/Projects/DRX_Primary/docs/WRELIK_KIT_INTEGRATION.md` for details
 Policy source of truth is root canonical files:
 
 - `./WRELIK_AGENTS.md`
+- `./AGENTS.md`
 - `./DEVELOPMENT_PROCESS.md`
 - `./RELEASE_POLICY.md`
 - `./VERSIONING_POLICY.md`
@@ -148,7 +149,7 @@ Canonical source:
 
 ### Prerequisites
 
-- Node.js 20.18.0
+- Node.js 20.19.0
 - pnpm 9.15.9
 - Supabase CLI
 

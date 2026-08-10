@@ -24,20 +24,20 @@ export const heroQueueRowsDone: DemoCardData = {
 
 export const heroCustomerRows: DemoCardData = {
   title: "CUSTOMER SNAPSHOT",
-  subtitle: "Credit check",
+  subtitle: "Store account",
   rows: [
     { label: "Name", value: "M. Ortega" },
-    { label: "Limit", value: "$500" },
-    { label: "Outstanding", value: "$260", status: "warn" },
+    { label: "Account Cap", value: "$500" },
+    { label: "Balance", value: "$260", status: "warn" },
     { label: "Last Visit", value: "Today 1:42 PM", status: "ok" },
   ],
 };
 
 export const stockRows = [
-  { sku: "BLUE-5G", onHand: 12, reorder: 10, status: "ok" as const },
-  { sku: "GELATO-1G", onHand: 6, reorder: 8, status: "warn" as const },
-  { sku: "OG-PREROLL", onHand: 18, reorder: 8, status: "ok" as const },
-  { sku: "GUMMIES-100", onHand: 4, reorder: 7, status: "critical" as const },
+  { sku: "HOOD-BLK-M", onHand: 12, reorder: 10, status: "ok" as const },
+  { sku: "TEE-HVY-L", onHand: 6, reorder: 8, status: "warn" as const },
+  { sku: "CAP-GRN", onHand: 18, reorder: 8, status: "ok" as const },
+  { sku: "BAG-UTIL", onHand: 4, reorder: 7, status: "critical" as const },
 ];
 
 export const revenueRows = [
@@ -46,7 +46,7 @@ export const revenueRows = [
   { label: "Avg Ticket", value: "$87.35" },
 ];
 
-export const frontsRows = [
+export const storeAccountRows = [
   { customer: "K. Lane", due: "$240", age: "4 days", status: "OVERDUE" },
   { customer: "A. Green", due: "$90", age: "1 day", status: "OPEN" },
   { customer: "D. Cruz", due: "$0", age: "-", status: "PAID" },

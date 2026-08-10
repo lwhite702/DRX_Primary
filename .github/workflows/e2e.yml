@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "20.19.0"
           cache: "pnpm"
 
       - name: Install dependencies
@@ -32,7 +32,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate --schema apps/app/prisma/schema.prisma
         env:
-          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:54322/postgres"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
@@ -54,7 +54,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate --schema apps/app/prisma/schema.prisma
         env:
-          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:54322/postgres"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
       - name: Start Supabase
         run: |
@@ -77,17 +77,20 @@ jobs:
             fi
             sleep 2
           done
+      - name: Apply Prisma schema
+        run: pnpm --filter deelrxcrm-app exec prisma db push --schema prisma/schema.prisma
         env:
-          SUPABASE_DB_PASSWORD: "admin"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
       - name: Install Playwright browsers
         run: pnpm --filter deelrxcrm-app exec playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm --filter deelrxcrm-app test:e2e:required
+        run: pnpm --filter deelrxcrm-app test:e2e:ci
         env:
           CI: true
           NODE_ENV: development
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
           SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjYyMzI4MzIwLCJleHAiOjE5Nzc5MDIzMjB9.s_fd0Q-qQV5_Ikh_I_w_w"

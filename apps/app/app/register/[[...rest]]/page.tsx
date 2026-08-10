@@ -3,10 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignUp } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
-import { drxClerkAuthAppearance } from "@/components/auth/clerk-appearance";
+import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
-import { authVisualFixturesEnabled } from "@/components/auth/visual-fixture-guard";
+import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 
 export const metadata: Metadata = {
   title: "Create an account | Deelrx CRM",
@@ -14,7 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RegisterPage() {
-  const { userId } = await auth();
+  const useVisualFixture = isAuthVisualFixtureEnabled();
+  const userId = useVisualFixture ? null : (await auth()).userId;
 
   if (userId) redirect("/dashboard");
 
@@ -31,7 +32,7 @@ export default async function RegisterPage() {
         </p>
       }
     >
-      {authVisualFixturesEnabled ? (
+      {useVisualFixture ? (
         <AuthVisualFixture mode="sign-up" />
       ) : (
         <SignUp

@@ -18,8 +18,8 @@ if (SENTRY_DSN) {
 
 export default function RootLayout() {
   return (
-    <PostHogProvider 
-      apiKey={process.env.EXPO_PUBLIC_POSTHOG_API_KEY!} 
+    <PostHogProvider
+      apiKey={process.env.EXPO_PUBLIC_POSTHOG_API_KEY!}
       options={{
         host: process.env.EXPO_PUBLIC_POSTHOG_HOST,
         enableSessionReplay: true,

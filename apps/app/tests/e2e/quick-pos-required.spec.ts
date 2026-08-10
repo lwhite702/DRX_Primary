@@ -27,6 +27,22 @@ test.describe("Quick POS required flow", () => {
       });
     });
 
+    await page.route("**/api/business/settings", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ privacy_protocol: null }),
+      });
+    });
+
+    await page.route("**/api/privacy/protexion/preferences", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ manual_enabled: false }),
+      });
+    });
+
     await page.route("**/api/pos/checkout", async (route) => {
       await route.fulfill({
         status: 201,
