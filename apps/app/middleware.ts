@@ -5,6 +5,7 @@ import {
   isClerkUiPath,
   isOnboardingPath,
   isPublicAppPath,
+  isStaticAssetPath,
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
@@ -51,6 +52,10 @@ function redirectToApp(req: Request, pathname: string, preserveCurrentHost = fal
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
 }
 
+function isNestedAuthAssetPath(pathname: string) {
+  return isAuthEntryPath(pathname) && isStaticAssetPath(pathname);
+}
+
 function hasOnboardingCompletionCookie(
   req: Request & {
     cookies?: {
@@ -70,7 +75,11 @@ function middlewareWithoutClerk(
   reqOrAuth: Request | unknown,
   maybeReq?: Request,
 ) {
-  const req = (maybeReq ?? reqOrAuth) as Request & {
+  const isDirectRequest =
+    typeof reqOrAuth === "object" &&
+    reqOrAuth !== null &&
+    ("nextUrl" in reqOrAuth || "url" in reqOrAuth);
+  const req = (isDirectRequest ? reqOrAuth : maybeReq) as Request & {
     nextUrl?: { pathname: string; search: string };
     url?: string;
   };
@@ -98,6 +107,10 @@ function middlewareWithoutClerk(
 
   if (hostKind !== "app") {
     return NextResponse.next();
+  }
+
+  if (isNestedAuthAssetPath(pathname)) {
+    return new NextResponse(null, { status: 404 });
   }
 
   if (isAuthBypassEnabled()) {
@@ -157,6 +170,10 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         return NextResponse.next();
       }
 
+      if (isNestedAuthAssetPath(pathname)) {
+        return new NextResponse(null, { status: 404 });
+      }
+
       const { userId, sessionClaims } = await auth();
       const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
@@ -202,6 +219,7 @@ export default (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWit
 
 export const config = {
   matcher: [
+    "/(login|register|sign-in|sign-up|sso-callback)(.*)",
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],

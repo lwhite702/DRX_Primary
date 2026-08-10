@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 
 vi.mock("@clerk/nextjs/server", () => ({
   createRouteMatcher: (patterns: string[]) => {
@@ -15,7 +16,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   clerkMiddleware: (handler: unknown) => handler,
 }));
 
-import middleware from "@/middleware";
+import middleware, { config } from "@/middleware";
 import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 type AuthResult = {
@@ -149,9 +150,40 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("rejects static-asset requests nested under auth catch-all routes", async () => {
+    const req = makeRequest("/login/favicon.ico", "deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.status).toBe(404);
+  });
+
   it("redirects marketing sign-in route to app sign-in", async () => {
     const req = makeRequest("/sign-in", "deelrxcrm.com");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/sign-in");
+  });
+});
+
+describe("middleware matcher", () => {
+  it.each(["/login/favicon.ico", "/register/logo.png", "/sign-in/favicon.ico"])(
+    "runs Clerk middleware for nested auth asset path %s",
+    (pathname) => {
+      expect(
+        unstable_doesMiddlewareMatch({
+          config,
+          nextConfig: {},
+          url: `https://www.deelrxcrm.app${pathname}`,
+        }),
+      ).toBe(true);
+    },
+  );
+
+  it("continues to skip real public static assets", () => {
+    expect(
+      unstable_doesMiddlewareMatch({
+        config,
+        nextConfig: {},
+        url: "https://www.deelrxcrm.app/brand/favicon-32.png",
+      }),
+    ).toBe(false);
   });
 });
