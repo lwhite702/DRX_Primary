@@ -150,11 +150,21 @@ describe("middleware auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it("rejects static-asset requests nested under auth catch-all routes", async () => {
-    const req = makeRequest("/login/favicon.ico", "deelrxcrm.app");
-    const res = await runMiddleware(req, { userId: null });
-    expect(res.status).toBe(404);
-  });
+  it.each(["deelrxcrm.app", "accounts.deelrxcrm.app", "deelrxcrm.com"])(
+    "rejects nested auth assets on %s before authentication",
+    async (host) => {
+      const req = makeRequest("/login/favicon.ico", host);
+      const authenticate = vi.fn(async () => ({ userId: null }));
+      const handler = middleware as unknown as (
+        auth: () => Promise<AuthResult>,
+        request: ReturnType<typeof makeRequest>,
+      ) => Promise<Response>;
+      const res = await handler(authenticate, req);
+
+      expect(res.status).toBe(404);
+      expect(authenticate).not.toHaveBeenCalled();
+    },
+  );
 
   it("redirects marketing sign-in route to app sign-in", async () => {
     const req = makeRequest("/sign-in", "deelrxcrm.com");
@@ -164,7 +174,13 @@ describe("middleware auth and routing", () => {
 });
 
 describe("middleware matcher", () => {
-  it.each(["/login/favicon.ico", "/register/logo.png", "/sign-in/favicon.ico"])(
+  it.each([
+    "/login/favicon.ico",
+    "/register/logo.png",
+    "/sign-in/favicon.ico",
+    "/sign-up/logo.png",
+    "/sso-callback/favicon.ico",
+  ])(
     "runs Clerk middleware for nested auth asset path %s",
     (pathname) => {
       expect(

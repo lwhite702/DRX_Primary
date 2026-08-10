@@ -18,7 +18,7 @@ async function expectConfiguredFallback(page: Page) {
 
 test.describe("Login and register surfaces", () => {
   test("nested favicon requests do not enter the login server component", async ({ request }) => {
-    const response = await request.get("/login/favicon.ico");
+    const response = await request.get("/login/favicon.ico", { maxRedirects: 0 });
     expect(response.status()).toBe(404);
   });
 

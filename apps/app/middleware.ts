@@ -91,6 +91,10 @@ function middlewareWithoutClerk(
   const hostname = req.headers.get("host") || "";
   const hostKind = classifyDrxHost(hostname);
 
+  if (isNestedAuthAssetPath(pathname)) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   if (hostKind === "marketing") {
     if (shouldRedirectMarketingToApp(pathname)) {
       return redirectToApp(req, "/waitlist");
@@ -107,10 +111,6 @@ function middlewareWithoutClerk(
 
   if (hostKind !== "app") {
     return NextResponse.next();
-  }
-
-  if (isNestedAuthAssetPath(pathname)) {
-    return new NextResponse(null, { status: 404 });
   }
 
   if (
@@ -146,6 +146,10 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       const hostname = req.headers.get("host") || "";
       const hostKind = classifyDrxHost(hostname);
 
+      if (isNestedAuthAssetPath(pathname)) {
+        return new NextResponse(null, { status: 404 });
+      }
+
       // Always allow webhook ingestion without redirect logic.
       if (pathname.startsWith("/api/webhooks")) {
         if (process.env.NODE_ENV !== "production") {
@@ -176,10 +180,6 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
 
       if (hostKind !== "app") {
         return NextResponse.next();
-      }
-
-      if (isNestedAuthAssetPath(pathname)) {
-        return new NextResponse(null, { status: 404 });
       }
 
       const { userId, sessionClaims } = await auth();
