@@ -50,46 +50,46 @@ async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: Au
 
 describe("proxy auth and routing", () => {
   beforeEach(() => {
-    process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
+    process.env.NEXT_PUBLIC_APP_URL = "https://www.deelrxcrm.app";
   });
 
   it("redirects marketing login to app login", async () => {
     const req = makeRequest("/login", "deelrxcrm.com");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/login");
   });
 
   it("redirects root to login when signed out", async () => {
-    const req = makeRequest("/", "deelrxcrm.app");
+    const req = makeRequest("/", "www.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/login");
   });
 
   it("redirects root to onboarding when signed in but onboarding incomplete", async () => {
-    const req = makeRequest("/", "deelrxcrm.app");
+    const req = makeRequest("/", "www.deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: false } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/onboarding");
   });
 
   it("redirects signed in users away from login to dashboard when onboarding is complete", async () => {
-    const req = makeRequest("/login", "deelrxcrm.app");
+    const req = makeRequest("/login", "www.deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/dashboard");
   });
 
   it("redirects signed in users to onboarding for protected routes until onboarding is complete", async () => {
-    const req = makeRequest("/dashboard", "deelrxcrm.app");
+    const req = makeRequest("/dashboard", "www.deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: false } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/onboarding");
   });
 
   it("allows protected routes when the completion cookie is set but Clerk claims are stale", async () => {
@@ -107,19 +107,19 @@ describe("proxy auth and routing", () => {
   });
 
   it("redirects signed in users from onboarding to dashboard when onboarding is complete", async () => {
-    const req = makeRequest("/onboarding", "deelrxcrm.app");
+    const req = makeRequest("/onboarding", "www.deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/dashboard");
   });
 
   it("redirects signed out users to login with redirect_url for non-api routes", async () => {
-    const req = makeRequest("/dashboard", "deelrxcrm.app", "?tab=sales");
+    const req = makeRequest("/dashboard", "www.deelrxcrm.app", "?tab=sales");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("location")).toBe(
-      "https://deelrxcrm.app/login?redirect_url=%2Fdashboard%3Ftab%3Dsales",
+      "https://www.deelrxcrm.app/login?redirect_url=%2Fdashboard%3Ftab%3Dsales",
     );
   });
 
@@ -132,7 +132,7 @@ describe("proxy auth and routing", () => {
   });
 
   it("passes through public auth-domain routes", async () => {
-    const req = makeRequest("/sign-in", "accounts.deelrxcrm.app");
+    const req = makeRequest("/sign-in", "clerk.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
@@ -155,13 +155,27 @@ describe("proxy auth and routing", () => {
   });
 
   it("passes through /api/public routes without auth redirect", async () => {
-    const req = makeRequest("/api/public/health", "deelrxcrm.app");
+    const req = makeRequest("/api/public/health", "www.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it.each([
+    ["/privacy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/privacy-policy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/legal/privacy", "https://www.deelrxcrm.com/legal/privacy"],
+    ["/terms", "https://www.deelrxcrm.com/legal/terms"],
+    ["/legal/terms", "https://www.deelrxcrm.com/legal/terms"],
+    ["/support", "https://www.deelrxcrm.com/support"],
+  ])("redirects public policy route %s to %s", async (pathname, target) => {
+    const req = makeRequest(pathname, "www.deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.status).toBe(308);
+    expect(res.headers.get("location")).toBe(target);
+  });
+
   it("passes through Next.js internal assets", async () => {
-    const req = makeRequest("/_next/static/chunks/main.js", "deelrxcrm.app");
+    const req = makeRequest("/_next/static/chunks/main.js", "www.deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
@@ -169,6 +183,6 @@ describe("proxy auth and routing", () => {
   it("redirects marketing sign-in route to app sign-in", async () => {
     const req = makeRequest("/sign-in", "deelrxcrm.com");
     const res = await runMiddleware(req, { userId: null });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/sign-in");
+    expect(res.headers.get("location")).toBe("https://www.deelrxcrm.app/sign-in");
   });
 });

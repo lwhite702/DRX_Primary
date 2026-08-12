@@ -5,7 +5,7 @@ import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
 test.describe("Feature flags access @smoke", () => {
   test.beforeEach(async ({ page }) => {
-    if (process.env.CLERK_PUBLISHABLE_KEY) {
+    if (process.env.CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) {
       await setupClerkTestingToken({ page });
     }
   });

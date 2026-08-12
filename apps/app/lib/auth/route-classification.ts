@@ -12,7 +12,14 @@ const PUBLIC_APP_PREFIXES = [
   "/brand",
 ] as const;
 
-const PUBLIC_APP_EXACT = new Set(["/privacy", "/terms"]);
+const PUBLIC_APP_EXACT = new Set([
+  "/privacy",
+  "/privacy-policy",
+  "/terms",
+  "/legal/privacy",
+  "/legal/terms",
+  "/support",
+]);
 const AUTH_ENTRY_PREFIXES = ["/login", "/register", "/sign-in", "/sign-up", "/sso-callback"] as const;
 const CLERK_UI_PREFIXES = [...AUTH_ENTRY_PREFIXES, "/onboarding"] as const;
 const OPERATOR_MARKETING_REDIRECT_PREFIXES = [
@@ -87,6 +94,7 @@ export function classifyDrxHost(hostname: string | null | undefined): DrxHostKin
     return "marketing";
   }
   if (
+    host === "clerk.deelrxcrm.app" ||
     host === "accounts.deelrxcrm.app" ||
     host.endsWith(".accounts.deelrxcrm.app") ||
     host === "accounts.deelrx.app" ||
@@ -99,6 +107,7 @@ export function classifyDrxHost(hostname: string | null | undefined): DrxHostKin
     host.endsWith(".deelrxcrm.app") ||
     host === "deelrx.app" ||
     host.endsWith(".deelrx.app") ||
+    host.endsWith(".vercel.app") ||
     host.includes("localhost")
   ) {
     return "app";
@@ -110,4 +119,3 @@ export function isProtectedAppPath(pathname: string) {
   const normalized = normalizePathname(pathname);
   return !isPublicAppPath(normalized) && !isApiPath(normalized);
 }
-

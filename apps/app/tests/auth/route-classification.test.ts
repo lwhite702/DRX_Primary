@@ -16,10 +16,13 @@ describe("route classification", () => {
     expect(classifyDrxHost("deelrx.com")).toBe("marketing");
     expect(classifyDrxHost("www.deelrx.com")).toBe("marketing");
     expect(classifyDrxHost("deelrxcrm.app")).toBe("app");
+    expect(classifyDrxHost("www.deelrxcrm.app")).toBe("app");
     expect(classifyDrxHost("preview.deelrxcrm.app")).toBe("app");
+    expect(classifyDrxHost("drx-feature-wrelik.vercel.app")).toBe("app");
     expect(classifyDrxHost("deelrx.app")).toBe("app");
     expect(classifyDrxHost("preview.deelrx.app")).toBe("app");
     expect(classifyDrxHost("localhost:3000")).toBe("app");
+    expect(classifyDrxHost("clerk.deelrxcrm.app")).toBe("auth");
     expect(classifyDrxHost("accounts.deelrxcrm.app")).toBe("auth");
     expect(classifyDrxHost("accounts.deelrx.app")).toBe("auth");
     expect(classifyDrxHost("api.example.com")).toBe("other");
@@ -32,6 +35,10 @@ describe("route classification", () => {
     expect(isPublicAppPath("/api/webhooks/clerk")).toBe(true);
     expect(isPublicAppPath("/_next/static/chunks/app.js")).toBe(true);
     expect(isPublicAppPath("/privacy")).toBe(true);
+    expect(isPublicAppPath("/privacy-policy")).toBe(true);
+    expect(isPublicAppPath("/legal/privacy")).toBe(true);
+    expect(isPublicAppPath("/legal/terms")).toBe(true);
+    expect(isPublicAppPath("/support")).toBe(true);
     expect(isPublicAppPath("/dashboard")).toBe(false);
   });
 
@@ -59,4 +66,3 @@ describe("route classification", () => {
     expect(shouldRedirectMarketingToApp("/product")).toBe(false);
   });
 });
-

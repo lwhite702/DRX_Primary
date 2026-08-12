@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const marketingUrl =
-    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://deelrxcrm.com";
+    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://www.deelrxcrm.com";
   const now = new Date();
 
   const routes = [
@@ -31,6 +31,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/legal/lawful-use",
     "/legal/regulatory-disclaimer",
     "/privacy",
+    "/privacy-policy",
+    "/support",
     "/terms",
   ];
 

@@ -20,6 +20,10 @@ export function AppLogo({
       }
       aria-label="Deelrx CRM Home"
     >
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/development
       <div
         className={
           "relative shrink-0 " +
@@ -34,6 +38,46 @@ export function AppLogo({
           priority
         />
       </div>
+<<<<<<< HEAD
+=======
+      {isSidebar ? (
+        /* Sidebar: mark icon + wordmark side by side */
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="relative shrink-0 h-8 w-8 rounded-md overflow-hidden">
+            <Image
+              src="/brand/drx-mark-primary.png"
+              alt=""
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="relative shrink-0 h-7 w-[110px]">
+            <Image
+              src="/brand/DRX Wordmark Color Tight.svg"
+              alt="DRX"
+              fill
+              className="object-contain object-left"
+              priority
+            />
+          </div>
+        </div>
+      ) : (
+        /* Top nav / default: wordmark only */
+        <div className="relative shrink-0 h-8 w-[110px]">
+          <Image
+            src="/brand/DRX Wordmark Color.svg"
+            alt="DRX"
+            fill
+            className="object-contain object-left"
+            priority
+          />
+        </div>
+      )}
+
+>>>>>>> origin/main
+=======
+>>>>>>> origin/development
       <div className="min-w-0 sr-only">
         <div className="text-base font-bold text-accent leading-none truncate">
           Deelrx CRM

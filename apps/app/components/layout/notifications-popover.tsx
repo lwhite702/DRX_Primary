@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,7 +132,7 @@ export function NotificationsPopover() {
                     <Link
                       href={notification.link}
                       className="text-xs text-primary mt-1 hover:underline"
-                      onClick={(e) => {
+                      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                         e.stopPropagation(); // prevent parent click
                         markAsRead(notification.id);
                       }}

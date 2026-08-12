@@ -20,6 +20,16 @@ import {
   type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
 import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
+
+const PUBLIC_APP_REDIRECTS: Readonly<Record<string, string>> = {
+  "/privacy": "https://www.deelrxcrm.com/legal/privacy",
+  "/privacy-policy": "https://www.deelrxcrm.com/legal/privacy",
+  "/legal/privacy": "https://www.deelrxcrm.com/legal/privacy",
+  "/terms": "https://www.deelrxcrm.com/legal/terms",
+  "/legal/terms": "https://www.deelrxcrm.com/legal/terms",
+  "/support": "https://www.deelrxcrm.com/support",
+};
+
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
@@ -32,12 +42,12 @@ function getCurrentOrigin(req: Request) {
   const protocol =
     forwardedProto ||
     (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-  return `${protocol}://${host || "deelrxcrm.app"}`;
+  return `${protocol}://${host || "www.deelrxcrm.app"}`;
 }
 
 function getConfiguredAppOrigin() {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
-  return configured ? configured.replace(/\/$/, "") : "https://deelrxcrm.app";
+  return configured ? configured.replace(/\/$/, "") : "https://www.deelrxcrm.app";
 }
 
 function getAppOrigin(req: Request, preserveCurrentHost = false) {
@@ -50,6 +60,11 @@ function getAppOrigin(req: Request, preserveCurrentHost = false) {
 
 function redirectToApp(req: Request, pathname: string, preserveCurrentHost = false) {
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
+}
+
+function redirectPublicAppPath(pathname: string) {
+  const target = PUBLIC_APP_REDIRECTS[pathname];
+  return target ? NextResponse.redirect(target, 308) : null;
 }
 
 function shouldServeVisualFixture(pathname: string) {
@@ -112,6 +127,9 @@ function middlewareWithoutClerk(
     return NextResponse.next();
   }
 
+  const publicRedirect = redirectPublicAppPath(pathname);
+  if (publicRedirect) return publicRedirect;
+
   if (shouldServeVisualFixture(pathname)) {
     return NextResponse.next();
   }
@@ -124,11 +142,20 @@ function middlewareWithoutClerk(
   }
 
   if (pathname === "/" || isClerkUiPath(pathname)) {
-    return redirectToApp(req, "/waitlist", true);
+    if (isClerkUiPath(pathname)) {
+      return NextResponse.next();
+    }
+    return redirectToApp(req, "/login", true);
   }
 
-  if (!isPublicAppPath(pathname) && !pathname.startsWith("/api")) {
-    return redirectToApp(req, "/waitlist", true);
+  if (!isPublicAppPath(pathname) && pathname.startsWith("/api")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isPublicAppPath(pathname)) {
+    const loginUrl = new URL("/login", getAppOrigin(req, true));
+    loginUrl.searchParams.set("redirect_url", `${pathname}${nextUrlLike.search}`);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
@@ -172,6 +199,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       if (hostKind !== "app") {
         return NextResponse.next();
       }
+
+      const publicRedirect = redirectPublicAppPath(pathname);
+      if (publicRedirect) return publicRedirect;
 
       if (shouldServeVisualFixture(pathname)) {
         return NextResponse.next();
