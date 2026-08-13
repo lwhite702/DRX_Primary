@@ -1,79 +1,78 @@
 ---
 title: "Get started with DRX"
-description: "Sign in, set up your store, add products, and run a test sale in minutes with DRX’s fast POS, inventory, and alias-first customer tracking."
+description: "Sign in to DRX, set your store basics, add your first products, and complete your first sale in minutes."
 tags:
   - DRX
-  - point of sale
+  - POS
   - inventory
   - getting started
 ---
 ## Overview
 
-This guide gets you to first sale with DRX in minutes. You will sign in, set up your store basics, add your first products, and run a test sale so you can confirm checkout, stock updates, and receipts are working.
+This guide helps you sign in, set up your store basics, add your first products, and run your first sale in DRX. Most shops complete these steps in under 15 minutes so you can start checking out customers right away.
 
 ## What you need
 
-- A DRX account with Admin access.
-- A device with a modern web browser (desktop recommended for setup; mobile works for checkout).
-- Optional: A barcode scanner (USB or Bluetooth) for faster checkout.
+- A DRX account with Admin or Manager access.
+- Basic store details (store name, location names if you have more than one).
+- A list of a few products with prices, and optional barcodes/SKUs.
+- A way to accept payment (cash, card, or other methods supported by your shop’s setup).
 
 ## Steps
 
 1. **Sign in**
-   - Open DRX in your browser and sign in with your email and password. You land on the dashboard with an overview of sales and inventory.
+   - Go to the DRX login page and sign in with your account. You land on the dashboard with a daily snapshot of sales and activity tiles when available.
 
-2. **Create your store profile**
-   - Open your store settings to add your store name and location. This sets the default store view and enables location-based reporting.
+2. **Review roles and access**
+   - Confirm your user role (Admin, Manager, or Operator) so you know which actions you can perform. Admins can set permissions and see activity logs for sensitive actions like refunds or inventory adjustments.
 
-3. **Add a team member (optional)**
-   - Invite a colleague and assign a role: Admin, Manager, or Operator. Operators run checkout; Managers help with inventory and reports; Admins control access and settings.
+3. **Set store basics**
+   - Open your account or store settings area and enter your store name and, if needed, add locations for separate storefronts. This ensures location-based reporting and accurate stock per location.
 
-4. **Add your first product**
-   - Go to your products area and create a product with a name, price, and stock quantity. You can add a SKU or barcode, category, vendor, and cost for profit visibility.
-   - Result: The product appears in search and can be scanned or tapped at checkout. Stock shows as live quantity.
+4. **Choose your privacy approach**
+   - Open Settings to review privacy controls. DRX uses Alias-First customer handling so you can track customers with minimal data. Keep customer fields optional if you prefer fast, privacy-first checkout.
 
-5. **Add a second product (recommended)**
-   - Create at least one more product so you can test multi-item sales and discounts. Include distinct prices and stock to see reporting and inventory changes.
+5. **Create your first products**
+   - Go to “/inventory”.
+   - Select the action to add a product. Enter a product name, price, and optional SKU/barcode and category. Save. Repeat for a few top sellers so you can test checkout.
+   - Result: Products appear in your inventory list and can be found at checkout by scan or search.
 
-6. **Set a starting stock level**
-   - For each product, confirm “Quantity on hand.” DRX tracks live stock and will reflect changes after each sale or refund. Low-stock alerts appear when quantities drop below your set levels.
+6. **Receive stock (optional but recommended)**
+   - Go to “/inventory/intake”.
+   - Start an intake, pick products, enter received quantities, and add cost details if you track margins. Save.
+   - Result: On-hand counts update and are ready for sale.
 
-7. **Open Checkout**
-   - Navigate to the POS checkout screen. You’ll see the ring-up flow: scan or search items, adjust quantities, apply discount, take payment, then the cart resets for the next sale.
+7. **Adjust counts if needed**
+   - Go to “/inventory/adjust”. Choose a product, enter the correct quantity change, and provide a clear reason (e.g., damaged, cycle count). Save.
+   - Result: The audit trail records who changed what and why, and counts are corrected.
 
-8. **Build a test cart**
-   - Scan a barcode or use product search to add 1–2 items. Adjust quantity if needed. Optional: Apply a discount to the cart or a single item to confirm pricing behavior.
-   - Result: The order summary updates with items, quantities, discounts, and totals.
+8. **Scan barcodes or test search**
+   - From your inventory list, confirm each item has a barcode or is easily searchable by name or SKU. If you use physical barcodes, test a quick scan to verify a match.
 
-9. **Attach a customer (optional, alias-first)**
-   - Use customer lookup to add an alias-based profile or skip attaching a profile. You can add minimal details and optional notes or tags.
+9. **Run a Quick Sale from the counter**
+   - Click “Quick Sale” in the top navigation to open the streamlined POS.
+   - Scan a product or search by name/SKU to add it to the cart. Adjust quantity or apply a discount if needed.
+   - Optionally attach a customer using an alias. You can skip this step to keep checkout fast.
 
-10. **Take a test payment**
-   - Choose a payment type and complete the sale. Use a small cash amount or a controlled test card if you have one authorized for training. Do not use a real customer card without permission.
-   - Result: The sale completes, stock updates, and the cart clears for the next sale.
+10. **Complete payment**
+    - In the POS, proceed through “/pos/sale” → “/pos/payment”. Select your payment method (for example, cash or card) and collect payment. Confirm the amount and finish the transaction.
+    - Result: You reach “/pos/complete” with a confirmation of the sale.
 
-11. **Review transaction history**
-   - Open transaction history to confirm the test sale details, line items, discounts, and payment type. Refund tracking is available in beta.
+11. **Review the sale**
+    - Open transaction history from the POS or dashboard area to confirm line items, discounts, and payment details. This helps validate your first end-to-end sale.
 
-12. **Check inventory updates**
-   - Return to the product list and confirm that on-hand quantities decreased by the quantities sold. Adjustment logs show the change from the sale.
+12. **Check your dashboard and insights**
+    - Return to the dashboard to see today’s sales totals, transaction counts, average sale value, and any inventory alerts. Use Operations Insights to spot best sellers and category splits as you add more sales.
 
-13. **View basic reports**
-   - Open reports to see daily or weekly sales and best-selling products. The dashboard shows a simple revenue overview and category performance.
+## What’s next
 
-### Optional: Run a full end-to-end test with a refund (beta)
-
-- Create a small second test sale, then locate it in transaction history and process a refund if you have refund permissions. Confirm stock returns to inventory for refunded items.
-
-## What's next
-
-- Learn the checkout flow in depth, including discounts and multiple payment types.
-- Set up low-stock alerts and vendor tracking for restocking.
-- Explore simple sales and product performance reports.
-- Configure roles and access for your team to track accountability for sensitive actions.
+- Learn inventory best practices, including batches, vendors, and low‑stock alerts in [Inventory basics](moxie-doc:section/inventory-basics).
+- Explore customers, notes/tags (beta), and loyalty tracking (beta) in [Customers](moxie-doc:section/customers).
+- Set team roles and permissions, and review activity logs in [Team access and logs](moxie-doc:section/team-access-logs).
+- View and export sales trends in [Operations Insights](moxie-doc:section/operations-insights).
 
 ## If something goes wrong
 
-- If you can’t sign in, confirm you have Admin access or ask an Admin to invite you again.
-- If products don’t appear at checkout, make sure they have a price and are in stock.
-- If stock doesn’t update after a sale, refresh the product list and check the adjustment log for that item.
+- If you can’t add or adjust inventory, ask an Admin to confirm your role and permissions.
+- If a barcode doesn’t scan, try searching by product name or SKU and verify the barcode is saved on the product.
+- If payments don’t complete, confirm the selected payment method is supported by your shop and try again from “/pos/payment”.
