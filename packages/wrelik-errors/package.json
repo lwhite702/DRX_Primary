@@ -21,13 +21,12 @@
   "dependencies": {
     "@sentry/browser": "^10.38.0",
     "@sentry/node": "^7.101.1",
-    "@sentry/nextjs": "^8.47.0",
-    "@sentry/react-native": "^6.10.0"
+    "@sentry/react-native": "^5.19.0"
   },
   "devDependencies": {
     "@types/node": "^25.2.0",
     "tsup": "^8.0.1",
-    "vitest": "^1.2.2",
+    "vitest": "^4.1.0",
     "@wrelik/eslint-config": "workspace:*",
     "@wrelik/tsconfig": "workspace:*"
   },

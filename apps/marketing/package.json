@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "20.18.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -16,7 +16,7 @@
     "@deelrx/brand": "link:../../packages/brand",
     "@deelrx/ui": "link:../../packages/ui",
     "lucide-react": "^0.454.0",
-    "next": "16.1.7",
+    "next": "16.2.6",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   },
