@@ -163,8 +163,8 @@ struct NativeOnboardingView: View {
                         : model.draft.currentStep == .review
                         ? "Create My Workspace"
                         : "Continue",
-                    isDisabled: environment.isSubmittingOnboarding,
                     identifier: "onboardingContinue",
+                    isDisabled: environment.isSubmittingOnboarding,
                     action: {
                         if model.draft.currentStep == .review {
                             submit()

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { OnboardingCompletionRedirect } from "@/app/onboarding/_components/OnboardingForm";
 
 describe("OnboardingCompletionRedirect", () => {
-  it("syncs legacy state and performs a hard dashboard navigation", async () => {
+  it("syncs legacy state and performs a hard sale-workspace navigation", async () => {
     const storage = { setItem: vi.fn() };
     const navigate = vi.fn();
 
@@ -20,7 +20,7 @@ describe("OnboardingCompletionRedirect", () => {
         "drx_onboarding_complete",
         "true",
       );
-      expect(navigate).toHaveBeenCalledWith("/dashboard");
+      expect(navigate).toHaveBeenCalledWith("/pos/sale");
     });
   });
 
@@ -41,7 +41,7 @@ describe("OnboardingCompletionRedirect", () => {
     );
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith("/dashboard");
+      expect(navigate).toHaveBeenCalledWith("/pos/sale");
     });
   });
 });

@@ -32,13 +32,13 @@ describe("GET /api/onboarding/reconcile", () => {
     mocks.getUser.mockResolvedValue({ publicMetadata: { existing: "kept" } });
   });
 
-  it("repairs a completed operator session and redirects to the dashboard", async () => {
+  it("repairs a completed operator session and redirects to the sale workspace", async () => {
     const response = await GET(
       new Request("https://www.deelrxcrm.app/api/onboarding/reconcile"),
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/dashboard");
+    expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/pos/sale");
     expect(response.headers.get("set-cookie")).toContain("drx_onboarding_complete=true");
     expect(mocks.updateUser).toHaveBeenCalledWith("user_123", {
       publicMetadata: {
