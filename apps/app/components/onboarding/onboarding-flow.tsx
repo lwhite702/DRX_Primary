@@ -124,7 +124,7 @@ export function OnboardingFlow() {
   const handleComplete = () => {
     localStorage.setItem("drx_onboarding_complete", "true");
     setOpen(false);
-    router.push("/dashboard");
+    router.push("/pos/sale");
   };
 
   const currentStepData = ONBOARDING_STEPS[currentStep];

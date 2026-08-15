@@ -17,7 +17,7 @@ export default async function LoginPage() {
   const useVisualFixture = isAuthVisualFixtureEnabled();
   const userId = useVisualFixture ? null : (await auth()).userId;
 
-  if (userId) redirect("/dashboard");
+  if (userId) redirect("/pos/sale");
 
   return (
     <AuthShell
@@ -39,8 +39,8 @@ export default async function LoginPage() {
           routing="path"
           path="/login"
           appearance={drxClerkAuthAppearance}
-          forceRedirectUrl="/dashboard"
-          fallbackRedirectUrl="/dashboard"
+          forceRedirectUrl="/pos/sale"
+          fallbackRedirectUrl="/pos/sale"
         />
       )}
     </AuthShell>
