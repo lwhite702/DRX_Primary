@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   getCompletedBusinessId: vi.fn(),
-  getUser: vi.fn(),
   updateUser: vi.fn(),
 }));
 
@@ -11,7 +10,6 @@ vi.mock("@/lib/adapters/auth/server", () => ({
   auth: mocks.auth,
   clerkClient: vi.fn(async () => ({
     users: {
-      getUser: mocks.getUser,
       updateUser: mocks.updateUser,
     },
   })),
@@ -27,9 +25,11 @@ import { GET } from "@/app/api/onboarding/reconcile/route";
 describe("GET /api/onboarding/reconcile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.auth.mockResolvedValue({ userId: "user_123" });
+    mocks.auth.mockResolvedValue({
+      userId: "user_123",
+      sessionClaims: { publicMetadata: { existing: "kept" } },
+    });
     mocks.getCompletedBusinessId.mockResolvedValue("business_123");
-    mocks.getUser.mockResolvedValue({ publicMetadata: { existing: "kept" } });
   });
 
   it("repairs a completed operator session and redirects to the sale workspace", async () => {
