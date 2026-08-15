@@ -15,7 +15,20 @@ import { redirect } from "next/navigation";
 
 export type OnboardingActionState =
   | { status: "idle"; error: null }
-  | { status: "success"; error: null };
+  | { status: "success"; error: null; summary: OnboardingSummary }
+  | { status: "error"; error: string };
+
+export type OnboardingSummary = {
+  businessType: string;
+  inventoryEnabled: boolean;
+  taxEnabled: boolean;
+  taxRateBps: number;
+  businessName: string;
+  ownerName: string;
+  locationName: string;
+  currency: string;
+  timezone: string;
+};
 
 export async function completeOnboarding(
   _previousState: OnboardingActionState,
@@ -28,17 +41,30 @@ export async function completeOnboarding(
   }
 
   const businessName = String(formData.get("businessName") || "").trim();
-  const role = String(formData.get("role") || "").trim();
-  const teamSize = String(formData.get("teamSize") || "").trim();
-  const tooling = String(formData.get("tooling") || "").trim();
+  const ownerName = String(formData.get("ownerName") || "").trim();
+  const businessType = String(formData.get("businessType") || "other").trim();
+  const currency = String(formData.get("currency") || "USD").trim();
+  const timezone = String(formData.get("timezone") || "America/New_York").trim();
+  const taxEnabled = String(formData.get("taxChoice") || "later") === "yes";
+  const tracksInventory = String(formData.get("tracksInventory") || "true") === "true";
+  const locationName = String(formData.get("locationName") || "").trim();
+  const city = String(formData.get("city") || "").trim();
+  const region = String(formData.get("region") || "").trim();
+  const country = String(formData.get("country") || "").trim();
+  const taxRateRaw = String(formData.get("taxRate") || "0");
+  const taxRate = Number.parseFloat(taxRateRaw);
+  const taxRateBps = Number.isFinite(taxRate) ? Math.round(taxRate * 100) : 0;
+  const resolvedLocation = [locationName, city, region, country]
+    .filter(Boolean)
+    .join(" · ");
   const dashboardPresetRaw = String(formData.get("dashboardPreset") || "operations").trim();
   const dashboardPreset: DashboardViewPreset =
     dashboardPresetRaw === "checkout" || dashboardPresetRaw === "inventory"
       ? dashboardPresetRaw
       : "operations";
 
-  if (!businessName || !role || !teamSize) {
-    throw new Error("Missing required onboarding fields.");
+  if (!businessName || !ownerName) {
+    return { status: "error", error: "Missing required onboarding fields." };
   }
 
   const claims = sessionClaims as OnboardingClaims & {
@@ -101,14 +127,15 @@ export async function completeOnboarding(
     onboarding_completed: true,
     dashboard_preset: dashboardPreset,
     dashboard_preferences: dashboardPreferences,
-    role,
-    team_size: teamSize,
-    tooling,
+    role: "owner",
+    team_size: "1",
+    tooling: "web",
     operator_profile: {
       businessName,
-      role,
-      teamSize,
-      tooling,
+      role: "owner",
+      teamSize: "1",
+      tooling: "web",
+      ownerName,
     },
   };
 
@@ -168,9 +195,9 @@ export async function completeOnboarding(
         onboardingComplete: true,
         operatorProfile: {
           businessName,
-          role,
-          teamSize,
-          tooling,
+          role: "owner",
+          teamSize: "1",
+          tooling: "web",
           dashboardPreferences,
         },
       },
@@ -186,8 +213,19 @@ export async function completeOnboarding(
     maxAge: 10 * 60,
   });
 
-  // Return a success result instead of relying on the server-action redirect
-  // transport. The client performs a full document navigation so the next
-  // request is guaranteed to include the new cookie and refreshed Clerk state.
-  return { status: "success", error: null };
+  return {
+    status: "success",
+    error: null,
+    summary: {
+      businessType: businessType || "other",
+      inventoryEnabled: tracksInventory,
+      taxEnabled,
+      taxRateBps,
+      businessName,
+      ownerName,
+      locationName: resolvedLocation,
+      currency,
+      timezone,
+    },
+  };
 }
