@@ -1,6 +1,6 @@
 ---
 title: "Quick Sale checkout"
-description: "Run a fast point‑of‑sale checkout in DRX: add items by scan or search, apply discounts, attach a customer, split payments, and send or print a receipt in one flow."
+description: "Run a fast point‑of‑sale checkout in DRX: add items by scan or search, apply discounts, attach a customer, use one payment method, and print or send the receipt in one flow."
 tags:
   - point of sale
   - checkout
@@ -8,7 +8,7 @@ tags:
 ---
 ## Overview
 
-Quick Sale checkout in DRX lets you ring up purchases quickly from item entry to receipt. You can add items by barcode scan or search, apply a discount, attach a customer to the sale, accept split payments, and print or email the receipt — all in one streamlined flow for web and mobile.
+Quick Sale checkout in DRX lets you ring up purchases quickly from item entry to receipt. You can add items by barcode scan or search, apply a discount, attach a customer to the sale, choose one payment method, and print or send the receipt.
 
 ## When to use it
 
@@ -16,7 +16,7 @@ Quick Sale checkout in DRX lets you ring up purchases quickly from item entry to
 - Add items by scanning barcodes or typing a quick search.
 - Apply a discount to a line item or the whole sale.
 - Attach a customer to track purchase history with minimal data.
-- Accept split payments across multiple methods and provide a receipt.
+- Use one payment method for the full sale and provide a receipt.
 
 ## How to use it
 
@@ -33,23 +33,23 @@ Quick Sale checkout in DRX lets you ring up purchases quickly from item entry to
    - Or **Add customer** with minimal details and **Save** to attach.
 6. **Review totals** and taxes. Confirm items, discounts, and the final amount due.
 7. **Take payment**:
-   - **Choose** a payment method and **Enter** the amount received.
-   - To split payment, **Add another payment** and **Enter** the remaining amount with the second method. Repeat if needed until the balance is zero.
+   - **Choose** one payment method and **Enter** the full amount due.
+   - Quick Sale accepts Cash, Card, or Credit for the whole sale.
 8. **Complete sale** once fully paid. The sale is recorded and inventory updates.
 9. **Send the receipt**:
    - **Print receipt** for a paper copy.
-   - Or **Email receipt** to the attached customer (or enter an email) and **Send**.
+   - Or send an SMS receipt to the attached customer and **Send**.
 
 ## Options and settings
 
 - Discounts: Apply at the line level or at the sale level; use amount or percentage based on your store’s discount options.
 - Customer details: Attach an existing customer or create a new one with minimal required information.
-- Split payments: Add multiple payment entries until the balance is fully covered.
-- Receipts: Choose to print or email after completing the sale.
+- Payment method: Cash, Card, or Credit for the full sale.
+- Receipts: Choose Print, SMS, or None before completing the sale.
 
 ## Tips
 
 - Scan first, then review: Scanning items in sequence reduces search time and ensures accurate counts.
 - Confirm discounts before payment: Adjusting discounts after taking payment may require reversing and re‑processing the sale.
-- Attach the customer before sending a receipt to use their saved email automatically.
+- Attach the customer before sending a receipt so the contact details are ready.
 - For returns or exchanges, start a separate return flow rather than using Quick Sale checkout.

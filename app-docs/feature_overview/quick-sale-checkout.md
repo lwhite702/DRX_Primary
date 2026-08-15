@@ -1,6 +1,6 @@
 ---
 title: "Quick Sale checkout"
-description: "Use Quick Sale in DRX to scan or search items, apply discounts, attach a customer, accept split or combined tenders, and print or email a receipt in one fast flow."
+description: "Use Quick Sale in DRX to scan or search items, apply discounts, attach a customer, use one tender, and print or SMS a receipt in one fast flow."
 tags:
   - POS
   - checkout
@@ -8,17 +8,17 @@ tags:
 ---
 ## Overview
 
-Quick Sale lets you ring up items fast, apply discounts, attach a customer, accept multiple payment types, and finish with a printed or emailed receipt. It’s designed for busy counters where you need to keep the line moving while keeping stock and customer records accurate.
+Quick Sale lets you ring up items fast, apply discounts, attach a customer, use one payment method, and finish with a printed or SMS receipt. It’s designed for busy counters where you need to keep the line moving while keeping stock and customer records accurate.
 
-The flow runs end to end: add items, adjust prices or discounts, choose or add a customer, collect payment (including split or combined tenders), and complete the receipt.
+The flow runs end to end: add items, adjust prices or discounts, choose a customer, collect one payment, and finish the receipt.
 
 ## When to use it
 
 - You need a fast checkout during busy periods.
 - You want to scan barcodes or quickly search to add items.
 - You need to apply a line-item or sale-level discount.
-- A customer wants to split payment across multiple tenders.
-- You want the receipt sent by email or printed on the spot.
+- A customer will pay with Cash, Card, or Credit.
+- You want the receipt printed, sent by SMS, or skipped.
 
 ## How to use it
 
@@ -36,15 +36,14 @@ The flow runs end to end: add items, adjust prices or discounts, choose or add a
 5. **Review** the cart summary:
    - Confirm items, quantities, discounts, taxes, and the sale total.
 6. **Proceed** to payment by selecting "Pay" to move from the sale screen to the payment screen.
-7. **Choose tender(s)** and take payment on the payment screen:
-   - **Select** a payment type (for example, cash, card, or other available tenders) and **Enter** the amount.
-   - To split payment, **Add payment** again and **Select** the next tender, repeating until the balance is $0.00.
-   - To combine tenders, **Apply** multiple partial payments as above until fully paid.
-   - **Confirm** each payment as it is approved or completed.
+7. **Choose one tender** and take payment on the payment screen:
+   - **Select** a payment type (cash, card, or credit) and **Enter** the amount.
+   - You cannot add more than one payment type in Quick Sale.
+   - **Confirm** the payment is approved or completed.
 8. **Complete** the sale when the balance reaches $0.00. You’ll move to the completion screen.
-9. **Print or email the receipt** on the completion screen:
+9. **Print or send the receipt** on the completion screen:
    - **Select** "Print receipt" to send it to your connected printer, or
-   - **Select** "Email receipt" and **Confirm** the customer email on file (or **Enter** an email) to send.
+   - **Select** "SMS receipt" to send it to the attached customer.
 10. **Finish** by returning to Quick Sale for the next customer.
 
 ## Options and settings
@@ -52,12 +51,12 @@ The flow runs end to end: add items, adjust prices or discounts, choose or add a
 - Cart controls: adjust quantity, remove an item, or apply a line-item discount from the cart.
 - Sale-level discount: apply a discount to the entire sale total when appropriate.
 - Attach customer: search and select an existing profile or add a new one during checkout.
-- Split tenders: accept multiple payment methods by adding payments until the balance is zero.
-- Receipt delivery: choose print or email on the completion screen.
+- Payment method: one of cash, card, or credit for the full sale.
+- Receipt delivery: choose print, SMS, or none on the completion screen.
 
 ## Tips
 
 - Scan first to minimize search errors; if a barcode fails, fall back to search and confirm the item details.
 - Attach the customer before payment so their email and preferences carry through to the receipt.
-- Confirm the remaining balance after each partial payment to avoid over-collection.
+- Confirm the total after discounts and payment so there is no over‑ or under‑charge.
 - If you apply both line-item and sale-level discounts, review the total carefully so the final price reflects your store policy.

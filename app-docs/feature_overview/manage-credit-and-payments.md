@@ -1,6 +1,6 @@
 ---
 title: "Manage Credit and Payments"
-description: "Run a fast checkout with mixed tenders (cash, card, credit, zelle), then print or share the receipt. Extend store credit, record payments toward credit, and confirm updated balances with receipts in DRX (Deelrx CRM)."
+description: "Complete a Quick POS sale with one cash, card, or credit payment method and select Print, SMS, or None for the receipt."
 tags:
   - payments
   - credit
@@ -9,43 +9,39 @@ tags:
 ---
 ## Overview
 
-Use DRX Quick POS to check out customers fast, accept one or more tenders (cash, card, credit, zelle), and immediately print or share the receipt. In the same workflow, you can extend store credit, record customer payments toward their credit, and confirm updated balances with documented tender references. This page walks you through the end-to-end flow so you can complete the sale and keep credit records accurate.
+Use DRX Quick POS to complete a sale with a single payment method: Cash, Card, or Credit. Credit is available only when credit policy is enabled and a customer is attached. Before completing the sale, select Print, SMS, or None as the receipt option.
+
+Quick POS does not support split payments, Zelle, tender amounts, tender references, or standalone payments toward an existing credit balance.
 
 ## When to use it
 
-- You need to ring up a sale quickly and accept a mix of tenders.
-- A customer wants to use or needs to be extended store credit.
-- You must record a payment made toward an outstanding credit balance.
-- You want to print, text, or email a receipt with tender details.
+- You need to ring up a sale quickly with Cash, Card, or Credit.
+- A customer is using store credit for the full sale total.
+- You need to choose Print, SMS, or None before checkout ends.
 
 ## How to use it
 
-1. **Open Quick POS** and start a new sale. Add items to the cart so you can see the running total.
-2. **Attach the customer** to the cart if you need to apply or manage credit. This ensures credit usage, extensions, and payments are tied to the correct account.
-3. **Review the cart total** and confirm quantities and prices before taking payment.
-4. **Choose tender(s)** in the payment area. Select from Cash, Card, Credit, or Zelle. You can combine tenders to cover the total.
-5. If using mixed tenders, **enter an amount for the first tender** and **apply** it. Repeat for each additional tender until the balance due is zero.
-6. If the customer will use store credit, **select Credit** and **enter the credit amount** they want to apply. DRX will reduce the balance due accordingly.
-7. If the customer needs more credit to complete the sale, **extend store credit**:
-   - **Select Credit** as a tender and **enter the additional amount** to be covered by credit. DRX records this as a credit extension tied to the customer.
-   - If required by your process, **add a note** in the tender reference field (for example, a reason for extension). DRX tracks these notes for follow‑up in credit pages.
-8. If using Zelle, **select Zelle** and **enter the amount** received. **Add a tender reference** (for example, the Zelle note or transfer ID) so it appears in records and on the receipt.
-9. **Complete the sale** when the balance due is zero. DRX finalizes the transaction and updates the customer’s credit balance if Credit was used or extended.
-10. **Print or share the receipt**. Choose the print option, or select a share method (such as text or email) and confirm delivery. The receipt includes tender breakdowns and any tender references you added.
-11. To record a payment toward an existing credit balance (not tied to a purchase), **open the credit and payments area** for the customer:
-    - **Start a payment** to reduce the outstanding credit balance.
-    - **Select the tender** (Cash, Card, Credit, Zelle) used for the payment. For Zelle, **add a tender reference** (e.g., Zelle note) for audit.
-    - **Enter the payment amount** and **confirm**. DRX updates the customer’s credit balance and creates a receipt.
-12. **Print or share the payment receipt** and **confirm the updated balance** shown for the customer.
+1. **Open Quick POS** and start a new sale.
+2. **Add items** to the cart and confirm the subtotal, tax, and total.
+3. **Attach a customer** before using credit so the charge is tied to the right account.
+4. In **Payment Method**, select one option for the full sale:
+   - **Cash**
+   - **Card**
+   - **Credit**, only when credit is enabled and the attached customer has enough available credit
+5. If you use Credit, review the customer’s remaining credit and **confirm the credit charge**.
+6. In **Receipt**, choose **Print**, **SMS**, or **None**.
+7. **Complete the sale**. DRX records the selected payment and, for credit sales, updates the customer’s used credit.
+8. Confirm the sale-completed message before starting the next sale.
 
 ## Options and settings
 
-- Tender reference: Add a short note or reference ID to any tender that requires documentation (for example, a Zelle transfer note). These appear on receipts and in credit follow‑up pages.
-- Mixed tenders: Apply multiple tenders in sequence until the balance due reaches zero; DRX records the exact tender mix on the receipt.
+- Credit policy: Credit appears only when the workspace has enabled credit sales.
+- Customer requirement: A customer must be attached before Credit can be used.
+- Receipt choice: Select Print, SMS, or None before completing the sale.
 
 ## Tips
 
-- Always attach the customer before applying or extending credit so balances update correctly.
-- Use clear, specific tender references for Zelle and other off‑terminal payments to simplify audits and follow‑ups.
-- If the balance does not reach zero, review each tender amount and adjust to match the cart total before completing the sale.
-- After recording a standalone credit payment, verify the new balance on the customer’s credit page and share the receipt immediately.
+- Confirm the payment method with the customer before completing the sale; Quick POS accepts only one method per sale.
+- Attach the right customer before selecting Credit so the charge lands on the correct account.
+- If Credit is unavailable, confirm credit policy, the customer is attached, and enough credit is available.
+- Use an approved workflow outside Quick POS if you need split tender, Zelle, tender references, or credit-only payments.
