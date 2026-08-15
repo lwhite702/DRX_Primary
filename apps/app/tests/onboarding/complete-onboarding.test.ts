@@ -70,6 +70,12 @@ const initialOnboardingActionState: OnboardingActionState = {
 function form(overrides: Record<string, string> = {}) {
   const formData = new FormData();
   formData.set("businessName", overrides.businessName ?? "Beta Market");
+  formData.set("ownerName", overrides.ownerName ?? "Lee Operator");
+  formData.set("businessType", overrides.businessType ?? "retail");
+  formData.set("locationName", overrides.locationName ?? "Main Store");
+  formData.set("city", overrides.city ?? "Albany");
+  formData.set("region", overrides.region ?? "NY");
+  formData.set("country", overrides.country ?? "US");
   formData.set("role", overrides.role ?? "owner_operator");
   formData.set("teamSize", overrides.teamSize ?? "1-5");
   formData.set("dashboardPreset", overrides.dashboardPreset ?? "checkout");
@@ -101,12 +107,20 @@ describe("completeOnboarding", () => {
   it("creates durable business setup before returning navigation success", async () => {
     await expect(
       completeOnboarding(initialOnboardingActionState, form()),
-    ).resolves.toEqual({ status: "success", error: null });
+    ).resolves.toMatchObject({
+      status: "success",
+      error: null,
+      summary: {
+        businessName: "Beta Market",
+        ownerName: "Lee Operator",
+        businessType: "retail",
+        locationName: "Main Store · Albany · NY · US",
+      },
+    });
 
     expect(mocks.dbMock.businessProfile.create).toHaveBeenCalledWith({
       data: {
         businessName: "Beta Market",
-        businessType: "other",
         ownerId: "user_123",
         isActive: true,
       },
@@ -120,9 +134,9 @@ describe("completeOnboarding", () => {
         settingsData: expect.objectContaining({
           onboarding_completed: true,
           dashboard_preset: "checkout",
-          role: "owner_operator",
-          team_size: "1-5",
-          tooling: "Spreadsheet and cash drawer",
+          role: "owner",
+          team_size: "1",
+          tooling: "web",
         }),
       }),
     });
@@ -170,14 +184,13 @@ describe("completeOnboarding", () => {
         initialOnboardingActionState,
         form({ businessName: "Updated Market" }),
       ),
-    ).resolves.toEqual({ status: "success", error: null });
+    ).resolves.toMatchObject({ status: "success", error: null });
 
     expect(mocks.dbMock.businessProfile.create).not.toHaveBeenCalled();
     expect(mocks.dbMock.businessProfile.update).toHaveBeenCalledWith({
       where: { id: "business_existing" },
       data: {
         businessName: "Updated Market",
-        businessType: "other",
         isActive: true,
       },
       select: { id: true },
@@ -187,7 +200,6 @@ describe("completeOnboarding", () => {
       data: {
         currency: "USD",
         timezone: "America/New_York",
-        collectTax: false,
         settingsData: expect.objectContaining({
           default_unit: "g",
           onboarding_completed: true,

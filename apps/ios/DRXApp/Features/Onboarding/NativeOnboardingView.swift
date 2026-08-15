@@ -1,9 +1,14 @@
 import SwiftUI
 import UIKit
+import ClerkKit
 
 struct NativeOnboardingView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var model = OnboardingModel()
+    @State private var navigationDirection: NavigationDirection = .forward
+    @State private var accountError: String?
 
     var body: some View {
         NavigationStack {
@@ -15,19 +20,23 @@ struct NativeOnboardingView: View {
                         .padding(24)
                         .frame(maxWidth: .infinity)
                         .id(model.draft.currentStep)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity),
-                        ))
+                        .transition(stepTransition)
                 }
                     .scrollDismissesKeyboard(.interactively)
                 actions.padding(24).background(.bar)
             }
             .background(DRXPalette.canvas.ignoresSafeArea())
-            .animation(
-                .spring(response: 0.34, dampingFraction: 0.86, blendDuration: 0.2),
-                value: model.draft.currentStep,
-            )
+            .animation(stepAnimation, value: model.draft.currentStep)
+            .navigationTitle("Business setup")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Use another account", systemImage: "person.crop.circle.badge.arrow.forward") {
+                        switchAccount()
+                    }
+                    .accessibilityIdentifier("onboardingSwitchAccount")
+                }
+            }
             .onAppear {
                 environment.telemetry.capture(model.resumed ? "onboarding_resumed" : "onboarding_started", properties: ["step": model.draft.currentStep.rawValue])
                 environment.telemetry.screen("Business Onboarding: \(model.draft.currentStep.rawValue)")
@@ -35,7 +44,33 @@ struct NativeOnboardingView: View {
             .onChange(of: model.draft.currentStep) { _, step in
                 environment.telemetry.capture("onboarding_step_viewed", properties: ["step": step.rawValue])
             }
+            .alert("Account Switch Failed", isPresented: .init(
+                get: { accountError != nil },
+                set: { if !$0 { accountError = nil } }
+            )) {
+                Button("OK", role: .cancel) { accountError = nil }
+            } message: {
+                Text(accountError ?? "")
+            }
         }
+    }
+
+    private enum NavigationDirection { case forward, backward }
+
+    private var stepAnimation: Animation {
+        reduceMotion
+            ? .easeOut(duration: 0.16)
+            : .spring(response: 0.38, dampingFraction: 0.9, blendDuration: 0.16)
+    }
+
+    private var stepTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        let insertion: Edge = navigationDirection == .forward ? .trailing : .leading
+        let removal: Edge = navigationDirection == .forward ? .leading : .trailing
+        return .asymmetric(
+            insertion: .move(edge: insertion).combined(with: .opacity),
+            removal: .move(edge: removal).combined(with: .opacity)
+        )
     }
 
     private var progress: some View {
@@ -99,7 +134,10 @@ struct NativeOnboardingView: View {
     private var actions: some View {
         HStack {
             if model.draft.currentStep != .welcome && model.draft.currentStep != .completed {
-                onboardingActionButton("Back") { withAnimation { model.back() } }
+                onboardingActionButton("Back", isPrimary: false) {
+                    navigationDirection = .backward
+                    withAnimation(stepAnimation) { model.back() }
+                }
             }
             Spacer()
             if model.draft.currentStep == .completed {
@@ -125,13 +163,14 @@ struct NativeOnboardingView: View {
                         : model.draft.currentStep == .review
                         ? "Create My Workspace"
                         : "Continue",
-                    isDisabled: environment.isSubmittingOnboarding,
                     identifier: "onboardingContinue",
+                    isDisabled: environment.isSubmittingOnboarding,
                     action: {
                         if model.draft.currentStep == .review {
                             submit()
                         } else {
-                            model.continueForward()
+                            navigationDirection = .forward
+                            withAnimation(stepAnimation) { model.continueForward() }
                         }
                     },
                 )
@@ -143,21 +182,34 @@ struct NativeOnboardingView: View {
         _ title: String,
         identifier: String = "",
         isDisabled: Bool = false,
+        isPrimary: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
-        Button(title, action: action)
-            .frame(minHeight: 44)
-            .buttonStyle(.borderedProminent)
-            .tint(DRXPalette.accent)
-            .foregroundStyle(DRXPalette.onAccent)
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(isPrimary ? DRXPalette.onAccent : DRXPalette.ink)
+                .padding(.horizontal, 20)
+                .frame(minHeight: 48)
+                .background(
+                    isPrimary ? DRXPalette.accent : DRXPalette.surface,
+                    in: RoundedRectangle(cornerRadius: DRXRadius.control)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: DRXRadius.control)
+                        .stroke(isPrimary ? Color.clear : DRXPalette.border, lineWidth: 1)
+                }
+        }
+            .buttonStyle(.plain)
             .disabled(isDisabled)
+            .opacity(isDisabled ? 0.48 : 1)
             .accessibilityIdentifier(identifier)
             .contentTransition(.identity)
     }
     private func prompt(_ title: String, _ body: String) -> some View { VStack(alignment: .leading, spacing: 10) { Text(title).font(.largeTitle.bold()); Text(body).foregroundStyle(DRXPalette.muted) } }
     private func choice(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View { Button(action: action) { HStack { Text(title).foregroundStyle(DRXPalette.ink); Spacer(); Image(systemName: selected ? "checkmark.circle.fill" : "circle").accessibilityHidden(true) }.padding().frame(minHeight: 56).background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 14)).overlay { RoundedRectangle(cornerRadius: 14).stroke(selected ? DRXPalette.accent : DRXPalette.border) } }.accessibilityAddTraits(selected ? .isSelected : []) }
     private var review: some View { VStack(alignment: .leading, spacing: 14) { prompt("Review your setup", "Everything here can be changed later in Business Settings."); summary("Owner", model.draft.ownerName, .ownerProfile); summary("Business", model.draft.businessName, .businessName); summary("Location", model.draft.locationName, .location); summary("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled", .taxDecision); summary("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled", model.draft.businessType?.tracksProducts == false ? .businessType : .inventoryDecision); summary("Team", model.draft.inviteTeam == true ? model.draft.invitedUserEmail : "Just me for now", .teamDecision) } }
-    private func summary(_ title: String, _ value: String, _ step: OnboardingStep) -> some View { HStack { VStack(alignment: .leading) { Text(title).font(.caption).foregroundStyle(DRXPalette.muted); Text(value) }; Spacer(); Button("Edit") { model.edit(step) } }.padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
+    private func summary(_ title: String, _ value: String, _ step: OnboardingStep) -> some View { HStack { VStack(alignment: .leading) { Text(title).font(.caption).foregroundStyle(DRXPalette.muted); Text(value) }; Spacer(); Button("Edit") { navigationDirection = .backward; withAnimation(stepAnimation) { model.edit(step) } } }.padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
     private var workspaceReady: some View { VStack(alignment: .leading, spacing: 16) { Text("Setup complete").font(.caption.bold()).foregroundStyle(DRXPalette.accent); prompt("Your DRX workspace is ready", "Here’s what we created. You can change these settings whenever you need to."); summaryValue("Business", model.draft.businessName); summaryValue("Owner", "\(model.draft.ownerName) · Owner"); summaryValue("Location", model.draft.locationName); summaryValue("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled"); summaryValue("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled"); Text("What would you like to do first?").font(.title3.bold()) } }
     private func summaryValue(_ title: String, _ value: String) -> some View { LabeledContent(title, value: value).padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
     private func submit() {
@@ -203,6 +255,18 @@ struct NativeOnboardingView: View {
                     "onboarding_submission_failed",
                     properties: ["error_category": "recoverable"],
                 )
+            }
+        }
+    }
+
+    private func switchAccount() {
+        Task {
+            do {
+                try await clerk.auth.signOut()
+                model.clear()
+                await environment.clerkSignedOut()
+            } catch {
+                accountError = "We couldn't switch accounts. Check your connection and try again."
             }
         }
     }

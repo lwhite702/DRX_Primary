@@ -49,6 +49,6 @@ describe("OnboardingLayout", () => {
 
     await expect(
       OnboardingLayout({ children: <div>Onboarding form</div> }),
-    ).rejects.toThrow("NEXT_REDIRECT:/dashboard");
+    ).rejects.toThrow("NEXT_REDIRECT:/pos/sale");
   });
 });
