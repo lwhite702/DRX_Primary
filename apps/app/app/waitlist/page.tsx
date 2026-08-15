@@ -28,7 +28,7 @@ export default async function WaitlistPage() {
     claims?.publicMetadata?.onboardingComplete === true ||
     claims?.public_metadata?.onboardingComplete === true;
 
-  if (userId) redirect(onboardingComplete ? "/dashboard" : "/onboarding");
+  if (userId) redirect(onboardingComplete ? "/pos/sale" : "/onboarding");
 
   return (
     <AuthShell

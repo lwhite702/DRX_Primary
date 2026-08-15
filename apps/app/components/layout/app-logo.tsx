@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export function AppLogo({
-  href = "/dashboard",
+  href = "/pos/sale",
   showTagline = false,
   size = "default",
 }: {

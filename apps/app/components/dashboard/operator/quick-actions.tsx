@@ -46,12 +46,12 @@ export function QuickActions({ className }: QuickActionsProps) {
           href="/settings"
           variant="secondary"
         />
-        <ActionButton
+            <ActionButton
           label="More"
           icon={MoreHorizontal}
-          href="/dashboard" // Fallback or expanded menu
+          href="/inventory" // Fallback or expanded menu
           variant="ghost"
-        />
+            />
       </div>
     </Card>
   );

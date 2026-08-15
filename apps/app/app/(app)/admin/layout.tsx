@@ -38,7 +38,7 @@ export default async function AdminLayout({
   const adminRole = await getAdminRole(userId);
 
   if (adminRole !== "super_admin") {
-    redirect("/dashboard");
+    redirect("/pos/sale");
   }
 
   return <AdminNavShell>{children}</AdminNavShell>;

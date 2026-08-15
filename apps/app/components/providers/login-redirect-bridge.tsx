@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/lib/adapters/auth/ui";
 
-export function LoginRedirectBridge({ target = "/dashboard" }: { target?: string }) {
+export function LoginRedirectBridge({ target = "/pos/sale" }: { target?: string }) {
   const { isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {

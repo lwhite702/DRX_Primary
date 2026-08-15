@@ -65,18 +65,18 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
     mode === "waitlist" ? "Auth Bypass Enabled" :
     "Auth Bypass Enabled (Sign In Disabled)";
 
-  return (
-    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+	    return (
+	    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-amber-50/90">
         Local testing bypass is enabled. Clerk auth UI is skipped so you can test app flows.
       </p>
       <div className="mt-4 flex gap-2">
         <a
-          href="/dashboard"
+          href="/pos/sale"
           className="inline-flex items-center rounded-md bg-amber-300 px-3 py-2 text-xs font-bold text-black"
         >
-          Continue to Dashboard
+          Continue to workspace
         </a>
         <a
           href="/pos/sale"

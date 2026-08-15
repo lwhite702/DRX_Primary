@@ -17,7 +17,7 @@ export default async function RegisterPage() {
   const useVisualFixture = isAuthVisualFixtureEnabled();
   const userId = useVisualFixture ? null : (await auth()).userId;
 
-  if (userId) redirect("/dashboard");
+  if (userId) redirect("/pos/sale");
 
   return (
     <AuthShell
