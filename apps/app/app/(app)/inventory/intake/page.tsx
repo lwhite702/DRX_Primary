@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ export default function InventoryIntakePage() {
   const inventoryItems = Array.isArray(inventory) ? inventory : [];
   const [processing, setProcessing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const idempotencyKey = useRef(crypto.randomUUID());
   const [formData, setFormData] = useState<IntakeFormData>({
     inventory_id: "",
     product_name: "",
@@ -124,6 +125,7 @@ export default function InventoryIntakePage() {
           total_weight_grams: parseFloat(formData.total_weight_grams),
           delivery_cost: parseFloat(formData.delivery_cost || "0"),
           supplier: formData.supplier || undefined,
+          idempotency_key: idempotencyKey.current,
         }),
       });
 
@@ -152,6 +154,7 @@ export default function InventoryIntakePage() {
         delivery_cost: "0",
         supplier: "",
       });
+      idempotencyKey.current = crypto.randomUUID();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to process intake",

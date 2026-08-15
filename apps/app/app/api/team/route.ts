@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import type { UserRole } from "@prisma/client";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,69 +12,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = await createServerDbClient();
-    // 2. Use resolved business context and validate caller is a team member.
     const business_id = businessId;
-
-    // 3. Verify permissions (manager/owner)
-    // We can rely on RLS policies implicitly if we were doing a direct select,
-    // but since we are doing admin work here, we should explicit check.
-    const { data: roleCheck } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("business_id", business_id)
-      .single();
-
-    // Allow managers, admins, owners, supervisors to view list?
-    // "staff.manage" permission usually needed.
-    // For now, let's allow any member to view the list (read-only), but only managers see actions in UI.
-    if (!roleCheck) {
+    if (!(await hasBusinessPermission(userId, business_id, "staff.manage"))) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // 4. Fetch User Roles for the business
-    const { data: teamRoles, error: rolesError } = await supabase
-      .from("user_roles")
-      .select("*")
-      .eq("business_id", business_id)
-      .order("created_at", { ascending: false });
-
-    if (rolesError) {
-      throw rolesError;
-    }
-
-    // 5. Fetch User Details (Emails) from Auth via Admin Client
-    const userIds = teamRoles.map((r: { user_id: string }) => r.user_id);
-
-    // Unfortunately listUsers usually doesn't take a filter by ID list efficiently in all versions,
-    // but we can iterate or fetch page by page.
-    // Optimization: If listUsers supports filters, good. If not, and list is small, list all?
-    // Better: getUserById in parallel? No, rate limits.
-    // Assuming small team for now.
-
-    // Actually, createClient (admin) generally doesn't expose a "getUsersByIds" easily.
-    // We will assume the team is small (< 50) and just map over them with getUser, or listUsers.
-    // Ideally: admin.auth.admin.listUsers() returns all.
-
-    // Let's use Promise.all for getUserById for accurate data, capped at 20 concurrent?
-    // Batch fetch (naive)
-    const promises = userIds.map(async (uid: string) => {
-      const { data: uData } =
-        await supabaseAdmin.auth.admin.getUserById(uid);
-      if (uData && uData.user) {
-        return { id: uid, email: uData.user.email, phone: uData.user.phone };
-      }
-      return null;
+    const teamRoles = await db.userRole.findMany({
+      where: { businessId: business_id },
+      orderBy: { createdAt: "desc" },
     });
+    const client = await clerkClient();
+    const userDetails = await Promise.all(
+      teamRoles.map(async (member: UserRole) => {
+        try {
+          const user = await client.users.getUser(member.userId);
+          return {
+            id: member.userId,
+            email: user.primaryEmailAddress?.emailAddress ?? "Unknown",
+            phone: user.primaryPhoneNumber?.phoneNumber ?? "",
+          };
+        } catch {
+          return { id: member.userId, email: "Unknown", phone: "" };
+        }
+      }),
+    );
 
-    const userDetails = await Promise.all(promises);
-
-    // 6. Merge Data
-    const enrichedTeam = teamRoles.map((member: { user_id: string }) => {
-      const details = userDetails.find((u: { id: string } | null) => u && u.id === member.user_id);
+    const enrichedTeam = teamRoles.map((member: UserRole) => {
+      const details = userDetails.find((user) => user.id === member.userId);
       return {
-        ...member,
+        id: member.id,
+        business_id: member.businessId,
+        user_id: member.userId,
+        role: member.role,
+        permissions: member.permissions,
+        created_at: member.createdAt,
+        updated_at: member.updatedAt,
         email: details?.email || "Unknown",
         phone: details?.phone || "",
       };
