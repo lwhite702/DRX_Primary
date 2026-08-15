@@ -1,10 +1,11 @@
 # Changelog Seed Export (Raw)
 
 Primary source: `/Users/lee/Projects/DRX_Primary/CHANGELOG.md`  
-Version file: `/Users/lee/Projects/DRX_Primary/VERSION` (`0.5.4`)
+Version file: `/Users/lee/Projects/DRX_Primary/VERSION` (`0.6.0-rc.1`)
 
 ## Extracted release headings
 
+- v0.6.0-rc.1 (2026-08-13)
 - v0.5.4 (2026-03-11)
 - v0.5.3 (2026-03-09)
 - v0.5.2 (2026-03-08)

@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { getCurrentUser } from "@/lib/adapters/auth";
 import { Role } from "@/lib/auth/permissions";
 import { revalidatePath } from "next/cache";
 
@@ -10,20 +11,19 @@ import { revalidatePath } from "next/cache";
  * Managers cannot assign 'super_admin'.
  */
 export async function updateUserRole(targetUserId: string, newRole: Role) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createServerDbClient();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser?.id) {
     return { error: "Not authenticated" };
   }
+  const user = sessionUser;
 
   // 1. Verify current user's role
   const { data: currentUserRoleData } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id)
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
     .single();
 
   const currentUserRole = currentUserRoleData?.role as Role;

@@ -1,5 +1,16 @@
 # DRX Customer Changelog
 
+## 2026-08-13 — v0.6.0-rc.1
+
+### Improved
+
+- Release candidate metadata was synchronized for TestFlight and customer-facing release tracking.
+
+### Fixed
+
+- Version and rollout roadmap references were updated so operational and shipping records stay in sync.
+- Local iOS archive validation succeeded for `0.6.0-rc.1`/build `20`. TestFlight upload remains blocked in this environment until Apple developer account/certificate context is available (`No Accounts`), and a valid iOS Distribution certificate plus provisioning profile for team `L8R42BJ54K` are loaded.
+
 ## 2026-03-11 — v0.5.4
 
 ### New

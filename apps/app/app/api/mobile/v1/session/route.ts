@@ -1,88 +1,85 @@
-import { NextResponse } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
-import { ROLE_PERMISSIONS, type Role } from "@/lib/auth/permissions";
+import { errorResponse, successResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 
-function explicitPermissions(value: unknown): string[] {
+function normalizePermissions(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.filter((permission): permission is string => typeof permission === "string");
   }
 
-  if (!value || typeof value !== "object") return [];
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .filter(([, enabled]) => enabled === true)
+      .map(([permission]) => permission);
+  }
 
-  return Object.entries(value as Record<string, unknown>)
-    .filter(([, enabled]) => enabled === true)
-    .map(([permission]) => permission);
-}
-
-function permissionsFor(role: string, value: unknown): string[] {
-  const rolePermissions = ROLE_PERMISSIONS[role as Role] ?? [];
-  return [...new Set([...rolePermissions, ...explicitPermissions(value)])];
+  return [];
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId) {
+      return errorResponse("UNAUTHORIZED", "Authentication required", 401);
+    }
 
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const business = orgId
+      ? await db.businessProfile.findUnique({
+          where: { clerkOrgId: orgId },
+          select: { id: true, businessName: true, ownerId: true, isActive: true },
+        })
+      : await db.businessProfile.findFirst({
+          where: {
+            OR: [{ ownerId: userId }, { userRoles: { some: { userId } } }],
+          },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, businessName: true, ownerId: true, isActive: true },
+        });
+
+    if (!business || !business.isActive) {
+      return errorResponse(
+        "FORBIDDEN",
+        "No active DRX business is available for this operator.",
+        403,
+      );
+    }
+
+    const role = await db.userRole.findFirst({
+      where: { businessId: business.id, userId },
+      select: { role: true, permissions: true },
+    });
+    const isOwner = business.ownerId === userId;
+
+    if (!isOwner && !role) {
+      return errorResponse(
+        "FORBIDDEN",
+        "You do not have operator access to this DRX business.",
+        403,
+      );
+    }
+
+    const profile = await db.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { email: true, name: true },
+    });
+
+    const email = profile?.email ?? null;
+    const displayName =
+      profile?.name ??
+      email ??
+      "DRX Operator";
+
+    return successResponse({
+      operatorId: userId,
+      displayName: displayName || email || "DRX Operator",
+      businessId: business.id,
+      businessName: business.businessName,
+      roles: isOwner ? ["owner"] : role?.role ? [role.role] : [],
+      permissions: isOwner ? ["*"] : normalizePermissions(role?.permissions),
+      email,
+    });
+  } catch (error) {
+    console.error("Mobile session bootstrap failed:", error);
+    return errorResponse("INTERNAL_ERROR", "Unable to restore the operator session", 500);
   }
-
-  const user = await db.user.findFirst({
-    where: { clerkUserId: userId },
-    select: {
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-      tenant: {
-        select: { id: true, businessName: true, ownerId: true, isActive: true },
-      },
-    },
-  });
-
-  if (!user) {
-    return NextResponse.json(
-      {
-        error: "Account is not provisioned for Deelrx CRM",
-        code: "MOBILE_ACCOUNT_NOT_PROVISIONED",
-      },
-      { status: 403 },
-    );
-  }
-
-  if (user.status !== "ACTIVE" || !user.tenant.isActive) {
-    return NextResponse.json(
-      {
-        error: "Account is inactive",
-        code: "MOBILE_ACCOUNT_INACTIVE",
-      },
-      { status: 403 },
-    );
-  }
-
-  const business = user.tenant;
-  const isOwner = business.ownerId === userId;
-  const assignedRole = isOwner
-    ? null
-    : await db.userRole.findFirst({
-        where: { userId, businessId: business.id },
-        select: { role: true, permissions: true },
-      });
-  const requestedRole = assignedRole?.role?.toLowerCase() ?? user.role.toLowerCase();
-  const role =
-    isOwner || requestedRole === "owner"
-      ? "owner"
-      : requestedRole in ROLE_PERMISSIONS
-        ? requestedRole
-        : "staff";
-
-  return NextResponse.json({
-    operator_id: userId,
-    display_name: user?.name || user?.email || "Deelrx Operator",
-    business_id: business.id,
-    business_name: business.businessName,
-    roles: [role],
-    permissions: permissionsFor(role, isOwner ? null : assignedRole?.permissions),
-    email: user?.email ?? null,
-  });
 }

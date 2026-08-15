@@ -1,46 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // 1. Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Get business_id from query params or user's role context
-    // Ideally we pass it in query param to be explicit, but for now let's derive from user_roles
-    // assuming single business context for simplicity, or we check permissions.
-    const { searchParams } = new URL(request.url);
-    let business_id = searchParams.get("business_id");
-
-    if (!business_id) {
-      // Fallback: get from user_roles
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("business_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (userRole) {
-        business_id = userRole.business_id;
-      }
-    }
-
-    if (!business_id) {
-      return NextResponse.json(
-        { error: "Business ID required" },
-        { status: 400 }
-      );
-    }
+    const supabase = await createServerDbClient();
+    // 2. Use resolved business context and validate caller is a team member.
+    const business_id = businessId;
 
     // 3. Verify permissions (manager/owner)
     // We can rely on RLS policies implicitly if we were doing a direct select,
@@ -48,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { data: roleCheck } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("business_id", business_id)
       .single();
 
@@ -84,11 +56,9 @@ export async function GET(request: NextRequest) {
     // Ideally: admin.auth.admin.listUsers() returns all.
 
     // Let's use Promise.all for getUserById for accurate data, capped at 20 concurrent?
-    const userDetailsMap = new Map();
-
     // Batch fetch (naive)
     const promises = userIds.map(async (uid: string) => {
-      const { data: uData, error: uError } =
+      const { data: uData } =
         await supabaseAdmin.auth.admin.getUserById(uid);
       if (uData && uData.user) {
         return { id: uid, email: uData.user.email, phone: uData.user.phone };

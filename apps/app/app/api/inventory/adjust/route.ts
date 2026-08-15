@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 interface AdjustmentRequest {
   inventory_id: string;
@@ -10,6 +11,11 @@ interface AdjustmentRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: AdjustmentRequest = await request.json();
     const { inventory_id, type, value, reason } = body;
 
@@ -32,16 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-
-    // Auth check
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = await createServerDbClient();
 
     // Role check (optional but recommended: verify user has inventory.adjust permission)
     // For now, assuming authenticated user in valid business context is sufficient or RLS handles it.
@@ -59,6 +56,10 @@ export async function POST(request: NextRequest) {
         { error: "Inventory item not found" },
         { status: 404 },
       );
+    }
+
+    if (item.business_id !== businessId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     let newQuantity = 0;
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
       transaction_type: "adjustment",
       quantity_change: delta,
       reason,
-      created_by: user.id,
+      created_by: userId,
       metadata: {
         type,
         original_value: item.quantity_on_hand,

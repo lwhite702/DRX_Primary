@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
 import { applyIntakeMutationViaRpc } from "@/lib/inventory/mutations/apply-intake";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 interface ApproveIntakeRequest {
   intake_id: string;
@@ -17,6 +18,11 @@ interface ApproveIntakeRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: ApproveIntakeRequest = await request.json();
     const { intake_id, action, rejection_reason, override_values } = body;
 
@@ -34,17 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = await createServerDbClient();
 
     // Get intake record
     const { data: intake, error: intakeError } = await supabase
@@ -57,11 +53,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Intake not found" }, { status: 404 });
     }
 
+    if (intake.business_id !== businessId) {
+      return NextResponse.json(
+        { error: "Forbidden: intake belongs to a different business" },
+        { status: 403 },
+      );
+    }
+
     // Check if user is a manager for this business
     const { data: isManagerData, error: managerError } = await supabase.rpc(
       "is_manager",
       {
-        user_id: user.id,
+        user_id: userId,
         business_id: intake.business_id,
       }
     );
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
         .from("inventory_intakes")
         .update({
           status: "rejected",
-          approved_by: user.id,
+          approved_by: userId,
           approved_at: new Date().toISOString(),
           rejection_reason,
           updated_at: new Date().toISOString(),
@@ -147,14 +150,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Process first; if processing fails, do not mark the intake approved.
-    await processApprovedIntake(supabase, intake, user.id);
+    await processApprovedIntake(supabase, intake, userId);
 
     // 3. Mark approved only after successful processing.
     const { error: updateError } = await supabase
       .from("inventory_intakes")
       .update({
         status: "approved",
-        approved_by: user.id,
+        approved_by: userId,
         approved_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

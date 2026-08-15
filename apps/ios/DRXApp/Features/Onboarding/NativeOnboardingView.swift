@@ -9,12 +9,25 @@ struct NativeOnboardingView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 if model.draft.currentStep != .welcome { progress.padding(.horizontal, 24).padding(.top) }
-                ScrollView { content.frame(maxWidth: 560, alignment: .leading).padding(24).frame(maxWidth: .infinity) }
+                ScrollView {
+                    content
+                        .frame(maxWidth: 560, alignment: .leading)
+                        .padding(24)
+                        .frame(maxWidth: .infinity)
+                        .id(model.draft.currentStep)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity),
+                        ))
+                }
                     .scrollDismissesKeyboard(.interactively)
                 actions.padding(24).background(.bar)
             }
             .background(DRXPalette.canvas.ignoresSafeArea())
-            .animation(.easeOut(duration: 0.2), value: model.draft.currentStep)
+            .animation(
+                .spring(response: 0.34, dampingFraction: 0.86, blendDuration: 0.2),
+                value: model.draft.currentStep,
+            )
             .onAppear {
                 environment.telemetry.capture(model.resumed ? "onboarding_resumed" : "onboarding_started", properties: ["step": model.draft.currentStep.rawValue])
                 environment.telemetry.screen("Business Onboarding: \(model.draft.currentStep.rawValue)")
@@ -79,20 +92,67 @@ struct NativeOnboardingView: View {
             default: ProgressView("Creating your DRX workspace…")
             }
             if let message = model.validationMessage { Text(message).foregroundStyle(DRXPalette.danger).accessibilityLabel("Error: \(message)") }
-        }.foregroundStyle(DRXPalette.ink).transition(.opacity.combined(with: .move(edge: .trailing)))
+        }
+        .foregroundStyle(DRXPalette.ink)
     }
 
     private var actions: some View {
-        HStack { if model.draft.currentStep != .welcome && model.draft.currentStep != .completed { Button("Back") { model.back() }.frame(minHeight: 44) }; Spacer()
+        HStack {
+            if model.draft.currentStep != .welcome && model.draft.currentStep != .completed {
+                onboardingActionButton("Back") { withAnimation { model.back() } }
+            }
+            Spacer()
             if model.draft.currentStep == .completed {
-                Button(model.draft.businessType == .service ? "Create First Service" : "Add First Product") { environment.telemetry.capture("onboarding_first_action_selected", properties: ["action": model.draft.businessType == .service ? "create_service" : "add_product"]); Task { await environment.openWorkspace(at: .inventory) } }
-                    .buttonStyle(.borderedProminent).accessibilityIdentifier("onboardingFirstAction")
+                onboardingActionButton(
+                    model.draft.businessType == .service ? "Create First Service" : "Add First Product",
+                    identifier: "onboardingFirstAction",
+                    action: {
+                        environment.telemetry.capture(
+                            "onboarding_first_action_selected",
+                            properties: [
+                                "action": model.draft.businessType == .service
+                                    ? "create_service"
+                                    : "add_product",
+                            ],
+                        )
+                        Task { await environment.openWorkspace(at: .inventory) }
+                    },
+                )
             } else {
-            Button(model.draft.currentStep == .welcome ? "Set Up My Business" : model.draft.currentStep == .review ? "Create My Workspace" : "Continue") {
-                if model.draft.currentStep == .review { submit() } else { model.continueForward() }
-            }.buttonStyle(.borderedProminent).disabled(environment.isSubmittingOnboarding).frame(minHeight: 44).accessibilityIdentifier("onboardingContinue")
+                onboardingActionButton(
+                    model.draft.currentStep == .welcome
+                        ? "Set Up My Business"
+                        : model.draft.currentStep == .review
+                        ? "Create My Workspace"
+                        : "Continue",
+                    isDisabled: environment.isSubmittingOnboarding,
+                    identifier: "onboardingContinue",
+                    action: {
+                        if model.draft.currentStep == .review {
+                            submit()
+                        } else {
+                            model.continueForward()
+                        }
+                    },
+                )
             }
         }
+    }
+    
+    private func onboardingActionButton(
+        _ title: String,
+        identifier: String = "",
+        isDisabled: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(title, action: action)
+            .frame(minHeight: 44)
+            .buttonStyle(.borderedProminent)
+            .tint(DRXPalette.accent)
+            .foregroundStyle(DRXPalette.onAccent)
+            .disabled(isDisabled)
+            .accessibilityIdentifier(identifier)
+            .contentTransition(.identity)
     }
     private func prompt(_ title: String, _ body: String) -> some View { VStack(alignment: .leading, spacing: 10) { Text(title).font(.largeTitle.bold()); Text(body).foregroundStyle(DRXPalette.muted) } }
     private func choice(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View { Button(action: action) { HStack { Text(title).foregroundStyle(DRXPalette.ink); Spacer(); Image(systemName: selected ? "checkmark.circle.fill" : "circle").accessibilityHidden(true) }.padding().frame(minHeight: 56).background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 14)).overlay { RoundedRectangle(cornerRadius: 14).stroke(selected ? DRXPalette.accent : DRXPalette.border) } }.accessibilityAddTraits(selected ? .isSelected : []) }
@@ -100,7 +160,52 @@ struct NativeOnboardingView: View {
     private func summary(_ title: String, _ value: String, _ step: OnboardingStep) -> some View { HStack { VStack(alignment: .leading) { Text(title).font(.caption).foregroundStyle(DRXPalette.muted); Text(value) }; Spacer(); Button("Edit") { model.edit(step) } }.padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
     private var workspaceReady: some View { VStack(alignment: .leading, spacing: 16) { Text("Setup complete").font(.caption.bold()).foregroundStyle(DRXPalette.accent); prompt("Your DRX workspace is ready", "Here’s what we created. You can change these settings whenever you need to."); summaryValue("Business", model.draft.businessName); summaryValue("Owner", "\(model.draft.ownerName) · Owner"); summaryValue("Location", model.draft.locationName); summaryValue("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled"); summaryValue("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled"); Text("What would you like to do first?").font(.title3.bold()) } }
     private func summaryValue(_ title: String, _ value: String) -> some View { LabeledContent(title, value: value).padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
-    private func submit() { let draft = model.draft; let invitesTeam = draft.inviteTeam == true; environment.telemetry.capture("onboarding_submission_started", properties: ["business_type": draft.businessType?.rawValue ?? "other", "tax_enabled": draft.taxChoice == .yes, "inventory_enabled": draft.tracksInventory == true]); Task { let success = await environment.completeOnboarding(.init(name: draft.ownerName.trimmingCharacters(in: .whitespacesAndNewlines), businessName: draft.businessName.trimmingCharacters(in: .whitespacesAndNewlines), businessType: draft.businessType?.rawValue ?? "other", currency: draft.currency, timezone: draft.timezone, collectTax: draft.taxChoice == .yes, taxRateBps: Int(((Double(draft.taxRate) ?? 0) * 100).rounded()), locationName: draft.locationName, city: draft.city.nilIfEmpty, region: draft.region.nilIfEmpty, country: draft.country, tracksInventory: draft.tracksInventory == true, invitedUserEmail: invitesTeam ? draft.invitedUserEmail.nilIfEmpty : nil, invitedUserRole: invitesTeam ? draft.invitedUserRole.uppercased() : nil, invitationToken: invitesTeam ? UUID().uuidString : nil)); if success { model.markCompleted(); environment.telemetry.capture("onboarding_completed", properties: ["business_type": draft.businessType?.rawValue ?? "other"]); UINotificationFeedbackGenerator().notificationOccurred(.success) } else { environment.telemetry.capture("onboarding_submission_failed", properties: ["error_category": "recoverable"]) } } }
+    private func submit() {
+        let draft = model.draft
+        let invitesTeam = draft.inviteTeam == true
+        environment.telemetry.capture(
+            "onboarding_submission_started",
+            properties: [
+                "business_type": draft.businessType?.rawValue ?? "other",
+                "tax_enabled": draft.taxChoice == .yes,
+                "inventory_enabled": draft.tracksInventory == true,
+            ],
+        )
+        Task {
+            let success = await environment.completeOnboarding(
+                .init(
+                    name: draft.ownerName.trimmingCharacters(in: .whitespacesAndNewlines),
+                    businessName: draft.businessName.trimmingCharacters(in: .whitespacesAndNewlines),
+                    businessType: draft.businessType?.rawValue ?? "other",
+                    currency: draft.currency,
+                    timezone: draft.timezone,
+                    collectTax: draft.taxChoice == .yes,
+                    taxRateBps: Int(((Double(draft.taxRate) ?? 0) * 100).rounded()),
+                    locationName: draft.locationName,
+                    city: draft.city.nilIfEmpty,
+                    region: draft.region.nilIfEmpty,
+                    country: draft.country,
+                    tracksInventory: draft.tracksInventory == true,
+                    invitedUserEmail: invitesTeam ? draft.invitedUserEmail.nilIfEmpty : nil,
+                    invitedUserRole: invitesTeam ? draft.invitedUserRole.uppercased() : nil,
+                    invitationToken: invitesTeam ? UUID().uuidString : nil,
+                )
+            )
+            if success {
+                model.markCompleted()
+                environment.telemetry.capture(
+                    "onboarding_completed",
+                    properties: ["business_type": draft.businessType?.rawValue ?? "other"],
+                )
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } else {
+                environment.telemetry.capture(
+                    "onboarding_submission_failed",
+                    properties: ["error_category": "recoverable"],
+                )
+            }
+        }
+    }
 }
 
 private extension String { var nilIfEmpty: String? { let value = trimmingCharacters(in: .whitespacesAndNewlines); return value.isEmpty ? nil : value } }

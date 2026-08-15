@@ -52,6 +52,16 @@ protocol ProvisioningClient: Sendable {
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse
 }
 
+private struct ConvexBusinessOnboardingPayload: Encodable, Sendable {
+    let name: String?
+    let businessName: String
+    let businessType: String?
+    let currency: String?
+    let timezone: String?
+    let collectTax: Bool?
+    let taxRateBps: Int?
+}
+
 struct LiveProvisioningClient: ProvisioningClient {
     let client: ConvexClient
 
@@ -64,17 +74,43 @@ struct LiveProvisioningClient: ProvisioningClient {
     }
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        try await client.mutation("onboarding:createBusinessOnboarding", args: input)
+        let sanitizedInput = ConvexBusinessOnboardingPayload(
+            name: input.name,
+            businessName: input.businessName,
+            businessType: input.businessType,
+            currency: input.currency,
+            timezone: input.timezone,
+            collectTax: input.collectTax,
+            taxRateBps: input.taxRateBps,
+        )
+        return try await client.mutation("onboarding:createBusinessOnboarding", args: sanitizedInput)
     }
 }
 
-struct PreviewProvisioningClient: ProvisioningClient {
+actor PreviewProvisioningClient: ProvisioningClient {
+    private var isBoarded = false
+
     func status() async throws -> ProvisioningStatusResponse {
-        ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil)
+        if isBoarded {
+            return ProvisioningStatusResponse(
+                status: .ready,
+                session: OperatorSession(
+                    operatorID: "preview_operator",
+                    displayName: "Preview Operator",
+                    businessID: "preview_business",
+                    businessName: "Preview Store",
+                    roles: ["owner"],
+                    permissions: ["*"],
+                    email: "operator@example.test"
+                )
+            )
+        }
+        return ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil)
     }
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
+        isBoarded = true
+        return BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
     }
 }
 

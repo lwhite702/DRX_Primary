@@ -35,7 +35,14 @@ function extractScreenPrivacyPreference(metadata: unknown): ScreenPrivacyMetadat
   };
 }
 
-async function getManualPreferenceFromClerk(userId: string, sessionClaims: unknown) {
+function getClaimsMetadata(sessionClaims: unknown) {
+  return typeof (sessionClaims as Record<string, unknown> | null)?.publicMetadata === "object" &&
+    (sessionClaims as Record<string, unknown> | null)?.publicMetadata !== null
+    ? ((sessionClaims as Record<string, unknown>).publicMetadata as Record<string, unknown>)
+    : {};
+}
+
+async function getManualPreferenceFromClaims(sessionClaims: unknown) {
   if (isAuthBypassEnabled()) {
     const fallback = extractScreenPrivacyPreference(
       (sessionClaims as { publicMetadata?: unknown } | null)?.publicMetadata ?? {},
@@ -43,21 +50,18 @@ async function getManualPreferenceFromClerk(userId: string, sessionClaims: unkno
     return !!fallback.manual_enabled;
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const current = extractScreenPrivacyPreference(user.publicMetadata);
+  const current = extractScreenPrivacyPreference(getClaimsMetadata(sessionClaims));
   return !!current.manual_enabled;
 }
 
-async function mirrorPreferenceToClerk(userId: string, manualEnabled: boolean) {
+async function mirrorPreferenceToClerk(userId: string, manualEnabled: boolean, sessionClaims: unknown) {
   if (isAuthBypassEnabled()) {
     return;
   }
 
   try {
     const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const publicMetadata = (user.publicMetadata ?? {}) as Record<string, unknown>;
+    const publicMetadata = getClaimsMetadata(sessionClaims);
     const operatorProfile =
       (publicMetadata.operatorProfile as Record<string, unknown> | undefined) ?? {};
     const screenPrivacy =
@@ -97,7 +101,7 @@ export async function GET() {
       return NextResponse.json({ manual_enabled: !!dbPreference.manual_enabled });
     }
 
-    const clerkValue = await getManualPreferenceFromClerk(userId, sessionClaims);
+    const clerkValue = await getManualPreferenceFromClaims(sessionClaims);
     return NextResponse.json({ manual_enabled: clerkValue });
   } catch (error) {
     console.error("[privacy/protexion/preferences][GET]", error);
@@ -130,13 +134,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!persisted) {
-      const fallback = await getManualPreferenceFromClerk(userId, sessionClaims);
+      const fallback = await getManualPreferenceFromClaims(sessionClaims);
       if (typeof body?.manual_enabled !== "boolean") {
         return NextResponse.json({ manual_enabled: fallback });
       }
     }
 
-    await mirrorPreferenceToClerk(userId, manualEnabled);
+    await mirrorPreferenceToClerk(userId, manualEnabled, sessionClaims);
 
     return NextResponse.json({ manual_enabled: manualEnabled });
   } catch (error) {

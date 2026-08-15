@@ -16,11 +16,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const client = await clerkClient();
-    let user;
-    try {
-      user = await client.users.getUser(id);
-    } catch (e) {
+    const targetUser = await db.user.findFirst({
+      where: {
+        OR: [{ clerkUserId: id }, { id }],
+      },
+      select: { id: true, clerkUserId: true, email: true, name: true },
+    });
+    if (!targetUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -34,17 +36,19 @@ export async function GET(
       select: { businessId: true },
     });
 
+    const targetUserId = targetUser.clerkUserId || targetUser.id;
     const roleData = await db.userRole.findFirst({
       where: {
-        userId: id,
+        userId: targetUserId,
         ...(actorRole?.businessId ? { businessId: actorRole.businessId } : {}),
       },
       select: { role: true },
     });
 
     return NextResponse.json({
-      id: user.id,
-      email: user.emailAddresses[0]?.emailAddress,
+      id: targetUserId,
+      email: targetUser.email,
+      name: targetUser.name,
       role: roleData?.role,
     });
   } catch (error) {
@@ -68,23 +72,37 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const targetUser = await db.user.findFirst({
+      where: { OR: [{ clerkUserId: targetUserId }, { id: targetUserId }] },
+      select: { id: true, clerkUserId: true },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const targetUserDbId = targetUser.clerkUserId || targetUser.id;
+    const roleUserId = targetUser.clerkUserId || targetUser.id;
+
     // Audit Log
     await db.systemAuditLog.create({
       data: {
         action: "delete_member",
-        entityId: targetUserId,
+        entityId: targetUserDbId,
         userId: actorId,
         entityType: "team_member",
         // resource_id: id, // entityId covers it
       },
     });
 
-    // Delete User (Cascade usually deletes roles, but verify)
-    const client = await clerkClient();
-    await client.users.deleteUser(targetUserId);
+    if (targetUser.clerkUserId) {
+      const clerk = await clerkClient();
+      await clerk.users.deleteUser(targetUser.clerkUserId);
+    }
 
     // Cleanup DB references
-    await db.userRole.deleteMany({ where: { userId: targetUserId } });
+    await db.userRole.deleteMany({ where: { userId: roleUserId } });
+    await db.user.delete({ where: { id: targetUser.id } });
 
     return NextResponse.json({}, { status: 204 });
   } catch (error: any) {

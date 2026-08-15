@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { updateUserRole } from "@/app/actions/user-management";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient } from "@/lib/data-access/server";
+import { getCurrentUser } from "@/lib/adapters/auth";
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+vi.mock("@/lib/data-access/server", () => ({
+  createLegacyServerDbClient: vi.fn(),
+}));
+vi.mock("@/lib/adapters/auth", () => ({
+  getCurrentUser: vi.fn(),
 }));
 
 describe("Role Hierarchy Integration", () => {
@@ -12,6 +16,7 @@ describe("Role Hierarchy Integration", () => {
   });
 
   it("should block managers from assigning super_admin role", async () => {
+    (getCurrentUser as any).mockResolvedValue({ id: "manager-1" });
     const mockSupabase = {
       auth: {
         getUser: vi
@@ -30,7 +35,7 @@ describe("Role Hierarchy Integration", () => {
       update: vi.fn().mockReturnThis(),
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
-    (createClient as any).mockResolvedValue(mockSupabase);
+    (createLegacyServerDbClient as any).mockResolvedValue(mockSupabase);
 
     const result = await updateUserRole("target-user", "super_admin");
 
@@ -39,6 +44,7 @@ describe("Role Hierarchy Integration", () => {
   });
 
   it("should allow super_admin to update any role", async () => {
+    (getCurrentUser as any).mockResolvedValue({ id: "admin-1" });
     const mockSupabase = {
       auth: {
         getUser: vi
@@ -57,7 +63,7 @@ describe("Role Hierarchy Integration", () => {
       update: vi.fn().mockReturnThis(),
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
-    (createClient as any).mockResolvedValue(mockSupabase);
+    (createLegacyServerDbClient as any).mockResolvedValue(mockSupabase);
 
     const result = await updateUserRole("target-user", "manager");
 

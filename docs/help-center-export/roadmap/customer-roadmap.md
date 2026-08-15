@@ -4,6 +4,10 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Release parity and rollout readiness** (`in progress`)
+  Version and changelog alignment for TestFlight and customer-facing release materials.
+  Local iOS archive build completed for version `0.6.0-rc.1` build `20`; TestFlight upload remains pending on Apple account/certificate provisioning in this environment (`No Accounts`, missing Distribution signing and provisioning profile import for team `L8R42BJ54K`).
+
 - **Quick POS flow hardening** (`in progress`)  
   Faster operator flow, cleaner state transitions, and fewer checkout interruptions.
 

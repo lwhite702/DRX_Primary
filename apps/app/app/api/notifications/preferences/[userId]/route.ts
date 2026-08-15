@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { getCurrentUser } from "@/lib/adapters/auth";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { errorResponse, successResponse } from "@/lib/api/response";
 
@@ -8,13 +9,10 @@ export async function GET(
   { params }: { params: { userId: string } },
 ) {
   const { userId } = params;
-  const supabase = await createServerClient();
+  const supabase = await createServerDbClient();
   // Auth check
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (!user || authError) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  const user = await getCurrentUser();
+  if (!user) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
 
   const canManageUsers =
     (await hasPermission("users.manage_all")) ||

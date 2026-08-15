@@ -106,6 +106,7 @@ describe("completeOnboarding", () => {
     expect(mocks.dbMock.businessProfile.create).toHaveBeenCalledWith({
       data: {
         businessName: "Beta Market",
+        businessType: "other",
         ownerId: "user_123",
         isActive: true,
       },
@@ -176,6 +177,7 @@ describe("completeOnboarding", () => {
       where: { id: "business_existing" },
       data: {
         businessName: "Updated Market",
+        businessType: "other",
         isActive: true,
       },
       select: { id: true },
@@ -185,6 +187,7 @@ describe("completeOnboarding", () => {
       data: {
         currency: "USD",
         timezone: "America/New_York",
+        collectTax: false,
         settingsData: expect.objectContaining({
           default_unit: "g",
           onboarding_completed: true,

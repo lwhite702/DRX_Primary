@@ -103,7 +103,7 @@ If any condition is unmet, keep the issue out of Done and state the blocker plai
 <!-- moxie-docs:start -->
 ## Moxie Docs Agent Guidance
 
-Before editing lwhite702/DRX_Primary, use the Moxie Docs MCP server for live repository conventions, documentation patterns, gaps, and verified commands. The **moxie-docs** skill (`.claude/skills/moxie-docs/`) has the full edit-then-document workflow - follow it when changing code.
+Before editing lwhite702/DRX_Primary, use the Moxie Docs MCP server for live repository conventions, documentation patterns, gaps, and verified commands. The **moxie-docs** skill (`.claude/skills/moxie-docs/`) has the full edit-then-document workflow — follow it when changing code.
 
 When your Moxie Docs token serves more than one repository, pass `repository: "lwhite702/DRX_Primary"` in every Moxie tool call from this repo so the context targets lwhite702/DRX_Primary.
 <!-- moxie-docs:end -->

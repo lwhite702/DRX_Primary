@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
 import { applyIntakeMutationViaRpc } from "@/lib/inventory/mutations/apply-intake";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 interface IntakeRequest {
   inventory_id: string;
@@ -13,6 +14,11 @@ interface IntakeRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: IntakeRequest = await request.json();
     const {
       inventory_id,
@@ -51,17 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = await createServerDbClient();
 
     // Get inventory item to verify access and get business_id
     const { data: inventoryItem, error: inventoryError } = await supabase
@@ -74,6 +70,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Inventory item not found" },
         { status: 404 }
+      );
+    }
+
+    if (inventoryItem.business_id !== businessId) {
+      return NextResponse.json(
+        { error: "Forbidden: inventory belongs to a different business" },
+        { status: 403 },
       );
     }
 
@@ -129,7 +132,7 @@ export async function POST(request: NextRequest) {
         supplier,
         requires_approval,
         status,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single();
@@ -153,14 +156,14 @@ export async function POST(request: NextRequest) {
         calculated_cost_per_gram,
         delivery_cost,
         supplier,
-        user_id: user.id,
+        user_id: userId,
       });
 
       const { error: approveError } = await supabase
         .from("inventory_intakes")
         .update({
           status: "approved",
-          approved_by: user.id,
+          approved_by: userId,
           approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })

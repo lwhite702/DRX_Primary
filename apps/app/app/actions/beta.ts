@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { getCurrentUser } from "@/lib/adapters/auth";
 import { z } from "zod";
 
 const ticketSchema = z.object({
@@ -19,17 +20,15 @@ export async function submitSupportTicket(data: unknown) {
     };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createServerDbClient();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser?.id) {
     return { error: "You must be logged in to submit a ticket" };
   }
 
   const { error } = await supabase.from("support_tickets").insert({
-    user_id: user.id,
+    user_id: sessionUser.id,
     subject: result.data.subject,
     message: result.data.message,
     priority: result.data.priority,
