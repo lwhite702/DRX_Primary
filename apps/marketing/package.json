@@ -16,7 +16,7 @@
     "@deelrx/brand": "link:../../packages/brand",
     "@deelrx/ui": "link:../../packages/ui",
     "lucide-react": "^0.454.0",
-    "next": "16.1.7",
+    "next": "16.2.11",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   },

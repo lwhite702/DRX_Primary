@@ -25,7 +25,7 @@
     "@wrelik/analytics": "workspace:*",
     "@wrelik/auth": "2.0.0",
     "@wrelik/errors": "workspace:*",
-    "axios": "^1.13.5",
+    "axios": "^1.18.0",
     "date-fns": "^4.1.0",
     "expo": "^54.0.32",
     "expo-application": "~7.0.8",
