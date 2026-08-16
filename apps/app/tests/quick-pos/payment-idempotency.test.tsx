@@ -136,4 +136,49 @@ describe("quick pos payment idempotency", () => {
     expect(secondBody.idempotencyKey).toBe(firstBody.idempotencyKey);
     expect(replace).toHaveBeenCalledWith("/pos/complete");
   });
+
+  it("submits inventory and manual items together in one canonical request", async () => {
+    seedState({
+      cartItems: [
+        {
+          id: "inv:1",
+          inventoryId: "11111111-1111-4111-8111-111111111111",
+          name: "Catalog Item",
+          unitPrice: 5,
+          qty: 2,
+          source: "inventory",
+        },
+        {
+          id: "manual:1",
+          inventoryId: null,
+          name: "Manual Item",
+          unitPrice: 3,
+          qty: 1,
+          source: "manual",
+        },
+      ],
+    });
+
+    render(
+      <QuickPosProvider>
+        <PaymentPage />
+      </QuickPosProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Complete Sale" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/pos/checkout",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body.items).toEqual([
+      expect.objectContaining({ name: "Catalog Item", source: "inventory" }),
+      expect.objectContaining({ name: "Manual Item", source: "manual" }),
+    ]);
+  });
 });

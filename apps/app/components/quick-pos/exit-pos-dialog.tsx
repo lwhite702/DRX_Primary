@@ -30,9 +30,13 @@ export function ExitPosDialog({
         body: JSON.stringify({ pin }),
       });
 
-      const data = (await res.json()) as { allowed?: boolean };
+      const data = (await res.json()) as { allowed?: boolean; error?: string };
       if (!data.allowed) {
-        setError("Invalid PIN");
+        setError(
+          res.status === 401
+            ? "Your session expired. Sign in again to continue."
+            : data.error || "Enter the configured manager PIN and try again.",
+        );
         return;
       }
 
@@ -51,7 +55,7 @@ export function ExitPosDialog({
         <p className="mt-2 text-sm text-muted-foreground">
           {bypassMode
             ? "Bypass mode is active. You can exit without a PIN."
-            : "Confirm and enter PIN to leave Quick Sale mode."}
+            : "Enter the manager PIN if one is configured, then confirm to return to your workspace."}
         </p>
         {!bypassMode ? (
           <p className="mt-1 text-xs text-white/60">
@@ -92,7 +96,7 @@ export function ExitPosDialog({
             type="button"
             className="h-12 rounded-md bg-accent text-black font-semibold disabled:opacity-60"
             onClick={bypassMode ? onSuccess : verify}
-            disabled={processing || (!bypassMode && pin.length === 0)}
+            disabled={processing}
           >
             {processing ? "Checking..." : bypassMode ? "Exit Now" : "Confirm Exit"}
           </button>

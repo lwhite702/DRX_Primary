@@ -123,7 +123,11 @@ test.describe("Quick POS @smoke", () => {
     await page.goto("/pos/sale");
 
     await page.getByRole("button", { name: "Exit Quick Sale" }).click();
-    await expect(page.getByText("Confirm and enter PIN to leave POS mode.")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Enter the manager PIN if one is configured, then confirm to return to your workspace.",
+      ),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Confirm Exit" }).click();
     await expect(page).toHaveURL(/\/dashboard/);
