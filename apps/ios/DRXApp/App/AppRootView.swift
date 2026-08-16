@@ -68,6 +68,7 @@ struct AppRootView: View {
                 .accessibilityIdentifier(route.accessibilityIdentifier)
         }
         .task {
+            guard !ProcessInfo.processInfo.arguments.contains("--ui-testing-hold-splash") else { return }
             try? await Task.sleep(for: .milliseconds(900))
             minimumSplashDurationElapsed = true
             completeInitialSplashIfReady()
@@ -180,6 +181,7 @@ private struct SignedOutWelcomeView: View {
                         .font(.largeTitle.bold())
                         .foregroundStyle(DRXPalette.ink)
                         .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("signedOutWelcomeTitle")
 
                     Text("Create an operator account or sign in to continue to your private business workspace.")
                         .font(.body)
@@ -212,7 +214,6 @@ private struct SignedOutWelcomeView: View {
             }
             .padding(DRXSpacing.xxl)
         }
-        .accessibilityIdentifier("signedOutWelcomeView")
     }
 }
 

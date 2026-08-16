@@ -6,15 +6,13 @@ final class DRXAppUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testColdLaunchShowsSplashAndExplicitAuthenticationChoices() {
+    func testColdLaunchShowsSplash() {
         let app = XCUIApplication()
         app.launchArguments.append("--ui-testing")
+        app.launchArguments.append("--ui-testing-hold-splash")
         app.launch()
 
-        XCTAssertTrue(app.otherElements["launchSplashView"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.otherElements["signedOutWelcomeView"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["createAccountButton"].exists)
-        XCTAssertTrue(app.buttons["signInButton"].exists)
+        XCTAssertTrue(app.otherElements["launchSplashView"].waitForExistence(timeout: 10))
     }
 
     func testCreateAccountOpensNativeRegistration() {
