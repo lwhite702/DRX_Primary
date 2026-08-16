@@ -129,6 +129,10 @@ private struct LaunchSplashView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isGlowing = false
 
+    private var isHeldForUITesting: Bool {
+        ProcessInfo.processInfo.arguments.contains("--ui-testing-hold-splash")
+    }
+
     var body: some View {
         ZStack {
             DRXPalette.canvas.ignoresSafeArea()
@@ -146,15 +150,15 @@ private struct LaunchSplashView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 210, height: 132)
-                .scaleEffect(reduceMotion ? 1 : (isGlowing ? 1.025 : 0.985))
-                .opacity(reduceMotion ? 1 : (isGlowing ? 1 : 0.86))
+                .scaleEffect(reduceMotion || isHeldForUITesting ? 1 : (isGlowing ? 1.025 : 0.985))
+                .opacity(reduceMotion || isHeldForUITesting ? 1 : (isGlowing ? 1 : 0.86))
                 .shadow(color: DRXPalette.accent.opacity(isGlowing ? 0.78 : 0.28), radius: isGlowing ? 34 : 14)
                 .shadow(color: DRXPalette.accent.opacity(isGlowing ? 0.40 : 0.12), radius: isGlowing ? 72 : 30)
                 .accessibilityLabel("Deelrx CRM")
         }
         .accessibilityIdentifier("launchSplashView")
         .onAppear {
-            guard !reduceMotion else {
+            guard !reduceMotion, !isHeldForUITesting else {
                 isGlowing = true
                 return
             }
