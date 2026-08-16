@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Release Metadata**: Updated iOS marketing/build metadata to `MARKETING_VERSION=0.6.0-rc.1` and `CURRENT_PROJECT_VERSION=20` for TestFlight parity, and aligned release documentation references for the current release candidate.
 - **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
 
+### Fixed
+
+- **Quick POS Recovery**: Route complete sales through the canonical checkout API with idempotent retries and allow authenticated operators to exit when no manager PIN is configured.
+
 ## [0.6.0-rc.1] - 2026-08-13
 
 ### Added
