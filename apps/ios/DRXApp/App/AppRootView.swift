@@ -5,6 +5,9 @@ import ClerkKitUI
 struct AppRootView: View {
     @State private var environment: AppEnvironment
     @State private var identifiedUserID: String?
+    @State private var authenticationRoute: AuthenticationRoute?
+    @State private var minimumSplashDurationElapsed = false
+    @State private var hasCompletedInitialSplash = false
     @Environment(Clerk.self) private var clerk
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -14,44 +17,42 @@ struct AppRootView: View {
 
     var body: some View {
         Group {
-            switch environment.rootState {
-            case .initializing, .checkingProvisioning, .loadingWorkspace:
-                SessionBootstrapView()
-            case .signedOut:
-                VStack(spacing: 0) {
-                    Image("DRXWordmark")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 176, height: 88)
-                        .accessibilityLabel("Deelrx CRM")
-                        .padding(.top, DRXSpacing.xl)
-
-                    VStack(spacing: DRXSpacing.sm) {
-                        Text("Sign in or create an account")
-                            .font(.title2.bold())
-                            .foregroundStyle(DRXPalette.ink)
-                        Text("Your account keeps each business workspace private and separate.")
-                            .font(.subheadline)
-                            .foregroundStyle(DRXPalette.muted)
-                            .multilineTextAlignment(.center)
+            if !hasCompletedInitialSplash {
+                LaunchSplashView()
+            } else {
+                switch environment.rootState {
+                case .initializing, .checkingProvisioning, .loadingWorkspace:
+                    SessionBootstrapView()
+                case .signedOut:
+                    SignedOutWelcomeView(
+                        onCreateAccount: { authenticationRoute = .signUp },
+                        onSignIn: { authenticationRoute = .signIn }
+                    )
+                    .onAppear { environment.telemetry.screen("Welcome") }
+                case .needsOnboarding:
+                    if clerk.user != nil {
+                        NativeOnboardingView()
+                    } else {
+                        SignedOutWelcomeView(
+                            onCreateAccount: { authenticationRoute = .signUp },
+                            onSignIn: { authenticationRoute = .signIn }
+                        )
                     }
-                    .padding(.horizontal, DRXSpacing.xl)
-
-                    AuthView(isDismissible: false)
-                        .environment(\.clerkTheme, .drx)
-                        .accessibilityIdentifier("clerkAuthView")
+                case .ready:
+                    if clerk.user != nil {
+                        OperatorTabView(onSwitchUser: { authenticationRoute = .signIn })
+                    } else {
+                        SignedOutWelcomeView(
+                            onCreateAccount: { authenticationRoute = .signUp },
+                            onSignIn: { authenticationRoute = .signIn }
+                        )
+                    }
+                case .recoverableError:
+                    ProvisioningRecoveryView()
                 }
-                .background(DRXPalette.canvas.ignoresSafeArea())
-                .onAppear { environment.telemetry.screen("Sign In") }
-            case .needsOnboarding:
-                if clerk.user != nil { NativeOnboardingView() } else { AuthView(isDismissible: false) }
-            case .ready:
-                if clerk.user != nil { OperatorTabView() } else { AuthView(isDismissible: false) }
-            case .recoverableError:
-                ProvisioningRecoveryView()
             }
         }
-        .id(environment.rootState)
+        .id(hasCompletedInitialSplash ? String(describing: environment.rootState) : "launchSplash")
         .transition(
             reduceMotion
                 ? .opacity
@@ -60,6 +61,17 @@ struct AppRootView: View {
         .animation(.easeInOut(duration: reduceMotion ? 0.16 : 0.3), value: environment.rootState)
         .tint(DRXPalette.accent)
         .environment(environment)
+        .fullScreenCover(item: $authenticationRoute) { route in
+            AuthView(mode: route.mode, isDismissible: true)
+                .environment(\.clerkTheme, .drx)
+                .background(DRXPalette.canvas.ignoresSafeArea())
+                .accessibilityIdentifier(route.accessibilityIdentifier)
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(900))
+            minimumSplashDurationElapsed = true
+            completeInitialSplashIfReady()
+        }
         .task(id: clerk.user?.id) {
             guard let userID = clerk.user?.id else {
                 await environment.clerkSignedOut()
@@ -72,6 +84,135 @@ struct AppRootView: View {
             identifiedUserID = userID
             await environment.checkProvisioning()
         }
+        .onChange(of: environment.rootState) { _, _ in
+            completeInitialSplashIfReady()
+        }
+        .onChange(of: clerk.user?.id) { _, userID in
+            if userID != nil {
+                authenticationRoute = nil
+            }
+        }
+    }
+
+    private func completeInitialSplashIfReady() {
+        guard minimumSplashDurationElapsed,
+              environment.rootState != .initializing,
+              environment.rootState != .checkingProvisioning,
+              environment.rootState != .loadingWorkspace else { return }
+        hasCompletedInitialSplash = true
+    }
+}
+
+private enum AuthenticationRoute: String, Identifiable {
+    case signIn
+    case signUp
+
+    var id: String { rawValue }
+
+    var mode: AuthView.Mode {
+        switch self {
+        case .signIn: .signIn
+        case .signUp: .signUp
+        }
+    }
+
+    var accessibilityIdentifier: String {
+        switch self {
+        case .signIn: "signInAuthView"
+        case .signUp: "signUpAuthView"
+        }
+    }
+}
+
+private struct LaunchSplashView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isGlowing = false
+
+    var body: some View {
+        ZStack {
+            DRXPalette.canvas.ignoresSafeArea()
+
+            RadialGradient(
+                colors: [DRXPalette.accent.opacity(isGlowing ? 0.17 : 0.07), .clear],
+                center: .center,
+                startRadius: 12,
+                endRadius: 240
+            )
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
+
+            Image("DRXWordmark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 210, height: 132)
+                .scaleEffect(reduceMotion ? 1 : (isGlowing ? 1.025 : 0.985))
+                .opacity(reduceMotion ? 1 : (isGlowing ? 1 : 0.86))
+                .shadow(color: DRXPalette.accent.opacity(isGlowing ? 0.78 : 0.28), radius: isGlowing ? 34 : 14)
+                .shadow(color: DRXPalette.accent.opacity(isGlowing ? 0.40 : 0.12), radius: isGlowing ? 72 : 30)
+                .accessibilityLabel("Deelrx CRM")
+        }
+        .accessibilityIdentifier("launchSplashView")
+        .onAppear {
+            guard !reduceMotion else {
+                isGlowing = true
+                return
+            }
+            withAnimation(.easeInOut(duration: 1.15).repeatForever(autoreverses: true)) {
+                isGlowing = true
+            }
+        }
+    }
+}
+
+private struct SignedOutWelcomeView: View {
+    let onCreateAccount: () -> Void
+    let onSignIn: () -> Void
+
+    var body: some View {
+        ZStack {
+            DRXPalette.canvas.ignoresSafeArea()
+
+            VStack(spacing: DRXSpacing.xxl) {
+                Spacer()
+
+                VStack(spacing: DRXSpacing.md) {
+                    Text("Your workspace starts here")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(DRXPalette.ink)
+                        .multilineTextAlignment(.center)
+
+                    Text("Create an operator account or sign in to continue to your private business workspace.")
+                        .font(.body)
+                        .foregroundStyle(DRXPalette.muted)
+                        .multilineTextAlignment(.center)
+                }
+
+                VStack(spacing: DRXSpacing.md) {
+                    Button("Create Account", action: onCreateAccount)
+                        .buttonStyle(.borderedProminent)
+                        .tint(DRXPalette.accent)
+                        .foregroundStyle(DRXPalette.onAccent)
+                        .controlSize(.large)
+                        .accessibilityIdentifier("createAccountButton")
+
+                    Button("Sign In", action: onSignIn)
+                        .buttonStyle(.bordered)
+                        .tint(DRXPalette.ink)
+                        .controlSize(.large)
+                        .accessibilityIdentifier("signInButton")
+                }
+                .frame(maxWidth: 360)
+
+                Spacer()
+
+                Text("Each operator session remains isolated to its authorized workspace.")
+                    .font(.footnote)
+                    .foregroundStyle(DRXPalette.muted)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(DRXSpacing.xxl)
+        }
+        .accessibilityIdentifier("signedOutWelcomeView")
     }
 }
 
@@ -161,10 +302,12 @@ private struct ProvisioningRecoveryView: View {
 }
 
 private struct OperatorTabView: View {
+    let onSwitchUser: () -> Void
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
     @State private var selection: WorkspaceTab = .dashboard
     @State private var signOutError: String?
+    @State private var isSwitchingUser = false
 
     var body: some View {
         TabView(selection: $selection) {
@@ -230,6 +373,14 @@ private struct OperatorTabView: View {
                             LabeledContent("Business", value: session.businessName)
                         }
 
+                        Button {
+                            Task { await switchUser() }
+                        } label: {
+                            Label("Switch User", systemImage: "person.2.arrow.trianglehead.counterclockwise")
+                        }
+                        .disabled(isSwitchingUser)
+                        .accessibilityIdentifier("switchUserButton")
+
                         Button("Sign Out", role: .destructive) {
                             Task {
                                 do {
@@ -272,6 +423,22 @@ private struct OperatorTabView: View {
             Button("OK", role: .cancel) { signOutError = nil }
         } message: {
             Text(signOutError ?? "")
+        }
+    }
+
+    @MainActor
+    private func switchUser() async {
+        guard !isSwitchingUser else { return }
+        isSwitchingUser = true
+        defer { isSwitchingUser = false }
+
+        do {
+            try await clerk.auth.signOut()
+            UserDefaultsOnboardingDraftStore().clear()
+            await environment.signOut()
+            onSwitchUser()
+        } catch {
+            signOutError = "We couldn't switch users. Check your connection and try again."
         }
     }
 
