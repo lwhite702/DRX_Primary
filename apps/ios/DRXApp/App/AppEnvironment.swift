@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-enum RootApplicationState: Equatable {
+enum RootApplicationState: Hashable {
     case initializing
     case signedOut
     case checkingProvisioning
@@ -45,6 +45,12 @@ struct BusinessOnboardingInput: Encodable, Sendable {
 
 struct BusinessOnboardingResponse: Decodable, Sendable {
     let status: String
+    let session: OperatorSession?
+
+    init(status: String, session: OperatorSession? = nil) {
+        self.status = status
+        self.session = session
+    }
 }
 
 protocol ProvisioningClient: Sendable {
@@ -110,7 +116,18 @@ actor PreviewProvisioningClient: ProvisioningClient {
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
         isBoarded = true
-        return BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
+        return BusinessOnboardingResponse(
+            status: "ONBOARDING_SUCCESS",
+            session: OperatorSession(
+                operatorID: "preview_operator",
+                displayName: input.name,
+                businessID: "preview_business",
+                businessName: input.businessName,
+                roles: ["owner"],
+                permissions: ["*"],
+                email: "operator@example.test"
+            )
+        )
     }
 }
 
@@ -258,6 +275,15 @@ final class AppEnvironment {
                 )
                 return false
             }
+            if let operatorSession = response.session {
+                session.restore(operatorSession)
+                telemetry.identify(operatorSession)
+                rootState = .needsOnboarding
+                return true
+            }
+
+            // Compatibility fallback for a production deployment that has not
+            // yet adopted the session-bearing onboarding response.
             session.reset()
             await checkProvisioning()
             return rootState == .ready
@@ -277,6 +303,10 @@ final class AppEnvironment {
 
     func openWorkspace(at tab: WorkspaceTab) async {
         nextWorkspaceTab = tab
+        if session.isAuthenticated {
+            rootState = .ready
+            return
+        }
         await checkProvisioning()
     }
 

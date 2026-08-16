@@ -6,6 +6,7 @@ struct AppRootView: View {
     @State private var environment: AppEnvironment
     @State private var identifiedUserID: String?
     @Environment(Clerk.self) private var clerk
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(environment: AppEnvironment) {
         _environment = State(initialValue: environment)
@@ -25,6 +26,17 @@ struct AppRootView: View {
                         .accessibilityLabel("Deelrx CRM")
                         .padding(.top, DRXSpacing.xl)
 
+                    VStack(spacing: DRXSpacing.sm) {
+                        Text("Sign in or create an account")
+                            .font(.title2.bold())
+                            .foregroundStyle(DRXPalette.ink)
+                        Text("Your account keeps each business workspace private and separate.")
+                            .font(.subheadline)
+                            .foregroundStyle(DRXPalette.muted)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, DRXSpacing.xl)
+
                     AuthView(isDismissible: false)
                         .environment(\.clerkTheme, .drx)
                         .accessibilityIdentifier("clerkAuthView")
@@ -39,6 +51,13 @@ struct AppRootView: View {
                 ProvisioningRecoveryView()
             }
         }
+        .id(environment.rootState)
+        .transition(
+            reduceMotion
+                ? .opacity
+                : .opacity.combined(with: .scale(scale: 0.985))
+        )
+        .animation(.easeInOut(duration: reduceMotion ? 0.16 : 0.3), value: environment.rootState)
         .tint(DRXPalette.accent)
         .environment(environment)
         .task(id: clerk.user?.id) {
