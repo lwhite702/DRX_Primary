@@ -5,6 +5,7 @@ import type {
   QuickPosBootstrapResponseContract,
   ReceiptOutput,
 } from "@/lib/pos/contract";
+import type { PosAuthoritativeQuote } from "@/lib/pos/types";
 
 export type QuickPosPaymentMethod = PosQuickPaymentMethod;
 export type QuickPosReceiptOption = PosReceiptOption;
@@ -49,7 +50,8 @@ export interface QuickPosState {
   creditPolicyEnabled: boolean;
 }
 
-export type QuickPosBootstrapItem = QuickPosBootstrapResponseContract["favorites"][number];
+export type QuickPosBootstrapItem =
+  QuickPosBootstrapResponseContract["favorites"][number];
 export type QuickPosBootstrapResponse = QuickPosBootstrapResponseContract;
 
 export interface QuickPosCheckoutRequest {
@@ -69,6 +71,12 @@ export interface QuickPosCheckoutResponse {
   saleId?: string;
   total?: number;
   receipt?: ReceiptOutput;
+  error?: string;
+}
+
+export interface QuickPosQuoteResponse {
+  success: boolean;
+  quote?: PosAuthoritativeQuote;
   error?: string;
 }
 

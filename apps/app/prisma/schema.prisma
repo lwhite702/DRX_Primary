@@ -99,6 +99,7 @@ model BusinessSettings {
   currency        String?         @default("USD") @db.VarChar(3)
   timezone        String?         @db.VarChar(100)
   collectTax      Boolean?        @default(true) @map("collect_tax")
+  defaultTaxRate  Decimal?        @default(0.08) @map("default_tax_rate") @db.Decimal(5, 4)
   posManagerPin   String?         @map("pos_manager_pin") @db.VarChar(10)
   settingsData    Json?           @default("{}") @map("settings_data")
   createdAt       DateTime        @default(now()) @map("created_at")

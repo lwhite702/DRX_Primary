@@ -49,7 +49,7 @@ Do not point marketing CTAs to in-domain auth pages on `.com`; they should alway
 Quick POS lives in `apps/app` and is designed as a minimal ring-up flow:
 
 - `/pos/sale` → search/scan/add items
-- `/pos/payment` → tender + receipt selection
+- `/pos/payment` → server-verified price, loyalty, tax, tender, and receipt selection
 - `/pos/complete` → receipt/confirmation state and quick reset for next sale
 
 The POS checkout contract is centralized in `/Users/lee/Projects/DRX_Primary/apps/app/lib/pos/contract.ts`.

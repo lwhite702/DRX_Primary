@@ -45,11 +45,14 @@ export async function GET() {
             productName: true,
             sku: true,
             sellingPrice: true,
+            quantityOnHand: true,
           },
         })
       : [];
 
-    const inventoryById = new Map(topInventory.map((item: any) => [item.id, item]));
+    const inventoryById = new Map(
+      topInventory.map((item: any) => [item.id, item]),
+    );
 
     const favorites = topInventoryIds
       .map((id: any) => inventoryById.get(id))
@@ -60,6 +63,7 @@ export async function GET() {
         sku: item!.sku,
         barcode: null,
         price: toNumber(item!.sellingPrice),
+        quantity_on_hand: item!.quantityOnHand,
       }));
 
     const recentItems = await db.salesLineItem.findMany({
@@ -82,6 +86,7 @@ export async function GET() {
             productName: true,
             sku: true,
             sellingPrice: true,
+            quantityOnHand: true,
           },
         },
       },
@@ -102,6 +107,7 @@ export async function GET() {
         sku: row.inventory.sku,
         barcode: null,
         price: toNumber(row.inventory.sellingPrice),
+        quantity_on_hand: row.inventory.quantityOnHand,
       });
 
       if (recentlySold.length >= QUICK_POS_RECENT_LIMIT) break;

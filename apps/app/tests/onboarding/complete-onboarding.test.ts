@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => {
   const redirectMock = vi.fn((url: string) => {
     const error = new Error(`NEXT_REDIRECT:${url}`);
-    (error as Error & { digest?: string }).digest = `NEXT_REDIRECT;replace;${url};307;`;
+    (error as Error & { digest?: string }).digest =
+      `NEXT_REDIRECT;replace;${url};307;`;
     throw error;
   });
 
@@ -80,6 +81,8 @@ function form(overrides: Record<string, string> = {}) {
   formData.set("teamSize", overrides.teamSize ?? "1-5");
   formData.set("dashboardPreset", overrides.dashboardPreset ?? "checkout");
   formData.set("tooling", overrides.tooling ?? "Spreadsheet and cash drawer");
+  formData.set("taxChoice", overrides.taxChoice ?? "later");
+  formData.set("taxRate", overrides.taxRate ?? "");
   return formData;
 }
 
@@ -98,8 +101,12 @@ describe("completeOnboarding", () => {
     });
 
     mocks.dbMock.businessProfile.findFirst.mockResolvedValue(null);
-    mocks.dbMock.businessProfile.create.mockResolvedValue({ id: "business_123" });
-    mocks.dbMock.businessProfile.update.mockResolvedValue({ id: "business_existing" });
+    mocks.dbMock.businessProfile.create.mockResolvedValue({
+      id: "business_123",
+    });
+    mocks.dbMock.businessProfile.update.mockResolvedValue({
+      id: "business_existing",
+    });
     mocks.dbMock.businessSettings.findUnique.mockResolvedValue(null);
     mocks.dbMock.userRole.findFirst.mockResolvedValue(null);
   });
@@ -131,6 +138,8 @@ describe("completeOnboarding", () => {
         businessId: "business_123",
         currency: "USD",
         timezone: "America/New_York",
+        collectTax: false,
+        defaultTaxRate: 0,
         settingsData: expect.objectContaining({
           onboarding_completed: true,
           dashboard_preset: "checkout",
@@ -170,7 +179,9 @@ describe("completeOnboarding", () => {
   });
 
   it("reuses an existing active owner business and updates setup state", async () => {
-    mocks.dbMock.businessProfile.findFirst.mockResolvedValue({ id: "business_existing" });
+    mocks.dbMock.businessProfile.findFirst.mockResolvedValue({
+      id: "business_existing",
+    });
     mocks.dbMock.businessSettings.findUnique.mockResolvedValue({
       id: "settings_existing",
       settingsData: {
@@ -200,6 +211,8 @@ describe("completeOnboarding", () => {
       data: {
         currency: "USD",
         timezone: "America/New_York",
+        collectTax: false,
+        defaultTaxRate: 0,
         settingsData: expect.objectContaining({
           default_unit: "g",
           onboarding_completed: true,
@@ -213,6 +226,20 @@ describe("completeOnboarding", () => {
         role: "owner",
         permissions: { all: true },
       },
+    });
+  });
+
+  it("persists the configured tax decision and rate", async () => {
+    await completeOnboarding(
+      initialOnboardingActionState,
+      form({ taxChoice: "yes", taxRate: "8.25" }),
+    );
+
+    expect(mocks.dbMock.businessSettings.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        collectTax: true,
+        defaultTaxRate: 0.0825,
+      }),
     });
   });
 });

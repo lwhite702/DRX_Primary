@@ -8,10 +8,22 @@ test.describe("Quick POS required flow", () => {
         contentType: "application/json",
         body: JSON.stringify({
           favorites: [
-            { id: "p-1", name: "Favorite Item", price: 15 },
-            { id: "p-2", name: "Favorite Item 2", price: 8 },
+            {
+              id: "p-1",
+              name: "Favorite Item",
+              price: 15,
+              quantity_on_hand: 10,
+            },
+            {
+              id: "p-2",
+              name: "Favorite Item 2",
+              price: 8,
+              quantity_on_hand: 10,
+            },
           ],
-          recentlySold: [{ id: "p-3", name: "Recent Item", price: 12 }],
+          recentlySold: [
+            { id: "p-3", name: "Recent Item", price: 12, quantity_on_hand: 10 },
+          ],
           creditPolicy: { enabled: true },
         }),
       });
@@ -22,7 +34,9 @@ test.describe("Quick POS required flow", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          items: [{ id: "p-4", name: "Search Item", price: 10, quantity_on_hand: 9 }],
+          items: [
+            { id: "p-4", name: "Search Item", price: 10, quantity_on_hand: 9 },
+          ],
         }),
       });
     });
@@ -50,12 +64,33 @@ test.describe("Quick POS required flow", () => {
         body: JSON.stringify({ success: true, saleId: "sale-1", total: 15 }),
       });
     });
+
+    await page.route("**/api/pos/quote", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          quote: {
+            subtotal: 15,
+            subtotalAfterDiscount: 15,
+            loyaltyDiscountAmount: 0,
+            loyaltyDiscountRate: 0,
+            taxAmount: 0,
+            feesTotal: 0,
+            total: 15,
+          },
+        }),
+      });
+    });
   });
 
   test("sale -> payment -> complete -> next sale", async ({ page }) => {
     await page.goto("/pos/sale");
 
-    const favoriteButton = page.getByRole("button", { name: /favorite item/i }).first();
+    const favoriteButton = page
+      .getByRole("button", { name: /favorite item/i })
+      .first();
     await expect(favoriteButton).toBeVisible();
     await favoriteButton.click();
 

@@ -6,6 +6,7 @@ import { toNumber } from "@/app/api/pos/_lib/server";
 import type { CartLineItem } from "@/lib/pos/contract";
 import type {
   PosCart,
+  PosAuthoritativeQuote,
   PosCartItem,
   PosCheckoutResult,
   PosFee,
@@ -32,6 +33,8 @@ type InventoryRow = {
   inventory_in_grams: number | null;
   unit_cost: number | null;
   convert_to_grams: number | null;
+  selling_price: number | null;
+  price_per_gram: number | null;
 };
 
 type InventoryValidationError = {
@@ -46,13 +49,15 @@ type InventoryAvailabilityResult = {
     string,
     {
       id: string;
-        productName: string;
-        quantityOnHand: number;
-        inventoryInGrams: number;
-        unitCost: number;
-        convertToGrams: number;
-      }
-    >;
+      productName: string;
+      quantityOnHand: number;
+      inventoryInGrams: number;
+      unitCost: number;
+      convertToGrams: number;
+      sellingPrice: number;
+      pricePerGram: number;
+    }
+  >;
 };
 
 type InventoryBatchAllocation = {
@@ -112,13 +117,19 @@ function getLineTotal(item: CartLineItem) {
   return roundCurrency(item.unitPrice * item.qty);
 }
 
-async function getCollectTaxSetting(tx: CheckoutDbClient, businessId: string) {
+async function getTaxSettings(tx: CheckoutDbClient, businessId: string) {
   const settings = await tx.businessSettings.findUnique({
     where: { businessId },
-    select: { collectTax: true },
+    select: { collectTax: true, defaultTaxRate: true },
   });
 
-  return settings?.collectTax !== false;
+  return {
+    collectTax: settings?.collectTax !== false,
+    taxRate: Math.max(
+      0,
+      Math.min(1, toNumber(settings?.defaultTaxRate ?? 0.08)),
+    ),
+  };
 }
 
 async function loadInventoryRows(
@@ -135,7 +146,8 @@ async function loadInventoryRows(
   if (lockRows) {
     return sqlClient.$queryRaw<InventoryRow[]>(
       Prisma.sql`
-        SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
+        SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost,
+               convert_to_grams, selling_price, price_per_gram
         FROM inventory
         WHERE business_id = ${businessId}
           AND id IN (${Prisma.join(inventoryIds)})
@@ -146,7 +158,8 @@ async function loadInventoryRows(
 
   return sqlClient.$queryRaw<InventoryRow[]>(
     Prisma.sql`
-      SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost, convert_to_grams
+      SELECT id, product_name, quantity_on_hand, inventory_in_grams, unit_cost,
+             convert_to_grams, selling_price, price_per_gram
       FROM inventory
       WHERE business_id = ${businessId}
         AND id IN (${Prisma.join(inventoryIds)})
@@ -164,7 +177,12 @@ export async function validateInventoryAvailability(
   const inventoryIds = Array.from(
     new Set(inventoryItems.map((item) => item.inventoryId!).filter(Boolean)),
   );
-  const rows = await loadInventoryRows(tx, businessId, inventoryIds, Boolean(options?.lockRows));
+  const rows = await loadInventoryRows(
+    tx,
+    businessId,
+    inventoryIds,
+    Boolean(options?.lockRows),
+  );
   const stockById: InventoryAvailabilityResult["stockById"] = new Map(
     rows.map((row) => [
       row.id,
@@ -175,6 +193,8 @@ export async function validateInventoryAvailability(
         inventoryInGrams: toNumber(row.inventory_in_grams),
         unitCost: toNumber(row.unit_cost),
         convertToGrams: toNumber(row.convert_to_grams),
+        sellingPrice: toNumber(row.selling_price),
+        pricePerGram: toNumber(row.price_per_gram),
       },
     ]),
   );
@@ -270,7 +290,10 @@ export async function validateCreditBalance(
 
 function getInventoryAllocationQuantityGrams(
   item: CartLineItem,
-  inventory: InventoryAvailabilityResult["stockById"] extends Map<string, infer TValue>
+  inventory: InventoryAvailabilityResult["stockById"] extends Map<
+    string,
+    infer TValue
+  >
     ? TValue
     : never,
 ) {
@@ -309,7 +332,9 @@ async function allocateInventoryBatches(
   );
 
   if (rows.length === 0) {
-    throw new PosCheckoutError(`Missing FIFO batch inventory for item ${inventoryId}`);
+    throw new PosCheckoutError(
+      `Missing FIFO batch inventory for item ${inventoryId}`,
+    );
   }
 
   const allocations: InventoryBatchAllocation[] = [];
@@ -346,7 +371,9 @@ async function allocateInventoryBatches(
   }
 
   if (remainingToAllocate > 0) {
-    throw new PosCheckoutError(`Insufficient FIFO batch inventory for item ${inventoryId}`);
+    throw new PosCheckoutError(
+      `Insufficient FIFO batch inventory for item ${inventoryId}`,
+    );
   }
 
   return allocations;
@@ -363,7 +390,8 @@ export function createCart(params: {
     businessId: params.businessId,
     userId: params.userId,
     mode: params.mode,
-    source: params.source ?? (params.mode === "quick" ? "quick-pos" : "legacy-sales"),
+    source:
+      params.source ?? (params.mode === "quick" ? "quick-pos" : "legacy-sales"),
     customerId: params.customerId ?? null,
     payment: { ...DEFAULT_PAYMENT },
     items: [],
@@ -385,9 +413,10 @@ export function addItem(cart: PosCart, item: PosCartItem): PosCart {
           ? {
               ...entry,
               qty: entry.qty + item.qty,
-              weightGrams: entry.weightGrams && item.weightGrams
-                ? roundWeight(entry.weightGrams + item.weightGrams)
-                : entry.weightGrams ?? item.weightGrams,
+              weightGrams:
+                entry.weightGrams && item.weightGrams
+                  ? roundWeight(entry.weightGrams + item.weightGrams)
+                  : (entry.weightGrams ?? item.weightGrams),
             }
           : entry,
       )
@@ -408,11 +437,17 @@ export function setTaxAmount(cart: PosCart, taxAmount: number): PosCart {
   return { ...cart, taxAmount };
 }
 
-export function setPaymentRef(cart: PosCart, paymentRef: string | null | undefined): PosCart {
+export function setPaymentRef(
+  cart: PosCart,
+  paymentRef: string | null | undefined,
+): PosCart {
   return { ...cart, paymentRef: paymentRef ?? null };
 }
 
-export function setAmountPaid(cart: PosCart, amountPaid: number | null | undefined): PosCart {
+export function setAmountPaid(
+  cart: PosCart,
+  amountPaid: number | null | undefined,
+): PosCart {
   return { ...cart, amountPaid: amountPaid ?? null };
 }
 
@@ -433,7 +468,10 @@ export function setDelivery(
 }
 
 export function quote(cart: PosCart): PosQuote {
-  const subtotal = cart.items.reduce((sum, item) => sum + getLineTotal(item), 0);
+  const subtotal = cart.items.reduce(
+    (sum, item) => sum + getLineTotal(item),
+    0,
+  );
   const feesTotal = cart.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0);
   const taxAmount = cart.taxAmount;
   const deliveryPrice = cart.deliveryPrice ?? 0;
@@ -444,6 +482,166 @@ export function quote(cart: PosCart): PosQuote {
     taxAmount: roundCurrency(taxAmount),
     feesTotal: roundCurrency(feesTotal),
     total,
+  };
+}
+
+type PreparedCheckout = {
+  inventoryCheck: InventoryAvailabilityResult;
+  items: PosCartItem[];
+  quote: PosAuthoritativeQuote;
+};
+
+function applyAuthoritativeQuickPrices(
+  cart: PosCart,
+  inventoryCheck: InventoryAvailabilityResult,
+): PosCartItem[] {
+  if (cart.mode !== "quick") {
+    return cart.items;
+  }
+
+  return cart.items.map((item) => {
+    if (!item.inventoryId) {
+      return item;
+    }
+
+    const inventory = inventoryCheck.stockById.get(item.inventoryId);
+    if (!inventory) {
+      throw new PosCheckoutError(`Inventory item not found for ${item.name}`);
+    }
+
+    if (item.weightGrams && item.weightGrams > 0) {
+      const pricePerGram = inventory.pricePerGram;
+      return {
+        ...item,
+        name: inventory.productName,
+        pricePerGram,
+        unitPrice: roundCurrency(pricePerGram * item.weightGrams),
+      };
+    }
+
+    return {
+      ...item,
+      name: inventory.productName,
+      unitPrice: roundCurrency(inventory.sellingPrice),
+      pricePerGram: undefined,
+    };
+  });
+}
+
+async function prepareCheckout(
+  tx: CheckoutDbClient,
+  cart: PosCart,
+  options?: { lockRows?: boolean },
+): Promise<PreparedCheckout> {
+  const inventoryCheck = await validateInventoryAvailability(
+    tx,
+    cart.businessId,
+    cart.items,
+    options,
+  );
+  if (!inventoryCheck.valid) {
+    throw new PosCheckoutError(
+      inventoryCheck.errors[0]?.message ?? "Insufficient stock",
+    );
+  }
+
+  const items = applyAuthoritativeQuickPrices(cart, inventoryCheck);
+  const subtotal = roundCurrency(
+    items.reduce((sum, item) => sum + getLineTotal(item), 0),
+  );
+  const feesTotal = roundCurrency(
+    cart.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0),
+  );
+  const deliveryPrice = roundCurrency(cart.deliveryPrice ?? 0);
+
+  let loyaltyDiscountRate = 0;
+  if (cart.customerId) {
+    const customer = await tx.customers.findFirst({
+      where: {
+        id: cart.customerId,
+        businessId: cart.businessId,
+      },
+      select: {
+        id: true,
+        discountRate: true,
+      },
+    });
+
+    if (!customer) {
+      throw new PosCheckoutError("Customer not found", 404);
+    }
+
+    loyaltyDiscountRate = Math.max(
+      0,
+      Math.min(1, toNumber(customer.discountRate)),
+    );
+  }
+
+  const loyaltyDiscountAmount = roundCurrency(subtotal * loyaltyDiscountRate);
+  const subtotalAfterDiscount = roundCurrency(subtotal - loyaltyDiscountAmount);
+  const taxSettings = await getTaxSettings(tx, cart.businessId);
+  const taxAmount = taxSettings.collectTax
+    ? cart.mode === "quick"
+      ? roundCurrency(subtotalAfterDiscount * taxSettings.taxRate)
+      : roundCurrency(cart.taxAmount)
+    : 0;
+  const total = roundCurrency(
+    subtotalAfterDiscount + feesTotal + taxAmount + deliveryPrice,
+  );
+
+  return {
+    inventoryCheck,
+    items,
+    quote: {
+      subtotal,
+      subtotalAfterDiscount,
+      loyaltyDiscountAmount,
+      loyaltyDiscountRate,
+      taxAmount,
+      feesTotal,
+      total,
+    },
+  };
+}
+
+export async function getAuthoritativeQuote(
+  cart: PosCart,
+): Promise<PosAuthoritativeQuote> {
+  const prepared = await prepareCheckout(db, cart);
+  return prepared.quote;
+}
+
+type ExistingSaleResult = {
+  id: string;
+  orderNumber: string;
+  totalAmount: unknown;
+  changeAmount: unknown;
+};
+
+async function findExistingSale(
+  tx: CheckoutDbClient,
+  businessId: string,
+  orderNumber: string,
+): Promise<PosCheckoutResult | null> {
+  const sale = (await tx.sales.findFirst({
+    where: { businessId, orderNumber },
+    select: {
+      id: true,
+      orderNumber: true,
+      totalAmount: true,
+      changeAmount: true,
+    },
+  })) as ExistingSaleResult | null;
+
+  if (!sale) {
+    return null;
+  }
+
+  return {
+    saleId: sale.id,
+    orderNumber: sale.orderNumber,
+    total: toNumber(sale.totalAmount),
+    changeAmount: toNumber(sale.changeAmount),
   };
 }
 
@@ -481,56 +679,27 @@ export async function checkout(
 
   try {
     return await db.$transaction(async (tx: any) => {
-      const existingSale = await tx.sales.findFirst({
-        where: {
-          businessId: cart.businessId,
-          orderNumber,
-        },
-        select: { id: true },
-      });
+      const existingSale = await findExistingSale(
+        tx,
+        cart.businessId,
+        orderNumber,
+      );
 
       if (existingSale) {
-        throw new PosCheckoutError("Duplicate idempotency key", 409);
+        return existingSale;
       }
 
-      const collectTax = await getCollectTaxSetting(tx, cart.businessId);
-      const taxAmount = collectTax ? cart.taxAmount : 0;
-      const subtotal = roundCurrency(cart.items.reduce((sum, item) => sum + getLineTotal(item), 0));
-      const feeAmount = roundCurrency(cart.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0));
+      const prepared = await prepareCheckout(tx, cart, { lockRows: true });
+      const { inventoryCheck, items } = prepared;
+      const {
+        subtotal,
+        subtotalAfterDiscount,
+        loyaltyDiscountAmount,
+        loyaltyDiscountRate,
+        taxAmount,
+        total,
+      } = prepared.quote;
       const deliveryPrice = roundCurrency(cart.deliveryPrice ?? 0);
-
-      const inventoryCheck = await validateInventoryAvailability(tx, cart.businessId, cart.items, {
-        lockRows: true,
-      });
-      if (!inventoryCheck.valid) {
-        throw new PosCheckoutError(inventoryCheck.errors[0]?.message ?? "Insufficient stock");
-      }
-
-      let loyaltyDiscountRate = 0;
-      let loyaltyDiscountAmount = 0;
-
-      if (cart.customerId) {
-        const customer = await tx.customers.findFirst({
-          where: {
-            id: cart.customerId,
-            businessId: cart.businessId,
-          },
-          select: {
-            id: true,
-            discountRate: true,
-          },
-        });
-
-        if (!customer) {
-          throw new PosCheckoutError("Customer not found", 404);
-        }
-
-        loyaltyDiscountRate = toNumber(customer.discountRate);
-        loyaltyDiscountAmount = roundCurrency(subtotal * loyaltyDiscountRate);
-      }
-
-      const subtotalAfterDiscount = roundCurrency(subtotal - loyaltyDiscountAmount);
-      const total = roundCurrency(subtotalAfterDiscount + feeAmount + taxAmount + deliveryPrice);
 
       if (cart.payment.method === "credit" && cart.customerId) {
         const creditCheck = await validateCreditBalance(
@@ -541,13 +710,14 @@ export async function checkout(
         );
 
         if (!creditCheck.valid) {
-          throw new PosCheckoutError(creditCheck.warning ?? "Credit cap exceeded");
+          throw new PosCheckoutError(
+            creditCheck.warning ?? "Credit cap exceeded",
+          );
         }
       }
 
       const amountPaid = roundCurrency(
-        cart.amountPaid ??
-          (cart.payment.method === "credit" ? 0 : total),
+        cart.amountPaid ?? (cart.payment.method === "credit" ? 0 : total),
       );
       const changeAmount = roundCurrency(
         cart.payment.method === "credit" ? 0 : Math.max(amountPaid - total, 0),
@@ -583,7 +753,7 @@ export async function checkout(
         WHERE id = ${sale.id}::uuid
       `;
 
-      for (const item of cart.items) {
+      for (const item of items) {
         const inventory = item.inventoryId
           ? inventoryCheck.stockById.get(item.inventoryId)
           : null;
@@ -592,7 +762,8 @@ export async function checkout(
           : 0;
         const pricePerGram =
           item.weightGrams && item.weightGrams > 0
-            ? item.pricePerGram ?? roundWeight(item.unitPrice / item.weightGrams)
+            ? (item.pricePerGram ??
+              roundWeight(item.unitPrice / item.weightGrams))
             : null;
 
         const batchAllocations =
@@ -605,7 +776,9 @@ export async function checkout(
               )
             : [];
         if (allocationQuantityGrams > 0 && batchAllocations.length === 0) {
-          throw new PosCheckoutError(`Missing FIFO allocations for item ${item.inventoryId}`);
+          throw new PosCheckoutError(
+            `Missing FIFO allocations for item ${item.inventoryId}`,
+          );
         }
         const allocatedExtendedCost = batchAllocations.reduce(
           (sum, entry) => sum + entry.extendedCost,
@@ -781,7 +954,7 @@ export async function checkout(
             idempotencyKey,
             paymentMethod: cart.payment.method,
             orderNumber: sale.orderNumber,
-            itemCount: cart.items.length,
+            itemCount: items.length,
           },
         },
       });
@@ -800,11 +973,22 @@ export async function checkout(
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        throw new PosCheckoutError("Duplicate idempotency key", 409);
+        const existingSale = await findExistingSale(
+          db,
+          cart.businessId,
+          orderNumber,
+        );
+        if (existingSale) {
+          return existingSale;
+        }
+        throw new PosCheckoutError("Checkout conflict", 409);
       }
     }
 
-    throw new PosCheckoutError(error instanceof Error ? error.message : "Checkout failed", 400);
+    throw new PosCheckoutError(
+      error instanceof Error ? error.message : "Checkout failed",
+      400,
+    );
   }
 }
 
