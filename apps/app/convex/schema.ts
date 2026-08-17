@@ -151,9 +151,23 @@ export default defineSchema({
     subtotalCents: v.number(),
     taxAmountCents: v.number(),
     totalAmountCents: v.number(),
+    deliveryFeeCents: v.optional(v.number()),
+    discountAmountCents: v.optional(v.number()),
+    isComp: v.optional(v.boolean()),
     amountPaidCents: v.number(),
     changeAmountCents: v.number(),
-    paymentMethod: v.string(), // "cash" | "card" | "credit"
+    paymentMethod: v.string(), // "cash" | "card" | "credit" | "comp"
+    voidReason: v.optional(v.string()),
+    voidSettlementStatus: v.optional(v.string()),
+    voidReference: v.optional(v.string()),
+    voidedBy: v.optional(v.string()),
+    voidedAt: v.optional(v.number()),
+    refundReason: v.optional(v.string()),
+    refundDisposition: v.optional(v.string()), // "restock" | "scrap"
+    refundSettlementStatus: v.optional(v.string()),
+    refundReference: v.optional(v.string()),
+    refundedBy: v.optional(v.string()),
+    refundedAt: v.optional(v.number()),
     createdBy: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -186,6 +200,23 @@ export default defineSchema({
   })
     .index("by_saleId", ["saleId"])
     .index("by_lineItemId", ["lineItemId"])
+    .index("by_batchId", ["batchId"]),
+
+  // Audited inventory movements outside normal intake and checkout.
+  stockAdjustments: defineTable({
+    businessId: v.id("businesses"),
+    productId: v.id("products"),
+    batchId: v.id("inventoryBatches"),
+    adjustmentType: v.string(), // "shrinkage" | "spill" | "damage" | "recount"
+    direction: v.string(), // "increase" | "decrease"
+    quantityGrams: v.number(),
+    costLossCents: v.number(),
+    notes: v.optional(v.string()),
+    createdBy: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_productId", ["productId"])
     .index("by_batchId", ["batchId"]),
 
   // Immutable Audit Events

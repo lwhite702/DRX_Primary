@@ -39,6 +39,11 @@ export const getProducts = async (businessId: string, token: string | null) => {
   return data.data || [];
 };
 
+export const getInventory = async (token: string | null) => {
+  const data = await fetchWithAuth("/api/inventory", token);
+  return data.data || [];
+};
+
 export const createProduct = async (productData: any, token: string | null) => {
   return fetchWithAuth("/api/inventory", token, {
     method: "POST",
@@ -60,7 +65,10 @@ export const createSale = async (saleData: any, token: string | null) => {
   return data;
 };
 
-export const getSalesHistory = async (businessId: string, token: string | null) => {
+export const getSalesHistory = async (
+  businessId: string,
+  token: string | null,
+) => {
   const data = await fetchWithAuth("/api/sales", token);
   return data.data || [];
 };
@@ -70,14 +78,24 @@ export const getDailySummary = async (token: string | null) => {
   return fetchWithAuth("/api/reports/pos-baseline", token);
 };
 
-export const recordDrawerEvent = async (token: string | null, eventType: string = "no_sale", note?: string) => {
+export const recordDrawerEvent = async (
+  token: string | null,
+  eventType: string = "no_sale",
+  note?: string,
+) => {
   return fetchWithAuth("/api/pos/drawer", token, {
     method: "POST",
     body: JSON.stringify({ eventType, note }),
   });
 };
 
-export const recordShrinkage = async (token: string | null, inventoryId: string, quantityGrams: number, shrinkageType: string, note?: string) => {
+export const recordShrinkage = async (
+  token: string | null,
+  inventoryId: string,
+  quantityGrams: number,
+  shrinkageType: string,
+  note?: string,
+) => {
   return fetchWithAuth("/api/pos/shrinkage", token, {
     method: "POST",
     body: JSON.stringify({ inventoryId, quantityGrams, shrinkageType, note }),
@@ -88,14 +106,22 @@ export const getRandomCheckProduct = async (token: string | null) => {
   return fetchWithAuth("/api/pos/inventory-check", token);
 };
 
-export const recordInventoryCheck = async (token: string | null, inventoryId: string, measuredWeightGrams: number) => {
+export const recordInventoryCheck = async (
+  token: string | null,
+  inventoryId: string,
+  measuredWeightGrams: number,
+) => {
   return fetchWithAuth("/api/pos/inventory-check", token, {
     method: "POST",
     body: JSON.stringify({ inventoryId, measuredWeightGrams }),
   });
 };
 
-export const getPosReconciliation = async (token: string | null, from?: string, to?: string) => {
+export const getPosReconciliation = async (
+  token: string | null,
+  from?: string,
+  to?: string,
+) => {
   let url = "/api/reports/pos-reconciliation";
   const params = new URLSearchParams();
   if (from) params.append("from", from);

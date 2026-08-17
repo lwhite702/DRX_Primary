@@ -9,7 +9,8 @@
 - Release configuration: `Release`
 - Minimum iOS version: iOS 17
 - Signing: Automatic, Apple team `L8R42BJ54K`
-- Version: `0.6.0-rc.1`
+- Release version: `0.6.0-rc.1`
+- iOS marketing version: `0.6.0`
 - Build number: Xcode Cloud `CI_BUILD_NUMBER`
 
 Xcode Cloud runs the scripts in `apps/ios/ci_scripts`. The post-clone script

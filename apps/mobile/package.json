@@ -1,7 +1,7 @@
 {
   "name": "deelrxcrm-mobile",
   "main": "expo-router/entry",
-  "version": "0.2.0",
+  "version": "0.6.0-rc.1",
   "engines": {
     "node": "20.x"
   },
@@ -67,7 +67,6 @@
     "eas-cli": "^16.30.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
-
     "expo-font": "~14.0.11",
     "expo-mcp": "~0.2.1",
     "typescript": "~5.9.2"

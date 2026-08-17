@@ -7,27 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **Release Metadata**: Updated iOS marketing/build metadata to `MARKETING_VERSION=0.6.0-rc.1` and `CURRENT_PROJECT_VERSION=20` for TestFlight parity, and aligned release documentation references for the current release candidate.
-- **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
-
 ### Fixed
 
 - **Quick POS Recovery**: Route complete sales through the canonical checkout API with idempotent retries and allow authenticated operators to exit when no manager PIN is configured.
 
-## [0.6.0-rc.1] - 2026-08-13
+## [0.6.0-rc.1] - 2026-08-17
 
 ### Added
 
-- **Convex POS Schema Extensions**: Added `pinCode` to `users` table, `deliveryFeeCents`, `discountAmountCents`, `isComp`, `voidReason`, and `refundReason` to `sales` table, and added `stockAdjustments` table for tracking inventory adjustments and shrink losses.
-- **POS Order Voids & Refunds Engine**: Created `apps/app/convex/refunds.ts` with `voidOrder` and `refundOrder` mutations, featuring transactional inventory stock restoration (product quantity and FIFO batch remaining quantity), customer credit/purchase totals rollback, and immutable audit logging.
-- **Stock Adjustments & Shrink Tracking**: Created `apps/app/convex/inventoryAdjustments.ts` with `createStockAdjustment` and `listStockAdjustments` for tracking inventory loss, damage, and recount adjustments.
-- **Checkout Support for Delivery & Comps**: Extended `apps/app/convex/checkout.ts` to support `deliveryFeeCents` and `isComp` flags.
-- **Financial Reporting Metrics**: Extended `apps/app/convex/reporting.ts` to compute Net Revenue, Cost of Goods Sold (COGS from `salesAllocations`), Gross Profit ($), Gross Margin (%), total delivery fees, and total shrink loss.
+- **Manager-Controlled Checkout Overrides**: Added delivery fees, discounts, and explicit comp sales with nonnegative integer validation and OWNER/ADMIN authorization.
+- **POS Order Voids & Refunds**: Added transactional, idempotent void and full-refund mutations with restock or scrap disposition, customer accounting reversal, tender-settlement confirmation, and immutable audit events.
+- **Stock Adjustments & Shrink Tracking**: Added tenant-bound product/batch adjustments with bounded quantities, server-derived loss cost, inventory updates, and audit history.
+- **Financial Reporting Metrics**: Added Net Revenue, FIFO Cost of Goods Sold, Gross Profit, Gross Margin, delivery fees, discounts, inventory loss, and refunded-scrap loss.
+- **Cross-Surface Version Tracking**: Added release-version verification across root, web, mobile package, Expo, XcodeGen, and committed Xcode metadata.
 
 ### Fixed
 
+- **Tenant and Financial Integrity**: Reject cross-tenant or inactive checkout customers, cashier-authored overrides, invalid quantities and cents, unconfirmed tender reversals, mismatched inventory batches, and inventory overdraws.
+- **Mobile Release Identity**: Aligned Expo display name, URL scheme, iOS bundle identifier, and Android application ID with DRX release metadata.
 - **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
 
 ## [0.5.7] - 2026-07-22

@@ -20,10 +20,12 @@ import type * as helpers_idempotency from "../helpers/idempotency.js";
 import type * as helpers_money from "../helpers/money.js";
 import type * as helpers_permissions from "../helpers/permissions.js";
 import type * as intake from "../intake.js";
+import type * as inventoryAdjustments from "../inventoryAdjustments.js";
 import type * as members from "../members.js";
 import type * as onboarding from "../onboarding.js";
 import type * as products from "../products.js";
 import type * as reporting from "../reporting.js";
+import type * as refunds from "../refunds.js";
 import type * as settings from "../settings.js";
 
 import type {
@@ -45,10 +47,12 @@ declare const fullApi: ApiFromModules<{
   "helpers/money": typeof helpers_money;
   "helpers/permissions": typeof helpers_permissions;
   intake: typeof intake;
+  inventoryAdjustments: typeof inventoryAdjustments;
   members: typeof members;
   onboarding: typeof onboarding;
   products: typeof products;
   reporting: typeof reporting;
+  refunds: typeof refunds;
   settings: typeof settings;
 }>;
 

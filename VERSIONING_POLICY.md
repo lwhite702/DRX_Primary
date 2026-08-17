@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Engineering Team  
-Last Updated: 2026-03-03  
+Last Updated: 2026-08-17
 Applies To: Deelrx CRM
 
 ## Purpose
@@ -15,9 +15,14 @@ Applies to version numbers, changelog entries, and release communication artifac
 
 ## Requirements
 
-- Semantic Versioning (`MAJOR.MINOR.PATCH`) MUST be used.
+- Semantic Versioning (`MAJOR.MINOR.PATCH`) MUST be used. Prereleases MAY use
+  a SemVer suffix such as `-rc.1`.
 - Every shipped behavioral change MUST have a corresponding changelog entry.
-- Root `package.json`, `apps/app/package.json`, and `VERSION` MUST stay consistent.
+- Root `package.json`, `apps/app/package.json`,
+  `apps/mobile/package.json`, and `VERSION` MUST stay consistent.
+- Expo and iOS marketing versions MUST match the numeric core of the release
+  version. Native build numbers MUST remain synchronized between XcodeGen and
+  the committed Xcode project.
 - Version bumps MUST match impact:
 - `MAJOR`: breaking changes.
 - `MINOR`: backward-compatible features.
@@ -28,8 +33,9 @@ Applies to version numbers, changelog entries, and release communication artifac
 DRX uses repository-native version tooling:
 
 1. `pnpm version:check` for consistency verification.
-2. `pnpm version:bump [major|minor|patch]` for coordinated bumping.
-3. `CHANGELOG.md` for release-note history.
+2. `pnpm version:bump [major|minor|patch]` for coordinated stable bumps.
+3. `node scripts/version.js set <semver>` for exact versions and prereleases.
+4. `CHANGELOG.md` for release-note history.
 
 ## Procedure
 
