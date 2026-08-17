@@ -17,8 +17,8 @@ const BusinessSettingsPatchSchema = z
     posManagerPin: z.string().trim().min(4).max(50).optional().nullable(),
     privacy_protocol: z.unknown().optional(),
     privacyProtocol: z.unknown().optional(),
-    defaultTaxRate: z.number().optional(),
-    default_tax_rate: z.number().optional(),
+    defaultTaxRate: z.number().min(0).max(1).optional(),
+    default_tax_rate: z.number().min(0).max(1).optional(),
   })
   .strict();
 
@@ -27,6 +27,8 @@ function mapSettingsResponse(settings: any) {
   return {
     collect_tax: settings?.collectTax ?? true,
     collectTax: settings?.collectTax ?? true,
+    default_tax_rate: Number(settings?.defaultTaxRate ?? 0.08),
+    defaultTaxRate: Number(settings?.defaultTaxRate ?? 0.08),
     pos_manager_pin: settings?.posManagerPin ?? null,
     posManagerPin: settings?.posManagerPin ?? null,
     privacy_protocol: protocol,
@@ -38,6 +40,8 @@ function mapLegacySettingsResponse(settings: any) {
   return {
     collect_tax: settings?.collectTax ?? true,
     collectTax: settings?.collectTax ?? true,
+    default_tax_rate: Number(settings?.defaultTaxRate ?? 0.08),
+    defaultTaxRate: Number(settings?.defaultTaxRate ?? 0.08),
     pos_manager_pin: settings?.posManagerPin ?? null,
     posManagerPin: settings?.posManagerPin ?? null,
   };
@@ -114,6 +118,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const collectTax = parsed.data.collect_tax ?? parsed.data.collectTax;
+    const defaultTaxRate =
+      parsed.data.default_tax_rate ?? parsed.data.defaultTaxRate;
     const posManagerPin =
       parsed.data.pos_manager_pin !== undefined
         ? parsed.data.pos_manager_pin
@@ -123,11 +129,13 @@ export async function PATCH(request: NextRequest) {
       where: { businessId },
       update: {
         collectTax: collectTax ?? undefined,
+        defaultTaxRate: defaultTaxRate ?? undefined,
         posManagerPin: posManagerPin ?? undefined,
       },
       create: {
         businessId,
         collectTax: collectTax ?? true,
+        defaultTaxRate: defaultTaxRate ?? 0.08,
         posManagerPin: posManagerPin ?? null,
       },
     });

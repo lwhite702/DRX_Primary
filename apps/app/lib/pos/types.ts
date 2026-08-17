@@ -48,6 +48,12 @@ export interface PosQuote {
   total: number;
 }
 
+export interface PosAuthoritativeQuote extends PosQuote {
+  subtotalAfterDiscount: number;
+  loyaltyDiscountAmount: number;
+  loyaltyDiscountRate: number;
+}
+
 export interface PosCheckoutResult {
   saleId: string;
   orderNumber: string;

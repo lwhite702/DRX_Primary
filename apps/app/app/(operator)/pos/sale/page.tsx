@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProductSearch } from "@/components/quick-pos/product-search";
 import { QuickGrid } from "@/components/quick-pos/quick-grid";
@@ -10,7 +10,6 @@ import { CustomerInline } from "@/components/quick-pos/customer-inline";
 import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
-import { useDRXProducts } from "@/lib/convex-hooks";
 
 interface ProductResult {
   id: string;
@@ -42,6 +41,8 @@ export default function QuickPosSalePage() {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [manualPrice, setManualPrice] = useState("");
+  const searchSequence = useRef(0);
+  const activeSearchController = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -65,68 +66,70 @@ export default function QuickPosSalePage() {
     load();
   }, [setCreditPolicy, setError]);
 
-  const { products: convexProducts } = useDRXProducts();
-
   useEffect(() => {
     const search = state.ui.search.trim().toLowerCase();
+    const requestId = ++searchSequence.current;
+    activeSearchController.current?.abort();
+
     if (!search) {
       setResults([]);
       return;
     }
 
-    if (convexProducts && convexProducts.length > 0) {
-      const filtered = convexProducts
-        .filter(
-          (p) =>
-            p.productName.toLowerCase().includes(search) ||
-            p.sku.toLowerCase().includes(search)
-        )
-        .map((p) => ({
-          id: p._id,
-          name: p.productName,
-          price: p.sellingPriceCents / 100,
-          quantity_on_hand: p.quantityOnHandGrams,
-          sku: p.sku,
-        }));
-      setResults(filtered);
-      return;
-    }
-
+    const controller = new AbortController();
+    activeSearchController.current = controller;
     const timer = window.setTimeout(async () => {
       try {
         const res = await fetch(
           `/api/pos/products?search=${encodeURIComponent(search)}`,
+          { signal: controller.signal },
         );
+        if (requestId !== searchSequence.current) return;
         if (!res.ok) {
           setError("Search unavailable");
           setResults([]);
           return;
         }
         const data = (await res.json()) as { items?: ProductResult[] };
+        if (requestId !== searchSequence.current) return;
         setResults(data.items || []);
-      } catch {
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
+        if (requestId !== searchSequence.current) return;
         setError("Search unavailable");
         setResults([]);
       }
     }, 150);
 
-    return () => window.clearTimeout(timer);
-  }, [state.ui.search, convexProducts, setError]);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [state.ui.search, setError]);
 
   const submitSearch = async () => {
     const search = state.ui.search.trim();
     if (!search) return;
 
+    const requestId = ++searchSequence.current;
+    activeSearchController.current?.abort();
+    const controller = new AbortController();
+    activeSearchController.current = controller;
+
     try {
       const res = await fetch(
         `/api/pos/products?search=${encodeURIComponent(search)}&exact=1`,
+        { signal: controller.signal },
       );
+      if (requestId !== searchSequence.current) return;
       if (!res.ok) {
         setError("Search failed");
         return;
       }
 
       const data = (await res.json()) as { items?: ProductResult[] };
+      if (requestId !== searchSequence.current) return;
       const exactItem = data.items?.[0];
       if (!exactItem) {
         setError("No product matched scan");
@@ -136,8 +139,14 @@ export default function QuickPosSalePage() {
       addInventoryItem(exactItem);
       setSearch("");
       setResults([]);
-    } catch {
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (requestId !== searchSequence.current) return;
       setError("Search failed");
+    } finally {
+      if (activeSearchController.current === controller) {
+        activeSearchController.current = null;
+      }
     }
   };
 
@@ -215,17 +224,7 @@ export default function QuickPosSalePage() {
 
         <QuickGrid
           title="Favorite Items"
-          items={
-            convexProducts && convexProducts.length > 0
-              ? convexProducts.slice(0, 8).map((p) => ({
-                  id: p._id,
-                  name: p.productName,
-                  price: p.sellingPriceCents / 100,
-                  quantity_on_hand: p.quantityOnHandGrams,
-                  sku: p.sku,
-                }))
-              : bootstrap?.favorites || []
-          }
+          items={bootstrap?.favorites || []}
           onAdd={addInventoryItem}
         />
 

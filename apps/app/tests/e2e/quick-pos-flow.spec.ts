@@ -15,10 +15,22 @@ test.describe("Quick POS @smoke", () => {
         contentType: "application/json",
         body: JSON.stringify({
           favorites: [
-            { id: "p-1", name: "Favorite Item", price: 15 },
-            { id: "p-2", name: "Favorite Item 2", price: 8 },
+            {
+              id: "p-1",
+              name: "Favorite Item",
+              price: 15,
+              quantity_on_hand: 10,
+            },
+            {
+              id: "p-2",
+              name: "Favorite Item 2",
+              price: 8,
+              quantity_on_hand: 10,
+            },
           ],
-          recentlySold: [{ id: "p-3", name: "Recent Item", price: 12 }],
+          recentlySold: [
+            { id: "p-3", name: "Recent Item", price: 12, quantity_on_hand: 10 },
+          ],
           creditPolicy: { enabled: true },
         }),
       });
@@ -29,7 +41,9 @@ test.describe("Quick POS @smoke", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          items: [{ id: "p-4", name: "Search Item", price: 10, quantity_on_hand: 9 }],
+          items: [
+            { id: "p-4", name: "Search Item", price: 10, quantity_on_hand: 9 },
+          ],
         }),
       });
     });
@@ -70,7 +84,26 @@ test.describe("Quick POS @smoke", () => {
       await route.fulfill({
         status: 201,
         contentType: "application/json",
-        body: JSON.stringify({ success: true, saleId: "sale-1" }),
+        body: JSON.stringify({ success: true, saleId: "sale-1", total: 15 }),
+      });
+    });
+
+    await page.route("**/api/pos/quote", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          quote: {
+            subtotal: 15,
+            subtotalAfterDiscount: 15,
+            loyaltyDiscountAmount: 0,
+            loyaltyDiscountRate: 0,
+            taxAmount: 0,
+            feesTotal: 0,
+            total: 15,
+          },
+        }),
       });
     });
 
@@ -92,9 +125,14 @@ test.describe("Quick POS @smoke", () => {
     const startedAt = Date.now();
 
     await page.goto("/pos/sale");
-    await expect(page.getByRole("heading", { name: "Quick Sale" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Quick Sale" }),
+    ).toBeVisible();
 
-    await page.getByRole("button", { name: /Favorite Item/i }).first().click();
+    await page
+      .getByRole("button", { name: /Favorite Item/i })
+      .first()
+      .click();
     await expect(page.getByText("Favorite Item x1")).toBeVisible();
 
     await page.getByRole("button", { name: "Take Payment" }).click();
@@ -114,7 +152,9 @@ test.describe("Quick POS @smoke", () => {
     expect(elapsedMs).toBeLessThan(10_000);
   });
 
-  test("requires confirmation flow to exit quick pos @smoke", async ({ page }) => {
+  test("requires confirmation flow to exit quick pos @smoke", async ({
+    page,
+  }) => {
     if (!hasClerkEnv) {
       await page.goto("/pos/sale");
       await expect(page.locator("body")).toBeVisible();
@@ -123,7 +163,11 @@ test.describe("Quick POS @smoke", () => {
     await page.goto("/pos/sale");
 
     await page.getByRole("button", { name: "Exit Quick Sale" }).click();
-    await expect(page.getByText("Confirm and enter PIN to leave POS mode.")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Enter the manager PIN if one is configured, then confirm to return to your workspace.",
+      ),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Confirm Exit" }).click();
     await expect(page).toHaveURL(/\/dashboard/);

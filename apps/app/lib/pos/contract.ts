@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 export const posModeSchema = z.enum(["quick", "full"]);
-export const posPaymentMethodSchema = z.enum(["cash", "card", "credit", "mixed", "zelle"]);
+export const posPaymentMethodSchema = z.enum([
+  "cash",
+  "card",
+  "credit",
+  "mixed",
+  "zelle",
+]);
 export const posQuickPaymentMethodSchema = z.enum(["cash", "card", "credit"]);
 export const posReceiptOptionSchema = z.enum(["print", "sms", "none"]);
 export const posCartItemSourceSchema = z.enum(["inventory", "manual"]);
@@ -79,6 +85,12 @@ export const quickCheckoutPayloadSchema = z.object({
   items: z.array(cartLineItemSchema).min(1),
 });
 
+export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
+  mode: true,
+  customerId: true,
+  items: true,
+});
+
 export const fullCheckoutPayloadSchema = z.object({
   mode: z.literal("full"),
   idempotencyKey: z.string().uuid(),
@@ -111,7 +123,9 @@ export const receiptOutputSchema = z.object({
   saleId: z.string().uuid().or(z.string().min(1)),
   total: z.number().nonnegative(),
   receipt: posReceiptOptionSchema,
-  channels: z.array(z.object({ type: z.string().min(1), value: z.string().min(1) })).default([]),
+  channels: z
+    .array(z.object({ type: z.string().min(1), value: z.string().min(1) }))
+    .default([]),
 });
 
 export const quickPosBootstrapItemSchema = z.object({
@@ -120,6 +134,7 @@ export const quickPosBootstrapItemSchema = z.object({
   price: z.number().nonnegative(),
   sku: z.string().optional().nullable(),
   barcode: z.string().optional().nullable(),
+  quantity_on_hand: z.number().int().nonnegative(),
 });
 
 export const quickPosBootstrapResponseSchema = z.object({
@@ -142,11 +157,14 @@ export type StockAdjustment = z.infer<typeof stockAdjustmentSchema>;
 export type CartLineItem = z.infer<typeof cartLineItemSchema>;
 export type PosFee = z.infer<typeof posFeeSchema>;
 export type QuickCheckoutPayload = z.infer<typeof quickCheckoutPayloadSchema>;
+export type QuickPosQuotePayload = z.infer<typeof quickPosQuotePayloadSchema>;
 export type FullCheckoutPayload = z.infer<typeof fullCheckoutPayloadSchema>;
 export type CheckoutPayload = z.infer<typeof checkoutPayloadSchema>;
 export type ReceiptOutput = z.infer<typeof receiptOutputSchema>;
 export type QuickPosBootstrapItem = z.infer<typeof quickPosBootstrapItemSchema>;
-export type QuickPosBootstrapResponseContract = z.infer<typeof quickPosBootstrapResponseSchema>;
+export type QuickPosBootstrapResponseContract = z.infer<
+  typeof quickPosBootstrapResponseSchema
+>;
 
 // Backward-compatible aliases for existing imports during the transition.
 export const posCheckoutSchema = checkoutPayloadSchema;

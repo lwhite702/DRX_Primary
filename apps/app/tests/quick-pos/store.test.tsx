@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { act, render } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { act, render, waitFor } from "@testing-library/react";
 import { QuickPosProvider, useQuickPosStore } from "@/lib/quick-pos/store";
+import { QUICK_POS_STORAGE_KEY } from "@/lib/quick-pos/constants";
 
 let storeRef: ReturnType<typeof useQuickPosStore> | null = null;
 
@@ -10,6 +11,10 @@ function Harness() {
 }
 
 describe("quick pos store", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   it("adds, increments, and removes items", () => {
     render(
       <QuickPosProvider>
@@ -87,5 +92,35 @@ describe("quick pos store", () => {
     });
 
     expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();
+  });
+
+  it("does not hydrate carts stored with the obsolete Convex ID version", async () => {
+    window.sessionStorage.setItem(
+      "quick_pos_state_v1",
+      JSON.stringify({
+        cartItems: [
+          {
+            id: "inv:legacy",
+            inventoryId: "jh7legacyconvexid",
+            name: "Legacy Item",
+            unitPrice: 10,
+            qty: 1,
+            source: "inventory",
+          },
+        ],
+      }),
+    );
+
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    await waitFor(() => {
+      expect(storeRef!.state.cartItems).toHaveLength(0);
+    });
+    expect(QUICK_POS_STORAGE_KEY).toBe("quick_pos_state_v2");
+    expect(window.sessionStorage.getItem("quick_pos_state_v1")).not.toBeNull();
   });
 });

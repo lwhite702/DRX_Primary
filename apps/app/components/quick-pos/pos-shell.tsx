@@ -30,7 +30,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-white/60 md:text-sm">
                 {bypassMode
                   ? "Bypass mode active: no PIN required to exit Quick Sale."
-                  : "Exit requires the manager PIN from Settings > POS Controls."}
+                  : "Use the manager PIN when one is configured in Settings > POS Controls."}
               </p>
             </div>
           </div>

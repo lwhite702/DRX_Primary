@@ -58,7 +58,10 @@ const mockedDb = vi.mocked(db);
 function createTxBase(overrides?: Record<string, unknown>) {
   return {
     businessSettings: {
-      findUnique: vi.fn().mockResolvedValue({ collectTax: true }),
+      findUnique: vi.fn().mockResolvedValue({
+        collectTax: true,
+        defaultTaxRate: 0,
+      }),
     },
     sales: {
       findFirst: vi.fn().mockResolvedValue(null),
@@ -179,21 +182,114 @@ describe("pos core", () => {
     expect(totals.total).toBe(24);
   });
 
-  it("rejects duplicate idempotency keys with 409", async () => {
+  it("returns the committed sale for an idempotent retry", async () => {
     const cart = createBaseCart();
     mockedDb.$transaction.mockImplementation(async (fn: any) => {
       const tx = createTxBase({
         sales: {
-          findFirst: vi.fn().mockResolvedValue({ id: "sale-existing" }),
+          findFirst: vi.fn().mockResolvedValue({
+            id: "sale-existing",
+            orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+            totalAmount: 20,
+            changeAmount: 0,
+          }),
         },
       });
       return fn(tx);
     });
 
-    await expect(checkout(cart, "11111111-1111-4111-8111-111111111111")).rejects.toMatchObject({
-      message: "Duplicate idempotency key",
-      status: 409,
+    await expect(
+      checkout(cart, "11111111-1111-4111-8111-111111111111"),
+    ).resolves.toEqual({
+      saleId: "sale-existing",
+      orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+      total: 20,
+      changeAmount: 0,
     });
+  });
+
+  it("reprices quick inventory and calculates discount and tax authoritatively", async () => {
+    let txUsed: ReturnType<typeof createTxBase> | undefined;
+    const cart = setPayment(
+      addItem(
+        createCart({
+          businessId: "11111111-1111-4111-8111-111111111111",
+          userId: "user_123",
+          mode: "quick",
+          customerId: "44444444-4444-4444-8444-444444444444",
+        }),
+        {
+          id: "inv-item-1",
+          inventoryId: "22222222-2222-4222-8222-222222222222",
+          name: "Stale Name",
+          unitPrice: 1,
+          qty: 2,
+          source: "inventory",
+        },
+      ),
+      {
+        method: "cash",
+        receipt: "none",
+        creditConfirmed: false,
+      },
+    );
+
+    mockedDb.$transaction.mockImplementation(async (fn: any) => {
+      txUsed = createTxBase({
+        businessSettings: {
+          findUnique: vi.fn().mockResolvedValue({
+            collectTax: true,
+            defaultTaxRate: 0.0825,
+          }),
+        },
+        customers: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: "44444444-4444-4444-8444-444444444444",
+            discountRate: 0.1,
+          }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        $queryRaw: vi.fn().mockResolvedValue([
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            product_name: "Canonical Item",
+            quantity_on_hand: 10,
+            inventory_in_grams: 0,
+            unit_cost: 4,
+            convert_to_grams: 0,
+            selling_price: 20,
+            price_per_gram: null,
+          },
+        ]),
+      });
+      return fn(txUsed);
+    });
+
+    await expect(
+      checkout(cart, "99999999-9999-4999-8999-999999999999"),
+    ).resolves.toEqual({
+      saleId: "sale_123",
+      orderNumber: "POS-11111111-1111-4111-8111-111111111111",
+      total: 38.97,
+      changeAmount: 0,
+    });
+    expect(txUsed?.sales.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          subtotal: expect.objectContaining({ value: 40 }),
+          taxAmount: expect.objectContaining({ value: 2.97 }),
+          totalAmount: expect.objectContaining({ value: 38.97 }),
+        }),
+      }),
+    );
+    expect(txUsed?.salesLineItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          unitPrice: expect.objectContaining({ value: 20 }),
+          lineTotal: expect.objectContaining({ value: 40 }),
+        }),
+      }),
+    );
   });
 
   it("rejects stock underflow before writing sale", async () => {
@@ -236,9 +332,9 @@ describe("pos core", () => {
       return fn(tx);
     });
 
-    await expect(checkout(cart, "33333333-3333-4333-8333-333333333333")).rejects.toThrow(
-      "Insufficient stock for Inventory Item",
-    );
+    await expect(
+      checkout(cart, "33333333-3333-4333-8333-333333333333"),
+    ).rejects.toThrow("Insufficient stock for Inventory Item");
   });
 
   it("rejects credit payment when cap is exceeded", async () => {
@@ -285,7 +381,9 @@ describe("pos core", () => {
       return fn(tx);
     });
 
-    await expect(checkout(withItem, "55555555-5555-4555-8555-555555555555")).rejects.toMatchObject({
+    await expect(
+      checkout(withItem, "55555555-5555-4555-8555-555555555555"),
+    ).rejects.toMatchObject({
       status: 400,
     });
   });
@@ -465,9 +563,9 @@ describe("pos core", () => {
       },
     );
 
-    await expect(checkout(cart, "66666666-6666-4666-8666-666666666666")).rejects.toBeInstanceOf(
-      PosCheckoutError,
-    );
+    await expect(
+      checkout(cart, "66666666-6666-4666-8666-666666666666"),
+    ).rejects.toBeInstanceOf(PosCheckoutError);
   });
 
   it("allocates FIFO batches for unit inventory using gram conversion", async () => {
@@ -650,7 +748,8 @@ describe("pos core", () => {
       checkout(cart, "99999999-9999-4999-8999-999999999999"),
     ).rejects.toMatchObject({
       status: 400,
-      message: "Missing FIFO batch inventory for item 22222222-2222-4222-8222-222222222222",
+      message:
+        "Missing FIFO batch inventory for item 22222222-2222-4222-8222-222222222222",
     });
   });
 });

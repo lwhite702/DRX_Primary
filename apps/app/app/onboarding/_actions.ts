@@ -1,6 +1,10 @@
 "use server";
 
-import { auth, clerkClient, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
+import {
+  auth,
+  clerkClient,
+  isAuthBypassEnabled,
+} from "@/lib/adapters/auth/server";
 import {
   ONBOARDING_COMPLETION_COOKIE,
   type OnboardingClaims,
@@ -44,9 +48,12 @@ export async function completeOnboarding(
   const ownerName = String(formData.get("ownerName") || "").trim();
   const businessType = String(formData.get("businessType") || "other").trim();
   const currency = String(formData.get("currency") || "USD").trim();
-  const timezone = String(formData.get("timezone") || "America/New_York").trim();
+  const timezone = String(
+    formData.get("timezone") || "America/New_York",
+  ).trim();
   const taxEnabled = String(formData.get("taxChoice") || "later") === "yes";
-  const tracksInventory = String(formData.get("tracksInventory") || "true") === "true";
+  const tracksInventory =
+    String(formData.get("tracksInventory") || "true") === "true";
   const locationName = String(formData.get("locationName") || "").trim();
   const city = String(formData.get("city") || "").trim();
   const region = String(formData.get("region") || "").trim();
@@ -57,7 +64,9 @@ export async function completeOnboarding(
   const resolvedLocation = [locationName, city, region, country]
     .filter(Boolean)
     .join(" · ");
-  const dashboardPresetRaw = String(formData.get("dashboardPreset") || "operations").trim();
+  const dashboardPresetRaw = String(
+    formData.get("dashboardPreset") || "operations",
+  ).trim();
   const dashboardPreset: DashboardViewPreset =
     dashboardPresetRaw === "checkout" || dashboardPresetRaw === "inventory"
       ? dashboardPresetRaw
@@ -145,6 +154,8 @@ export async function completeOnboarding(
       data: {
         currency: "USD",
         timezone: "America/New_York",
+        collectTax: taxEnabled,
+        defaultTaxRate: taxRateBps / 10_000,
         settingsData,
       },
     });
@@ -154,6 +165,8 @@ export async function completeOnboarding(
         businessId: business.id,
         currency: "USD",
         timezone: "America/New_York",
+        collectTax: taxEnabled,
+        defaultTaxRate: taxRateBps / 10_000,
         settingsData,
       },
     });

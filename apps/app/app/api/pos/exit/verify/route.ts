@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
   )?.trim();
 
   if (!configuredPin) {
-    return NextResponse.json({ allowed: false }, { status: 423 });
+    // Exiting only returns the authenticated operator to their workspace. A
+    // missing optional PIN must not trap them inside Quick Sale.
+    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
   }
 
   const response: QuickPosExitVerifyResponse = {
