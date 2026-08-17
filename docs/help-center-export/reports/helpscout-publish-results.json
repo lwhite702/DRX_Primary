@@ -1,0 +1,96 @@
+{
+  "dryRun": true,
+  "executedAt": "2026-08-15T08:40:24.810Z",
+  "results": [
+    {
+      "file": "app-docs/getting_started/getting-started-get-started-with-drx.md",
+      "title": "Get started with DRX",
+      "action": "would-create",
+      "category": "Getting Started"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "title": "Dashboard and reports",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-inventory-receive-and-adjust.md",
+      "title": "Inventory intake and audit",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "title": "Customers and store credit",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "title": "Privacy and minimal data",
+      "action": "would-create",
+      "category": "Operations"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-quick-sale-checkout.md",
+      "title": "Quick Sale checkout",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "title": "Standard Sales console",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/feature-overview-switch-stores-and-roles.md",
+      "title": "Switch stores and roles",
+      "action": "would-create",
+      "category": "Operations"
+    },
+    {
+      "file": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "title": "Inventory Intake and Adjustments",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/feature_overview/manage-credit-and-payments.md",
+      "title": "Manage Credit and Payments",
+      "action": "would-create",
+      "category": "Quick POS"
+    },
+    {
+      "file": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "title": "Troubleshoot Inventory and Audit",
+      "action": "would-create",
+      "category": "Troubleshooting"
+    },
+    {
+      "file": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "title": "Troubleshoot Checkout and Payments",
+      "action": "would-create",
+      "category": "Troubleshooting"
+    },
+    {
+      "file": "app-docs/troubleshooting/troubleshooting-checkout-and-sales.md",
+      "title": "Troubleshoot checkout and sales",
+      "action": "would-create",
+      "category": "Troubleshooting"
+    },
+    {
+      "file": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "title": "Troubleshoot customers and credit",
+      "action": "would-create",
+      "category": "Troubleshooting"
+    },
+    {
+      "file": "app-docs/troubleshooting/troubleshooting-stores-and-access.md",
+      "title": "Troubleshoot stores and access",
+      "action": "would-create",
+      "category": "Troubleshooting"
+    }
+  ]
+}

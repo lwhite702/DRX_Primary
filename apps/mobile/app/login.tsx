@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
   Alert,
   Image,
@@ -39,19 +38,12 @@ export default function Login() {
     }
 
     setLoading(true);
-    console.log("Attempting login with:", email.trim());
     try {
       const { error } = await signIn(email.trim(), password);
-      console.log("Login result, error:", error);
       if (error) {
-        console.error("Login error:", error.message);
         Alert.alert("Login Failed", error.message);
       } else {
-        console.log("Login successful, navigating to tabs");
-        // Small delay to allow auth state to update
-        setTimeout(() => {
-          router.replace("/(tabs)");
-        }, 500);
+        router.replace("/");
       }
     } catch (error: any) {
       console.error("Login exception:", error);
@@ -64,7 +56,7 @@ export default function Login() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={process.env.EXPO_OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.content}>
         {/* Logo/Brand */}
@@ -153,6 +145,13 @@ export default function Login() {
                 />
               </>
             )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.signupLink}
+            onPress={() => router.push("/signup")}
+            accessibilityRole="link"
+          >
+            <Text style={styles.signupText}>Create an owner account</Text>
           </TouchableOpacity>
         </View>
 
@@ -252,6 +251,15 @@ const styles = StyleSheet.create({
     color: COLORS.background,
     fontSize: FONT_SIZES.lg,
     fontWeight: "700",
+  },
+  signupLink: {
+    alignItems: "center",
+    paddingTop: SPACING.lg,
+  },
+  signupText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.sm,
+    fontWeight: "600",
   },
   footer: {
     alignItems: "center",

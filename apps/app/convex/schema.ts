@@ -155,6 +155,9 @@ export default defineSchema({
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
     createdBy: v.string(),
+    offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
+    offlineDeviceId: v.optional(v.string()),
+    occurredAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -209,4 +212,104 @@ export default defineSchema({
     resultJson: v.string(),
     createdAt: v.number(),
   }).index("by_businessId_and_key", ["businessId", "key"]),
+
+  // Owner-controlled offline checkout policy. There is deliberately no
+  // application fallback: offline checkout stays disabled until an owner
+  // configures every risk limit.
+  offlinePolicies: defineTable({
+    businessId: v.id("businesses"),
+    enabled: v.boolean(),
+    authorizationWindowMinutes: v.number(),
+    perSaleLimitCents: v.number(),
+    perDeviceSessionLimitCents: v.number(),
+    offlineCreditLimitCents: v.number(),
+    maxQueuedSales: v.number(),
+    version: v.number(),
+    updatedBy: v.string(),
+    updatedAt: v.number(),
+  }).index("by_businessId", ["businessId"]),
+
+  registeredDevices: defineTable({
+    businessId: v.id("businesses"),
+    deviceId: v.string(),
+    displayName: v.optional(v.string()),
+    platform: v.literal("android"),
+    appVersion: v.string(),
+    status: v.union(v.literal("active"), v.literal("revoked")),
+    registeredBy: v.string(),
+    createdAt: v.number(),
+    lastSeenAt: v.number(),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_deviceId", ["businessId", "deviceId"]),
+
+  offlineAuthorizations: defineTable({
+    businessId: v.id("businesses"),
+    deviceRecordId: v.id("registeredDevices"),
+    deviceId: v.string(),
+    userId: v.string(),
+    policyId: v.id("offlinePolicies"),
+    policyVersion: v.number(),
+    issuedAt: v.number(),
+    expiresAt: v.number(),
+    perSaleLimitCents: v.number(),
+    sessionLimitCents: v.number(),
+    offlineCreditLimitCents: v.number(),
+    maxQueuedSales: v.number(),
+    usedCents: v.number(),
+    usedSales: v.number(),
+    collectTax: v.boolean(),
+    taxRateBps: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("revoked"),
+      v.literal("expired"),
+    ),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_deviceId", ["businessId", "deviceId"])
+    .index("by_businessId_and_userId", ["businessId", "userId"]),
+
+  offlineSaleSubmissions: defineTable({
+    businessId: v.id("businesses"),
+    authorizationId: v.optional(v.id("offlineAuthorizations")),
+    deviceId: v.string(),
+    userId: v.string(),
+    idempotencyKey: v.string(),
+    sequence: v.number(),
+    occurredAt: v.number(),
+    paymentMethod: v.union(v.literal("cash"), v.literal("credit")),
+    totalAmountCents: v.number(),
+    itemCount: v.number(),
+    status: v.union(v.literal("committed"), v.literal("quarantined")),
+    saleId: v.optional(v.id("sales")),
+    quarantineReason: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_businessId_and_idempotencyKey", ["businessId", "idempotencyKey"])
+    .index("by_businessId_and_status", ["businessId", "status"]),
+
+  reconciliationCases: defineTable({
+    businessId: v.id("businesses"),
+    saleId: v.id("sales"),
+    kind: v.union(
+      v.literal("inventory_shortfall"),
+      v.literal("credit_limit_exceeded"),
+      v.literal("stale_price"),
+      v.literal("clock_skew"),
+    ),
+    status: v.union(v.literal("open"), v.literal("resolved")),
+    productId: v.optional(v.id("products")),
+    customerId: v.optional(v.id("customers")),
+    expectedValue: v.optional(v.number()),
+    actualValue: v.optional(v.number()),
+    summary: v.string(),
+    createdBy: v.string(),
+    resolvedBy: v.optional(v.string()),
+    resolutionReason: v.optional(v.string()),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_businessId_and_status", ["businessId", "status"])
+    .index("by_saleId", ["saleId"]),
 });

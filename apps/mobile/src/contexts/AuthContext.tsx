@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext } from "react";
 import * as SecureStore from "expo-secure-store";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
+import { api } from "@drx-convex/_generated/api";
 import {
   ClerkProvider,
-  toWorkflowSession,
   useClerkAuth,
   useSignIn,
   useUser,
@@ -12,14 +14,8 @@ const tokenCache = {
   async getToken(key: string) {
     try {
       const item = await SecureStore.getItemAsync(key);
-      if (item) {
-        console.log(`${key} was used 🔐 \n`);
-      } else {
-        console.log("No values stored under key: " + key);
-      }
       return item;
-    } catch (error) {
-      console.error("SecureStore get item error: ", error);
+    } catch {
       await SecureStore.deleteItemAsync(key);
       return null;
     }
@@ -27,13 +23,27 @@ const tokenCache = {
   async saveToken(key: string, value: string) {
     try {
       return SecureStore.setItemAsync(key, value);
-    } catch (err) {
+    } catch {
       return;
     }
   },
 };
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+const CONVEX_URL = process.env.EXPO_PUBLIC_CONVEX_URL!;
+const convex = CONVEX_URL
+  ? new ConvexReactClient(CONVEX_URL, { unsavedChangesWarning: false })
+  : null;
+
+type OperatorSession = {
+  operatorId: string;
+  displayName: string;
+  businessId: string;
+  businessName: string;
+  roles: string[];
+  permissions: string[];
+  email: string | null;
+};
 
 interface AuthContextType {
   isSignedIn: boolean;
@@ -41,21 +51,24 @@ interface AuthContextType {
   getToken: () => Promise<string | null>;
   signOut: () => Promise<void>;
   businessId: string | null;
-  // Exposed from Clerk for compatibility
-  user: any; // Type 'UserResource' from Clerk but 'any' avoids importing complex types for now if fine.
-  // Actually let's use 'any' or just leave it generic. The error said 'Property user does not exist'.
-  // Ideally, import { UserResource } from "@clerk/types";
+  session: OperatorSession | null;
+  onboardingStatus: "NEEDS_BUSINESS_ONBOARDING" | "READY" | "INACTIVE" | "BUSINESS_MISSING" | null;
+  user: any;
   loading: boolean;
-  signIn: any; // SignInResource
+  signIn: (email?: string, password?: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const { isSignedIn, userId, signOut, getToken, isLoaded } = useClerkAuth();
+  const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
   const { user } = useUser();
   const { signIn: clerkSignIn, setActive, isLoaded: isSignInLoaded } = useSignIn();
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  const onboarding = useQuery(
+    api.onboarding.getCurrentOnboardingStatus,
+    isAuthenticated ? {} : "skip",
+  );
 
   const signIn = async (email?: string, password?: string) => {
     if (!isSignInLoaded || !clerkSignIn) {
@@ -77,37 +90,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       return { error: new Error(msg) };
     }
   };
-  useEffect(() => {
-    if (isSignedIn && userId) {
-      // In a real implementation, you might fetch this from your API
-      // or derive it from the user's public metadata if you sync it there.
-      // For now, let's try to fetch it from the API or user metadata.
-      const fetchBusiness = async () => {
-        try {
-          const token = await getToken();
-          const workflowSession = toWorkflowSession({
-            userId,
-            orgId: null,
-            session: { user: user ? { publicMetadata: user.publicMetadata } : undefined },
-          });
-          // We can't call the API yet because we haven't refactored the API client.
-          // But we can check user public metadata if available.
-          const metadata = user?.publicMetadata as any;
-          if (metadata?.businessId) {
-            setBusinessId(metadata.businessId);
-          } else if (workflowSession.tenantId) {
-            setBusinessId(workflowSession.tenantId);
-          }
-        } catch (e) {
-          console.error("Failed to fetch business ID", e);
-        }
-      };
-
-      fetchBusiness();
-    } else {
-      setBusinessId(null);
-    }
-  }, [isSignedIn, userId, user]);
+  const session = onboarding?.status === "READY" ? (onboarding.session as OperatorSession) : null;
+  const onboardingStatus = onboarding?.status ?? null;
+  const loading =
+    !isLoaded ||
+    isConvexLoading ||
+    (!!isSignedIn && isAuthenticated && onboarding === undefined);
 
   return (
     <AuthContext.Provider
@@ -116,9 +104,11 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         userId: userId || null,
         getToken,
         signOut,
-        businessId,
+        businessId: session?.businessId ?? null,
+        session,
+        onboardingStatus,
         user,
-        loading: !isLoaded,
+        loading,
         signIn,
       }}
     >
@@ -128,9 +118,8 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  if (!CLERK_PUBLISHABLE_KEY) {
-    console.error("Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY");
-    return null;
+  if (!CLERK_PUBLISHABLE_KEY || !convex) {
+    throw new Error("Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY or EXPO_PUBLIC_CONVEX_URL");
   }
 
   return (
@@ -138,7 +127,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       publishableKey={CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
     >
-      <AuthProviderInner>{children}</AuthProviderInner>
+      <ConvexProviderWithClerk client={convex} useAuth={useClerkAuth}>
+        <AuthProviderInner>{children}</AuthProviderInner>
+      </ConvexProviderWithClerk>
     </ClerkProvider>
   );
 }
