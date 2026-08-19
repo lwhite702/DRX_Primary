@@ -74,6 +74,7 @@
     "eslint-config-expo": "~10.0.0",
     "expo-font": "~14.0.12",
     "expo-mcp": "~0.2.1",
+    "metro-cache": "0.83.3",
     "typescript": "~5.9.2"
   },
   "private": true
