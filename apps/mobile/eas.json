@@ -40,7 +40,6 @@
       },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
-        "NODE_ENV": "production",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
         "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
       }
@@ -54,7 +53,6 @@
       },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
-        "NODE_ENV": "production",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
         "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
       }
@@ -67,7 +65,6 @@
       },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
-        "NODE_ENV": "production",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
         "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
       }
