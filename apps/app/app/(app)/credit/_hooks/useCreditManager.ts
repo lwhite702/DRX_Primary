@@ -44,8 +44,13 @@ export function useCreditManager(businessId: string | undefined) {
       .eq("business_id", businessId);
 
     if (data) {
-      const map = new Map();
-      data.forEach((limit: CreditLimit) => map.set(limit.customer_id, limit));
+      const map = new Map<string, CreditLimit>();
+      data.forEach((limit) =>
+        map.set(limit.customer_id, {
+          ...limit,
+          business_id: businessId,
+        }),
+      );
       setCreditLimits(map);
     }
   }, [businessId, supabase]);

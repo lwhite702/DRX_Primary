@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,8 +44,6 @@ export default function TeamClient() {
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const supabase = createAppClient();
-
   useEffect(() => {
     if (business?.id) {
       fetchTeam();
@@ -72,7 +69,7 @@ export default function TeamClient() {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (!supabase || !business?.id) return;
+    if (!business?.id) return;
 
     // confirm
     if (
@@ -84,22 +81,29 @@ export default function TeamClient() {
 
     setUpdating(userId);
     try {
-      const { error } = await supabase
-        .from("user_roles")
-        .update({ role: newRole })
-        .eq("user_id", userId)
-        .eq("business_id", business.id);
-
-      if (error) throw error;
+      const response = await fetch(`/api/team/members/${userId}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-business-id": business.id,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update role");
+      }
 
       toast.success("User role updated");
       // Update local state
       setUsers(
         users.map((u) => (u.user_id === userId ? { ...u, role: newRole } : u)),
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating role:", error);
-      toast.error(error.message || "Failed to update role");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update role",
+      );
     } finally {
       setUpdating(null);
     }
@@ -110,7 +114,7 @@ export default function TeamClient() {
   }
 
   // Check permission
-  const canManageUsers = hasPermission("users.manage");
+  const canManageUsers = hasPermission("staff.manage");
 
   return (
     <div className="p-4 md:p-8 space-y-6">

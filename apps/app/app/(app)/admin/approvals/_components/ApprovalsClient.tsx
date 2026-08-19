@@ -68,10 +68,18 @@ export function ApprovalsClient() {
   const supabase = createAppClient();
 
   const fetchIntakes = async () => {
+    if (!supabase) {
+      setIntakes([]);
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+    const client = supabase;
+
     try {
       setLoading(true);
       // Fetch Pending
-      const { data: pendingData, error: pendingError } = await supabase
+      const { data: pendingData, error: pendingError } = await client
         .from("inventory_intakes")
         .select(
           `
@@ -86,7 +94,7 @@ export function ApprovalsClient() {
       if (pendingError) throw pendingError;
 
       // Fetch History (Last 20)
-      const { data: historyData, error: historyError } = await supabase
+      const { data: historyData, error: historyError } = await client
         .from("inventory_intakes")
         .select(
           `
