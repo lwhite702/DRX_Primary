@@ -27,7 +27,7 @@ import { BulkPricingTier } from "../../../src/lib/types";
 export default function AddProductScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { businessId, getToken } = useAuth();
+  const { legacyBusinessId, getToken } = useAuth();
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -131,7 +131,7 @@ export default function AddProductScreen() {
       return;
     }
 
-    if (!businessId) {
+    if (!legacyBusinessId) {
       Alert.alert("Error", "Business ID not found");
       return;
     }
@@ -141,7 +141,7 @@ export default function AddProductScreen() {
       const token = await getToken();
 
       const payload = {
-        business_id: businessId,
+        business_id: legacyBusinessId,
         product_name: productName,
         sku: sku || null,
         category: category,

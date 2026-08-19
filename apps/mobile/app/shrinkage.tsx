@@ -13,13 +13,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
-import { getInventory, recordShrinkage } from "../src/services/apiClient";
+import { getProducts, recordShrinkage } from "../src/services/apiClient";
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from "../src/constants/theme";
 
 export default function Shrinkage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getToken } = useAuth();
+  const { legacyBusinessId, getToken } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
@@ -32,11 +32,12 @@ export default function Shrinkage() {
   useEffect(() => {
     const fetchInv = async () => {
       const token = await getToken();
-      const data = await getInventory(token);
+      if (!legacyBusinessId) return;
+      const data = await getProducts(legacyBusinessId, token);
       setInventory(data.filter((item: any) => item.inventory_in_grams > 0));
     };
     fetchInv();
-  }, [getToken]);
+  }, [legacyBusinessId, getToken]);
 
   const handleSubmit = async () => {
     if (!selectedItemId || !quantity) {

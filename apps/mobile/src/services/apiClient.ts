@@ -28,6 +28,19 @@ async function fetchWithAuth(
   return response.json();
 }
 
+export type LegacyMobileSession = {
+  operatorId: string;
+  displayName: string;
+  businessId: string;
+  businessName: string;
+  roles: string[];
+  permissions: string[];
+  email: string | null;
+};
+
+export const getLegacyMobileSession = async (token: string | null) =>
+  fetchWithAuth("/api/mobile/v1/session", token) as Promise<LegacyMobileSession>;
+
 // ==================== INVENTORY ====================
 
 export const getProducts = async (businessId: string, token: string | null) => {

@@ -21,6 +21,7 @@ import type * as helpers_money from "../helpers/money.js";
 import type * as helpers_permissions from "../helpers/permissions.js";
 import type * as intake from "../intake.js";
 import type * as members from "../members.js";
+import type * as offline from "../offline.js";
 import type * as onboarding from "../onboarding.js";
 import type * as products from "../products.js";
 import type * as reporting from "../reporting.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/permissions": typeof helpers_permissions;
   intake: typeof intake;
   members: typeof members;
+  offline: typeof offline;
   onboarding: typeof onboarding;
   products: typeof products;
   reporting: typeof reporting;
