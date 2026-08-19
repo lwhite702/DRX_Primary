@@ -21,17 +21,16 @@ export default function AdminClient() {
       setLoading(false);
       return;
     }
+    const client = supabase;
 
     async function fetchStats() {
       try {
         // Fetch stats
         const [businesses, users, auditLogs, aiFailures] = await Promise.all([
-          supabase.from("business_profile").select("id", { count: "exact" }),
-          supabase.from("user_roles").select("id", { count: "exact" }),
-          supabase.from("system_audit_log").select("id", { count: "exact" }),
-          supabase
-            .from("ai_insights_failures")
-            .select("id", { count: "exact" }),
+          client.from("business_profile").select("id", { count: "exact" }),
+          client.from("user_roles").select("id", { count: "exact" }),
+          client.from("system_audit_log").select("id", { count: "exact" }),
+          client.from("ai_insights_failures").select("id", { count: "exact" }),
         ]);
 
         setStats({

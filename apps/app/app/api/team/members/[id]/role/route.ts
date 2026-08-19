@@ -1,87 +1,80 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
+
+const ASSIGNABLE_ROLES = new Set(["cashier", "supervisor", "manager"]);
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { userId: actorId } = await auth();
+  const { userId: actorId, businessId } = await resolveAuthContext(request);
 
-  if (!actorId) {
+  if (!actorId || !businessId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Get Caller Role
-    const callerRoleRec = await db.userRole.findFirst({
-      where: { userId: actorId },
-    });
-
-    if (
-      !callerRoleRec ||
-      !["manager", "owner", "super_admin"].includes(callerRoleRec.role || "")
-    ) {
+    if (!(await hasBusinessPermission(actorId, businessId, "staff.manage"))) {
       return NextResponse.json(
         { error: "Forbidden: Insufficient permissions" },
         { status: 403 },
       );
     }
 
-    const businessId = callerRoleRec.businessId;
     const body = await request.json();
-    const { role } = body;
-    const callerRole = callerRoleRec.role?.toLowerCase() || "";
-    const targetRole = role.toLowerCase();
-
-    // Enforce Role Hierarchy
-    if (
-      callerRole === "manager" &&
-      ["owner", "super_admin"].includes(targetRole)
-    ) {
+    const role = typeof body.role === "string" ? body.role.toLowerCase() : "";
+    if (!ASSIGNABLE_ROLES.has(role)) {
       return NextResponse.json(
-        { error: "Managers cannot assign Owner or Super Admin roles" },
-        { status: 403 },
+        { error: "Role must be cashier, supervisor, or manager" },
+        { status: 400 },
       );
     }
 
-    // Update Role
-    // Scope to businessId to prevent cross-tenant modification if needed, though 'id' is user_id globally?
-    // Since `user_roles` has `{userId, businessId}` and user might have multiple roles...
-    // We should update the role for THIS business context.
-
-    const updateResult = await db.userRole.updateMany({
-      where: {
-        userId: id,
-        businessId: businessId, // Ensure we only update role in the actor's business
-      },
-      data: { role: role },
+    const targetMembership = await db.userRole.findFirst({
+      where: { userId: id, businessId },
+      select: { id: true, role: true },
     });
-
-    if (updateResult.count === 0) {
-      // If no role found, maybe we should create it? Or user not in business.
+    if (!targetMembership) {
       return NextResponse.json(
         { error: "User not found in this business" },
         { status: 404 },
       );
     }
+    if (["owner", "super_admin"].includes(targetMembership.role || "")) {
+      return NextResponse.json(
+        { error: "Owner and super admin roles cannot be changed here" },
+        { status: 403 },
+      );
+    }
 
-    // Audit Log
+    await db.userRole.update({
+      where: { id: targetMembership.id },
+      data: { role },
+    });
+
     await db.systemAuditLog.create({
       data: {
         action: "role_update",
         entityId: id,
         userId: actorId,
-        newValues: { new_role: role },
+        oldValues: { role: targetMembership.role },
+        newValues: { role },
         entityType: "team_member",
-        businessId: businessId,
+        businessId,
       },
     });
 
     return NextResponse.json({ id, role }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update role error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 },
+    );
   }
 }
