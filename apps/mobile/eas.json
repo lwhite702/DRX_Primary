@@ -1,11 +1,16 @@
 {
   "cli": {
-    "version": ">= 10.0.0"
+    "version": ">= 20.5.1",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
@@ -15,6 +20,7 @@
     "development-simulator": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
       "ios": {
         "simulator": true
       },
@@ -26,6 +32,23 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EAS_BUILD_NPM_CLIENT": "pnpm",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
+        "EXPO_PUBLIC_API_URL": "https://deelrxcrm.app"
+      }
+    },
+    "closed-test": {
+      "distribution": "store",
+      "environment": "preview",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
@@ -33,6 +56,11 @@
       }
     },
     "production": {
+      "environment": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
@@ -41,6 +69,17 @@
     }
   },
   "submit": {
-    "production": {}
+    "closed-test": {
+      "android": {
+        "track": "alpha",
+        "releaseStatus": "draft"
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }
