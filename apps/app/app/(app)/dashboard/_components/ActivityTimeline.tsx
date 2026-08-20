@@ -1,6 +1,7 @@
 import React from "react";
 import { type ActivityItem } from "../_hooks/useDashboardData";
 import { DollarSign, Package, CreditCard, User } from "lucide-react";
+import Link from "next/link";
 
 interface ActivityTimelineProps {
   activities: ActivityItem[];
@@ -44,7 +45,7 @@ export function ActivityTimeline({ activities, compact = false }: ActivityTimeli
   return (
     <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)] md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-        SECTION D: RECENT ACTIVITY TIMELINE
+        Recent activity
       </div>
 
       <div className="space-y-1">
@@ -72,9 +73,12 @@ export function ActivityTimeline({ activities, compact = false }: ActivityTimeli
         ))}
       </div>
 
-      <button className="w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white">
-        View Full Activity Log →
-      </button>
+      <Link
+        href="/reports"
+        className="block w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white"
+      >
+        View reports →
+      </Link>
     </section>
   );
 }

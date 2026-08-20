@@ -22,6 +22,7 @@ import { createAppClient } from "@/lib/data/client/supabase-client";
 import { RefreshCw, AlertTriangle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import type { AIPricingRecommendation, InventoryForecast } from "@/lib/validations/schemas";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 interface AIRecommendations {
   pricing: AIPricingRecommendation | null;
@@ -125,7 +126,7 @@ export default function AIIntelligencePage() {
   };
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <AppPageSkeleton rows={5} />;
   }
 
   if (!business) {

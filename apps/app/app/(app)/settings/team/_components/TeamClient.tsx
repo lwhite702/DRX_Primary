@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -26,11 +27,14 @@ import {
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { toast } from "sonner";
-import { ShieldAlert } from "lucide-react";
+import { Building2, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface TeamMember {
   id: string;
@@ -42,38 +46,59 @@ interface TeamMember {
 }
 
 export default function TeamClient() {
-  const { business } = useBusiness();
+  const router = useRouter();
+  const { business, loading: businessLoading } = useBusiness();
   const { hasPermission, loading: permsLoading } = usePermission(business?.id);
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedBusinessId, setLoadedBusinessId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{
+    businessId: string;
+    message: string;
+  } | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("cashier");
   const [inviting, setInviting] = useState(false);
 
-  useEffect(() => {
-    if (business?.id) {
-      fetchTeam();
+  const fetchTeam = useCallback(async (signal?: AbortSignal) => {
+    if (!business?.id) {
+      setUsers([]);
+      setLoadedBusinessId(null);
+      setLoading(false);
+      setLoadError(null);
+      return;
+    }
+
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const response = await fetch(`/api/team?business_id=${business.id}`, { signal });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) throw new Error(result.error || "Failed to load team members");
+
+      setUsers(result.data || []);
+      setLoadedBusinessId(business.id);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      console.error("Error fetching team:", error);
+      setLoadError({
+        businessId: business.id,
+        message:
+          error instanceof Error ? error.message : "Failed to load team members",
+      });
+      toast.error("Failed to load team members");
+    } finally {
+      if (!signal?.aborted) setLoading(false);
     }
   }, [business?.id]);
 
-  const fetchTeam = async () => {
-    if (!business?.id) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/team?business_id=${business.id}`);
-      const result = await response.json();
-
-      if (!response.ok) throw new Error(result.error);
-
-      setUsers(result.data || []);
-    } catch (error) {
-      console.error("Error fetching team:", error);
-      toast.error("Failed to load team members");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchTeam(controller.signal);
+    return () => controller.abort();
+  }, [fetchTeam]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     if (!business?.id) return;
@@ -148,8 +173,40 @@ export default function TeamClient() {
     }
   };
 
-  if (permsLoading || loading) {
-    return <div className="p-8">Loading...</div>;
+  if (businessLoading) {
+    return <AppPageSkeleton rows={5} />;
+  }
+
+  if (!business) {
+    return (
+      <EmptyState
+        icon={Building2}
+        title="Finish business setup"
+        description="Create your business profile before inviting or managing team members."
+        actionLabel="Continue setup"
+        onAction={() => router.push("/onboarding")}
+        className="m-4 md:m-8"
+      />
+    );
+  }
+
+  const currentLoadError =
+    loadError && loadError.businessId === business.id ? loadError : null;
+
+  if (currentLoadError) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorState
+          title="Team members could not be loaded"
+          message={currentLoadError.message}
+          onRetry={() => void fetchTeam()}
+        />
+      </div>
+    );
+  }
+
+  if (permsLoading || loading || loadedBusinessId !== business.id) {
+    return <AppPageSkeleton rows={5} />;
   }
 
   // Check permission
@@ -250,6 +307,13 @@ export default function TeamClient() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {!users.length ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                    No additional team members have been added yet.
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>

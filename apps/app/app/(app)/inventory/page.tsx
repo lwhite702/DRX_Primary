@@ -18,10 +18,13 @@ import {
 import { useRouter } from "next/navigation";
 import { drxCopy } from "@/lib/copy/drx";
 import { Tour } from "@/components/ui/tour";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PackageOpen } from "lucide-react";
 
 export default function InventoryPage() {
   const router = useRouter();
-  const { business } = useBusiness();
+  const { business, loading: businessLoading } = useBusiness();
   const {
     inventory,
     showDialog,
@@ -34,11 +37,20 @@ export default function InventoryPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  if (businessLoading) {
+    return <AppPageSkeleton rows={5} />;
+  }
+
   if (!business) {
     return (
-      <div className="p-4 md:p-8 text-center text-muted-foreground">
-        {drxCopy.inventory.missingBusiness}
-      </div>
+      <EmptyState
+        icon={PackageOpen}
+        title="Finish business setup"
+        description={drxCopy.inventory.missingBusiness}
+        actionLabel="Continue setup"
+        onAction={() => router.push("/onboarding")}
+        className="m-4 md:m-8"
+      />
     );
   }
 

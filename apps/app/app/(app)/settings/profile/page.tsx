@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Lock, User, Settings } from "lucide-react";
 import { useUser } from "@/lib/adapters/auth/ui";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <AppPageSkeleton rows={2} className="mx-auto max-w-2xl" />;
   }
 
   return (

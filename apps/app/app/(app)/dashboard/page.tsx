@@ -11,21 +11,21 @@ import { OperatorSnapshot } from "./_components/OperatorSnapshot";
 import { QuickActions } from "./_components/QuickActions";
 import { DashboardAlerts } from "./_components/DashboardAlerts";
 import { ActivityTimeline } from "./_components/ActivityTimeline";
-import { Shortcuts } from "./_components/Shortcuts";
 import { TopMovers } from "./_components/TopMovers";
-import { PinnedPanel } from "./_components/PinnedPanel";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, RefreshCw } from "lucide-react";
 import { ErrorState } from "@/components/ui/error-state";
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
-  const { preferences, saving, setPinnedItemIds } = useDashboardPreferences();
+  const { preferences } = useDashboardPreferences();
   const {
     stats,
     loading: statsLoading,
+    refreshing,
     error,
     refresh,
   } = useDashboardData(business?.id);
@@ -49,7 +49,7 @@ export default function DashboardPage() {
       );
   }
 
-  if (error || !stats) {
+  if (!stats) {
     return (
       <div className="p-4 md:p-8">
         <ErrorState
@@ -62,85 +62,69 @@ export default function DashboardPage() {
 
   const preset = preferences.preset;
   const showAlerts = stats.lowStockCount > 0 || stats.overdueCount > 0;
-
-  const pinnedPanel = (
-    <PinnedPanel
-      preset={preset}
-      pinnedItemIds={preferences.pinnedItemIds}
-      saving={saving}
-      onChange={setPinnedItemIds}
-    />
-  );
-
-  const snapshot = (
-    <OperatorSnapshot
-      stats={stats}
-      compact={preset === "checkout"}
-      emphasizeInventory={preset === "inventory"}
-    />
-  );
-
-  const alerts = showAlerts ? <DashboardAlerts stats={stats} /> : null;
+  const hasActivity = stats.recentActivity.length > 0;
+  const hasMovers = stats.topMovers.length > 0;
 
   return (
     <div className="min-h-screen bg-background p-4 font-sans text-foreground selection:bg-accent selection:text-black md:p-8">
-      <div className="mx-auto max-w-[1600px] space-y-8">
+      <div className="mx-auto max-w-[1400px] space-y-6">
         <SetupGuide />
 
         <PageHeader
           title="Operator Dashboard"
-          description="Revenue, stock risk, and the next actions that keep the shift moving."
+          description="Today’s business health, the exceptions that need attention, and your next action."
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void refresh()}
+            disabled={refreshing}
+            aria-label={refreshing ? "Refreshing dashboard data" : "Refresh dashboard data"}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
+            {refreshing ? "Refreshing" : "Refresh"}
+          </Button>
+        </PageHeader>
+
+        {error ? (
+          <div
+            role="status"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3 text-sm text-white/80"
+          >
+            <span>Could not refresh the dashboard. Showing the last loaded values.</span>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refresh()}>
+              Try again
+            </Button>
+          </div>
+        ) : null}
+
+        <OperatorSnapshot
+          stats={stats}
+          emphasizeInventory={preset === "inventory"}
         />
 
-        {preset === "checkout" ? (
-          <div className="space-y-8">
-            <QuickActions preset={preset} />
-            <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-              <div className="space-y-8 xl:col-span-2">
-                {snapshot}
-                {alerts}
-                <Shortcuts compact />
-                <TopMovers movers={stats.topMovers} totalRevenue={stats.salesToday} compact />
-              </div>
-              <div className="space-y-8">
-                {pinnedPanel}
-                <ActivityTimeline activities={stats.recentActivity} compact />
-              </div>
-            </div>
+        {showAlerts ? <DashboardAlerts stats={stats} /> : null}
+
+        <QuickActions preset={preset} />
+
+        {hasActivity || hasMovers ? (
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            {hasActivity ? (
+              <ActivityTimeline activities={stats.recentActivity} compact />
+            ) : null}
+            {hasMovers ? (
+              <TopMovers
+                movers={stats.topMovers}
+                totalRevenue={stats.salesToday}
+                compact
+              />
+            ) : null}
           </div>
-        ) : preset === "inventory" ? (
-          <div className="space-y-8">
-            {snapshot}
-            <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-              <div className="space-y-8 xl:col-span-2">
-                {alerts}
-                <TopMovers movers={stats.topMovers} totalRevenue={stats.salesToday} />
-                <ActivityTimeline activities={stats.recentActivity} />
-                <QuickActions preset={preset} compact />
-              </div>
-              <div className="space-y-8">
-                {pinnedPanel}
-                <Shortcuts compact />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {snapshot}
-            {alerts}
-            <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-              <div className="space-y-8 xl:col-span-2">
-                <QuickActions preset={preset} />
-                <ActivityTimeline activities={stats.recentActivity} />
-                <Shortcuts compact />
-              </div>
-              <div className="space-y-8">
-                {pinnedPanel}
-                <TopMovers movers={stats.topMovers} totalRevenue={stats.salesToday} />
-              </div>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
