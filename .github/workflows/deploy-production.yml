@@ -86,13 +86,26 @@ jobs:
           fi
           echo "preview-url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
       - name: Smoke test production health endpoint
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
         run: |
           set -euo pipefail
           HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
-          if [ -z "$HEALTH_URL" ]; then
-            HEALTH_URL="${{ steps.vercel.outputs.preview-url }}/api/health"
+          if [ -n "$HEALTH_URL" ]; then
+            HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
+          else
+            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              --deployment "${{ steps.vercel.outputs.preview-url }}" \
+              --yes \
+              --token "$VERCEL_TOKEN" \
+              --scope "$VERCEL_SCOPE")
           fi
-          if [[ "$HEALTH_URL" != http://* && "$HEALTH_URL" != https://* ]]; then
-            HEALTH_URL="https://$HEALTH_URL"
-          fi
-          curl -fsSL "$HEALTH_URL"
+          HEALTH_RESPONSE="$HEALTH_RESPONSE" node -e '
+            const response = JSON.parse(process.env.HEALTH_RESPONSE);
+            if (response.status !== "healthy" || response.checks?.database !== true) {
+              throw new Error("Production health check did not report a healthy database");
+            }
+          '
