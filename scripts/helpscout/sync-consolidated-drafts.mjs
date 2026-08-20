@@ -101,13 +101,41 @@ function parseSource(source, filename) {
 
 async function main() {
   const live = process.argv.includes("--live");
+  const verify = process.argv.includes("--verify");
   const apiKey = process.env.HELPSCOUT_DOCS_API_KEY || process.env.HELPSCOUT_API_KEY;
   const plan = [];
+
+  if (live && verify) {
+    throw new Error("Use either --live or --verify, not both.");
+  }
 
   for (const [filename, articleId] of targets) {
     const source = await fs.readFile(path.join(SOURCE_DIR, filename), "utf8");
     const { title, html } = parseSource(source, filename);
     plan.push({ filename, articleId, title, bytes: Buffer.byteLength(html) });
+
+    if (verify) {
+      if (!apiKey) {
+        throw new Error("Set HELPSCOUT_DOCS_API_KEY in the secret environment before using --verify.");
+      }
+
+      const response = await fetch(`${API_BASE}/articles/${articleId}?draft=true`, {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${apiKey}:X`).toString("base64")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`${articleId} draft read-back returned ${response.status}.`);
+      }
+
+      const payload = await response.json();
+      const article = payload.article || payload;
+      if (article.text !== html) {
+        throw new Error(`${articleId} draft body does not match ${filename}.`);
+      }
+      continue;
+    }
 
     if (!live) continue;
     if (!apiKey) {
@@ -130,7 +158,13 @@ async function main() {
   }
 
   console.table(plan);
-  console.log(live ? `Saved ${plan.length} Help Scout drafts.` : `Dry run: ${plan.length} drafts would be saved.`);
+  if (verify) {
+    console.log(`Verified ${plan.length} Help Scout drafts against source.`);
+  } else if (live) {
+    console.log(`Saved ${plan.length} Help Scout drafts.`);
+  } else {
+    console.log(`Dry run: ${plan.length} drafts would be saved.`);
+  }
 }
 
 main().catch((error) => {
