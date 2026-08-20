@@ -3,6 +3,25 @@ import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 
+const productRecord = v.object({
+  _id: v.id("products"),
+  _creationTime: v.number(),
+  businessId: v.id("businesses"),
+  sku: v.string(),
+  productName: v.string(),
+  description: v.optional(v.string()),
+  category: v.optional(v.string()),
+  sellingPriceCents: v.number(),
+  unitCostCents: v.number(),
+  isTaxable: v.optional(v.boolean()),
+  quantityOnHandGrams: v.number(),
+  reorderLevelGrams: v.number(),
+  allowFractionalWeight: v.boolean(),
+  isActive: v.boolean(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
 export const createProduct = mutation({
   args: {
     sku: v.string(),
@@ -11,8 +30,11 @@ export const createProduct = mutation({
     category: v.optional(v.string()),
     sellingPriceCents: v.number(),
     unitCostCents: v.number(),
+    isTaxable: v.optional(v.boolean()),
+    allowFractionalWeight: v.optional(v.boolean()),
     reorderLevelGrams: v.optional(v.number()),
   },
+  returns: v.id("products"),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_INVENTORY");
@@ -21,13 +43,15 @@ export const createProduct = mutation({
     // Check SKU uniqueness per business
     const existing = await ctx.db
       .query("products")
-      .withIndex("by_businessId_and_sku", (q: any) =>
-        q.eq("businessId", auth.businessId).eq("sku", args.sku)
+      .withIndex("by_businessId_and_sku", (q) =>
+        q.eq("businessId", auth.businessId).eq("sku", args.sku),
       )
       .unique();
 
     if (existing) {
-      throw new Error(`ALREADY_EXISTS: Product SKU '${args.sku}' already exists in catalog`);
+      throw new Error(
+        `ALREADY_EXISTS: Product SKU '${args.sku}' already exists in catalog`,
+      );
     }
 
     const productId = await ctx.db.insert("products", {
@@ -38,9 +62,10 @@ export const createProduct = mutation({
       category: args.category || "General",
       sellingPriceCents: args.sellingPriceCents,
       unitCostCents: args.unitCostCents,
+      isTaxable: args.isTaxable ?? true,
       quantityOnHandGrams: 0,
       reorderLevelGrams: args.reorderLevelGrams || 10,
-      allowFractionalWeight: true,
+      allowFractionalWeight: args.allowFractionalWeight ?? true,
       isActive: true,
       createdAt: now,
       updatedAt: now,
@@ -62,6 +87,7 @@ export const createProduct = mutation({
 
 export const listProducts = query({
   args: {},
+  returns: v.array(productRecord),
   handler: async (ctx) => {
     const auth = await requireUserAndBusiness(ctx);
     const products = await ctx.db

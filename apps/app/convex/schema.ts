@@ -78,6 +78,7 @@ export default defineSchema({
     category: v.optional(v.string()),
     sellingPriceCents: v.number(), // Integer cents
     unitCostCents: v.number(), // Integer cents
+    isTaxable: v.optional(v.boolean()),
     quantityOnHandGrams: v.number(), // Weight in grams or unit count
     reorderLevelGrams: v.number(),
     allowFractionalWeight: v.boolean(),
@@ -149,11 +150,13 @@ export default defineSchema({
     orderNumber: v.string(),
     orderStatus: v.string(), // "completed" | "pending" | "cancelled" | "refunded"
     subtotalCents: v.number(),
+    taxableSubtotalCents: v.optional(v.number()),
     taxAmountCents: v.number(),
     totalAmountCents: v.number(),
     amountPaidCents: v.number(),
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
+    checkoutFingerprint: v.optional(v.string()),
     createdBy: v.string(),
     offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
     offlineDeviceId: v.optional(v.string()),

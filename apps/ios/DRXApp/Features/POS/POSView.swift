@@ -45,20 +45,21 @@ final class POSStore {
             min(CurrencyInput.maximumTransactionCents, subtotal + min(item.lineTotal, CurrencyInput.maximumTransactionCents - subtotal))
         }
     }
+    var cartTaxableSubtotalCents: Int {
+        cartItems.filter { $0.product.isSubjectToTax }.reduce(0) { subtotal, item in
+            min(CurrencyInput.maximumTransactionCents, subtotal + min(item.lineTotal, CurrencyInput.maximumTransactionCents - subtotal))
+        }
+    }
     var cartTaxCents: Int {
         guard let business else { return 0 }
         return CheckoutMath.taxCents(
-            subtotalCents: cartSubtotalCents,
+            subtotalCents: cartTaxableSubtotalCents,
             collectTax: business.collectTax,
             taxRateBps: business.taxRateBps
         )
     }
     var cartTotalCents: Int {
-        CheckoutMath.totalCents(
-            subtotalCents: cartSubtotalCents,
-            collectTax: business?.collectTax ?? false,
-            taxRateBps: business?.taxRateBps ?? 0
-        )
+        min(CurrencyInput.maximumTransactionCents, cartSubtotalCents + min(cartTaxCents, CurrencyInput.maximumTransactionCents - cartSubtotalCents))
     }
 
     var cartIsEmpty: Bool { cartItems.isEmpty }

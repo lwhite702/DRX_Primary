@@ -41,6 +41,7 @@ struct DRXProduct: Decodable, Identifiable, Sendable {
     let quantityOnHandGrams: Double
     let reorderLevelGrams: Double
     let allowFractionalWeight: Bool
+    let isTaxable: Bool?
     let isActive: Bool
     let createdAt: Double
     let updatedAt: Double
@@ -49,7 +50,7 @@ struct DRXProduct: Decodable, Identifiable, Sendable {
         case id = "_id"
         case sku, productName, description, category
         case sellingPriceCents, unitCostCents
-        case quantityOnHandGrams, reorderLevelGrams, allowFractionalWeight
+        case quantityOnHandGrams, reorderLevelGrams, allowFractionalWeight, isTaxable
         case isActive, createdAt, updatedAt
     }
 
@@ -58,6 +59,7 @@ struct DRXProduct: Decodable, Identifiable, Sendable {
     var stockFormatted: String { formatGrams(quantityOnHandGrams) }
     var isLowStock: Bool { quantityOnHandGrams <= reorderLevelGrams && quantityOnHandGrams > 0 }
     var isOutOfStock: Bool { quantityOnHandGrams <= 0 }
+    var isSubjectToTax: Bool { isTaxable != false }
 }
 
 // MARK: - Customer
