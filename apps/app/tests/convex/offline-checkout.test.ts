@@ -443,26 +443,43 @@ describe("Android offline checkout", () => {
       taxAmountCents: 100,
     });
 
-    await expect(
-      owner.mutation(api.offline.syncSale, {
-        ...common,
-        idempotencyKey: "offline-fractional-unit",
-        sequence: 2,
-        items: [
-          {
-            productId: unitProductId,
-            quantityGrams: 0.5,
-            unitPriceCents: 1000,
-          },
-        ],
-        amountPaidCents: 550,
-      }),
-    ).rejects.toThrow("whole-unit quantity");
+    const fractionalQuarantine = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-fractional-unit",
+      sequence: 2,
+      items: [
+        {
+          productId: unitProductId,
+          quantityGrams: 0.5,
+          unitPriceCents: 1000,
+        },
+      ],
+      amountPaidCents: 550,
+    });
+    expect(fractionalQuarantine).toMatchObject({
+      status: "quarantined",
+      saleId: null,
+      totalAmountCents: 550,
+    });
+    const fractionalRetry = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-fractional-unit",
+      sequence: 2,
+      items: [
+        {
+          productId: unitProductId,
+          quantityGrams: 0.5,
+          unitPriceCents: 1000,
+        },
+      ],
+      amountPaidCents: 550,
+    });
+    expect(fractionalRetry.status).toBe("quarantined");
 
     const quarantined = await owner.mutation(api.offline.syncSale, {
       ...common,
       idempotencyKey: "offline-inactive-customer",
-      sequence: 2,
+      sequence: 3,
       customerId: inactiveCustomerId,
       items: [
         {
@@ -480,7 +497,7 @@ describe("Android offline checkout", () => {
     const quarantinedRetry = await owner.mutation(api.offline.syncSale, {
       ...common,
       idempotencyKey: "offline-inactive-customer",
-      sequence: 2,
+      sequence: 3,
       customerId: inactiveCustomerId,
       items: [
         {
@@ -504,7 +521,7 @@ describe("Android offline checkout", () => {
     const unlimitedCredit = await owner.mutation(api.offline.syncSale, {
       ...common,
       idempotencyKey: "offline-unlimited-credit",
-      sequence: 3,
+      sequence: 4,
       customerId: unlimitedCustomerId,
       items: [
         {

@@ -404,6 +404,7 @@ export const syncSale = mutation({
       product: Doc<"products">;
       lineTotalCents: number;
     }> = [];
+    let permanentValidationReason: string | null = null;
     const conflictInputs: Array<{
       kind:
         | "inventory_shortfall"
@@ -427,9 +428,7 @@ export const syncSale = mutation({
         !product.allowFractionalWeight &&
         !Number.isInteger(item.quantityGrams)
       ) {
-        throw new Error(
-          `INVALID_ARGUMENT: Product '${product.productName}' requires a whole-unit quantity`,
-        );
+        permanentValidationReason = "fractional_quantity_not_allowed";
       }
       const lineTotalCents = Math.round(
         item.quantityGrams * item.unitPriceCents,
@@ -465,6 +464,29 @@ export const syncSale = mutation({
       authorization?.collectTax ? authorization.taxRateBps : 0,
     );
     const totalAmountCents = subtotalCents + taxAmountCents;
+    if (permanentValidationReason) {
+      const submissionId = await quarantine(ctx, {
+        businessId: auth.businessId,
+        authorizationId: authorization?._id,
+        deviceId: args.deviceId,
+        userId: auth.userId,
+        idempotencyKey: args.idempotencyKey,
+        sequence: args.sequence,
+        occurredAt: args.occurredAt,
+        paymentMethod: args.paymentMethod,
+        totalAmountCents,
+        itemCount: args.items.length,
+        reason: permanentValidationReason,
+      });
+      return {
+        status: "quarantined" as const,
+        submissionId,
+        saleId: null,
+        orderNumber: null,
+        totalAmountCents,
+        conflicts: [],
+      };
+    }
     const invalidReason = !authorization
       ? "authorization_missing"
       : authorization.userId !== auth.userId ||
