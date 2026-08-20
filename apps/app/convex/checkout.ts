@@ -147,7 +147,32 @@ export const processCheckout = mutation({
       .unique();
 
     if (existingOrder) {
-      if (existingOrder.checkoutFingerprint !== fingerprint) {
+      let existingFingerprint = existingOrder.checkoutFingerprint;
+      if (!existingFingerprint) {
+        const existingLineItems = await ctx.db
+          .query("salesLineItems")
+          .withIndex("by_saleId", (q) => q.eq("saleId", existingOrder._id))
+          .collect();
+        if (
+          existingLineItems.length > 0 &&
+          (existingOrder.paymentMethod === "cash" ||
+            existingOrder.paymentMethod === "card" ||
+            existingOrder.paymentMethod === "credit")
+        ) {
+          existingFingerprint = createCheckoutFingerprint({
+            customerId: existingOrder.customerId,
+            items: normalizeItems(
+              existingLineItems.map((lineItem) => ({
+                productId: lineItem.productId,
+                quantityGrams: lineItem.quantityGrams,
+              })),
+            ),
+            paymentMethod: existingOrder.paymentMethod,
+            amountPaidCents: existingOrder.amountPaidCents,
+          });
+        }
+      }
+      if (existingFingerprint !== fingerprint) {
         throw new Error(
           "IDEMPOTENCY_CONFLICT: Order number was already used for a different checkout payload",
         );
@@ -225,7 +250,7 @@ export const processCheckout = mutation({
       const lineTotalCents = Math.round(
         item.quantityGrams * product.sellingPriceCents,
       );
-      if (!Number.isSafeInteger(lineTotalCents) || lineTotalCents < 0) {
+      if (!Number.isSafeInteger(lineTotalCents) || lineTotalCents <= 0) {
         throw new Error(
           "INVALID_ARGUMENT: Calculated line total is outside the safe range",
         );

@@ -147,6 +147,92 @@ describe("authoritative Convex checkout", () => {
     expect(records.product?.quantityOnHandGrams).toBe(8);
   });
 
+  it("deduplicates exact retries of legacy sales without stored fingerprints", async () => {
+    const { t, owner, businessId } = await setupStore({ collectTax: false });
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "LEGACY-1",
+      productName: "Legacy Product",
+      sellingPriceCents: 1000,
+      unitCostCents: 500,
+    });
+    const saleId = await t.run(async (ctx) => {
+      const now = Date.now();
+      const id = await ctx.db.insert("sales", {
+        businessId,
+        orderNumber: "LEGACY-ORDER",
+        orderStatus: "completed",
+        subtotalCents: 1000,
+        taxAmountCents: 0,
+        totalAmountCents: 1000,
+        amountPaidCents: 1000,
+        changeAmountCents: 0,
+        paymentMethod: "cash",
+        createdBy: "checkout_owner",
+        createdAt: now,
+        updatedAt: now,
+      });
+      await ctx.db.insert("salesLineItems", {
+        saleId: id,
+        productId,
+        quantityGrams: 1,
+        unitPriceCents: 1000,
+        lineTotalCents: 1000,
+        unitCostCents: 500,
+        createdAt: now,
+      });
+      return id;
+    });
+
+    const retry = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "LEGACY-ORDER",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "cash",
+      amountPaidCents: 1000,
+    });
+    expect(retry).toMatchObject({ saleId, status: "ALREADY_PROCESSED" });
+
+    await expect(
+      owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "LEGACY-ORDER",
+        items: [{ productId, quantityGrams: 2 }],
+        paymentMethod: "cash",
+        amountPaidCents: 2000,
+      }),
+    ).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+  });
+
+  it("rejects positive quantities that round to a zero-cent line", async () => {
+    const { t, owner } = await setupStore({ collectTax: false });
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "TINY-1",
+      productName: "Tiny Fraction Product",
+      sellingPriceCents: 1000,
+      unitCostCents: 500,
+      allowFractionalWeight: true,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId,
+      totalWeightGrams: 1,
+      totalCostCents: 500,
+    });
+
+    await expect(
+      owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "ZERO-CENT-LINE",
+        items: [{ productId, quantityGrams: 0.0001 }],
+        paymentMethod: "cash",
+        amountPaidCents: 0,
+      }),
+    ).rejects.toThrow("Calculated line total");
+
+    const records = await t.run(async (ctx) => ({
+      sales: await ctx.db.query("sales").collect(),
+      product: await ctx.db.get(productId),
+    }));
+    expect(records.sales).toHaveLength(0);
+    expect(records.product?.quantityOnHandGrams).toBe(1);
+  });
+
   it("enforces tenant, permission, quantity, stock, and credit boundaries atomically", async () => {
     const { t, owner, businessId } = await setupStore({ collectTax: false });
     const unitProductId = await owner.mutation(api.products.createProduct, {

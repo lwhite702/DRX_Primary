@@ -75,13 +75,24 @@ export const configurePolicy = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requireOwnerOrAdmin(auth.userRecord.role);
-    requirePositiveInteger(args.authorizationWindowMinutes, "authorizationWindowMinutes");
+    requirePositiveInteger(
+      args.authorizationWindowMinutes,
+      "authorizationWindowMinutes",
+    );
     requirePositiveInteger(args.perSaleLimitCents, "perSaleLimitCents");
-    requirePositiveInteger(args.perDeviceSessionLimitCents, "perDeviceSessionLimitCents");
-    requirePositiveInteger(args.offlineCreditLimitCents, "offlineCreditLimitCents");
+    requirePositiveInteger(
+      args.perDeviceSessionLimitCents,
+      "perDeviceSessionLimitCents",
+    );
+    requirePositiveInteger(
+      args.offlineCreditLimitCents,
+      "offlineCreditLimitCents",
+    );
     requirePositiveInteger(args.maxQueuedSales, "maxQueuedSales");
     if (args.perSaleLimitCents > args.perDeviceSessionLimitCents) {
-      throw new Error("INVALID_ARGUMENT: Per-sale limit cannot exceed the device-session limit");
+      throw new Error(
+        "INVALID_ARGUMENT: Per-sale limit cannot exceed the device-session limit",
+      );
     }
 
     const existing = await ctx.db
@@ -93,7 +104,10 @@ export const configurePolicy = mutation({
     const values = { ...args, version, updatedBy: auth.userId, updatedAt: now };
     const policyId = existing
       ? (await ctx.db.patch(existing._id, values), existing._id)
-      : await ctx.db.insert("offlinePolicies", { businessId: auth.businessId, ...values });
+      : await ctx.db.insert("offlinePolicies", {
+          businessId: auth.businessId,
+          ...values,
+        });
 
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,
@@ -194,7 +208,9 @@ export const issueAuthorization = mutation({
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
       .unique();
     if (!policy?.enabled) {
-      throw new Error("OFFLINE_DISABLED: An owner must configure and enable offline checkout");
+      throw new Error(
+        "OFFLINE_DISABLED: An owner must configure and enable offline checkout",
+      );
     }
     const device = await ctx.db
       .query("registeredDevices")
@@ -203,7 +219,9 @@ export const issueAuthorization = mutation({
       )
       .unique();
     if (!device || device.status !== "active") {
-      throw new Error("DEVICE_NOT_AUTHORIZED: Register an active Android device first");
+      throw new Error(
+        "DEVICE_NOT_AUTHORIZED: Register an active Android device first",
+      );
     }
     const issuedAt = Date.now();
     const expiresAt = issuedAt + policy.authorizationWindowMinutes * 60_000;
@@ -279,7 +297,10 @@ async function quarantine(
     action: "OFFLINE_SALE_QUARANTINED",
     entityType: "offline_sale_submission",
     entityId: submissionId,
-    metadata: JSON.stringify({ reason: input.reason, itemCount: input.itemCount }),
+    metadata: JSON.stringify({
+      reason: input.reason,
+      itemCount: input.itemCount,
+    }),
     timestamp: Date.now(),
   });
   return submissionId;
@@ -311,13 +332,20 @@ export const syncSale = mutation({
     const duplicate = await ctx.db
       .query("offlineSaleSubmissions")
       .withIndex("by_businessId_and_idempotencyKey", (q) =>
-        q.eq("businessId", auth.businessId).eq("idempotencyKey", args.idempotencyKey),
+        q
+          .eq("businessId", auth.businessId)
+          .eq("idempotencyKey", args.idempotencyKey),
       )
       .unique();
     if (duplicate) {
-      const duplicateSale = duplicate.saleId ? await ctx.db.get(duplicate.saleId) : null;
+      const duplicateSale = duplicate.saleId
+        ? await ctx.db.get(duplicate.saleId)
+        : null;
       return {
-        status: duplicate.status === "quarantined" ? ("quarantined" as const) : ("duplicate" as const),
+        status:
+          duplicate.status === "quarantined"
+            ? ("quarantined" as const)
+            : ("duplicate" as const),
         submissionId: duplicate._id,
         saleId: duplicate.saleId ?? null,
         orderNumber: duplicateSale?.orderNumber ?? null,
@@ -327,16 +355,28 @@ export const syncSale = mutation({
     }
 
     if (args.items.length === 0 || args.items.length > 50) {
-      throw new Error("INVALID_ARGUMENT: Offline sale must contain 1 to 50 items");
+      throw new Error(
+        "INVALID_ARGUMENT: Offline sale must contain 1 to 50 items",
+      );
     }
     requirePositiveInteger(args.sequence, "sequence");
-    if (!Number.isSafeInteger(args.amountPaidCents) || args.amountPaidCents < 0) {
-      throw new Error("INVALID_ARGUMENT: amountPaidCents must be a non-negative integer");
+    if (
+      !Number.isSafeInteger(args.amountPaidCents) ||
+      args.amountPaidCents < 0
+    ) {
+      throw new Error(
+        "INVALID_ARGUMENT: amountPaidCents must be a non-negative integer",
+      );
     }
     let subtotalCents = 0;
+    let taxableSubtotalCents = 0;
     const aggregatedItems = new Map<
       Id<"products">,
-      { productId: Id<"products">; quantityGrams: number; unitPriceCents: number }
+      {
+        productId: Id<"products">;
+        quantityGrams: number;
+        unitPriceCents: number;
+      }
     >();
     for (const item of args.items) {
       if (!Number.isFinite(item.quantityGrams) || item.quantityGrams <= 0) {
@@ -345,7 +385,9 @@ export const syncSale = mutation({
       requirePositiveInteger(item.unitPriceCents, "unitPriceCents");
       const existing = aggregatedItems.get(item.productId);
       if (existing && existing.unitPriceCents !== item.unitPriceCents) {
-        throw new Error("INVALID_ARGUMENT: Duplicate products must use one authorized price");
+        throw new Error(
+          "INVALID_ARGUMENT: Duplicate products must use one authorized price",
+        );
       }
       aggregatedItems.set(item.productId, {
         productId: item.productId,
@@ -354,12 +396,20 @@ export const syncSale = mutation({
       });
     }
     const currentProducts: Array<{
-      item: { productId: Id<"products">; quantityGrams: number; unitPriceCents: number };
+      item: {
+        productId: Id<"products">;
+        quantityGrams: number;
+        unitPriceCents: number;
+      };
       product: Doc<"products">;
       lineTotalCents: number;
     }> = [];
     const conflictInputs: Array<{
-      kind: "inventory_shortfall" | "credit_limit_exceeded" | "stale_price" | "clock_skew";
+      kind:
+        | "inventory_shortfall"
+        | "credit_limit_exceeded"
+        | "stale_price"
+        | "clock_skew";
       productId?: Id<"products">;
       customerId?: Id<"customers">;
       expectedValue?: number;
@@ -369,13 +419,28 @@ export const syncSale = mutation({
     for (const item of aggregatedItems.values()) {
       const product = await ctx.db.get(item.productId);
       if (!product || product.businessId !== auth.businessId) {
-        throw new Error("FORBIDDEN: Offline product is outside the active tenant");
+        throw new Error(
+          "FORBIDDEN: Offline product is outside the active tenant",
+        );
       }
-      const lineTotalCents = Math.round(item.quantityGrams * item.unitPriceCents);
+      if (
+        !product.allowFractionalWeight &&
+        !Number.isInteger(item.quantityGrams)
+      ) {
+        throw new Error(
+          `INVALID_ARGUMENT: Product '${product.productName}' requires a whole-unit quantity`,
+        );
+      }
+      const lineTotalCents = Math.round(
+        item.quantityGrams * item.unitPriceCents,
+      );
       if (!Number.isSafeInteger(lineTotalCents) || lineTotalCents <= 0) {
         throw new Error("INVALID_ARGUMENT: Invalid offline line total");
       }
       subtotalCents += lineTotalCents;
+      if (product.isTaxable !== false) {
+        taxableSubtotalCents += lineTotalCents;
+      }
       currentProducts.push({ item, product, lineTotalCents });
       if (product.sellingPriceCents !== item.unitPriceCents) {
         conflictInputs.push({
@@ -383,23 +448,27 @@ export const syncSale = mutation({
           productId: product._id,
           expectedValue: item.unitPriceCents,
           actualValue: product.sellingPriceCents,
-          summary: "Offline sale used an authorized cached price that changed before sync.",
+          summary:
+            "Offline sale used an authorized cached price that changed before sync.",
         });
       }
     }
 
     const authorization = await ctx.db.get(args.authorizationId);
     if (authorization && authorization.businessId !== auth.businessId) {
-      throw new Error("FORBIDDEN: Offline authorization is outside the active tenant");
+      throw new Error(
+        "FORBIDDEN: Offline authorization is outside the active tenant",
+      );
     }
     const taxAmountCents = calculateTaxCents(
-      subtotalCents,
+      taxableSubtotalCents,
       authorization?.collectTax ? authorization.taxRateBps : 0,
     );
     const totalAmountCents = subtotalCents + taxAmountCents;
     const invalidReason = !authorization
       ? "authorization_missing"
-      : authorization.userId !== auth.userId || authorization.deviceId !== args.deviceId
+      : authorization.userId !== auth.userId ||
+          authorization.deviceId !== args.deviceId
         ? "authorization_identity_mismatch"
         : authorization.status !== "active"
           ? "authorization_inactive"
@@ -408,7 +477,8 @@ export const syncSale = mutation({
             ? "authorization_time_window"
             : totalAmountCents > authorization.perSaleLimitCents
               ? "per_sale_limit_exceeded"
-              : authorization.usedCents + totalAmountCents > authorization.sessionLimitCents
+              : authorization.usedCents + totalAmountCents >
+                  authorization.sessionLimitCents
                 ? "session_limit_exceeded"
                 : authorization.usedSales + 1 > authorization.maxQueuedSales
                   ? "queued_sale_limit_exceeded"
@@ -440,18 +510,36 @@ export const syncSale = mutation({
       };
     }
 
-    if (args.paymentMethod === "cash" && args.amountPaidCents < totalAmountCents) {
-      throw new Error("PAYMENT_ERROR: Offline cash received is below the sale total");
+    if (
+      args.paymentMethod === "cash" &&
+      args.amountPaidCents < totalAmountCents
+    ) {
+      throw new Error(
+        "PAYMENT_ERROR: Offline cash received is below the sale total",
+      );
     }
     const customer = args.customerId ? await ctx.db.get(args.customerId) : null;
-    if (args.customerId && (!customer || customer.businessId !== auth.businessId)) {
-      throw new Error("FORBIDDEN: Offline customer is outside the active tenant");
+    if (
+      args.customerId &&
+      (!customer || customer.businessId !== auth.businessId)
+    ) {
+      throw new Error(
+        "FORBIDDEN: Offline customer is outside the active tenant",
+      );
+    }
+    if (customer && !customer.isActive) {
+      throw new Error("FORBIDDEN: Offline customer account is inactive");
     }
     if (args.paymentMethod === "credit") {
       if (!customer) {
-        throw new Error("PAYMENT_ERROR: Offline credit requires an existing tenant customer");
+        throw new Error(
+          "PAYMENT_ERROR: Offline credit requires an existing tenant customer",
+        );
       }
-      const currentAvailable = Math.max(0, customer.creditLimitCents - customer.totalCreditUsedCents);
+      const currentAvailable = Math.max(
+        0,
+        customer.creditLimitCents - customer.totalCreditUsedCents,
+      );
       if (totalAmountCents > currentAvailable) {
         conflictInputs.push({
           kind: "credit_limit_exceeded",
@@ -467,7 +555,8 @@ export const syncSale = mutation({
         kind: "clock_skew",
         expectedValue: Date.now(),
         actualValue: args.occurredAt,
-        summary: "Offline device time was more than five minutes ahead of server time.",
+        summary:
+          "Offline device time was more than five minutes ahead of server time.",
       });
     }
 
@@ -479,11 +568,14 @@ export const syncSale = mutation({
       orderNumber,
       orderStatus: "completed",
       subtotalCents,
+      taxableSubtotalCents,
       taxAmountCents,
       totalAmountCents,
       amountPaidCents: args.paymentMethod === "cash" ? args.amountPaidCents : 0,
       changeAmountCents:
-        args.paymentMethod === "cash" ? Math.max(0, args.amountPaidCents - totalAmountCents) : 0,
+        args.paymentMethod === "cash"
+          ? Math.max(0, args.amountPaidCents - totalAmountCents)
+          : 0,
       paymentMethod: args.paymentMethod,
       createdBy: auth.userId,
       offlineAuthorizationId: args.authorizationId,
@@ -504,34 +596,37 @@ export const syncSale = mutation({
         createdAt: now,
       });
       let remaining = item.quantityGrams;
-      let cursor: string | null = null;
-      while (remaining > 0) {
-        const page = await ctx.db
-          .query("inventoryBatches")
-          .withIndex("by_productId_and_receivedAt", (q) => q.eq("productId", item.productId))
-          .paginate({ cursor, numItems: 100 });
-        for (const batch of page.page) {
-          if (remaining <= 0) break;
-          if (batch.businessId !== auth.businessId || batch.remainingQuantityGrams <= 0) continue;
-          const allocated = Math.min(batch.remainingQuantityGrams, remaining);
-          await ctx.db.patch(batch._id, {
-            remainingQuantityGrams: batch.remainingQuantityGrams - allocated,
-            updatedAt: now,
-          });
-          await ctx.db.insert("salesAllocations", {
-            saleId,
-            lineItemId,
-            productId: item.productId,
-            batchId: batch._id,
-            quantityGrams: allocated,
-            unitCostPerGramCents: batch.unitCostPerGramCents,
-            extendedCostCents: Math.round(allocated * batch.unitCostPerGramCents),
-            createdAt: now,
-          });
-          remaining -= allocated;
-        }
-        if (page.isDone) break;
-        cursor = page.continueCursor;
+      const batches = await ctx.db
+        .query("inventoryBatches")
+        .withIndex("by_productId_and_receivedAt", (q) =>
+          q.eq("productId", item.productId),
+        )
+        .collect();
+      for (const batch of batches) {
+        if (remaining <= 0) break;
+        if (
+          batch.businessId !== auth.businessId ||
+          batch.remainingQuantityGrams <= 0
+        )
+          continue;
+        const allocated = Math.min(batch.remainingQuantityGrams, remaining);
+        await ctx.db.patch(batch._id, {
+          remainingQuantityGrams: batch.remainingQuantityGrams - allocated,
+          updatedAt: now,
+        });
+        await ctx.db.insert("salesAllocations", {
+          saleId,
+          lineItemId,
+          productId: item.productId,
+          batchId: batch._id,
+          quantityGrams: allocated,
+          unitCostPerGramCents: batch.unitCostPerGramCents,
+          extendedCostCents: Math.round(
+            allocated * batch.unitCostPerGramCents,
+          ),
+          createdAt: now,
+        });
+        remaining -= allocated;
       }
       if (remaining > 0) {
         conflictInputs.push({
@@ -615,7 +710,9 @@ export const syncSale = mutation({
 });
 
 export const listReconciliationCases = query({
-  args: { status: v.optional(v.union(v.literal("open"), v.literal("resolved"))) },
+  args: {
+    status: v.optional(v.union(v.literal("open"), v.literal("resolved"))),
+  },
   returns: v.array(
     v.object({
       _id: v.id("reconciliationCases"),
@@ -657,7 +754,10 @@ export const listReconciliationCases = query({
 
 export const resolveReconciliationCase = mutation({
   args: { caseId: v.id("reconciliationCases"), resolutionReason: v.string() },
-  returns: v.object({ caseId: v.id("reconciliationCases"), status: v.literal("resolved") }),
+  returns: v.object({
+    caseId: v.id("reconciliationCases"),
+    status: v.literal("resolved"),
+  }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requireOwnerOrAdmin(auth.userRecord.role);
@@ -667,7 +767,9 @@ export const resolveReconciliationCase = mutation({
     }
     const reason = args.resolutionReason.trim();
     if (reason.length < 4 || reason.length > 500) {
-      throw new Error("INVALID_ARGUMENT: Resolution reason must be 4 to 500 characters");
+      throw new Error(
+        "INVALID_ARGUMENT: Resolution reason must be 4 to 500 characters",
+      );
     }
     const now = Date.now();
     await ctx.db.patch(row._id, {
