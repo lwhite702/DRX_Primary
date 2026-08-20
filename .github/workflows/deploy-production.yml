@@ -100,10 +100,7 @@ jobs:
             fi
             HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
           else
-            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl \
-              --token "$VERCEL_TOKEN" \
-              --scope "$VERCEL_SCOPE" \
-              /api/health \
+            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
               --deployment "${{ steps.vercel.outputs.preview-url }}" \
               --yes)
           fi
