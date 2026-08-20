@@ -38,7 +38,6 @@ jobs:
         run: |
           set -euo pipefail
           for variable in \
-            CONVEX_DEPLOY_KEY \
             VERCEL_TOKEN \
             VERCEL_ORG_ID \
             VERCEL_PROJECT_ID_PRODUCTION \
@@ -49,8 +48,13 @@ jobs:
               exit 1
             fi
           done
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ -z "${CONVEX_DEPLOY_KEY:-}" ]; then
+            echo "Missing required production configuration: CONVEX_DEPLOY_KEY" >&2
+            exit 1
+          fi
 
       - name: Deploy Convex functions to Production
+        if: ${{ github.event_name != 'workflow_dispatch' || secrets.CONVEX_DEPLOY_KEY != '' }}
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         working-directory: ./apps/app
