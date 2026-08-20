@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { resolveTeamManagementContext } from "./_lib/server";
 import { clerkClient } from "@/lib/adapters/auth/server";
-import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, businessId } = await resolveAuthContext(request);
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveTeamManagementContext(request);
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
 
-    const business_id = businessId;
-    if (!(await hasBusinessPermission(userId, business_id, "staff.manage"))) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
+    const business_id = context.businessId;
 
     const teamRoles = await db.userRole.findMany({
       where: { businessId: business_id },
@@ -54,12 +53,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: enrichedTeam });
   } catch (error) {
-    console.error("Team API Error:", error);
+    console.error("Team API request failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
 }

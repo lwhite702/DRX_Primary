@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import {
   Card,
   CardContent,
@@ -28,6 +28,9 @@ import { usePermission } from "@/lib/hooks/use-permission";
 import { toast } from "sonner";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface TeamMember {
   id: string;
@@ -44,6 +47,10 @@ export default function TeamClient() {
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("cashier");
+  const [inviting, setInviting] = useState(false);
+
   useEffect(() => {
     if (business?.id) {
       fetchTeam();
@@ -81,14 +88,14 @@ export default function TeamClient() {
 
     setUpdating(userId);
     try {
-      const response = await fetch(`/api/team/members/${userId}/role`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-business-id": business.id,
+      const response = await fetch(
+        `/api/team/members/${encodeURIComponent(userId)}/role?business_id=${encodeURIComponent(business.id)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role: newRole }),
         },
-        body: JSON.stringify({ role: newRole }),
-      });
+      );
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || "Failed to update role");
@@ -106,6 +113,38 @@ export default function TeamClient() {
       );
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!business?.id || !inviteEmail.trim()) return;
+
+    setInviting(true);
+    try {
+      const response = await fetch(
+        `/api/team/members?business_id=${encodeURIComponent(business.id)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send invitation");
+      }
+
+      setInviteEmail("");
+      setInviteRole("cashier");
+      toast.success("Invitation sent");
+    } catch (error) {
+      console.error("Error inviting team member:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send invitation",
+      );
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -135,6 +174,60 @@ export default function TeamClient() {
                 You do not have permission to manage team members.
               </p>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {canManageUsers && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Invite a Team Member</CardTitle>
+            <CardDescription>
+              DRX sends a one-time invitation. Passwords are created privately
+              by the invited user.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_auto] md:items-end"
+              onSubmit={handleInvite}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="team-invite-email">Email address</Label>
+                <Input
+                  id="team-invite-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                  placeholder="operator@example.com"
+                  disabled={inviting}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-invite-role">Role</Label>
+                <Select
+                  value={inviteRole}
+                  onValueChange={setInviteRole}
+                  disabled={inviting}
+                >
+                  <SelectTrigger id="team-invite-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="staff">Staff</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" disabled={inviting}>
+                {inviting ? "Sending…" : "Send Invitation"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       )}
