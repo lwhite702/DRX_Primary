@@ -2,13 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
+  resolveAuthContext: vi.fn(),
+  hasBusinessPermission: vi.fn(),
   db: {
     businessProfile: {
-      findFirst: vi.fn(),
-    },
-    userRole: {
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
     },
     businessSettings: {
       findFirst: vi.fn(),
@@ -21,8 +19,12 @@ const mocks = vi.hoisted(() => ({
   decodeCustomerPii: vi.fn(),
 }));
 
-vi.mock("@/lib/adapters/auth/server", () => ({
-  auth: mocks.auth,
+vi.mock("@/app/api/pos/_lib/server", () => ({
+  resolveAuthContext: mocks.resolveAuthContext,
+}));
+
+vi.mock("@/lib/auth/server-guards", () => ({
+  hasBusinessPermission: mocks.hasBusinessPermission,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -39,9 +41,12 @@ import { POST } from "@/app/api/customers/route";
 describe("Customers API ephemeral controls", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.auth.mockResolvedValue({ userId: "user_1" });
-    mocks.db.businessProfile.findFirst.mockResolvedValue({ id: "biz_1" });
-    mocks.db.userRole.findFirst.mockResolvedValue(null);
+    mocks.resolveAuthContext.mockResolvedValue({
+      userId: "user_1",
+      businessId: "biz_1",
+    });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
     mocks.encodeCustomerPii.mockResolvedValue({
       aliasEncrypted: "enc",
       firstNameEncrypted: null,

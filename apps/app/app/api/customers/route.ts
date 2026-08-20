@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { encodeCustomerPii } from "@/lib/privacy/customer-pii";
 import { canWriteField } from "@/lib/privacy/privacy-policy";
@@ -8,23 +7,7 @@ import { findCustomersForSearch } from "@/lib/customers/core/customer-search";
 import { mapOperationalCustomerRecord } from "@/lib/customers/core/customer-identity";
 import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-
-async function resolveBusinessId(userId: string): Promise<string | null> {
-  const ownedBusiness = await db.businessProfile.findFirst({
-    where: { ownerId: userId },
-    select: { id: true },
-  });
-  if (ownedBusiness?.id) {
-    return ownedBusiness.id;
-  }
-
-  const userRole = await db.userRole.findFirst({
-    where: { userId },
-    select: { businessId: true },
-  });
-
-  return userRole?.businessId ?? null;
-}
+import { resolveCustomerAccess } from "./_lib/server";
 
 function parseNumeric(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -80,18 +63,14 @@ function collectWriteViolations(
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const businessId = await resolveBusinessId(userId);
-    if (!businessId) {
+    const context = await resolveCustomerAccess(request, "customers.view");
+    if (!context.ok) {
       return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
+        { error: context.error },
+        { status: context.status },
       );
     }
+    const { userId, businessId } = context;
 
     const { searchParams } = new URL(request.url);
     const search = (searchParams.get("search") || "").trim();
@@ -146,28 +125,23 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: rows, privacy_protocol: privacyProtocol });
   } catch (error) {
-    console.error("Customers API Error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    console.error("Customers API failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.manage");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
-
-    const businessId = await resolveBusinessId(userId);
-    if (!businessId) {
-      return NextResponse.json({ error: "Business not found" }, { status: 404 });
-    }
+    const { businessId } = context;
 
     const body = await request.json();
     const privacyProtocol = await resolveBusinessPrivacyPolicy(businessId);
@@ -266,13 +240,9 @@ export async function POST(request: NextRequest) {
       status: 201,
     });
   } catch (error) {
-    console.error("Create Customer Error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    console.error("Create customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

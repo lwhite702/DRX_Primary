@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { resolveAuthContext } from "../../pos/_lib/server";
 import { decodeCustomerPii, encodeCustomerPii } from "@/lib/privacy/customer-pii";
 import { canWriteField } from "@/lib/privacy/privacy-policy";
 import { sanitizePiiInput } from "@/lib/privacy/crypto";
 import { mapCustomerToOperationalModel } from "@/lib/customers/core/customer-normalizer";
 import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
+import { resolveCustomerAccess } from "../_lib/server";
 
 function parseNumeric(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -53,10 +53,14 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.view");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
+    const { businessId } = context;
 
     const customerId = params.id;
 
@@ -88,12 +92,16 @@ export async function GET(
         metrics = metricsData[0];
       }
     } catch (error) {
-      console.warn("Could not fetch analytics view:", error);
+      console.warn("Customer analytics lookup failed", {
+        errorType: error instanceof Error ? error.name : "UnknownError",
+      });
     }
 
     return NextResponse.json(await mapResponse(customer, metrics));
   } catch (error) {
-    console.error("GET Customer Error:", error);
+    console.error("Get customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -117,10 +125,14 @@ export async function PATCH(
 
 async function handleUpdate(request: NextRequest, customerId: string) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.manage");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
+    const { businessId } = context;
 
     const body = await request.json();
 
@@ -253,7 +265,9 @@ async function handleUpdate(request: NextRequest, customerId: string) {
 
     return NextResponse.json(await mapResponse(updated));
   } catch (error) {
-    console.error("Update Customer Error:", error);
+    console.error("Update customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

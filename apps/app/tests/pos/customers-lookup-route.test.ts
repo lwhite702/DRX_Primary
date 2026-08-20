@@ -3,9 +3,13 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
+  hasBusinessPermission: vi.fn(),
   ensureServerFlag: vi.fn(),
   lookupPosCustomerCandidates: vi.fn(),
   db: {
+    businessProfile: {
+      findUnique: vi.fn(),
+    },
     customers: {
       findMany: vi.fn(),
     },
@@ -16,6 +20,10 @@ vi.mock("@/app/api/pos/_lib/server", () => ({
   resolveAuthContext: mocks.resolveAuthContext,
   cleanPhone: (value: string) => value.replace(/[^0-9]/g, ""),
   toNumber: (value: unknown) => Number(value),
+}));
+
+vi.mock("@/lib/auth/server-guards", () => ({
+  hasBusinessPermission: mocks.hasBusinessPermission,
 }));
 
 vi.mock("@/lib/posthog/server-flags", () => ({
@@ -36,6 +44,8 @@ describe("POS customers lookup route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.resolveAuthContext.mockResolvedValue({ userId: "u_1", businessId: "biz_1" });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
   });
 
   it("uses deterministic lookup path when feature is enabled", async () => {

@@ -3,7 +3,11 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
+  hasBusinessPermission: vi.fn(),
   db: {
+    businessProfile: {
+      findUnique: vi.fn(),
+    },
     businessSettings: {
       findFirst: vi.fn(),
     },
@@ -21,6 +25,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
   resolveAuthContext: mocks.resolveAuthContext,
+}));
+
+vi.mock("@/lib/auth/server-guards", () => ({
+  hasBusinessPermission: mocks.hasBusinessPermission,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -47,6 +55,8 @@ describe("POS quick-create ephemeral behavior", () => {
       userId: "user_1",
       businessId: "biz_1",
     });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
     mocks.hashLookupValue.mockResolvedValue(null);
     mocks.sanitizePiiInput.mockImplementation((value: unknown) =>
       typeof value === "string" ? value.trim() : null,
