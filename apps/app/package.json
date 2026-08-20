@@ -48,7 +48,7 @@
     "test:e2e:a11y:required": "PLAYWRIGHT_APP_PORT=3100 PW_NEXT_WEBPACK=1 PW_SKIP_GLOBAL_SETUP=1 BYPASS_AUTH_FOR_TESTING=false A11Y_TARGET=public playwright test tests/e2e/a11y.spec.ts --workers=1 && PLAYWRIGHT_APP_PORT=3100 PW_NEXT_WEBPACK=1 PW_SKIP_GLOBAL_SETUP=1 BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_a11y BYPASS_AUTH_ORG_ID=org_required_a11y A11Y_TARGET=protected playwright test tests/e2e/a11y.spec.ts --workers=1",
     "test:e2e:regression": "playwright test tests/e2e/visual-regression.spec.ts",
     "test:e2e:visual:required": "PW_NEXT_WEBPACK=1 VISUAL_TARGET=public VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1 && PW_NEXT_WEBPACK=1 VISUAL_TARGET=protected VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_visual BYPASS_AUTH_ORG_ID=org_required_visual playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1",
-    "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
+    "test:integration": "VITEST_INCLUDE_INTEGRATION=true vitest run tests/integration tests/auth tests/middleware.test.ts",
     "test:flags:parity": "node scripts/verify-posthog-flags.mjs",
     "verify:migration-rollbacks": "node scripts/verify-migration-rollbacks.mjs",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",
