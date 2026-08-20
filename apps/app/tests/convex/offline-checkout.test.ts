@@ -348,7 +348,7 @@ describe("Android offline checkout", () => {
     expect(product?.quantityOnHandGrams).toBe(6);
   });
 
-  it("uses product taxability and rejects fractional units and inactive customers", async () => {
+  it("uses product taxability and handles fractional units and inactive customers safely", async () => {
     const t = convexTest(schema, modules);
     const owner = t.withIdentity({
       subject: "offline_invariants_owner",
@@ -390,6 +390,13 @@ describe("Android offline checkout", () => {
     await t.run(async (ctx) => {
       await ctx.db.patch(inactiveCustomerId, { isActive: false });
     });
+    const unlimitedCustomerId = await owner.mutation(
+      api.customers.createCustomer,
+      {
+        firstName: "Unlimited",
+        creditLimitCents: 0,
+      },
+    );
     await owner.mutation(api.offline.configurePolicy, {
       enabled: true,
       authorizationWindowMinutes: 60,
@@ -452,21 +459,68 @@ describe("Android offline checkout", () => {
       }),
     ).rejects.toThrow("whole-unit quantity");
 
-    await expect(
-      owner.mutation(api.offline.syncSale, {
-        ...common,
-        idempotencyKey: "offline-inactive-customer",
-        sequence: 2,
-        customerId: inactiveCustomerId,
-        items: [
-          {
-            productId: taxableProductId,
-            quantityGrams: 1,
-            unitPriceCents: 1000,
-          },
-        ],
-        amountPaidCents: 1100,
-      }),
-    ).rejects.toThrow("customer account is inactive");
+    const quarantined = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-inactive-customer",
+      sequence: 2,
+      customerId: inactiveCustomerId,
+      items: [
+        {
+          productId: taxableProductId,
+          quantityGrams: 1,
+          unitPriceCents: 1000,
+        },
+      ],
+      amountPaidCents: 1100,
+    });
+    expect(quarantined).toMatchObject({
+      status: "quarantined",
+      saleId: null,
+    });
+    const quarantinedRetry = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-inactive-customer",
+      sequence: 2,
+      customerId: inactiveCustomerId,
+      items: [
+        {
+          productId: taxableProductId,
+          quantityGrams: 1,
+          unitPriceCents: 1000,
+        },
+      ],
+      amountPaidCents: 1100,
+    });
+    expect(quarantinedRetry.status).toBe("quarantined");
+    const inactiveCustomer = await t.run((ctx) =>
+      ctx.db.get(inactiveCustomerId),
+    );
+    expect(inactiveCustomer).toMatchObject({
+      purchaseCount: 0,
+      totalCreditUsedCents: 0,
+      totalPurchasesCents: 0,
+    });
+
+    const unlimitedCredit = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-unlimited-credit",
+      sequence: 3,
+      customerId: unlimitedCustomerId,
+      items: [
+        {
+          productId: taxableProductId,
+          quantityGrams: 1,
+          unitPriceCents: 1000,
+        },
+      ],
+      paymentMethod: "credit",
+      amountPaidCents: 0,
+    });
+    expect(unlimitedCredit.status).toBe("committed");
+    expect(unlimitedCredit.conflicts).not.toContain("credit_limit_exceeded");
+    const unlimitedCustomer = await t.run((ctx) =>
+      ctx.db.get(unlimitedCustomerId),
+    );
+    expect(unlimitedCustomer?.totalCreditUsedCents).toBe(1100);
   });
 });

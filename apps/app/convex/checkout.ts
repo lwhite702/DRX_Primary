@@ -124,7 +124,8 @@ export const processCheckout = mutation({
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     requireNonnegativeSafeInteger(args.amountPaidCents, "amountPaidCents");
 
-    const orderNumber = args.orderNumber.trim();
+    const originalOrderNumber = args.orderNumber;
+    const orderNumber = originalOrderNumber.trim();
     if (!orderNumber || orderNumber.length > 128) {
       throw new Error(
         "INVALID_ARGUMENT: Order number must be between 1 and 128 characters",
@@ -139,7 +140,18 @@ export const processCheckout = mutation({
       amountPaidCents: args.amountPaidCents,
     });
 
-    const existingOrder = await ctx.db
+    let existingOrder =
+      originalOrderNumber !== orderNumber
+        ? await ctx.db
+            .query("sales")
+            .withIndex("by_businessId_and_orderNumber", (q) =>
+              q
+                .eq("businessId", auth.businessId)
+                .eq("orderNumber", originalOrderNumber),
+            )
+            .unique()
+        : null;
+    existingOrder ??= await ctx.db
       .query("sales")
       .withIndex("by_businessId_and_orderNumber", (q) =>
         q.eq("businessId", auth.businessId).eq("orderNumber", orderNumber),
@@ -317,7 +329,10 @@ export const processCheckout = mutation({
     if (args.paymentMethod === "credit" && customer) {
       const newCreditUsedCents =
         customer.totalCreditUsedCents + totalAmountCents;
-      if (newCreditUsedCents > customer.creditLimitCents) {
+      if (
+        customer.creditLimitCents > 0 &&
+        newCreditUsedCents > customer.creditLimitCents
+      ) {
         throw new Error(
           `CREDIT_LIMIT_EXCEEDED: Transaction total (${totalAmountCents}¢) exceeds available customer credit`,
         );

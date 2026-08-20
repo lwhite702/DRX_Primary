@@ -528,7 +528,27 @@ export const syncSale = mutation({
       );
     }
     if (customer && !customer.isActive) {
-      throw new Error("FORBIDDEN: Offline customer account is inactive");
+      const submissionId = await quarantine(ctx, {
+        businessId: auth.businessId,
+        authorizationId: args.authorizationId,
+        deviceId: args.deviceId,
+        userId: auth.userId,
+        idempotencyKey: args.idempotencyKey,
+        sequence: args.sequence,
+        occurredAt: args.occurredAt,
+        paymentMethod: args.paymentMethod,
+        totalAmountCents,
+        itemCount: args.items.length,
+        reason: "customer_inactive",
+      });
+      return {
+        status: "quarantined" as const,
+        submissionId,
+        saleId: null,
+        orderNumber: null,
+        totalAmountCents,
+        conflicts: [],
+      };
     }
     if (args.paymentMethod === "credit") {
       if (!customer) {
@@ -536,11 +556,14 @@ export const syncSale = mutation({
           "PAYMENT_ERROR: Offline credit requires an existing tenant customer",
         );
       }
-      const currentAvailable = Math.max(
-        0,
-        customer.creditLimitCents - customer.totalCreditUsedCents,
-      );
-      if (totalAmountCents > currentAvailable) {
+      const currentAvailable =
+        customer.creditLimitCents === 0
+          ? null
+          : Math.max(
+              0,
+              customer.creditLimitCents - customer.totalCreditUsedCents,
+            );
+      if (currentAvailable !== null && totalAmountCents > currentAvailable) {
         conflictInputs.push({
           kind: "credit_limit_exceeded",
           customerId: customer._id,
@@ -596,13 +619,12 @@ export const syncSale = mutation({
         createdAt: now,
       });
       let remaining = item.quantityGrams;
-      const batches = await ctx.db
+      const batches = ctx.db
         .query("inventoryBatches")
         .withIndex("by_productId_and_receivedAt", (q) =>
           q.eq("productId", item.productId),
-        )
-        .collect();
-      for (const batch of batches) {
+        );
+      for await (const batch of batches) {
         if (remaining <= 0) break;
         if (
           batch.businessId !== auth.businessId ||
@@ -621,9 +643,7 @@ export const syncSale = mutation({
           batchId: batch._id,
           quantityGrams: allocated,
           unitCostPerGramCents: batch.unitCostPerGramCents,
-          extendedCostCents: Math.round(
-            allocated * batch.unitCostPerGramCents,
-          ),
+          extendedCostCents: Math.round(allocated * batch.unitCostPerGramCents),
           createdAt: now,
         });
         remaining -= allocated;

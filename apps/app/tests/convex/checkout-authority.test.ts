@@ -159,7 +159,7 @@ describe("authoritative Convex checkout", () => {
       const now = Date.now();
       const id = await ctx.db.insert("sales", {
         businessId,
-        orderNumber: "LEGACY-ORDER",
+        orderNumber: " LEGACY-ORDER ",
         orderStatus: "completed",
         subtotalCents: 1000,
         taxAmountCents: 0,
@@ -184,7 +184,7 @@ describe("authoritative Convex checkout", () => {
     });
 
     const retry = await owner.mutation(api.checkout.processCheckout, {
-      orderNumber: "LEGACY-ORDER",
+      orderNumber: " LEGACY-ORDER ",
       items: [{ productId, quantityGrams: 1 }],
       paymentMethod: "cash",
       amountPaidCents: 1000,
@@ -193,7 +193,7 @@ describe("authoritative Convex checkout", () => {
 
     await expect(
       owner.mutation(api.checkout.processCheckout, {
-        orderNumber: "LEGACY-ORDER",
+        orderNumber: " LEGACY-ORDER ",
         items: [{ productId, quantityGrams: 2 }],
         paymentMethod: "cash",
         amountPaidCents: 2000,
@@ -233,6 +233,39 @@ describe("authoritative Convex checkout", () => {
     expect(records.product?.quantityOnHandGrams).toBe(1);
   });
 
+  it("preserves zero as the unlimited customer-credit sentinel", async () => {
+    const { t, owner } = await setupStore({ collectTax: false });
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "UNLIMITED-CREDIT-1",
+      productName: "Unlimited Credit Product",
+      sellingPriceCents: 1000,
+      unitCostCents: 500,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId,
+      totalWeightGrams: 1,
+      totalCostCents: 500,
+    });
+    const customerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "Unlimited",
+      creditLimitCents: 0,
+    });
+
+    const result = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "UNLIMITED-CREDIT",
+      customerId,
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "credit",
+      amountPaidCents: 0,
+    });
+    expect(result).toMatchObject({
+      status: "COMPLETED",
+      totalAmountCents: 1000,
+    });
+    const customer = await t.run((ctx) => ctx.db.get(customerId));
+    expect(customer?.totalCreditUsedCents).toBe(1000);
+  });
+
   it("enforces tenant, permission, quantity, stock, and credit boundaries atomically", async () => {
     const { t, owner, businessId } = await setupStore({ collectTax: false });
     const unitProductId = await owner.mutation(api.products.createProduct, {
@@ -247,9 +280,9 @@ describe("authoritative Convex checkout", () => {
       totalWeightGrams: 2,
       totalCostCents: 1000,
     });
-    const noCreditCustomerId = await owner.mutation(
+    const limitedCustomerId = await owner.mutation(
       api.customers.createCustomer,
-      { firstName: "No Credit", creditLimitCents: 0 },
+      { firstName: "Limited Credit", creditLimitCents: 500 },
     );
 
     await t.run(async (ctx) => {
@@ -287,7 +320,7 @@ describe("authoritative Convex checkout", () => {
     await expect(
       owner.mutation(api.checkout.processCheckout, {
         orderNumber: "NO-CREDIT-LIMIT",
-        customerId: noCreditCustomerId,
+        customerId: limitedCustomerId,
         items: [{ productId: unitProductId, quantityGrams: 1 }],
         paymentMethod: "credit",
         amountPaidCents: 0,
@@ -344,7 +377,7 @@ describe("authoritative Convex checkout", () => {
     const records = await t.run(async (ctx) => ({
       sales: await ctx.db.query("sales").collect(),
       product: await ctx.db.get(unitProductId),
-      customer: await ctx.db.get(noCreditCustomerId),
+      customer: await ctx.db.get(limitedCustomerId),
     }));
     expect(records.sales).toHaveLength(0);
     expect(records.product?.quantityOnHandGrams).toBe(2);
