@@ -16,10 +16,44 @@ jobs:
       CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install production deployment dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate production deployment configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_PRODUCTION: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        run: |
+          set -euo pipefail
+          for variable in \
+            CONVEX_DEPLOY_KEY \
+            VERCEL_TOKEN \
+            VERCEL_ORG_ID \
+            VERCEL_PROJECT_ID_PRODUCTION \
+            VERCEL_SCOPE
+          do
+            if [ -z "${!variable:-}" ]; then
+              echo "Missing required production configuration: $variable" >&2
+              exit 1
+            fi
+          done
+
       - name: Deploy Convex functions to Production
-        if: ${{ github.event_name != 'workflow_dispatch' || env.CONVEX_DEPLOY_KEY != '' }}
         working-directory: ./apps/app
-        run: npx convex deploy
+        run: pnpm convex:deploy
 
       - name: Deploy production to Vercel
         id: vercel
@@ -37,5 +71,8 @@ jobs:
           HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
           if [ -z "$HEALTH_URL" ]; then
             HEALTH_URL="${{ steps.vercel.outputs.preview-url }}/api/health"
+          fi
+          if [[ "$HEALTH_URL" != http://* && "$HEALTH_URL" != https://* ]]; then
+            HEALTH_URL="https://$HEALTH_URL"
           fi
           curl -fsSL "$HEALTH_URL"
