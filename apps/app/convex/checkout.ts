@@ -1,12 +1,109 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Doc, Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { requireUserAndBusiness } from "./helpers/auth";
-import { calculateTaxCents } from "./helpers/money";
 import { allocateFifoInventoryBatches } from "./helpers/fifo";
-
+import { calculateTaxCents } from "./helpers/money";
 import { requirePermission } from "./helpers/permissions";
 
-const VALID_PAYMENT_METHODS = ["cash", "card", "credit"] as const;
+const paymentMethod = v.union(
+  v.literal("cash"),
+  v.literal("card"),
+  v.literal("credit"),
+);
+
+const checkoutResult = v.object({
+  saleId: v.id("sales"),
+  orderNumber: v.string(),
+  status: v.union(v.literal("COMPLETED"), v.literal("ALREADY_PROCESSED")),
+  subtotalCents: v.number(),
+  taxableSubtotalCents: v.number(),
+  taxAmountCents: v.number(),
+  totalAmountCents: v.number(),
+  changeAmountCents: v.number(),
+  allocationsCount: v.number(),
+});
+
+const saleRecord = v.object({
+  _id: v.id("sales"),
+  _creationTime: v.number(),
+  businessId: v.id("businesses"),
+  customerId: v.optional(v.id("customers")),
+  orderNumber: v.string(),
+  orderStatus: v.string(),
+  subtotalCents: v.number(),
+  taxableSubtotalCents: v.optional(v.number()),
+  taxAmountCents: v.number(),
+  totalAmountCents: v.number(),
+  amountPaidCents: v.number(),
+  changeAmountCents: v.number(),
+  paymentMethod: v.string(),
+  checkoutFingerprint: v.optional(v.string()),
+  createdBy: v.string(),
+  offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
+  offlineDeviceId: v.optional(v.string()),
+  occurredAt: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+function requireNonnegativeSafeInteger(value: number, field: string): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(
+      `INVALID_ARGUMENT: ${field} must be a nonnegative integer number of cents`,
+    );
+  }
+}
+
+function normalizeItems(
+  items: Array<{ productId: Id<"products">; quantityGrams: number }>,
+): Array<{ productId: Id<"products">; quantityGrams: number }> {
+  if (items.length === 0) {
+    throw new Error("INVALID_ARGUMENT: Checkout cart cannot be empty");
+  }
+
+  const quantitiesByProduct = new Map<string, number>();
+  for (const item of items) {
+    if (!Number.isFinite(item.quantityGrams) || item.quantityGrams <= 0) {
+      throw new Error(
+        "INVALID_ARGUMENT: Item quantity must be a positive finite number",
+      );
+    }
+    const productId = String(item.productId);
+    const quantity =
+      (quantitiesByProduct.get(productId) ?? 0) + item.quantityGrams;
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new Error(
+        "INVALID_ARGUMENT: Aggregated item quantity must be a positive finite number",
+      );
+    }
+    quantitiesByProduct.set(productId, quantity);
+  }
+
+  return Array.from(quantitiesByProduct.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([productId, quantityGrams]) => ({
+      productId: productId as Id<"products">,
+      quantityGrams,
+    }));
+}
+
+function createCheckoutFingerprint(input: {
+  customerId?: Id<"customers">;
+  items: Array<{ productId: Id<"products">; quantityGrams: number }>;
+  paymentMethod: "cash" | "card" | "credit";
+  amountPaidCents: number;
+}): string {
+  return JSON.stringify({
+    customerId: input.customerId ? String(input.customerId) : null,
+    items: input.items.map((item) => [
+      String(item.productId),
+      item.quantityGrams,
+    ]),
+    paymentMethod: input.paymentMethod,
+    amountPaidCents: input.amountPaidCents,
+  });
+}
 
 export const processCheckout = mutation({
   args: {
@@ -16,66 +113,138 @@ export const processCheckout = mutation({
       v.object({
         productId: v.id("products"),
         quantityGrams: v.number(),
-      })
+      }),
     ),
-    paymentMethod: v.string(), // "cash" | "card" | "credit"
+    paymentMethod,
     amountPaidCents: v.number(),
   },
+  returns: checkoutResult,
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
-    const now = Date.now();
+    requireNonnegativeSafeInteger(args.amountPaidCents, "amountPaidCents");
 
-    if (!VALID_PAYMENT_METHODS.includes(args.paymentMethod as any)) {
-      throw new Error(`INVALID_ARGUMENT: Payment method '${args.paymentMethod}' is not supported. Must be 'cash', 'card', or 'credit'`);
+    const orderNumber = args.orderNumber.trim();
+    if (!orderNumber || orderNumber.length > 128) {
+      throw new Error(
+        "INVALID_ARGUMENT: Order number must be between 1 and 128 characters",
+      );
     }
 
-    if (!args.items || args.items.length === 0) {
-      throw new Error("INVALID_ARGUMENT: Checkout cart cannot be empty");
-    }
+    const normalizedItems = normalizeItems(args.items);
+    const fingerprint = createCheckoutFingerprint({
+      customerId: args.customerId,
+      items: normalizedItems,
+      paymentMethod: args.paymentMethod,
+      amountPaidCents: args.amountPaidCents,
+    });
 
-    // 1. Verify idempotency / order number uniqueness
     const existingOrder = await ctx.db
       .query("sales")
-      .withIndex("by_businessId_and_orderNumber", (q: any) =>
-        q.eq("businessId", auth.businessId).eq("orderNumber", args.orderNumber)
+      .withIndex("by_businessId_and_orderNumber", (q) =>
+        q.eq("businessId", auth.businessId).eq("orderNumber", orderNumber),
       )
       .unique();
 
     if (existingOrder) {
+      if (existingOrder.checkoutFingerprint !== fingerprint) {
+        throw new Error(
+          "IDEMPOTENCY_CONFLICT: Order number was already used for a different checkout payload",
+        );
+      }
       return {
         saleId: existingOrder._id,
         orderNumber: existingOrder.orderNumber,
-        status: "ALREADY_PROCESSED",
+        status: "ALREADY_PROCESSED" as const,
+        subtotalCents: existingOrder.subtotalCents,
+        taxableSubtotalCents:
+          existingOrder.taxableSubtotalCents ?? existingOrder.subtotalCents,
+        taxAmountCents: existingOrder.taxAmountCents,
         totalAmountCents: existingOrder.totalAmountCents,
+        changeAmountCents: existingOrder.changeAmountCents,
+        allocationsCount: 0,
       };
     }
 
-    // 2. Authoritative Price & Line Item Calculation
+    let customer: Doc<"customers"> | null = null;
+    if (args.customerId) {
+      customer = await ctx.db.get(args.customerId);
+      if (!customer || customer.businessId !== auth.businessId) {
+        throw new Error(`NOT_FOUND: Customer '${args.customerId}' not found`);
+      }
+      if (!customer.isActive) {
+        throw new Error("FORBIDDEN: Customer account is inactive");
+      }
+    }
+
+    if (args.paymentMethod === "credit" && !customer) {
+      throw new Error("INVALID_ARGUMENT: Credit sales require a customer");
+    }
+
     let subtotalCents = 0;
+    let taxableSubtotalCents = 0;
     const processedLineItems: Array<{
-      productId: typeof args.items[0]["productId"];
+      product: Doc<"products">;
       quantityGrams: number;
       unitPriceCents: number;
       lineTotalCents: number;
       unitCostCents: number;
     }> = [];
 
-    for (const item of args.items) {
+    for (const item of normalizedItems) {
       const product = await ctx.db.get(item.productId);
       if (!product || product.businessId !== auth.businessId) {
-        throw new Error(`NOT_FOUND: Product '${item.productId}' not found in catalog`);
+        throw new Error(
+          `NOT_FOUND: Product '${item.productId}' not found in catalog`,
+        );
       }
-
       if (!product.isActive) {
-        throw new Error(`FORBIDDEN: Product '${product.productName}' is inactive`);
+        throw new Error(
+          `FORBIDDEN: Product '${product.productName}' is inactive`,
+        );
       }
+      if (
+        !product.allowFractionalWeight &&
+        !Number.isInteger(item.quantityGrams)
+      ) {
+        throw new Error(
+          `INVALID_ARGUMENT: Product '${product.productName}' requires a whole-unit quantity`,
+        );
+      }
+      if (product.quantityOnHandGrams < item.quantityGrams) {
+        throw new Error(
+          `INSUFFICIENT_STOCK: Product '${product.productName}' does not have enough stock`,
+        );
+      }
+      requireNonnegativeSafeInteger(
+        product.sellingPriceCents,
+        "sellingPriceCents",
+      );
+      requireNonnegativeSafeInteger(product.unitCostCents, "unitCostCents");
 
-      const lineTotalCents = Math.round(item.quantityGrams * product.sellingPriceCents);
+      const lineTotalCents = Math.round(
+        item.quantityGrams * product.sellingPriceCents,
+      );
+      if (!Number.isSafeInteger(lineTotalCents) || lineTotalCents < 0) {
+        throw new Error(
+          "INVALID_ARGUMENT: Calculated line total is outside the safe range",
+        );
+      }
       subtotalCents += lineTotalCents;
+      if (product.isTaxable !== false) {
+        taxableSubtotalCents += lineTotalCents;
+      }
+      if (
+        !Number.isSafeInteger(subtotalCents) ||
+        !Number.isSafeInteger(taxableSubtotalCents)
+      ) {
+        throw new Error(
+          "INVALID_ARGUMENT: Calculated checkout subtotal is outside the safe range",
+        );
+      }
 
       processedLineItems.push({
-        productId: item.productId,
+        product,
         quantityGrams: item.quantityGrams,
         unitPriceCents: product.sellingPriceCents,
         lineTotalCents,
@@ -83,51 +252,81 @@ export const processCheckout = mutation({
       });
     }
 
-    // 3. Authoritative Tax Calculation using integer basis points
     const taxRateBps = auth.businessRecord.collectTax
       ? auth.businessRecord.taxRateBps
       : 0;
-    const taxAmountCents = calculateTaxCents(subtotalCents, taxRateBps);
+    requireNonnegativeSafeInteger(taxRateBps, "taxRateBps");
+    if (taxRateBps > 10_000) {
+      throw new Error("INVALID_ARGUMENT: taxRateBps cannot exceed 10000");
+    }
+    const taxAmountCents = calculateTaxCents(taxableSubtotalCents, taxRateBps);
     const totalAmountCents = subtotalCents + taxAmountCents;
-
-    if (args.paymentMethod === "cash" && args.amountPaidCents < totalAmountCents) {
+    if (!Number.isSafeInteger(totalAmountCents)) {
       throw new Error(
-        `PAYMENT_ERROR: Amount paid (${args.amountPaidCents}¢) is less than total order amount (${totalAmountCents}¢)`
+        "INVALID_ARGUMENT: Calculated checkout total is outside the safe range",
       );
     }
 
-    const changeAmountCents = Math.max(0, args.amountPaidCents - totalAmountCents);
+    if (
+      args.paymentMethod === "cash" &&
+      args.amountPaidCents < totalAmountCents
+    ) {
+      throw new Error(
+        `PAYMENT_ERROR: Amount paid (${args.amountPaidCents}¢) is less than total order amount (${totalAmountCents}¢)`,
+      );
+    }
+    if (
+      args.paymentMethod === "card" &&
+      args.amountPaidCents !== totalAmountCents
+    ) {
+      throw new Error(
+        "PAYMENT_ERROR: Card tender amount must equal the order total",
+      );
+    }
+    if (args.paymentMethod === "credit" && args.amountPaidCents !== 0) {
+      throw new Error(
+        "PAYMENT_ERROR: Credit sales cannot record a tender amount",
+      );
+    }
 
-    // 4. Perform Sales Record Insertion
+    if (args.paymentMethod === "credit" && customer) {
+      const newCreditUsedCents =
+        customer.totalCreditUsedCents + totalAmountCents;
+      if (newCreditUsedCents > customer.creditLimitCents) {
+        throw new Error(
+          `CREDIT_LIMIT_EXCEEDED: Transaction total (${totalAmountCents}¢) exceeds available customer credit`,
+        );
+      }
+    }
+
+    const now = Date.now();
+    const changeAmountCents = Math.max(
+      0,
+      args.amountPaidCents - totalAmountCents,
+    );
     const saleId = await ctx.db.insert("sales", {
       businessId: auth.businessId,
       customerId: args.customerId,
-      orderNumber: args.orderNumber,
+      orderNumber,
       orderStatus: "completed",
       subtotalCents,
+      taxableSubtotalCents,
       taxAmountCents,
       totalAmountCents,
       amountPaidCents: args.amountPaidCents,
       changeAmountCents,
       paymentMethod: args.paymentMethod,
+      checkoutFingerprint: fingerprint,
       createdBy: auth.userId,
       createdAt: now,
       updatedAt: now,
     });
 
-    // 5. FIFO Batch Allocation & Line Item + Allocation Insertions
-    const allAllocations: Array<{
-      lineItemId: string;
-      batchId: string;
-      quantityGrams: number;
-      extendedCostCents: number;
-    }> = [];
-
+    let allocationsCount = 0;
     for (const lineItem of processedLineItems) {
-      // Insert Line Item
       const lineItemId = await ctx.db.insert("salesLineItems", {
         saleId,
-        productId: lineItem.productId,
+        productId: lineItem.product._id,
         quantityGrams: lineItem.quantityGrams,
         unitPriceCents: lineItem.unitPriceCents,
         lineTotalCents: lineItem.lineTotalCents,
@@ -135,65 +334,44 @@ export const processCheckout = mutation({
         createdAt: now,
       });
 
-      // Allocate FIFO batches
       const allocations = await allocateFifoInventoryBatches(
         ctx,
         auth.businessId,
-        lineItem.productId,
-        lineItem.quantityGrams
+        lineItem.product._id,
+        lineItem.quantityGrams,
       );
-
-      for (const alloc of allocations) {
+      for (const allocation of allocations) {
         await ctx.db.insert("salesAllocations", {
           saleId,
           lineItemId,
-          productId: lineItem.productId,
-          batchId: alloc.batchId,
-          quantityGrams: alloc.allocatedGrams,
-          unitCostPerGramCents: alloc.unitCostPerGramCents,
-          extendedCostCents: alloc.extendedCostCents,
+          productId: lineItem.product._id,
+          batchId: allocation.batchId,
+          quantityGrams: allocation.allocatedGrams,
+          unitCostPerGramCents: allocation.unitCostPerGramCents,
+          extendedCostCents: allocation.extendedCostCents,
           createdAt: now,
         });
-
-        allAllocations.push({
-          lineItemId,
-          batchId: alloc.batchId,
-          quantityGrams: alloc.allocatedGrams,
-          extendedCostCents: alloc.extendedCostCents,
-        });
       }
+      allocationsCount += allocations.length;
 
-      // Update product total stock
-      const product = await ctx.db.get(lineItem.productId);
-      if (product) {
-        await ctx.db.patch(lineItem.productId, {
-          quantityOnHandGrams: product.quantityOnHandGrams - lineItem.quantityGrams,
-          updatedAt: now,
-        });
-      }
+      await ctx.db.patch(lineItem.product._id, {
+        quantityOnHandGrams:
+          lineItem.product.quantityOnHandGrams - lineItem.quantityGrams,
+        updatedAt: now,
+      });
     }
 
-    // 6. Update Customer Record & Credit Balance (if attached)
-    if (args.customerId) {
-      const customer = await ctx.db.get(args.customerId);
-      if (customer && customer.businessId === auth.businessId) {
-        let newCreditUsed = customer.totalCreditUsedCents;
-        if (args.paymentMethod === "credit") {
-          newCreditUsed += totalAmountCents;
-          if (customer.creditLimitCents > 0 && newCreditUsed > customer.creditLimitCents) {
-            throw new Error(`CREDIT_LIMIT_EXCEEDED: Transaction total (${totalAmountCents}¢) exceeds available customer credit`);
-          }
-        }
-        await ctx.db.patch(args.customerId, {
-          totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
-          totalCreditUsedCents: newCreditUsed,
-          purchaseCount: customer.purchaseCount + 1,
-          updatedAt: now,
-        });
-      }
+    if (customer && args.customerId) {
+      await ctx.db.patch(args.customerId, {
+        totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
+        totalCreditUsedCents:
+          customer.totalCreditUsedCents +
+          (args.paymentMethod === "credit" ? totalAmountCents : 0),
+        purchaseCount: customer.purchaseCount + 1,
+        updatedAt: now,
+      });
     }
 
-    // 7. Insert the audit log event
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,
       userId: auth.userId,
@@ -201,39 +379,40 @@ export const processCheckout = mutation({
       entityType: "sale",
       entityId: saleId,
       metadata: JSON.stringify({
-        orderNumber: args.orderNumber,
+        orderNumber,
         subtotalCents,
+        taxableSubtotalCents,
         taxAmountCents,
         totalAmountCents,
-        itemCount: args.items.length,
+        itemCount: processedLineItems.length,
       }),
       timestamp: now,
     });
 
     return {
       saleId,
-      orderNumber: args.orderNumber,
-      status: "COMPLETED",
+      orderNumber,
+      status: "COMPLETED" as const,
       subtotalCents,
+      taxableSubtotalCents,
       taxAmountCents,
       totalAmountCents,
       changeAmountCents,
-      allocationsCount: allAllocations.length,
+      allocationsCount,
     };
   },
 });
 
 export const getSalesHistory = query({
   args: {},
+  returns: v.array(saleRecord),
   handler: async (ctx) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
-    const sales = await ctx.db
+    return await ctx.db
       .query("sales")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
       .order("desc")
       .take(50);
-
-    return sales;
   },
 });
