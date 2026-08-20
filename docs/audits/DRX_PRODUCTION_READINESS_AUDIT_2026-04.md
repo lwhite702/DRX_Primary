@@ -1,5 +1,7 @@
 # DRX Production Readiness Audit Report
 
+> **Historical artifact — superseded.** The current production-readiness verdict is recorded in [`DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md`](DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md). This April report must not be used as current release approval.
+
 **Audit Date:** 2026-04-09  
 **Auditor:** Senior Staff Engineer + Release Manager  
 **Scope:** Web App (Next.js) + Mobile App (React Native/Expo) + Third-Party Integrations  
