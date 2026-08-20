@@ -12,8 +12,6 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
-    env:
-      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +30,7 @@ jobs:
 
       - name: Validate production deployment configuration
         env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID_PRODUCTION: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
@@ -52,6 +51,8 @@ jobs:
           done
 
       - name: Deploy Convex functions to Production
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         working-directory: ./apps/app
         run: pnpm convex:deploy
 
