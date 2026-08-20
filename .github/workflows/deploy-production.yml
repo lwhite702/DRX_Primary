@@ -95,6 +95,9 @@ jobs:
           set -euo pipefail
           HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
           if [ -n "$HEALTH_URL" ]; then
+            if [[ "$HEALTH_URL" != http://* && "$HEALTH_URL" != https://* ]]; then
+              HEALTH_URL="https://$HEALTH_URL"
+            fi
             HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
           else
             HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
