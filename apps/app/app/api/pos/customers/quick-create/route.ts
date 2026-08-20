@@ -27,19 +27,23 @@ export async function POST(request: NextRequest) {
   }
 
   const privacyProtocol = await resolveBusinessPrivacyPolicy(businessId);
-  const ephemeralDays = privacyProtocol.ephemeral_profiles.default_retention_days;
+  const ephemeralDays =
+    privacyProtocol.ephemeral_profiles.default_retention_days;
   const useEphemeral = privacyProtocol.ephemeral_profiles.enabled;
 
   try {
     const result = await createOrAttachQuickCustomer({
       businessId,
+      actorUserId: context.userId,
       phone,
       alias,
       useEphemeral,
       ephemeralRetentionDays: ephemeralDays,
     });
 
-    return NextResponse.json(result.model, { status: result.created ? 201 : 200 });
+    return NextResponse.json(result.model, {
+      status: result.created ? 201 : 200,
+    });
   } catch (error) {
     console.error("POS customer quick-create failed", {
       errorType: error instanceof Error ? error.name : "UnknownError",

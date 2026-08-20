@@ -5,8 +5,18 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { usePermission } from "@/lib/hooks/use-permission";
 import { useUser } from "@/lib/adapters/auth/ui";
-import { ArrowLeft, Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import {
+  Archive,
+  ArrowLeft,
+  Mail,
+  MapPin,
+  Phone,
+  ReceiptText,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
 import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
@@ -24,6 +34,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import Link from "next/link";
+
+interface CustomerTransaction {
+  id: string;
+  order_number: string | null;
+  status: string;
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  payment_method: string | null;
+  created_by: string | null;
+  created_at: string;
+}
 
 interface CustomerDetail {
   id: string;
@@ -64,17 +87,20 @@ export default function CustomerDetailPage() {
   const customerId = params.id as string;
 
   const { business, loading: businessLoading } = useBusiness();
+  const { hasPermission, loading: permissionLoading } = usePermission(
+    business?.id,
+  );
   const { user } = useUser();
   const [customer, setCustomer] = useState<any>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [user_id, setUser_id] = useState<string>("");
   const [can_apply_changes, setCan_apply_changes] = useState(false);
-  const [privacyProtocol, setPrivacyProtocol] = useState<PrivacyProtocolSettings>(
-    getDefaultPrivacyProtocol(),
-  );
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
   const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
     useState(false);
+  const [lifecyclePending, setLifecyclePending] = useState(false);
 
   useEffect(() => {
     if (!business?.id) return;
@@ -137,6 +163,43 @@ export default function CustomerDetailPage() {
     fetchData();
   }, [business?.id, customerId, user]);
 
+  const handleLifecycleChange = async (isActive: boolean) => {
+    if (lifecyclePending) return;
+    setLifecyclePending(true);
+    const action = isActive ? "reactivate" : "archive";
+    const promise = async () => {
+      const response = await fetch(`/api/customers/${customerId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: isActive }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `Failed to ${action} customer`);
+      }
+
+      const updated = await response.json();
+      setCustomer((current: any) => ({ ...current, ...updated }));
+      return `Customer ${isActive ? "reactivated" : "archived"}`;
+    };
+
+    const lifecyclePromise = promise();
+    toast.promise(lifecyclePromise, {
+      loading: `${isActive ? "Reactivating" : "Archiving"} customer...`,
+      success: (message) => message,
+      error: (error) =>
+        error instanceof Error ? error.message : `Failed to ${action} customer`,
+    });
+
+    try {
+      await lifecyclePromise;
+    } catch {
+      // The toast presents the API error without exposing profile data.
+    } finally {
+      setLifecyclePending(false);
+    }
+  };
+
   if (businessLoading || loading) {
     return <CustomerDetailSkeleton />;
   }
@@ -153,10 +216,19 @@ export default function CustomerDetailPage() {
 
   const displayName =
     customer.alias ||
-    [customer.firstName || customer.first_name, customer.lastName || customer.last_name]
+    [
+      customer.firstName || customer.first_name,
+      customer.lastName || customer.last_name,
+    ]
       .filter(Boolean)
       .join(" ") ||
     "Customer";
+  const isActive = customer.isActive ?? customer.is_active ?? true;
+  const transactions = (
+    Array.isArray(customer.transaction_history)
+      ? customer.transaction_history
+      : []
+  ) as CustomerTransaction[];
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -219,7 +291,31 @@ export default function CustomerDetailPage() {
             </SheetContent>
           </Sheet>
         </div>
+        {!permissionLoading && hasPermission("customers.manage") ? (
+          <Button
+            variant="outline"
+            disabled={lifecyclePending}
+            onClick={() => void handleLifecycleChange(!isActive)}
+          >
+            {isActive ? (
+              <Archive className="h-4 w-4 mr-2" />
+            ) : (
+              <RotateCcw className="h-4 w-4 mr-2" />
+            )}
+            {isActive ? "Archive Customer" : "Reactivate Customer"}
+          </Button>
+        ) : null}
       </div>
+
+      {!isActive ? (
+        <div
+          className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm"
+          role="status"
+        >
+          This customer is archived. Transaction history remains available, and
+          authorized operators can reactivate the profile.
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -237,7 +333,9 @@ export default function CustomerDetailPage() {
                     <div>
                       <p className="text-xs text-muted-foreground">Email</p>
                       <p className="text-sm">
-                        {shouldMask ? maskSensitiveText() : customer.email || "N/A"}
+                        {shouldMask
+                          ? maskSensitiveText()
+                          : customer.email || "N/A"}
                       </p>
                     </div>
                   </div>
@@ -250,7 +348,9 @@ export default function CustomerDetailPage() {
                       <p className="text-sm">
                         {shouldMask
                           ? maskSensitiveText()
-                          : customer.phoneNumber || customer.phone_number || "N/A"}
+                          : customer.phoneNumber ||
+                            customer.phone_number ||
+                            "N/A"}
                       </p>
                     </div>
                   </div>
@@ -341,6 +441,60 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ReceiptText className="h-5 w-5" />
+                Transaction History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {transactions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No customer transactions have been recorded.
+                </p>
+              ) : (
+                <div className="divide-y">
+                  {transactions.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex flex-col gap-2 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <Link
+                          href={`/sales/${transaction.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {transaction.order_number || "Transaction"}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                          {new Intl.DateTimeFormat(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }).format(new Date(transaction.created_at))}
+                          {transaction.payment_method
+                            ? ` • ${transaction.payment_method}`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="sm:text-right">
+                        <p className="font-semibold">
+                          {new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency: "USD",
+                          }).format(transaction.total_amount)}
+                        </p>
+                        <p className="text-xs capitalize text-muted-foreground">
+                          {transaction.status}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 

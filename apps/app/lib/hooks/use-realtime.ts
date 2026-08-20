@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 // import { db } from "@wrelik/db/server";
 
 let didLogRealtimeBlock = false;
@@ -229,16 +229,38 @@ export function useRealtimeCredit(
 
 export function useRealtimeCustomers(business_id: string | null) {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!business_id) {
+      setCustomers([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `/api/customers?business_id=${encodeURIComponent(business_id)}`,
+      );
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to load customer snapshot");
+      }
+      setCustomers(Array.isArray(payload?.data) ? payload.data : []);
+    } catch (error) {
+      console.warn("[realtime] customer snapshot load failed", {
+        errorType: error instanceof Error ? error.name : "UnknownError",
+      });
+      setCustomers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [business_id]);
 
   useEffect(() => {
+    void refresh();
     if (!business_id) return;
-
-    // Initial fetch
-    fetch(`/api/customers?business_id=${business_id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.data) setCustomers(data.data);
-      });
 
     // Subscribe to changes
     const channel = openRealtimeChannel(`customers:${business_id}`);
@@ -261,14 +283,20 @@ export function useRealtimeCustomers(business_id: string | null) {
             if (!response.ok || !normalized?.id) return;
 
             setCustomers((prev) =>
-              [normalized, ...prev.filter((row) => row.id !== normalized.id)].sort((a, b) =>
+              [
+                normalized,
+                ...prev.filter((row) => row.id !== normalized.id),
+              ].sort((a, b) =>
                 (a.first_name || a.alias || "").localeCompare(
                   b.first_name || b.alias || "",
                 ),
               ),
             );
           } catch (error) {
-            console.warn("[realtime] customer INSERT normalization failed", error);
+            console.warn(
+              "[realtime] customer INSERT normalization failed",
+              error,
+            );
           }
         } else if (payload.eventType === "UPDATE") {
           try {
@@ -279,10 +307,15 @@ export function useRealtimeCustomers(business_id: string | null) {
             if (!response.ok || !normalized?.id) return;
 
             setCustomers((prev) =>
-              prev.map((item) => (item.id === normalized.id ? normalized : item)),
+              prev.map((item) =>
+                item.id === normalized.id ? normalized : item,
+              ),
             );
           } catch (error) {
-            console.warn("[realtime] customer UPDATE normalization failed", error);
+            console.warn(
+              "[realtime] customer UPDATE normalization failed",
+              error,
+            );
           }
         } else if (payload.eventType === "DELETE") {
           setCustomers((prev) =>
@@ -295,7 +328,7 @@ export function useRealtimeCustomers(business_id: string | null) {
     return () => {
       channel.unsubscribe();
     };
-  }, [business_id]);
+  }, [business_id, refresh]);
 
-  return customers;
+  return { customers, loading, refresh };
 }

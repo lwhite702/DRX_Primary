@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
   hasBusinessPermission: vi.fn(),
   db: {
+    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
     businessProfile: {
       findUnique: vi.fn(),
     },
@@ -15,11 +17,16 @@ const mocks = vi.hoisted(() => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
+    systemAuditLog: {
+      create: vi.fn(),
+    },
   },
   encodeCustomerPii: vi.fn(),
   decodeCustomerPii: vi.fn(),
   getCustomerDisplayName: vi.fn(),
   hashLookupValue: vi.fn(),
+  hashPhoneLookupCandidates: vi.fn(),
+  hashEmailLookupCandidates: vi.fn(),
   sanitizePiiInput: vi.fn(),
 }));
 
@@ -46,6 +53,19 @@ vi.mock("@/lib/privacy/crypto", () => ({
   sanitizePiiInput: mocks.sanitizePiiInput,
 }));
 
+vi.mock("@/lib/privacy/pii-hash", () => ({
+  hashAliasLookup: vi.fn(),
+  hashAliasLookupCandidates: vi.fn().mockResolvedValue([]),
+  buildDeterministicLookupHashes: vi.fn().mockResolvedValue({
+    aliasHash: null,
+    phoneHash: null,
+    emailHash: null,
+    hashVersion: 1,
+  }),
+  hashPhoneLookupCandidates: mocks.hashPhoneLookupCandidates,
+  hashEmailLookupCandidates: mocks.hashEmailLookupCandidates,
+}));
+
 import { POST } from "@/app/api/pos/customers/quick-create/route";
 
 describe("POS quick-create ephemeral behavior", () => {
@@ -57,6 +77,13 @@ describe("POS quick-create ephemeral behavior", () => {
     });
     mocks.hasBusinessPermission.mockResolvedValue(true);
     mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
+    mocks.db.$transaction.mockImplementation(async (callback: any) =>
+      callback(mocks.db),
+    );
+    mocks.db.$queryRaw.mockResolvedValue([]);
+    mocks.db.systemAuditLog.create.mockResolvedValue({});
+    mocks.hashPhoneLookupCandidates.mockResolvedValue(["hash-phone"]);
+    mocks.hashEmailLookupCandidates.mockResolvedValue([]);
     mocks.hashLookupValue.mockResolvedValue(null);
     mocks.sanitizePiiInput.mockImplementation((value: unknown) =>
       typeof value === "string" ? value.trim() : null,
@@ -102,11 +129,14 @@ describe("POS quick-create ephemeral behavior", () => {
       ephemeralExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    const req = new NextRequest("http://localhost:3000/api/pos/customers/quick-create", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ phone: "5551234" }),
-    });
+    const req = new NextRequest(
+      "http://localhost:3000/api/pos/customers/quick-create",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phone: "5551234" }),
+      },
+    );
     const res = await POST(req);
     const json = await res.json();
 
@@ -139,11 +169,14 @@ describe("POS quick-create ephemeral behavior", () => {
       ephemeralExpiresAt: null,
     });
 
-    const req = new NextRequest("http://localhost:3000/api/pos/customers/quick-create", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ phone: "5551234" }),
-    });
+    const req = new NextRequest(
+      "http://localhost:3000/api/pos/customers/quick-create",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phone: "5551234" }),
+      },
+    );
     const res = await POST(req);
     const json = await res.json();
 

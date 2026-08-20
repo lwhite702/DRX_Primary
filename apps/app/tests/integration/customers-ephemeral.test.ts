@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
   hasBusinessPermission: vi.fn(),
   db: {
+    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
     businessProfile: {
       findUnique: vi.fn(),
     },
@@ -12,11 +14,17 @@ const mocks = vi.hoisted(() => ({
       findFirst: vi.fn(),
     },
     customers: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    systemAuditLog: {
       create: vi.fn(),
     },
   },
   encodeCustomerPii: vi.fn(),
   decodeCustomerPii: vi.fn(),
+  hashPhoneLookupCandidates: vi.fn(),
+  hashEmailLookupCandidates: vi.fn(),
 }));
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
@@ -36,6 +44,19 @@ vi.mock("@/lib/privacy/customer-pii", () => ({
   decodeCustomerPii: mocks.decodeCustomerPii,
 }));
 
+vi.mock("@/lib/privacy/pii-hash", () => ({
+  hashAliasLookup: vi.fn(),
+  hashAliasLookupCandidates: vi.fn().mockResolvedValue([]),
+  buildDeterministicLookupHashes: vi.fn().mockResolvedValue({
+    aliasHash: null,
+    phoneHash: null,
+    emailHash: null,
+    hashVersion: 1,
+  }),
+  hashPhoneLookupCandidates: mocks.hashPhoneLookupCandidates,
+  hashEmailLookupCandidates: mocks.hashEmailLookupCandidates,
+}));
+
 import { POST } from "@/app/api/customers/route";
 
 describe("Customers API ephemeral controls", () => {
@@ -47,6 +68,14 @@ describe("Customers API ephemeral controls", () => {
     });
     mocks.hasBusinessPermission.mockResolvedValue(true);
     mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
+    mocks.db.$transaction.mockImplementation(async (callback: any) =>
+      callback(mocks.db),
+    );
+    mocks.db.$queryRaw.mockResolvedValue([]);
+    mocks.db.customers.findFirst.mockResolvedValue(null);
+    mocks.db.systemAuditLog.create.mockResolvedValue({});
+    mocks.hashPhoneLookupCandidates.mockResolvedValue([]);
+    mocks.hashEmailLookupCandidates.mockResolvedValue([]);
     mocks.encodeCustomerPii.mockResolvedValue({
       aliasEncrypted: "enc",
       firstNameEncrypted: null,
