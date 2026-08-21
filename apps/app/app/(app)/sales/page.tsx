@@ -71,7 +71,7 @@ export default function SalesHistoryPage() {
     <div className="p-4 md:p-8 space-y-6 animate-in fade-in-0 duration-200">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Sales History</h1>
+          <h1 className="text-3xl font-bold">Orders & Receipts</h1>
           <p className="text-muted-foreground mt-1">
             Review completed sales, receipts, and order history
           </p>
@@ -79,7 +79,7 @@ export default function SalesHistoryPage() {
         <Button asChild className="gap-2 bg-accent text-background hover:bg-accent/90">
           <Link href="/pos/sale">
             <Plus className="w-4 h-4" />
-            New Quick Sale
+            Open Point of Sale
           </Link>
         </Button>
       </div>

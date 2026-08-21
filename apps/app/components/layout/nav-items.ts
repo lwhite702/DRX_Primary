@@ -22,8 +22,8 @@ export type NavItem = {
 
 export const primaryNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/sales", label: "Sales", icon: ShoppingCart },
-  { href: "/pos/sale", label: "Quick Sale", icon: ScanLine },
+  { href: "/sales", label: "Orders & Receipts", icon: ShoppingCart },
+  { href: "/pos/sale", label: "Point of Sale", icon: ScanLine },
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/credit", label: "Store Credit", icon: Wallet },
