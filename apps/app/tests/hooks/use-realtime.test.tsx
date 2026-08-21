@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.unmock("@/lib/hooks/use-realtime");
 
 import {
+  setRealtimeChannelFactoryForTests,
   useRealtimeCustomers,
   useRealtimeInventory,
 } from "@/lib/hooks/use-realtime";
@@ -28,6 +29,7 @@ describe("useRealtimeInventory", () => {
   });
 
   afterEach(() => {
+    setRealtimeChannelFactoryForTests(null);
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -41,7 +43,9 @@ describe("useRealtimeInventory", () => {
       .fn()
       .mockReturnValueOnce(firstResponse)
       .mockResolvedValueOnce(
-        apiResponse([{ id: "item-2", businessId: "business-2", productName: "Current" }]),
+        apiResponse([
+          { id: "item-2", businessId: "business-2", productName: "Current" },
+        ]),
       );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -55,7 +59,9 @@ describe("useRealtimeInventory", () => {
 
     await act(async () => {
       resolveFirst(
-        apiResponse([{ id: "item-1", businessId: "business-1", productName: "Stale" }]),
+        apiResponse([
+          { id: "item-1", businessId: "business-1", productName: "Stale" },
+        ]),
       );
       await firstResponse;
     });
@@ -73,7 +79,9 @@ describe("useRealtimeInventory", () => {
       vi
         .fn()
         .mockResolvedValueOnce(
-          apiResponse([{ id: "item-1", businessId: "business-1", productName: "Current" }]),
+          apiResponse([
+            { id: "item-1", businessId: "business-1", productName: "Current" },
+          ]),
         )
         .mockReturnValueOnce(refreshResponse),
     );
@@ -89,7 +97,9 @@ describe("useRealtimeInventory", () => {
 
     await act(async () => {
       resolveRefresh(
-        apiResponse([{ id: "item-1", businessId: "business-1", productName: "Updated" }]),
+        apiResponse([
+          { id: "item-1", businessId: "business-1", productName: "Updated" },
+        ]),
       );
       await refreshResponse;
     });
@@ -117,5 +127,76 @@ describe("useRealtimeInventory", () => {
     expect(result.current.customers).toEqual([]);
     expect(result.current.error).toMatch(/temporarily unavailable/i);
     expect(result.current.syncStatus).toBe("offline");
+  });
+
+  it("discards customer normalization that completes after a business switch", async () => {
+    const callbacks = new Map<string, (payload: unknown) => Promise<void>>();
+    setRealtimeChannelFactoryForTests((name) => {
+      const channel = {
+        on: vi.fn(),
+        subscribe: vi.fn(),
+        unsubscribe: vi.fn(),
+      };
+      channel.on.mockImplementation(
+        (
+          _event: string,
+          _filter: unknown,
+          callback: (payload: unknown) => Promise<void>,
+        ) => {
+          callbacks.set(name, callback);
+          return channel;
+        },
+      );
+      channel.subscribe.mockImplementation(() => channel);
+      return channel;
+    });
+
+    let resolveDetail!: (response: Response) => void;
+    const detailResponse = new Promise<Response>((resolve) => {
+      resolveDetail = resolve;
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(apiResponse([{ id: "customer-a" }]))
+        .mockReturnValueOnce(detailResponse)
+        .mockResolvedValueOnce(apiResponse([{ id: "customer-b" }])),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ businessId }) => useRealtimeCustomers(businessId),
+      { initialProps: { businessId: "business-a" as string | null } },
+    );
+    await waitFor(() =>
+      expect(result.current.customers[0]?.id).toBe("customer-a"),
+    );
+
+    let staleEvent!: Promise<void>;
+    act(() => {
+      staleEvent = callbacks.get("customers:business-a")?.({
+        eventType: "INSERT",
+        new: { id: "customer-a-late" },
+      }) as Promise<void>;
+    });
+    rerender({ businessId: "business-b" });
+    await waitFor(() =>
+      expect(result.current.customers[0]?.id).toBe("customer-b"),
+    );
+
+    await act(async () => {
+      resolveDetail({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          id: "customer-a-late",
+          first_name: "Stale",
+        }),
+      } as unknown as Response);
+      await staleEvent;
+    });
+
+    expect(result.current.customers.map((customer) => customer.id)).toEqual([
+      "customer-b",
+    ]);
   });
 });

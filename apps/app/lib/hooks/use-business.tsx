@@ -18,12 +18,7 @@ import {
 import { getCurrentBusinessProfile } from "@/app/actions/get-current-business";
 
 export type BusinessLoadStatus =
-  | "idle"
-  | "loading"
-  | "refreshing"
-  | "success"
-  | "empty"
-  | "error";
+  "idle" | "loading" | "refreshing" | "success" | "empty" | "error";
 
 type BusinessProfile = Record<string, any>;
 
@@ -53,8 +48,9 @@ function useBusinessState(): BusinessContextValue {
   const [status, setStatus] = useState<BusinessLoadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const requestVersion = useRef(0);
+  const switchQueue = useRef<Promise<void>>(Promise.resolve());
   const hasResolved = useRef(false);
-  const identityKey = authBypassEnabled ? "bypass" : user?.id ?? "signed-out";
+  const identityKey = authBypassEnabled ? "bypass" : (user?.id ?? "signed-out");
 
   const fetchBusinessProfile = useCallback(async () => {
     if (!isUserLoaded && !authBypassEnabled) return;
@@ -74,7 +70,9 @@ function useBusinessState(): BusinessContextValue {
       if (version !== requestVersion.current) return;
 
       console.error("Error fetching business profile:", caught);
-      setError("We could not load your business. Check your connection and try again.");
+      setError(
+        "We could not load your business. Check your connection and try again.",
+      );
       setStatus("error");
       hasResolved.current = true;
     }
@@ -130,7 +128,9 @@ function useBusinessState(): BusinessContextValue {
       setBusiness(null);
       setError(null);
       setStatus("loading");
-      void (async () => {
+      const operation = switchQueue.current.then(async () => {
+        // A newer selection can supersede a queued switch before it reaches Clerk.
+        if (version !== requestVersion.current) return;
         try {
           await setActive({ organization: organizationId });
           if (version !== requestVersion.current) return;
@@ -142,7 +142,13 @@ function useBusinessState(): BusinessContextValue {
           setStatus("error");
           hasResolved.current = true;
         }
-      })();
+      });
+      // Keep Clerk organization mutations serialized even after an individual
+      // activation fails so the latest requested organization always wins.
+      switchQueue.current = operation.then(
+        () => undefined,
+        () => undefined,
+      );
     },
     [authBypassEnabled, fetchBusinessProfile, setActive],
   );
@@ -152,7 +158,8 @@ function useBusinessState(): BusinessContextValue {
       business,
       settings:
         business && "settingsData" in business
-          ? (business.settingsData as Record<string, unknown> | undefined) ?? null
+          ? ((business.settingsData as Record<string, unknown> | undefined) ??
+            null)
           : null,
       availableBusinesses: authBypassEnabled
         ? bypassBusinesses
@@ -185,7 +192,9 @@ function useBusinessState(): BusinessContextValue {
 export function BusinessProvider({ children }: { children: ReactNode }) {
   const value = useBusinessState();
   return (
-    <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>
+    <BusinessContext.Provider value={value}>
+      {children}
+    </BusinessContext.Provider>
   );
 }
 

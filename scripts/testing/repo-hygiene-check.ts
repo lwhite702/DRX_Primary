@@ -13,8 +13,11 @@ const SOURCE_EXTENSIONS = new Set([
   ".kt",
   ".kts",
   ".mjs",
+  ".mts",
+  ".prisma",
   ".scss",
   ".sh",
+  ".sql",
   ".swift",
   ".toml",
   ".ts",
@@ -65,7 +68,9 @@ function main() {
   const mergeConflictMarkers = findMergeConflictMarkers(tracked);
 
   if (banned.length > 0) {
-    console.error("❌ Repo hygiene check failed. Tracked .DS_Store is not allowed:");
+    console.error(
+      "❌ Repo hygiene check failed. Tracked .DS_Store is not allowed:",
+    );
     for (const file of banned) {
       console.error(`- ${file}`);
     }

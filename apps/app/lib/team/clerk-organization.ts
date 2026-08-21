@@ -5,6 +5,11 @@ type ClerkOrganizationsApi = {
     name: string;
     createdBy: string;
   }) => Promise<{ id: string }>;
+  createOrganizationMembership: (params: {
+    organizationId: string;
+    userId: string;
+    role: "org:admin" | "org:member";
+  }) => Promise<unknown>;
   deleteOrganization: (organizationId: string) => Promise<unknown>;
 };
 
@@ -35,6 +40,26 @@ export async function ensureClerkOrganization(params: {
   });
 
   try {
+    const existingMemberships: Array<{
+      userId: string;
+      role: string | null;
+    }> = await db.userRole.findMany({
+      where: { businessId: params.businessId },
+      select: { userId: true, role: true },
+    });
+    const uniqueMembers = new Map(
+      existingMemberships
+        .filter((membership) => membership.userId !== params.ownerId)
+        .map((membership) => [membership.userId, membership]),
+    );
+    for (const membership of uniqueMembers.values()) {
+      await params.organizations.createOrganizationMembership({
+        organizationId: created.id,
+        userId: membership.userId,
+        role: toClerkOrganizationRole(membership.role ?? "staff"),
+      });
+    }
+
     const bound = await db.businessProfile.updateMany({
       where: {
         id: params.businessId,

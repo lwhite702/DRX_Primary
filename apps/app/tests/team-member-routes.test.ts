@@ -451,6 +451,11 @@ describe("tenant-scoped team member routes", () => {
       businessName: "DRX Store",
     });
     mocks.db.businessProfile.updateMany.mockResolvedValue({ count: 1 });
+    mocks.db.userRole.findMany.mockResolvedValue([
+      { userId: "owner-1", role: "owner" },
+      { userId: "cashier-1", role: "cashier" },
+      { userId: "admin-1", role: "admin" },
+    ]);
 
     const response = await POST(
       request("/api/team/members?business_id=business-1", {
@@ -464,6 +469,29 @@ describe("tenant-scoped team member routes", () => {
       name: "DRX Store",
       createdBy: "owner-1",
     });
+    expect(
+      mocks.clerk.organizations.createOrganizationMembership,
+    ).toHaveBeenCalledTimes(2);
+    expect(
+      mocks.clerk.organizations.createOrganizationMembership,
+    ).toHaveBeenCalledWith({
+      organizationId: "org_business_1",
+      userId: "cashier-1",
+      role: "org:member",
+    });
+    expect(
+      mocks.clerk.organizations.createOrganizationMembership,
+    ).toHaveBeenCalledWith({
+      organizationId: "org_business_1",
+      userId: "admin-1",
+      role: "org:admin",
+    });
+    expect(
+      mocks.clerk.organizations.createOrganizationMembership.mock
+        .invocationCallOrder[1],
+    ).toBeLessThan(
+      mocks.db.businessProfile.updateMany.mock.invocationCallOrder[0],
+    );
     expect(mocks.db.businessProfile.updateMany).toHaveBeenCalledWith({
       where: {
         id: "business-1",

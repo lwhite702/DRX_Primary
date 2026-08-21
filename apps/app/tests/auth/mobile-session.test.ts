@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   db: {
     userRole: { findFirst: vi.fn() },
     user: { findFirst: vi.fn() },
+    businessProfile: { findUnique: vi.fn() },
   },
 }));
 
@@ -18,6 +19,7 @@ describe("GET /api/mobile/v1/session", () => {
     vi.clearAllMocks();
     mocks.db.userRole.findFirst.mockResolvedValue(null);
     mocks.db.user.findFirst.mockResolvedValue(null);
+    mocks.db.businessProfile.findUnique.mockResolvedValue(null);
   });
 
   it("rejects requests without a verified Clerk user", async () => {
@@ -87,6 +89,89 @@ describe("GET /api/mobile/v1/session", () => {
     expect(body.permissions).toContain("sales.create");
     expect(body.permissions).toContain("inventory.manage");
     expect(body.permissions).not.toContain("reports.view_all");
+  });
+
+  it("uses the active Clerk organization for an invited mobile operator", async () => {
+    mocks.auth.mockResolvedValue({
+      userId: "user_cashier",
+      orgId: "org_business_2",
+    });
+    mocks.db.user.findFirst.mockResolvedValue({
+      name: "Cashier",
+      email: "cashier@example.com",
+      role: "MEMBER",
+      status: "ACTIVE",
+      tenant: {
+        id: "business_1",
+        businessName: "Original Store",
+        ownerId: "owner_1",
+        isActive: true,
+      },
+    });
+    mocks.db.businessProfile.findUnique.mockResolvedValue({
+      id: "business_2",
+      businessName: "Invited Store",
+      ownerId: "owner_2",
+      isActive: true,
+    });
+    mocks.db.userRole.findFirst.mockResolvedValue({
+      role: "cashier",
+      permissions: {},
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mocks.db.businessProfile.findUnique).toHaveBeenCalledWith({
+      where: { clerkOrgId: "org_business_2" },
+      select: {
+        id: true,
+        businessName: true,
+        ownerId: true,
+        isActive: true,
+      },
+    });
+    expect(mocks.db.userRole.findFirst).toHaveBeenCalledWith({
+      where: { userId: "user_cashier", businessId: "business_2" },
+      select: { role: true, permissions: true },
+    });
+    expect(body).toMatchObject({
+      business_id: "business_2",
+      business_name: "Invited Store",
+      roles: ["cashier"],
+    });
+  });
+
+  it("denies an active Clerk organization without a scoped DRX membership", async () => {
+    mocks.auth.mockResolvedValue({
+      userId: "user_cashier",
+      orgId: "org_business_2",
+    });
+    mocks.db.user.findFirst.mockResolvedValue({
+      name: "Cashier",
+      email: "cashier@example.com",
+      role: "MEMBER",
+      status: "ACTIVE",
+      tenant: {
+        id: "business_1",
+        businessName: "Original Store",
+        ownerId: "owner_1",
+        isActive: true,
+      },
+    });
+    mocks.db.businessProfile.findUnique.mockResolvedValue({
+      id: "business_2",
+      businessName: "Foreign Store",
+      ownerId: "owner_2",
+      isActive: true,
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.code).toBe("MOBILE_BUSINESS_ACCESS_DENIED");
   });
 
   it("explains when a Clerk user has no Deelrx business", async () => {

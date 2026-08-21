@@ -5,6 +5,18 @@ let didLogRealtimeBlock = false;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RealtimeChannelLike = any;
+type RealtimeChannelFactory = (name: string) => RealtimeChannelLike | null;
+
+let realtimeChannelFactoryForTests: RealtimeChannelFactory | null = null;
+
+export function setRealtimeChannelFactoryForTests(
+  factory: RealtimeChannelFactory | null,
+) {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("Realtime channel injection is only available in tests");
+  }
+  realtimeChannelFactoryForTests = factory;
+}
 
 // Normalize Prisma/camelCase API payloads to the legacy snake_case client shape
 // that existing pages still expect while we finish the adapter migration.
@@ -41,6 +53,9 @@ function normalizeInventoryPayload(payload: any): any[] {
 }
 
 function openRealtimeChannel(name: string): RealtimeChannelLike | null {
+  if (realtimeChannelFactoryForTests) {
+    return realtimeChannelFactoryForTests(name);
+  }
   if (!didLogRealtimeBlock) {
     didLogRealtimeBlock = true;
     console.warn(
@@ -122,33 +137,33 @@ export function useRealtimeInventory(business_id: string | null) {
     if (channel) {
       channel
         .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "inventory",
-          filter: `business_id=eq.${business_id}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === "INSERT") {
-            setInventory((prev) => [
-              ...prev,
-              normalizeInventoryItem(payload.new),
-            ]);
-          } else if (payload.eventType === "UPDATE") {
-            setInventory((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id
-                  ? normalizeInventoryItem(payload.new)
-                  : item,
-              ),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setInventory((prev) =>
-              prev.filter((item) => item.id !== payload.old.id),
-            );
-          }
-        },
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "inventory",
+            filter: `business_id=eq.${business_id}`,
+          },
+          (payload: any) => {
+            if (payload.eventType === "INSERT") {
+              setInventory((prev) => [
+                ...prev,
+                normalizeInventoryItem(payload.new),
+              ]);
+            } else if (payload.eventType === "UPDATE") {
+              setInventory((prev) =>
+                prev.map((item) =>
+                  item.id === payload.new.id
+                    ? normalizeInventoryItem(payload.new)
+                    : item,
+                ),
+              );
+            } else if (payload.eventType === "DELETE") {
+              setInventory((prev) =>
+                prev.filter((item) => item.id !== payload.old.id),
+              );
+            }
+          },
         )
         .subscribe();
     }
@@ -165,11 +180,7 @@ export function useRealtimeInventory(business_id: string | null) {
     loading: loading || Boolean(business_id && !matchesBusiness),
     refreshing: matchesBusiness ? refreshing : false,
     error: matchesBusiness ? error : null,
-    syncStatus: refreshing
-      ? "reconnecting"
-      : error
-        ? "offline"
-        : "snapshot",
+    syncStatus: refreshing ? "reconnecting" : error ? "offline" : "snapshot",
     refresh,
   } as const;
 }
@@ -291,6 +302,7 @@ export function useRealtimeCustomers(business_id: string | null) {
   const loadedBusinessId = useRef<string | null>(null);
   const stateBusinessId = useRef<string | null>(null);
   const requestVersion = useRef(0);
+  const subscriptionVersion = useRef(0);
 
   const refresh = useCallback(async () => {
     const version = ++requestVersion.current;
@@ -340,70 +352,86 @@ export function useRealtimeCustomers(business_id: string | null) {
     void refresh();
     if (!business_id) return;
 
+    const subscribedBusinessId = business_id;
+    const version = ++subscriptionVersion.current;
+    const isCurrentSubscription = () =>
+      subscriptionVersion.current === version &&
+      stateBusinessId.current === subscribedBusinessId;
+
     // Subscribe to changes
     const channel = openRealtimeChannel(`customers:${business_id}`);
-    if (channel) channel.on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "customers",
-        filter: `business_id=eq.${business_id}`,
-      },
-      async (payload: any) => {
-        if (payload.eventType === "INSERT") {
-          try {
-            const id = payload?.new?.id;
-            if (!id) return;
-            const response = await fetch(`/api/customers/${id}`);
-            const normalized = await response.json();
-            if (!response.ok || !normalized?.id) return;
+    if (channel)
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "customers",
+          filter: `business_id=eq.${business_id}`,
+        },
+        async (payload: any) => {
+          if (!isCurrentSubscription()) return;
+          if (payload.eventType === "INSERT") {
+            try {
+              const id = payload?.new?.id;
+              if (!id) return;
+              const response = await fetch(
+                `/api/customers/${id}?business_id=${encodeURIComponent(subscribedBusinessId)}`,
+              );
+              const normalized = await response.json();
+              if (!response.ok || !normalized?.id || !isCurrentSubscription())
+                return;
 
-            setCustomers((prev) =>
-              [
-                normalized,
-                ...prev.filter((row) => row.id !== normalized.id),
-              ].sort((a, b) =>
-                (a.first_name || a.alias || "").localeCompare(
-                  b.first_name || b.alias || "",
+              setCustomers((prev) =>
+                [
+                  normalized,
+                  ...prev.filter((row) => row.id !== normalized.id),
+                ].sort((a, b) =>
+                  (a.first_name || a.alias || "").localeCompare(
+                    b.first_name || b.alias || "",
+                  ),
                 ),
-              ),
-            );
-          } catch (error) {
-            console.warn(
-              "[realtime] customer INSERT normalization failed",
-              error,
-            );
-          }
-        } else if (payload.eventType === "UPDATE") {
-          try {
-            const id = payload?.new?.id;
-            if (!id) return;
-            const response = await fetch(`/api/customers/${id}`);
-            const normalized = await response.json();
-            if (!response.ok || !normalized?.id) return;
+              );
+            } catch (error) {
+              console.warn(
+                "[realtime] customer INSERT normalization failed",
+                error,
+              );
+            }
+          } else if (payload.eventType === "UPDATE") {
+            try {
+              const id = payload?.new?.id;
+              if (!id) return;
+              const response = await fetch(
+                `/api/customers/${id}?business_id=${encodeURIComponent(subscribedBusinessId)}`,
+              );
+              const normalized = await response.json();
+              if (!response.ok || !normalized?.id || !isCurrentSubscription())
+                return;
 
+              setCustomers((prev) =>
+                prev.map((item) =>
+                  item.id === normalized.id ? normalized : item,
+                ),
+              );
+            } catch (error) {
+              console.warn(
+                "[realtime] customer UPDATE normalization failed",
+                error,
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            if (!isCurrentSubscription()) return;
             setCustomers((prev) =>
-              prev.map((item) =>
-                item.id === normalized.id ? normalized : item,
-              ),
-            );
-          } catch (error) {
-            console.warn(
-              "[realtime] customer UPDATE normalization failed",
-              error,
+              prev.filter((item) => item.id !== payload.old.id),
             );
           }
-        } else if (payload.eventType === "DELETE") {
-          setCustomers((prev) =>
-            prev.filter((item) => item.id !== payload.old.id),
-          );
-        }
-      },
-    );
+        },
+      );
 
     return () => {
       requestVersion.current += 1;
+      subscriptionVersion.current += 1;
       channel?.unsubscribe();
     };
   }, [business_id, refresh]);
@@ -414,11 +442,7 @@ export function useRealtimeCustomers(business_id: string | null) {
     loading: loading || Boolean(business_id && !matchesBusiness),
     refreshing: matchesBusiness ? refreshing : false,
     error: matchesBusiness ? error : null,
-    syncStatus: refreshing
-      ? "reconnecting"
-      : error
-        ? "offline"
-        : "snapshot",
+    syncStatus: refreshing ? "reconnecting" : error ? "offline" : "snapshot",
     refresh,
   } as const;
 }
