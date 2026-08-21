@@ -10,6 +10,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
+import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
 import { openFeedbackWithFallback } from "@/lib/feedback";
 
 export function Sidebar() {
