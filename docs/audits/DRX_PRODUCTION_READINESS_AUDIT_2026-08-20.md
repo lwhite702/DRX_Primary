@@ -1,9 +1,9 @@
 # DRX production-readiness audit — 2026-08-20
 
-Tracking: WRE-62  
+Tracking: WRE-62
 Audited source: `codex/wre-readiness-blockers`; readiness snapshot at `8338449fd`, with WRE-63 remediation pending its draft PR
 Latest observed `origin/main`: `8b51b8f47`
-Deployed desktop release label observed in the authenticated UI: `v0.4.12`  
+Deployed desktop release label observed in the authenticated UI: `v0.4.12`
 Repository version: `0.5.8`
 
 This report supersedes the April 2026 readiness reports for current release decisions. It records no secrets, customer payloads, or personally identifying evidence. Moxie is optional and is not a DRX release gate.
