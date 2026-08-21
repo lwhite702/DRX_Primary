@@ -17,7 +17,9 @@ test.describe("Auth routing regressions", () => {
     }
 
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
-    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /sign in/i }).first(),
+    ).toBeVisible();
     await expect(page.getByRole("textbox", { name: /email address/i })).toBeVisible();
   });
 });
