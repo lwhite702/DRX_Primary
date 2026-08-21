@@ -12,30 +12,101 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
-    env:
-      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install production deployment dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate production deployment configuration
+        id: config
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_PRODUCTION: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        run: |
+          set -euo pipefail
+          for variable in \
+            VERCEL_TOKEN \
+            VERCEL_ORG_ID \
+            VERCEL_PROJECT_ID_PRODUCTION \
+            VERCEL_SCOPE
+          do
+            if [ -z "${!variable:-}" ]; then
+              echo "Missing required production configuration: $variable" >&2
+              exit 1
+            fi
+          done
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ -z "${CONVEX_DEPLOY_KEY:-}" ]; then
+            echo "Missing required production configuration: CONVEX_DEPLOY_KEY" >&2
+            exit 1
+          fi
+          if [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
+            echo "has_convex_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_convex_key=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy Convex functions to Production
-        if: ${{ github.event_name != 'workflow_dispatch' || env.CONVEX_DEPLOY_KEY != '' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || steps.config.outputs.has_convex_key == 'true' }}
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         working-directory: ./apps/app
-        run: npx convex deploy
+        run: pnpm convex:deploy
 
       - name: Deploy production to Vercel
         id: vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
-          scope: ${{ secrets.VERCEL_SCOPE }}
-          working-directory: ./apps/app
-          vercel-args: --prod
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        run: |
+          set -euo pipefail
+          DEPLOYMENT_URL=$(pnpm dlx vercel@59.3.0 deploy \
+            --prod \
+            --yes \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_SCOPE")
+          if [[ "$DEPLOYMENT_URL" != https://* ]]; then
+            echo "Vercel did not return a valid deployment URL" >&2
+            exit 1
+          fi
+          echo "preview-url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
       - name: Smoke test production health endpoint
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
         run: |
           set -euo pipefail
           HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
-          if [ -z "$HEALTH_URL" ]; then
-            HEALTH_URL="${{ steps.vercel.outputs.preview-url }}/api/health"
+          if [ -n "$HEALTH_URL" ]; then
+            if [[ "$HEALTH_URL" != http://* && "$HEALTH_URL" != https://* ]]; then
+              HEALTH_URL="https://$HEALTH_URL"
+            fi
+            HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
+          else
+            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              --deployment "${{ steps.vercel.outputs.preview-url }}" \
+              --yes)
           fi
-          curl -fsSL "$HEALTH_URL"
+          HEALTH_RESPONSE="$HEALTH_RESPONSE" node -e '
+            const response = JSON.parse(process.env.HEALTH_RESPONSE);
+            if (response.status !== "healthy" || response.checks?.database !== true) {
+              throw new Error("Production health check did not report a healthy database");
+            }
+          '
