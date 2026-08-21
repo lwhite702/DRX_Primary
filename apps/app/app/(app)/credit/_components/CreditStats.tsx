@@ -12,14 +12,20 @@ interface CreditStatsProps {
 }
 
 export function CreditStats({
-  totalOutstanding,
-  customerCount,
-  overdueBalance,
-  overdueCount,
-  totalLimit,
+  totalOutstanding = 0,
+  customerCount = 0,
+  overdueBalance = 0,
+  overdueCount = 0,
+  totalLimit = 0,
 }: CreditStatsProps) {
+  const safeTotalOutstanding = Number(totalOutstanding || 0);
+  const safeOverdueBalance = Number(overdueBalance || 0);
+  const safeTotalLimit = Number(totalLimit || 0);
+  const safeCustomerCount = Number(customerCount || 0);
+  const safeOverdueCount = Number(overdueCount || 0);
+
   const utilization =
-    totalLimit > 0 ? (totalOutstanding / totalLimit) * 100 : 0;
+    safeTotalLimit > 0 ? (safeTotalOutstanding / safeTotalLimit) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -33,10 +39,10 @@ export function CreditStats({
                 Total Outstanding
               </p>
               <p className="text-3xl font-bold text-[#4ADE80] font-mono">
-                ${totalOutstanding.toFixed(2)}
+                ${safeTotalOutstanding.toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Across {customerCount} customers
+                Across {safeCustomerCount} customers
               </p>
             </div>
           </CardContent>
@@ -50,10 +56,10 @@ export function CreditStats({
                 Overdue Balance
               </p>
               <p className="text-3xl font-bold text-[#EF4444] font-mono">
-                ${overdueBalance.toFixed(2)}
+                ${safeOverdueBalance.toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {overdueCount} {overdueCount === 1 ? "customer" : "customers"}{" "}
+                {safeOverdueCount} {safeOverdueCount === 1 ? "customer" : "customers"}{" "}
                 overdue
               </p>
             </div>
@@ -77,13 +83,13 @@ export function CreditStats({
           indicatorClassName="bg-gradient-to-r from-[#4ADE80] to-[#EAB308]"
         />
         <div className="flex justify-between mt-1 text-[10px] text-muted-foreground font-mono">
-          <span>${totalOutstanding.toFixed(2)} used</span>
-          <span>${totalLimit.toFixed(2)} total limit</span>
+          <span>${safeTotalOutstanding.toFixed(2)} used</span>
+          <span>${safeTotalLimit.toFixed(2)} total limit</span>
         </div>
       </div>
 
       {/* Overdue Alert */}
-      {overdueCount > 0 && (
+      {safeOverdueCount > 0 && (
         <div className="bg-[#1A0505] border border-[#EF4444]/20 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex gap-4">
             <div className="bg-[#EF4444]/10 p-2 h-fit rounded text-[#EF4444]">
@@ -91,11 +97,11 @@ export function CreditStats({
             </div>
             <div>
               <h3 className="text-[#EF4444] font-bold text-sm mb-1">
-                {overdueCount} Overdue{" "}
-                {overdueCount === 1 ? "Account" : "Accounts"}
+                {safeOverdueCount} Overdue{" "}
+                {safeOverdueCount === 1 ? "Account" : "Accounts"}
               </h3>
               <p className="text-xs text-[#EF4444]/70">
-                Total overdue: ${overdueBalance.toFixed(2)} • Please review
+                Total overdue: ${safeOverdueBalance.toFixed(2)} • Please review
                 immediately
               </p>
             </div>

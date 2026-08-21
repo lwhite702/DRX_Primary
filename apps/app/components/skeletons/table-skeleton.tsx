@@ -19,7 +19,7 @@ export function TableSkeleton({
   rowCount = 10,
 }: TableSkeletonProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-in fade-in-0 duration-200">
       {/* Header Skeleton */}
       <div className="flex justify-between items-center mb-6">
         <div>

@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { createAppClient } from "@/lib/data/client/supabase-client";
 
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+
 interface EventDeskMetrics {
   totalSales: number;
   salesCount: number;
@@ -104,43 +106,18 @@ export default function EventDeskPage() {
         ) || 0;
       const salesCount = todaySales.data?.length || 0;
       const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
-      // Assuming 'sales' here refers to 'todaySales.data' for consistency with the original code's context
-      // If 'sales' refers to a different dataset, it needs to be fetched or defined.
-      // For now, I'll assume it's a typo and should be todaySales.data
-      const totalRevenue =
-        todaySales.data?.reduce(
-          (sum: number, sale: { total_amount: number | null }) =>
-            sum + (sale.total_amount || 0),
-          0
-        ) || 0;
-
-      const inventoryAlerts = lowStockItems.data?.length || 0;
-
-      // Credit stats
-      // Assuming 'creditTransactions' here refers to 'creditData.data' for consistency with the original code's context
-      // If 'creditTransactions' refers to a different dataset, it needs to be fetched or defined.
-      // Also, the original code sums 'current_balance', while the change sums 'amount' based on 'status'.
-      // I will keep the original logic for creditOutstanding as it aligns with the fetched 'credit_limits' data,
-      // and add the user's requested line if it's meant to be a separate calculation,
-      // but it seems to be a replacement for the existing creditOutstanding.
-      // Given the instruction "Add type annotations to reduce callbacks", I will apply type annotations to the existing creditOutstanding calculation.
       const creditOutstanding =
         creditData.data?.reduce(
           (sum: number, credit: { current_balance: number | null }) =>
             sum + (credit.current_balance || 0),
           0
         ) || 0;
-      // If the user intended to replace the creditOutstanding calculation with the one provided,
-      // and 'creditTransactions' is meant to be 'creditData.data', then the line would be:
-      // const creditOutstanding = creditData.data?.reduce((sum: number, credit: { status: string, amount: number }) => (credit.status === 'pending' ? sum + credit.amount : sum), 0) || 0;
-      // However, 'credit_limits' table likely doesn't have 'status' and 'amount' fields in this context, but 'current_balance'.
-      // Sticking to the original data structure and applying type annotation.
 
       setMetrics({
         totalSales,
         salesCount,
         averageSale,
-        inventoryAlerts,
+        inventoryAlerts: lowStockItems.data?.length || 0,
         pendingIntakes: pendingIntakes.count || 0,
         activeCustomers: activeCustomers.count || 0,
         creditOutstanding,
@@ -155,28 +132,19 @@ export default function EventDeskPage() {
   };
 
   if (businessLoading || loading) {
-    return (
-      <div className="p-4 md:p-8 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Operations Insights</h1>
-          <p className="text-muted-foreground mt-2">
-            Real-time business metrics and alerts
-          </p>
-        </div>
-      </div>
-    );
+    return <AppPageSkeleton rows={4} className="animate-in fade-in-0 duration-200" />;
   }
 
   if (!business) {
     return (
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8 text-muted-foreground text-center">
         No business found. Please set up your business first.
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in-0 duration-200">
       <div>
         <h1 className="text-3xl font-bold">Operations Insights</h1>
         <p className="text-muted-foreground mt-2">
@@ -191,10 +159,10 @@ export default function EventDeskPage() {
             Today's Sales
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${metrics.totalSales.toFixed(2)}
+            ${(metrics?.totalSales ?? 0).toFixed(2)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {metrics.salesCount} transactions
+            {metrics?.salesCount ?? 0} transactions
           </p>
         </Card>
         <Card className="p-6">
@@ -202,7 +170,7 @@ export default function EventDeskPage() {
             Average Sale
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${metrics.averageSale.toFixed(2)}
+            ${(metrics?.averageSale ?? 0).toFixed(2)}
           </p>
         </Card>
         <Card className="p-6">

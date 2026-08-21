@@ -11,7 +11,7 @@ export function AppPageSkeleton({
 }) {
   return (
     <div
-      className={cn("space-y-6 p-4 md:p-8", className)}
+      className={cn("space-y-6 p-4 md:p-8 animate-in fade-in-0 duration-200", className)}
       aria-label="Loading page"
       aria-busy="true"
     >

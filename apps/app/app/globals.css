@@ -160,23 +160,29 @@
   }
 }
 
-/* Motion vocabulary: route content fades/translates, sheets slide, dialogs scale/fade. */
+:root {
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Motion vocabulary: Apple-style fluid SF Pro transitions. */
 .page-transition {
   min-width: 0;
 }
 
 .route-content-transition {
-  animation: routeContentIn 180ms var(--ease-out) both;
+  animation: routeContentIn 220ms var(--ease-apple) both;
+  will-change: opacity, transform;
 }
 
 @keyframes routeContentIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px) scale(0.998);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
