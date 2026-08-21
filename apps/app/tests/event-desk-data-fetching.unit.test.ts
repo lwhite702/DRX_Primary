@@ -301,6 +301,9 @@ describe('EventDeskPage Data Fetching', () => {
         business: null, // No business context
         settings: null,
         loading: false,
+        status: "empty",
+        refreshing: false,
+        error: null,
         availableBusinesses: [],
         needsSetup: false,
         refreshBusiness: async () => {},

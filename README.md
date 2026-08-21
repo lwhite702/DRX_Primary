@@ -15,7 +15,7 @@ This repository is a **pnpm monorepo**. Product ownership is explicit:
 
 ### Node Version Policy
 
-- **Required Node.js:** `20.19.0` (exact)
+- **Required Node.js:** `22.23.1` (exact)
 - **Package manager:** `pnpm@9.15.9`
 - CI and local policy are aligned (`.nvmrc`, `.node-version`, package `engines`)
 
@@ -149,7 +149,7 @@ Canonical source:
 
 ### Prerequisites
 
-- Node.js 20.19.0
+- Node.js 22.23.1
 - pnpm 9.15.9
 - Supabase CLI
 

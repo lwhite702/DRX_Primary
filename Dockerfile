@@ -1,4 +1,4 @@
-FROM node:20.19.0-alpine AS base
+FROM node:22.23.1-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -12,7 +12,7 @@ COPY apps/app ./apps/app
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter deelrxcrm-app build
 
-FROM node:20.19.0-alpine AS runner
+FROM node:22.23.1-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000

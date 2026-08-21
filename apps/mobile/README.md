@@ -4,7 +4,7 @@
 
 ## Runtime Policy
 
-- **Node.js:** `20.19.0` (exact, matches monorepo policy)
+- **Node.js:** `22.23.1` (exact, matches monorepo policy)
 - **pnpm:** `9.15.9`
 
 ## Development

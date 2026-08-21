@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProductSearchPage() {
-  return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <SearchView />
-    </div>
-  );
+  return <SearchView />;
 }

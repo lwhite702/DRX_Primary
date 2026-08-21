@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { encodeCustomerPii } from "@/lib/privacy/customer-pii";
 import { canWriteField } from "@/lib/privacy/privacy-policy";
@@ -8,23 +7,11 @@ import { findCustomersForSearch } from "@/lib/customers/core/customer-search";
 import { mapOperationalCustomerRecord } from "@/lib/customers/core/customer-identity";
 import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-
-async function resolveBusinessId(userId: string): Promise<string | null> {
-  const ownedBusiness = await db.businessProfile.findFirst({
-    where: { ownerId: userId },
-    select: { id: true },
-  });
-  if (ownedBusiness?.id) {
-    return ownedBusiness.id;
-  }
-
-  const userRole = await db.userRole.findFirst({
-    where: { userId },
-    select: { businessId: true },
-  });
-
-  return userRole?.businessId ?? null;
-}
+import { resolveCustomerAccess } from "./_lib/server";
+import {
+  createCustomerWithAudit,
+  CustomerConflictError,
+} from "@/lib/customers/core/customer-lifecycle";
 
 function parseNumeric(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -49,6 +36,32 @@ function parseEphemeralRetentionDays(value: unknown): 1 | 7 | 30 | null {
 
 function buildEphemeralExpiry(days: 1 | 7 | 30): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
+function providedCustomerFields(body: Record<string, unknown>): string[] {
+  const fields = [
+    ["alias", body.alias],
+    ["first_name", body.first_name ?? body.firstName],
+    ["last_name", body.last_name ?? body.lastName],
+    ["phone", body.phone ?? body.phone_number ?? body.phoneNumber],
+    ["email", body.email],
+    ["address", body.address],
+    ["notes", body.notes],
+    ["city", body.city],
+    ["state", body.state],
+    ["zip_code", body.zip_code ?? body.zipCode],
+    ["customer_type", body.customer_type ?? body.customerType],
+    [
+      "fixed_price_per_gram",
+      body.fixed_price_per_gram ?? body.fixedPricePerGram,
+    ],
+    ["ephemeral", body.ephemeral],
+    ["is_active", body.is_active ?? body.isActive],
+  ] as const;
+
+  return fields
+    .filter(([, value]) => value !== undefined)
+    .map(([field]) => field);
 }
 
 function collectWriteViolations(
@@ -80,20 +93,28 @@ function collectWriteViolations(
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const businessId = await resolveBusinessId(userId);
-    if (!businessId) {
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status") || "active";
+    if (status !== "active" && status !== "archived") {
       return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
+        { error: "Status must be active or archived" },
+        { status: 400 },
       );
     }
 
-    const { searchParams } = new URL(request.url);
+    const isActive = status === "active";
+    const context = await resolveCustomerAccess(
+      request,
+      isActive ? "customers.view" : "customers.manage",
+    );
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
+    }
+    const { userId, businessId } = context;
+
     const search = (searchParams.get("search") || "").trim();
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
@@ -114,11 +135,12 @@ export async function GET(request: NextRequest) {
             search,
             limit,
             offset,
+            isActive,
           })
         : (async () => {
             const where: any = {
               businessId,
-              isActive: true,
+              isActive,
             };
 
             if (search) {
@@ -132,26 +154,33 @@ export async function GET(request: NextRequest) {
 
             const customers = await db.customers.findMany({
               where,
-              take: Number.isFinite(limit) ? Math.max(1, Math.min(limit, 200)) : 50,
+              take: Number.isFinite(limit)
+                ? Math.max(1, Math.min(limit, 200))
+                : 50,
               skip: Number.isFinite(offset) ? Math.max(offset, 0) : 0,
               orderBy: { createdAt: "desc" },
             });
 
             return Promise.all(
-              customers.map((customer: any) => mapOperationalCustomerRecord(customer)),
+              customers.map((customer: any) =>
+                mapOperationalCustomerRecord(customer),
+              ),
             );
           })(),
       resolveBusinessPrivacyPolicy(businessId),
     ]);
 
-    return NextResponse.json({ data: rows, privacy_protocol: privacyProtocol });
+    return NextResponse.json({
+      data: rows,
+      status,
+      privacy_protocol: privacyProtocol,
+    });
   } catch (error) {
-    console.error("Customers API Error:", error);
+    console.error("Customers API failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -159,25 +188,38 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.manage");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
+    const { businessId, userId } = context;
 
-    const businessId = await resolveBusinessId(userId);
-    if (!businessId) {
-      return NextResponse.json({ error: "Business not found" }, { status: 404 });
+    let body: Record<string, unknown>;
+    try {
+      const parsed = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("invalid body");
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
     }
-
-    const body = await request.json();
     const privacyProtocol = await resolveBusinessPrivacyPolicy(businessId);
 
-    const alias = body.alias;
-    const firstName = body.first_name ?? body.firstName;
-    const phone = body.phone ?? body.phone_number ?? body.phoneNumber;
-    const email = body.email;
-    const address = body.address;
-    const notes = body.notes;
+    const alias = sanitizePiiInput(body.alias);
+    const firstName = sanitizePiiInput(body.first_name ?? body.firstName);
+    const phone = sanitizePiiInput(
+      body.phone ?? body.phone_number ?? body.phoneNumber,
+    );
+    const email = sanitizePiiInput(body.email);
+    const address = sanitizePiiInput(body.address);
+    const notes = sanitizePiiInput(body.notes);
     const requestedEphemeral = body.ephemeral === true;
     const requestedRetentionDays = parseEphemeralRetentionDays(
       body.ephemeral_retention_days ?? body.ephemeralRetentionDays,
@@ -208,7 +250,8 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         {
-          error: "Ephemeral profile creation is disabled for standard customer create",
+          error:
+            "Ephemeral profile creation is disabled for standard customer create",
         },
         { status: 400 },
       );
@@ -216,7 +259,8 @@ export async function POST(request: NextRequest) {
 
     const effectiveEphemeral = requestedEphemeral;
     const effectiveEphemeralDays =
-      requestedRetentionDays ?? privacyProtocol.ephemeral_profiles.default_retention_days;
+      requestedRetentionDays ??
+      privacyProtocol.ephemeral_profiles.default_retention_days;
 
     const piiStorage = await encodeCustomerPii({
       alias,
@@ -231,34 +275,48 @@ export async function POST(request: NextRequest) {
       body.fixed_price_per_gram ?? body.fixedPricePerGram,
     );
 
-    const newCustomer = await db.customers.create({
-      data: {
-        businessId,
-        alias: null,
-        firstName: null,
-        lastName: sanitizePiiInput(body.last_name ?? body.lastName),
-        phoneNumber: null,
-        email: null,
-        address: null,
-        notes: null,
-        city: sanitizePiiInput(body.city),
-        state: sanitizePiiInput(body.state),
-        zipCode: sanitizePiiInput(body.zip_code ?? body.zipCode),
-        customerType:
-          sanitizePiiInput(body.customer_type ?? body.customerType) || "retail",
-        fixedPricePerGram,
-        isActive:
-          typeof body.is_active === "boolean"
-            ? body.is_active
-            : typeof body.isActive === "boolean"
-              ? body.isActive
-              : true,
+    const isActive =
+      typeof body.is_active === "boolean"
+        ? body.is_active
+        : typeof body.isActive === "boolean"
+          ? body.isActive
+          : true;
+    const customerType =
+      sanitizePiiInput(body.customer_type ?? body.customerType) || "retail";
+    const data = {
+      businessId,
+      alias: null,
+      firstName: null,
+      lastName: sanitizePiiInput(body.last_name ?? body.lastName),
+      phoneNumber: null,
+      email: null,
+      address: null,
+      notes: null,
+      city: sanitizePiiInput(body.city),
+      state: sanitizePiiInput(body.state),
+      zipCode: sanitizePiiInput(body.zip_code ?? body.zipCode),
+      customerType,
+      fixedPricePerGram,
+      isActive,
+      ephemeral: effectiveEphemeral,
+      ephemeralExpiresAt: effectiveEphemeral
+        ? buildEphemeralExpiry(effectiveEphemeralDays)
+        : null,
+      lastActivityAt: new Date(),
+      ...piiStorage,
+    };
+
+    const newCustomer = await createCustomerWithAudit({
+      businessId,
+      actorUserId: userId,
+      phone: sanitizePiiInput(phone),
+      email: sanitizePiiInput(email),
+      data,
+      audit: {
+        changedFields: providedCustomerFields(body),
+        isActive,
         ephemeral: effectiveEphemeral,
-        ephemeralExpiresAt: effectiveEphemeral
-          ? buildEphemeralExpiry(effectiveEphemeralDays)
-          : null,
-        lastActivityAt: new Date(),
-        ...piiStorage,
+        customerType,
       },
     });
 
@@ -266,12 +324,20 @@ export async function POST(request: NextRequest) {
       status: 201,
     });
   } catch (error) {
-    console.error("Create Customer Error:", error);
+    if (error instanceof CustomerConflictError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          existing_customer_id: error.existingCustomerId,
+        },
+        { status: 409 },
+      );
+    }
+    console.error("Create customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

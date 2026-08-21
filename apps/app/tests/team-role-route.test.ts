@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   findMembership: vi.fn(),
   updateMembership: vi.fn(),
   createAuditLog: vi.fn(),
+  findBusiness: vi.fn(),
+  transaction: vi.fn(),
 }));
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
@@ -19,6 +21,8 @@ vi.mock("@/lib/auth/server-guards", () => ({
 
 vi.mock("@/lib/db", () => ({
   db: {
+    $transaction: mocks.transaction,
+    businessProfile: { findUnique: mocks.findBusiness },
     userRole: {
       findFirst: mocks.findMembership,
       update: mocks.updateMembership,
@@ -50,10 +54,19 @@ describe("PUT /api/team/members/[id]/role", () => {
     mocks.hasBusinessPermission.mockResolvedValue(true);
     mocks.findMembership.mockResolvedValue({
       id: "membership_1",
+      userId: "user_2",
       role: "cashier",
+      permissions: {},
+      createdAt: new Date("2026-08-19T12:00:00.000Z"),
+      updatedAt: new Date("2026-08-19T12:00:00.000Z"),
+    });
+    mocks.findBusiness.mockResolvedValue({
+      ownerId: "owner_1",
+      isActive: true,
     });
     mocks.updateMembership.mockResolvedValue({ id: "membership_1" });
     mocks.createAuditLog.mockResolvedValue({ id: "audit_1" });
+    mocks.transaction.mockResolvedValue([]);
   });
 
   it("updates only the target membership in the selected business", async () => {
@@ -74,8 +87,18 @@ describe("PUT /api/team/members/[id]/role", () => {
       "staff.manage",
     );
     expect(mocks.findMembership).toHaveBeenCalledWith({
-      where: { userId: "user_2", businessId: "business_1" },
-      select: { id: true, role: true },
+      where: {
+        businessId: "business_1",
+        OR: [{ id: "user_2" }, { userId: "user_2" }],
+      },
+      select: {
+        id: true,
+        userId: true,
+        role: true,
+        permissions: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     expect(mocks.updateMembership).toHaveBeenCalledWith({
       where: { id: "membership_1" },
@@ -86,7 +109,11 @@ describe("PUT /api/team/members/[id]/role", () => {
   it("does not allow owner roles to be changed", async () => {
     mocks.findMembership.mockResolvedValue({
       id: "membership_1",
+      userId: "user_2",
       role: "owner",
+      permissions: {},
+      createdAt: new Date("2026-08-19T12:00:00.000Z"),
+      updatedAt: new Date("2026-08-19T12:00:00.000Z"),
     });
 
     const response = await PUT(makeRequest("manager"), {
@@ -96,5 +123,31 @@ describe("PUT /api/team/members/[id]/role", () => {
     expect(response.status).toBe(403);
     expect(mocks.updateMembership).not.toHaveBeenCalled();
     expect(mocks.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("requires system management permission to assign administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+
+    const response = await PUT(makeRequest("admin"), {
+      params: Promise.resolve({ id: "user_2" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(mocks.findMembership).not.toHaveBeenCalled();
+    expect(mocks.updateMembership).not.toHaveBeenCalled();
+  });
+
+  it("allows system managers to assign administrators", async () => {
+    const response = await PUT(makeRequest("admin"), {
+      params: Promise.resolve({ id: "user_2" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mocks.updateMembership).toHaveBeenCalledWith({
+      where: { id: "membership_1" },
+      data: { role: "admin" },
+    });
   });
 });

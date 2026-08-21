@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { BusinessSetupProvider } from "@/components/providers/business-setup-provider";
+import { BusinessProvider } from "@/lib/hooks/use-business";
 import { CustomerProvider } from "@/components/providers/customer-provider";
 import { OfflineProvider } from "@/components/providers/offline-provider";
 import { OnboardingContext } from "./onboarding-context";
@@ -28,6 +29,8 @@ const LazyOnboardingFlow = dynamic(
 const completedOnboardingState = {
   steps: { profile: true, product: true, customer: true, sale: true },
   isLoading: false,
+  isRefreshing: false,
+  error: null,
   progress: 100,
   isComplete: true,
   refreshOnboarding: async () => {},
@@ -57,24 +60,27 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   // If we are server-side or onboarding is complete, use the lightweight context provider
   if (!isClient || !isOnboardingNeeded) {
     return (
-      <OnboardingContext.Provider value={completedOnboardingState}>
-        {baseProviders}
-      </OnboardingContext.Provider>
+      <BusinessProvider>
+        <OnboardingContext.Provider value={completedOnboardingState}>
+          {baseProviders}
+        </OnboardingContext.Provider>
+      </BusinessProvider>
     );
   }
 
   // If onboarding is incomplete, wrap in the dynamic onboarding provider and flow
   return (
-    <BusinessSetupProvider>
-      <OfflineProvider>
-        <LazyOnboardingProvider>
-          <CustomerProvider>
-            {children}
-            <LazyOnboardingFlow />
-          </CustomerProvider>
-        </LazyOnboardingProvider>
-      </OfflineProvider>
-    </BusinessSetupProvider>
+    <BusinessProvider>
+      <BusinessSetupProvider>
+        <OfflineProvider>
+          <LazyOnboardingProvider>
+            <CustomerProvider>
+              {children}
+              <LazyOnboardingFlow />
+            </CustomerProvider>
+          </LazyOnboardingProvider>
+        </OfflineProvider>
+      </BusinessSetupProvider>
+    </BusinessProvider>
   );
 }
-

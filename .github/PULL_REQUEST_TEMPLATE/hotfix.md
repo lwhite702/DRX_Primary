@@ -13,4 +13,4 @@ _How you'll confirm the fix in production._
 ## Follow-ups to file
 - [ ] (add follow-up tasks here)
 
-<sub>* Required sections - Moxie will flag if missing on alignment.</sub>
+<sub>* Required sections — keep them in the pull request description.</sub>

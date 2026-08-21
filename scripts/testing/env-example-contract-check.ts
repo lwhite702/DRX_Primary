@@ -33,6 +33,7 @@ const ignoredRuntimeKeys = new Set([
   "PW_REUSE_EXISTING_SERVER",
   "PW_SKIP_GLOBAL_SETUP",
   "VITEST",
+  "VITEST_INCLUDE_INTEGRATION",
 ]);
 
 function fail(message: string): never {

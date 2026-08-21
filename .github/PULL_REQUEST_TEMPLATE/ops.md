@@ -10,4 +10,4 @@ _How you confirmed the change works in the target environment._
 ## Reminder
 > Coordinate with on-call before merging during business hours.
 
-<sub>* Required sections - Moxie will flag if missing on alignment.</sub>
+<sub>* Required sections — keep them in the pull request description.</sub>

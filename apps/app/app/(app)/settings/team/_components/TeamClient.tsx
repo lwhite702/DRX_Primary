@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -26,8 +27,14 @@ import {
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { toast } from "sonner";
-import { ShieldAlert } from "lucide-react";
+import { Building2, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface TeamMember {
   id: string;
@@ -39,34 +46,59 @@ interface TeamMember {
 }
 
 export default function TeamClient() {
-  const { business } = useBusiness();
+  const router = useRouter();
+  const { business, loading: businessLoading } = useBusiness();
   const { hasPermission, loading: permsLoading } = usePermission(business?.id);
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedBusinessId, setLoadedBusinessId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{
+    businessId: string;
+    message: string;
+  } | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
-  useEffect(() => {
-    if (business?.id) {
-      fetchTeam();
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("cashier");
+  const [inviting, setInviting] = useState(false);
+
+  const fetchTeam = useCallback(async (signal?: AbortSignal) => {
+    if (!business?.id) {
+      setUsers([]);
+      setLoadedBusinessId(null);
+      setLoading(false);
+      setLoadError(null);
+      return;
+    }
+
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const response = await fetch(`/api/team?business_id=${business.id}`, { signal });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) throw new Error(result.error || "Failed to load team members");
+
+      setUsers(result.data || []);
+      setLoadedBusinessId(business.id);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      console.error("Error fetching team:", error);
+      setLoadError({
+        businessId: business.id,
+        message:
+          error instanceof Error ? error.message : "Failed to load team members",
+      });
+      toast.error("Failed to load team members");
+    } finally {
+      if (!signal?.aborted) setLoading(false);
     }
   }, [business?.id]);
 
-  const fetchTeam = async () => {
-    if (!business?.id) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/team?business_id=${business.id}`);
-      const result = await response.json();
-
-      if (!response.ok) throw new Error(result.error);
-
-      setUsers(result.data || []);
-    } catch (error) {
-      console.error("Error fetching team:", error);
-      toast.error("Failed to load team members");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchTeam(controller.signal);
+    return () => controller.abort();
+  }, [fetchTeam]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     if (!business?.id) return;
@@ -81,14 +113,14 @@ export default function TeamClient() {
 
     setUpdating(userId);
     try {
-      const response = await fetch(`/api/team/members/${userId}/role`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-business-id": business.id,
+      const response = await fetch(
+        `/api/team/members/${encodeURIComponent(userId)}/role?business_id=${encodeURIComponent(business.id)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role: newRole }),
         },
-        body: JSON.stringify({ role: newRole }),
-      });
+      );
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || "Failed to update role");
@@ -109,12 +141,78 @@ export default function TeamClient() {
     }
   };
 
-  if (permsLoading || loading) {
-    return <div className="p-8">Loading...</div>;
+  const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!business?.id || !inviteEmail.trim()) return;
+
+    setInviting(true);
+    try {
+      const response = await fetch(
+        `/api/team/members?business_id=${encodeURIComponent(business.id)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send invitation");
+      }
+
+      setInviteEmail("");
+      setInviteRole("cashier");
+      toast.success("Invitation sent");
+    } catch (error) {
+      console.error("Error inviting team member:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send invitation",
+      );
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  if (businessLoading) {
+    return <AppPageSkeleton rows={5} />;
+  }
+
+  if (!business) {
+    return (
+      <EmptyState
+        icon={Building2}
+        title="Finish business setup"
+        description="Create your business profile before inviting or managing team members."
+        actionLabel="Continue setup"
+        onAction={() => router.push("/onboarding")}
+        className="m-4 md:m-8"
+      />
+    );
+  }
+
+  const currentLoadError =
+    loadError && loadError.businessId === business.id ? loadError : null;
+
+  if (currentLoadError) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorState
+          title="Team members could not be loaded"
+          message={currentLoadError.message}
+          onRetry={() => void fetchTeam()}
+        />
+      </div>
+    );
+  }
+
+  if (permsLoading || loading || loadedBusinessId !== business.id) {
+    return <AppPageSkeleton rows={5} />;
   }
 
   // Check permission
   const canManageUsers = hasPermission("staff.manage");
+  const canManagePrivilegedRoles =
+    hasPermission("system.manage") || hasPermission("users.manage_all");
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -139,6 +237,62 @@ export default function TeamClient() {
         </Card>
       )}
 
+      {canManageUsers && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Invite a Team Member</CardTitle>
+            <CardDescription>
+              DRX sends a one-time invitation. Passwords are created privately
+              by the invited user.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_auto] md:items-end"
+              onSubmit={handleInvite}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="team-invite-email">Email address</Label>
+                <Input
+                  id="team-invite-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                  placeholder="operator@example.com"
+                  disabled={inviting}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-invite-role">Role</Label>
+                <Select
+                  value={inviteRole}
+                  onValueChange={setInviteRole}
+                  disabled={inviting}
+                >
+                  <SelectTrigger id="team-invite-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    {canManagePrivilegedRoles && (
+                      <SelectItem value="admin">Administrator</SelectItem>
+                    )}
+                    <SelectItem value="staff">Staff</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" disabled={inviting}>
+                {inviting ? "Sending…" : "Send Invitation"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Team Members</CardTitle>
@@ -157,6 +311,13 @@ export default function TeamClient() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {!users.length ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                    No additional team members have been added yet.
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
@@ -183,7 +344,9 @@ export default function TeamClient() {
                           handleRoleChange(user.user_id, val)
                         }
                         disabled={
-                          updating === user.user_id || user.role === "owner"
+                          updating === user.user_id ||
+                          user.role === "owner" ||
+                          (user.role === "admin" && !canManagePrivilegedRoles)
                         }
                       >
                         <SelectTrigger className="w-[140px] ml-auto">
@@ -193,6 +356,10 @@ export default function TeamClient() {
                           <SelectItem value="cashier">Cashier</SelectItem>
                           <SelectItem value="supervisor">Supervisor</SelectItem>
                           <SelectItem value="manager">Manager</SelectItem>
+                          {canManagePrivilegedRoles && (
+                            <SelectItem value="admin">Administrator</SelectItem>
+                          )}
+                          <SelectItem value="staff">Staff</SelectItem>
                           {/* Owner cannot be assigned via UI usually, but displayed */}
                           {user.role === "owner" && (
                             <SelectItem value="owner">Owner</SelectItem>

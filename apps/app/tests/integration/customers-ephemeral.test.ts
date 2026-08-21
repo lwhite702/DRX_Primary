@@ -2,27 +2,37 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
+  resolveAuthContext: vi.fn(),
+  hasBusinessPermission: vi.fn(),
   db: {
+    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
     businessProfile: {
-      findFirst: vi.fn(),
-    },
-    userRole: {
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
     },
     businessSettings: {
       findFirst: vi.fn(),
     },
     customers: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    systemAuditLog: {
       create: vi.fn(),
     },
   },
   encodeCustomerPii: vi.fn(),
   decodeCustomerPii: vi.fn(),
+  hashPhoneLookupCandidates: vi.fn(),
+  hashEmailLookupCandidates: vi.fn(),
 }));
 
-vi.mock("@/lib/adapters/auth/server", () => ({
-  auth: mocks.auth,
+vi.mock("@/app/api/pos/_lib/server", () => ({
+  resolveAuthContext: mocks.resolveAuthContext,
+}));
+
+vi.mock("@/lib/auth/server-guards", () => ({
+  hasBusinessPermission: mocks.hasBusinessPermission,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -34,14 +44,38 @@ vi.mock("@/lib/privacy/customer-pii", () => ({
   decodeCustomerPii: mocks.decodeCustomerPii,
 }));
 
+vi.mock("@/lib/privacy/pii-hash", () => ({
+  hashAliasLookup: vi.fn(),
+  hashAliasLookupCandidates: vi.fn().mockResolvedValue([]),
+  buildDeterministicLookupHashes: vi.fn().mockResolvedValue({
+    aliasHash: null,
+    phoneHash: null,
+    emailHash: null,
+    hashVersion: 1,
+  }),
+  hashPhoneLookupCandidates: mocks.hashPhoneLookupCandidates,
+  hashEmailLookupCandidates: mocks.hashEmailLookupCandidates,
+}));
+
 import { POST } from "@/app/api/customers/route";
 
 describe("Customers API ephemeral controls", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.auth.mockResolvedValue({ userId: "user_1" });
-    mocks.db.businessProfile.findFirst.mockResolvedValue({ id: "biz_1" });
-    mocks.db.userRole.findFirst.mockResolvedValue(null);
+    mocks.resolveAuthContext.mockResolvedValue({
+      userId: "user_1",
+      businessId: "biz_1",
+    });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.db.businessProfile.findUnique.mockResolvedValue({ isActive: true });
+    mocks.db.$transaction.mockImplementation(async (callback: any) =>
+      callback(mocks.db),
+    );
+    mocks.db.$queryRaw.mockResolvedValue([]);
+    mocks.db.customers.findFirst.mockResolvedValue(null);
+    mocks.db.systemAuditLog.create.mockResolvedValue({});
+    mocks.hashPhoneLookupCandidates.mockResolvedValue([]);
+    mocks.hashEmailLookupCandidates.mockResolvedValue([]);
     mocks.encodeCustomerPii.mockResolvedValue({
       aliasEncrypted: "enc",
       firstNameEncrypted: null,

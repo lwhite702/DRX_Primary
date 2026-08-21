@@ -10,6 +10,7 @@ import { CustomerInline } from "@/components/quick-pos/customer-inline";
 import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProductResult {
   id: string;
@@ -206,11 +207,15 @@ export default function QuickPosSalePage() {
         />
         {isBootstrapping ? (
           <div
-            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70"
+            className="grid grid-cols-2 gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-4"
             role="status"
+            aria-label="Loading register data and favorites"
+            aria-busy="true"
             aria-live="polite"
           >
-            Loading register data and favorites...
+            {[0, 1, 2, 3].map((item) => (
+              <Skeleton key={item} className="h-14 bg-white/10" />
+            ))}
           </div>
         ) : null}
 

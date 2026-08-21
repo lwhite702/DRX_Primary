@@ -12,4 +12,4 @@ _What changed and where it lives now._
 - [ ] No stale screenshots
 - [ ] Examples still run
 
-<sub>* Required sections - Moxie will flag if missing on alignment.</sub>
+<sub>* Required sections — keep them in the pull request description.</sub>

@@ -1,79 +1,101 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
-
-const ASSIGNABLE_ROLES = new Set(["cashier", "supervisor", "manager"]);
+import {
+  findTeamMembership,
+  isPrivilegedTeamRole,
+  normalizeTeamRole,
+  resolveTeamManagementContext,
+} from "../../../_lib/server";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const { userId: actorId, businessId } = await resolveAuthContext(request);
-
-  if (!actorId || !businessId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    if (!(await hasBusinessPermission(actorId, businessId, "staff.manage"))) {
+    const context = await resolveTeamManagementContext(request);
+    if (!context.ok) {
       return NextResponse.json(
-        { error: "Forbidden: Insufficient permissions" },
-        { status: 403 },
+        { error: context.error },
+        { status: context.status },
       );
     }
 
-    const body = await request.json();
-    const role = typeof body.role === "string" ? body.role.toLowerCase() : "";
-    if (!ASSIGNABLE_ROLES.has(role)) {
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
-        { error: "Role must be cashier, supervisor, or manager" },
+        { error: "Invalid request body" },
         { status: 400 },
       );
     }
 
-    const targetMembership = await db.userRole.findFirst({
-      where: { userId: id, businessId },
-      select: { id: true, role: true },
-    });
-    if (!targetMembership) {
+    const role = normalizeTeamRole((body as Record<string, unknown>).role);
+    if (!role) {
       return NextResponse.json(
-        { error: "User not found in this business" },
-        { status: 404 },
+        { error: "Select a valid assignable role" },
+        { status: 400 },
       );
     }
-    if (["owner", "super_admin"].includes(targetMembership.role || "")) {
+    if (isPrivilegedTeamRole(role) && !context.canManagePrivilegedRoles) {
       return NextResponse.json(
-        { error: "Owner and super admin roles cannot be changed here" },
+        { error: "Only an owner or administrator can assign that role" },
         { status: 403 },
       );
     }
 
-    await db.userRole.update({
-      where: { id: targetMembership.id },
-      data: { role },
-    });
+    const { id } = await params;
+    const membership = await findTeamMembership(context.businessId, id);
+    if (!membership) {
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    }
+    if (membership.userId === context.userId) {
+      return NextResponse.json(
+        { error: "You cannot change your own role" },
+        { status: 409 },
+      );
+    }
+    if (membership.userId === context.ownerId || membership.role === "owner") {
+      return NextResponse.json(
+        { error: "The business owner role cannot be changed" },
+        { status: 403 },
+      );
+    }
+    if (
+      isPrivilegedTeamRole(membership.role) &&
+      !context.canManagePrivilegedRoles
+    ) {
+      return NextResponse.json(
+        { error: "Only an owner or administrator can manage that role" },
+        { status: 403 },
+      );
+    }
 
-    await db.systemAuditLog.create({
-      data: {
-        action: "role_update",
-        entityId: id,
-        userId: actorId,
-        oldValues: { role: targetMembership.role },
-        newValues: { role },
-        entityType: "team_member",
-        businessId,
-      },
-    });
+    await db.$transaction([
+      db.userRole.update({
+        where: { id: membership.id },
+        data: { role },
+      }),
+      db.systemAuditLog.create({
+        data: {
+          action: "role_update",
+          entityId: membership.userId,
+          userId: context.userId,
+          businessId: context.businessId,
+          entityType: "team_member",
+          oldValues: { role: membership.role },
+          newValues: { role },
+        },
+      }),
+    ]);
 
-    return NextResponse.json({ id, role }, { status: 200 });
+    return NextResponse.json({ id: membership.userId, role }, { status: 200 });
   } catch (error) {
-    console.error("Update role error:", error);
+    console.error("Update team role failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

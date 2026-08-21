@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 
 const PosLayoutShell = dynamic(
   () =>
@@ -9,9 +10,7 @@ const PosLayoutShell = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-screen w-full animate-pulse bg-background" />
-    ),
+    loading: () => <SalesSkeleton />,
   },
 );
 

@@ -1,6 +1,10 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@/lib/adapters/auth/server";
+import {
+  syncCreatedClerkUser,
+  type ClerkCreatedUserPayload,
+} from "@/lib/auth/clerk-user-sync";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -54,36 +58,9 @@ export async function POST(req: Request) {
 
   try {
     if (eventType === "user.created") {
-      const { id, email_addresses, first_name, last_name } = evt.data;
-      const primaryEmail = email_addresses[0]?.email_address;
-
-      if (primaryEmail) {
-        // We create a User, but we might not have a tenant yet.
-        // We can create a placeholder or wait for org creation.
-        // For strict schema (User needs Tenant), we might need to create a default "Personal" tenant
-        // OR make tenantId optional in schema temporarily.
-        // Given our schema requires tenantId, we'll need to handle this carefully.
-        // For B2B with Clerk Organizations, usually flow is: User Creates Account -> User Creates Org.
-
-        // Option: Create a "Personal" BusinessProfile for the user immediately.
-        const personalOrg = await prisma.businessProfile.create({
-          data: {
-            businessName: `${first_name}'s Workspace`,
-            ownerId: id, // Temporary, will link real user below
-            clerkOrgId: `personal_${id}`, // Synthetic Org ID
-          },
-        });
-
-        await prisma.user.create({
-          data: {
-            clerkUserId: id,
-            email: primaryEmail,
-            name: `${first_name} ${last_name || ""}`.trim(),
-            role: "OWNER",
-            tenantId: personalOrg.id,
-          },
-        });
-      }
+      await syncCreatedClerkUser(
+        evt.data as unknown as ClerkCreatedUserPayload,
+      );
     }
 
     if (eventType === "organization.created") {
@@ -114,8 +91,12 @@ export async function POST(req: Request) {
       eventType === "session.removed" ||
       eventType === "session.revoked"
     ) {
-      const sessionData = evt.data as Record<string, any>;
-      const latestActivity = sessionData.latest_activity || {};
+      const sessionData = evt.data as unknown as Record<string, unknown>;
+      const latestActivity =
+        sessionData.latest_activity &&
+        typeof sessionData.latest_activity === "object"
+          ? (sessionData.latest_activity as Record<string, unknown>)
+          : {};
       const userId = sessionData.user_id || sessionData.userId;
       const sessionId = sessionData.id || sessionData.session_id;
 
@@ -144,7 +125,10 @@ export async function POST(req: Request) {
 
     // Additional events: organizationMembership.created to sync roles/invites.
   } catch (error) {
-    console.log("Webhook error: ", error);
+    console.error("Clerk webhook handler failed", {
+      eventType,
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return new Response("Webhook handler failed", { status: 500 });
   }
 

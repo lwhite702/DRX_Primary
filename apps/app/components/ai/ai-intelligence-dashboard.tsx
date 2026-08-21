@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createAppClient } from "@/lib/data/client/supabase-client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AIIntelligenceDashboardProps {
   businessId: string;
@@ -14,6 +15,7 @@ interface AIIntelligenceDashboardProps {
 export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState({
     pricingRecommendations: 0,
     criticalAlerts: 0,
@@ -28,9 +30,14 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
   }, [businessId]);
 
   const fetchDashboardData = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setError("Intelligence data is unavailable in this environment.");
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
+    setError(null);
     try {
       const [pricingRes, alertsRes, forecastsRes] = await Promise.all([
         supabase
@@ -57,9 +64,10 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
         urgentRestocks: forecastsRes.count || 0,
         opportunitiesCount: (pricingRes.count || 0) + (forecastsRes.count || 0),
       });
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+    } catch (caught) {
+      console.error("Error fetching dashboard data:", caught);
       toast.error("Failed to load AI intelligence data");
+      setError("Intelligence data could not be loaded.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +90,7 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
       const result = await response.json();
       toast.success(`Analysis complete: ${result.processed_count} items analyzed`);
       await fetchDashboardData();
-    } catch (error) {
+    } catch {
       toast.error("Failed to run analysis");
     } finally {
       setAnalyzing(false);
@@ -130,8 +138,17 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading intelligence data...</p>
+            <div className="grid grid-cols-2 gap-4 py-2 md:grid-cols-4" aria-label="Loading intelligence summary" aria-busy="true">
+              {[0, 1, 2, 3].map((item) => (
+                <Skeleton key={item} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/25 bg-warning/5 p-4 text-sm">
+              <span>{error}</span>
+              <Button type="button" variant="outline" size="sm" onClick={() => void fetchDashboardData()}>
+                Try again
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

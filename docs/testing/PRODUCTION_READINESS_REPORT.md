@@ -1,5 +1,7 @@
 # PRODUCTION_READINESS_REPORT
 
+> **Historical artifact — superseded.** This generated April report did not prove the current credentialed desktop/native workflow. The current verdict and reproducible evidence are in [`../audits/DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md`](../audits/DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md). Do not use this file as current release approval.
+
 Generated: 2026-04-01T01:04:22.782Z
 Recommendation: **GO**
 
