@@ -50,7 +50,14 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchScreen</key>
-	<dict/>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>DRXWordmark</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+	</dict>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

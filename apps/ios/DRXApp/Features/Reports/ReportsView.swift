@@ -100,8 +100,7 @@ struct ReportsView: View {
             Text(message).foregroundStyle(DRXPalette.muted)
         } actions: {
             Button("Retry") { Task { await load() } }
-                .buttonStyle(.borderedProminent)
-                .tint(DRXPalette.accent)
+                .buttonStyle(.drxPrimary)
         }
         .padding(.top, 60)
     }

@@ -33,6 +33,29 @@ struct AIIntelligenceView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay { RoundedRectangle(cornerRadius: 18).stroke(DRXPalette.border, lineWidth: 1) }
 
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Catalog intelligence is available", systemImage: "checkmark.shield.fill")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(DRXPalette.success)
+                    Text("Analysis runs through your authenticated business workspace so tenant authorization and audit controls remain enforced.")
+                        .font(.caption)
+                        .foregroundStyle(DRXPalette.muted)
+
+                    NavigationLink {
+                        AuthenticatedWebView(path: "ai-intelligence", title: "AI Intelligence")
+                    } label: {
+                        Label("Run AI Analysis", systemImage: "sparkles")
+                            .font(.headline)
+                    }
+                    .buttonStyle(.drxPrimaryFullWidth)
+                    .accessibilityIdentifier("runAIAnalysisButton")
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DRXPalette.card)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
+
                 // Insight Cards
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Automated Insights")

@@ -43,8 +43,11 @@ export default function CreditPage() {
   } = useCreditManager(business?.id);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const safeAgingData = Array.isArray(agingData) ? agingData : [];
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
 
-  if (businessLoading || (creditLoading && !agingData.length)) {
+  if (businessLoading || (creditLoading && safeAgingData.length === 0)) {
     return <AppPageSkeleton rows={5} />;
   }
 
@@ -60,8 +63,9 @@ export default function CreditPage() {
   }
 
   // Filter Data
-  const filteredAgingData = agingData.filter((a) =>
-    a.customer_name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const normalizedSearch = searchTerm.toLowerCase();
+  const filteredAgingData = safeAgingData.filter((a) =>
+    String(a?.customer_name ?? "").toLowerCase().includes(normalizedSearch),
   );
 
   // Calculate Stats
@@ -69,13 +73,13 @@ export default function CreditPage() {
     (a) => Number(a.bucket_31_plus) > 0 || Number(a.bucket_15_30) > 0,
   ).length;
 
-  const totalOutstanding = agingData.reduce(
+  const totalOutstanding = safeAgingData.reduce(
     (sum, a) => sum + Number(a.total_outstanding || 0),
     0,
   );
 
   // Calculate Overdue Balance (Sum of 31+ aka delinquent buckets for now)
-  const overdueBalance = agingData.reduce(
+  const overdueBalance = safeAgingData.reduce(
     (sum, a) =>
       sum + Number(a.bucket_31_plus || 0) + Number(a.bucket_15_30 || 0),
     0,
@@ -131,7 +135,7 @@ export default function CreditPage() {
       <div id="tour-credit-stats">
         <CreditStats
           totalOutstanding={totalOutstanding}
-          customerCount={agingData.length}
+          customerCount={safeAgingData.length}
           overdueBalance={overdueBalance}
           overdueCount={delinquentCount}
           totalLimit={totalLimit}
@@ -167,17 +171,17 @@ export default function CreditPage() {
             // Figma shows "View History". Likely a filter on the transactions list or a new page.
             // For now, I'll log or scroll to transactions.
             console.log("View history", id);
-            setSearchTerm(customers.find((c) => c.id === id)?.first_name || "");
+            setSearchTerm(safeCustomers.find((c) => c.id === id)?.first_name || "");
           }}
         />
       </div>
 
-      {transactions.length > 0 ? (
+      {safeTransactions.length > 0 ? (
         <div className="space-y-4 mt-8">
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
             Recent Activity
           </h2>
-          <CreditTransactionsList transactions={transactions} />
+          <CreditTransactionsList transactions={safeTransactions} />
         </div>
       ) : (
         <Card>
@@ -196,14 +200,14 @@ export default function CreditPage() {
       <ExtensionDialog
         open={showExtensionDialog}
         onOpenChange={setShowExtensionDialog}
-        customers={customers}
+        customers={safeCustomers}
         onSubmit={handleExtension}
       />
 
       <PaymentDialog
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
-        customers={customers}
+        customers={safeCustomers}
         onSubmit={handlePayment}
       />
 

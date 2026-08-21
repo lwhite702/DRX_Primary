@@ -97,6 +97,33 @@ describe("useRealtimeInventory", () => {
     expect(result.current.inventory[0]?.product_name).toBe("Updated");
   });
 
+  it("normalizes Prisma price fields for legacy inventory consumers", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        apiResponse([
+          {
+            id: "item-1",
+            productName: "Flower",
+            unitCost: 12.5,
+            sellingPrice: 20,
+          },
+        ]),
+      ),
+    );
+
+    const { result } = renderHook(() => useRealtimeInventory("business-1"));
+    await waitFor(() => expect(result.current.inventory).toHaveLength(1));
+
+    expect(result.current.inventory[0]).toMatchObject({
+      product_name: "Flower",
+      unit_cost: 12.5,
+      unitCost: 12.5,
+      selling_price: 20,
+      sellingPrice: 20,
+    });
+  });
+
   it("terminates the initial inventory loader with an actionable error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(failedApiResponse()));
 

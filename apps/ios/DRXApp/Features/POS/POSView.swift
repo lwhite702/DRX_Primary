@@ -357,8 +357,7 @@ struct CartFooter: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(DRXPalette.accent)
+            .buttonStyle(.drxPrimaryFullWidth)
         }
         .padding(16)
     }
@@ -385,8 +384,7 @@ private struct CompactCartBar: View {
                     .font(.headline)
                     .frame(minHeight: 44)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(DRXPalette.accent)
+            .buttonStyle(.drxPrimary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)

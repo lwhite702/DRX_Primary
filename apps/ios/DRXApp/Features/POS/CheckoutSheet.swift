@@ -103,8 +103,7 @@ struct CheckoutSheet: View {
                     }
                     .frame(maxWidth: .infinity, minHeight: 50)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(DRXPalette.accent)
+                .buttonStyle(.drxPrimaryFullWidth)
                 .disabled(!canConfirm || isProcessing)
                 .padding(.horizontal)
             }
@@ -388,8 +387,7 @@ struct CheckoutSheet: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 50)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(DRXPalette.accent)
+            .buttonStyle(.drxPrimaryFullWidth)
             .padding(.horizontal)
             .padding(.bottom)
         }

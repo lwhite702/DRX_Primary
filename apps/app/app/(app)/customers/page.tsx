@@ -238,19 +238,18 @@ export default function CustomersPage() {
 
   const displayedCustomers =
     viewStatus === "active"
-      ? (customers as CustomerRecord[])
+      ? (Array.isArray(customers) ? customers : []) as CustomerRecord[]
       : archivedCustomers;
+  const normalizedSearch = searchTerm.toLowerCase();
   const filteredCustomers = displayedCustomers.filter(
     (customer) =>
-      (customer.first_name || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (customer.last_name || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      customer.alias?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()),
+      [
+        customer?.first_name,
+        customer?.last_name,
+        customer?.alias,
+        customer?.phone_number,
+        customer?.email,
+      ].some((value) => String(value ?? "").toLowerCase().includes(normalizedSearch)),
   );
 
   if (businessLoading || customersLoading) {
