@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { completeOnboarding, type OnboardingActionState } from "../_actions";
 import { clearDraft, createDraft, loadDraft, nextStep, ONBOARDING_DRAFT_KEY, previousStep, productBusiness, saveDraft, validationMessage, type BusinessType, type OnboardingDraft, type OnboardingStep } from "@/lib/onboarding/state-machine";
 import { capture } from "@wrelik/analytics/client";
+import { useUser } from "@/lib/adapters/auth/ui";
 
 const initialState: OnboardingActionState = { status: "idle", error: null };
 const choices: Array<[BusinessType, string, string]> = [
@@ -34,6 +35,7 @@ function Card({ selected, title, detail, onClick }: { selected: boolean; title: 
 }
 
 export function OnboardingForm() {
+  const { user } = useUser();
   const [result, action, pending] = useActionState(completeOnboarding, initialState);
   const [draft, setDraft] = useState(() => createDraft());
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +55,28 @@ export function OnboardingForm() {
     } catch {
       saved = createDraft(timezone);
     }
+    if (user) {
+      const clerkName = (user.fullName || `${user.firstName || ""} ${user.lastName || ""}`).trim();
+      const clerkBusiness = (user.publicMetadata?.businessName || user.unsafeMetadata?.businessName || "") as string;
+      if (!saved.ownerName && clerkName) saved.ownerName = clerkName;
+      if (!saved.businessName && clerkBusiness) saved.businessName = clerkBusiness;
+    }
     setDraft(saved);
     setResumed(saved.currentStep !== "welcome");
     setRestored(true);
-  }, []);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const clerkName = (user.fullName || `${user.firstName || ""} ${user.lastName || ""}`).trim();
+    const clerkBusiness = (user.publicMetadata?.businessName || user.unsafeMetadata?.businessName || "") as string;
+    setDraft((prev) => {
+      const patch: Partial<OnboardingDraft> = {};
+      if (!prev.ownerName && clerkName) patch.ownerName = clerkName;
+      if (!prev.businessName && clerkBusiness) patch.businessName = clerkBusiness;
+      return Object.keys(patch).length > 0 ? { ...prev, ...patch } : prev;
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!restored) return;
