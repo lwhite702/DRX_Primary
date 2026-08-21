@@ -86,4 +86,5 @@ export interface QuickPosExitVerifyRequest {
 
 export interface QuickPosExitVerifyResponse {
   allowed: boolean;
+  hasPinConfigured?: boolean;
 }

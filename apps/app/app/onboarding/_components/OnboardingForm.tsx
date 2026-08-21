@@ -23,7 +23,7 @@ export function OnboardingCompletionRedirect({ completed, storage, navigate }: {
     } catch {
       /* Server state and the completion cookie remain authoritative. */
     } finally {
-      (navigate ?? ((path) => window.location.replace(path)))("/pos/sale");
+      (navigate ?? ((path) => window.location.replace(path)))("/dashboard");
     }
   }, [completed, navigate, storage]);
   return null;
@@ -171,7 +171,7 @@ function WorkspaceReady({ summary }: { summary: import("../_actions").Onboarding
       <a href={actions[1].href} className="rounded-full border border-white/20 px-6 py-3 text-center font-semibold text-white">
         {actions[1].label}
       </a>
-      <a href="/pos/sale" className="px-5 py-3 text-center text-white">
+      <a href="/dashboard" className="px-5 py-3 text-center text-white">
         Go to workspace
       </a>
     </div>
