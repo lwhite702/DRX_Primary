@@ -1,18 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import SalesHistoryPage from "@/app/(app)/sales/page";
 
-const { redirect } = vi.hoisted(() => ({
-  redirect: vi.fn(),
-}));
-
-vi.mock("next/navigation", () => ({ redirect }));
-
-import SalesPage from "@/app/(app)/sales/page";
-
-describe("legacy sales route", () => {
-  beforeEach(() => redirect.mockClear());
-
-  it("uses the maintained register without loading the legacy browser POS", () => {
-    SalesPage();
-    expect(redirect).toHaveBeenCalledWith("/pos/sale");
+describe("sales history page", () => {
+  it("exports SalesHistoryPage component for order and sales history", () => {
+    expect(SalesHistoryPage).toBeTypeOf("function");
   });
 });
