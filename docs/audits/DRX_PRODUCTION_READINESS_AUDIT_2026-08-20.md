@@ -1,7 +1,7 @@
 # DRX production-readiness audit — 2026-08-20
 
 Tracking: WRE-62  
-Audited source: `codex/wre-readiness-blockers`; readiness snapshot at `54ad8e048`, with WRE-63 remediation pending its draft PR
+Audited source: `codex/wre-readiness-blockers`; readiness snapshot at `8338449fd`, with WRE-63 remediation pending its draft PR
 Latest observed `origin/main`: `8b51b8f47`
 Deployed desktop release label observed in the authenticated UI: `v0.4.12`  
 Repository version: `0.5.8`
@@ -177,14 +177,14 @@ These commits are local to `codex/wre-readiness-blockers` unless separately merg
 
 | Commit | File area | Purpose | Before | After | Regression coverage |
 |---|---|---|---|---|---|
-| `55e054bcc` | Governance/templates | WRE-55: make Moxie optional | Moxie evidence was treated as mandatory | Moxie is opt-in and not a release gate | Policy/template checks |
-| `a295e5656` | Team API/auth | WRE-13: tenant and role authorization | Legacy/bypass-prone team authorization paths | Canonical server auth and tenant-scoped role enforcement | Team member/role route tests |
-| `f5bb4b13b` | AI API/auth | WRE-56: protect AI routes | AI endpoints did not consistently use canonical authorization | Tenant-aware authenticated AI handlers | AI route authorization tests |
-| `ba6feffe8` | Vitest configuration | WRE-57: prevent false-green integration runs | Integration tests could be silently excluded | Explicit opt-in gate executes the intended suite | 15 files / 77 tests |
-| `89f92eafa` | Customer APIs | WRE-17: customer tenant authorization | Customer reads/writes had inconsistent server enforcement | Canonical tenant-scoped server helpers | Customer route authorization tests |
-| `db14cbf9a` | Customer lifecycle/UI | WRE-17: atomic duplicate-aware lifecycle | Archive/reactivation/history and quick-create consistency were incomplete | Atomic lifecycle, legacy duplicate fallback, history, and status-aware UI | Customer lifecycle and quick-create tests |
-| `54ad8e048` | This report and summary pointer | WRE-62: correct the stale readiness conclusion | April documents could be misread as current release approval | Dated evidence-backed NOT READY report | Documentation review plus reproducible commands |
-| `f63702ea6` plus pending WRE-63 commits | Desktop UX/runtime/observability/tests | Complete the P1-P3 pre-RC UX list | Crowded dashboard, overlapping tours, blocking loaders/reloads, inconsistent transitions, stale tenant responses, and outdated runtime/observability wiring | Simplified Today view, Radix-anchored tour, shared/cached business state, tailored skeletons, nonblocking refresh/reconnect states, Node 22, pinned browser, and privacy-safe Sentry entrypoint | 470 unit, 77 integration, 28 route, 14 accessibility, exact-runtime/build/contracts |
+| `f05da9707` | Governance/templates | WRE-55: make Moxie optional | Moxie evidence was treated as mandatory | Moxie is opt-in and not a release gate | Policy/template checks |
+| `61b6bdf29` | Team API/auth | WRE-13: tenant and role authorization | Legacy/bypass-prone team authorization paths | Canonical server auth and tenant-scoped role enforcement | Team member/role route tests |
+| `b9ac78d05` | AI API/auth | WRE-56: protect AI routes | AI endpoints did not consistently use canonical authorization | Tenant-aware authenticated AI handlers | AI route authorization tests |
+| `19c3a22c1` | Vitest configuration | WRE-57: prevent false-green integration runs | Integration tests could be silently excluded | Explicit opt-in gate executes the intended suite | 15 files / 77 tests |
+| `656042aec` | Customer APIs | WRE-17: customer tenant authorization | Customer reads/writes had inconsistent server enforcement | Canonical tenant-scoped server helpers | Customer route authorization tests |
+| `808ff3e2a` | Customer lifecycle/UI | WRE-17: atomic duplicate-aware lifecycle | Archive/reactivation/history and quick-create consistency were incomplete | Atomic lifecycle, legacy duplicate fallback, history, and status-aware UI | Customer lifecycle and quick-create tests |
+| `8338449fd` | This report and summary pointer | WRE-62: correct the stale readiness conclusion | April documents could be misread as current release approval | Dated evidence-backed NOT READY report | Documentation review plus reproducible commands |
+| `ba8f60763`, `7fb335b2f` | Desktop UX/runtime/observability/tests | Complete the P1-P3 pre-RC UX list | Crowded dashboard, overlapping tours, blocking loaders/reloads, inconsistent transitions, stale tenant responses, and outdated runtime/observability wiring | Simplified Today view, Radix-anchored tour, shared/cached business state, tailored skeletons, nonblocking refresh/reconnect states, Node 22, pinned browser, and privacy-safe Sentry entrypoint | 470 unit, 77 integration, 28 route, 14 accessibility, exact-runtime/build/contracts |
 
 ## 10. Remaining work in release order
 
