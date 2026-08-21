@@ -10,12 +10,6 @@ export interface DashboardStats {
   overdueCount: number;
   recentActivity: ActivityItem[];
   topMovers: TopMover[];
-  systemHealth: {
-    syncStatus: "CLEAN" | "SYNCING" | "ERROR";
-    brokenLinks: number;
-    lastAudit: string;
-    location: string;
-  };
 }
 
 export interface ActivityItem {
@@ -78,18 +72,6 @@ interface BaselineResponse {
     createdAt: string;
   }>;
   latestAuditAt: string | null;
-}
-
-function formatAuditLabel(latestAuditAt: string | null) {
-  if (!latestAuditAt) return "NO AUDIT YET";
-  const diffMs = Date.now() - new Date(latestAuditAt).getTime();
-  const mins = Math.max(0, Math.floor(diffMs / 60000));
-  if (mins < 1) return "JUST NOW";
-  if (mins < 60) return `${mins} MIN AGO`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} HRS AGO`;
-  const days = Math.floor(hours / 24);
-  return `${days} DAYS AGO`;
 }
 
 function calcGrowth(current: number, previous: number) {
@@ -175,12 +157,6 @@ export function useDashboardData(businessId: string | undefined) {
         overdueCount: report.credit.activeBalances,
         recentActivity,
         topMovers,
-        systemHealth: {
-          syncStatus: "CLEAN",
-          brokenLinks: 0,
-          lastAudit: formatAuditLabel(report.latestAuditAt),
-          location: businessId ? "BUSINESS-SCOPED" : "UNKNOWN",
-        },
       };
 
       statsRef.current = nextStats;

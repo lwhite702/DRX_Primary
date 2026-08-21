@@ -15,6 +15,7 @@ import { usePermission } from "@/lib/hooks/use-permission";
 import { Tour } from "@/components/ui/tour";
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getDefaultPrivacyProtocol,
   PRIVACY_PROFILE_OPTIONS,
@@ -971,7 +972,11 @@ export default function SettingsPage() {
                 </select>
               </div>
               {inventoryLoading ? (
-                <p className="text-xs text-muted-foreground">Loading inventory snapshot...</p>
+                <div className="grid grid-cols-2 gap-3" aria-label="Loading privacy inventory" aria-busy="true">
+                  {[0, 1, 2, 3].map((item) => (
+                    <Skeleton key={item} className="h-12 w-full" />
+                  ))}
+                </div>
               ) : inventorySnapshot ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                   <p>
@@ -1064,7 +1069,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {sessionsLoading ? (
-              <div className="text-sm text-muted-foreground">Loading sessions...</div>
+              <div className="space-y-3" aria-label="Loading device sessions" aria-busy="true">
+                {[0, 1, 2].map((item) => (
+                  <Skeleton key={item} className="h-14 w-full" />
+                ))}
+              </div>
             ) : sessions.length === 0 ? (
               <div className="text-sm text-muted-foreground">No active sessions found.</div>
             ) : (

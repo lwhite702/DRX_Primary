@@ -33,7 +33,7 @@ describe("TeamClient terminal loading states", () => {
     vi.mocked(useBusiness).mockReturnValue({
       business: null,
       loading: true,
-    } as ReturnType<typeof useBusiness>);
+    } as unknown as ReturnType<typeof useBusiness>);
 
     render(<TeamClient />);
 
@@ -44,7 +44,7 @@ describe("TeamClient terminal loading states", () => {
     vi.mocked(useBusiness).mockReturnValue({
       business: null,
       loading: false,
-    } as ReturnType<typeof useBusiness>);
+    } as unknown as ReturnType<typeof useBusiness>);
 
     render(<TeamClient />);
 
@@ -57,7 +57,7 @@ describe("TeamClient terminal loading states", () => {
     vi.mocked(useBusiness).mockReturnValue({
       business: { id: "business-1" },
       loading: false,
-    } as ReturnType<typeof useBusiness>);
+    } as unknown as ReturnType<typeof useBusiness>);
     fetchMock.mockResolvedValue({
       ok: false,
       json: vi.fn().mockResolvedValue({ error: "Team service unavailable" }),
@@ -76,7 +76,7 @@ describe("TeamClient terminal loading states", () => {
     vi.mocked(useBusiness).mockReturnValue({
       business: { id: "business-1" },
       loading: false,
-    } as ReturnType<typeof useBusiness>);
+    } as unknown as ReturnType<typeof useBusiness>);
     fetchMock.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({ data: [] }),
@@ -96,7 +96,7 @@ describe("TeamClient terminal loading states", () => {
     let currentBusiness = {
       business: { id: "business-1" },
       loading: false,
-    } as ReturnType<typeof useBusiness>;
+    } as unknown as ReturnType<typeof useBusiness>;
     vi.mocked(useBusiness).mockImplementation(() => currentBusiness);
 
     let resolveSecondRequest!: (value: unknown) => void;
@@ -128,7 +128,7 @@ describe("TeamClient terminal loading states", () => {
     currentBusiness = {
       business: { id: "business-2" },
       loading: false,
-    } as ReturnType<typeof useBusiness>;
+    } as unknown as ReturnType<typeof useBusiness>;
     rerender(<TeamClient />);
 
     expect(screen.getByLabelText("Loading page")).toBeInTheDocument();

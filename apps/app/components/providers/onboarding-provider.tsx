@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -30,7 +32,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     sale: false,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isGuideDismissed, setIsGuideDismissed] = useState(false);
+  const requestVersion = useRef(0);
+  const loadedBusinessId = useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -45,13 +51,20 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const checkProgress = async () => {
+  const checkProgress = useCallback(async () => {
+    const version = ++requestVersion.current;
     if (!business?.id) {
+      loadedBusinessId.current = null;
       setIsLoading(false);
+      setIsRefreshing(false);
+      setError(null);
       return;
     }
 
-    setIsLoading(true);
+    const refreshInPlace = loadedBusinessId.current === business.id;
+    setIsLoading(!refreshInPlace);
+    setIsRefreshing(refreshInPlace);
+    setError(null);
 
     try {
       const [inventoryRes, customerRes, baselineRes] = await Promise.all([
@@ -59,6 +72,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         fetch("/api/customers?limit=1", { credentials: "same-origin" }),
         fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
       ]);
+
+      if (!inventoryRes.ok || !customerRes.ok || !baselineRes.ok) {
+        throw new Error("Onboarding progress request failed");
+      }
 
       const inventoryJson = inventoryRes.ok ? await inventoryRes.json() : null;
       const customerJson = customerRes.ok ? await customerRes.json() : null;
@@ -71,22 +88,32 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         (baselineJson?.week?.salesCount ?? 0) > 0 ||
         (Array.isArray(baselineJson?.recentSales) && baselineJson.recentSales.length > 0);
 
+      if (version !== requestVersion.current) return;
       setSteps({
         profile: true,
         product: inventoryRows.length > 0,
         customer: customerRows.length > 0,
         sale: hasSales,
       });
+      loadedBusinessId.current = business.id;
     } catch (err) {
+      if (version !== requestVersion.current) return;
       console.error("Failed to check onboarding progress", err);
+      setError("Setup progress could not be refreshed.");
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
-  };
+  }, [business?.id]);
 
   useEffect(() => {
     void checkProgress();
-  }, [business?.id]);
+    return () => {
+      requestVersion.current += 1;
+    };
+  }, [checkProgress]);
 
   const totalSteps = Object.keys(steps).length;
   const completedSteps = Object.values(steps).filter(Boolean).length;
@@ -97,6 +124,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       value={{
         steps,
         isLoading,
+        isRefreshing,
+        error,
         progress,
         isComplete: progress === 100,
         refreshOnboarding: checkProgress,

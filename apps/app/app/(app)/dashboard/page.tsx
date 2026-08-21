@@ -71,7 +71,7 @@ export default function DashboardPage() {
         <SetupGuide />
 
         <PageHeader
-          title="Operator Dashboard"
+          title="Today"
           description="Today’s business health, the exceptions that need attention, and your next action."
         >
           <Button

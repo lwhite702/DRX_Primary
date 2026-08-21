@@ -41,6 +41,7 @@ import {
   maskPII,
   PrivacyPreset,
 } from "@/lib/utils/privacy";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 type CustomerRecord = Customer & {
   id: string;
@@ -63,6 +64,7 @@ export default function CustomersPage() {
   const {
     customers,
     loading: customersLoading,
+    syncStatus,
     refresh,
   } = useCustomerContext();
   const { hasPermission, loading: permissionLoading } = usePermission(
@@ -286,13 +288,14 @@ export default function CustomersPage() {
       <div className="noise-overlay" />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            CUSTOMERS
+          <h1 className="text-3xl font-bold">
+            Customers
           </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            MANAGEMENT CONSOLE • {filteredCustomers.length} PROFILES
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filteredCustomers.length} customer {filteredCustomers.length === 1 ? "profile" : "profiles"}
           </p>
         </div>
+        <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           {canManageCustomers ? (
             <DialogTrigger asChild>
@@ -302,7 +305,7 @@ export default function CustomersPage() {
                 className="laser-button bg-[#FFD700] text-black hover:bg-[#FFD700]/90 shadow-[0_0_15px_rgba(255,215,0,0.4)] border-none font-bold tracking-wider"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                ADD CUSTOMER
+                Add customer
               </Button>
             </DialogTrigger>
           ) : null}

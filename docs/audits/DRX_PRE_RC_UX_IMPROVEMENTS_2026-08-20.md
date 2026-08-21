@@ -23,7 +23,7 @@ make the application production-ready while the P0/P1 workflow gates remain.
 | P1 | Distinguish business loading from a truly missing business | Inventory treated the initial `null` business value as completed setup failure | Implemented and locally verified |
 | P1 | Provide stable-shell route loading and a restrained transition | Most protected routes had neither a route loading boundary nor a shared transition wrapper | Implemented and locally verified |
 | P1 | Replace manual tour viewport math and overlapping fallbacks | Tour used `getBoundingClientRect`, fixed card math, and a centered fallback when the target was absent | Implemented with installed Radix Popover and locally verified |
-| P2 | Replace high-traffic text-only loading screens with skeletons | Settings, Team, profile, AI, and sale details used full-page `Loading...` text | Implemented and locally verified for those surfaces |
+| P2 | Replace high-traffic text-only loading screens with skeletons | Settings, Team, profile, AI, sale, inventory, customers, reports, and administration used generic or text-only loading states | Implemented and locally verified for those surfaces |
 | P2 | Remove avoidable hard navigation to Reports | POS admin action assigned `window.location.href`, discarding the client shell | Implemented with Next navigation and locally verified |
 | P2 | Remove redundant Settings refresh after save | Settings refreshed business state and then forced `router.refresh()` | Implemented and locally verified |
 
@@ -31,75 +31,91 @@ make the application production-ready while the P0/P1 workflow gates remain.
 
 - [x] Run component regression tests for dashboard refresh, dashboard action
   density, Team terminal states, and tour target sequencing.
-- [x] Run type checking, targeted lint, the complete web unit suite, and a
-  production web build.
+- [x] Run exact-Node-22 type checking, targeted lint, the complete web unit and
+  integration suites, and the app plus marketing production builds.
 - [ ] Exercise dashboard, Inventory, Team, Settings, and the first-run tour in a
   production-equivalent local build at desktop and tablet breakpoints.
 - [ ] Verify keyboard-only tour navigation, Escape dismissal, focus placement,
   target collision near all viewport edges, missing targets, and reduced motion.
 - [ ] Measure route-change and data-ready timings before and after the change;
   establish an RC budget for shell preservation and time to useful content.
-- [ ] Verify slow, failed, aborted, and repeated dashboard/Team requests do not
-  expose stale tenant data or leave a permanent loader.
-- [ ] Verify the same navigation and loading language across customers, credit,
-  inventory intake/adjust/audit, reports, and sale detail.
+- [x] Add regression coverage showing that prior-business responses are ignored,
+  background refresh keeps current data visible, and chunk recovery never
+  reloads automatically.
+- [x] Apply the same initial-load, background-refresh, reconnect, error, and
+  skeleton language across customers, credit, inventory
+  intake/adjust/audit/search, reports, settings, administration, and sale.
 - [ ] Add iOS parity acceptance for loading, refresh, error, transition, and tour
   equivalents where the feature exists natively.
 - [ ] Run accessibility checks at 200% zoom and with reduced motion enabled.
 - [ ] Obtain explicit deployment approval, merge the issue-linked change, deploy,
   and repeat the authenticated production workflow before closing WRE-63.
 
-## Follow-up inventory
+## P1-P3 execution inventory
 
-These items remain outside the first coherent repair and must stay visible in the
-RC backlog:
+The implementation state below is branch-local. "Implemented" does not mean
+merged, deployed, or credentialed-production verified.
 
-| Priority | Follow-up | Known location or reason |
-| --- | --- | --- |
-| P1 | Share/cache the business profile across protected routes | `useBusiness` owns local state per hook instance and calls the profile action repeatedly |
-| P1 | Add explicit initial/loading, background-refresh, mutation, empty, and error states to all data hooks | Several hooks still expose a single overloaded `loading` boolean |
-| P1 | Replace remaining full-page text loaders on admin surfaces | Admin client, AI admin, and businesses admin retain `Loading...` states |
-| P1 | Audit `router.refresh()` after credit and onboarding mutations | Credit panels and onboarding still force route refreshes; confirm whether targeted state/cache updates can replace them |
-| P1 | Add stale-response protection to every tenant-scoped hook | Business switches and concurrent requests must never render a prior tenant's data |
-| P2 | Add route-level skeletons tailored to POS, inventory, customers, reports, and settings | The shared protected-route skeleton is a safe fallback, not the final page-specific design |
-| P2 | Add a visible non-blocking reconnect state for realtime inventory/customer channels | Production evidence showed API snapshot fallback without a clear in-product status |
-| P2 | Define a single transition vocabulary | Fade/translate for route content, slide for drawers, scale/fade for dialogs, and no decorative motion for data refresh |
-| P2 | Remove repeated dashboard configuration that no longer affects the simplified home view | Pinned-dashboard preferences remain available but are not shown on the simplified dashboard |
-| P2 | Add skeleton contrast and animation accessibility checks | Skeletons need readable contrast and must stop animation under reduced motion |
-| P2 | Move the runtime to Node 22 and remove the Supabase Node 20 deprecation | The production build passes but emits the dependency's Node 20 end-of-support warning |
-| P2 | Validate Upstash configuration in every deployed environment | The configuration-free local production build warns that Redis URL/token are absent; values must remain secret and environment-managed |
-| P2 | Pin and provision the Playwright browser used by CI/local RC checks | The installed runner expected a Chromium headless-shell revision that was absent locally, so the formal five-route smoke suite could not open a page |
-| P3 | Move Sentry client initialization to `instrumentation-client.ts` | The production build passes but Next/Sentry reports the legacy filename deprecation |
-| P3 | Replace technical labels and section codes with task language throughout the app | The dashboard slice is corrected; other surfaces still expose implementation-oriented copy |
+| Priority | Improvement | Branch-local state | Remaining RC evidence |
+| --- | --- | --- | --- |
+| P1 | Share/cache the business profile across protected routes | Implemented with one provider-owned request, last-good data retention, retry/error state, and safe business switching | Credentialed multi-business browser verification |
+| P1 | Separate initial load, background refresh, mutation, empty, and error states | Implemented in business, role, inventory, customer, onboarding, and dashboard preference/data paths | Production slow/error injection against the deployed API |
+| P1 | Replace remaining administration full-page text loaders | Implemented with page- or list-shaped skeletons | Authenticated role-by-role production check |
+| P1 | Remove avoidable credit/onboarding route refreshes | Implemented with local mutation results and explicit completion callbacks; the operator-login refresh remains intentionally at the auth boundary | Credentialed mutation and session-activation check |
+| P1 | Protect tenant-scoped hooks from stale responses | Implemented with abort/version guards and last-good data scoped to the active business | Credentialed two-business switch and concurrency check |
+| P2 | Add tailored route skeletons for POS, inventory, customers, reports, and settings | Implemented | Production performance timings and visual review |
+| P2 | Show non-blocking realtime reconnect/snapshot status | Implemented for inventory and customers | Controlled deployed disconnect/reconnect check |
+| P2 | Define one transition vocabulary | Implemented: route fade/translate, sheet slide, dialog scale/fade, no refresh animation, reduced-motion override | Production route timing budget and native parity |
+| P2 | Remove dashboard preferences that no longer affect the simplified view | Unused pinned UI and setter removed; stored metadata retained for compatibility | Migration/removal decision for legacy persisted metadata |
+| P2 | Make skeleton animation accessibility-safe | Implemented with `motion-safe` animation plus the global reduced-motion override | Manual 200% zoom and assistive-technology review |
+| P2 | Standardize the runtime on Node 22 | Implemented at Node 22.23.1 across engines, CI, Docker, documentation, and release preflight | CI run on the draft PR and deployment runtime confirmation |
+| P2 | Fail closed on incomplete Upstash configuration | Implemented; local use safely bypasses cache while Vercel preview/production require the URL/token pair | Preview and production variable names are present; deployed behavior still needs a controlled check |
+| P2 | Pin and provision the Playwright browser | Implemented with repository scripts and exact Chromium provisioning in CI; the pinned browser also ran locally from a task-specific cache | Draft-PR CI run |
+| P3 | Move Sentry client initialization to `instrumentation-client.ts` | Implemented with default PII and replay capture disabled; observability contract passes | Controlled preview error receipt in Sentry |
+| P3 | Replace technical labels and section codes with task language | Implemented across dashboard, administration, customer, inventory, and login surfaces | Product copy review |
 
 ## Local verification evidence
 
-- `pnpm --filter deelrxcrm-app typecheck`: passed.
-- Targeted UX regressions: 4 files, 16 tests passed.
-- `pnpm --filter deelrxcrm-app test:run`: 78 files, 455 tests passed;
+- Node runtime: exact `22.23.1` verified; release preflight passed with the
+  frozen pnpm 9.15.9 install and version consistency checks.
+- `pnpm --filter deelrxcrm-app typecheck`: passed on Node 22.23.1.
+- `pnpm --filter deelrxcrm-app test:run`: 81 files, 470 tests passed;
   no failures or skips.
 - `pnpm --filter deelrxcrm-app test:integration`: 15 files, 77 tests
   passed; no failures or skips.
-- Targeted ESLint: zero errors and 17 warnings in legacy touched pages.
-- `pnpm --filter deelrxcrm-app build`: passed; 114 routes generated.
-- Build warnings retained as follow-ups: Node 20/Supabase support, missing
-  configuration-free local Upstash values, disabled PWA output, Prisma preview
-  deprecation, and the Sentry client-config filename deprecation.
-- Formal Playwright UX smoke: not executed because the runner's pinned Chromium
-  headless-shell revision was not installed. A read-only system-Chrome diagnostic
-  reached dashboard, inventory, Team, and Settings with HTTP 200, terminal
-  non-loading content, and the route-transition wrapper; it also confirmed that
-  a configuration-free production runtime correctly rejects missing Clerk keys.
-  This diagnostic is not credentialed production evidence and is not counted as
-  a passing E2E suite.
+- Changed-file ESLint: zero errors; legacy warnings remain. Full-repository
+  ESLint is still a failed gate with 3,724 errors and 509 warnings, primarily in
+  pre-existing generated/vendor content and existing restricted imports; this
+  must be baselined or repaired before a READY verdict.
+- Production build: passed on the second run, generating 114 application routes
+  and 31 marketing routes. The first run exposed `/inventory/search` outside the
+  shared provider boundary; moving it under the protected route group repaired
+  the Release-only failure. Remaining warnings are the Prisma driver-adapter
+  preview deprecation and intentionally disabled PWA output.
+- Required Playwright suites: 8 public/auth-routing checks and 20 desktop/mobile
+  protected-route UX checks passed using pinned Chromium. Visual fixtures or the
+  development-only auth bypass were used, Clerk test keys were absent, and the
+  local database was unreachable; these are UI regression checks, not
+  credentialed workflow evidence.
+- Accessibility Playwright suites: 8 public and 6 protected desktop/mobile checks
+  passed with no serious or critical Axe findings. Protected checks used the
+  development-only auth bypass. Reduced-motion behavior is also covered by the
+  tour regression; 200% manual zoom verification remains open.
+- Observability, environment, policy, security, repository-hygiene, secret-file,
+  version, and migration rollback-policy checks passed. The migration check
+  reports 21 documented legacy migrations without rollback files and enforces
+  rollback companions for later migrations.
+- Upstash variable names were verified, without reading values, in both preview
+  and production Vercel environments.
 - Authenticated production verification is intentionally still pending because
   this branch has not been merged or deployed and deployment requires explicit
   approval.
 
 ## Open-source implementation decision
 
-The current slice uses the already-installed Radix Popover primitive for tour
+The implementation uses the already-installed Radix Popover primitive for tour
 anchoring, collision avoidance, focus handling, portal rendering, and Escape
 dismissal. Route motion uses CSS and the Next App Router template/loading
-conventions. No new runtime package, analytics capture, or external data
-processor is introduced.
+conventions. Playwright supplies the pinned cross-viewport checks, and Sentry
+remains the error reporter with replay/PII capture disabled. No new analytics
+capture or external data processor is introduced.

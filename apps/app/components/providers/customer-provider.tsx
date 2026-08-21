@@ -7,6 +7,9 @@ import { useBusiness } from "@/lib/hooks/use-business";
 interface CustomerContextType {
   customers: any[];
   loading: boolean;
+  refreshing: boolean;
+  error: string | null;
+  syncStatus: "snapshot" | "reconnecting" | "offline";
   refresh: () => Promise<void>;
 }
 
@@ -16,13 +19,15 @@ const CustomerContext = createContext<CustomerContextType | undefined>(
 
 export function CustomerProvider({ children }: { children: ReactNode }) {
   const { business } = useBusiness();
-  const { customers, loading, refresh } = useRealtimeCustomers(
-    business?.id || null,
-  );
+  const { customers, loading, refreshing, error, syncStatus, refresh } =
+    useRealtimeCustomers(business?.id || null);
 
   const value = {
     customers,
     loading,
+    refreshing,
+    error,
+    syncStatus,
     refresh,
   };
 

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { useUser } from "@/lib/adapters/auth/ui";
 import {
   Archive,
   ArrowLeft,
@@ -90,12 +89,9 @@ export default function CustomerDetailPage() {
   const { hasPermission, loading: permissionLoading } = usePermission(
     business?.id,
   );
-  const { user } = useUser();
   const [customer, setCustomer] = useState<any>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user_id, setUser_id] = useState<string>("");
-  const [can_apply_changes, setCan_apply_changes] = useState(false);
   const [privacyProtocol, setPrivacyProtocol] =
     useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
   const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
@@ -107,11 +103,6 @@ export default function CustomerDetailPage() {
 
     const fetchData = async () => {
       try {
-        if (user) {
-          setUser_id(user.id);
-          setCan_apply_changes(true);
-        }
-
         // Fetch customer details via API
         const res = await fetch(`/api/customers/${customerId}`);
         if (!res.ok) throw new Error("Failed to load customer");
@@ -161,7 +152,10 @@ export default function CustomerDetailPage() {
     };
 
     fetchData();
-  }, [business?.id, customerId, user]);
+  }, [business?.id, customerId]);
+
+  const can_apply_changes =
+    !permissionLoading && hasPermission("customers.manage");
 
   const handleLifecycleChange = async (isActive: boolean) => {
     if (lifecyclePending) return;
@@ -247,9 +241,6 @@ export default function CustomerDetailPage() {
             <h1 className="text-2xl md:text-3xl font-bold break-words">
               {shouldMask ? maskAlias(displayName) : displayName}
             </h1>
-            <p className="text-muted-foreground mt-1 text-xs break-all">
-              Customer ID: {customer.id}
-            </p>
           </div>
         </div>
 
@@ -268,7 +259,6 @@ export default function CustomerDetailPage() {
               <div className="p-4 overflow-y-auto">
                 <AICreditPanel
                   customer_id={customer.id}
-                  business_id={business.id}
                   current_limit={Number(
                     customer.creditLimit || customer.credit_limit || 0,
                   )}
@@ -285,7 +275,6 @@ export default function CustomerDetailPage() {
                     customer.credit_limit_last_reviewed_at
                   }
                   can_apply={can_apply_changes}
-                  user_id={user_id}
                 />
               </div>
             </SheetContent>
@@ -519,7 +508,6 @@ export default function CustomerDetailPage() {
         <div className="hidden lg:block">
           <AICreditPanel
             customer_id={customer.id}
-            business_id={business.id}
             current_limit={Number(
               customer.creditLimit || customer.credit_limit || 0,
             )}
@@ -536,7 +524,6 @@ export default function CustomerDetailPage() {
               customer.credit_limit_last_reviewed_at
             }
             can_apply={can_apply_changes}
-            user_id={user_id}
           />
         </div>
       </div>

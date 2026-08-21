@@ -37,11 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <TopNav />
             <div
               id="main-content"
-              key={pathname}
-              className={
-                "min-w-0 flex-1 overflow-auto animate-in fade-in slide-in-from-bottom-2 duration-300 " +
-                "pb-20 md:pb-0 safe-bottom"
-              }
+              className="min-w-0 flex-1 overflow-auto pb-20 md:pb-0 safe-bottom"
             >
               {children}
             </div>

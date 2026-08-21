@@ -13,6 +13,7 @@ import {
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export function AdminAIClient() {
   const [failures, setFailures] = useState<any[]>([]);
@@ -60,7 +61,7 @@ export function AdminAIClient() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <AppPageSkeleton rows={5} />;
   }
 
   return (

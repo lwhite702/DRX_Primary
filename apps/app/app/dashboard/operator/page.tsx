@@ -4,7 +4,7 @@ import { QuickActions } from "@/components/dashboard/operator/quick-actions";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Operator Dashboard | Deelrx CRM",
+  title: "Today | Deelrx CRM",
   description: "Operational overview for daily tasks and monitoring.",
 };
 
@@ -15,10 +15,10 @@ export default function OperatorDashboardPage() {
         {/* Header Section */}
         <section className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">
-            Operator Dashboard
+            Today
           </h1>
           <p className="text-muted-foreground">
-            Overview of today&apos;s operational status and priority actions.
+            Sales, stock exceptions, and the next actions that need attention.
           </p>
         </section>
 

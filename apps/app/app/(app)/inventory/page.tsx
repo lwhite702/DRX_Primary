@@ -20,13 +20,18 @@ import { drxCopy } from "@/lib/copy/drx";
 import { Tour } from "@/components/ui/tour";
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function InventoryPage() {
   const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
   const {
     inventory,
+    loading: inventoryLoading,
+    refreshing,
+    error,
+    refreshInventory,
     showDialog,
     editingItem,
     setShowDialog,
@@ -37,7 +42,7 @@ export default function InventoryPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  if (businessLoading) {
+  if (businessLoading || inventoryLoading) {
     return <AppPageSkeleton rows={5} />;
   }
 
@@ -57,8 +62,28 @@ export default function InventoryPage() {
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 page-transition">
       <div id="tour-inventory-header">
-        <PageHeader title={drxCopy.inventory.title} description={drxCopy.inventory.description} />
+        <PageHeader title={drxCopy.inventory.title} description={drxCopy.inventory.description}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={refreshing}
+            onClick={() => void refreshInventory()}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
+            {refreshing ? "Refreshing" : "Refresh"}
+          </Button>
+        </PageHeader>
       </div>
+
+      {error ? (
+        <div role="status" className="rounded-lg border border-warning/25 bg-warning/5 p-3 text-sm">
+          Inventory could not refresh. {inventory.length ? "Showing the last loaded items." : error}
+        </div>
+      ) : null}
 
       <div id="tour-inventory-ops">
         <InventoryHeader
