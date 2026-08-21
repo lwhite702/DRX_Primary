@@ -1,5 +1,7 @@
 # Production Readiness Summary
 
+> **Superseded for release decisions.** The current evidence-backed verdict is **NOT READY**. See [`docs/audits/DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md`](docs/audits/DRX_PRODUCTION_READINESS_AUDIT_2026-08-20.md), tracked by WRE-62. The content below is retained only as historical build evidence and must not be used as current end-to-end, deployment, security, or cross-platform approval.
+
 ## Completed Items
 
 ### 1. Build System Fixed

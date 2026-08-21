@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { setupBusinessAction } from "@/app/actions/setup-business";
 import {
@@ -44,7 +43,7 @@ import { drxCopy } from "@/lib/copy/drx";
 
 interface BusinessSetupWizardProps {
   userId: string;
-  onComplete?: () => Promise<void>;
+  onComplete: () => Promise<void>;
 }
 
 const STEPS: {
@@ -127,7 +126,6 @@ export function BusinessSetupWizard({
 }: BusinessSetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const [formData, setFormData] = useState<BusinessSetupFormData>({
     // Business Details
@@ -216,11 +214,7 @@ export function BusinessSetupWizard({
 
       toast.success(drxCopy.onboarding.wizard.setupComplete);
 
-      if (onComplete) {
-        await onComplete();
-      } else {
-        router.refresh();
-      }
+      await onComplete();
     } catch (error: any) {
       console.error("Setup error:", error);
       toast.error(error.message || drxCopy.onboarding.wizard.setupFailed);

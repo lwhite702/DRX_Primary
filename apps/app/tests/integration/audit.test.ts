@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/admin/audit-logs/route";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/adapters/auth/server";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
-// Mock Clerk auth
-vi.mock("@clerk/nextjs/server", () => ({
+// Mock the repository auth adapter used by the route.
+vi.mock("@/lib/adapters/auth/server", () => ({
   auth: vi.fn(),
 }));
 

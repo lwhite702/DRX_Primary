@@ -7,6 +7,8 @@ export type OnboardingStep = "profile" | "product" | "customer" | "sale";
 export interface OnboardingState {
   steps: Record<OnboardingStep, boolean>;
   isLoading: boolean;
+  isRefreshing: boolean;
+  error: string | null;
   progress: number;
   isComplete: boolean;
   refreshOnboarding: () => Promise<void>;

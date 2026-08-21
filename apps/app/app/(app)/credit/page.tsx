@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { Card, CardContent } from "@/components/ui/card";
-import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 import { CreditExposureDashboard } from "@/components/credit/CreditExposureDashboard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FileText } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 // Components
 import { PageHeader } from "@/components/ui/page-header";
@@ -29,6 +31,9 @@ export default function CreditPage() {
     agingData, // This is unfiltered
     transactions,
     loading: creditLoading,
+    refreshing,
+    error,
+    refreshData,
     handleExtension,
     handlePayment,
     showExtensionDialog,
@@ -40,35 +45,17 @@ export default function CreditPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   if (businessLoading || (creditLoading && !agingData.length)) {
-    // Show skeleton if initial load
-    return (
-      <div className="p-4 md:p-8 space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
-            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <TableSkeleton rowCount={5} columnCount={6} />
-      </div>
-    );
+    return <AppPageSkeleton rows={5} />;
   }
 
   if (!business) {
     return (
-      <div className="p-4 md:p-8">
-        No business found. Please set up your business first.
-      </div>
+      <EmptyState
+        icon={FileText}
+        title="Finish business setup"
+        description="Complete onboarding before managing customer credit."
+        className="m-4 md:m-8"
+      />
     );
   }
 
@@ -115,6 +102,29 @@ export default function CreditPage() {
           />
         </div>
       </PageHeader>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+          {refreshing
+            ? "Refreshing credit balances without clearing the page."
+            : error
+              ? "Credit data could not refresh. Showing the last loaded values."
+              : "Balances are current as of the latest refresh."}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={refreshing}
+          onClick={() => void refreshData()}
+        >
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+            aria-hidden="true"
+          />
+          {refreshing ? "Refreshing" : "Refresh"}
+        </Button>
+      </div>
 
       <CreditExposureDashboard business_id={business.id} />
 

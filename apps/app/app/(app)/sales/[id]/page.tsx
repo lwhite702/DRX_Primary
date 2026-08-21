@@ -35,6 +35,7 @@ import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
 import { ArrowLeft, User, Calendar, CreditCard, Package } from "lucide-react";
 import { useCustomerContext } from "@/components/providers/customer-provider";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export default function SaleDetailPage() {
   const params = useParams();
@@ -167,7 +168,7 @@ export default function SaleDetailPage() {
   };
 
   if (loading) {
-    return <div className="p-4 md:p-8">Loading sale details...</div>;
+    return <AppPageSkeleton />;
   }
 
   if (!sale) {

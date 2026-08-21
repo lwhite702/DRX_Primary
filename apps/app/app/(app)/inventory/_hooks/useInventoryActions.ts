@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { type Inventory } from "@/lib/validations/schemas";
 import { toast } from "sonner";
 
@@ -58,44 +58,65 @@ export function useInventoryActions(businessId: string | undefined) {
 
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [mutating, setMutating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadedBusinessId = useRef<string | undefined>(undefined);
+  const requestController = useRef<AbortController | null>(null);
 
-  // Fetch inventory
-  React.useEffect(() => {
+  const refreshInventory = useCallback(async () => {
+    requestController.current?.abort();
     if (!businessId) {
       setInventory([]);
       setLoading(false);
+      setRefreshing(false);
+      setError(null);
+      loadedBusinessId.current = undefined;
       return;
     }
 
     const controller = new AbortController();
-    const fetchInventory = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}`,
-          {
-            credentials: "same-origin",
-            signal: controller.signal,
-          },
-        );
-        const body = await readApiResponse(response);
-        const rows = Array.isArray(body.data) ? body.data : [];
-        setInventory(rows.map(normalizeInventoryItem));
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error("Failed to load inventory", error);
-          toast.error(
-            error instanceof Error ? error.message : "Failed to load inventory",
-          );
-          setInventory([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+    requestController.current = controller;
+    const hasCurrentData = loadedBusinessId.current === businessId;
+    if (!hasCurrentData) setInventory([]);
+    setLoading(!hasCurrentData);
+    setRefreshing(hasCurrentData);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}`,
+        {
+          credentials: "same-origin",
+          signal: controller.signal,
+        },
+      );
+      const body = await readApiResponse(response);
+      if (controller.signal.aborted) return;
+      const rows = Array.isArray(body.data) ? body.data : [];
+      loadedBusinessId.current = businessId;
+      setInventory(rows.map(normalizeInventoryItem));
+    } catch (caught) {
+      if (!controller.signal.aborted) {
+        console.error("Failed to load inventory", caught);
+        const message =
+          caught instanceof Error ? caught.message : "Failed to load inventory";
+        setError(message);
+        if (!hasCurrentData) setInventory([]);
       }
-    };
-    void fetchInventory();
-    return () => controller.abort();
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
   }, [businessId]);
+
+  React.useEffect(() => {
+    void refreshInventory();
+    return () => requestController.current?.abort();
+  }, [refreshInventory]);
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -153,6 +174,7 @@ export function useInventoryActions(businessId: string | undefined) {
       }
     };
 
+    setMutating(true);
     try {
       const message = await promise();
       toast.success(message);
@@ -162,12 +184,25 @@ export function useInventoryActions(businessId: string | undefined) {
       toast.error(
         error instanceof Error ? error.message : "Failed to save item",
       );
+    } finally {
+      setMutating(false);
     }
   };
 
   return {
     inventory,
     loading,
+    refreshing,
+    mutating,
+    error,
+    status: loading
+      ? "loading"
+      : error
+        ? "error"
+        : inventory.length
+          ? "success"
+          : "empty",
+    refreshInventory,
     showDialog,
     setShowDialog,
     editingItem,

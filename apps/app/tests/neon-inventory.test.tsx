@@ -11,7 +11,14 @@ vi.mock("@/lib/hooks/use-business", () => ({
 }));
 
 vi.mock("@/lib/hooks/use-realtime", () => ({
-  useRealtimeInventory: () => [],
+  useRealtimeInventory: () => ({
+    inventory: [],
+    loading: false,
+    refreshing: false,
+    error: null,
+    syncStatus: "snapshot",
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock("@/lib/data/client/supabase-client", () => ({

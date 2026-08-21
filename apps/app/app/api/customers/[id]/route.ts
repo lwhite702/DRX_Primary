@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { resolveAuthContext } from "../../pos/_lib/server";
-import { decodeCustomerPii, encodeCustomerPii } from "@/lib/privacy/customer-pii";
+import {
+  decodeCustomerPii,
+  encodeCustomerPii,
+} from "@/lib/privacy/customer-pii";
 import { canWriteField } from "@/lib/privacy/privacy-policy";
 import { sanitizePiiInput } from "@/lib/privacy/crypto";
 import { mapCustomerToOperationalModel } from "@/lib/customers/core/customer-normalizer";
 import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
+import { resolveCustomerAccess } from "../_lib/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { toNumberSafe } from "@/lib/customers/core/customer-normalizer";
+import {
+  CustomerConflictError,
+  CustomerLifecycleNotFoundError,
+  updateCustomerWithAudit,
+} from "@/lib/customers/core/customer-lifecycle";
 
 function parseNumeric(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -32,6 +42,32 @@ function buildEphemeralExpiry(days: 1 | 7 | 30): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
+function providedCustomerFields(body: Record<string, unknown>): string[] {
+  const fields = [
+    ["alias", body.alias],
+    ["first_name", body.firstName ?? body.first_name],
+    ["last_name", body.lastName ?? body.last_name],
+    ["phone", body.phoneNumber ?? body.phone_number ?? body.phone],
+    ["email", body.email],
+    ["address", body.address],
+    ["notes", body.notes],
+    ["city", body.city],
+    ["state", body.state],
+    ["zip_code", body.zipCode ?? body.zip_code],
+    ["customer_type", body.customerType ?? body.customer_type],
+    [
+      "fixed_price_per_gram",
+      body.fixedPricePerGram ?? body.fixed_price_per_gram,
+    ],
+    ["ephemeral", body.ephemeral],
+    ["is_active", body.isActive ?? body.is_active],
+  ] as const;
+
+  return fields
+    .filter(([, value]) => value !== undefined)
+    .map(([field]) => field);
+}
+
 async function mapResponse(customer: any, metrics?: unknown) {
   const pii = await decodeCustomerPii(customer);
   return {
@@ -53,10 +89,14 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.view");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
+    const { businessId } = context;
 
     const customerId = params.id;
 
@@ -69,6 +109,17 @@ export async function GET(
         { error: "Customer not found" },
         { status: 404 },
       );
+    }
+
+    if (
+      !customer.isActive &&
+      !(await hasBusinessPermission(
+        context.userId,
+        businessId,
+        "customers.manage",
+      ))
+    ) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     let metrics = null;
@@ -88,12 +139,58 @@ export async function GET(
         metrics = metricsData[0];
       }
     } catch (error) {
-      console.warn("Could not fetch analytics view:", error);
+      console.warn("Customer analytics lookup failed", {
+        errorType: error instanceof Error ? error.name : "UnknownError",
+      });
     }
 
-    return NextResponse.json(await mapResponse(customer, metrics));
+    const sales = await db.sales.findMany({
+      where: { businessId, customerId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        orderNumber: true,
+        orderStatus: true,
+        subtotal: true,
+        taxAmount: true,
+        totalAmount: true,
+        paymentMethod: true,
+        createdBy: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json({
+      ...(await mapResponse(customer, metrics)),
+      transaction_history: sales.map(
+        (sale: {
+          id: string;
+          orderNumber: string | null;
+          orderStatus: string;
+          subtotal: unknown;
+          taxAmount: unknown;
+          totalAmount: unknown;
+          paymentMethod: string | null;
+          createdBy: string | null;
+          createdAt: Date;
+        }) => ({
+          id: sale.id,
+          order_number: sale.orderNumber,
+          status: sale.orderStatus,
+          subtotal: toNumberSafe(sale.subtotal),
+          tax_amount: toNumberSafe(sale.taxAmount),
+          total_amount: toNumberSafe(sale.totalAmount),
+          payment_method: sale.paymentMethod,
+          created_by: sale.createdBy,
+          created_at: sale.createdAt,
+        }),
+      ),
+    });
   } catch (error) {
-    console.error("GET Customer Error:", error);
+    console.error("Get customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -117,12 +214,28 @@ export async function PATCH(
 
 async function handleUpdate(request: NextRequest, customerId: string) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveCustomerAccess(request, "customers.manage");
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
+    const { businessId } = context;
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      const parsed = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("invalid body");
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
 
     const customer = await db.customers.findFirst({
       where: { id: customerId, businessId },
@@ -146,27 +259,51 @@ async function handleUpdate(request: NextRequest, customerId: string) {
     const incomingNotes = body.notes;
     const incomingEphemeral =
       typeof body.ephemeral === "boolean" ? body.ephemeral : undefined;
+    const incomingIsActive =
+      typeof body.isActive === "boolean"
+        ? body.isActive
+        : typeof body.is_active === "boolean"
+          ? body.is_active
+          : undefined;
     const incomingEphemeralDays = parseEphemeralRetentionDays(
       body.ephemeral_retention_days ?? body.ephemeralRetentionDays,
     );
 
     if (blockedByPrivacy(privacyProtocol, "alias", incomingAlias)) {
-      return NextResponse.json({ error: "Alias updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Alias updates are disabled" },
+        { status: 400 },
+      );
     }
     if (blockedByPrivacy(privacyProtocol, "first_name", incomingFirstName)) {
-      return NextResponse.json({ error: "First name updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "First name updates are disabled" },
+        { status: 400 },
+      );
     }
     if (blockedByPrivacy(privacyProtocol, "phone", incomingPhone)) {
-      return NextResponse.json({ error: "Phone updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Phone updates are disabled" },
+        { status: 400 },
+      );
     }
     if (blockedByPrivacy(privacyProtocol, "email", incomingEmail)) {
-      return NextResponse.json({ error: "Email updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email updates are disabled" },
+        { status: 400 },
+      );
     }
     if (blockedByPrivacy(privacyProtocol, "address", incomingAddress)) {
-      return NextResponse.json({ error: "Address updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Address updates are disabled" },
+        { status: 400 },
+      );
     }
     if (blockedByPrivacy(privacyProtocol, "notes", incomingNotes)) {
-      return NextResponse.json({ error: "Notes updates are disabled" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Notes updates are disabled" },
+        { status: 400 },
+      );
     }
 
     if (
@@ -176,7 +313,8 @@ async function handleUpdate(request: NextRequest, customerId: string) {
     ) {
       return NextResponse.json(
         {
-          error: "Ephemeral profile creation is disabled for standard customer update",
+          error:
+            "Ephemeral profile creation is disabled for standard customer update",
         },
         { status: 400 },
       );
@@ -184,76 +322,113 @@ async function handleUpdate(request: NextRequest, customerId: string) {
 
     const nextPii = {
       alias:
-        incomingAlias !== undefined ? sanitizePiiInput(incomingAlias) : currentPii.alias,
+        incomingAlias !== undefined
+          ? sanitizePiiInput(incomingAlias)
+          : currentPii.alias,
       first_name:
         incomingFirstName !== undefined
           ? sanitizePiiInput(incomingFirstName)
           : currentPii.first_name,
       phone:
-        incomingPhone !== undefined ? sanitizePiiInput(incomingPhone) : currentPii.phone,
+        incomingPhone !== undefined
+          ? sanitizePiiInput(incomingPhone)
+          : currentPii.phone,
       email:
-        incomingEmail !== undefined ? sanitizePiiInput(incomingEmail) : currentPii.email,
+        incomingEmail !== undefined
+          ? sanitizePiiInput(incomingEmail)
+          : currentPii.email,
       address:
         incomingAddress !== undefined
           ? sanitizePiiInput(incomingAddress)
           : currentPii.address,
       notes:
-        incomingNotes !== undefined ? sanitizePiiInput(incomingNotes) : currentPii.notes,
+        incomingNotes !== undefined
+          ? sanitizePiiInput(incomingNotes)
+          : currentPii.notes,
     };
 
     const piiStorage = await encodeCustomerPii(nextPii);
 
-    const updated = await db.customers.update({
-      where: { id: customerId },
-      data: {
-        alias: null,
-        firstName: null,
-        phoneNumber: null,
-        email: null,
-        address: null,
-        notes: null,
-        lastName:
-          body.lastName !== undefined || body.last_name !== undefined
-            ? sanitizePiiInput(body.lastName ?? body.last_name)
-            : customer.lastName,
-        city: body.city !== undefined ? sanitizePiiInput(body.city) : customer.city,
-        state:
-          body.state !== undefined ? sanitizePiiInput(body.state) : customer.state,
-        zipCode:
-          body.zipCode !== undefined || body.zip_code !== undefined
-            ? sanitizePiiInput(body.zipCode ?? body.zip_code)
-            : customer.zipCode,
-        customerType:
-          body.customerType !== undefined || body.customer_type !== undefined
-            ? sanitizePiiInput(body.customerType ?? body.customer_type)
-            : customer.customerType,
-        fixedPricePerGram:
-          body.fixedPricePerGram !== undefined || body.fixed_price_per_gram !== undefined
-            ? parseNumeric(body.fixedPricePerGram ?? body.fixed_price_per_gram)
-            : customer.fixedPricePerGram,
-        ephemeral:
-          incomingEphemeral !== undefined ? incomingEphemeral : customer.ephemeral,
-        ephemeralExpiresAt:
-          incomingEphemeral !== undefined
-            ? incomingEphemeral
-              ? buildEphemeralExpiry(
-                  incomingEphemeralDays ??
-                    privacyProtocol.ephemeral_profiles.default_retention_days,
-                )
-              : null
-            : incomingEphemeralDays
-              ? customer.ephemeral
-                ? buildEphemeralExpiry(incomingEphemeralDays)
-                : customer.ephemeralExpiresAt
-              : customer.ephemeralExpiresAt,
-        lastActivityAt: new Date(),
-        ...piiStorage,
-      },
+    const data = {
+      alias: null,
+      firstName: null,
+      phoneNumber: null,
+      email: null,
+      address: null,
+      notes: null,
+      lastName:
+        body.lastName !== undefined || body.last_name !== undefined
+          ? sanitizePiiInput(body.lastName ?? body.last_name)
+          : customer.lastName,
+      city:
+        body.city !== undefined ? sanitizePiiInput(body.city) : customer.city,
+      state:
+        body.state !== undefined
+          ? sanitizePiiInput(body.state)
+          : customer.state,
+      zipCode:
+        body.zipCode !== undefined || body.zip_code !== undefined
+          ? sanitizePiiInput(body.zipCode ?? body.zip_code)
+          : customer.zipCode,
+      customerType:
+        body.customerType !== undefined || body.customer_type !== undefined
+          ? sanitizePiiInput(body.customerType ?? body.customer_type)
+          : customer.customerType,
+      fixedPricePerGram:
+        body.fixedPricePerGram !== undefined ||
+        body.fixed_price_per_gram !== undefined
+          ? parseNumeric(body.fixedPricePerGram ?? body.fixed_price_per_gram)
+          : customer.fixedPricePerGram,
+      isActive:
+        incomingIsActive !== undefined ? incomingIsActive : customer.isActive,
+      ephemeral:
+        incomingEphemeral !== undefined
+          ? incomingEphemeral
+          : customer.ephemeral,
+      ephemeralExpiresAt:
+        incomingEphemeral !== undefined
+          ? incomingEphemeral
+            ? buildEphemeralExpiry(
+                incomingEphemeralDays ??
+                  privacyProtocol.ephemeral_profiles.default_retention_days,
+              )
+            : null
+          : incomingEphemeralDays
+            ? customer.ephemeral
+              ? buildEphemeralExpiry(incomingEphemeralDays)
+              : customer.ephemeralExpiresAt
+            : customer.ephemeralExpiresAt,
+      lastActivityAt: new Date(),
+      ...piiStorage,
+    };
+
+    const updated = await updateCustomerWithAudit({
+      businessId,
+      actorUserId: context.userId,
+      customerId,
+      phone: nextPii.phone,
+      email: nextPii.email,
+      data,
+      changedFields: providedCustomerFields(body),
     });
 
     return NextResponse.json(await mapResponse(updated));
   } catch (error) {
-    console.error("Update Customer Error:", error);
+    if (error instanceof CustomerConflictError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          existing_customer_id: error.existingCustomerId,
+        },
+        { status: 409 },
+      );
+    }
+    if (error instanceof CustomerLifecycleNotFoundError) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+    console.error("Update customer failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

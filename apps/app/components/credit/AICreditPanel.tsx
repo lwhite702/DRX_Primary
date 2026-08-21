@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,26 +25,21 @@ interface CreditRecommendation {
 
 interface AICreditPanelProps {
   customer_id: string;
-  business_id: string;
   current_limit: number;
   ai_recommended_limit?: number;
   risk_score?: number;
   last_reviewed_at?: string;
   can_apply: boolean;
-  user_id: string;
 }
 
 export function AICreditPanel({
   customer_id,
-  business_id,
   current_limit,
   ai_recommended_limit = 0,
   risk_score = 0,
   last_reviewed_at,
   can_apply,
-  user_id,
 }: AICreditPanelProps) {
-  const router = useRouter();
   const [recommendation, setRecommendation] =
     useState<CreditRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,6 +47,11 @@ export function AICreditPanel({
   const [showOverrideDialog, setShowOverrideDialog] = useState(false);
   const [overrideLimit, setOverrideLimit] = useState(current_limit);
   const [overrideReason, setOverrideReason] = useState("");
+  const [displayedLimit, setDisplayedLimit] = useState(current_limit);
+
+  useEffect(() => {
+    setDisplayedLimit(current_limit);
+  }, [current_limit]);
 
   useEffect(() => {
     // Load stored recommendation if available
@@ -73,7 +72,7 @@ export function AICreditPanel({
       const response = await fetch("/api/credit/refresh-customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id, business_id }),
+        body: JSON.stringify({ customer_id }),
       });
 
       if (!response.ok) {
@@ -103,8 +102,6 @@ export function AICreditPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer_id,
-          business_id,
-          user_id,
           action: "apply_ai_recommendation",
         }),
       });
@@ -114,8 +111,11 @@ export function AICreditPanel({
         throw new Error(error.error || "Failed to apply recommendation");
       }
 
+      const data = await response.json();
+      setDisplayedLimit(
+        Number(data.new_limit ?? recommendation?.recommended_limit ?? displayedLimit),
+      );
       toast.success("Credit limit updated successfully");
-      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to apply recommendation"
@@ -138,8 +138,6 @@ export function AICreditPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer_id,
-          business_id,
-          user_id,
           action: "override",
           new_limit: overrideLimit,
           reason: overrideReason,
@@ -151,9 +149,10 @@ export function AICreditPanel({
         throw new Error(error.error || "Failed to override limit");
       }
 
+      const data = await response.json();
+      setDisplayedLimit(Number(data.new_limit ?? overrideLimit));
       toast.success("Credit limit overridden successfully");
       setShowOverrideDialog(false);
-      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to override limit"
@@ -186,7 +185,7 @@ export function AICreditPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">${current_limit.toFixed(2)}</div>
+          <div className="text-3xl font-bold">${displayedLimit.toFixed(2)}</div>
           <p className="text-sm text-muted-foreground mt-1">Approved maximum credit exposure</p>
         </CardContent>
       </Card>
@@ -260,22 +259,22 @@ export function AICreditPanel({
               )}
             </div>
 
-            {recommendation.recommended_limit > current_limit && (
+            {recommendation.recommended_limit > displayedLimit && (
               <div className="flex gap-2 p-3 bg-green-50 border border-green-200 rounded">
                 <TrendingUp className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-green-800">
                   <strong>Opportunity:</strong> Customer qualifies for increase of $
-                  {(recommendation.recommended_limit - current_limit).toFixed(2)}
+                  {(recommendation.recommended_limit - displayedLimit).toFixed(2)}
                 </p>
               </div>
             )}
 
-            {recommendation.recommended_limit < current_limit && (
+            {recommendation.recommended_limit < displayedLimit && (
               <div className="flex gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded">
                 <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-yellow-800">
                   <strong>Caution:</strong> Recent activity suggests reducing limit by $
-                  {(current_limit - recommendation.recommended_limit).toFixed(2)}
+                  {(displayedLimit - recommendation.recommended_limit).toFixed(2)}
                 </p>
               </div>
             )}

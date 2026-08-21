@@ -22,6 +22,8 @@ import { createAppClient } from "@/lib/data/client/supabase-client";
 import { RefreshCw, AlertTriangle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import type { AIPricingRecommendation, InventoryForecast } from "@/lib/validations/schemas";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 interface AIRecommendations {
   pricing: AIPricingRecommendation | null;
@@ -30,7 +32,12 @@ interface AIRecommendations {
 
 export default function AIIntelligencePage() {
   const { business, loading: businessLoading } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
+  const {
+    inventory,
+    loading: inventoryLoading,
+    syncStatus,
+    refresh: refreshInventory,
+  } = useRealtimeInventory(business?.id || null);
   const [selectedSku, setSelectedSku] = useState<string>("");
   const [recommendations, setRecommendations] = useState<Map<string, AIRecommendations>>(
     new Map()
@@ -124,8 +131,8 @@ export default function AIIntelligencePage() {
     }
   };
 
-  if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+  if (businessLoading || inventoryLoading) {
+    return <AppPageSkeleton rows={5} />;
   }
 
   if (!business) {
@@ -148,15 +155,21 @@ export default function AIIntelligencePage() {
             Pricing recommendations, inventory forecasting, and demand analytics
           </p>
         </div>
-        <Button
-          onClick={handleAnalyzeAll}
-          disabled={loading}
-          size="lg"
-          className="w-full md:w-auto"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {loading ? "Analyzing..." : "Analyze All Products"}
-        </Button>
+        <div className="flex flex-col items-stretch gap-2 md:items-end">
+          <DataSyncStatus
+            status={syncStatus}
+            onRefresh={() => void refreshInventory()}
+          />
+          <Button
+            onClick={handleAnalyzeAll}
+            disabled={loading}
+            size="lg"
+            className="w-full md:w-auto"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {loading ? "Analyzing..." : "Analyze All Products"}
+          </Button>
+        </div>
       </div>
 
       {/* Dashboard */}

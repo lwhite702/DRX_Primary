@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.19.0"
+          node-version: "22.23.1"
           cache: "pnpm"
 
       - name: Install dependencies
@@ -83,7 +83,7 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
       - name: Install Playwright browsers
-        run: pnpm --filter deelrxcrm-app exec playwright install --with-deps
+        run: pnpm --filter deelrxcrm-app test:e2e:install:ci
 
       - name: Run E2E tests
         run: pnpm --filter deelrxcrm-app test:e2e:ci

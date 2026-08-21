@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Pencil, Trash2, ShieldAlert } from "lucide-react";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 import { updateUserRole } from "@/app/actions/user-management";
 import { initiateRTBF } from "@/app/actions/rtbf";
 import { Role, ROLES } from "@/lib/auth/permissions";
@@ -159,11 +160,7 @@ export function UsersClient() {
   };
 
   if (loading) {
-    return (
-      <div className="p-4 md:p-8 flex items-center justify-center h-48">
-        <Loader2 className="animate-spin mr-2" /> Loading users...
-      </div>
-    );
+    return <AppPageSkeleton rows={5} />;
   }
 
   return (

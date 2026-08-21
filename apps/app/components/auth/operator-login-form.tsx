@@ -162,19 +162,15 @@ export function OperatorLoginForm() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-8">
-      {/* System Status Mock */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-[10px] font-bold text-[#4ADE80] tracking-wider uppercase border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-1.5 py-0.5 rounded">
-            System Online
+          <Lock className="h-3.5 w-3.5 text-[#4ADE80]" aria-hidden="true" />
+          <span className="text-xs font-medium text-[#4ADE80]">
+            Secure sign-in
           </span>
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1.5 opacity-60">
-          <Lock className="w-3 h-3" /> ENCRYPTED
+        <span className="text-xs text-muted-foreground">
+          Protected session
         </span>
       </div>
 

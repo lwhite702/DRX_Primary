@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Building2, Users, FileText, Brain } from "lucide-react";
 import Link from "next/link";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export default function AdminClient() {
   const [stats, setStats] = useState({
@@ -51,16 +52,13 @@ export default function AdminClient() {
   }, [supabase]);
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <AppPageSkeleton rows={4} />;
   }
 
   return (
     <div className="p-8 space-y-6">
       <div>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Admin Console</h1>
-          <p className="text-sm text-muted-foreground">v0.4.12</p>
-        </div>
+        <h1 className="text-3xl font-bold">Administration</h1>
         <p className="text-muted-foreground mt-2">
           Admin controls for the full DRX workspace
         </p>

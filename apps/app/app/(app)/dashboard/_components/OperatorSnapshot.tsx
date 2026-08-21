@@ -96,7 +96,7 @@ export function OperatorSnapshot({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-            SECTION A: OPERATOR SNAPSHOT
+            At a glance
           </div>
           <p className="mt-1 text-xs text-white/70">
             Daily totals, credit exposure, and stock pressure at a glance.

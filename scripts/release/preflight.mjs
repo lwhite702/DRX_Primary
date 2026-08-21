@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const REQUIRED_NODE = "20.19.0";
+const REQUIRED_NODE = "22.23.1";
 
 function run(command, args) {
   const result = spawnSync(command, args, {

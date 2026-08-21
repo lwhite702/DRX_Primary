@@ -58,18 +58,18 @@ export default function InventoryAuditPage() {
       <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
         <div className="noise-overlay" />
         <div className="relative z-10">
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            INVENTORY AUDIT LOG
+          <h1 className="text-3xl font-bold">
+            Inventory history
           </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            TRANSACTION HISTORY &amp; COMPLIANCE
+          <p className="mt-1 text-sm text-muted-foreground">
+            Every inventory change, who made it, and why
           </p>
         </div>
 
         <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
           <div className="p-6 border-b border-white/5 flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3B82F6]" />
-            <h2 className="headline-text text-lg tracking-wider text-blue-500">RECENT ACTIVITY</h2>
+            <h2 className="text-lg font-semibold">Recent activity</h2>
           </div>
           <CardContent className="p-0">
             {loading ? (
