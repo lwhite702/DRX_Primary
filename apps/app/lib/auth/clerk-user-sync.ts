@@ -100,9 +100,9 @@ async function acceptTeamInvitation(params: {
     throw new Error("Invited DRX business is unavailable");
   }
 
-  const name =
+  const suppliedName =
     [params.firstName, params.lastName].filter(Boolean).join(" ").trim() ||
-    email.split("@")[0];
+    null;
   const accepted = await db.$transaction(async (tx: typeof db) => {
     const claimed = await tx.invite.updateMany({
       where: {
@@ -121,6 +121,8 @@ async function acceptTeamInvitation(params: {
     ) {
       throw new Error("Email is already mapped to another Clerk identity");
     }
+    const name =
+      suppliedName || existingUser?.name?.trim() || email.split("@")[0];
     if (existingUser) {
       await tx.user.update({
         where: { id: existingUser.id },

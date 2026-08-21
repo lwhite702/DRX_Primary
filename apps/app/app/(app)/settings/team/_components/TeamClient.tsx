@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, type FormEvent } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -60,41 +66,64 @@ export default function TeamClient() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("cashier");
   const [inviting, setInviting] = useState(false);
+  const currentBusinessIdRef = useRef(business?.id);
+  currentBusinessIdRef.current = business?.id;
 
-  const fetchTeam = useCallback(async (signal?: AbortSignal) => {
-    if (!business?.id) {
-      setUsers([]);
-      setLoadedBusinessId(null);
-      setLoading(false);
+  const fetchTeam = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!business?.id) {
+        setUsers([]);
+        setLoadedBusinessId(null);
+        setLoading(false);
+        setLoadError(null);
+        return;
+      }
+
+      setLoading(true);
       setLoadError(null);
-      return;
-    }
+      try {
+        const response = await fetch(`/api/team?business_id=${business.id}`, {
+          signal,
+        });
+        const result = await response.json().catch(() => ({}));
 
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const response = await fetch(`/api/team?business_id=${business.id}`, { signal });
-      const result = await response.json().catch(() => ({}));
+        if (!response.ok)
+          throw new Error(result.error || "Failed to load team members");
 
-      if (!response.ok) throw new Error(result.error || "Failed to load team members");
-
-      setUsers(result.data || []);
-      setLoadedBusinessId(business.id);
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return;
-      console.error("Error fetching team:", error);
-      setLoadError({
-        businessId: business.id,
-        message:
-          error instanceof Error ? error.message : "Failed to load team members",
-      });
-      toast.error("Failed to load team members");
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [business?.id]);
+        if (!signal?.aborted && currentBusinessIdRef.current === business.id) {
+          setUsers(result.data || []);
+          setLoadedBusinessId(business.id);
+        }
+      } catch (error) {
+        if (
+          (error instanceof Error && error.name === "AbortError") ||
+          currentBusinessIdRef.current !== business.id
+        ) {
+          return;
+        }
+        console.error("Error fetching team:", error);
+        setLoadError({
+          businessId: business.id,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to load team members",
+        });
+        toast.error("Failed to load team members");
+      } finally {
+        if (!signal?.aborted && currentBusinessIdRef.current === business.id) {
+          setLoading(false);
+        }
+      }
+    },
+    [business?.id],
+  );
 
   useEffect(() => {
+    setUpdating(null);
+    setInviting(false);
+    setInviteEmail("");
+    setInviteRole("cashier");
     const controller = new AbortController();
     void fetchTeam(controller.signal);
     return () => controller.abort();
@@ -102,6 +131,7 @@ export default function TeamClient() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     if (!business?.id) return;
+    const mutationBusinessId = business.id;
 
     // confirm
     if (
@@ -114,7 +144,7 @@ export default function TeamClient() {
     setUpdating(userId);
     try {
       const response = await fetch(
-        `/api/team/members/${encodeURIComponent(userId)}/role?business_id=${encodeURIComponent(business.id)}`,
+        `/api/team/members/${encodeURIComponent(userId)}/role?business_id=${encodeURIComponent(mutationBusinessId)}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -125,30 +155,36 @@ export default function TeamClient() {
       if (!response.ok) {
         throw new Error(result.error || "Failed to update role");
       }
+      if (currentBusinessIdRef.current !== mutationBusinessId) return;
 
       toast.success("User role updated");
-      // Update local state
-      setUsers(
-        users.map((u) => (u.user_id === userId ? { ...u, role: newRole } : u)),
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user.user_id === userId ? { ...user, role: newRole } : user,
+        ),
       );
     } catch (error) {
+      if (currentBusinessIdRef.current !== mutationBusinessId) return;
       console.error("Error updating role:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to update role",
       );
     } finally {
-      setUpdating(null);
+      if (currentBusinessIdRef.current === mutationBusinessId) {
+        setUpdating(null);
+      }
     }
   };
 
   const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!business?.id || !inviteEmail.trim()) return;
+    const mutationBusinessId = business.id;
 
     setInviting(true);
     try {
       const response = await fetch(
-        `/api/team/members?business_id=${encodeURIComponent(business.id)}`,
+        `/api/team/members?business_id=${encodeURIComponent(mutationBusinessId)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -159,17 +195,21 @@ export default function TeamClient() {
       if (!response.ok) {
         throw new Error(result.error || "Failed to send invitation");
       }
+      if (currentBusinessIdRef.current !== mutationBusinessId) return;
 
       setInviteEmail("");
       setInviteRole("cashier");
       toast.success("Invitation sent");
     } catch (error) {
+      if (currentBusinessIdRef.current !== mutationBusinessId) return;
       console.error("Error inviting team member:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to send invitation",
       );
     } finally {
-      setInviting(false);
+      if (currentBusinessIdRef.current === mutationBusinessId) {
+        setInviting(false);
+      }
     }
   };
 
@@ -313,7 +353,10 @@ export default function TeamClient() {
             <TableBody>
               {!users.length ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={4}
+                    className="py-10 text-center text-muted-foreground"
+                  >
                     No additional team members have been added yet.
                   </TableCell>
                 </TableRow>

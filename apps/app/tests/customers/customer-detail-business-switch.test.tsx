@@ -1,9 +1,16 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   businessId: "business-a",
+  canManageCustomers: false,
   fetch: vi.fn(),
 }));
 
@@ -22,7 +29,8 @@ vi.mock("@/lib/hooks/use-business", () => ({
 vi.mock("@/lib/hooks/use-permission", () => ({
   usePermission: () => ({
     loading: false,
-    hasPermission: () => false,
+    hasPermission: (permission: string) =>
+      permission === "customers.manage" && mocks.canManageCustomers,
   }),
 }));
 
@@ -66,6 +74,7 @@ function response(body: unknown) {
 describe("customer detail business switching", () => {
   beforeEach(() => {
     mocks.businessId = "business-a";
+    mocks.canManageCustomers = false;
     mocks.fetch.mockReset();
     vi.stubGlobal("fetch", mocks.fetch);
   });
@@ -124,6 +133,60 @@ describe("customer detail business switching", () => {
     });
 
     expect(screen.queryByText("Business A Customer")).not.toBeInTheDocument();
+    expect(screen.getByText("Business B Customer")).toBeInTheDocument();
+  });
+
+  it("does not publish a lifecycle mutation from the previous business", async () => {
+    mocks.canManageCustomers = true;
+    const lifecycle = deferred<Response>();
+    mocks.fetch.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (init?.method === "PATCH") return lifecycle.promise;
+        if (url.includes("/api/customers/")) {
+          const alias = url.includes("business_id=business-a")
+            ? "Business A Customer"
+            : "Business B Customer";
+          return Promise.resolve(
+            response({
+              id: "customer-1",
+              alias,
+              isActive: true,
+              transaction_history: [],
+            }),
+          );
+        }
+        if (url.includes("/api/business/settings")) {
+          return Promise.resolve(response({}));
+        }
+        return Promise.resolve(response({ manual_enabled: false }));
+      },
+    );
+
+    const rendered = render(<CustomerDetailPage />);
+    expect(
+      await screen.findByRole("heading", { name: "Business A Customer" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Archive Customer" }));
+
+    mocks.businessId = "business-b";
+    rendered.rerender(<CustomerDetailPage />);
+    expect(
+      await screen.findByRole("heading", { name: "Business B Customer" }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      lifecycle.resolve(
+        response({
+          id: "customer-1",
+          alias: "Business A Archived",
+          isActive: false,
+        }),
+      );
+      await lifecycle.promise;
+    });
+
+    expect(screen.queryByText("Business A Archived")).not.toBeInTheDocument();
     expect(screen.getByText("Business B Customer")).toBeInTheDocument();
   });
 });

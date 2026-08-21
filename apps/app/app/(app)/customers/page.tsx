@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,31 +77,82 @@ export default function CustomersPage() {
   const [archivedCustomers, setArchivedCustomers] = useState<CustomerRecord[]>(
     [],
   );
+  const [archivedBusinessId, setArchivedBusinessId] = useState<string | null>(
+    null,
+  );
   const [archivedLoading, setArchivedLoading] = useState(false);
   const [lifecycleCustomerId, setLifecycleCustomerId] = useState<string | null>(
     null,
   );
+  const currentBusinessIdRef = useRef(business?.id);
+  const archivedRequestController = useRef<AbortController | null>(null);
+  currentBusinessIdRef.current = business?.id;
 
   const canManageCustomers =
     !permissionLoading && hasPermission("customers.manage");
 
   const loadArchived = useCallback(async () => {
-    if (!business?.id || !canManageCustomers) return;
+    archivedRequestController.current?.abort();
+    const businessId = business?.id;
+    if (
+      !businessId ||
+      !canManageCustomers ||
+      currentBusinessIdRef.current !== businessId
+    ) {
+      setArchivedCustomers([]);
+      setArchivedBusinessId(null);
+      setArchivedLoading(false);
+      return;
+    }
 
+    const controller = new AbortController();
+    archivedRequestController.current = controller;
     setArchivedLoading(true);
     try {
-      const response = await fetch("/api/customers?status=archived");
+      const query = new URLSearchParams({
+        status: "archived",
+        business_id: businessId,
+      });
+      const response = await fetch(`/api/customers?${query}`, {
+        signal: controller.signal,
+      });
       if (!response.ok) {
         throw new Error("Failed to load archived customers");
       }
       const payload = await response.json();
+      if (
+        controller.signal.aborted ||
+        currentBusinessIdRef.current !== businessId
+      ) {
+        return;
+      }
       setArchivedCustomers(Array.isArray(payload.data) ? payload.data : []);
+      setArchivedBusinessId(businessId);
     } catch {
-      toast.error("Failed to load archived customers");
+      if (
+        !controller.signal.aborted &&
+        currentBusinessIdRef.current === businessId
+      ) {
+        toast.error("Failed to load archived customers");
+      }
     } finally {
-      setArchivedLoading(false);
+      if (archivedRequestController.current === controller) {
+        archivedRequestController.current = null;
+        if (currentBusinessIdRef.current === businessId) {
+          setArchivedLoading(false);
+        }
+      }
     }
   }, [business?.id, canManageCustomers]);
+
+  useEffect(() => {
+    archivedRequestController.current?.abort();
+    archivedRequestController.current = null;
+    setArchivedCustomers([]);
+    setArchivedBusinessId(null);
+    setArchivedLoading(false);
+    setLifecycleCustomerId(null);
+  }, [business?.id]);
 
   useEffect(() => {
     if (viewStatus === "archived") {
@@ -239,7 +290,9 @@ export default function CustomersPage() {
   const displayedCustomers =
     viewStatus === "active"
       ? (customers as CustomerRecord[])
-      : archivedCustomers;
+      : archivedBusinessId === business?.id
+        ? archivedCustomers
+        : [];
   const filteredCustomers = displayedCustomers.filter(
     (customer) =>
       (customer.first_name || "")
@@ -288,11 +341,10 @@ export default function CustomersPage() {
       <div className="noise-overlay" />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="text-3xl font-bold">
-            Customers
-          </h1>
+          <h1 className="text-3xl font-bold">Customers</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filteredCustomers.length} customer {filteredCustomers.length === 1 ? "profile" : "profiles"}
+            {filteredCustomers.length} customer{" "}
+            {filteredCustomers.length === 1 ? "profile" : "profiles"}
           </p>
         </div>
         <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />

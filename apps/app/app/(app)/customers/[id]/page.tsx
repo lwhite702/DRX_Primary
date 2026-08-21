@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,6 +98,8 @@ export default function CustomerDetailPage() {
   const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
     useState(false);
   const [lifecyclePending, setLifecyclePending] = useState(false);
+  const currentBusinessIdRef = useRef(business?.id);
+  currentBusinessIdRef.current = business?.id;
 
   useEffect(() => {
     const businessId = business?.id;
@@ -106,6 +108,7 @@ export default function CustomerDetailPage() {
     setMetrics(null);
     setPrivacyProtocol(getDefaultPrivacyProtocol());
     setManualScreenPrivacyEnabled(false);
+    setLifecyclePending(false);
     setLoading(Boolean(businessId));
     if (!businessId) return;
 
@@ -188,11 +191,13 @@ export default function CustomerDetailPage() {
     !permissionLoading && hasPermission("customers.manage");
 
   const handleLifecycleChange = async (isActive: boolean) => {
-    if (lifecyclePending) return;
+    const mutationBusinessId = business?.id;
+    if (lifecyclePending || !mutationBusinessId) return;
     setLifecyclePending(true);
     const action = isActive ? "reactivate" : "archive";
     const promise = async () => {
-      const response = await fetch(`/api/customers/${customerId}`, {
+      const query = new URLSearchParams({ business_id: mutationBusinessId });
+      const response = await fetch(`/api/customers/${customerId}?${query}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: isActive }),
@@ -203,7 +208,9 @@ export default function CustomerDetailPage() {
       }
 
       const updated = await response.json();
-      setCustomer((current: any) => ({ ...current, ...updated }));
+      if (currentBusinessIdRef.current === mutationBusinessId) {
+        setCustomer((current: any) => ({ ...current, ...updated }));
+      }
       return `Customer ${isActive ? "reactivated" : "archived"}`;
     };
 
@@ -220,7 +227,9 @@ export default function CustomerDetailPage() {
     } catch {
       // The toast presents the API error without exposing profile data.
     } finally {
-      setLifecyclePending(false);
+      if (currentBusinessIdRef.current === mutationBusinessId) {
+        setLifecyclePending(false);
+      }
     }
   };
 

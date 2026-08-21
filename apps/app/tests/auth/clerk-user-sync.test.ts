@@ -234,6 +234,34 @@ describe("Clerk user synchronization", () => {
     });
   });
 
+  it("preserves an existing display name when an organization invitation has no name", async () => {
+    mocks.db.user.findUnique.mockResolvedValue({
+      id: "user-row-1",
+      clerkUserId: null,
+      name: "Existing Display Name",
+    });
+
+    const result = await syncAcceptedClerkOrganizationInvitation({
+      email_address: "staff@example.com",
+      organization_id: "org_business_1",
+      user_id: "clerk-user-1",
+      public_metadata: {
+        drxBusinessId: "business-1",
+        drxInviteToken: "token-1",
+      },
+    });
+
+    expect(result).toBe("invitation_accepted");
+    expect(mocks.db.user.update).toHaveBeenCalledWith({
+      where: { id: "user-row-1" },
+      data: {
+        clerkUserId: "clerk-user-1",
+        name: "Existing Display Name",
+        status: "ACTIVE",
+      },
+    });
+  });
+
   it("uses organization membership events as an idempotent invite fallback", async () => {
     mocks.db.businessProfile.findUnique
       .mockReset()
