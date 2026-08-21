@@ -9,6 +9,7 @@ type TeamManagementContext =
       userId: string;
       businessId: string;
       ownerId: string;
+      canManagePrivilegedRoles: boolean;
     }
   | {
       ok: false;
@@ -39,12 +40,21 @@ export async function resolveTeamManagementContext(
     return { ok: false, status: 403, error: "Access denied" };
   }
 
+  const canManagePrivilegedRoles =
+    business.ownerId === userId ||
+    (await hasBusinessPermission(userId, businessId, "system.manage"));
+
   return {
     ok: true,
     userId,
     businessId,
     ownerId: business.ownerId,
+    canManagePrivilegedRoles,
   };
+}
+
+export function isPrivilegedTeamRole(role: string) {
+  return role === "admin" || role === "owner" || role === "super_admin";
 }
 
 export async function findTeamMembership(businessId: string, id: string) {

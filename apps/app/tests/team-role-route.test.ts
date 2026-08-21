@@ -124,4 +124,30 @@ describe("PUT /api/team/members/[id]/role", () => {
     expect(mocks.updateMembership).not.toHaveBeenCalled();
     expect(mocks.createAuditLog).not.toHaveBeenCalled();
   });
+
+  it("requires system management permission to assign administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+
+    const response = await PUT(makeRequest("admin"), {
+      params: Promise.resolve({ id: "user_2" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(mocks.findMembership).not.toHaveBeenCalled();
+    expect(mocks.updateMembership).not.toHaveBeenCalled();
+  });
+
+  it("allows system managers to assign administrators", async () => {
+    const response = await PUT(makeRequest("admin"), {
+      params: Promise.resolve({ id: "user_2" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mocks.updateMembership).toHaveBeenCalledWith({
+      where: { id: "membership_1" },
+      data: { role: "admin" },
+    });
+  });
 });

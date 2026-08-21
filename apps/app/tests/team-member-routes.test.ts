@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => {
       },
       systemAuditLog: {
         create: vi.fn(),
+        findMany: vi.fn(),
       },
       user: {
         findFirst: vi.fn(),
@@ -63,6 +64,7 @@ import {
   DELETE,
   GET,
 } from "@/app/api/team/members/[id]/route";
+import { GET as GET_MEMBER_AUDIT_LOGS } from "@/app/api/team/members/[id]/audit-logs/route";
 import { PUT } from "@/app/api/team/members/[id]/role/route";
 
 const routeContext = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -110,6 +112,7 @@ describe("tenant-scoped team member routes", () => {
     mocks.db.invite.findFirst.mockResolvedValue(null);
     mocks.db.invite.create.mockResolvedValue({ id: "local-invite-1" });
     mocks.db.systemAuditLog.create.mockResolvedValue({ id: "audit-1" });
+    mocks.db.systemAuditLog.findMany.mockResolvedValue([]);
     mocks.db.user.findUnique.mockResolvedValue(null);
     mocks.db.user.findFirst.mockResolvedValue(null);
     mocks.db.userRole.findFirst.mockResolvedValue(null);
@@ -160,6 +163,23 @@ describe("tenant-scoped team member routes", () => {
       request("/api/team/members?business_id=business-1", {
         method: "POST",
         body: { email: "staff@example.com", role: "cashier" },
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.clerk.invitations.createInvitation).not.toHaveBeenCalled();
+    expect(mocks.db.invite.create).not.toHaveBeenCalled();
+  });
+
+  it("blocks staff managers from inviting administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+
+    const response = await POST(
+      request("/api/team/members?business_id=business-1", {
+        method: "POST",
+        body: { email: "admin@example.com", role: "admin" },
       }),
     );
 
@@ -258,6 +278,70 @@ describe("tenant-scoped team member routes", () => {
 
     expect(response.status).toBe(409);
     expect(mocks.db.userRole.delete).not.toHaveBeenCalled();
+  });
+
+  it("blocks staff managers from removing administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+    mocks.db.userRole.findFirst.mockResolvedValue(
+      membership({ userId: "admin-1", role: "admin" }),
+    );
+
+    const response = await DELETE(
+      request("/api/team/members/admin-1?business_id=business-1", {
+        method: "DELETE",
+      }),
+      routeContext("admin-1"),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.db.userRole.delete).not.toHaveBeenCalled();
+  });
+
+  it("scopes member audit logs to the selected business membership", async () => {
+    mocks.db.userRole.findFirst.mockResolvedValue(membership());
+
+    const response = await GET_MEMBER_AUDIT_LOGS(
+      request("/api/team/members/member-1/audit-logs?business_id=business-1"),
+      routeContext("member-1"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.db.systemAuditLog.findMany).toHaveBeenCalledWith({
+      where: {
+        entityId: "member-1",
+        businessId: "business-1",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  });
+
+  it("requires audit permission before reading member audit logs", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+
+    const response = await GET_MEMBER_AUDIT_LOGS(
+      request("/api/team/members/member-1/audit-logs?business_id=business-1"),
+      routeContext("member-1"),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.db.userRole.findFirst).not.toHaveBeenCalled();
+    expect(mocks.db.systemAuditLog.findMany).not.toHaveBeenCalled();
+  });
+
+  it("does not read audit logs for a member outside the selected business", async () => {
+    mocks.db.userRole.findFirst.mockResolvedValue(null);
+
+    const response = await GET_MEMBER_AUDIT_LOGS(
+      request("/api/team/members/foreign/audit-logs?business_id=business-1"),
+      routeContext("foreign"),
+    );
+
+    expect(response.status).toBe(404);
+    expect(mocks.db.systemAuditLog.findMany).not.toHaveBeenCalled();
   });
 
   it("creates a one-time invitation without accepting or generating a password", async () => {
@@ -379,6 +463,44 @@ describe("tenant-scoped team member routes", () => {
 
     expect(response.status).toBe(400);
     expect(mocks.db.userRole.findFirst).not.toHaveBeenCalled();
+    expect(mocks.db.userRole.update).not.toHaveBeenCalled();
+  });
+
+  it("blocks staff managers from assigning administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+
+    const response = await PUT(
+      request("/api/team/members/member-1/role?business_id=business-1", {
+        method: "PUT",
+        body: { role: "admin" },
+      }),
+      routeContext("member-1"),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.db.userRole.findFirst).not.toHaveBeenCalled();
+    expect(mocks.db.userRole.update).not.toHaveBeenCalled();
+  });
+
+  it("blocks staff managers from demoting administrators", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) => permission === "staff.manage",
+    );
+    mocks.db.userRole.findFirst.mockResolvedValue(
+      membership({ userId: "admin-1", role: "admin" }),
+    );
+
+    const response = await PUT(
+      request("/api/team/members/admin-1/role?business_id=business-1", {
+        method: "PUT",
+        body: { role: "cashier" },
+      }),
+      routeContext("admin-1"),
+    );
+
+    expect(response.status).toBe(403);
     expect(mocks.db.userRole.update).not.toHaveBeenCalled();
   });
 });

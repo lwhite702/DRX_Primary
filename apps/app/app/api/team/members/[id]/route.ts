@@ -3,6 +3,7 @@ import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import {
   findTeamMembership,
+  isPrivilegedTeamRole,
   resolveTeamManagementContext,
 } from "../../_lib/server";
 
@@ -39,9 +40,8 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         const clerkUser = await client.users.getUser(membership.userId);
         email = clerkUser.primaryEmailAddress?.emailAddress ?? "Unknown";
         name =
-          [clerkUser.firstName, clerkUser.lastName]
-            .filter(Boolean)
-            .join(" ") || null;
+          [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
+          null;
       } catch {
         // A missing identity should not expose data outside the scoped membership.
       }
@@ -94,6 +94,15 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json(
         { error: "The business owner cannot be removed" },
         { status: 409 },
+      );
+    }
+    if (
+      isPrivilegedTeamRole(membership.role) &&
+      !context.canManagePrivilegedRoles
+    ) {
+      return NextResponse.json(
+        { error: "Only an owner or administrator can remove that role" },
+        { status: 403 },
       );
     }
 

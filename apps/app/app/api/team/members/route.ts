@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import {
+  isPrivilegedTeamRole,
   normalizeTeamRole,
   resolveTeamManagementContext,
 } from "../_lib/server";
@@ -29,7 +30,10 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
   }
 
   const payload = body as Record<string, unknown>;
@@ -48,6 +52,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Select a valid assignable role" },
       { status: 400 },
+    );
+  }
+  if (isPrivilegedTeamRole(role) && !context.canManagePrivilegedRoles) {
+    return NextResponse.json(
+      { error: "Only an owner or administrator can invite an administrator" },
+      { status: 403 },
     );
   }
 

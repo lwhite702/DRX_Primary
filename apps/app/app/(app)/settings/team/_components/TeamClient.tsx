@@ -211,6 +211,8 @@ export default function TeamClient() {
 
   // Check permission
   const canManageUsers = hasPermission("staff.manage");
+  const canManagePrivilegedRoles =
+    hasPermission("system.manage") || hasPermission("users.manage_all");
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -276,7 +278,9 @@ export default function TeamClient() {
                     <SelectItem value="cashier">Cashier</SelectItem>
                     <SelectItem value="supervisor">Supervisor</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
+                    {canManagePrivilegedRoles && (
+                      <SelectItem value="admin">Administrator</SelectItem>
+                    )}
                     <SelectItem value="staff">Staff</SelectItem>
                   </SelectContent>
                 </Select>
@@ -340,7 +344,9 @@ export default function TeamClient() {
                           handleRoleChange(user.user_id, val)
                         }
                         disabled={
-                          updating === user.user_id || user.role === "owner"
+                          updating === user.user_id ||
+                          user.role === "owner" ||
+                          (user.role === "admin" && !canManagePrivilegedRoles)
                         }
                       >
                         <SelectTrigger className="w-[140px] ml-auto">
@@ -350,6 +356,10 @@ export default function TeamClient() {
                           <SelectItem value="cashier">Cashier</SelectItem>
                           <SelectItem value="supervisor">Supervisor</SelectItem>
                           <SelectItem value="manager">Manager</SelectItem>
+                          {canManagePrivilegedRoles && (
+                            <SelectItem value="admin">Administrator</SelectItem>
+                          )}
+                          <SelectItem value="staff">Staff</SelectItem>
                           {/* Owner cannot be assigned via UI usually, but displayed */}
                           {user.role === "owner" && (
                             <SelectItem value="owner">Owner</SelectItem>

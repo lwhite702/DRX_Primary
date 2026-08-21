@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
   findTeamMembership,
+  isPrivilegedTeamRole,
   normalizeTeamRole,
   resolveTeamManagementContext,
 } from "../../../_lib/server";
@@ -36,6 +37,12 @@ export async function PUT(
         { status: 400 },
       );
     }
+    if (isPrivilegedTeamRole(role) && !context.canManagePrivilegedRoles) {
+      return NextResponse.json(
+        { error: "Only an owner or administrator can assign that role" },
+        { status: 403 },
+      );
+    }
 
     const { id } = await params;
     const membership = await findTeamMembership(context.businessId, id);
@@ -51,6 +58,15 @@ export async function PUT(
     if (membership.userId === context.ownerId || membership.role === "owner") {
       return NextResponse.json(
         { error: "The business owner role cannot be changed" },
+        { status: 403 },
+      );
+    }
+    if (
+      isPrivilegedTeamRole(membership.role) &&
+      !context.canManagePrivilegedRoles
+    ) {
+      return NextResponse.json(
+        { error: "Only an owner or administrator can manage that role" },
         { status: 403 },
       );
     }
