@@ -11,20 +11,20 @@ export function usePermission(businessId: string | undefined) {
     loading: roleLoading,
     refreshRole,
   } = useUserRole(businessId);
-  const roleMatchesBusiness = Boolean(businessId) && roleBusinessId === businessId;
   const permissions = useMemo(
     () =>
       authBypassEnabled
         ? ["*"]
-        : roleMatchesBusiness && role
-          ? ROLE_PERMISSIONS[role]
+        : role
+          ? (ROLE_PERMISSIONS[role] as string[] ?? [])
           : [],
-    [authBypassEnabled, role, roleMatchesBusiness],
+    [authBypassEnabled, role],
   );
 
   const hasPermission = useCallback(
     (requiredPermission: string) => {
       if (authBypassEnabled) return true;
+      if (permissions.includes("*")) return true;
       return permissions.includes(requiredPermission);
     },
     [authBypassEnabled, permissions],
@@ -34,7 +34,7 @@ export function usePermission(businessId: string | undefined) {
     permissions,
     loading:
       !authBypassEnabled &&
-      (!businessId || roleLoading || !roleMatchesBusiness),
+      (roleLoading || (Boolean(businessId) && !role)),
     hasPermission,
     refreshPermissions: refreshRole,
   };
