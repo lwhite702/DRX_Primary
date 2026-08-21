@@ -13,13 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Lock, User, Settings } from "lucide-react";
-import { useUser } from "@/lib/adapters/auth/ui";
+import { useClerk, useUser } from "@/lib/adapters/auth/ui";
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const { user, isLoaded } = useUser();
+  const { openUserProfile } = useClerk();
 
   useEffect(() => {
     setLoading(!isLoaded);
@@ -30,10 +31,14 @@ export default function ProfilePage() {
 
     setUpdating(true);
     try {
-      toast.info("Password changes and security settings are managed in Clerk.");
-    } catch (error: any) {
+      await openUserProfile();
+    } catch (error: unknown) {
       console.error("Error updating password:", error);
-      toast.error(error?.message || "Unable to open security settings right now.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to open security settings right now.",
+      );
     } finally {
       setUpdating(false);
     }
@@ -90,12 +95,15 @@ export default function ProfilePage() {
             <Lock className="h-5 w-5" />
             Security
           </CardTitle>
-          <CardDescription>Security settings are managed by Clerk</CardDescription>
+          <CardDescription>
+            Security settings are managed by Clerk
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSecurityNotice} className="space-y-4">
             <div className="rounded-md border border-dashed border-muted px-4 py-3 text-sm text-muted-foreground">
-              Open your Clerk profile/security settings to update your password or manage active sessions.
+              Open your Clerk profile/security settings to update your password
+              or manage active sessions.
             </div>
             <div className="flex items-center justify-end gap-3">
               <Button type="submit" disabled={updating} variant="outline">

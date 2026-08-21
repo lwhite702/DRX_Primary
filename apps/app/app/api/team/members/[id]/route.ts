@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import {
+  isRealClerkOrganizationId,
+  toClerkOrganizationRole,
+} from "@/lib/team/clerk-organization";
+import {
   findTeamMembership,
   isPrivilegedTeamRole,
   resolveTeamManagementContext,
 } from "../../_lib/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
+
+function clerkErrorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : undefined;
+}
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
@@ -106,19 +116,59 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    await db.$transaction([
-      db.systemAuditLog.create({
-        data: {
-          action: "remove_member",
-          entityId: membership.userId,
-          userId: context.userId,
-          businessId: context.businessId,
-          entityType: "team_member",
-          oldValues: { role: membership.role },
-        },
-      }),
-      db.userRole.delete({ where: { id: membership.id } }),
-    ]);
+    let clerkMembershipRemoved = false;
+    if (isRealClerkOrganizationId(context.clerkOrgId)) {
+      try {
+        const client = await clerkClient();
+        await client.organizations.deleteOrganizationMembership({
+          organizationId: context.clerkOrgId!,
+          userId: membership.userId,
+        });
+        clerkMembershipRemoved = true;
+      } catch (error) {
+        if (clerkErrorStatus(error) !== 404) {
+          console.error("Remove Clerk organization membership failed", {
+            status: clerkErrorStatus(error),
+          });
+          return NextResponse.json(
+            { error: "Failed to remove identity-provider membership" },
+            { status: 502 },
+          );
+        }
+      }
+    }
+
+    try {
+      await db.$transaction([
+        db.systemAuditLog.create({
+          data: {
+            action: "remove_member",
+            entityId: membership.userId,
+            userId: context.userId,
+            businessId: context.businessId,
+            entityType: "team_member",
+            oldValues: { role: membership.role },
+          },
+        }),
+        db.userRole.delete({ where: { id: membership.id } }),
+      ]);
+    } catch (error) {
+      if (clerkMembershipRemoved && context.clerkOrgId) {
+        try {
+          const client = await clerkClient();
+          await client.organizations.createOrganizationMembership({
+            organizationId: context.clerkOrgId,
+            userId: membership.userId,
+            role: toClerkOrganizationRole(membership.role ?? "staff"),
+          });
+        } catch (compensationError) {
+          console.error("Restore Clerk organization membership failed", {
+            status: clerkErrorStatus(compensationError),
+          });
+        }
+      }
+      throw error;
+    }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

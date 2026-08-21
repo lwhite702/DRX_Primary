@@ -90,6 +90,7 @@ export default function CustomerDetailPage() {
     business?.id,
   );
   const [customer, setCustomer] = useState<any>(null);
+  const [loadedBusinessId, setLoadedBusinessId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [privacyProtocol, setPrivacyProtocol] =
@@ -99,16 +100,30 @@ export default function CustomerDetailPage() {
   const [lifecyclePending, setLifecyclePending] = useState(false);
 
   useEffect(() => {
-    if (!business?.id) return;
+    const businessId = business?.id;
+    setCustomer(null);
+    setLoadedBusinessId(null);
+    setMetrics(null);
+    setPrivacyProtocol(getDefaultPrivacyProtocol());
+    setManualScreenPrivacyEnabled(false);
+    setLoading(Boolean(businessId));
+    if (!businessId) return;
+
+    const controller = new AbortController();
+    let active = true;
 
     const fetchData = async () => {
       try {
-        // Fetch customer details via API
-        const res = await fetch(`/api/customers/${customerId}`);
+        const query = new URLSearchParams({ business_id: businessId });
+        const res = await fetch(`/api/customers/${customerId}?${query}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error("Failed to load customer");
         const data = await res.json();
+        if (!active) return;
 
         setCustomer(data);
+        setLoadedBusinessId(businessId);
 
         if (data.metrics) {
           setMetrics({
@@ -128,9 +143,14 @@ export default function CustomerDetailPage() {
         }
 
         const [settingsRes, preferenceRes] = await Promise.all([
-          fetch("/api/business/settings"),
-          fetch("/api/privacy/protexion/preferences"),
+          fetch(`/api/business/settings?${query}`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/privacy/protexion/preferences?${query}`, {
+            signal: controller.signal,
+          }),
         ]);
+        if (!active) return;
         if (settingsRes.ok) {
           const settingsData = await settingsRes.json();
           setPrivacyProtocol(
@@ -144,14 +164,24 @@ export default function CustomerDetailPage() {
           setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
         }
       } catch (error) {
+        if (
+          !active ||
+          (error instanceof Error && error.name === "AbortError")
+        ) {
+          return;
+        }
         toast.error("Failed to load customer details");
         console.error(error);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
-    fetchData();
+    void fetchData();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [business?.id, customerId]);
 
   const can_apply_changes =
@@ -198,7 +228,7 @@ export default function CustomerDetailPage() {
     return <CustomerDetailSkeleton />;
   }
 
-  if (!business || !customer) {
+  if (!business || loadedBusinessId !== business.id || !customer) {
     return <div className="p-4 md:p-8">Customer not found</div>;
   }
 

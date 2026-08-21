@@ -9,6 +9,8 @@ type TeamManagementContext =
       userId: string;
       businessId: string;
       ownerId: string;
+      clerkOrgId: string | null;
+      businessName: string;
       canManagePrivilegedRoles: boolean;
     }
   | {
@@ -30,7 +32,12 @@ export async function resolveTeamManagementContext(
 
   const business = await db.businessProfile.findUnique({
     where: { id: businessId },
-    select: { ownerId: true, isActive: true },
+    select: {
+      ownerId: true,
+      isActive: true,
+      clerkOrgId: true,
+      businessName: true,
+    },
   });
   if (!business?.isActive) {
     return { ok: false, status: 403, error: "Business is unavailable" };
@@ -49,8 +56,38 @@ export async function resolveTeamManagementContext(
     userId,
     businessId,
     ownerId: business.ownerId,
+    clerkOrgId: business.clerkOrgId,
+    businessName: business.businessName,
     canManagePrivilegedRoles,
   };
+}
+
+export async function resolveTeamReadContext(request: Request) {
+  const { userId, businessId } = await resolveAuthContext(request);
+  if (!userId) {
+    return { ok: false as const, status: 401 as const, error: "Unauthorized" };
+  }
+  if (!businessId) {
+    return {
+      ok: false as const,
+      status: 403 as const,
+      error: "Business access denied",
+    };
+  }
+
+  const business = await db.businessProfile.findUnique({
+    where: { id: businessId },
+    select: { isActive: true },
+  });
+  if (!business?.isActive) {
+    return {
+      ok: false as const,
+      status: 403 as const,
+      error: "Business is unavailable",
+    };
+  }
+
+  return { ok: true as const, userId, businessId };
 }
 
 export function isPrivilegedTeamRole(role: string) {

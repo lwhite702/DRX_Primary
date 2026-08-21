@@ -3,6 +3,10 @@ import { randomUUID } from "node:crypto";
 import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import {
+  ensureClerkOrganization,
+  toClerkOrganizationRole,
+} from "@/lib/team/clerk-organization";
+import {
   isPrivilegedTeamRole,
   normalizeTeamRole,
   resolveTeamManagementContext,
@@ -30,6 +34,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 },
@@ -99,14 +110,23 @@ export async function POST(request: NextRequest) {
   }
 
   let invitationId: string | null = null;
+  let organizationId: string | null = null;
   try {
     const inviteToken = randomUUID();
     const client = await clerkClient();
-    const invitation = await client.invitations.createInvitation({
+    organizationId = await ensureClerkOrganization({
+      organizations: client.organizations,
+      businessId: context.businessId,
+      businessName: context.businessName,
+      ownerId: context.ownerId,
+      clerkOrgId: context.clerkOrgId,
+    });
+    const invitation = await client.organizations.createOrganizationInvitation({
+      organizationId,
       emailAddress: email,
+      role: toClerkOrganizationRole(role),
       expiresInDays: INVITATION_TTL_DAYS,
-      ignoreExisting: false,
-      notify: true,
+      inviterUserId: context.userId,
       publicMetadata: {
         drxBusinessId: context.businessId,
         drxInviteToken: inviteToken,
@@ -155,10 +175,14 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    if (invitationId) {
+    if (invitationId && organizationId) {
       try {
         const client = await clerkClient();
-        await client.invitations.revokeInvitation(invitationId);
+        await client.organizations.revokeOrganizationInvitation({
+          organizationId,
+          invitationId,
+          requestingUserId: context.userId,
+        });
       } catch (revokeError) {
         console.error("Failed to revoke orphaned team invitation", {
           status: clerkErrorStatus(revokeError),

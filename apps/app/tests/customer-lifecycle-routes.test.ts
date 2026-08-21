@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   mapCustomerToOperationalModel: vi.fn(),
   mapOperationalCustomerRecord: vi.fn(),
   createCustomerWithAudit: vi.fn(),
+  canWriteField: vi.fn(),
   db: {
     $queryRaw: vi.fn(),
     customers: {
@@ -70,7 +71,7 @@ vi.mock("@/lib/privacy/customer-pii", () => ({
 }));
 
 vi.mock("@/lib/privacy/privacy-policy", () => ({
-  canWriteField: vi.fn().mockReturnValue(true),
+  canWriteField: mocks.canWriteField,
 }));
 
 vi.mock("@/lib/customers/core/customer-normalizer", () => ({
@@ -120,6 +121,7 @@ describe("customer lifecycle routes", () => {
     }));
     mocks.db.$queryRaw.mockResolvedValue([]);
     mocks.db.sales.findMany.mockResolvedValue([]);
+    mocks.canWriteField.mockReturnValue(true);
   });
 
   it("maps a tenant duplicate to a conflict without a second create", async () => {
@@ -138,6 +140,25 @@ describe("customer lifecycle routes", () => {
       existing_customer_id: "customer-existing",
     });
     expect(mocks.createCustomerWithAudit).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows a minimum profile when restricted PII fields are omitted", async () => {
+    mocks.canWriteField.mockReturnValue(false);
+    mocks.createCustomerWithAudit.mockResolvedValue({
+      id: "customer-minimum",
+      isActive: true,
+    });
+    mocks.mapOperationalCustomerRecord.mockResolvedValue({
+      id: "customer-minimum",
+    });
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", { customer_type: "retail" }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(mocks.createCustomerWithAudit).toHaveBeenCalledTimes(1);
+    expect(mocks.canWriteField).not.toHaveBeenCalled();
   });
 
   it("requires manage access and an inactive filter for the archived list", async () => {

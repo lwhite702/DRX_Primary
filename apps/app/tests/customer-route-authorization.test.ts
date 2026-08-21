@@ -127,7 +127,7 @@ describe("customer route authorization", () => {
     expect(mocks.db.customers.findFirst).not.toHaveBeenCalled();
   });
 
-  it("requires customers.manage before standard and POS customer creation", async () => {
+  it("requires customers.manage for standard creation and customer visibility for POS quick create", async () => {
     mocks.hasBusinessPermission.mockResolvedValue(false);
 
     const standardResponse = await CREATE_CUSTOMER(
@@ -146,7 +146,32 @@ describe("customer route authorization", () => {
       "business-1",
       "customers.manage",
     );
+    expect(mocks.hasBusinessPermission).toHaveBeenCalledWith(
+      "actor-1",
+      "business-1",
+      "customers.view",
+    );
     expect(mocks.db.customers.create).not.toHaveBeenCalled();
+  });
+
+  it("requires checkout permission after customer visibility for POS quick create", async () => {
+    mocks.hasBusinessPermission.mockImplementation(
+      async (_userId, _businessId, permission) =>
+        permission === "customers.view",
+    );
+
+    const response = await QUICK_CREATE_CUSTOMER(
+      request("/api/pos/customers/quick-create", "POST", {
+        phone: "5551234",
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.hasBusinessPermission).toHaveBeenCalledWith(
+      "actor-1",
+      "business-1",
+      "sales.create",
+    );
   });
 
   it("requires customers.manage before loading or updating a customer", async () => {
