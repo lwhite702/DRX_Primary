@@ -38,8 +38,7 @@ struct AuthenticatedWebView: View {
                         Button("Retry") {
                             loadSessionToken()
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(DRXPalette.accent)
+                        .buttonStyle(.drxPrimary)
                     }
                 }
             } else {

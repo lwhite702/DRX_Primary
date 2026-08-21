@@ -18,10 +18,11 @@ export function ProductSearch({
   onAddToCart,
   onWeightEntry,
 }: ProductSearchProps) {
-  const filteredInventory = inventory.filter(
+  const normalizedSearch = searchTerm.toLowerCase();
+  const filteredInventory = (Array.isArray(inventory) ? inventory : []).filter(
     (item) =>
-      item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase()),
+      String(item?.product_name ?? "").toLowerCase().includes(normalizedSearch) ||
+      String(item?.sku ?? "").toLowerCase().includes(normalizedSearch),
   );
 
   return (

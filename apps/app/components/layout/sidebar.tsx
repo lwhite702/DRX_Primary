@@ -11,6 +11,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { openFeedbackWithFallback } from "@/lib/feedback";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -130,9 +131,9 @@ export function Sidebar() {
         <button
           onClick={() => {
             const feedback = (window as any).Sentry?.getFeedback?.();
-            if (feedback) {
-              feedback.createWidget();
-            }
+            void openFeedbackWithFallback(
+              feedback ? () => feedback.createWidget() : null,
+            );
           }}
           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
         >

@@ -19,12 +19,13 @@ const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     from?: string;
     to?: string;
-  };
+  }>;
 }) {
   const { businessId } = await resolveAuthContext();
+  const resolvedSearchParams = await searchParams;
 
   if (!businessId) {
     return (
@@ -37,8 +38,12 @@ export default async function ReportsPage({
     );
   }
 
-  const from = searchParams?.from ? new Date(searchParams.from) : undefined;
-  const to = searchParams?.to ? new Date(searchParams.to) : undefined;
+  const from = resolvedSearchParams?.from
+    ? new Date(resolvedSearchParams.from)
+    : undefined;
+  const to = resolvedSearchParams?.to
+    ? new Date(resolvedSearchParams.to)
+    : undefined;
   const range = {
     from: from && !Number.isNaN(from.getTime()) ? from : undefined,
     to: to && !Number.isNaN(to.getTime()) ? to : undefined,

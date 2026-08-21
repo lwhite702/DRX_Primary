@@ -37,6 +37,13 @@ pnpm start
 - Data plane: Clerk-authenticated Convex queries and mutations
 - Offline checkout: SQLCipher-backed queue for owner-authorized cash and customer-credit sales
 
+The current Convex offline contract uses `offline.configurePolicy`,
+`offline.getPolicy`, `offline.registerDevice`, `offline.issueAuthorization`, and
+`offline.syncSale`. Reconciliation is exposed through
+`offline.listReconciliationCases`, `offline.resolveReconciliationCase`, and
+`offline.dismissReconciliationCase`; older queue-oriented function names are
+not part of the implemented API.
+
 The local and EAS environments must provide these public runtime variables:
 
 ```text
