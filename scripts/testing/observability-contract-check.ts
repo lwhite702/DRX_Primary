@@ -14,19 +14,15 @@ const checks: Array<{ file: string; tokens: string[] }> = [
   },
   {
     file: "apps/app/instrumentation-client.ts",
-    tokens: ["sentry.client.config"],
-  },
-  {
-    file: "apps/app/sentry.client.config.ts",
-    tokens: ["Sentry.init", "NEXT_PUBLIC_SENTRY_DSN"],
+    tokens: ["Sentry.init", "NEXT_PUBLIC_SENTRY_DSN", "sendDefaultPii: false"],
   },
   {
     file: "apps/app/sentry.server.config.ts",
-    tokens: ["Sentry.init", "SENTRY_DSN"],
+    tokens: ["Sentry.init", "SENTRY_DSN", "sendDefaultPii: false"],
   },
   {
     file: "apps/app/sentry.edge.config.ts",
-    tokens: ["Sentry.init", "SENTRY_DSN"],
+    tokens: ["Sentry.init", "SENTRY_DSN", "sendDefaultPii: false"],
   },
 ];
 

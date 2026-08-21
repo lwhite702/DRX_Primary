@@ -370,34 +370,32 @@ export async function computeAICreditLimit(
 ): Promise<AILimitRecommendation> {
   try {
     // 1. Rate Limiting
-    const ratelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, "1 h"),
-    });
+    if (redis) {
+      const ratelimit = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+      });
 
-    const { success } = await ratelimit.limit(`limit_engine:${business_id}`);
-    if (!success) {
-      return {
-        recommended_limit_final: current_limit,
-        risk_score_final: 50,
-        justification_final: "Rate limit exceeded - please try again later",
-        suggested_range_min: current_limit * 0.9,
-        suggested_range_max: current_limit * 1.1,
-        used_ai: false,
-        fallback_reason: "Rate limit exceeded",
-      };
+      const { success } = await ratelimit.limit(`limit_engine:${business_id}`);
+      if (!success) {
+        return {
+          recommended_limit_final: current_limit,
+          risk_score_final: 50,
+          justification_final: "Rate limit exceeded - please try again later",
+          suggested_range_min: current_limit * 0.9,
+          suggested_range_max: current_limit * 1.1,
+          used_ai: false,
+          fallback_reason: "Rate limit exceeded",
+        };
+      }
     }
 
-    // 2. Cache Check
-    // 2. Cache Check
-
-    // We use a simplified cache key for now to prioritize speed
+    // Use a stable tenant/customer cache key.
     const simpleCacheKey = `credit_limit:${business_id}:${customer_id}`;
 
-    // Check cache
-    const cachedResult = await redis.get<AILimitRecommendation>(simpleCacheKey);
-    if (cachedResult) {
-      return cachedResult;
+    if (redis) {
+      const cachedResult = await redis.get<AILimitRecommendation>(simpleCacheKey);
+      if (cachedResult) return cachedResult;
     }
 
     const normalized = normalizeFeatures(features);
@@ -440,7 +438,9 @@ export async function computeAICreditLimit(
     }
 
     // Cache the result for 1 hour
-    await redis.set(simpleCacheKey, finalResult, { ex: 3600 });
+    if (redis) {
+      await redis.set(simpleCacheKey, finalResult, { ex: 3600 });
+    }
 
     return finalResult;
   } catch (error) {

@@ -16,7 +16,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
   return (
     <section className="space-y-4 rounded-xl border border-warning/15 bg-warning/[0.03] p-4 md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-        SECTION C: ALERTS THAT MATTER
+        Needs attention
       </div>
       <p className="text-xs text-white/70">
         Real exceptions that need action now. Nothing decorative.

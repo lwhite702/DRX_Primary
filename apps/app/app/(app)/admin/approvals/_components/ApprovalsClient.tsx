@@ -226,7 +226,11 @@ export function ApprovalsClient() {
 
         <TabsContent value="pending" className="space-y-4">
           {loading ? (
-            <div className="py-10 text-center">Loading...</div>
+            <div className="space-y-3 py-4" aria-label="Loading approvals" aria-busy="true">
+              {[0, 1, 2].map((row) => (
+                <div key={row} className="h-24 rounded-lg bg-muted motion-safe:animate-pulse" />
+              ))}
+            </div>
           ) : intakes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 border rounded-lg bg-muted/10">
               <CheckCircle className="h-10 w-10 text-muted-foreground mb-4" />

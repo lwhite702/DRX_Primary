@@ -150,19 +150,13 @@ export function BottomNav() {
                   className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
                 >
                   <Settings className="h-5 w-5" />
-                  <span className="min-w-0 truncate">Admin Console</span>
+                  <span className="min-w-0 truncate">Administration</span>
                 </Link>
 
                 <div className="pt-2">
                   <LogoutButton className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border" />
                 </div>
 
-                {/* Version */}
-                <div className="pt-4 pb-2">
-                  <p className="text-xs text-muted-foreground text-center">
-                    v0.4.12
-                  </p>
-                </div>
               </div>
             </div>
           </SheetContent>

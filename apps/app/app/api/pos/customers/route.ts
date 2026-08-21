@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { cleanPhone, resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
+import { cleanPhone, toNumber } from "@/app/api/pos/_lib/server";
+import { resolveCustomerAccess } from "@/app/api/customers/_lib/server";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { lookupPosCustomerCandidates } from "@/lib/customers/core/customer-search";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
@@ -7,11 +8,15 @@ import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
-    const { businessId } = await resolveAuthContext();
-
-    if (!businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    const context = await resolveCustomerAccess(request, "customers.view");
+    if (!context.ok) {
+      return errorResponse(
+        context.status === 401 ? "UNAUTHORIZED" : "FORBIDDEN",
+        context.error,
+        context.status,
+      );
     }
+    const { businessId } = context;
 
     const url = new URL(request.url);
     const phoneRaw = url.searchParams.get("phone") || "";
@@ -86,11 +91,9 @@ export async function GET(request: NextRequest) {
 
     return successResponse({ items, data: items, count: items.length });
   } catch (error: unknown) {
-    console.error("POS customers lookup error:", error);
-    return errorResponse(
-      "INTERNAL_ERROR",
-      error instanceof Error ? error.message : "Unexpected server error",
-      500,
-    );
+    console.error("POS customers lookup failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
+    return errorResponse("INTERNAL_ERROR", "Unexpected server error", 500);
   }
 }

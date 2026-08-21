@@ -1,26 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { db } from "@/lib/db";
+import {
+  findTeamMembership,
+  resolveTeamManagementContext,
+} from "../../../_lib/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { id } = await params;
-
   try {
-    // Fetch logs for this user (entityId = id)
-    // Legacy had OR condition resource_id.eq.id.
-    // In Prisma SystemAuditLog, we use entityId for the primary target.
+    const context = await resolveTeamManagementContext(request);
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
+    }
+    if (
+      !(await hasBusinessPermission(
+        context.userId,
+        context.businessId,
+        "audit.view",
+      ))
+    ) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const membership = await findTeamMembership(context.businessId, id);
+    if (!membership) {
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    }
 
     const logs = await db.systemAuditLog.findMany({
       where: {
-        entityId: id,
+        entityId: membership.userId,
+        businessId: context.businessId,
       },
       orderBy: {
         createdAt: "desc",
@@ -28,8 +45,13 @@ export async function GET(
     });
 
     return NextResponse.json(logs);
-  } catch (error: any) {
-    console.error("Fetch member audit logs error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("Fetch member audit logs failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

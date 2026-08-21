@@ -15,6 +15,10 @@ import {
   hashEmailLookupCandidates,
   hashPhoneLookupCandidates,
 } from "@/lib/privacy/pii-hash";
+import {
+  createCustomerWithAudit,
+  CustomerConflictError,
+} from "@/lib/customers/core/customer-lifecycle";
 
 function buildEphemeralExpiry(days: 1 | 7 | 30): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
@@ -50,6 +54,7 @@ export async function resolveCustomerByDeterministicLookup(args: {
 
 export async function createOrAttachQuickCustomer(args: {
   businessId: string;
+  actorUserId: string;
   phone: string;
   alias?: string | null;
   useEphemeral: boolean;
@@ -66,7 +71,9 @@ export async function createOrAttachQuickCustomer(args: {
   });
 
   if (existing) {
-    const pii = await decodeCustomerPii(existing as unknown as Record<string, unknown>);
+    const pii = await decodeCustomerPii(
+      existing as unknown as Record<string, unknown>,
+    );
     return {
       created: false,
       customer: existing,
@@ -87,28 +94,68 @@ export async function createOrAttachQuickCustomer(args: {
     phone: normalizedPhone,
   });
 
-  const created = await db.customers.create({
-    data: {
+  let created;
+  try {
+    created = await createCustomerWithAudit({
       businessId: args.businessId,
-      alias: null,
-      firstName: null,
-      lastName: null,
-      phoneNumber: null,
-      email: null,
-      address: null,
-      notes: null,
-      customerType: "retail",
-      isActive: true,
-      ephemeral: args.useEphemeral,
-      ephemeralExpiresAt: args.useEphemeral
-        ? buildEphemeralExpiry(args.ephemeralRetentionDays)
-        : null,
-      lastActivityAt: new Date(),
-      ...piiStorage,
-    },
-  });
+      actorUserId: args.actorUserId,
+      phone: normalizedPhone,
+      data: {
+        businessId: args.businessId,
+        alias: null,
+        firstName: null,
+        lastName: null,
+        phoneNumber: null,
+        email: null,
+        address: null,
+        notes: null,
+        customerType: "retail",
+        isActive: true,
+        ephemeral: args.useEphemeral,
+        ephemeralExpiresAt: args.useEphemeral
+          ? buildEphemeralExpiry(args.ephemeralRetentionDays)
+          : null,
+        lastActivityAt: new Date(),
+        ...piiStorage,
+      },
+      audit: {
+        changedFields: ["alias", "phone", "ephemeral"],
+        isActive: true,
+        ephemeral: args.useEphemeral,
+        customerType: "retail",
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof CustomerConflictError)) throw error;
+    const concurrentExisting = await db.customers.findFirst({
+      where: {
+        id: error.existingCustomerId,
+        businessId: args.businessId,
+        isActive: true,
+      },
+    });
+    if (!concurrentExisting) throw error;
 
-  const pii = await decodeCustomerPii(created as unknown as Record<string, unknown>);
+    const pii = await decodeCustomerPii(
+      concurrentExisting as unknown as Record<string, unknown>,
+    );
+    return {
+      created: false,
+      customer: concurrentExisting,
+      model: {
+        id: concurrentExisting.id,
+        phone: pii.phone || normalizedPhone,
+        alias: getCustomerDisplayName(pii),
+        ephemeral: !!concurrentExisting.ephemeral,
+        ephemeral_expires_at: concurrentExisting.ephemeralExpiresAt || null,
+        remainingCredit: 0,
+      },
+    };
+  }
+
+  const pii = await decodeCustomerPii(
+    created as unknown as Record<string, unknown>,
+  );
 
   return {
     created: true,
@@ -128,7 +175,8 @@ export async function createOrAttachCreditCustomer(args: {
   businessId: string;
   customerName: string;
 }) {
-  const normalizedAlias = normalizeAlias(args.customerName) || "credit-customer";
+  const normalizedAlias =
+    normalizeAlias(args.customerName) || "credit-customer";
   const aliasHash = await hashAliasLookup(normalizedAlias);
   const whereOr = [
     ...(aliasHash ? [{ aliasHash }] : []),
@@ -172,6 +220,8 @@ export async function createOrAttachCreditCustomer(args: {
 }
 
 export async function mapOperationalCustomerRecord(customer: any) {
-  const pii = await decodeCustomerPii(customer as unknown as Record<string, unknown>);
+  const pii = await decodeCustomerPii(
+    customer as unknown as Record<string, unknown>,
+  );
   return mapCustomerToOperationalModel(customer, pii);
 }

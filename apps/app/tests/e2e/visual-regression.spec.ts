@@ -13,26 +13,6 @@ const hasClerkTestingKeys =
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   );
 const visualFixturesEnabled = process.env.VISUAL_FIXTURES === "true";
-<<<<<<< HEAD
-=======
-const canRenderProtected = hasClerkTestingKeys || bypassAuthEnabled;
-
-const publicPages = visualFixturesEnabled
-  ? [
-      { name: "login", url: "/login", heading: "Sign in" },
-      { name: "register", url: "/register", heading: "Create account" },
-      { name: "waitlist", url: "/waitlist", heading: "Join the beta" },
-    ]
-  : [];
-const protectedPages = canRenderProtected
-  ? [
-      { name: "dashboard", url: "/dashboard", heading: "Operator dashboard" },
-      { name: "pos-sale", url: "/pos/sale", heading: "Quick sale" },
-      { name: "inventory", url: "/inventory", heading: "Inventory" },
-      { name: "customers", url: "/customers", heading: "Customers" },
-    ]
-  : [];
->>>>>>> origin/main
 
 test.describe("Visual regression", () => {
   test.beforeEach(async ({ page }) => {
@@ -45,7 +25,6 @@ test.describe("Visual regression", () => {
   const visualTarget = process.env.VISUAL_TARGET ?? "all";
   const pages =
     visualTarget === "public"
-<<<<<<< HEAD
       ? [
           { name: "login", url: "/login", heading: "Sign in" },
           { name: "register", url: "/register", heading: "Create account" },
@@ -67,18 +46,6 @@ test.describe("Visual regression", () => {
             { name: "inventory", url: visualFixturesEnabled ? "/visual-fixtures/inventory" : "/inventory", heading: "Inventory" },
             { name: "customers", url: visualFixturesEnabled ? "/visual-fixtures/customers" : "/customers", heading: "Customers" },
           ];
-=======
-      ? publicPages
-      : visualTarget === "protected"
-        ? protectedPages
-        : [...publicPages, ...protectedPages];
-
-  const viewports = [
-    { name: "desktop", width: 1440, height: 1024 },
-    { name: "tablet", width: 834, height: 1194 },
-    { name: "mobile", width: 390, height: 844 },
-  ];
->>>>>>> origin/main
 
   const viewports = [
     { name: "desktop", width: 1440, height: 1024 },
@@ -130,10 +97,7 @@ test.describe("Visual regression", () => {
         });
         await expect(page).toHaveScreenshot(`${pageMeta.name}-${viewport.name}.png`, {
           fullPage: false,
-<<<<<<< HEAD
           animations: "allow",
-=======
->>>>>>> origin/main
           // Chromium's Linux and macOS text rasterizers differ slightly even
           // after web fonts settle. Keep the allowance narrow enough to catch
           // layout regressions while avoiding platform-only glyph noise.

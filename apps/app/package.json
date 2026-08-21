@@ -3,7 +3,7 @@
   "version": "0.5.7",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "scripts": {
     "build": "prisma generate && next build --webpack",
@@ -38,8 +38,10 @@
     "test:run": "vitest run",
     "test:coverage": "prisma generate && vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
+    "test:e2e:install:ci": "playwright install --with-deps chromium",
     "test:e2e:ci": "pnpm test:e2e:required && pnpm test:e2e:quick-pos-smoke",
-    "test:e2e:required": "playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_ux BYPASS_AUTH_ORG_ID=org_required_ux playwright test tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
+    "test:e2e:required": "prisma generate && VISUAL_FIXTURES=true playwright test tests/e2e/auth-routing.spec.ts tests/e2e/login-surfaces.spec.ts --workers=1 && BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_ux BYPASS_AUTH_ORG_ID=org_required_ux playwright test tests/e2e/help-center-smoke.spec.ts tests/e2e/ux-smoke.spec.ts --workers=1",
     "test:e2e:quick-pos-smoke": "BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_pos BYPASS_AUTH_ORG_ID=org_required_pos playwright test tests/e2e/quick-pos-required.spec.ts --project=chromium --workers=1",
     "test:e2e:auth": "E2E_REQUIRE_AUTH=1 playwright test tests/e2e/auth-routing-authenticated.spec.ts --workers=1",
     "test:e2e:testsprite": "BYPASS_AUTH_FOR_TESTING=true playwright test -c playwright.testsprite.local.config.ts --timeout=20000",
@@ -47,8 +49,8 @@
     "test:e2e:a11y": "PLAYWRIGHT_APP_PORT=3100 PW_NEXT_WEBPACK=1 PW_SKIP_GLOBAL_SETUP=1 playwright test tests/e2e/a11y.spec.ts --workers=1",
     "test:e2e:a11y:required": "PLAYWRIGHT_APP_PORT=3100 PW_NEXT_WEBPACK=1 PW_SKIP_GLOBAL_SETUP=1 BYPASS_AUTH_FOR_TESTING=false A11Y_TARGET=public playwright test tests/e2e/a11y.spec.ts --workers=1 && PLAYWRIGHT_APP_PORT=3100 PW_NEXT_WEBPACK=1 PW_SKIP_GLOBAL_SETUP=1 BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_a11y BYPASS_AUTH_ORG_ID=org_required_a11y A11Y_TARGET=protected playwright test tests/e2e/a11y.spec.ts --workers=1",
     "test:e2e:regression": "playwright test tests/e2e/visual-regression.spec.ts",
-    "test:e2e:visual:required": "VISUAL_TARGET=public VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1 && VISUAL_TARGET=protected VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_visual BYPASS_AUTH_ORG_ID=org_required_visual playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1",
-    "test:integration": "vitest run tests/integration tests/auth tests/middleware.test.ts",
+    "test:e2e:visual:required": "PW_NEXT_WEBPACK=1 VISUAL_TARGET=public VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=false playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1 && PW_NEXT_WEBPACK=1 VISUAL_TARGET=protected VISUAL_FIXTURES=true BYPASS_AUTH_FOR_TESTING=true BYPASS_AUTH_USER_ID=user_required_visual BYPASS_AUTH_ORG_ID=org_required_visual playwright test tests/e2e/visual-regression.spec.ts --project=chromium --workers=1",
+    "test:integration": "prisma generate && VITEST_INCLUDE_INTEGRATION=true vitest run tests/integration tests/auth tests/middleware.test.ts",
     "test:flags:parity": "node scripts/verify-posthog-flags.mjs",
     "verify:migration-rollbacks": "node scripts/verify-migration-rollbacks.mjs",
     "test:required:auth-data": "vitest run tests/middleware.test.ts tests/auth tests/pos tests/quick-pos",

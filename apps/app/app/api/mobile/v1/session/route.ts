@@ -5,7 +5,9 @@ import { db } from "@/lib/db";
 
 function explicitPermissions(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((permission): permission is string => typeof permission === "string");
+    return value.filter(
+      (permission): permission is string => typeof permission === "string",
+    );
   }
 
   if (!value || typeof value !== "object") return [];
@@ -21,7 +23,7 @@ function permissionsFor(role: string, value: unknown): string[] {
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,7 +52,7 @@ export async function GET() {
     );
   }
 
-  if (user.status !== "ACTIVE" || !user.tenant.isActive) {
+  if (user.status !== "ACTIVE") {
     return NextResponse.json(
       {
         error: "Account is inactive",
@@ -60,7 +62,31 @@ export async function GET() {
     );
   }
 
-  const business = user.tenant;
+  const business = orgId
+    ? await db.businessProfile.findUnique({
+        where: { clerkOrgId: orgId },
+        select: { id: true, businessName: true, ownerId: true, isActive: true },
+      })
+    : user.tenant;
+  if (!business) {
+    return NextResponse.json(
+      {
+        error: "Active business is not provisioned for Deelrx CRM",
+        code: "MOBILE_BUSINESS_NOT_PROVISIONED",
+      },
+      { status: 403 },
+    );
+  }
+  if (!business.isActive) {
+    return NextResponse.json(
+      {
+        error: "Account is inactive",
+        code: "MOBILE_ACCOUNT_INACTIVE",
+      },
+      { status: 403 },
+    );
+  }
+
   const isOwner = business.ownerId === userId;
   const assignedRole = isOwner
     ? null
@@ -68,7 +94,17 @@ export async function GET() {
         where: { userId, businessId: business.id },
         select: { role: true, permissions: true },
       });
-  const requestedRole = assignedRole?.role?.toLowerCase() ?? user.role.toLowerCase();
+  if (orgId && !isOwner && !assignedRole) {
+    return NextResponse.json(
+      {
+        error: "You do not have access to the active business",
+        code: "MOBILE_BUSINESS_ACCESS_DENIED",
+      },
+      { status: 403 },
+    );
+  }
+  const requestedRole =
+    assignedRole?.role?.toLowerCase() ?? user.role.toLowerCase();
   const role =
     isOwner || requestedRole === "owner"
       ? "owner"
@@ -82,7 +118,10 @@ export async function GET() {
     business_id: business.id,
     business_name: business.businessName,
     roles: [role],
-    permissions: permissionsFor(role, isOwner ? null : assignedRole?.permissions),
+    permissions: permissionsFor(
+      role,
+      isOwner ? null : assignedRole?.permissions,
+    ),
     email: user?.email ?? null,
   });
 }

@@ -128,7 +128,7 @@ export function TopNav() {
                     className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
                   >
                     <Settings className="h-5 w-5" />
-                    <span className="min-w-0 truncate">Admin Console</span>
+                    <span className="min-w-0 truncate">Administration</span>
                   </Link>
                 )}
                 <SentryFeedbackButton
@@ -239,7 +239,7 @@ export function TopNav() {
             {showAdminConsole && (
               <UserButton.MenuItems>
                 <UserButton.Action
-                  label="Admin Console"
+                  label="Administration"
                   labelIcon={<Settings className="w-4 h-4" />}
                   onClick={() => router.push("/admin")}
                 />

@@ -7,10 +7,13 @@ import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 export function SearchView() {
   const { business } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
+  const { inventory, syncStatus, refresh } = useRealtimeInventory(
+    business?.id || null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<
@@ -67,6 +70,9 @@ export function SearchView() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />
+      </div>
       {/* Search Header */}
       <div className="max-w-3xl mx-auto w-full space-y-4">
         <div>

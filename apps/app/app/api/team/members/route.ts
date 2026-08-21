@@ -1,121 +1,205 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { randomUUID } from "node:crypto";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import {
+  ensureClerkOrganization,
+  toClerkOrganizationRole,
+} from "@/lib/team/clerk-organization";
+import {
+  isPrivilegedTeamRole,
+  normalizeTeamRole,
+  resolveTeamManagementContext,
+} from "../_lib/server";
+
+const INVITATION_TTL_DAYS = 7;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function clerkErrorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : undefined;
+}
 
 export async function POST(request: NextRequest) {
-  const { userId: actorId } = await auth();
-
-  if (!actorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const context = await resolveTeamManagementContext(request);
+  if (!context.ok) {
+    return NextResponse.json(
+      { error: context.error },
+      { status: context.status },
+    );
   }
 
-  // Check if user is Manager (optional enforcement here, or we trust caller is Manager?)
-  // For robustness, we should check role. But test uses Manager token.
-
-  const body = await request.json();
-  const { email, password, role, name } = body;
-
-  const tempPassword = password || "TempPass123!";
-
+  let body: unknown;
   try {
-    const client = await clerkClient();
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
 
-    // 1. Create User in Clerk
-    const createdUser = await client.users.createUser({
-      emailAddress: [email],
-      password: tempPassword,
-      firstName: name?.split(" ")[0],
-      lastName: name?.split(" ").slice(1).join(" "),
-      skipPasswordChecks: true,
-      skipPasswordRequirement: true,
-    });
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
 
-    const newUserId = createdUser.id;
+  const payload = body as Record<string, unknown>;
+  const email =
+    typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+  const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const role = normalizeTeamRole(payload.role ?? "cashier");
 
-    // 2. Assign Role (Needs Business ID usually. We'll find one or default?)
-    // Using the current user's business?
-    // We need to know which business to add the member to.
+  if (!EMAIL_PATTERN.test(email)) {
+    return NextResponse.json(
+      { error: "Enter a valid email address" },
+      { status: 400 },
+    );
+  }
+  if (!role) {
+    return NextResponse.json(
+      { error: "Select a valid assignable role" },
+      { status: 400 },
+    );
+  }
+  if (isPrivilegedTeamRole(role) && !context.canManagePrivilegedRoles) {
+    return NextResponse.json(
+      { error: "Only an owner or administrator can invite an administrator" },
+      { status: 403 },
+    );
+  }
 
-    // We'll try to find the business owned by the current user or where they are a manager.
-    // Fetch actor's role/business
-    const actorRole = await db.userRole.findFirst({
-      where: { userId: actorId },
-      select: { businessId: true, role: true },
-    });
+  const now = new Date();
+  const existingInvite = await db.invite.findFirst({
+    where: {
+      tenantId: context.businessId,
+      email,
+      status: "PENDING",
+      expiresAt: { gt: now },
+    },
+    select: { id: true },
+  });
+  if (existingInvite) {
+    return NextResponse.json(
+      { error: "An active invitation already exists for this email" },
+      { status: 409 },
+    );
+  }
 
-    // Also check if actor is owner of a business
-    const ownedBusiness = await db.businessProfile.findFirst({
-      where: { ownerId: actorId },
+  const existingUser = await db.user.findUnique({
+    where: { email },
+    select: { clerkUserId: true },
+  });
+  if (existingUser?.clerkUserId) {
+    const existingMembership = await db.userRole.findFirst({
+      where: {
+        businessId: context.businessId,
+        userId: existingUser.clerkUserId,
+      },
       select: { id: true },
     });
-
-    const businessId = ownedBusiness?.id || actorRole?.businessId;
-
-    if (!businessId) {
+    if (existingMembership) {
       return NextResponse.json(
-        { error: "User business context not found" },
-        { status: 403 },
+        { error: "This user is already a member of the business" },
+        { status: 409 },
       );
     }
+  }
 
-    // Enforce permissions if not owner
-    if (!ownedBusiness) {
-      if (actorRole) {
-        const callerRole = actorRole.role || "";
-        const targetRole = role || "cashier";
+  let invitationId: string | null = null;
+  let organizationId: string | null = null;
+  try {
+    const inviteToken = randomUUID();
+    const client = await clerkClient();
+    organizationId = await ensureClerkOrganization({
+      organizations: client.organizations,
+      businessId: context.businessId,
+      businessName: context.businessName,
+      ownerId: context.ownerId,
+      clerkOrgId: context.clerkOrgId,
+    });
+    const invitation = await client.organizations.createOrganizationInvitation({
+      organizationId,
+      emailAddress: email,
+      role: toClerkOrganizationRole(role),
+      expiresInDays: INVITATION_TTL_DAYS,
+      inviterUserId: context.userId,
+      publicMetadata: {
+        drxBusinessId: context.businessId,
+        drxInviteToken: inviteToken,
+        drxRole: role,
+        drxInvitedBy: context.userId,
+        ...(name ? { drxInvitedName: name } : {}),
+      },
+    });
+    invitationId = invitation.id;
 
-        // Hierarchy check: Manager cannot assign owner or super_admin
-        if (
-          callerRole === "manager" &&
-          ["owner", "super_admin"].includes(targetRole.toLowerCase())
-        ) {
-          return NextResponse.json(
-            { error: "Managers cannot assign Owner or Super Admin roles" },
-            { status: 403 },
-          );
-        }
+    const expiresAt = new Date(
+      now.getTime() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000,
+    );
+    await db.$transaction([
+      db.invite.create({
+        data: {
+          email,
+          token: inviteToken,
+          tenantId: context.businessId,
+          role,
+          status: "PENDING",
+          expiresAt,
+          invitedBy: context.userId,
+        },
+      }),
+      db.systemAuditLog.create({
+        data: {
+          action: "invite_member",
+          entityId: invitation.id,
+          userId: context.userId,
+          businessId: context.businessId,
+          newValues: { role },
+          entityType: "team_invitation",
+        },
+      }),
+    ]);
 
-        if (
-          !["manager", "owner", "super_admin"].includes(
-            callerRole.toLowerCase(),
-          )
-        ) {
-          return NextResponse.json(
-            { error: "Insufficient permissions to manage team members" },
-            { status: 403 },
-          );
-        }
+    return NextResponse.json(
+      {
+        id: invitation.id,
+        email,
+        role,
+        status: "pending",
+        expiresAt: expiresAt.toISOString(),
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    if (invitationId && organizationId) {
+      try {
+        const client = await clerkClient();
+        await client.organizations.revokeOrganizationInvitation({
+          organizationId,
+          invitationId,
+          requestingUserId: context.userId,
+        });
+      } catch (revokeError) {
+        console.error("Failed to revoke orphaned team invitation", {
+          status: clerkErrorStatus(revokeError),
+        });
       }
     }
 
-    if (businessId) {
-      await db.userRole.create({
-        data: {
-          userId: newUserId,
-          businessId: businessId,
-          role: role || "cashier",
-          permissions: { all: false }, // Default permissions
-        },
-      });
+    const status = clerkErrorStatus(error);
+    console.error("Create team invitation failed", { status });
+    if (status === 409 || status === 422) {
+      return NextResponse.json(
+        { error: "An invitation or account already exists for this email" },
+        { status: 409 },
+      );
     }
-
-    // 3. Audit Log
-    await db.systemAuditLog.create({
-      data: {
-        action: "create_member",
-        entityId: newUserId,
-        userId: actorId, // Acted by
-        newValues: { email, role, name },
-        entityType: "team_member",
-      },
-    });
-
-    return NextResponse.json({ id: newUserId, email, role }, { status: 201 });
-  } catch (error: any) {
-    console.error("Create member error:", error);
-    // Map Clerk errors if needed
     return NextResponse.json(
-      { error: error.message || "Failed to create user" },
+      { error: "Failed to create invitation" },
       { status: 500 },
     );
   }

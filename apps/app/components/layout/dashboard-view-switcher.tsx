@@ -18,7 +18,7 @@ import {
 import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
 
 export function DashboardViewSwitcher() {
-  const { preferences, setPreset, saving } = useDashboardPreferences();
+  const { preferences, setPreset, saving, error } = useDashboardPreferences();
 
   const currentLabel = dashboardPresetLabels[preferences.preset] ?? "Operations";
 
@@ -37,6 +37,8 @@ export function DashboardViewSwitcher() {
           </span>
           {saving ? (
             <span className="text-[10px] text-muted-foreground">Saving</span>
+          ) : error ? (
+            <span className="text-[10px] text-warning">Local only</span>
           ) : null}
         </Button>
       </DropdownMenuTrigger>
@@ -57,4 +59,3 @@ export function DashboardViewSwitcher() {
     </DropdownMenu>
   );
 }
-

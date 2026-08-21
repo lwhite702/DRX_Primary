@@ -1,10 +1,22 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 // import { db } from "@wrelik/db/server";
 
 let didLogRealtimeBlock = false;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RealtimeChannelLike = any;
+type RealtimeChannelFactory = (name: string) => RealtimeChannelLike | null;
+
+let realtimeChannelFactoryForTests: RealtimeChannelFactory | null = null;
+
+export function setRealtimeChannelFactoryForTests(
+  factory: RealtimeChannelFactory | null,
+) {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("Realtime channel injection is only available in tests");
+  }
+  realtimeChannelFactoryForTests = factory;
+}
 
 // Normalize Prisma/camelCase API payloads to the legacy snake_case client shape
 // that existing pages still expect while we finish the adapter migration.
@@ -41,6 +53,9 @@ function normalizeInventoryPayload(payload: any): any[] {
 }
 
 function openRealtimeChannel(name: string): RealtimeChannelLike | null {
+  if (realtimeChannelFactoryForTests) {
+    return realtimeChannelFactoryForTests(name);
+  }
   if (!didLogRealtimeBlock) {
     didLogRealtimeBlock = true;
     console.warn(
@@ -59,63 +74,115 @@ const db = {
 
 export function useRealtimeInventory(business_id: string | null) {
   const [inventory, setInventory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadedBusinessId = useRef<string | null>(null);
+  const stateBusinessId = useRef<string | null>(null);
+  const requestController = useRef<AbortController | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!business_id) {
+      setInventory([]);
+      loadedBusinessId.current = null;
+      stateBusinessId.current = null;
+      setLoading(false);
+      setRefreshing(false);
+      setError(null);
+      return;
+    }
+
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
+    const hasCurrentData = loadedBusinessId.current === business_id;
+    stateBusinessId.current = business_id;
+    if (!hasCurrentData) setInventory([]);
+    setLoading(!hasCurrentData);
+    setRefreshing(hasCurrentData);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/inventory?business_id=${encodeURIComponent(business_id)}`,
+        { signal: controller.signal },
+      );
+      const payload = await response.json();
+      if (!response.ok) throw new Error("Failed to load inventory snapshot");
+      if (controller.signal.aborted) return;
+      setInventory(normalizeInventoryPayload(payload));
+      loadedBusinessId.current = business_id;
+    } catch (caught) {
+      if (caught instanceof Error && caught.name === "AbortError") return;
+      console.warn("[realtime] Failed to load inventory snapshot", {
+        errorType: caught instanceof Error ? caught.name : "UnknownError",
+      });
+      setError("Inventory updates are temporarily unavailable.");
+      if (!hasCurrentData) setInventory([]);
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [business_id]);
 
   useEffect(() => {
+    void refresh();
     if (!business_id) return;
-
-    // Initial fetch
-    // Initial fetch
-    fetch(`/api/inventory?business_id=${business_id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setInventory(normalizeInventoryPayload(data));
-      })
-      .catch((error) => {
-        console.warn("[realtime] Failed to load inventory snapshot", error);
-        setInventory([]);
-      });
 
     // Subscribe to changes via @wrelik/db realtime
     const channel = openRealtimeChannel(`inventory:${business_id}`);
-    if (!channel) return;
-    channel
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "inventory",
-          filter: `business_id=eq.${business_id}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === "INSERT") {
-            setInventory((prev) => [
-              ...prev,
-              normalizeInventoryItem(payload.new),
-            ]);
-          } else if (payload.eventType === "UPDATE") {
-            setInventory((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id
-                  ? normalizeInventoryItem(payload.new)
-                  : item,
-              ),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setInventory((prev) =>
-              prev.filter((item) => item.id !== payload.old.id),
-            );
-          }
-        },
-      )
-      .subscribe();
+    if (channel) {
+      channel
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "inventory",
+            filter: `business_id=eq.${business_id}`,
+          },
+          (payload: any) => {
+            if (payload.eventType === "INSERT") {
+              setInventory((prev) => [
+                ...prev,
+                normalizeInventoryItem(payload.new),
+              ]);
+            } else if (payload.eventType === "UPDATE") {
+              setInventory((prev) =>
+                prev.map((item) =>
+                  item.id === payload.new.id
+                    ? normalizeInventoryItem(payload.new)
+                    : item,
+                ),
+              );
+            } else if (payload.eventType === "DELETE") {
+              setInventory((prev) =>
+                prev.filter((item) => item.id !== payload.old.id),
+              );
+            }
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      channel.unsubscribe();
+      requestController.current?.abort();
+      channel?.unsubscribe();
     };
-  }, [business_id]);
+  }, [business_id, refresh]);
 
-  return inventory;
+  const matchesBusiness = stateBusinessId.current === business_id;
+  return {
+    inventory: matchesBusiness ? inventory : [],
+    loading: loading || Boolean(business_id && !matchesBusiness),
+    refreshing: matchesBusiness ? refreshing : false,
+    error: matchesBusiness ? error : null,
+    syncStatus: refreshing ? "reconnecting" : error ? "offline" : "snapshot",
+    refresh,
+  } as const;
 }
 
 export function useRealtimeSales(business_id: string | null) {
@@ -229,73 +296,153 @@ export function useRealtimeCredit(
 
 export function useRealtimeCustomers(business_id: string | null) {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadedBusinessId = useRef<string | null>(null);
+  const stateBusinessId = useRef<string | null>(null);
+  const requestVersion = useRef(0);
+  const subscriptionVersion = useRef(0);
+
+  const refresh = useCallback(async () => {
+    const version = ++requestVersion.current;
+    if (!business_id) {
+      setCustomers([]);
+      loadedBusinessId.current = null;
+      stateBusinessId.current = null;
+      setLoading(false);
+      setRefreshing(false);
+      setError(null);
+      return;
+    }
+
+    const hasCurrentData = loadedBusinessId.current === business_id;
+    stateBusinessId.current = business_id;
+    if (!hasCurrentData) setCustomers([]);
+    setLoading(!hasCurrentData);
+    setRefreshing(hasCurrentData);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/customers?business_id=${encodeURIComponent(business_id)}`,
+      );
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to load customer snapshot");
+      }
+      if (version !== requestVersion.current) return;
+      setCustomers(Array.isArray(payload?.data) ? payload.data : []);
+      loadedBusinessId.current = business_id;
+    } catch (caught) {
+      if (version !== requestVersion.current) return;
+      console.warn("[realtime] customer snapshot load failed", {
+        errorType: caught instanceof Error ? caught.name : "UnknownError",
+      });
+      setError("Customer updates are temporarily unavailable.");
+      if (!hasCurrentData) setCustomers([]);
+    } finally {
+      if (version === requestVersion.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [business_id]);
 
   useEffect(() => {
+    void refresh();
     if (!business_id) return;
 
-    // Initial fetch
-    fetch(`/api/customers?business_id=${business_id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.data) setCustomers(data.data);
-      });
+    const subscribedBusinessId = business_id;
+    const version = ++subscriptionVersion.current;
+    const isCurrentSubscription = () =>
+      subscriptionVersion.current === version &&
+      stateBusinessId.current === subscribedBusinessId;
 
     // Subscribe to changes
     const channel = openRealtimeChannel(`customers:${business_id}`);
-    if (!channel) return;
-    channel.on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "customers",
-        filter: `business_id=eq.${business_id}`,
-      },
-      async (payload: any) => {
-        if (payload.eventType === "INSERT") {
-          try {
-            const id = payload?.new?.id;
-            if (!id) return;
-            const response = await fetch(`/api/customers/${id}`);
-            const normalized = await response.json();
-            if (!response.ok || !normalized?.id) return;
+    if (channel)
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "customers",
+          filter: `business_id=eq.${business_id}`,
+        },
+        async (payload: any) => {
+          if (!isCurrentSubscription()) return;
+          if (payload.eventType === "INSERT") {
+            try {
+              const id = payload?.new?.id;
+              if (!id) return;
+              const response = await fetch(
+                `/api/customers/${id}?business_id=${encodeURIComponent(subscribedBusinessId)}`,
+              );
+              const normalized = await response.json();
+              if (!response.ok || !normalized?.id || !isCurrentSubscription())
+                return;
 
-            setCustomers((prev) =>
-              [normalized, ...prev.filter((row) => row.id !== normalized.id)].sort((a, b) =>
-                (a.first_name || a.alias || "").localeCompare(
-                  b.first_name || b.alias || "",
+              setCustomers((prev) =>
+                [
+                  normalized,
+                  ...prev.filter((row) => row.id !== normalized.id),
+                ].sort((a, b) =>
+                  (a.first_name || a.alias || "").localeCompare(
+                    b.first_name || b.alias || "",
+                  ),
                 ),
-              ),
-            );
-          } catch (error) {
-            console.warn("[realtime] customer INSERT normalization failed", error);
-          }
-        } else if (payload.eventType === "UPDATE") {
-          try {
-            const id = payload?.new?.id;
-            if (!id) return;
-            const response = await fetch(`/api/customers/${id}`);
-            const normalized = await response.json();
-            if (!response.ok || !normalized?.id) return;
+              );
+            } catch (error) {
+              console.warn(
+                "[realtime] customer INSERT normalization failed",
+                error,
+              );
+            }
+          } else if (payload.eventType === "UPDATE") {
+            try {
+              const id = payload?.new?.id;
+              if (!id) return;
+              const response = await fetch(
+                `/api/customers/${id}?business_id=${encodeURIComponent(subscribedBusinessId)}`,
+              );
+              const normalized = await response.json();
+              if (!response.ok || !normalized?.id || !isCurrentSubscription())
+                return;
 
+              setCustomers((prev) =>
+                prev.map((item) =>
+                  item.id === normalized.id ? normalized : item,
+                ),
+              );
+            } catch (error) {
+              console.warn(
+                "[realtime] customer UPDATE normalization failed",
+                error,
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            if (!isCurrentSubscription()) return;
             setCustomers((prev) =>
-              prev.map((item) => (item.id === normalized.id ? normalized : item)),
+              prev.filter((item) => item.id !== payload.old.id),
             );
-          } catch (error) {
-            console.warn("[realtime] customer UPDATE normalization failed", error);
           }
-        } else if (payload.eventType === "DELETE") {
-          setCustomers((prev) =>
-            prev.filter((item) => item.id !== payload.old.id),
-          );
-        }
-      },
-    );
+        },
+      );
 
     return () => {
-      channel.unsubscribe();
+      requestVersion.current += 1;
+      subscriptionVersion.current += 1;
+      channel?.unsubscribe();
     };
-  }, [business_id]);
+  }, [business_id, refresh]);
 
-  return customers;
+  const matchesBusiness = stateBusinessId.current === business_id;
+  return {
+    customers: matchesBusiness ? customers : [],
+    loading: loading || Boolean(business_id && !matchesBusiness),
+    refreshing: matchesBusiness ? refreshing : false,
+    error: matchesBusiness ? error : null,
+    syncStatus: refreshing ? "reconnecting" : error ? "offline" : "snapshot",
+    refresh,
+  } as const;
 }

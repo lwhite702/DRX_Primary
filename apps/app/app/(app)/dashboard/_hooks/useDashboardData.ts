@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface DashboardStats {
   salesToday: number;
@@ -10,12 +10,6 @@ export interface DashboardStats {
   overdueCount: number;
   recentActivity: ActivityItem[];
   topMovers: TopMover[];
-  systemHealth: {
-    syncStatus: "CLEAN" | "SYNCING" | "ERROR";
-    brokenLinks: number;
-    lastAudit: string;
-    location: string;
-  };
 }
 
 export interface ActivityItem {
@@ -80,18 +74,6 @@ interface BaselineResponse {
   latestAuditAt: string | null;
 }
 
-function formatAuditLabel(latestAuditAt: string | null) {
-  if (!latestAuditAt) return "NO AUDIT YET";
-  const diffMs = Date.now() - new Date(latestAuditAt).getTime();
-  const mins = Math.max(0, Math.floor(diffMs / 60000));
-  if (mins < 1) return "JUST NOW";
-  if (mins < 60) return `${mins} MIN AGO`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} HRS AGO`;
-  const days = Math.floor(hours / 24);
-  return `${days} DAYS AGO`;
-}
-
 function calcGrowth(current: number, previous: number) {
   if (previous <= 0) {
     return current > 0 ? 100 : 0;
@@ -102,24 +84,51 @@ function calcGrowth(current: number, previous: number) {
 export function useDashboardData(businessId: string | undefined) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const statsRef = useRef<DashboardStats | null>(null);
+  const statsBusinessIdRef = useRef<string | undefined>(undefined);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
+    requestControllerRef.current?.abort();
+
     if (!businessId) {
+      statsRef.current = null;
+      statsBusinessIdRef.current = undefined;
+      setStats(null);
       setLoading(false);
+      setRefreshing(false);
+      setError(null);
       return;
     }
 
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    const hasCurrentStats =
+      statsRef.current !== null && statsBusinessIdRef.current === businessId;
+
+    if (!hasCurrentStats) {
+      statsRef.current = null;
+      statsBusinessIdRef.current = businessId;
+      setStats(null);
+    }
+
     try {
-      setLoading(true);
+      setLoading(!hasCurrentStats);
+      setRefreshing(hasCurrentStats);
       setError(null);
 
-      const res = await fetch("/api/reports/pos-baseline", { credentials: "same-origin" });
+      const res = await fetch("/api/reports/pos-baseline", {
+        credentials: "same-origin",
+        signal: controller.signal,
+      });
       if (!res.ok) {
         throw new Error("Failed to load dashboard report");
       }
 
       const report = (await res.json()) as BaselineResponse;
+      if (controller.signal.aborted) return;
 
       const recentActivity: ActivityItem[] = report.recentSales.map((sale) => ({
         id: sale.id,
@@ -138,7 +147,7 @@ export function useDashboardData(businessId: string | undefined) {
         revenue: product.revenue,
       }));
 
-      setStats({
+      const nextStats: DashboardStats = {
         salesToday: report.today.salesTotal,
         cashCollected: report.today.cashCollected,
         transactionsCount: report.today.salesCount,
@@ -148,25 +157,41 @@ export function useDashboardData(businessId: string | undefined) {
         overdueCount: report.credit.activeBalances,
         recentActivity,
         topMovers,
-        systemHealth: {
-          syncStatus: "CLEAN",
-          brokenLinks: 0,
-          lastAudit: formatAuditLabel(report.latestAuditAt),
-          location: businessId ? "BUSINESS-SCOPED" : "UNKNOWN",
-        },
-      });
+      };
+
+      statsRef.current = nextStats;
+      statsBusinessIdRef.current = businessId;
+      setStats(nextStats);
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
       console.error("Dashboard Fetch Error:", err);
       setError("Failed to load dashboard data");
     } finally {
-      setLoading(false);
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [businessId]);
 
   useEffect(() => {
-    fetchDashboardData();
+    void fetchDashboardData();
+
+    return () => {
+      requestControllerRef.current?.abort();
+    };
   }, [fetchDashboardData]);
 
-  return { stats, loading, error, refresh: fetchDashboardData };
-}
+  const statsMatchBusiness = statsBusinessIdRef.current === businessId;
 
+  return {
+    stats: statsMatchBusiness ? stats : null,
+    loading: loading || Boolean(businessId && !statsMatchBusiness),
+    refreshing: statsMatchBusiness ? refreshing : false,
+    error: statsMatchBusiness ? error : null,
+    refresh: fetchDashboardData,
+  };
+}

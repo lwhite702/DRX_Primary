@@ -46,4 +46,4 @@ When changing a domain or route:
 
 ## Runtime note
 
-WRE-31 currently contains conflicting runtime declarations. `.nvmrc`, `.node-version`, root package engines, release preflight, and most CI jobs enforce Node `20.19.0`, while the Dockerfile, version workflow, and existing runtime docs reference Node `22.23.1`. Resolve those files to one approved version before merge; documentation must not claim that local, CI, and container runtimes are aligned until the enforcement files agree.
+DRX standardizes local, CI, container, and release validation on Node `22.23.1`. The repository `.nvmrc`, `.node-version`, package engines, release preflight, Dockerfile, and version workflow are the enforcement sources and must remain aligned when the runtime changes.

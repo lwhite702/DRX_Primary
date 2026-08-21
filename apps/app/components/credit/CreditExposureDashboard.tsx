@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExposureMetrics {
   total_credit_limits: number;
@@ -67,8 +68,10 @@ export function CreditExposureDashboard({
   if (loading) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground text-center">Loading metrics...</p>
+        <CardContent className="grid grid-cols-2 gap-4 pt-6 md:grid-cols-4" aria-label="Loading credit exposure" aria-busy="true">
+          {[0, 1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-20 w-full" />
+          ))}
         </CardContent>
       </Card>
     );

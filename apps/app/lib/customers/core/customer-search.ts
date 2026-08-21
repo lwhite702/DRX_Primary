@@ -52,20 +52,24 @@ export async function findCustomersForSearch(args: {
   search?: string;
   limit?: number;
   offset?: number;
+  isActive?: boolean;
 }): Promise<Array<Record<string, unknown>>> {
   const limit = clampLimit(args.limit ?? 50);
   const offset = clampOffset(args.offset ?? 0);
   const search = normalizeCustomerSearchInput(args.search);
+  const isActive = args.isActive ?? true;
 
   if (!search.hasQuery) {
     const rows = await db.customers.findMany({
-      where: { businessId: args.businessId, isActive: true },
+      where: { businessId: args.businessId, isActive },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
     });
 
-    const decoded = await Promise.all(rows.map((row: any) => decodeForFiltering(row)));
+    const decoded = await Promise.all(
+      rows.map((row: any) => decodeForFiltering(row)),
+    );
     return decoded.map((row) => row.model);
   }
 
@@ -112,7 +116,7 @@ export async function findCustomersForSearch(args: {
   const primaryRows = await db.customers.findMany({
     where: {
       businessId: args.businessId,
-      isActive: true,
+      isActive,
       OR: orClauses.length > 0 ? orClauses : undefined,
     },
     orderBy: { createdAt: "desc" },
@@ -123,11 +127,13 @@ export async function findCustomersForSearch(args: {
     primaryRows.map((row: any) => decodeForFiltering(row)),
   );
 
-  let matched = primaryDecoded.filter((row) => customerMatchesSearch(row, search));
+  let matched = primaryDecoded.filter((row) =>
+    customerMatchesSearch(row, search),
+  );
 
   if (matched.length < offset + limit) {
     const fallbackRows = await db.customers.findMany({
-      where: { businessId: args.businessId, isActive: true },
+      where: { businessId: args.businessId, isActive },
       orderBy: { createdAt: "desc" },
       take: Math.max(120, limit * 8),
     });
@@ -153,7 +159,13 @@ export async function lookupPosCustomerCandidates(args: {
   const limit = clampLimit(args.limit ?? 10);
   const normalized = normalizeCustomerSearchInput(args.search);
 
-  if (!normalized.hasQuery) return [] as Array<{ id: string; phone: string; alias: string; remainingCredit: number }>;
+  if (!normalized.hasQuery)
+    return [] as Array<{
+      id: string;
+      phone: string;
+      alias: string;
+      remainingCredit: number;
+    }>;
 
   const [phoneHashes, emailHashes, aliasHashes] = await Promise.all([
     hashPhoneLookupCandidates(normalized.phone || normalized.raw),
@@ -162,8 +174,12 @@ export async function lookupPosCustomerCandidates(args: {
   ]);
 
   const legacyOr: any[] = [];
-  if (normalized.phone) legacyOr.push({ phoneNumber: { contains: normalized.phone } });
-  if (normalized.email) legacyOr.push({ email: { contains: normalized.email, mode: "insensitive" } });
+  if (normalized.phone)
+    legacyOr.push({ phoneNumber: { contains: normalized.phone } });
+  if (normalized.email)
+    legacyOr.push({
+      email: { contains: normalized.email, mode: "insensitive" },
+    });
   if (normalized.raw) {
     legacyOr.push(
       { firstName: { contains: normalized.raw, mode: "insensitive" } },
@@ -208,13 +224,22 @@ export async function lookupPosCustomerCandidates(args: {
     },
   });
 
-  const decoded = await Promise.all(rows.map((row: any) => decodeForFiltering(row)));
-  const filtered = decoded.filter((row) => customerMatchesSearch(row, normalized));
+  const decoded = await Promise.all(
+    rows.map((row: any) => decodeForFiltering(row)),
+  );
+  const filtered = decoded.filter((row) =>
+    customerMatchesSearch(row, normalized),
+  );
 
   return filtered.slice(0, limit).map((row) => {
-    const limitRow = rows.find((candidate: any) => candidate.id === row.id)?.creditLimits?.[0];
+    const limitRow = rows.find((candidate: any) => candidate.id === row.id)
+      ?.creditLimits?.[0];
     const remainingCredit = limitRow
-      ? Math.max(0, toNumberSafe(limitRow.maxCreditLimit) - toNumberSafe(limitRow.currentBalance))
+      ? Math.max(
+          0,
+          toNumberSafe(limitRow.maxCreditLimit) -
+            toNumberSafe(limitRow.currentBalance),
+        )
       : 0;
 
     return {

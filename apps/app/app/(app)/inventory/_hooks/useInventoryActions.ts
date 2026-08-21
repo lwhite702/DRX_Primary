@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { type Inventory } from "@/lib/validations/schemas";
 import { toast } from "sonner";
 
@@ -25,7 +25,9 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
     description:
       typeof item.description === "string" ? item.description : undefined,
     category: typeof item.category === "string" ? item.category : undefined,
-    unit_of_measure: (item.unit_of_measure ?? item.baseUnit ?? "g") as Inventory["unit_of_measure"],
+    unit_of_measure: (item.unit_of_measure ??
+      item.baseUnit ??
+      "g") as Inventory["unit_of_measure"],
     quantity_on_hand: Number(item.quantity_on_hand ?? item.quantityOnHand ?? 0),
     reorder_level: Number(item.reorder_level ?? item.reorderLevel ?? 10),
     unit_cost: unitCost != null ? Number(unitCost) : undefined,
@@ -58,43 +60,77 @@ export function useInventoryActions(businessId: string | undefined) {
 
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [mutating, setMutating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadedBusinessId = useRef<string | undefined>(undefined);
+  const requestController = useRef<AbortController | null>(null);
+  const currentBusinessId = useRef(businessId);
+  currentBusinessId.current = businessId;
 
-  // Fetch inventory
-  React.useEffect(() => {
+  const refreshInventory = useCallback(async () => {
+    requestController.current?.abort();
     if (!businessId) {
       setInventory([]);
       setLoading(false);
+      setRefreshing(false);
+      setError(null);
+      loadedBusinessId.current = undefined;
       return;
     }
 
     const controller = new AbortController();
-    const fetchInventory = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}`,
-          {
-            credentials: "same-origin",
-            signal: controller.signal,
-          },
-        );
-        const body = await readApiResponse(response);
-        const rows = Array.isArray(body.data) ? body.data : [];
-        setInventory(rows.map(normalizeInventoryItem));
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error("Failed to load inventory", error);
-          toast.error(
-            error instanceof Error ? error.message : "Failed to load inventory",
-          );
-          setInventory([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+    requestController.current = controller;
+    const hasCurrentData = loadedBusinessId.current === businessId;
+    if (!hasCurrentData) setInventory([]);
+    setLoading(!hasCurrentData);
+    setRefreshing(hasCurrentData);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}`,
+        {
+          credentials: "same-origin",
+          signal: controller.signal,
+        },
+      );
+      const body = await readApiResponse(response);
+      if (
+        controller.signal.aborted ||
+        currentBusinessId.current !== businessId
+      ) {
+        return;
       }
-    };
-    void fetchInventory();
-    return () => controller.abort();
+      const rows = Array.isArray(body.data) ? body.data : [];
+      loadedBusinessId.current = businessId;
+      setInventory(rows.map(normalizeInventoryItem));
+    } catch (caught) {
+      if (!controller.signal.aborted) {
+        console.error("Failed to load inventory", caught);
+        const message =
+          caught instanceof Error ? caught.message : "Failed to load inventory";
+        setError(message);
+        if (!hasCurrentData) setInventory([]);
+      }
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [businessId]);
+
+  React.useEffect(() => {
+    void refreshInventory();
+    return () => requestController.current?.abort();
+  }, [refreshInventory]);
+
+  React.useEffect(() => {
+    setMutating(false);
+    setShowDialog(false);
+    setEditingItem(null);
   }, [businessId]);
 
   const handleAdd = () => {
@@ -120,24 +156,25 @@ export function useInventoryActions(businessId: string | undefined) {
       toast.error("Business not found");
       return;
     }
+    const mutationBusinessId = businessId;
+    const editingItemId = editingItem?.id;
 
     const promise = async () => {
-      if (editingItem && "id" in editingItem && editingItem.id) {
+      if (editingItemId) {
         const response = await fetch(
-          `/api/inventory/${editingItem.id}?business_id=${encodeURIComponent(businessId)}`,
+          `/api/inventory/${editingItemId}?business_id=${encodeURIComponent(mutationBusinessId)}`,
           {
-          method: "PUT",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+            method: "PUT",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
           },
         );
         const body = await readApiResponse(response);
+        if (currentBusinessId.current !== mutationBusinessId) return null;
         const updatedItem = normalizeInventoryItem(body.data ?? data);
         setInventory((prev) =>
-          prev.map((item) =>
-            item.id === editingItem.id ? updatedItem : item,
-          ),
+          prev.map((item) => (item.id === editingItemId ? updatedItem : item)),
         );
         return "Item updated successfully";
       } else {
@@ -145,29 +182,53 @@ export function useInventoryActions(businessId: string | undefined) {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...data, business_id: businessId }),
+          body: JSON.stringify({ ...data, business_id: mutationBusinessId }),
         });
         const newItem = normalizeInventoryItem(await readApiResponse(response));
+        if (currentBusinessId.current !== mutationBusinessId) return null;
         setInventory((prev) => [...prev, newItem]);
         return "Item added successfully";
       }
     };
 
+    setMutating(true);
     try {
       const message = await promise();
-      toast.success(message);
-      setShowDialog(false);
-      setEditingItem(null);
+      if (message && currentBusinessId.current === mutationBusinessId) {
+        toast.success(message);
+        setShowDialog(false);
+        setEditingItem(null);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save item",
-      );
+      if (currentBusinessId.current === mutationBusinessId) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save item",
+        );
+      }
+    } finally {
+      if (currentBusinessId.current === mutationBusinessId) {
+        setMutating(false);
+      }
     }
   };
 
+  const visibleInventory =
+    loadedBusinessId.current === businessId ? inventory : [];
+
   return {
-    inventory,
+    inventory: visibleInventory,
     loading,
+    refreshing,
+    mutating,
+    error,
+    status: loading
+      ? "loading"
+      : error
+        ? "error"
+        : visibleInventory.length
+          ? "success"
+          : "empty",
+    refreshInventory,
     showDialog,
     setShowDialog,
     editingItem,

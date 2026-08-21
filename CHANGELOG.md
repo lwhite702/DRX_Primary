@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Pre-RC operator UX**: Simplified dashboard density, preserved the application shell during route changes, added domain-specific skeletons and non-blocking refresh status, and replaced automatic chunk reloads with an explicit recovery action.
+- **Runtime and observability**: Standardized local, CI, container, web, marketing, and mobile tooling on Node `22.23.1`; moved Sentry client setup to `instrumentation-client.ts` and disabled default PII and replay capture.
+- **Release Metadata**: Updated iOS marketing/build metadata to `MARKETING_VERSION=0.6.0-rc.1` and `CURRENT_PROJECT_VERSION=20` for TestFlight parity, and aligned release documentation references for the current release candidate.
+- **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
+
+### Fixed
+
+- **Quick POS Recovery**: Route complete sales through the canonical checkout API with idempotent retries and allow authenticated operators to exit when no manager PIN is configured.
+
+## [0.6.0-rc.1] - 2026-08-13
+
+### Added
+
+- **Convex POS Schema Extensions**: Added `pinCode` to `users` table, `deliveryFeeCents`, `discountAmountCents`, `isComp`, `voidReason`, and `refundReason` to `sales` table, and added `stockAdjustments` table for tracking inventory adjustments and shrink losses.
+- **POS Order Voids & Refunds Engine**: Created `apps/app/convex/refunds.ts` with `voidOrder` and `refundOrder` mutations, featuring transactional inventory stock restoration (product quantity and FIFO batch remaining quantity), customer credit/purchase totals rollback, and immutable audit logging.
+- **Stock Adjustments & Shrink Tracking**: Created `apps/app/convex/inventoryAdjustments.ts` with `createStockAdjustment` and `listStockAdjustments` for tracking inventory loss, damage, and recount adjustments.
+- **Checkout Support for Delivery & Comps**: Extended `apps/app/convex/checkout.ts` to support `deliveryFeeCents` and `isComp` flags.
+- **Financial Reporting Metrics**: Extended `apps/app/convex/reporting.ts` to compute Net Revenue, Cost of Goods Sold (COGS from `salesAllocations`), Gross Profit ($), Gross Margin (%), total delivery fees, and total shrink loss.
+
 ### Fixed
 
 - **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.

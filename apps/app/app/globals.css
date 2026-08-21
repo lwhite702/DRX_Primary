@@ -160,20 +160,34 @@
   }
 }
 
-/* Page Transitions */
+/* Motion vocabulary: route content fades/translates, sheets slide, dialogs scale/fade. */
 .page-transition {
-  animation: fadeIn var(--duration-normal) var(--ease-out) forwards;
+  min-width: 0;
 }
 
-@keyframes fadeIn {
+.route-content-transition {
+  animation: routeContentIn 180ms var(--ease-out) both;
+}
+
+@keyframes routeContentIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.tour-target-highlight {
+  position: relative;
+  z-index: 45;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-primary) 75%, transparent),
+    0 0 0 8px color-mix(in srgb, var(--color-background) 70%, transparent);
+  transition: box-shadow 160ms var(--ease-out);
 }
 
 /* Reduced Motion */

@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 export function BusinessesClient() {
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -129,7 +130,7 @@ export function BusinessesClient() {
   };
 
   if (loading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <AppPageSkeleton rows={5} />;
   }
 
   return (
