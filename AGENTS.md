@@ -80,7 +80,7 @@ Do not treat access to a tool or credential as approval for a broader action.
 
 - DRX is a privacy-first regulated-retail operating system, not a pharmacy or healthcare product.
 - Native iOS and desktop web must support the approved operator workflow without silent platform divergence.
-- Continuous deployment: publishing/pushing to `main` automatically deploys and releases the application to production.
+- Continuous deployment & unique versioning: publishing/pushing to `main` automatically deploys and releases the application to production. Every push to `main` changes the version and release number automatically; no push can have the same version or release number as a previous push.
 - Tenant isolation, role authorization, customer privacy, financial correctness, inventory integrity, audit events, and safe exports are release gates.
 - Validate authentication, onboarding, business setup, users and roles, inventory intake, customer handling, checkout, balances, reports, and audit records end to end.
 - Existing tickets and code may retain older technical assumptions. Reconcile them against the current official product document before expanding scope.
@@ -88,7 +88,7 @@ Do not treat access to a tool or credential as approval for a broader action.
 
 ## Release integrity gate
 
-For every product-behavior change or any version, changelog, roadmap, release-note, tag, deployment, TestFlight, Play, or Featurebase task, read and follow `.agents/skills/release-integrity/SKILL.md`. Run `pnpm release:integrity`; affected work cannot be reported complete while this gate fails. Pushing or publishing to `main` automatically deploys and releases the change.
+For every product-behavior change or any version, changelog, roadmap, release-note, tag, deployment, TestFlight, Play, or Featurebase task, read and follow `.agents/skills/release-integrity/SKILL.md`. Run `pnpm release:integrity`; affected work cannot be reported complete while this gate fails. Pushing or publishing to `main` automatically deploys and releases the change with a distinct version and release number.
 
 ## Definition of done
 

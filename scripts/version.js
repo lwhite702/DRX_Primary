@@ -171,7 +171,42 @@ function replaceAllVersionAssignments(content, pattern, version, label) {
   return updated;
 }
 
-function prepare(root, version) {
+function bumpBuild(root, nextBuild) {
+  const surfaceFiles = files(root);
+  requireFiles(surfaceFiles);
+  const data = collect(root);
+  const currentBuild = Number(data.builds[0][1]);
+  const targetBuild = nextBuild !== undefined ? Number(nextBuild) : currentBuild + 1;
+  if (!Number.isInteger(targetBuild) || targetBuild <= 0) {
+    throw new Error(`Expected positive integer build number, received: ${nextBuild}`);
+  }
+
+  const yml = fs.readFileSync(surfaceFiles.iosProjectYml, "utf8");
+  fs.writeFileSync(
+    surfaceFiles.iosProjectYml,
+    replaceAllVersionAssignments(
+      yml,
+      /^(?<prefix>\s*CURRENT_PROJECT_VERSION:\s*)[^\s#]+(?<suffix>\s*)$/gm,
+      String(targetBuild),
+      "project.yml CURRENT_PROJECT_VERSION",
+    ),
+  );
+  const pbxproj = fs.readFileSync(surfaceFiles.iosPbxproj, "utf8");
+  fs.writeFileSync(
+    surfaceFiles.iosPbxproj,
+    replaceAllVersionAssignments(
+      pbxproj,
+      /^(?<prefix>\s*CURRENT_PROJECT_VERSION = )[^;]+(?<suffix>;\s*)$/gm,
+      String(targetBuild),
+      "Xcode CURRENT_PROJECT_VERSION",
+    ),
+  );
+
+  console.log(`Updated native build identifier to ${targetBuild}.`);
+  return targetBuild;
+}
+
+function prepare(root, version, { autoBumpBuild = false, nextBuild } = {}) {
   requireStableSemver(version);
   const surfaceFiles = files(root);
   requireFiles(surfaceFiles);
@@ -207,7 +242,13 @@ function prepare(root, version) {
     ),
   );
 
-  console.log(`Prepared product version ${version}. Native build identifiers were not changed.`);
+  let buildMsg = "Native build identifiers were not changed.";
+  if (autoBumpBuild) {
+    const newBuild = bumpBuild(root, nextBuild);
+    buildMsg = `Native build identifier updated to ${newBuild}.`;
+  }
+
+  console.log(`Prepared product version ${version}. ${buildMsg}`);
   console.log("This is planned release metadata, not evidence that the version was released.");
 }
 
@@ -230,13 +271,18 @@ function main() {
     }
     if (command === "bump") {
       const current = fs.readFileSync(files(root).version, "utf8").trim();
-      prepare(root, increment(current, value ?? "patch"));
+      prepare(root, increment(current, value ?? "patch"), { autoBumpBuild: true });
+      return;
+    }
+    if (command === "bump-build") {
+      bumpBuild(root, value ? Number(value) : undefined);
       return;
     }
     console.log("Usage:");
     console.log("  node scripts/version.js check [--root PATH]");
     console.log("  node scripts/version.js prepare X.Y.Z [--root PATH]");
     console.log("  node scripts/version.js bump [major|minor|patch] [--root PATH]");
+    console.log("  node scripts/version.js bump-build [N] [--root PATH]");
     process.exit(1);
   } catch (error) {
     console.error(`[version] ${error.message}`);

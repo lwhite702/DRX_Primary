@@ -15,7 +15,7 @@ Classify the work before editing release records:
 - **implemented**: matching source is verified in a branch/PR and required repository checks pass; pending merge/push to `main`.
 - **released**: the commit is merged and published to `main` (which automatically deploys and releases to production), or has verified store distribution.
 
-Use the lowest state supported by reproducible evidence. Pushing/publishing to `main` automatically triggers production deployment and release.
+Use the lowest state supported by reproducible evidence. Pushing/publishing to `main` automatically triggers production deployment and release. Every push to `main` changes the version and release number automatically; no push can share the same version or release number as a previous push.
 
 ## SemVer decision
 

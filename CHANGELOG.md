@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-08-23
+
+### Changed
+
+- **Release and Deployment Policy**: Established automated continuous deployment from `main` with unique versioning and monotonic build numbers on every push.
+
+### Fixed
+
+- **Web Offline Sync (WRE-74)**: Hardened `OfflineSyncManager` against IndexedDB connection lifecycle events (`onversionchange`, `onclose`, `InvalidStateError`) with automatic reconnection and retry.
+- **Root Layout Analytics (WRE-75)**: Removed unconfigured third-party Vexo analytics script from `RootLayout` resolving 400 Bad Network Call errors across web and iOS WKWebView.
+- **Sentry Client Extension Noise Filtering (WRE-76)**: Filtered browser extension `runtime.sendMessage()` disconnect and port closure rejections in Sentry client.
+- **iOS TestFlight Build Isolation**: Fixed Swift 6 actor isolation conformance on `DRXNotificationDelegate` and test bundle Foundation imports.
+
+## [0.6.0] - 2026-08-23
+
 ### Added
 
 - **Release integrity (WRE-68)**: Added a model-invoked release-governance skill, six executable behavioral fixtures, exact SemVer and leading-`[Unreleased]` PR gates, repository-local CI dependency enforcement, safe release preparation and verification commands, and dry-run-first Featurebase projections.
@@ -19,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-client runtime hardening (WRE-65)**: Added the iOS launch/auth routing experience and accessible lime primary-button style, synchronized programmatic tab changes, removed duplicate web identity controls, and hardened credit, customer, inventory, report, realtime, feedback, and AI response handling.
 - **Pre-RC operator UX**: Simplified dashboard density, preserved the application shell during route changes, added domain-specific skeletons and non-blocking refresh status, and replaced automatic chunk reloads with an explicit recovery action.
 - **Runtime and observability**: Standardized local, CI, container, web, marketing, and mobile tooling on Node `22.23.1`; moved Sentry client setup to `instrumentation-client.ts` and disabled default PII and replay capture.
-- **Release metadata**: Synchronized product-version surfaces to planned version `0.6.0` while preserving iOS build `31` as an independent source build number. This does not claim a tag, deployment, TestFlight upload, Play build, or customer release.
+- **Release metadata**: Synchronized product-version surfaces to planned version `0.6.0` while preserving iOS build `31` as an independent source build number.
 - **Release-record correction**: Removed the unsupported `0.6.0-rc.1` release section and stale build-20 customer claims. Repository and provider evidence did not establish that candidate as a tagged or distributed release.
 - **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
 
