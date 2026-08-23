@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     }
   }
 
-  const response = NextResponse.redirect(new URL("/pos/sale", requestURL.origin), 303);
+  const response = NextResponse.redirect(new URL("/dashboard", requestURL.origin), 303);
   response.cookies.set(ONBOARDING_COMPLETION_COOKIE, "true", {
     httpOnly: true,
     sameSite: "lax",

@@ -28,9 +28,9 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { POST } from "@/app/api/pos/exit/verify/route";
+import { GET, POST } from "@/app/api/pos/exit/verify/route";
 
-function makeRequest(pin = "") {
+function makePostRequest(pin = "") {
   return new NextRequest("http://localhost/api/pos/exit/verify", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -38,7 +38,7 @@ function makeRequest(pin = "") {
   });
 }
 
-describe("POST /api/pos/exit/verify", () => {
+describe("GET & POST /api/pos/exit/verify", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.isAuthBypassEnabledServer.mockReturnValue(false);
@@ -53,38 +53,57 @@ describe("POST /api/pos/exit/verify", () => {
     });
   });
 
-  it("allows an authenticated operator to exit when no PIN is configured", async () => {
+  it("GET returns hasPinConfigured false when no PIN is set", async () => {
     mocks.findBusinessSettings.mockResolvedValue({
       posManagerPin: null,
       settingsData: null,
     });
 
-    const response = await POST(makeRequest());
+    const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: true });
+    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
   });
 
-  it("continues to reject an incorrect configured PIN", async () => {
-    const response = await POST(makeRequest("0000"));
+  it("GET returns hasPinConfigured true when a manager PIN is configured", async () => {
+    const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: false });
+    await expect(response.json()).resolves.toEqual({ allowed: false, hasPinConfigured: true });
   });
 
-  it("allows the configured manager PIN", async () => {
-    const response = await POST(makeRequest("2468"));
+  it("POST allows an authenticated operator to exit when no PIN is configured", async () => {
+    mocks.findBusinessSettings.mockResolvedValue({
+      posManagerPin: null,
+      settingsData: null,
+    });
+
+    const response = await POST(makePostRequest());
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: true });
+    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
+  });
+
+  it("POST continues to reject an incorrect configured PIN", async () => {
+    const response = await POST(makePostRequest("0000"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ allowed: false, hasPinConfigured: true });
+  });
+
+  it("POST allows the configured manager PIN", async () => {
+    const response = await POST(makePostRequest("2468"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: true });
   });
 
   it("does not query settings when local auth bypass is active", async () => {
     mocks.isAuthBypassEnabledServer.mockReturnValue(true);
 
-    const response = await POST(makeRequest());
+    const response = await POST(makePostRequest());
 
-    await expect(response.json()).resolves.toEqual({ allowed: true });
+    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
     expect(mocks.resolveAuthContext).not.toHaveBeenCalled();
     expect(mocks.findBusinessSettings).not.toHaveBeenCalled();
   });
@@ -95,7 +114,7 @@ describe("POST /api/pos/exit/verify", () => {
       businessId: null,
     });
 
-    const response = await POST(makeRequest());
+    const response = await POST(makePostRequest());
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });

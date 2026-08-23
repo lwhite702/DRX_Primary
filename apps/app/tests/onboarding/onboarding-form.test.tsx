@@ -20,7 +20,7 @@ describe("OnboardingCompletionRedirect", () => {
         "drx_onboarding_complete",
         "true",
       );
-      expect(navigate).toHaveBeenCalledWith("/pos/sale");
+      expect(navigate).toHaveBeenCalledWith("/dashboard");
     });
   });
 
@@ -41,7 +41,7 @@ describe("OnboardingCompletionRedirect", () => {
     );
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith("/pos/sale");
+      expect(navigate).toHaveBeenCalledWith("/dashboard");
     });
   });
 });

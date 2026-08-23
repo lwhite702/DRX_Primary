@@ -184,7 +184,12 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
     ...(canonical.manualItems.length
       ? { manualItems: canonical.manualItems }
       : {}),
-    delivery: canonical.delivery,
+    delivery: canonical.delivery
+      ? {
+          vendorFeeCents: canonical.delivery.vendorFeeCents,
+          chargeCustomer: canonical.delivery.chargeCustomer,
+        }
+      : undefined,
   });
   return toWebQuote(quote);
 }

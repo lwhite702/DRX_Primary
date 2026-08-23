@@ -20,10 +20,8 @@ export function Sidebar() {
 
   // Filter nav items
   const filteredNav = primaryNav.filter((item) => {
-    // If loading, maintain current state or show all?
-    // To prevent flicker, we might want to show all initially or hide sensitive ones.
-    // But since authentication is required, default to hidden for restricted is safer.
-    if (loading) return false;
+    // Keep nav visible while permissions loading to prevent nav collapse
+    if (loading) return true;
 
     switch (item.href) {
       case "/settings":

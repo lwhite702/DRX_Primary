@@ -129,7 +129,7 @@ export default function RootLayout({
           signInUrl="/login"
           signUpUrl="/register"
           waitlistUrl="/waitlist"
-          signInFallbackRedirectUrl="/pos/sale"
+          signInFallbackRedirectUrl="/dashboard"
           signUpFallbackRedirectUrl="/onboarding"
           afterSignOutUrl="/login"
         >

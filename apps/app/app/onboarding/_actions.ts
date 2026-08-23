@@ -139,6 +139,8 @@ export async function completeOnboarding(
     role: "owner",
     team_size: "1",
     tooling: "web",
+    collect_tax: taxEnabled,
+    default_tax_rate: taxRateBps / 10_000,
     operator_profile: {
       businessName,
       role: "owner",
@@ -148,28 +150,57 @@ export async function completeOnboarding(
     },
   };
 
-  if (existingSettings) {
-    await db.businessSettings.update({
-      where: { id: existingSettings.id },
-      data: {
-        currency: "USD",
-        timezone: "America/New_York",
-        collectTax: taxEnabled,
-        defaultTaxRate: taxRateBps / 10_000,
-        settingsData,
-      },
-    });
-  } else {
-    await db.businessSettings.create({
-      data: {
-        businessId: business.id,
-        currency: "USD",
-        timezone: "America/New_York",
-        collectTax: taxEnabled,
-        defaultTaxRate: taxRateBps / 10_000,
-        settingsData,
-      },
-    });
+  try {
+    if (existingSettings) {
+      await db.businessSettings.update({
+        where: { id: existingSettings.id },
+        data: {
+          currency: "USD",
+          timezone: "America/New_York",
+          collectTax: taxEnabled,
+          defaultTaxRate: taxRateBps / 10_000,
+          settingsData,
+        },
+      });
+    } else {
+      await db.businessSettings.create({
+        data: {
+          businessId: business.id,
+          currency: "USD",
+          timezone: "America/New_York",
+          collectTax: taxEnabled,
+          defaultTaxRate: taxRateBps / 10_000,
+          settingsData,
+        },
+      });
+    }
+  } catch (dbError) {
+    console.warn(
+      "[onboarding] businessSettings update with full schema failed, falling back to core settingsData:",
+      dbError,
+    );
+    try {
+      if (existingSettings) {
+        await db.businessSettings.update({
+          where: { id: existingSettings.id },
+          data: {
+            settingsData,
+          },
+        });
+      } else {
+        await db.businessSettings.create({
+          data: {
+            businessId: business.id,
+            settingsData,
+          },
+        });
+      }
+    } catch (fallbackError) {
+      console.error(
+        "[onboarding] businessSettings fallback creation/update failed:",
+        fallbackError,
+      );
+    }
   }
 
   const existingRole = await db.userRole.findFirst({

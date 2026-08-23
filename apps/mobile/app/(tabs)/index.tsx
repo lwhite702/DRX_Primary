@@ -107,6 +107,7 @@ export default function POSScreen() {
   const [cashReceived, setCashReceived] = useState("");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checkoutOrderNumber, setCheckoutOrderNumber] = useState<string | null>(null);
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [vendorFee, setVendorFee] = useState("");
@@ -236,6 +237,7 @@ export default function POSScreen() {
         "Out of stock",
         `${product.productName} has no available inventory.`,
       );
+    setCheckoutOrderNumber(null);
     setCart((current) => {
       const initialQuantity = Math.min(
         product.quantityOnHandGrams,
@@ -258,6 +260,7 @@ export default function POSScreen() {
     });
   };
   const updateQuantity = (productId: Id<"products">, raw: string) => {
+    setCheckoutOrderNumber(null);
     const quantity = Number(raw);
     setCart((current) =>
       current.flatMap((line) => {
@@ -277,6 +280,7 @@ export default function POSScreen() {
     );
   };
   const updateDollarAmount = (productId: Id<"products">, raw: string) => {
+    setCheckoutOrderNumber(null);
     const cents = Math.round(Number(raw) * 100);
     setCart((current) =>
       current.flatMap((line) => {
@@ -344,9 +348,14 @@ export default function POSScreen() {
         if (tender === "cash" && amountPaidCents < freshQuote.totalAmountCents) {
           throw new Error("Cash received must cover the current server total.");
         }
+        const activeOrderNumber =
+          checkoutOrderNumber ?? `DRX-A-${occurredAt}`;
+        if (!checkoutOrderNumber) {
+          setCheckoutOrderNumber(activeOrderNumber);
+        }
         const result = await (checkout as unknown as (args: CheckoutRequest) => Promise<CheckoutResult>)({
           customerId: customer?._id,
-          orderNumber: `DRX-A-${occurredAt}`,
+          orderNumber: activeOrderNumber,
           items: cart.map((line) => ({
             productId: line.product._id,
             quantityGrams: line.quantityGrams,
@@ -361,6 +370,7 @@ export default function POSScreen() {
               }
             : undefined,
         });
+        setCheckoutOrderNumber(null);
         Alert.alert(
           "Sale complete",
           `${result.orderNumber} · ${money(result.totalAmountCents)}${result.deliveryId ? " · delivery ready for dispatch" : ""}`,

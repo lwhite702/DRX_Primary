@@ -15,8 +15,8 @@ const BusinessSettingsPatchSchema = z
     collectTax: z.boolean().optional(),
     pos_manager_pin: z.string().trim().min(4).max(50).optional().nullable(),
     posManagerPin: z.string().trim().min(4).max(50).optional().nullable(),
-    privacy_protocol: z.unknown().optional(),
-    privacyProtocol: z.unknown().optional(),
+    privacy_protocol: z.enum(["Standard", "Protexion", "Strict"]).optional(),
+    privacyProtocol: z.enum(["Standard", "Protexion", "Strict"]).optional(),
     defaultTaxRate: z.number().min(0).max(1).optional(),
     default_tax_rate: z.number().min(0).max(1).optional(),
   })
@@ -24,26 +24,34 @@ const BusinessSettingsPatchSchema = z
 
 function mapSettingsResponse(settings: any) {
   const protocol = extractPrivacyProtocol(settings?.settingsData);
+  const data =
+    settings?.settingsData && typeof settings.settingsData === "object"
+      ? (settings.settingsData as Record<string, unknown>)
+      : {};
   return {
-    collect_tax: settings?.collectTax ?? true,
-    collectTax: settings?.collectTax ?? true,
-    default_tax_rate: Number(settings?.defaultTaxRate ?? 0.08),
-    defaultTaxRate: Number(settings?.defaultTaxRate ?? 0.08),
-    pos_manager_pin: settings?.posManagerPin ?? null,
-    posManagerPin: settings?.posManagerPin ?? null,
+    collect_tax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
+    collectTax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
+    default_tax_rate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
+    defaultTaxRate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
+    pos_manager_pin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
+    posManagerPin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
     privacy_protocol: protocol,
     privacyProtocol: protocol,
   };
 }
 
 function mapLegacySettingsResponse(settings: any) {
+  const data =
+    settings?.settingsData && typeof settings.settingsData === "object"
+      ? (settings.settingsData as Record<string, unknown>)
+      : {};
   return {
-    collect_tax: settings?.collectTax ?? true,
-    collectTax: settings?.collectTax ?? true,
-    default_tax_rate: Number(settings?.defaultTaxRate ?? 0.08),
-    defaultTaxRate: Number(settings?.defaultTaxRate ?? 0.08),
-    pos_manager_pin: settings?.posManagerPin ?? null,
-    posManagerPin: settings?.posManagerPin ?? null,
+    collect_tax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
+    collectTax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
+    default_tax_rate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
+    defaultTaxRate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
+    pos_manager_pin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
+    posManagerPin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
   };
 }
 
@@ -63,9 +71,22 @@ export async function GET() {
       },
     );
 
-    const settings = await db.businessSettings.findFirst({
-      where: { businessId },
-    });
+    let settings: any = null;
+    try {
+      settings = await db.businessSettings.findFirst({
+        where: { businessId },
+      });
+    } catch (err) {
+      console.warn("GET Business Settings fallback to settingsData:", err);
+      try {
+        settings = await db.businessSettings.findFirst({
+          where: { businessId },
+          select: { id: true, businessId: true, settingsData: true },
+        });
+      } catch {
+        settings = null;
+      }
+    }
 
     if (!settings) {
       return successResponse(
@@ -125,20 +146,49 @@ export async function PATCH(request: NextRequest) {
         ? parsed.data.pos_manager_pin
         : parsed.data.posManagerPin;
 
-    const baseUpdate = await db.businessSettings.upsert({
-      where: { businessId },
-      update: {
-        collectTax: collectTax ?? undefined,
-        defaultTaxRate: defaultTaxRate ?? undefined,
-        posManagerPin: posManagerPin ?? undefined,
-      },
-      create: {
-        businessId,
-        collectTax: collectTax ?? true,
-        defaultTaxRate: defaultTaxRate ?? 0.08,
-        posManagerPin: posManagerPin ?? null,
-      },
-    });
+    let baseUpdate: any = null;
+    try {
+      baseUpdate = await db.businessSettings.upsert({
+        where: { businessId },
+        update: {
+          collectTax: collectTax ?? undefined,
+          defaultTaxRate: defaultTaxRate ?? undefined,
+          posManagerPin: posManagerPin ?? undefined,
+        },
+        create: {
+          businessId,
+          collectTax: collectTax ?? true,
+          defaultTaxRate: defaultTaxRate ?? 0.08,
+          posManagerPin: posManagerPin ?? null,
+        },
+      });
+    } catch (err) {
+      console.warn("PATCH Business Settings fallback to settingsData:", err);
+      const existing = await db.businessSettings.findUnique({
+        where: { businessId },
+        select: { id: true, settingsData: true },
+      });
+      const existingData =
+        existing?.settingsData && typeof existing.settingsData === "object"
+          ? (existing.settingsData as Record<string, unknown>)
+          : {};
+      const updatedData = {
+        ...existingData,
+        ...(collectTax !== undefined && { collect_tax: collectTax }),
+        ...(defaultTaxRate !== undefined && { default_tax_rate: defaultTaxRate }),
+        ...(posManagerPin !== undefined && { pos_manager_pin: posManagerPin }),
+      };
+      if (existing) {
+        baseUpdate = await db.businessSettings.update({
+          where: { id: existing.id },
+          data: { settingsData: updatedData },
+        });
+      } else {
+        baseUpdate = await db.businessSettings.create({
+          data: { businessId, settingsData: updatedData },
+        });
+      }
+    }
 
     const nextProtocolCandidate =
       parsed.data.privacy_protocol ?? parsed.data.privacyProtocol;
@@ -151,9 +201,14 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
-    const refreshed = await db.businessSettings.findFirst({
-      where: { businessId },
-    });
+    let refreshed: any = null;
+    try {
+      refreshed = await db.businessSettings.findFirst({
+        where: { businessId },
+      });
+    } catch {
+      refreshed = baseUpdate;
+    }
 
     return successResponse({
       ...(privacySettingsEnabled

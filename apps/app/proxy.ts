@@ -112,7 +112,7 @@ function middlewareWithoutClerk(
 
   if (hostKind === "auth") {
     if (isAuthBypassEnabled()) {
-      return redirectToApp(req, "/pos/sale");
+      return redirectToApp(req, "/dashboard");
     }
     return redirectToApp(req, "/waitlist");
   }
@@ -127,7 +127,7 @@ function middlewareWithoutClerk(
 
   if (isAuthBypassEnabled()) {
     if (pathname === "/" || isAuthEntryPath(pathname) || pathname === "/waitlist") {
-      return redirectToApp(req, "/pos/sale", true);
+      return redirectToApp(req, "/dashboard", true);
     }
     return NextResponse.next();
   }
@@ -200,11 +200,11 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
           return redirectToApp(req, "/login", true);
         }
 
-        return redirectToApp(req, onboardingComplete ? "/pos/sale" : "/onboarding", true);
+        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding", true);
       }
 
       if (userId && isAuthEntryPath(pathname)) {
-        return redirectToApp(req, onboardingComplete ? "/pos/sale" : "/onboarding", true);
+        return redirectToApp(req, onboardingComplete ? "/dashboard" : "/onboarding", true);
       }
 
       if (userId && !pathname.startsWith("/api")) {
@@ -213,7 +213,7 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         }
 
         if (onboardingComplete && isOnboardingPath(pathname)) {
-          return redirectToApp(req, "/pos/sale", true);
+          return redirectToApp(req, "/dashboard", true);
         }
       }
 

@@ -116,7 +116,29 @@ async function aggregatePeriod(
   let unknownCostLineCount = 0;
   let knownManualCogsCents = 0;
 
-  for (const sale of sales) {
+  const [allLineItems, allAllocations] = await Promise.all([
+    Promise.all(
+      sales.map((sale) =>
+        ctx.db
+          .query("salesLineItems")
+          .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+          .collect(),
+      ),
+    ),
+    Promise.all(
+      sales.map((sale) =>
+        ctx.db
+          .query("salesAllocations")
+          .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+          .collect(),
+      ),
+    ),
+  ]);
+
+  for (let i = 0; i < sales.length; i++) {
+    const sale = sales[i];
+    const lineItems = allLineItems[i];
+    const allocations = allAllocations[i];
     grossCollectedCents += sale.totalAmountCents;
     saleTaxCents += sale.taxAmountCents;
     totalSubtotalCents += sale.subtotalCents;
@@ -126,16 +148,6 @@ async function aggregatePeriod(
     vendorDeliveryExpenseCents += sale.vendorDeliveryExpenseCents ?? 0;
     saleDeliveryTaxCents += sale.deliveryTaxCents ?? 0;
     discountCents += sale.discountCents ?? 0;
-    const [lineItems, allocations] = await Promise.all([
-      ctx.db
-        .query("salesLineItems")
-        .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
-        .collect(),
-      ctx.db
-        .query("salesAllocations")
-        .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
-        .collect(),
-    ]);
     if (lineItems.length === 0) {
       cogsCents += sale.cogsCents ?? 0;
       continue;

@@ -34,7 +34,7 @@ export default async function OnboardingLayout({
   // Let that response reach the client so it can perform the intentional hard
   // navigation with the freshly persisted cookie and Clerk metadata.
   if (onboardingComplete && !isServerActionRequest) {
-    redirect("/pos/sale");
+    redirect("/dashboard");
   }
 
   // Existing operators may have completed setup before the Clerk metadata gate

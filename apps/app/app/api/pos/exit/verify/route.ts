@@ -5,9 +5,9 @@ import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 import type { QuickPosExitVerifyRequest, QuickPosExitVerifyResponse } from "@/lib/quick-pos/types";
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   if (isAuthBypassEnabledServer()) {
-    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
+    return NextResponse.json({ allowed: true, hasPinConfigured: false } satisfies QuickPosExitVerifyResponse);
   }
 
   const { businessId, userId } = await resolveAuthContext();
@@ -22,7 +22,43 @@ export async function POST(request: NextRequest) {
     defaultValue: true,
   });
   if (!pinEnforcementEnabled) {
-    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
+    return NextResponse.json({ allowed: true, hasPinConfigured: false } satisfies QuickPosExitVerifyResponse);
+  }
+
+  const settings = await db.businessSettings.findFirst({
+    where: { businessId },
+    select: { settingsData: true, posManagerPin: true },
+  });
+
+  const configuredPin = (
+    settings?.posManagerPin ||
+    (settings?.settingsData as { quick_pos_exit_pin?: string } | null)?.quick_pos_exit_pin
+  )?.trim();
+
+  return NextResponse.json({
+    allowed: !configuredPin,
+    hasPinConfigured: Boolean(configuredPin),
+  } satisfies QuickPosExitVerifyResponse);
+}
+
+export async function POST(request: NextRequest) {
+  if (isAuthBypassEnabledServer()) {
+    return NextResponse.json({ allowed: true, hasPinConfigured: false } satisfies QuickPosExitVerifyResponse);
+  }
+
+  const { businessId, userId } = await resolveAuthContext();
+
+  if (!businessId || !userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const pinEnforcementEnabled = await ensureServerFlag("feat_pos_exit_pin_enforcement", {
+    distinctId: userId,
+    personProperties: { business_id: businessId },
+    defaultValue: true,
+  });
+  if (!pinEnforcementEnabled) {
+    return NextResponse.json({ allowed: true, hasPinConfigured: false } satisfies QuickPosExitVerifyResponse);
   }
 
   const body = (await request.json()) as QuickPosExitVerifyRequest;
@@ -41,11 +77,12 @@ export async function POST(request: NextRequest) {
   if (!configuredPin) {
     // Exiting only returns the authenticated operator to their workspace. A
     // missing optional PIN must not trap them inside Quick Sale.
-    return NextResponse.json({ allowed: true } satisfies QuickPosExitVerifyResponse);
+    return NextResponse.json({ allowed: true, hasPinConfigured: false } satisfies QuickPosExitVerifyResponse);
   }
 
   const response: QuickPosExitVerifyResponse = {
     allowed: pin.length > 0 && pin === String(configuredPin),
+    hasPinConfigured: true,
   };
 
   return NextResponse.json(response);

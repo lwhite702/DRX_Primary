@@ -24,7 +24,25 @@ export async function getCurrentUserRole(
     select: { role: true },
   });
 
-  return (userRole?.role as Role) || null;
+  if (userRole?.role) {
+    return userRole.role as Role;
+  }
+
+  // Fallback: Check if user is owner of an active business
+  const ownedBusiness = await db.businessProfile.findFirst({
+    where: {
+      ownerId: userId,
+      ...(businessId ? { id: businessId } : {}),
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (ownedBusiness) {
+    return "owner";
+  }
+
+  return null;
 }
 
 export async function hasPermission(

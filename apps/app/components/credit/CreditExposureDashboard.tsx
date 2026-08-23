@@ -41,7 +41,14 @@ export function CreditExposureDashboard({
       }
 
       const data = await response.json();
-      setMetrics(data);
+      const payload = data?.data?.data || data?.data || data;
+      setMetrics({
+        total_credit_limits: Number(payload?.total_credit_limits ?? 0),
+        total_credit_balance: Number(payload?.total_credit_balance ?? 0),
+        utilization_ratio: Number(payload?.utilization_ratio ?? 0),
+        at_risk_customers: Number(payload?.at_risk_customers ?? 0),
+        customers_reviewed_today: Number(payload?.customers_reviewed_today ?? 0),
+      });
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Error fetching credit exposure metrics:", error);
@@ -89,7 +96,7 @@ export function CreditExposureDashboard({
     );
   }
 
-  const utilizationPercent = Math.round(metrics.utilization_ratio * 100);
+  const utilizationPercent = Math.round((metrics?.utilization_ratio ?? 0) * 100);
   const utilizationColor =
     utilizationPercent > 80
       ? "text-red-600"
@@ -98,8 +105,8 @@ export function CreditExposureDashboard({
       : "text-green-600";
 
   const riskLevel =
-    metrics.at_risk_customers > 0
-      ? metrics.at_risk_customers > 5
+    (metrics?.at_risk_customers ?? 0) > 0
+      ? (metrics?.at_risk_customers ?? 0) > 5
         ? "critical"
         : "high"
       : "low";
@@ -132,7 +139,7 @@ export function CreditExposureDashboard({
             <div className="bg-slate-50 p-4 rounded">
               <p className="text-xs text-muted-foreground">Total Credit Limits</p>
               <p className="text-2xl font-bold mt-2">
-                ${metrics.total_credit_limits.toFixed(2)}
+                ${(metrics?.total_credit_limits ?? 0).toFixed(2)}
               </p>
             </div>
 
@@ -140,7 +147,7 @@ export function CreditExposureDashboard({
             <div className="bg-slate-50 p-4 rounded">
               <p className="text-xs text-muted-foreground">Current Balance</p>
               <p className="text-2xl font-bold mt-2">
-                ${metrics.total_credit_balance.toFixed(2)}
+                ${(metrics?.total_credit_balance ?? 0).toFixed(2)}
               </p>
             </div>
 
