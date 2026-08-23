@@ -38,7 +38,7 @@ describe("GET /api/onboarding/reconcile", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/pos/sale");
+    expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/dashboard");
     expect(response.headers.get("set-cookie")).toContain("drx_onboarding_complete=true");
     expect(mocks.updateUser).toHaveBeenCalledWith("user_123", {
       publicMetadata: {

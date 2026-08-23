@@ -4,9 +4,11 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
-- **Release parity and rollout readiness** (`in progress`)
-  Version and changelog alignment for TestFlight and customer-facing release materials.
-  Local iOS archive build completed for version `0.6.0-rc.1` build `20`; TestFlight upload remains pending on Apple account/certificate provisioning in this environment (`No Accounts`, missing Distribution signing and provisioning profile import for team `L8R42BJ54K`).
+- **0.6.0 mobile commerce and delivery fulfillment** (`planned`)
+  Fractional quantity or dollar entry with serving suggestions, product-level presets, bulk pricing, spend-based loyalty tiers, delivery checkout and accounting, and an operator delivery queue with assignment, reminders, escalation, and reconciliation.
+
+- **Release integrity and rollout readiness** (`in progress`)
+  Evidence-aligned version, roadmap, changelog, and distribution records across web, iOS, and Android. Planned version metadata is not a store or production release.
 
 - **Quick POS flow hardening** (`in progress`)  
   Faster operator flow, cleaner state transitions, and fewer checkout interruptions.
@@ -22,6 +24,12 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 - **Reporting + insights depth** (`planned`)  
   More actionable reporting views for managers and owners without extra clicks.
 
+- **Automated delivery-provider ordering and tracking** (`planned`)
+  Provider APIs for courier ordering, live status, and automated delivery updates after the manual 0.6.0 workflow is verified.
+
+- **Loyalty points and redemption** (`planned`)
+  Point accrual and redemption beyond the spend-based tier benefits planned for 0.6.0.
+
 - **Credit / balance workflow polish** (`planned`)  
   Better visibility for overdue tracking and cleaner payment posting confidence.
 
@@ -29,6 +37,9 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
   Ongoing cleanup so role behavior is predictable across all routes.
 
 ## Later
+
+- **Advanced delivery pricing and analytics** (`under review`)
+  Partial subsidies, merchant markup, provider optimization, and deeper delivery profitability analysis.
 
 - **AI-assisted operations expansion** (`under review`)  
   Smarter assistant signals for day-to-day decisions with stronger trust controls.

@@ -13,6 +13,7 @@ import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
+import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
 
 const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 
@@ -71,6 +72,13 @@ export default async function ReportsPage({
           Export reconciliation CSV
         </Link>
       </div>
+
+      <CommerceDeliverySummary
+        from={report.period.from}
+        toExclusive={new Date(
+          new Date(report.period.to).getTime() + 1,
+        ).toISOString()}
+      />
 
       <div id="tour-reports-stats" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>

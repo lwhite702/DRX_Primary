@@ -21,12 +21,24 @@ const mocks = vi.hoisted(() => {
     setAmountPaid: vi.fn(),
     setDelivery: vi.fn(),
     checkout: vi.fn(),
+    checkoutCanonicalCommerce: vi.fn(),
+    shouldUseCanonicalCommerce: vi.fn(),
+    hasConfiguredCanonicalCommerce: vi.fn(),
     PosCheckoutError,
   };
 });
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
   resolveAuthContext: mocks.resolveAuthContext,
+}));
+
+vi.mock("@/app/api/pos/_lib/convex-commerce", () => ({
+  checkoutCanonicalCommerce: mocks.checkoutCanonicalCommerce,
+  shouldUseCanonicalCommerce: mocks.shouldUseCanonicalCommerce,
+}));
+
+vi.mock("@/app/api/pos/_lib/commerce-routing", () => ({
+  hasConfiguredCanonicalCommerce: mocks.hasConfiguredCanonicalCommerce,
 }));
 
 vi.mock("@/lib/pos/core", () => ({
@@ -153,6 +165,48 @@ describe("POST /api/pos/checkout", () => {
       total: 15,
       changeAmount: 0,
     });
+    mocks.shouldUseCanonicalCommerce.mockReturnValue(false);
+    mocks.hasConfiguredCanonicalCommerce.mockResolvedValue(false);
+    mocks.checkoutCanonicalCommerce.mockResolvedValue({
+      saleId: "convex_sale_123",
+      orderNumber: "WEB-33333333-3333-4333-8333-333333333333",
+      total: 20,
+      changeAmount: 0,
+    });
+  });
+
+  it("routes delivery checkout through the atomic canonical sale and delivery mutation", async () => {
+    mocks.shouldUseCanonicalCommerce.mockReturnValue(true);
+    const payload = makeQuickPayload({
+      delivery: {
+        enabled: true,
+        address: "123 Synthetic Test Street",
+        vendorFeeCents: 500,
+        feeAllocation: "absorb",
+        feeTaxable: false,
+      },
+    });
+
+    const res = await POST(makeRequest(payload) as any);
+    const data = await res.json();
+
+    expect(res.status).toBe(201);
+    expect(data).toMatchObject({
+      success: true,
+      saleId: "convex_sale_123",
+      total: 20,
+    });
+    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: "business_123",
+        idempotencyKey: payload.idempotencyKey,
+        delivery: expect.objectContaining({
+          vendorFeeCents: 500,
+          feeAllocation: "absorb",
+        }),
+      }),
+    );
+    expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
   it("returns 401 when auth context is missing", async () => {
@@ -165,6 +219,29 @@ describe("POST /api/pos/checkout", () => {
       success: false,
       error: "Unauthorized",
     });
+  });
+
+  it("routes a whole-unit bulk-priced checkout through canonical commerce", async () => {
+    mocks.hasConfiguredCanonicalCommerce.mockResolvedValue(true);
+    const payload = makeQuickPayload({
+      customerId: null,
+      items: [
+        {
+          id: "line-bulk",
+          inventoryId: INVENTORY_ID,
+          name: "Whole case",
+          unitPrice: 10,
+          qty: 12,
+          source: "inventory",
+        },
+      ],
+    });
+
+    const res = await POST(makeRequest(payload) as any);
+
+    expect(res.status).toBe(201);
+    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalled();
+    expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
   it("returns 400 for invalid payload", async () => {

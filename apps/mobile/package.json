@@ -1,7 +1,7 @@
 {
   "name": "deelrxcrm-mobile",
   "main": "expo-router/entry",
-  "version": "0.2.0",
+  "version": "0.6.0",
   "engines": {
     "node": "22.x"
   },
@@ -43,6 +43,7 @@
     "expo-image": "~3.0.11",
     "expo-linking": "~8.0.12",
     "expo-localization": "~17.0.9",
+    "expo-notifications": "~0.32.17",
     "expo-router": "~6.0.24",
     "expo-screen-capture": "~8.0.9",
     "expo-secure-store": "~15.0.8",

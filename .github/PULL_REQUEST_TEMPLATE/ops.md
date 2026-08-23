@@ -4,6 +4,9 @@ _What's changing in the system._
 ## Risk and rollback *
 _Blast radius and how to revert._
 
+Release impact: none
+Roadmap impact: none
+
 ## Verification
 _How you confirmed the change works in the target environment._
 

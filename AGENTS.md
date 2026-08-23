@@ -85,6 +85,10 @@ Do not treat access to a tool or credential as approval for a broader action.
 - Existing tickets and code may retain older technical assumptions. Reconcile them against the current official product document before expanding scope.
 - Never place regulated-retail customer records, identifiers, notes, transaction payloads, or decrypted PII in third-party analytics or issue evidence.
 
+## Release integrity gate
+
+For every product-behavior change or any version, changelog, roadmap, release-note, tag, deployment, TestFlight, Play, or Featurebase task, read and follow `.agents/skills/release-integrity/SKILL.md`. Run `pnpm release:integrity`; affected work cannot be reported complete while this gate fails. A passing repository gate does not prove deployment, store distribution, or physical-device behavior.
+
 ## Definition of done
 
 Work is complete only when:

@@ -6,6 +6,10 @@ import {
 import { resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
 import { errorResponse, successResponse } from "@/lib/api/response";
+import {
+  getDefaultProductCommerceConfig,
+  readCommerceSettings,
+} from "@/lib/commerce/config";
 
 export async function GET() {
   try {
@@ -14,6 +18,12 @@ export async function GET() {
     if (!businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
+
+    const settings = await db.businessSettings.findUnique({
+      where: { businessId },
+      select: { settingsData: true },
+    });
+    const commerce = readCommerceSettings(settings?.settingsData);
 
     const topSellers = await db.salesLineItem.groupBy({
       by: ["inventoryId"],
@@ -46,6 +56,10 @@ export async function GET() {
             sku: true,
             sellingPrice: true,
             quantityOnHand: true,
+            inventoryInGrams: true,
+            pricePerGram: true,
+            baseUnit: true,
+            allowFractionalWeight: true,
           },
         })
       : [];
@@ -57,14 +71,7 @@ export async function GET() {
     const favorites = topInventoryIds
       .map((id: any) => inventoryById.get(id))
       .filter((item: any) => Boolean(item))
-      .map((item: any) => ({
-        id: item!.id,
-        name: item!.productName,
-        sku: item!.sku,
-        barcode: null,
-        price: toNumber(item!.sellingPrice),
-        quantity_on_hand: item!.quantityOnHand,
-      }));
+      .map((item: any) => mapBootstrapItem(item!, commerce.productConfigs[item!.id]));
 
     const recentItems = await db.salesLineItem.findMany({
       where: {
@@ -87,6 +94,10 @@ export async function GET() {
             sku: true,
             sellingPrice: true,
             quantityOnHand: true,
+            inventoryInGrams: true,
+            pricePerGram: true,
+            baseUnit: true,
+            allowFractionalWeight: true,
           },
         },
       },
@@ -101,14 +112,12 @@ export async function GET() {
       }
 
       seen.add(row.inventoryId);
-      recentlySold.push({
-        id: row.inventory.id,
-        name: row.inventory.productName,
-        sku: row.inventory.sku,
-        barcode: null,
-        price: toNumber(row.inventory.sellingPrice),
-        quantity_on_hand: row.inventory.quantityOnHand,
-      });
+      recentlySold.push(
+        mapBootstrapItem(
+          row.inventory,
+          commerce.productConfigs[row.inventory.id],
+        ),
+      );
 
       if (recentlySold.length >= QUICK_POS_RECENT_LIMIT) break;
     }
@@ -128,6 +137,10 @@ export async function GET() {
       creditPolicy: {
         enabled: creditAccounts > 0,
       },
+      deliveryPolicy: {
+        feeTaxable: commerce.merchant.deliveryFeeTaxable,
+        dispatchSlaMinutes: commerce.merchant.dispatchSlaMinutes,
+      },
     };
 
     return successResponse({
@@ -143,4 +156,36 @@ export async function GET() {
       500,
     );
   }
+}
+
+function mapBootstrapItem(item: any, storedConfig: any) {
+  const fallback = getDefaultProductCommerceConfig();
+  const fractionalEnabled =
+    storedConfig?.fractionalEnabled ??
+    (item.allowFractionalWeight === true && toNumber(item.pricePerGram) > 0);
+  const config = {
+    ...(storedConfig ?? fallback),
+    fractionalEnabled,
+    sellingUnit: storedConfig?.sellingUnit ?? item.baseUnit ?? fallback.sellingUnit,
+    decimalPrecision:
+      storedConfig?.decimalPrecision ?? (fractionalEnabled ? 2 : 0),
+    minimumSaleQuantity:
+      storedConfig?.minimumSaleQuantity ?? (fractionalEnabled ? 0.01 : 1),
+    quantityIncrement:
+      storedConfig?.quantityIncrement ?? (fractionalEnabled ? 0.01 : 1),
+    baseUnitPrice:
+      toNumber(item.pricePerGram) || toNumber(item.sellingPrice),
+  };
+  return {
+    id: item.id,
+    name: item.productName,
+    sku: item.sku,
+    barcode: null,
+    price: toNumber(item.sellingPrice),
+    quantity_on_hand: fractionalEnabled
+      ? toNumber(item.inventoryInGrams)
+      : item.quantityOnHand,
+    commerce_config: config,
+    fractional_config: fractionalEnabled ? config : undefined,
+  };
 }

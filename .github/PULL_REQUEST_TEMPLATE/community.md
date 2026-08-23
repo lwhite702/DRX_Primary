@@ -11,6 +11,11 @@ _What this PR does and why. Reviewers should be able to understand the change wi
 - [ ] Documentation update
 - [ ] Internal refactor
 
+Release impact: none
+Roadmap impact: none
+
+_Set each value to one allowed option: `none|patch|minor|major` and `none|add|move|remove`._
+
 ## Quality checks
 - [ ] Added or updated tests covering this change
 - [ ] Ran the project's verified commands locally

@@ -1,11 +1,6 @@
 "use client";
 
-interface QuickItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity_on_hand: number;
-}
+import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
 
 export function QuickGrid({
   title,
@@ -13,8 +8,8 @@ export function QuickGrid({
   onAdd,
 }: {
   title: string;
-  items: QuickItem[];
-  onAdd: (item: QuickItem) => void;
+  items: QuickPosBootstrapItem[];
+  onAdd: (item: QuickPosBootstrapItem) => void;
 }) {
   return (
     <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm">
@@ -31,8 +26,15 @@ export function QuickGrid({
               {item.name}
             </div>
             <div className="mt-2 text-xl font-bold text-accent">
-              ${item.price.toFixed(2)}
+              {item.fractional_config
+                ? `$${item.fractional_config.baseUnitPrice.toFixed(4)}/${item.fractional_config.sellingUnit}`
+                : `$${item.price.toFixed(2)}`}
             </div>
+            {item.commerce_config?.bulkPriceTiers.length ? (
+              <div className="mt-1 text-xs text-muted-foreground">
+                Bulk from {Math.min(...item.commerce_config.bulkPriceTiers.map((tier) => tier.minimumQuantity))} {item.commerce_config.sellingUnit}
+              </div>
+            ) : null}
           </button>
         ))}
       </div>

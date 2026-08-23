@@ -165,6 +165,7 @@ final class AppEnvironment {
     private(set) var supportRequestID: String?
     private(set) var isSubmittingOnboarding = false
     private(set) var nextWorkspaceTab: WorkspaceTab = .dashboard
+    private(set) var deliveryRouteRequestID = 0
     private var provisioningGeneration = 0
 
     init(
@@ -387,5 +388,10 @@ final class AppEnvironment {
         provisioningMessage = nil
         supportRequestID = nil
         rootState = .signedOut
+    }
+
+    func requestDeliveryQueue() {
+        nextWorkspaceTab = .more
+        deliveryRouteRequestID += 1
     }
 }

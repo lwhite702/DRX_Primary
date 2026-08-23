@@ -4,6 +4,9 @@ _Describe the user-visible symptom and when it started._
 ## Root cause *
 _What was actually wrong in the code?_
 
+Release impact: patch
+Roadmap impact: none
+
 ## How to verify the fix
 _Steps a reviewer can run to confirm the fix._
 

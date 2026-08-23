@@ -11,16 +11,10 @@ import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FractionalEntryDialog } from "@/components/quick-pos/fractional-entry-dialog";
+import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
 
-interface ProductResult {
-  id: string;
-  name: string;
-  price: number;
-  quantity_on_hand: number;
-  sku?: string | null;
-  barcode?: string | null;
-  low_stock_threshold?: number;
-}
+type ProductResult = QuickPosBootstrapItem & { low_stock_threshold?: number };
 
 export default function QuickPosSalePage() {
   const router = useRouter();
@@ -32,6 +26,7 @@ export default function QuickPosSalePage() {
     setCustomer,
     setSearch,
     setCreditPolicy,
+    setDeliveryFeeTaxable,
     setError,
     total,
   } = useQuickPosStore();
@@ -42,6 +37,8 @@ export default function QuickPosSalePage() {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [manualPrice, setManualPrice] = useState("");
+  const [fractionalProduct, setFractionalProduct] =
+    useState<QuickPosBootstrapItem | null>(null);
   const searchSequence = useRef(0);
   const activeSearchController = useRef<AbortController | null>(null);
 
@@ -57,6 +54,7 @@ export default function QuickPosSalePage() {
         const data = (await res.json()) as QuickPosBootstrapResponse;
         setBootstrap(data);
         setCreditPolicy(data.creditPolicy.enabled);
+        setDeliveryFeeTaxable(data.deliveryPolicy.feeTaxable);
       } catch {
         setError("Unable to load POS");
       } finally {
@@ -65,7 +63,7 @@ export default function QuickPosSalePage() {
     };
 
     load();
-  }, [setCreditPolicy, setError]);
+  }, [setCreditPolicy, setDeliveryFeeTaxable, setError]);
 
   useEffect(() => {
     const search = state.ui.search.trim().toLowerCase();
@@ -137,7 +135,7 @@ export default function QuickPosSalePage() {
         return;
       }
 
-      addInventoryItem(exactItem);
+      selectInventoryItem(exactItem);
       setSearch("");
       setResults([]);
     } catch (error: unknown) {
@@ -171,6 +169,17 @@ export default function QuickPosSalePage() {
       source: "inventory",
     });
     setError(null);
+  };
+
+  const selectInventoryItem = (item: QuickPosBootstrapItem) => {
+    if (
+      item.commerce_config?.fractionalEnabled ||
+      (item.commerce_config?.bulkPriceTiers.length ?? 0) > 0
+    ) {
+      setFractionalProduct(item);
+      return;
+    }
+    addInventoryItem(item);
   };
 
   const addManualItem = () => {
@@ -223,20 +232,20 @@ export default function QuickPosSalePage() {
           value={state.ui.search}
           onChange={setSearch}
           items={results}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
           onSubmitSearch={submitSearch}
         />
 
         <QuickGrid
           title="Favorite Items"
           items={bootstrap?.favorites || []}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
         />
 
         <QuickGrid
           title="Recently Sold"
           items={bootstrap?.recentlySold || []}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
         />
 
         <PosKeypad
@@ -283,6 +292,14 @@ export default function QuickPosSalePage() {
           </p>
         </div>
       </div>
+      <FractionalEntryDialog
+        product={fractionalProduct}
+        onClose={() => setFractionalProduct(null)}
+        onAdd={(item) => {
+          addItem(item);
+          setError(null);
+        }}
+      />
     </div>
   );
 }

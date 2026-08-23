@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -6,13 +6,14 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePreventScreenCapture } from "expo-screen-capture";
 import type { Id } from "@drx-convex/_generated/dataModel";
@@ -24,6 +25,19 @@ import {
   saveCachedCatalog,
 } from "../../src/offline/database";
 import {
+  effectiveUnitPriceCents,
+  formatQuantity,
+  minimumSaleQuantity,
+  normalizeQuantity,
+  pricedLineTotalCents,
+  resolveLoyaltyEligibleSpendCents,
+  resolveLoyaltyRateBps,
+  suggestedQuantityForDollars,
+  type FractionalProduct,
+  type LoyaltyCombinationPolicy,
+  type LoyaltyTier,
+} from "../../src/lib/checkoutMath";
+import {
   BORDER_RADIUS,
   COLORS,
   FONT_SIZES,
@@ -34,6 +48,26 @@ type Product = NonNullable<ReturnType<typeof useProducts>>[number];
 type Customer = NonNullable<ReturnType<typeof useCustomers>>[number];
 type CartLine = { product: Product; quantityGrams: number };
 type Tender = "cash" | "card" | "credit";
+type PricedProduct = Product & FractionalProduct;
+type CheckoutRequest = {
+  customerId?: Id<"customers">;
+  orderNumber: string;
+  items: { productId: Id<"products">; quantityGrams: number }[];
+  paymentMethod: Tender;
+  amountPaidCents: number;
+  delivery?: { address: string; vendorFeeCents: number; chargeCustomer: boolean };
+};
+type CheckoutResult = { orderNumber: string; totalAmountCents: number; deliveryId?: string };
+type CheckoutQuoteRequest = {
+  customerId?: Id<"customers">;
+  items: { productId: Id<"products">; quantityGrams: number }[];
+  delivery?: { vendorFeeCents: number; chargeCustomer: boolean };
+};
+type CommerceSettings = {
+  loyaltyCombinationPolicy?: LoyaltyCombinationPolicy;
+  loyaltyTiers?: LoyaltyTier[];
+  deliveryFeeTaxable?: boolean;
+};
 function useProducts() {
   return useQuery(api.products.listProducts);
 }
@@ -41,6 +75,7 @@ function useCustomers() {
   return useQuery(api.customers.listCustomers);
 }
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+const pricing = (product: Product) => product as PricedProduct;
 const maskCustomerName = (customer: Customer) => {
   const name = `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim();
   if (!name) return "Customer";
@@ -62,6 +97,7 @@ export default function POSScreen() {
     null,
   );
   const businessSettings = useQuery(api.settings.getBusinessSettings);
+  const convex = useConvex();
   const checkout = useMutation(api.checkout.processCheckout);
   const { isOnline, authorization, queue, queueSale, syncPending } =
     useOffline();
@@ -71,8 +107,27 @@ export default function POSScreen() {
   const [cashReceived, setCashReceived] = useState("");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checkoutOrderNumber, setCheckoutOrderNumber] = useState<string | null>(null);
+  const [deliveryEnabled, setDeliveryEnabled] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [vendorFee, setVendorFee] = useState("");
+  const [chargeDeliveryToCustomer, setChargeDeliveryToCustomer] = useState(true);
   const products = liveProducts ?? cachedProducts;
   const customers = liveCustomers ?? cachedCustomers;
+  const pricingForCheckout = useCallback((product: Product): PricedProduct => {
+    const configured = pricing(product);
+    return isOnline ? configured : { ...configured, bulkPriceTiers: [] };
+  }, [isOnline]);
+  const commerceSettings = businessSettings?.settings as CommerceSettings | null | undefined;
+  const loyaltyEligibleSpendCents = customer
+    ? resolveLoyaltyEligibleSpendCents(
+        customer as Customer & { loyaltyEligibleSpendCents?: number },
+      )
+    : 0;
+  const loyaltyRateBps = isOnline && customer
+    ? resolveLoyaltyRateBps(loyaltyEligibleSpendCents, commerceSettings?.loyaltyTiers ?? [])
+    : 0;
+  const loyaltyPolicy = commerceSettings?.loyaltyCombinationPolicy ?? "best_only";
 
   useEffect(() => {
     let active = true;
@@ -103,10 +158,15 @@ export default function POSScreen() {
     () =>
       cart.reduce(
         (sum, line) =>
-          sum + Math.round(line.quantityGrams * line.product.sellingPriceCents),
+          sum + pricedLineTotalCents(
+            pricingForCheckout(line.product),
+            line.quantityGrams,
+            loyaltyRateBps,
+            loyaltyPolicy,
+          ),
         0,
       ),
-    [cart],
+    [cart, loyaltyPolicy, loyaltyRateBps, pricingForCheckout],
   );
   const taxableSubtotalCents = useMemo(
     () =>
@@ -114,11 +174,15 @@ export default function POSScreen() {
         (sum, line) =>
           line.product.isTaxable === false
             ? sum
-            : sum +
-              Math.round(line.quantityGrams * line.product.sellingPriceCents),
+            : sum + pricedLineTotalCents(
+                pricingForCheckout(line.product),
+                line.quantityGrams,
+                loyaltyRateBps,
+                loyaltyPolicy,
+              ),
         0,
       ),
-    [cart],
+    [cart, loyaltyPolicy, loyaltyRateBps, pricingForCheckout],
   );
   const collectTax = isOnline
     ? businessSettings?.business.collectTax
@@ -126,10 +190,45 @@ export default function POSScreen() {
   const taxRateBps = isOnline
     ? businessSettings?.business.taxRateBps
     : authorization?.taxRateBps;
-  const taxCents = collectTax
+  const merchandiseTaxCents = collectTax
     ? Math.round((taxableSubtotalCents * (taxRateBps ?? 0)) / 10_000)
     : 0;
-  const estimatedTotalCents = subtotalCents + taxCents;
+  const vendorFeeCents = Math.max(0, Math.round(Number(vendorFee || 0) * 100));
+  const deliveryRevenueCents =
+    deliveryEnabled && chargeDeliveryToCustomer ? vendorFeeCents : 0;
+  const deliveryFeeTaxable =
+    commerceSettings?.deliveryFeeTaxable === true;
+  const deliveryTaxCents =
+    collectTax && deliveryFeeTaxable
+      ? Math.round((deliveryRevenueCents * (taxRateBps ?? 0)) / 10_000)
+      : 0;
+  const taxCents = merchandiseTaxCents + deliveryTaxCents;
+  const estimatedTotalCents = subtotalCents + deliveryRevenueCents + taxCents;
+  const deliveryDetailsValid = !deliveryEnabled || (
+    deliveryAddress.trim().length > 0 &&
+    vendorFee.trim().length > 0 &&
+    Number.isFinite(Number(vendorFee)) &&
+    Number(vendorFee) > 0 &&
+    Number.isSafeInteger(vendorFeeCents)
+  );
+  const quoteArgs = useMemo<CheckoutQuoteRequest>(() => ({
+    ...(customer ? { customerId: customer._id } : {}),
+    items: cart.map((line) => ({
+      productId: line.product._id,
+      quantityGrams: line.quantityGrams,
+    })),
+    ...(deliveryEnabled
+      ? { delivery: { vendorFeeCents, chargeCustomer: chargeDeliveryToCustomer } }
+      : {}),
+  }), [cart, chargeDeliveryToCustomer, customer, deliveryEnabled, vendorFeeCents]);
+  const checkoutQuote = useQuery(
+    api.checkout.quoteCheckout,
+    isOnline && cart.length > 0 && deliveryDetailsValid ? quoteArgs : "skip",
+  );
+  const displayedTotalCents = isOnline
+    ? checkoutQuote?.totalAmountCents ?? estimatedTotalCents
+    : estimatedTotalCents;
+  const quotePending = isOnline && cart.length > 0 && deliveryDetailsValid && checkoutQuote === undefined;
   const isTablet = width >= 800;
 
   const addProduct = (product: Product) => {
@@ -138,16 +237,22 @@ export default function POSScreen() {
         "Out of stock",
         `${product.productName} has no available inventory.`,
       );
+    setCheckoutOrderNumber(null);
     setCart((current) => {
+      const initialQuantity = Math.min(
+        product.quantityOnHandGrams,
+        Math.max(minimumSaleQuantity(pricing(product)), 1),
+      );
+      const increment = minimumSaleQuantity(pricing(product));
       const existing = current.find((line) => line.product._id === product._id);
-      if (!existing) return [...current, { product, quantityGrams: 1 }];
+      if (!existing) return [...current, { product, quantityGrams: initialQuantity }];
       return current.map((line) =>
         line.product._id === product._id
           ? {
               ...line,
               quantityGrams: Math.min(
                 product.quantityOnHandGrams,
-                line.quantityGrams + 1,
+                line.quantityGrams + increment,
               ),
             }
           : line,
@@ -155,6 +260,7 @@ export default function POSScreen() {
     });
   };
   const updateQuantity = (productId: Id<"products">, raw: string) => {
+    setCheckoutOrderNumber(null);
     const quantity = Number(raw);
     setCart((current) =>
       current.flatMap((line) => {
@@ -163,11 +269,38 @@ export default function POSScreen() {
         return [
           {
             ...line,
-            quantityGrams: Math.min(line.product.quantityOnHandGrams, quantity),
+            quantityGrams: normalizeQuantity(
+              pricing(line.product),
+              quantity,
+              line.product.quantityOnHandGrams,
+            ),
           },
         ];
       }),
     );
+  };
+  const updateDollarAmount = (productId: Id<"products">, raw: string) => {
+    setCheckoutOrderNumber(null);
+    const cents = Math.round(Number(raw) * 100);
+    setCart((current) =>
+      current.flatMap((line) => {
+        if (line.product._id !== productId) return [line];
+        const quantity = suggestedQuantityForDollars(
+          pricingForCheckout(line.product),
+          cents,
+          line.product.quantityOnHandGrams,
+          loyaltyRateBps,
+          loyaltyPolicy,
+        );
+        return quantity > 0 ? [{ ...line, quantityGrams: quantity }] : [];
+      }),
+    );
+  };
+  const setQuantityPreset = (productId: Id<"products">, quantity: number) => {
+    updateQuantity(productId, String(quantity));
+  };
+  const setDollarPreset = (productId: Id<"products">, cents: number) => {
+    updateDollarAmount(productId, String(cents / 100));
   };
 
   const submitSale = async () => {
@@ -182,34 +315,78 @@ export default function POSScreen() {
         "Card unavailable offline",
         "Use cash or authorized customer credit until connectivity returns.",
       );
+    if (deliveryEnabled && !isOnline)
+      return Alert.alert(
+        "Delivery requires a connection",
+        "Reconnect before creating a delivery so the sale and dispatch record are committed together.",
+      );
+    if (
+      deliveryEnabled &&
+      (!deliveryAddress.trim() ||
+        !vendorFee.trim() ||
+        !Number.isFinite(Number(vendorFee)) ||
+        Number(vendorFee) <= 0 ||
+        !Number.isSafeInteger(vendorFeeCents))
+    )
+      return Alert.alert(
+        "Delivery details required",
+        "Enter the delivery address and the current Uber/vendor quote.",
+      );
     setSubmitting(true);
     try {
       const occurredAt = Date.now();
-      const amountPaidCents =
-        tender === "cash"
-          ? Math.round(Number(cashReceived || estimatedTotalCents / 100) * 100)
+      if (isOnline) {
+        const freshQuote = await convex.query(api.checkout.quoteCheckout, quoteArgs);
+        const amountPaidCents = tender === "cash"
+          ? Math.round(Number(cashReceived || freshQuote.totalAmountCents / 100) * 100)
           : tender === "credit"
             ? 0
-            : estimatedTotalCents;
-      if (tender === "cash" && amountPaidCents < estimatedTotalCents) {
-        throw new Error("Cash received must cover the sale total.");
-      }
-      if (isOnline) {
-        const result = await checkout({
+            : freshQuote.totalAmountCents;
+        if (!Number.isFinite(amountPaidCents)) {
+          throw new Error("Enter a valid cash amount.");
+        }
+        if (tender === "cash" && amountPaidCents < freshQuote.totalAmountCents) {
+          throw new Error("Cash received must cover the current server total.");
+        }
+        const activeOrderNumber =
+          checkoutOrderNumber ?? `DRX-A-${occurredAt}`;
+        if (!checkoutOrderNumber) {
+          setCheckoutOrderNumber(activeOrderNumber);
+        }
+        const result = await (checkout as unknown as (args: CheckoutRequest) => Promise<CheckoutResult>)({
           customerId: customer?._id,
-          orderNumber: `DRX-A-${occurredAt}`,
+          orderNumber: activeOrderNumber,
           items: cart.map((line) => ({
             productId: line.product._id,
             quantityGrams: line.quantityGrams,
           })),
           paymentMethod: tender,
           amountPaidCents,
+          delivery: deliveryEnabled
+            ? {
+                address: deliveryAddress.trim(),
+                vendorFeeCents,
+                chargeCustomer: chargeDeliveryToCustomer,
+              }
+            : undefined,
         });
+        setCheckoutOrderNumber(null);
         Alert.alert(
           "Sale complete",
-          `${result.orderNumber} · ${money(result.totalAmountCents)}`,
+          `${result.orderNumber} · ${money(result.totalAmountCents)}${result.deliveryId ? " · delivery ready for dispatch" : ""}`,
         );
       } else {
+        const amountPaidCents = tender === "cash"
+          ? Math.round(Number(cashReceived || estimatedTotalCents / 100) * 100)
+          : tender === "credit"
+            ? 0
+            : estimatedTotalCents;
+        if (!Number.isFinite(amountPaidCents)) {
+          throw new Error("Enter a valid cash amount.");
+        }
+        if (tender === "cash" && amountPaidCents < estimatedTotalCents) {
+          throw new Error("Cash received must cover the offline preview total.");
+        }
         if (!authorization || authorization.expiresAt < occurredAt)
           throw new Error(
             "An active offline authorization is required. Reconnect and refresh it from More.",
@@ -247,10 +424,16 @@ export default function POSScreen() {
       setCustomer(null);
       setCashReceived("");
       setCheckoutOpen(false);
-    } catch (error: any) {
+      setDeliveryEnabled(false);
+      setDeliveryAddress("");
+      setVendorFee("");
+      setChargeDeliveryToCustomer(true);
+    } catch (error: unknown) {
       Alert.alert(
         "Checkout stopped",
-        error.message ?? "The sale could not be preserved.",
+        error instanceof Error
+          ? error.message
+          : "The sale could not be preserved.",
       );
     } finally {
       setSubmitting(false);
@@ -303,7 +486,7 @@ export default function POSScreen() {
               {item.sku} · {item.quantityOnHandGrams.toFixed(1)}g
             </Text>
             <Text style={styles.productPrice}>
-              {money(item.sellingPriceCents)}/g
+              {money(item.sellingPriceCents)}/{pricing(item).sellingUnit ?? "g"}
             </Text>
           </TouchableOpacity>
         )}
@@ -323,26 +506,80 @@ export default function POSScreen() {
         ) : (
           cart.map((line) => (
             <View key={line.product._id} style={styles.line}>
-              <View style={styles.lineInfo}>
-                <Text style={styles.lineName}>{line.product.productName}</Text>
-                <Text style={styles.linePrice}>
-                  {money(
-                    Math.round(
-                      line.quantityGrams * line.product.sellingPriceCents,
-                    ),
-                  )}
-                </Text>
+              <View style={styles.lineContent}>
+                <View style={styles.lineHeading}>
+                  <View style={styles.lineInfo}>
+                    <Text style={styles.lineName}>{line.product.productName}</Text>
+                    <Text style={styles.linePrice}>
+                      {money(
+                        checkoutQuote?.lines.find(
+                          (quotedLine: { productId: string }) => quotedLine.productId === line.product._id,
+                        )?.lineSubtotalCents ?? pricedLineTotalCents(
+                          pricingForCheckout(line.product),
+                          line.quantityGrams,
+                          loyaltyRateBps,
+                          loyaltyPolicy,
+                        ),
+                      )}
+                      {effectiveUnitPriceCents(pricingForCheckout(line.product), line.quantityGrams) !==
+                      line.product.sellingPriceCents
+                        ? ` · bulk ${money(effectiveUnitPriceCents(pricingForCheckout(line.product), line.quantityGrams))}/${pricing(line.product).sellingUnit ?? "g"}`
+                        : ""}
+                    </Text>
+                  </View>
+                  <Text style={styles.quantitySummary}>
+                    {formatQuantity(pricing(line.product), line.quantityGrams)}
+                  </Text>
+                </View>
+                <View style={styles.entryRow}>
+                  <View style={styles.entryField}>
+                    <Text style={styles.entryLabel}>QUANTITY</Text>
+                    <TextInput
+                      style={styles.quantity}
+                      value={String(line.quantityGrams)}
+                      onChangeText={(value) => updateQuantity(line.product._id, value)}
+                      keyboardType="decimal-pad"
+                      accessibilityLabel={`${line.product.productName} quantity in ${pricing(line.product).sellingUnit ?? "grams"}`}
+                    />
+                  </View>
+                  <View style={styles.entryField}>
+                    <Text style={styles.entryLabel}>DOLLARS</Text>
+                    <TextInput
+                      key={`${line.product._id}-${line.quantityGrams}`}
+                      style={styles.quantity}
+                      defaultValue={(pricedLineTotalCents(
+                        pricingForCheckout(line.product),
+                        line.quantityGrams,
+                        loyaltyRateBps,
+                        loyaltyPolicy,
+                      ) / 100).toFixed(2)}
+                      onEndEditing={(event) =>
+                        updateDollarAmount(line.product._id, event.nativeEvent.text)
+                      }
+                      keyboardType="decimal-pad"
+                      accessibilityLabel={`${line.product.productName} dollar amount`}
+                    />
+                  </View>
+                </View>
+                {(pricing(line.product).suggestedQuantityPresets?.length ?? 0) > 0 ? (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
+                    {pricing(line.product).suggestedQuantityPresets?.map((quantity: number) => (
+                      <TouchableOpacity key={`q-${quantity}`} style={styles.preset} onPress={() => setQuantityPreset(line.product._id, quantity)}>
+                        <Text style={styles.presetText}>{formatQuantity(pricing(line.product), quantity)}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : null}
+                {(pricing(line.product).suggestedDollarPresetsCents?.length ?? 0) > 0 ? (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
+                    {pricing(line.product).suggestedDollarPresetsCents?.map((cents: number) => (
+                      <TouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.product._id, cents)}>
+                        <Text style={styles.presetText}>{money(cents)}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : null}
               </View>
-              <TextInput
-                style={styles.quantity}
-                value={String(line.quantityGrams)}
-                onChangeText={(value) =>
-                  updateQuantity(line.product._id, value)
-                }
-                keyboardType="decimal-pad"
-                accessibilityLabel={`${line.product.productName} quantity in grams`}
-              />
-              <Text style={styles.grams}>g</Text>
             </View>
           ))
         )}
@@ -358,9 +595,10 @@ export default function POSScreen() {
         </Text>
       </TouchableOpacity>
       <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>Total</Text>
-        <Text style={styles.total}>{money(estimatedTotalCents)}</Text>
+        <Text style={styles.totalLabel}>{isOnline && !checkoutQuote ? "Preview" : "Total"}</Text>
+        <Text style={styles.total}>{money(displayedTotalCents)}</Text>
       </View>
+      {quotePending ? <Text style={styles.quoteStatus}>Calculating server total…</Text> : null}
       <TouchableOpacity
         style={[styles.checkout, cart.length === 0 && styles.disabled]}
         disabled={cart.length === 0}
@@ -394,10 +632,25 @@ export default function POSScreen() {
         onRequestClose={() => setCheckoutOpen(false)}
       >
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
+          <ScrollView
+            style={styles.modalCard}
+            contentContainerStyle={styles.modalContent}
+            contentInsetAdjustmentBehavior="automatic"
+          >
             <Text style={styles.title}>
-              Tender · {money(estimatedTotalCents)}
+              Tender · {money(displayedTotalCents)}
             </Text>
+            {isOnline ? (
+              checkoutQuote ? (
+                <Text style={styles.quoteVerified}>
+                  SERVER VERIFIED · {money(checkoutQuote.merchandiseSubtotalCents)} merchandise
+                  {checkoutQuote.discountCents > 0 ? ` · −${money(checkoutQuote.discountCents)} discounts` : ""}
+                  {checkoutQuote.taxAmountCents > 0 ? ` · ${money(checkoutQuote.taxAmountCents)} tax` : ""}
+                </Text>
+              ) : (
+                <Text style={styles.quoteStatus}>Preview only · calculating server total…</Text>
+              )
+            ) : null}
             <Text style={styles.modalLabel}>Customer</Text>
             <ScrollView
               horizontal
@@ -410,7 +663,7 @@ export default function POSScreen() {
               >
                 <Text style={styles.chipText}>Walk-in</Text>
               </TouchableOpacity>
-              {customers.map((item) => (
+              {customers.map((item: Customer) => (
                 <TouchableOpacity
                   key={item._id}
                   style={[
@@ -424,6 +677,69 @@ export default function POSScreen() {
               ))}
             </ScrollView>
             <Text style={styles.modalLabel}>Payment</Text>
+            {customer ? (
+              <Text style={styles.loyaltyNotice}>
+                {customer.loyaltyTier.toUpperCase()} loyalty
+                {loyaltyRateBps > 0
+                  ? ` · ${(loyaltyRateBps / 100).toFixed(2)}% ${loyaltyPolicy === "stack" ? "stacks after" : "compared with"} bulk pricing`
+                  : " · no checkout discount"}
+              </Text>
+            ) : null}
+            <View style={styles.deliveryToggleRow}>
+              <View style={styles.deliveryToggleCopy}>
+                <Text style={styles.modalLabel}>Include delivery</Text>
+                <Text style={styles.deliveryHint}>
+                  Creates the dispatch task with this completed sale.
+                </Text>
+              </View>
+              <Switch
+                value={deliveryEnabled}
+                onValueChange={setDeliveryEnabled}
+                disabled={!isOnline}
+                trackColor={{ true: COLORS.accent }}
+                accessibilityLabel="Include delivery"
+              />
+            </View>
+            {deliveryEnabled ? (
+              <View style={styles.deliveryFields}>
+                <TextInput
+                  style={styles.deliveryInput}
+                  value={deliveryAddress}
+                  onChangeText={setDeliveryAddress}
+                  placeholder="Delivery address"
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  textContentType="fullStreetAddress"
+                />
+                <TextInput
+                  style={styles.deliveryInput}
+                  value={vendorFee}
+                  onChangeText={setVendorFee}
+                  placeholder="Uber/vendor quote"
+                  placeholderTextColor={COLORS.textMuted}
+                  keyboardType="decimal-pad"
+                />
+                <View style={styles.allocationRow}>
+                  <TouchableOpacity
+                    style={[styles.allocationButton, chargeDeliveryToCustomer && styles.allocationActive]}
+                    onPress={() => setChargeDeliveryToCustomer(true)}
+                  >
+                    <Text style={styles.allocationText}>CHARGE CUSTOMER</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.allocationButton, !chargeDeliveryToCustomer && styles.allocationActive]}
+                    onPress={() => setChargeDeliveryToCustomer(false)}
+                  >
+                    <Text style={styles.allocationText}>MERCHANT ABSORBS</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.deliveryHint}>
+                  {chargeDeliveryToCustomer
+                    ? `${money((checkoutQuote?.deliveryRevenueCents ?? deliveryRevenueCents) + (checkoutQuote?.deliveryTaxCents ?? deliveryTaxCents))} is added to the customer total.`
+                    : `${money(vendorFeeCents)} remains a vendor expense and does not reduce merchandise revenue.`}
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.tenders}>
               {(["cash", "card", "credit"] as Tender[]).map((method) => (
                 <TouchableOpacity
@@ -453,13 +769,18 @@ export default function POSScreen() {
             {!isOnline ? (
               <Text style={styles.offlineNotice}>
                 Offline sales use the owner-approved limits stored on this
-                device. Conflicts are preserved for reconciliation.
+                device. Bulk and loyalty discounts require live server pricing;
+                base catalog prices are used offline. Conflicts are preserved
+                for reconciliation.
               </Text>
             ) : null}
             <TouchableOpacity
-              style={styles.checkout}
+              style={[
+                styles.checkout,
+                (submitting || !deliveryDetailsValid || (isOnline && !checkoutQuote)) && styles.disabled,
+              ]}
               onPress={submitSale}
-              disabled={submitting}
+              disabled={submitting || !deliveryDetailsValid || (isOnline && !checkoutQuote)}
             >
               {submitting ? (
                 <ActivityIndicator color={COLORS.background} />
@@ -475,7 +796,7 @@ export default function POSScreen() {
             >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -562,15 +883,29 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   line: {
-    alignItems: "center",
     borderBottomColor: COLORS.border,
     borderBottomWidth: 1,
-    flexDirection: "row",
     paddingVertical: SPACING.sm,
   },
+  lineContent: { flex: 1, gap: SPACING.xs },
+  lineHeading: { alignItems: "center", flexDirection: "row", gap: SPACING.sm },
   lineInfo: { flex: 1 },
   lineName: { color: COLORS.text, fontSize: FONT_SIZES.sm, fontWeight: "600" },
   linePrice: { color: COLORS.textSecondary, fontSize: FONT_SIZES.xs },
+  quantitySummary: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.sm,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "700",
+  },
+  entryRow: { flexDirection: "row", gap: SPACING.sm },
+  entryField: { flex: 1, gap: 3 },
+  entryLabel: {
+    color: COLORS.textMuted,
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
   quantity: {
     backgroundColor: COLORS.surfaceLight,
     borderRadius: BORDER_RADIUS.sm,
@@ -579,7 +914,16 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     textAlign: "right",
   },
-  grams: { color: COLORS.textMuted, marginLeft: SPACING.xs },
+  presetRow: { gap: SPACING.xs, paddingTop: SPACING.xs },
+  preset: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  presetText: { color: COLORS.textSecondary, fontSize: FONT_SIZES.xs },
   customerButton: { paddingVertical: SPACING.sm },
   customerButtonText: {
     color: COLORS.accent,
@@ -593,6 +937,17 @@ const styles = StyleSheet.create({
   },
   totalLabel: { color: COLORS.textSecondary, fontSize: FONT_SIZES.md },
   total: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "800" },
+  quoteStatus: {
+    color: COLORS.warning,
+    fontSize: FONT_SIZES.xs,
+    marginBottom: SPACING.sm,
+  },
+  quoteVerified: {
+    color: COLORS.success,
+    fontSize: FONT_SIZES.xs,
+    lineHeight: 18,
+    marginTop: SPACING.xs,
+  },
   checkout: {
     alignItems: "center",
     backgroundColor: COLORS.accent,
@@ -616,15 +971,52 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderTopLeftRadius: BORDER_RADIUS.xl,
     borderTopRightRadius: BORDER_RADIUS.xl,
-    padding: SPACING.lg,
-    paddingBottom: 36,
+    maxHeight: "92%",
   },
+  modalContent: { padding: SPACING.lg, paddingBottom: 36 },
   modalLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.sm,
     marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
   },
+  loyaltyNotice: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.xs,
+    lineHeight: 18,
+    marginBottom: SPACING.sm,
+  },
+  deliveryToggleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: SPACING.md,
+    justifyContent: "space-between",
+    marginBottom: SPACING.sm,
+  },
+  deliveryToggleCopy: { flex: 1 },
+  deliveryFields: { gap: SPACING.sm, marginBottom: SPACING.md },
+  deliveryInput: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    color: COLORS.text,
+    minHeight: 48,
+    padding: SPACING.md,
+  },
+  allocationRow: { flexDirection: "row", gap: SPACING.sm },
+  allocationButton: {
+    alignItems: "center",
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    flex: 1,
+    padding: SPACING.sm,
+  },
+  allocationActive: { borderColor: COLORS.accent },
+  allocationText: { color: COLORS.text, fontSize: 10, fontWeight: "800" },
+  deliveryHint: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs, lineHeight: 18 },
   chips: { gap: SPACING.sm },
   chip: {
     backgroundColor: COLORS.surfaceLight,

@@ -16,31 +16,22 @@ The authoritative version for this project is stored in the `VERSION` file in th
 X.Y.Z
 ```
 
-All other references to the version (package.json, UI components, documentation, etc.) must be synchronized with this value.
+Root/web/mobile packages, Expo, iOS marketing versions, and runtime displays must derive from or be synchronized with this value. Run `pnpm release:integrity` to verify them.
 
 ## Version Display Requirements
 
 Per Wrelik Brands Versioning Protocol, the version MUST be displayed in:
 
-1. **App UI Components**:
-   - Sidebar navigation footer
-   - Mobile bottom navigation (in "More" menu)
-   - Application footer
-   - Settings page header
-
-2. **Admin Panel**:
-   - Admin console header
-
-3. **Code References**:
-   - package.json (used by build tooling)
-   - Any version constants or configuration files
+1. Web surfaces render the web package version.
+2. Native surfaces render the installed application's native version.
+3. Source metadata remains synchronized by `pnpm release:prepare X.Y.Z`.
+4. iOS build number and Android remote version code are verified separately against their provider immediately before submission.
 
 ## Compliance Checklist
 
 When making version changes, ensure:
-- ✅ VERSION file updated
-- ✅ package.json version updated
-- ✅ CHANGELOG.md entry added
-- ✅ UI components updated (sidebar, bottom-nav, admin, footer, settings)
-- ✅ Documentation updated if applicable
-- ✅ No TODOs or commented-out code added
+- `pnpm release:integrity` passes.
+- Customer-visible implementation is recorded under `[Unreleased]`.
+- Planned work remains on the roadmap and is absent from the customer changelog.
+- Store build identifiers are based on current provider evidence rather than inferred from SemVer.
+- Tags, deployment, store submission, Featurebase publication, and customer notification retain separate approvals.

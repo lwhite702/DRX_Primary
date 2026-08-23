@@ -1,16 +1,5 @@
 # DRX Customer Changelog
 
-## 2026-08-13 — v0.6.0-rc.1
-
-### Improved
-
-- Release candidate metadata was synchronized for TestFlight and customer-facing release tracking.
-
-### Fixed
-
-- Version and rollout roadmap references were updated so operational and shipping records stay in sync.
-- Local iOS archive validation succeeded for `0.6.0-rc.1`/build `20`. TestFlight upload remains blocked in this environment until Apple developer account/certificate context is available (`No Accounts`), and a valid iOS Distribution certificate plus provisioning profile for team `L8R42BJ54K` are loaded.
-
 ## 2026-03-11 — v0.5.4
 
 ### New
@@ -25,31 +14,6 @@
 ### Fixed
 
 - Stability and consistency fixes across shared app flows.
-
-## 2026-03-09 — v0.5.3
-
-### Improved
-
-- Better handling around auth and route guards for protected pages.
-- Operator navigation flow cleanup for faster handoff between screens.
-
-### Fixed
-
-- Multiple bug fixes across sales/inventory interaction points.
-
-## 2026-03-08 — v0.5.2 / v0.5.1
-
-### New
-
-- Continued rollout of operational routes and reporting foundations.
-
-### Improved
-
-- Hardening around role checks and data-scope behavior.
-
-### Fixed
-
-- Regression fixes from rapid iteration in early 0.5.x.
 
 ## 2026-03-07 — v0.5.0
 

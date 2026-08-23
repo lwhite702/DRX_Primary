@@ -13,6 +13,7 @@ import type {
   QuickPosQuoteResponse,
 } from "@/lib/quick-pos/types";
 import type { PosAuthoritativeQuote } from "@/lib/pos/types";
+import { DeliveryCheckout } from "@/components/quick-pos/delivery-checkout";
 
 export default function QuickPosPaymentPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function QuickPosPaymentPage() {
     setPaymentMethod,
     setReceipt,
     setCreditConfirmed,
+    setDelivery,
     setProcessing,
     setError,
     setSuccess,
@@ -54,6 +56,7 @@ export default function QuickPosPaymentPage() {
           body: JSON.stringify({
             mode: "quick",
             customerId: state.customer.id,
+            delivery: state.delivery.enabled ? state.delivery : undefined,
             items: state.cartItems,
           }),
           signal: controller.signal,
@@ -83,7 +86,7 @@ export default function QuickPosPaymentPage() {
 
     void loadQuote();
     return () => controller.abort();
-  }, [state.cartItems, state.customer.id, setError]);
+  }, [state.cartItems, state.customer.id, state.delivery, setError]);
 
   const allowCredit = canUseCredit(state);
 
@@ -97,6 +100,11 @@ export default function QuickPosPaymentPage() {
 
     if (!quote) {
       setError("Wait for the verified total before completing the sale");
+      return;
+    }
+
+    if (state.delivery.enabled && !state.delivery.address.trim()) {
+      setError("Delivery address is required");
       return;
     }
 
@@ -131,6 +139,7 @@ export default function QuickPosPaymentPage() {
           idempotencyKey,
           customerId: state.customer.id,
           payment: state.payment,
+          delivery: state.delivery.enabled ? state.delivery : undefined,
           items: state.cartItems,
         }),
       });
@@ -186,17 +195,28 @@ export default function QuickPosPaymentPage() {
             </div>
             {quote.loyaltyDiscountAmount > 0 ? (
               <div className="flex justify-between text-emerald-300">
-                <dt>Loyalty discount</dt>
+                <dt>Discounts</dt>
                 <dd>-${quote.loyaltyDiscountAmount.toFixed(2)}</dd>
               </div>
             ) : null}
             <div className="flex justify-between">
-              <dt>Tax</dt>
-              <dd>${quote.taxAmount.toFixed(2)}</dd>
+              <dt>Merchandise tax</dt>
+              <dd>${quote.merchandiseTaxAmount.toFixed(2)}</dd>
             </div>
+            {quote.deliveryRevenue > 0 ? (
+              <div className="flex justify-between"><dt>Delivery charged</dt><dd>${quote.deliveryRevenue.toFixed(2)}</dd></div>
+            ) : null}
+            {quote.deliveryTaxAmount > 0 ? (
+              <div className="flex justify-between"><dt>Delivery tax</dt><dd>${quote.deliveryTaxAmount.toFixed(2)}</dd></div>
+            ) : null}
+            {state.delivery.enabled && state.delivery.feeAllocation === "absorb" ? (
+              <div className="flex justify-between text-amber-200"><dt>Delivery absorbed</dt><dd>${quote.vendorDeliveryExpense.toFixed(2)} expense</dd></div>
+            ) : null}
           </dl>
         ) : null}
       </div>
+
+      <DeliveryCheckout delivery={state.delivery} onChange={setDelivery} />
 
       <PaymentMethods
         selected={state.payment.method}

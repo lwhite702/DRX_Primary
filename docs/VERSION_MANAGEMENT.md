@@ -8,16 +8,16 @@ Canonical policy source:
 ## DRX Workflow
 
 1. Add changes under `[Unreleased]` in `CHANGELOG.md`.
-2. Run:
+2. Validate:
 
 ```bash
-pnpm version:check
+pnpm release:integrity
 ```
 
-3. For release, run:
+3. Prepare approved planned metadata without claiming a release:
 
 ```bash
-pnpm version:bump <major|minor|patch>
+pnpm release:prepare X.Y.Z
 ```
 
-4. Confirm `CHANGELOG.md`, `VERSION`, and root/app versions are aligned in the release PR.
+4. After implementation, preflight, and explicit approval, cut and verify the release with `pnpm release:cut X.Y.Z` and `pnpm release:verify X.Y.Z --evidence PATH`.

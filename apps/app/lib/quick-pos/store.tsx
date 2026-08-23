@@ -14,11 +14,13 @@ import {
 } from "@/lib/quick-pos/constants";
 import type {
   QuickPosCartItem,
+  QuickPosDeliveryState,
   QuickPosPaymentMethod,
   QuickPosReceiptOption,
   QuickPosState,
 } from "@/lib/quick-pos/types";
 import { getSubtotal, getTax, getTotal } from "@/lib/quick-pos/selectors";
+import { calculateFractionalLine } from "@/lib/quick-pos/commerce";
 
 const initialState: QuickPosState = {
   cartItems: [],
@@ -32,6 +34,13 @@ const initialState: QuickPosState = {
     method: null,
     receipt: "none",
     creditConfirmed: false,
+  },
+  delivery: {
+    enabled: false,
+    address: "",
+    vendorFeeCents: 0,
+    feeAllocation: "charge_customer",
+    feeTaxable: false,
   },
   ui: {
     search: "",
@@ -61,6 +70,8 @@ type Action =
   | { type: "set_payment_method"; payload: QuickPosPaymentMethod | null }
   | { type: "set_receipt"; payload: QuickPosReceiptOption }
   | { type: "set_credit_confirmed"; payload: boolean }
+  | { type: "set_delivery"; payload: QuickPosDeliveryState }
+  | { type: "set_delivery_fee_taxable"; payload: boolean }
   | { type: "set_processing"; payload: boolean }
   | { type: "set_error"; payload: string | null }
   | { type: "set_success"; payload: string | null }
@@ -76,7 +87,15 @@ type Action =
 function reducer(state: QuickPosState, action: Action): QuickPosState {
   switch (action.type) {
     case "hydrate":
-      return action.payload;
+      return {
+        ...initialState,
+        ...action.payload,
+        customer: { ...initialState.customer, ...action.payload.customer },
+        payment: { ...initialState.payment, ...action.payload.payment },
+        delivery: { ...initialState.delivery, ...action.payload.delivery },
+        ui: { ...initialState.ui, ...action.payload.ui },
+        session: { ...initialState.session, ...action.payload.session },
+      };
     case "set_search":
       return { ...state, ui: { ...state.ui, search: action.payload } };
     case "set_credit_policy":
@@ -97,7 +116,23 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
       return {
         ...state,
         cartItems: state.cartItems.map((item) =>
-          item.id === action.payload.id ? { ...item, qty: item.qty + 1 } : item,
+          item.id === action.payload.id
+            ? (() => {
+                if (item.commerceConfig && !item.commerceConfig.fractionalEnabled) {
+                  const line = calculateFractionalLine(
+                    item.qty + item.commerceConfig.quantityIncrement,
+                    item.commerceConfig,
+                  );
+                  return {
+                    ...item,
+                    qty: line.quantity,
+                    unitPrice: line.unitPrice,
+                    bulkTierApplied: line.bulkTier?.label,
+                  };
+                }
+                return { ...item, qty: item.qty + 1 };
+              })()
+            : item,
         ),
       };
     case "remove_item":
@@ -120,6 +155,13 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
       return { ...state, payment: { ...state.payment, receipt: action.payload } };
     case "set_credit_confirmed":
       return { ...state, payment: { ...state.payment, creditConfirmed: action.payload } };
+    case "set_delivery":
+      return { ...state, delivery: action.payload };
+    case "set_delivery_fee_taxable":
+      return {
+        ...state,
+        delivery: { ...state.delivery, feeTaxable: action.payload },
+      };
     case "set_processing":
       return { ...state, ui: { ...state.ui, processing: action.payload } };
     case "set_error":
@@ -181,6 +223,8 @@ interface QuickPosStore {
   setPaymentMethod: (method: QuickPosPaymentMethod | null) => void;
   setReceipt: (receipt: QuickPosReceiptOption) => void;
   setCreditConfirmed: (value: boolean) => void;
+  setDelivery: (delivery: QuickPosDeliveryState) => void;
+  setDeliveryFeeTaxable: (feeTaxable: boolean) => void;
   setProcessing: (value: boolean) => void;
   setError: (value: string | null) => void;
   setSuccess: (value: string | null) => void;
@@ -224,6 +268,16 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const setPaymentMethod = useCallback((method: QuickPosPaymentMethod | null) => dispatch({ type: "set_payment_method", payload: method }), []);
   const setReceipt = useCallback((receipt: QuickPosReceiptOption) => dispatch({ type: "set_receipt", payload: receipt }), []);
   const setCreditConfirmed = useCallback((value: boolean) => dispatch({ type: "set_credit_confirmed", payload: value }), []);
+  const setDelivery = useCallback(
+    (delivery: QuickPosDeliveryState) =>
+      dispatch({ type: "set_delivery", payload: delivery }),
+    [],
+  );
+  const setDeliveryFeeTaxable = useCallback(
+    (feeTaxable: boolean) =>
+      dispatch({ type: "set_delivery_fee_taxable", payload: feeTaxable }),
+    [],
+  );
   const setProcessing = useCallback((value: boolean) => dispatch({ type: "set_processing", payload: value }), []);
   const setError = useCallback((value: string | null) => dispatch({ type: "set_error", payload: value }), []);
   const setSuccess = useCallback((value: string | null) => dispatch({ type: "set_success", payload: value }), []);
@@ -260,6 +314,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setPaymentMethod,
       setReceipt,
       setCreditConfirmed,
+      setDelivery,
+      setDeliveryFeeTaxable,
       setProcessing,
       setError,
       setSuccess,
@@ -284,6 +340,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setPaymentMethod,
       setReceipt,
       setCreditConfirmed,
+      setDelivery,
+      setDeliveryFeeTaxable,
       setProcessing,
       setError,
       setSuccess,

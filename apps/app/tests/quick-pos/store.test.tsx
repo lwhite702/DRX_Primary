@@ -65,6 +65,51 @@ describe("quick pos store", () => {
     expect(storeRef!.state.creditPolicyEnabled).toBe(true);
   });
 
+  it("updates a whole-unit line and its displayed tier when incrementing across a bulk threshold", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.addItem({
+        id: "inv:bulk",
+        inventoryId: "22222222-2222-4222-8222-222222222222",
+        name: "Whole case",
+        unitPrice: 10,
+        qty: 5,
+        source: "inventory",
+        commerceConfig: {
+          fractionalEnabled: false,
+          sellingUnit: "case",
+          decimalPrecision: 0,
+          minimumSaleQuantity: 1,
+          quantityIncrement: 2,
+          baseUnitPrice: 10,
+          suggestedDollarAmounts: [50],
+          suggestedQuantities: [1, 3],
+          bulkPriceTiers: [
+            {
+              id: "six-cases",
+              label: "7+ cases",
+              minimumQuantity: 7,
+              unitPrice: 8,
+            },
+          ],
+        },
+      });
+      storeRef!.incrementItem("inv:bulk");
+    });
+
+    expect(storeRef!.state.cartItems[0]).toMatchObject({
+      qty: 7,
+      unitPrice: 8,
+      bulkTierApplied: "7+ cases",
+    });
+    expect(storeRef!.subtotal).toBe(56);
+  });
+
   it("persists and clears pending idempotency key correctly", () => {
     render(
       <QuickPosProvider>
@@ -92,6 +137,33 @@ describe("quick pos store", () => {
     });
 
     expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();
+  });
+
+  it("tracks delivery checkout details without mixing them into the sale total locally", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.setDelivery({
+        enabled: true,
+        address: "100 Example Ave",
+        vendorFeeCents: 1250,
+        feeAllocation: "charge_customer",
+        feeTaxable: true,
+      });
+    });
+
+    expect(storeRef!.state.delivery).toEqual({
+      enabled: true,
+      address: "100 Example Ave",
+      vendorFeeCents: 1250,
+      feeAllocation: "charge_customer",
+      feeTaxable: true,
+    });
+    expect(storeRef!.total).toBe(0);
   });
 
   it("does not hydrate carts stored with the obsolete Convex ID version", async () => {

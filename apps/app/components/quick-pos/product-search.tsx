@@ -1,13 +1,6 @@
 "use client";
 
-interface ProductItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity_on_hand: number;
-  sku?: string | null;
-  barcode?: string | null;
-}
+import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
 
 export function ProductSearch({
   value,
@@ -18,8 +11,8 @@ export function ProductSearch({
 }: {
   value: string;
   onChange: (value: string) => void;
-  items: ProductItem[];
-  onAdd: (item: ProductItem) => void;
+  items: QuickPosBootstrapItem[];
+  onAdd: (item: QuickPosBootstrapItem) => void;
   onSubmitSearch?: () => void;
 }) {
   return (
@@ -51,8 +44,17 @@ export function ProductSearch({
               {item.sku ? (
                 <p className="text-xs text-muted-foreground">SKU {item.sku}</p>
               ) : null}
+              {item.commerce_config?.bulkPriceTiers.length ? (
+                <p className="text-xs text-accent">
+                  Bulk pricing from {Math.min(...item.commerce_config.bulkPriceTiers.map((tier) => tier.minimumQuantity))} {item.commerce_config.sellingUnit}
+                </p>
+              ) : null}
             </div>
-            <span className="text-xl font-semibold text-accent">${item.price.toFixed(2)}</span>
+            <span className="text-xl font-semibold text-accent">
+              {item.fractional_config
+                ? `$${item.fractional_config.baseUnitPrice.toFixed(4)}/${item.fractional_config.sellingUnit}`
+                : `$${item.price.toFixed(2)}`}
+            </span>
           </button>
         ))}
       </div>

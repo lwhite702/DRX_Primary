@@ -10,6 +10,7 @@ import {
   useUser,
 } from "../adapters/auth/client";
 import { getLegacyMobileSession } from "../services/apiClient";
+import { unregisterPushBeforeSignOut } from "../lib/pushNotifications";
 
 const OPERATOR_SESSION_KEY_PREFIX = "drx.operator-session.v1";
 
@@ -66,12 +67,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function AuthProviderInner({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, userId, signOut, getToken, isLoaded } = useClerkAuth();
+  const { isSignedIn, userId, signOut: clerkSignOut, getToken, isLoaded } = useClerkAuth();
   const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
   const { user } = useUser();
   const { signIn: clerkSignIn, setActive, isLoaded: isSignInLoaded } = useSignIn();
   const [cachedSession, setCachedSession] = useState<OperatorSession | null>(null);
   const [cacheUserId, setCacheUserId] = useState<string | null>(null);
+  const signOut = async () => {
+    await unregisterPushBeforeSignOut();
+    await clerkSignOut();
+  };
   const onboarding = useQuery(
     api.onboarding.getCurrentOnboardingStatus,
     isAuthenticated ? {} : "skip",

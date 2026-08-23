@@ -7,6 +7,11 @@ import {
   getAuthoritativeQuote,
 } from "@/lib/pos/core";
 import { quickPosQuotePayloadSchema } from "@/lib/pos/contract";
+import {
+  quoteCanonicalCommerce,
+  shouldUseCanonicalCommerce,
+} from "@/app/api/pos/_lib/convex-commerce";
+import { hasConfiguredCanonicalCommerce } from "@/app/api/pos/_lib/commerce-routing";
 
 export async function POST(request: NextRequest) {
   const { userId, businessId } = await resolveAuthContext();
@@ -24,6 +29,33 @@ export async function POST(request: NextRequest) {
       { success: false, error: "Invalid quote payload" },
       { status: 400 },
     );
+  }
+
+  const requiresCanonicalCommerce =
+    shouldUseCanonicalCommerce(parsed.data) ||
+    (await hasConfiguredCanonicalCommerce(businessId, parsed.data.items));
+
+  if (requiresCanonicalCommerce) {
+    try {
+      const quote = await quoteCanonicalCommerce({
+        businessId,
+        customerId: parsed.data.customerId,
+        items: parsed.data.items,
+        delivery: parsed.data.delivery,
+      });
+      return NextResponse.json({ success: true, quote });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unable to quote commerce sale",
+        },
+        { status: 400 },
+      );
+    }
   }
 
   let cart = createCart({

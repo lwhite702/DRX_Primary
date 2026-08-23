@@ -33,12 +33,15 @@ describe("Convex Phase 2 Foundation & Infrastructure", () => {
 
       expect(hasPermission(ownerUser, "MANAGE_MEMBERS")).toBe(true);
       expect(hasPermission(ownerUser, "VIEW_FINANCIALS")).toBe(true);
+      expect(hasPermission(ownerUser, "MANAGE_COMMERCE_SETTINGS")).toBe(true);
 
       expect(hasPermission(adminUser, "MANAGE_MEMBERS")).toBe(false);
       expect(hasPermission(adminUser, "PROCESS_CHECKOUT")).toBe(true);
+      expect(hasPermission(adminUser, "MANAGE_COMMERCE_SETTINGS")).toBe(true);
 
       expect(hasPermission(memberUser, "RECORD_INTAKE")).toBe(false);
       expect(hasPermission(memberUser, "PROCESS_CHECKOUT")).toBe(true);
+      expect(hasPermission(memberUser, "MANAGE_COMMERCE_SETTINGS")).toBe(false);
 
       expect(() => requirePermission(memberUser, "MANAGE_PRODUCTS")).toThrowError(
         /User role 'MEMBER' does not possess required permission 'MANAGE_PRODUCTS'/

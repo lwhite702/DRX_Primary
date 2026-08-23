@@ -25,6 +25,16 @@ export interface QuickPosPaymentState {
   creditConfirmed: boolean;
 }
 
+export type DeliveryFeeAllocation = "charge_customer" | "absorb";
+
+export interface QuickPosDeliveryState {
+  enabled: boolean;
+  address: string;
+  vendorFeeCents: number;
+  feeAllocation: DeliveryFeeAllocation;
+  feeTaxable: boolean;
+}
+
 export interface QuickPosUiState {
   search: string;
   exitDialogOpen: boolean;
@@ -45,6 +55,7 @@ export interface QuickPosState {
   cartItems: QuickPosCartItem[];
   customer: QuickPosCustomer;
   payment: QuickPosPaymentState;
+  delivery: QuickPosDeliveryState;
   ui: QuickPosUiState;
   session: QuickPosSessionState;
   creditPolicyEnabled: boolean;
@@ -63,6 +74,7 @@ export interface QuickPosCheckoutRequest {
     receipt: QuickPosReceiptOption;
     creditConfirmed: boolean;
   };
+  delivery?: QuickPosDeliveryState;
   items: QuickPosCartItem[];
 }
 

@@ -38,6 +38,13 @@ function seedState(overrides?: Partial<QuickPosState>) {
       receipt: "none",
       creditConfirmed: false,
     },
+    delivery: {
+      enabled: false,
+      address: "",
+      vendorFeeCents: 0,
+      feeAllocation: "charge_customer",
+      feeTaxable: false,
+    },
     ui: {
       search: "",
       exitDialogOpen: false,
@@ -88,6 +95,10 @@ describe("quick pos payment idempotency", () => {
             loyaltyDiscountAmount: 1,
             loyaltyDiscountRate: 0.1,
             taxAmount: 0.72,
+            merchandiseTaxAmount: 0.72,
+            deliveryRevenue: 0,
+            vendorDeliveryExpense: 0,
+            deliveryTaxAmount: 0,
             feesTotal: 0,
             total: 9.72,
           },
@@ -127,7 +138,7 @@ describe("quick pos payment idempotency", () => {
       </QuickPosProvider>,
     );
 
-    await screen.findByText("Loyalty discount");
+    await screen.findByText("Discounts");
     expect(screen.getByText("-$1.00")).toBeInTheDocument();
     expect(screen.getByText("$0.72")).toBeInTheDocument();
 

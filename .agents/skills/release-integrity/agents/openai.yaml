@@ -1,0 +1,6 @@
+interface:
+  display_name: Release Integrity
+  short_description: Keep versions and release records evidence-aligned
+  default_prompt: Verify the requested DRX release work against implementation and distribution evidence, then synchronize the appropriate artifacts without overstating its state.
+policy:
+  allow_implicit_invocation: true

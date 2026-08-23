@@ -7,6 +7,9 @@
 ## What's the fix *
 _Be specific. One line is fine._
 
+Release impact: patch
+Roadmap impact: none
+
 ## Post-merge verification *
 _How you'll confirm the fix in production._
 

@@ -30,6 +30,7 @@ struct WorkspacesView: View {
             Section("Account Actions") {
                 Button("Sign Out of Deelrx CRM", role: .destructive) {
                     Task {
+                        await PushNotificationCoordinator.shared.unregister()
                         try? await clerk.auth.signOut()
                         await environment.signOut()
                     }

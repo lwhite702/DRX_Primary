@@ -9,6 +9,7 @@ import * as intake from "../../convex/intake";
 import * as offline from "../../convex/offline";
 import * as onboarding from "../../convex/onboarding";
 import * as products from "../../convex/products";
+import * as reporting from "../../convex/reporting";
 
 const modules = {
   "_generated/api.js": async () => generatedApi,
@@ -18,6 +19,7 @@ const modules = {
   "offline.ts": async () => offline,
   "onboarding.ts": async () => onboarding,
   "products.ts": async () => products,
+  "reporting.ts": async () => reporting,
 };
 
 describe("Android offline checkout", () => {
@@ -44,6 +46,16 @@ describe("Android offline checkout", () => {
       totalCostCents: 800,
       supplier: "Synthetic test supplier",
     });
+    const customerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "Legacy Offline Customer",
+      creditLimitCents: 0,
+    });
+    await t.run(async (ctx) => {
+      await ctx.db.patch(customerId, {
+        totalPurchasesCents: 5_000,
+        loyaltyEligibleSpendCents: undefined,
+      });
+    });
     await owner.mutation(api.offline.configurePolicy, {
       enabled: true,
       authorizationWindowMinutes: 60,
@@ -66,6 +78,7 @@ describe("Android offline checkout", () => {
       idempotencyKey: "offline-sale-0001",
       sequence: 1,
       occurredAt: authorization.issuedAt + 1,
+      customerId,
       items: [{ productId, quantityGrams: 3, unitPriceCents: 1000 }],
       paymentMethod: "cash" as const,
       amountPaidCents: 3000,
@@ -86,6 +99,31 @@ describe("Android offline checkout", () => {
     expect(cases[0].kind).toBe("inventory_shortfall");
     const catalog = await owner.query(api.products.listProducts, {});
     expect(catalog[0].quantityOnHandGrams).toBe(-1);
+    const persisted = await t.run(async (ctx) => ({
+      customer: await ctx.db.get(customerId),
+      sale: first.saleId ? await ctx.db.get(first.saleId) : null,
+    }));
+    expect(persisted.customer?.loyaltyEligibleSpendCents).toBe(8_000);
+    expect(persisted.sale).toMatchObject({
+      merchandiseRevenueCents: 3_000,
+      loyaltyEligibleSpendCents: 3_000,
+    });
+    const aggregate = await owner.query(api.reporting.getSalesAggregate, {
+      startAt: 0,
+      endAt: Date.now() + 1_000,
+      timezone: "UTC",
+    });
+    expect(aggregate.cogsCents).toBe(800);
+    expect(aggregate.cogsAllocationCoverage).toEqual({
+      inventoryLineCount: 1,
+      fullyAllocatedLineCount: 0,
+      partiallyAllocatedLineCount: 1,
+      unallocatedLineCount: 0,
+      expectedQuantity: 3,
+      allocatedQuantity: 2,
+      unallocatedQuantity: 1,
+      coverageBps: 6_667,
+    });
   });
 
   it("rejects cross-tenant authorization use", async () => {
@@ -539,5 +577,187 @@ describe("Android offline checkout", () => {
       ctx.db.get(unlimitedCustomerId),
     );
     expect(unlimitedCustomer?.totalCreditUsedCents).toBe(1100);
+  });
+
+  it("quarantines tampered fractional envelopes, normalizes legacy defaults, and continues", async () => {
+    const t = convexTest(schema, modules);
+    const owner = t.withIdentity({
+      subject: "offline_quantity_owner",
+      email: "quantity@example.test",
+    });
+    await owner.mutation(api.onboarding.createBusinessOnboarding, {
+      businessName: "Offline Quantity Store",
+      collectTax: false,
+    });
+    const configuredProductId = await owner.mutation(
+      api.products.createProduct,
+      {
+        sku: "OFF-QTY-CONFIGURED",
+        productName: "Configured Fractional Product",
+        sellingPriceCents: 1_000,
+        unitCostCents: 400,
+        allowFractionalWeight: true,
+      },
+    );
+    await owner.mutation(api.products.updateCommerceConfig, {
+      productId: configuredProductId,
+      sellingUnit: "gram",
+      quantityPrecision: 2,
+      minimumSaleQuantity: 0.25,
+      quantityIncrement: 0.05,
+      suggestedQuantityPresets: [0.25, 0.5],
+      suggestedDollarPresetsCents: [500],
+      bulkPriceTiers: [],
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: configuredProductId,
+      totalWeightGrams: 5,
+      totalCostCents: 2_000,
+    });
+    const missingConfigProductId = await owner.mutation(
+      api.products.createProduct,
+      {
+        sku: "OFF-QTY-MISSING",
+        productName: "Missing Fractional Configuration",
+        sellingPriceCents: 1_000,
+        unitCostCents: 400,
+        allowFractionalWeight: true,
+      },
+    );
+    await t.run((ctx) =>
+      ctx.db.patch(missingConfigProductId, {
+        sellingUnit: undefined,
+        quantityPrecision: undefined,
+        minimumSaleQuantity: undefined,
+        quantityIncrement: undefined,
+      }),
+    );
+    await owner.mutation(api.offline.configurePolicy, {
+      enabled: true,
+      authorizationWindowMinutes: 60,
+      perSaleLimitCents: 10_000,
+      perDeviceSessionLimitCents: 20_000,
+      offlineCreditLimitCents: 5_000,
+      maxQueuedSales: 10,
+    });
+    const deviceId = "android-quantity-device";
+    await owner.mutation(api.offline.registerDevice, {
+      deviceId,
+      appVersion: "0.6.0",
+    });
+    const authorization = await owner.mutation(api.offline.issueAuthorization, {
+      deviceId,
+    });
+    const common = {
+      authorizationId: authorization.authorizationId,
+      deviceId,
+      occurredAt: authorization.issuedAt + 1,
+      paymentMethod: "cash" as const,
+    };
+    const invalidCases = [
+      {
+        idempotencyKey: "offline-quantity-below-minimum",
+        items: [
+          {
+            productId: configuredProductId,
+            quantityGrams: 0.2,
+            unitPriceCents: 1_000,
+          },
+        ],
+        reason: "quantity_below_minimum",
+      },
+      {
+        idempotencyKey: "offline-quantity-excess-precision",
+        items: [
+          {
+            productId: configuredProductId,
+            quantityGrams: 0.251,
+            unitPriceCents: 1_000,
+          },
+        ],
+        reason: "quantity_precision_exceeded",
+      },
+      {
+        idempotencyKey: "offline-quantity-off-increment",
+        items: [
+          {
+            productId: configuredProductId,
+            quantityGrams: 0.26,
+            unitPriceCents: 1_000,
+          },
+        ],
+        reason: "quantity_increment_mismatch",
+      },
+      {
+        idempotencyKey: "offline-quantity-split-tamper",
+        items: [
+          {
+            productId: configuredProductId,
+            quantityGrams: 0.125,
+            unitPriceCents: 1_000,
+          },
+          {
+            productId: configuredProductId,
+            quantityGrams: 0.125,
+            unitPriceCents: 1_000,
+          },
+        ],
+        reason: "quantity_precision_exceeded",
+      },
+    ] as const;
+    for (const [index, invalidCase] of invalidCases.entries()) {
+      const result = await owner.mutation(api.offline.syncSale, {
+        ...common,
+        idempotencyKey: invalidCase.idempotencyKey,
+        sequence: index + 1,
+        items: [...invalidCase.items],
+        amountPaidCents: 1_000,
+      });
+      expect(result).toMatchObject({
+        status: "quarantined",
+        saleId: null,
+        quarantineReason: invalidCase.reason,
+      });
+    }
+
+    const legacyDefault = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-quantity-legacy-default",
+      sequence: invalidCases.length + 1,
+      items: [
+        {
+          productId: missingConfigProductId,
+          quantityGrams: 0.5,
+          unitPriceCents: 1_000,
+        },
+      ],
+      amountPaidCents: 500,
+    });
+    expect(legacyDefault).toMatchObject({
+      status: "committed",
+      quarantineReason: null,
+    });
+
+    const valid = await owner.mutation(api.offline.syncSale, {
+      ...common,
+      idempotencyKey: "offline-quantity-valid-after-quarantine",
+      sequence: invalidCases.length + 2,
+      items: [
+        {
+          productId: configuredProductId,
+          quantityGrams: 0.25,
+          unitPriceCents: 1_000,
+        },
+      ],
+      amountPaidCents: 250,
+    });
+    expect(valid).toMatchObject({
+      status: "committed",
+      quarantineReason: null,
+    });
+    const configuredProduct = await t.run((ctx) =>
+      ctx.db.get(configuredProductId),
+    );
+    expect(configuredProduct?.quantityOnHandGrams).toBe(4.75);
   });
 });
