@@ -43,20 +43,25 @@ final class PushNotificationCoordinator {
         await registerCurrentToken()
     }
 
-    func handleDeliveryPush(_ userInfo: [AnyHashable: Any], route: Bool) async {
-        if let cancellation = DRXDeliveryPushCancellationPayload.parse(userInfo) {
+    func handleDeliveryPush(
+        cancellation: DRXDeliveryPushCancellationPayload?,
+        push: DRXDeliveryPushPayload?,
+        local: DRXLocalDeliveryReminderPayload?,
+        route: Bool
+    ) async {
+        if let cancellation {
             DeliveryReminderScheduler.cancel(deliveryID: cancellation.deliveryId)
             await acknowledge(outboxID: cancellation.outboxId)
             return
         }
-        if let payload = DRXDeliveryPushPayload.parse(userInfo) {
-            await acknowledge(outboxID: payload.outboxId)
+        if let push {
+            await acknowledge(outboxID: push.outboxId)
             if route {
-                NotificationCenter.default.post(name: .deliveryPushRouteRequested, object: payload.deliveryId)
+                NotificationCenter.default.post(name: .deliveryPushRouteRequested, object: push.deliveryId)
             }
             return
         }
-        if route, let local = DRXLocalDeliveryReminderPayload.parse(userInfo) {
+        if route, let local {
             NotificationCenter.default.post(name: .deliveryPushRouteRequested, object: local.deliveryId)
         }
     }
@@ -89,12 +94,61 @@ final class PushNotificationCoordinator {
     }
 }
 
-final class DRXAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+final class DRXNotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        let userInfo = notification.request.content.userInfo
+        let cancellation = DRXDeliveryPushCancellationPayload.parse(userInfo)
+        let push = DRXDeliveryPushPayload.parse(userInfo)
+        let local = DRXLocalDeliveryReminderPayload.parse(userInfo)
+        Task { @MainActor in
+            await PushNotificationCoordinator.shared.handleDeliveryPush(
+                cancellation: cancellation,
+                push: push,
+                local: local,
+                route: false
+            )
+        }
+        completionHandler(
+            cancellation == nil
+                ? [.banner, .list, .sound]
+                : []
+        )
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        let cancellation = DRXDeliveryPushCancellationPayload.parse(userInfo)
+        let push = DRXDeliveryPushPayload.parse(userInfo)
+        let local = DRXLocalDeliveryReminderPayload.parse(userInfo)
+        Task { @MainActor in
+            await PushNotificationCoordinator.shared.handleDeliveryPush(
+                cancellation: cancellation,
+                push: push,
+                local: local,
+                route: true
+            )
+        }
+        completionHandler()
+    }
+}
+
+@MainActor
+final class DRXAppDelegate: NSObject, UIApplicationDelegate {
+    private let notificationDelegate = DRXNotificationDelegate()
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().delegate = notificationDelegate
         return true
     }
 
@@ -112,38 +166,18 @@ final class DRXAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationC
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
+        let cancellation = DRXDeliveryPushCancellationPayload.parse(userInfo)
+        let push = DRXDeliveryPushPayload.parse(userInfo)
+        let local = DRXLocalDeliveryReminderPayload.parse(userInfo)
         Task { @MainActor in
-            await PushNotificationCoordinator.shared.handleDeliveryPush(userInfo, route: false)
-            completionHandler(.newData)
+            await PushNotificationCoordinator.shared.handleDeliveryPush(
+                cancellation: cancellation,
+                push: push,
+                local: local,
+                route: false
+            )
         }
-    }
-
-    func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-    ) {
-        let userInfo = notification.request.content.userInfo
-        Task { @MainActor in
-            await PushNotificationCoordinator.shared.handleDeliveryPush(userInfo, route: false)
-        }
-        completionHandler(
-            DRXDeliveryPushCancellationPayload.parse(userInfo) == nil
-                ? [.banner, .list, .sound]
-                : []
-        )
-    }
-
-    func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping () -> Void
-    ) {
-        let userInfo = response.notification.request.content.userInfo
-        Task { @MainActor in
-            await PushNotificationCoordinator.shared.handleDeliveryPush(userInfo, route: true)
-            completionHandler()
-        }
+        completionHandler(.newData)
     }
 }
 
