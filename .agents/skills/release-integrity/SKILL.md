@@ -12,10 +12,10 @@ Keep implementation, version metadata, and release claims in the same evidence s
 Classify the work before editing release records:
 
 - **planned**: approved direction exists; implementation or verification is incomplete.
-- **implemented**: matching source is merged and its required repository checks pass; distribution is unproven.
-- **released**: the exact version and commit have matching tag, release, deployment or store distribution, and required runtime or device evidence.
+- **implemented**: matching source is verified in a branch/PR and required repository checks pass; pending merge/push to `main`.
+- **released**: the commit is merged and published to `main` (which automatically deploys and releases to production), or has verified store distribution.
 
-Use the lowest state supported by reproducible evidence. A build, archive, preview, or clean worktree is not release evidence.
+Use the lowest state supported by reproducible evidence. Pushing/publishing to `main` automatically triggers production deployment and release.
 
 ## SemVer decision
 
