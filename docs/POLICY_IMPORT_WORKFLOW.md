@@ -25,7 +25,7 @@ git pull
 2. Copy policy templates into DRX root canonical files.
 3. Apply DRX adaptation patch set:
 - Branch governance (`feature/*` -> `development` -> `staging` -> `main`)
-- DRX version tooling (`pnpm version:check`, `pnpm version:bump`)
+- DRX release tooling (`pnpm release:integrity`, `pnpm release:prepare X.Y.Z`)
 - DRX-approved compatibility exception language in stack policy
 4. Update metadata headers:
 - `Owner: DRX Engineering Team`
@@ -36,7 +36,7 @@ git pull
 
 ```bash
 pnpm test:policy
-pnpm version:check
+pnpm release:integrity
 ```
 
 7. Open PR with:

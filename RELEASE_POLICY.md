@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Engineering Team  
-Last Updated: 2026-03-03  
+Last Updated: 2026-08-21
 Applies To: Deelrx CRM
 
 ## Purpose
@@ -20,6 +20,7 @@ Applies to production-bound merges and tagged releases.
 - Launch preflight MUST pass (`pnpm release:preflight`) before release promotion.
 - Versioning artifacts MUST be present before release merge.
 - Release tags MUST match shipped version numbers.
+- The exact state `planned`, `implemented`, or `released` MUST match the evidence rules in `.agents/skills/release-integrity/SKILL.md`.
 - Beta launch uses hybrid gates:
   - Blocking: preflight, lint, typecheck, build, auth/data integrity tests, required UX tests.
   - Advisory with artifacts: integration, full e2e, auth-secrets e2e, security, perf, coverage.
@@ -34,10 +35,12 @@ Applies to production-bound merges and tagged releases.
 - readiness artifacts in `docs/testing/*` (when applicable)
 4. Run launch baseline preflight:
  - `pnpm release:preflight`
-5. Finalize release artifacts (`CHANGELOG.md`, `VERSION`, version consistency via `pnpm version:check`).
+5. Finalize release artifacts and pass `pnpm release:integrity` and `pnpm release:preflight`.
 6. Open release PR from `staging` to `main` after approvals.
 7. Merge release PR and create/push tag (`vX.Y.Z`) when required.
-8. Publish release notes through CI/repository workflow.
+8. Run `pnpm release:verify X.Y.Z --evidence PATH`, then separately approve any external release-note publication.
+
+GitHub branch protection is not presently confirmed as enforceable for this private repository on its current plan. CI and repository policy are mandatory, but they MUST NOT be described as non-bypassable until required-check protection is enabled and verified.
 
 ## Exceptions
 

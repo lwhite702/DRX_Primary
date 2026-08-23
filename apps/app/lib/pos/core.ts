@@ -402,6 +402,8 @@ export function createCart(params: {
     deliveryManagementId: null,
     deliveryAddress: null,
     deliveryPrice: 0,
+    deliveryVendorCost: 0,
+    deliveryTaxable: false,
   };
 }
 
@@ -457,6 +459,8 @@ export function setDelivery(
     deliveryManagementId?: string | null;
     deliveryAddress?: string | null;
     deliveryPrice?: number | null;
+    deliveryVendorCost?: number | null;
+    deliveryTaxable?: boolean;
   },
 ): PosCart {
   return {
@@ -464,6 +468,8 @@ export function setDelivery(
     deliveryManagementId: delivery.deliveryManagementId ?? null,
     deliveryAddress: delivery.deliveryAddress ?? null,
     deliveryPrice: delivery.deliveryPrice ?? 0,
+    deliveryVendorCost: delivery.deliveryVendorCost ?? 0,
+    deliveryTaxable: delivery.deliveryTaxable ?? false,
   };
 }
 
@@ -580,11 +586,21 @@ async function prepareCheckout(
   const loyaltyDiscountAmount = roundCurrency(subtotal * loyaltyDiscountRate);
   const subtotalAfterDiscount = roundCurrency(subtotal - loyaltyDiscountAmount);
   const taxSettings = await getTaxSettings(tx, cart.businessId);
-  const taxAmount = taxSettings.collectTax
+  const merchandiseTaxAmount = taxSettings.collectTax
     ? cart.mode === "quick"
       ? roundCurrency(subtotalAfterDiscount * taxSettings.taxRate)
       : roundCurrency(cart.taxAmount)
     : 0;
+  const deliveryTaxAmount =
+    taxSettings.collectTax &&
+    cart.mode === "quick" &&
+    cart.deliveryTaxable &&
+    deliveryPrice > 0
+      ? roundCurrency(deliveryPrice * taxSettings.taxRate)
+      : 0;
+  const taxAmount = roundCurrency(
+    merchandiseTaxAmount + deliveryTaxAmount,
+  );
   const total = roundCurrency(
     subtotalAfterDiscount + feesTotal + taxAmount + deliveryPrice,
   );
@@ -597,6 +613,10 @@ async function prepareCheckout(
       subtotalAfterDiscount,
       loyaltyDiscountAmount,
       loyaltyDiscountRate,
+      merchandiseTaxAmount,
+      deliveryTaxAmount,
+      deliveryRevenue: deliveryPrice,
+      vendorDeliveryExpense: roundCurrency(cart.deliveryVendorCost ?? 0),
       taxAmount,
       feesTotal,
       total,

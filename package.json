@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -9,6 +9,10 @@
   "scripts": {
     "postinstall": "pnpm --filter deelrxcrm-app exec prisma generate --schema prisma/schema.prisma",
     "release:preflight": "node scripts/release/preflight.mjs",
+    "release:integrity": "node scripts/release/integrity-check.mjs && node scripts/release/test-integrity.mjs && node scripts/release/test-verify.mjs && node scripts/featurebase/test-import-content.mjs",
+    "release:prepare": "node scripts/version.js prepare",
+    "release:cut": "node scripts/release/cut.mjs",
+    "release:verify": "node scripts/release/verify.mjs",
     "normalize:next-env": "node scripts/release/normalize-next-env.mjs",
     "build": "corepack pnpm --filter deelrxcrm-app build && corepack pnpm --filter deelrxcrm-marketing build",
     "dev": "doppler run -- corepack pnpm --filter deelrxcrm-app dev",
@@ -73,10 +77,12 @@
     "featurebase:import:help-center": "pnpm dlx tsx scripts/featurebase/import-help-center.ts",
     "featurebase:import:help-center:dry": "pnpm dlx tsx scripts/featurebase/import-help-center.ts --dry-run",
     "featurebase:export:changelog": "pnpm dlx tsx scripts/featurebase/export-changelog.ts",
-    "featurebase:import:changelog": "pnpm dlx tsx scripts/featurebase/import-changelog.ts",
+    "featurebase:import:changelog": "pnpm dlx tsx scripts/featurebase/import-changelog.ts --dry-run",
+    "featurebase:publish:changelog": "pnpm dlx tsx scripts/featurebase/import-changelog.ts --publish",
     "featurebase:import:changelog:dry": "pnpm dlx tsx scripts/featurebase/import-changelog.ts --dry-run",
     "featurebase:export:roadmap": "pnpm dlx tsx scripts/featurebase/export-roadmap.ts",
-    "featurebase:import:roadmap": "pnpm dlx tsx scripts/featurebase/import-roadmap.ts",
+    "featurebase:import:roadmap": "pnpm dlx tsx scripts/featurebase/import-roadmap.ts --dry-run",
+    "featurebase:publish:roadmap": "pnpm dlx tsx scripts/featurebase/import-roadmap.ts --publish",
     "featurebase:import:roadmap:dry": "pnpm dlx tsx scripts/featurebase/import-roadmap.ts --dry-run",
     "featurebase:reorder:help-center": "pnpm dlx tsx scripts/featurebase/reorder-help-center.ts",
     "featurebase:reorder:help-center:dry": "pnpm dlx tsx scripts/featurebase/reorder-help-center.ts --dry-run"

@@ -9,20 +9,21 @@ import React, {
 } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import * as Application from "expo-application";
-import * as SecureStore from "expo-secure-store";
-import { useMutation } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import type { Id } from "@drx-convex/_generated/dataModel";
 import { api } from "@drx-convex/_generated/api";
 import { useAuth } from "./AuthContext";
 import {
   enqueueOfflineSale,
   getActiveAuthorization,
+  getCachedCatalog,
   getOfflineDatabase,
   getQueueSummary,
   listPendingSales,
   markSyncFailure,
   markSyncing,
   markSyncResult,
+  quarantineOfflineSale,
   saveAuthorization,
 } from "../offline/database";
 import type {
@@ -30,8 +31,11 @@ import type {
   OfflineQueueSummary,
   OfflineSaleEnvelope,
 } from "../offline/types";
-
-const INSTALLATION_ID_KEY = "drx.android.installation-id.v1";
+import {
+  OfflineQuantityValidationError,
+  validateOfflineSaleQuantities,
+} from "../lib/offlineSaleValidation";
+import { getInstallationId } from "../lib/deviceIdentity";
 
 type OfflineContextValue = {
   isOnline: boolean;
@@ -46,25 +50,16 @@ type OfflineContextValue = {
 const EMPTY_QUEUE: OfflineQueueSummary = { pending: 0, quarantined: 0, totalCents: 0 };
 const OfflineContext = createContext<OfflineContextValue | undefined>(undefined);
 
-async function getInstallationId() {
-  if (process.env.EXPO_OS === "android") {
-    const androidId = Application.getAndroidId();
-    if (androidId) return `android-${androidId}`;
-  }
-  const existing = await SecureStore.getItemAsync(INSTALLATION_ID_KEY);
-  if (existing) return existing;
-  const generated = `install-${globalThis.crypto.randomUUID()}`;
-  await SecureStore.setItemAsync(INSTALLATION_ID_KEY, generated, {
-    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  });
-  return generated;
-}
-
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const { businessId, userId, isSignedIn } = useAuth();
+  const { isAuthenticated: isConvexAuthenticated } = useConvexAuth();
   const registerDevice = useMutation(api.offline.registerDevice);
   const issueAuthorization = useMutation(api.offline.issueAuthorization);
   const syncSale = useMutation(api.offline.syncSale);
+  const liveProducts = useQuery(
+    api.products.listProducts,
+    isSignedIn && isConvexAuthenticated ? {} : "skip",
+  );
   const [isOnline, setIsOnline] = useState(true);
   const [authorization, setAuthorization] = useState<OfflineAuthorizationSnapshot | null>(null);
   const [queue, setQueue] = useState<OfflineQueueSummary>(EMPTY_QUEUE);
@@ -122,7 +117,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       const registration = await registerDevice({
         deviceId,
         displayName: Application.applicationName ?? "DRX Android",
-        appVersion: Application.nativeApplicationVersion ?? "0.1.0",
+        appVersion: Application.nativeApplicationVersion ?? "unknown",
       });
       if (registration.status !== "active") throw new Error("DEVICE_REVOKED");
       issued = await issueAuthorization({ deviceId });
@@ -150,6 +145,8 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const queueSale = useCallback(
     async (sale: OfflineSaleEnvelope) => {
       if (!authorization) throw new Error("OFFLINE_AUTHORIZATION_REQUIRED");
+      const catalog = await getCachedCatalog(sale.businessId, sale.userId);
+      validateOfflineSaleQuantities(sale.items, catalog.products);
       await enqueueOfflineSale(authorization, sale);
       await refreshQueue();
     },
@@ -157,12 +154,26 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   );
 
   const syncPending = useCallback(async () => {
-    if (syncLock.current || !isOnline || !businessId || !userId || !isSignedIn) return;
+    if (
+      syncLock.current ||
+      !isOnline ||
+      !businessId ||
+      !userId ||
+      !isSignedIn ||
+      liveProducts === undefined
+    ) return;
     syncLock.current = true;
     setIsSyncing(true);
     try {
       const pending = await listPendingSales(businessId, userId);
       for (const row of pending) {
+        try {
+          validateOfflineSaleQuantities(row.envelope.items, liveProducts);
+        } catch (error) {
+          if (!(error instanceof OfflineQuantityValidationError)) throw error;
+          await quarantineOfflineSale(row.idempotencyKey, error.code);
+          continue;
+        }
         await markSyncing(row.idempotencyKey);
         const envelope = row.envelope;
         try {
@@ -197,7 +208,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       setIsSyncing(false);
       await refreshQueue();
     }
-  }, [businessId, isOnline, isSignedIn, refreshQueue, syncSale, userId]);
+  }, [businessId, isOnline, isSignedIn, liveProducts, refreshQueue, syncSale, userId]);
 
   useEffect(() => {
     if (isOnline) void syncPending();

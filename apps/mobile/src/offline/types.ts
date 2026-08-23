@@ -50,3 +50,16 @@ export interface OfflineQueueSummary {
   quarantined: number;
   totalCents: number;
 }
+
+export type DeliveryReminderKind = "eta_warning" | "eta_due" | "overdue";
+
+export interface LocalDeliveryReminder {
+  deliveryId: string;
+  businessId: string;
+  userId: string;
+  orderNumber: string;
+  kind: DeliveryReminderKind;
+  scheduledAt: number;
+  notificationIdentifier?: string;
+  acknowledgedAt?: number;
+}

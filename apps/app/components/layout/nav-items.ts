@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   ShoppingCart,
+  Truck,
   ScanLine,
   Package,
   Users,
@@ -24,6 +25,7 @@ export const primaryNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/sales", label: "Sales", icon: ShoppingCart },
   { href: "/pos/sale", label: "Quick Sale", icon: ScanLine },
+  { href: "/deliveries", label: "Deliveries", icon: Truck },
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/credit", label: "Store Credit", icon: Wallet },

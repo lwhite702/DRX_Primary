@@ -9,8 +9,9 @@
 - Release configuration: `Release`
 - Minimum iOS version: iOS 17
 - Signing: Automatic, Apple team `L8R42BJ54K`
-- Version: `0.6.0-rc.1`
-- Build number: Xcode Cloud `CI_BUILD_NUMBER`
+- Planned source version: `0.6.0` (unreleased)
+- Source build number: `31`
+- Upload build number: resolve `max(App Store Connect/TestFlight, 31) + 1` immediately before the approved archive; do not infer it from SemVer.
 
 Xcode Cloud runs the scripts in `apps/ios/ci_scripts`. The post-clone script
 installs XcodeGen when needed, writes an ignored

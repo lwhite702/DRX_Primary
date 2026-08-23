@@ -1,6 +1,6 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "private": true,
   "engines": {
     "node": "22.x"
@@ -14,8 +14,8 @@
     "dev:bypass": "BYPASS_AUTH_FOR_TESTING=true next dev --turbopack",
     "dev:bypass:webpack": "BYPASS_AUTH_FOR_TESTING=true next dev --webpack",
     "dev:ci": "next dev",
-    "version:check": "node scripts/version.js check",
-    "version:bump": "node scripts/version.js bump",
+    "version:check": "node ../../scripts/version.js check",
+    "version:bump": "node ../../scripts/version.js bump",
     "lint": "eslint .",
     "lint:readiness": "eslint app/api/pos/checkout/route.ts 'app/(operator)/pos' lib/pos lib/quick-pos tests/pos tests/quick-pos tests/middleware.test.ts tests/auth",
     "typecheck": "tsc --noEmit",
@@ -63,6 +63,7 @@
     "@clerk/nextjs": "^7.0.8",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
+    "@noble/ciphers": "^1.3.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@radix-ui/react-accordion": "1.2.2",

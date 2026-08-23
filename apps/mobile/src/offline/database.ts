@@ -5,11 +5,14 @@ import type {
   OfflineQueueSummary,
   OfflineSaleEnvelope,
   PendingOfflineSale,
+  LocalDeliveryReminder,
 } from "./types";
+import { staleDeliveryReminderSchedule } from "../lib/deliveryReminders";
+import { hasNormalizedOfflineQuantityConfig } from "../lib/offlineSaleValidation";
 
 const DATABASE_NAME = "drx-offline.db";
 const DATABASE_KEY_NAME = "drx.offline.database-key.v1";
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 4;
 
 export type CachedProduct = {
   _id: string;
@@ -17,6 +20,11 @@ export type CachedProduct = {
   sku: string;
   sellingPriceCents: number;
   quantityOnHandGrams: number;
+  allowFractionalWeight: boolean;
+  sellingUnit: string;
+  quantityPrecision: number;
+  minimumSaleQuantity: number;
+  quantityIncrement: number;
   [key: string]: unknown;
 };
 
@@ -118,6 +126,30 @@ async function openDatabase() {
         updated_at INTEGER NOT NULL,
         PRIMARY KEY (business_id, user_id, customer_id)
       );
+      PRAGMA user_version = 2;
+    `);
+  }
+  if (version < 3) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS delivery_reminders (
+        delivery_id TEXT NOT NULL,
+        business_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        order_number TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('eta_warning', 'eta_due', 'overdue')),
+        scheduled_at INTEGER NOT NULL,
+        acknowledged_at INTEGER,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (delivery_id, kind, scheduled_at)
+      );
+      CREATE INDEX IF NOT EXISTS delivery_reminders_scope_due
+        ON delivery_reminders (business_id, user_id, acknowledged_at, scheduled_at);
+      PRAGMA user_version = 3;
+    `);
+  }
+  if (version < 4) {
+    await db.execAsync(`
+      ALTER TABLE delivery_reminders ADD COLUMN notification_identifier TEXT;
       PRAGMA user_version = ${DATABASE_VERSION};
     `);
   }
@@ -277,6 +309,17 @@ export async function markSyncFailure(idempotencyKey: string, errorCode: string)
   );
 }
 
+export async function quarantineOfflineSale(idempotencyKey: string, errorCode: string) {
+  const db = await getOfflineDatabase();
+  await db.runAsync(
+    `UPDATE offline_sales SET status = 'quarantined', last_error_code = ?, updated_at = ?
+     WHERE idempotency_key = ? AND status IN ('pending', 'syncing')`,
+    errorCode.slice(0, 80),
+    Date.now(),
+    idempotencyKey,
+  );
+}
+
 export async function markSyncResult(
   idempotencyKey: string,
   result: { status: "committed" | "duplicate" | "quarantined"; saleId: string | null },
@@ -333,6 +376,13 @@ export async function saveCachedCatalog(
   products: CachedProduct[],
   customers: CachedCustomer[],
 ) {
+  if (products.some((product) =>
+    typeof product.sellingUnit !== "string" ||
+    !product.sellingUnit.trim() ||
+    !hasNormalizedOfflineQuantityConfig(product)
+  )) {
+    throw new Error("OFFLINE_PRODUCT_QUANTITY_CONFIG_UNAVAILABLE");
+  }
   const db = await getOfflineDatabase();
   await db.withExclusiveTransactionAsync(async (transaction) => {
     const now = Date.now();
@@ -411,4 +461,196 @@ export async function getQueueSummary(businessId: string, userId: string) {
     quarantined: Number(row?.quarantined ?? 0),
     totalCents: Number(row?.totalCents ?? 0),
   };
+}
+
+export async function replaceDeliveryReminders(
+  businessId: string,
+  userId: string,
+  deliveryId: string,
+  orderNumber: string,
+  reminders: Pick<
+    LocalDeliveryReminder,
+    "kind" | "scheduledAt" | "notificationIdentifier"
+  >[],
+) {
+  const db = await getOfflineDatabase();
+  await db.withExclusiveTransactionAsync(async (transaction) => {
+    await transaction.runAsync(
+      "DELETE FROM delivery_reminders WHERE delivery_id = ?",
+      deliveryId,
+    );
+    const now = Date.now();
+    for (const reminder of reminders) {
+      await transaction.runAsync(
+        `INSERT OR REPLACE INTO delivery_reminders
+          (delivery_id, business_id, user_id, order_number, kind, scheduled_at,
+           notification_identifier, acknowledged_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)`,
+        deliveryId,
+        businessId,
+        userId,
+        orderNumber,
+        reminder.kind,
+        reminder.scheduledAt,
+        reminder.notificationIdentifier ?? null,
+        now,
+      );
+    }
+  });
+}
+
+export async function reconcileDeliveryReminders(
+  businessId: string,
+  userId: string,
+  deliveryId: string,
+  orderNumber: string,
+  reminders: Pick<
+    LocalDeliveryReminder,
+    "kind" | "scheduledAt" | "notificationIdentifier"
+  >[],
+) {
+  const db = await getOfflineDatabase();
+  await db.withExclusiveTransactionAsync(async (transaction) => {
+    // Delivery IDs are globally unique. Remove a prior assignee's rows first;
+    // the v3 primary key does not include user scope and would otherwise make
+    // INSERT OR IGNORE silently skip the current operator's canonical rows.
+    await transaction.runAsync(
+      `DELETE FROM delivery_reminders
+       WHERE delivery_id = ? AND (business_id != ? OR user_id != ?)`,
+      deliveryId,
+      businessId,
+      userId,
+    );
+    const existing = await transaction.getAllAsync<{
+      kind: LocalDeliveryReminder["kind"];
+      scheduled_at: number;
+    }>(
+      `SELECT kind, scheduled_at FROM delivery_reminders
+       WHERE business_id = ? AND user_id = ? AND delivery_id = ?`,
+      businessId,
+      userId,
+      deliveryId,
+    );
+    const stale = staleDeliveryReminderSchedule(
+      existing.map((reminder) => ({
+        kind: reminder.kind,
+        scheduledAt: reminder.scheduled_at,
+      })),
+      reminders,
+    );
+    for (const reminder of stale) {
+      await transaction.runAsync(
+        `DELETE FROM delivery_reminders
+         WHERE business_id = ? AND user_id = ? AND delivery_id = ? AND kind = ? AND scheduled_at = ?`,
+        businessId,
+        userId,
+        deliveryId,
+        reminder.kind,
+        reminder.scheduledAt,
+      );
+    }
+    const now = Date.now();
+    for (const reminder of reminders) {
+      await transaction.runAsync(
+        `INSERT OR IGNORE INTO delivery_reminders
+          (delivery_id, business_id, user_id, order_number, kind, scheduled_at,
+           notification_identifier, acknowledged_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)`,
+        deliveryId,
+        businessId,
+        userId,
+        orderNumber,
+        reminder.kind,
+        reminder.scheduledAt,
+        reminder.notificationIdentifier ?? null,
+        now,
+      );
+    }
+  });
+}
+
+export async function saveDeliveryReminder(reminder: LocalDeliveryReminder) {
+  const db = await getOfflineDatabase();
+  await db.runAsync(
+    `INSERT OR IGNORE INTO delivery_reminders
+      (delivery_id, business_id, user_id, order_number, kind, scheduled_at,
+       notification_identifier, acknowledged_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    reminder.deliveryId,
+    reminder.businessId,
+    reminder.userId,
+    reminder.orderNumber,
+    reminder.kind,
+    reminder.scheduledAt,
+    reminder.notificationIdentifier ?? null,
+    reminder.acknowledgedAt ?? null,
+    Date.now(),
+  );
+}
+
+export async function listDueDeliveryReminders(
+  businessId: string,
+  userId: string,
+  now = Date.now(),
+) {
+  const db = await getOfflineDatabase();
+  const rows = await db.getAllAsync<{
+    delivery_id: string;
+    business_id: string;
+    user_id: string;
+    order_number: string;
+    kind: LocalDeliveryReminder["kind"];
+    scheduled_at: number;
+    notification_identifier: string | null;
+    acknowledged_at: number | null;
+  }>(
+    `SELECT delivery_id, business_id, user_id, order_number, kind, scheduled_at,
+            notification_identifier, acknowledged_at
+     FROM delivery_reminders
+     WHERE business_id = ? AND user_id = ? AND acknowledged_at IS NULL AND scheduled_at <= ?
+     ORDER BY scheduled_at ASC`,
+    businessId,
+    userId,
+    now,
+  );
+  return rows.map((row): LocalDeliveryReminder => ({
+    deliveryId: row.delivery_id,
+    businessId: row.business_id,
+    userId: row.user_id,
+    orderNumber: row.order_number,
+    kind: row.kind,
+    scheduledAt: row.scheduled_at,
+    notificationIdentifier: row.notification_identifier ?? undefined,
+    acknowledgedAt: row.acknowledged_at ?? undefined,
+  }));
+}
+
+export async function acknowledgeDeliveryReminder(reminder: LocalDeliveryReminder) {
+  const db = await getOfflineDatabase();
+  const now = Date.now();
+  await db.runAsync(
+    `UPDATE delivery_reminders SET acknowledged_at = ?, updated_at = ?
+     WHERE delivery_id = ? AND business_id = ? AND user_id = ? AND kind = ? AND scheduled_at = ?`,
+    now,
+    now,
+    reminder.deliveryId,
+    reminder.businessId,
+    reminder.userId,
+    reminder.kind,
+    reminder.scheduledAt,
+  );
+}
+
+export async function clearDeliveryReminders(
+  businessId: string,
+  userId: string,
+  deliveryId: string,
+) {
+  const db = await getOfflineDatabase();
+  await db.runAsync(
+    "DELETE FROM delivery_reminders WHERE business_id = ? AND user_id = ? AND delivery_id = ?",
+    businessId,
+    userId,
+    deliveryId,
+  );
 }

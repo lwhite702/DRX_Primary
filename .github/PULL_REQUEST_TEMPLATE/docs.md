@@ -4,6 +4,9 @@ _Which PRs or commits prompted this update?_
 ## Docs updated *
 _What changed and where it lives now._
 
+Release impact: none
+Roadmap impact: none
+
 ## Source PR or commit
 **Link:** _<add here>_ _(Optional - paste the PR or commit URL.)_
 

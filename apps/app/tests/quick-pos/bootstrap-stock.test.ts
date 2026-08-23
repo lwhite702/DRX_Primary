@@ -13,6 +13,9 @@ const mocks = vi.hoisted(() => ({
     creditLimit: {
       count: vi.fn(),
     },
+    businessSettings: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -25,6 +28,8 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { GET } from "@/app/api/pos/bootstrap/route";
 
+const INVENTORY_ID = "22222222-2222-4222-8222-222222222222";
+
 describe("quick POS bootstrap stock metadata", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -33,11 +38,11 @@ describe("quick POS bootstrap stock metadata", () => {
       businessId: "business_1",
     });
     mocks.db.salesLineItem.groupBy.mockResolvedValue([
-      { inventoryId: "inventory_1", _sum: { quantity: 4 } },
+      { inventoryId: INVENTORY_ID, _sum: { quantity: 4 } },
     ]);
     mocks.db.inventory.findMany.mockResolvedValue([
       {
-        id: "inventory_1",
+        id: INVENTORY_ID,
         productName: "Sold Out Favorite",
         sku: "SO-1",
         sellingPrice: 12,
@@ -46,9 +51,9 @@ describe("quick POS bootstrap stock metadata", () => {
     ]);
     mocks.db.salesLineItem.findMany.mockResolvedValue([
       {
-        inventoryId: "inventory_1",
+        inventoryId: INVENTORY_ID,
         inventory: {
-          id: "inventory_1",
+          id: INVENTORY_ID,
           productName: "Sold Out Favorite",
           sku: "SO-1",
           sellingPrice: 12,
@@ -57,6 +62,7 @@ describe("quick POS bootstrap stock metadata", () => {
       },
     ]);
     mocks.db.creditLimit.count.mockResolvedValue(0);
+    mocks.db.businessSettings.findUnique.mockResolvedValue(null);
   });
 
   it("includes on-hand quantity for favorites and recently sold items", async () => {
@@ -65,12 +71,62 @@ describe("quick POS bootstrap stock metadata", () => {
 
     expect(response.status).toBe(200);
     expect(payload.favorites[0]).toMatchObject({
-      id: "inventory_1",
+      id: INVENTORY_ID,
       quantity_on_hand: 0,
     });
     expect(payload.recentlySold[0]).toMatchObject({
-      id: "inventory_1",
+      id: INVENTORY_ID,
       quantity_on_hand: 0,
     });
+  });
+
+  it("keeps whole-unit bulk configuration visible to the register", async () => {
+    mocks.db.businessSettings.findUnique.mockResolvedValue({
+      settingsData: {
+        commerce: {
+          merchant: {
+            loyaltyCombinationPolicy: "best_only",
+            loyaltyTiers: [],
+            deliveryFeeTaxable: false,
+            dispatchSlaMinutes: 5,
+            escalationDelayMinutes: 10,
+            managerNotificationTargets: [],
+          },
+          productConfigs: {
+            [INVENTORY_ID]: {
+              fractionalEnabled: false,
+              sellingUnit: "case",
+              decimalPrecision: 0,
+              minimumSaleQuantity: 1,
+              quantityIncrement: 1,
+              suggestedDollarAmounts: [50],
+              suggestedQuantities: [1, 12],
+              bulkPriceTiers: [
+                {
+                  id: "case-12",
+                  label: "12+ cases",
+                  minimumQuantity: 12,
+                  unitPrice: 8,
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+
+    const response = await GET();
+    const payload = await response.json();
+
+    expect(payload.favorites[0]).toMatchObject({
+      commerce_config: {
+        fractionalEnabled: false,
+        sellingUnit: "case",
+        bulkPriceTiers: [
+          expect.objectContaining({ minimumQuantity: 12, unitPrice: 8 }),
+        ],
+      },
+    });
+    expect(payload.favorites[0]).not.toHaveProperty("fractional_config");
   });
 });

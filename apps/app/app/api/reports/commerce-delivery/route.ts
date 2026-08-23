@@ -1,0 +1,162 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import { getCanonicalCommerceSummary } from "@/app/api/pos/_lib/convex-commerce";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import {
+  canonicalSourceSummaryFromAggregate,
+  combineCommerceDeliverySummaries,
+  getLegacyWebCommerceSummary,
+  type CombinedCommerceDeliverySummary,
+} from "@/lib/reports/commerce-delivery";
+
+function defaultPeriod() {
+  const now = new Date();
+  const startAt = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+  return { startAt, endAt: startAt + 24 * 60 * 60 * 1_000 };
+}
+
+function parsePeriod(request: NextRequest) {
+  const fallback = defaultPeriod();
+  const from = request.nextUrl.searchParams.get("from");
+  const to = request.nextUrl.searchParams.get("to");
+  const startAt = from ? new Date(from).getTime() : fallback.startAt;
+  const endAt = to ? new Date(to).getTime() : fallback.endAt;
+  if (
+    !Number.isSafeInteger(startAt) ||
+    !Number.isSafeInteger(endAt) ||
+    endAt <= startAt
+  ) {
+    throw new Error("INVALID_PERIOD");
+  }
+  return { startAt, endAt };
+}
+
+const metricRows = [
+  ["order_count", "Orders", "count", "orderCount"],
+  ["gross_collected", "Gross collected", "cents", "grossCollectedCents"],
+  ["net_cash_activity", "Net cash activity", "cents", "netCashActivityCents"],
+  ["merchandise_revenue", "Merchandise revenue", "cents", "merchandiseRevenueCents"],
+  ["delivery_revenue", "Delivery revenue", "cents", "deliveryRevenueCents"],
+  ["vendor_delivery_expense", "Vendor delivery expense", "cents", "vendorDeliveryExpenseCents"],
+  ["delivery_tax", "Delivery tax", "cents", "deliveryTaxCents"],
+  ["unclassified_tax", "Legacy/unclassified tax", "cents", "unclassifiedTaxCents"],
+  ["discounts", "Discounts", "cents", "discountCents"],
+  ["cogs", "COGS", "cents", "cogsCents"],
+  ["customer_fee_refunds", "Customer fee refunds", "cents", "customerFeeRefundCents"],
+  ["delivery_tax_refunds", "Delivery tax refunds", "cents", "deliveryTaxRefundCents"],
+  ["vendor_credits", "Vendor credits", "cents", "vendorCreditsCents"],
+  ["net_revenue", "Net revenue", "cents", "netRevenueCents"],
+  ["gross_profit", "Gross profit", "cents", "grossProfitCents"],
+] as const;
+
+function csvCell(value: unknown) {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function toCsv(report: CombinedCommerceDeliverySummary) {
+  const rows: unknown[][] = [
+    ["section", "key", "label", "unit", "canonical", "legacy_web", "combined", "note"],
+    ["metadata", "period_start", "Period start (inclusive)", "utc_iso", "", "", "", report.period.from],
+    ["metadata", "period_end", "Period end (exclusive)", "utc_iso", "", "", "", report.period.to],
+    ["metadata", "profit_coverage", "Gross profit coverage", "status", "", "", "", report.grossProfitComplete ? "complete" : "known_costs_only"],
+    ["metadata", "duplicates_excluded", "Mirrored orders excluded", "count", "", "", report.duplicateOrdersExcluded, "Matched by stable checkout idempotency reference"],
+  ];
+  if (report.canonical.cogsAllocationCoverage) {
+    const coverage = report.canonical.cogsAllocationCoverage;
+    rows.push(
+      ["coverage", "inventory_lines", "Canonical inventory lines", "count", coverage.inventoryLineCount, "", "", "Manual lines are excluded"],
+      ["coverage", "fully_allocated_lines", "Fully allocated inventory lines", "count", coverage.fullyAllocatedLineCount, "", "", ""],
+      ["coverage", "partially_allocated_lines", "Partially allocated inventory lines", "count", coverage.partiallyAllocatedLineCount, "", "", ""],
+      ["coverage", "unallocated_lines", "Unallocated inventory lines", "count", coverage.unallocatedLineCount, "", "", ""],
+      ["coverage", "expected_quantity", "Expected inventory quantity", "quantity", coverage.expectedQuantity, "", "", ""],
+      ["coverage", "allocated_quantity", "Allocated inventory quantity", "quantity", coverage.allocatedQuantity, "", "", ""],
+      ["coverage", "unallocated_quantity", "Unallocated inventory quantity", "quantity", coverage.unallocatedQuantity, "", "", ""],
+      ["coverage", "coverage_bps", "COGS allocation coverage", "basis_points", coverage.coverageBps, "", "", ""],
+    );
+  }
+  if (report.canonical.manualCostCoverage) {
+    const coverage = report.canonical.manualCostCoverage;
+    rows.push(
+      ["coverage", "manual_lines", "Canonical manual lines", "count", coverage.manualLineCount, "", "", ""],
+      ["coverage", "known_cost_manual_lines", "Manual lines with known cost", "count", coverage.knownCostLineCount, "", "", ""],
+      ["coverage", "unknown_cost_manual_lines", "Manual lines with unknown cost", "count", coverage.unknownCostLineCount, "", "", ""],
+      ["coverage", "known_manual_cogs", "Known manual-line COGS", "cents", coverage.knownManualCogsCents, "", "", ""],
+      ["coverage", "manual_cost_complete", "Manual cost coverage complete", "boolean", coverage.complete, "", "", ""],
+    );
+  }
+  for (const [key, label, unit, field] of metricRows) {
+    rows.push([
+      "metric",
+      key,
+      label,
+      unit,
+      report.canonical.totals[field],
+      report.legacyWeb.totals[field],
+      report.combined[field],
+      key === "gross_profit" && !report.grossProfitComplete
+        ? "Known gross profit only; see warnings"
+        : "",
+    ]);
+  }
+  report.warnings.forEach((warning, index) => {
+    rows.push(["warning", `warning_${index + 1}`, "Coverage warning", "text", "", "", "", warning]);
+  });
+  return rows.map((row) => row.map(csvCell).join(",")).join("\n");
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { businessId, userId } = await resolveAuthContext();
+    if (!businessId || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { startAt, endAt } = parsePeriod(request);
+    const canonicalAggregate = await getCanonicalCommerceSummary({
+      businessId,
+      startAt,
+      endAt,
+    });
+    const canonical = canonicalSourceSummaryFromAggregate(canonicalAggregate);
+    const legacy = await getLegacyWebCommerceSummary(
+      businessId,
+      { from: new Date(startAt), to: new Date(endAt) },
+      canonical.orderNumbers,
+    );
+    const report = combineCommerceDeliverySummaries({
+      period: {
+        from: new Date(startAt).toISOString(),
+        to: new Date(endAt).toISOString(),
+      },
+      canonical,
+      legacyWeb: legacy.summary,
+      duplicateOrdersExcluded: legacy.duplicateOrdersExcluded,
+    });
+
+    if (request.nextUrl.searchParams.get("format") === "csv") {
+      return new Response(toCsv(report), {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="drx-commerce-delivery-${new Date(startAt).toISOString().slice(0, 10)}.csv"`,
+        },
+      });
+    }
+    return NextResponse.json(report);
+  } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_PERIOD") {
+      return NextResponse.json({ error: "Invalid reporting period" }, { status: 400 });
+    }
+    console.error("Combined commerce reporting error", error);
+    return NextResponse.json(
+      {
+        error:
+          "Combined reporting is unavailable until both canonical and legacy ledgers can be read.",
+      },
+      { status: 503 },
+    );
+  }
+}

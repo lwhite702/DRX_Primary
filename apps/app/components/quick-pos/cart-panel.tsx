@@ -26,11 +26,11 @@ export function CartPanel({
     }, QUICK_POS_LONG_PRESS_MS);
   };
 
-  const endPress = (id: string) => {
+  const endPress = (id: string, incrementable: boolean) => {
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
-      onTap(id);
+      if (incrementable) onTap(id);
     }
   };
 
@@ -50,7 +50,7 @@ export function CartPanel({
             key={item.id}
             type="button"
             onPointerDown={() => startPress(item.id)}
-            onPointerUp={() => endPress(item.id)}
+            onPointerUp={() => endPress(item.id, !item.weightGrams)}
             onPointerLeave={() => {
               if (timeoutRef.current) {
                 window.clearTimeout(timeoutRef.current);
@@ -60,7 +60,10 @@ export function CartPanel({
             className="flex h-16 w-full items-center justify-between rounded-md border border-white/10 bg-black/40 px-4 text-left transition hover:border-accent/30 hover:bg-accent/5"
           >
             <span className="text-lg font-semibold">
-              {item.name} x{item.qty}
+              {item.name}{" "}
+              {item.weightGrams
+                ? `${item.weightGrams}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`
+                : `x${item.qty}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`}
             </span>
             <span className="text-lg font-semibold text-accent">${(item.unitPrice * item.qty).toFixed(2)}</span>
           </button>

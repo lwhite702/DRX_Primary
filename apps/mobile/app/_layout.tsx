@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet } from 'react-native';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { OfflineProvider } from '../src/contexts/OfflineContext';
+import { PushNotificationProvider } from '../src/contexts/PushNotificationContext';
 import { initErrors } from '@wrelik/errors/react-native';
 import { PostHogProvider } from 'posthog-react-native';
 
@@ -27,18 +28,20 @@ export default function RootLayout() {
       }}
     >
       <AuthProvider>
-        <OfflineProvider>
-          <View style={styles.container}>
-            <StatusBar style="light" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: '#0A0A0A' },
-                animation: 'slide_from_right',
-              }}
-            />
-          </View>
-        </OfflineProvider>
+        <PushNotificationProvider>
+          <OfflineProvider>
+            <View style={styles.container}>
+              <StatusBar style="light" />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: '#0A0A0A' },
+                  animation: 'slide_from_right',
+                }}
+              />
+            </View>
+          </OfflineProvider>
+        </PushNotificationProvider>
       </AuthProvider>
     </PostHogProvider>
   );

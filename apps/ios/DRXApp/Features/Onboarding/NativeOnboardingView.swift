@@ -262,6 +262,7 @@ struct NativeOnboardingView: View {
     private func switchAccount() {
         Task {
             do {
+                await PushNotificationCoordinator.shared.unregister()
                 try await clerk.auth.signOut()
                 model.clear()
                 await environment.clerkSignedOut()

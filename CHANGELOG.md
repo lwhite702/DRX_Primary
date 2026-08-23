@@ -7,32 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Release integrity (WRE-68)**: Added a model-invoked release-governance skill, six executable behavioral fixtures, exact SemVer and leading-`[Unreleased]` PR gates, repository-local CI dependency enforcement, safe release preparation and verification commands, and dry-run-first Featurebase projections.
+- **Fractional and value-based checkout (WRE-69, WRE-71, WRE-72, WRE-73)**: Added server-authoritative fractional quantities, reciprocal dollar/quantity entry, suggested presets, ordered bulk-price tiers, and spend-based loyalty with merchant-selected stack or best-benefit behavior across web, iOS, and Android.
+- **Delivery fulfillment (WRE-70, WRE-71, WRE-72, WRE-73)**: Added encrypted-address delivery checkout, atomic sale linkage, vendor-fee allocation and tax treatment, tenant-scoped operator queues, assignment and shift handoff, audited status events and address access, required Uber wait time, server-owned reminders and manager escalation, and durable Android reminder recovery.
+- **Delivery accounting and reporting (WRE-70, WRE-71)**: Added separate merchandise and delivery revenue, vendor delivery expense, delivery tax, discounts, COGS, capped customer-fee and delivery-tax refunds, vendor credits, and gross-profit reconciliation with a sanitized aggregate CSV export.
+
 ### Changed
 
-- **Cross-client runtime hardening (WRE-65)**: Added the iOS launch/auth routing experience and accessible lime primary-button style, synchronized programmatic tab changes, bumped native metadata to `0.6.1 (31)`, removed duplicate web identity controls, and hardened credit, customer, inventory, report, realtime, feedback, and AI response handling.
+- **Cross-client runtime hardening (WRE-65)**: Added the iOS launch/auth routing experience and accessible lime primary-button style, synchronized programmatic tab changes, removed duplicate web identity controls, and hardened credit, customer, inventory, report, realtime, feedback, and AI response handling.
 - **Pre-RC operator UX**: Simplified dashboard density, preserved the application shell during route changes, added domain-specific skeletons and non-blocking refresh status, and replaced automatic chunk reloads with an explicit recovery action.
 - **Runtime and observability**: Standardized local, CI, container, web, marketing, and mobile tooling on Node `22.23.1`; moved Sentry client setup to `instrumentation-client.ts` and disabled default PII and replay capture.
-- **Release Metadata**: Recorded the prior `0.6.0-rc.1 (20)` release-candidate baseline; WRE-65 now advances the native source metadata to `0.6.1 (31)` without publishing a store build.
+- **Release metadata**: Synchronized product-version surfaces to planned version `0.6.0` while preserving iOS build `31` as an independent source build number. This does not claim a tag, deployment, TestFlight upload, Play build, or customer release.
+- **Release-record correction**: Removed the unsupported `0.6.0-rc.1` release section and stale build-20 customer claims. Repository and provider evidence did not establish that candidate as a tagged or distributed release.
 - **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
 
 ### Fixed
 
 - **Feedback fallback**: All in-app bug-report entry points now open the Featurebase Help Center when the Sentry feedback widget is unavailable or fails to initialize.
 - **Quick POS Recovery**: Route complete sales through the canonical checkout API with idempotent retries and allow authenticated operators to exit when no manager PIN is configured.
-
-## [0.6.0-rc.1] - 2026-08-13
-
-### Added
-
-- **Convex POS Schema Extensions**: Added `pinCode` to `users` table, `deliveryFeeCents`, `discountAmountCents`, `isComp`, `voidReason`, and `refundReason` to `sales` table, and added `stockAdjustments` table for tracking inventory adjustments and shrink losses.
-- **POS Order Voids & Refunds Engine**: Created `apps/app/convex/refunds.ts` with `voidOrder` and `refundOrder` mutations, featuring transactional inventory stock restoration (product quantity and FIFO batch remaining quantity), customer credit/purchase totals rollback, and immutable audit logging.
-- **Stock Adjustments & Shrink Tracking**: Created `apps/app/convex/inventoryAdjustments.ts` with `createStockAdjustment` and `listStockAdjustments` for tracking inventory loss, damage, and recount adjustments.
-- **Checkout Support for Delivery & Comps**: Extended `apps/app/convex/checkout.ts` to support `deliveryFeeCents` and `isComp` flags.
-- **Financial Reporting Metrics**: Extended `apps/app/convex/reporting.ts` to compute Net Revenue, Cost of Goods Sold (COGS from `salesAllocations`), Gross Profit ($), Gross Margin (%), total delivery fees, and total shrink loss.
-
-### Fixed
-
-- **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
 
 ## [0.5.7] - 2026-07-22
 

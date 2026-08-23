@@ -6,6 +6,8 @@ export type Permission =
   | "MANAGE_INVENTORY"
   | "MANAGE_CUSTOMERS"
   | "PROCESS_CHECKOUT"
+  | "MANAGE_DELIVERIES"
+  | "MANAGE_COMMERCE_SETTINGS"
   | "VIEW_FINANCIALS"
   | "MANAGE_MEMBERS"
   | "VIEW_AUDIT_LOGS";
@@ -17,6 +19,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_INVENTORY",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
+    "MANAGE_DELIVERIES",
+    "MANAGE_COMMERCE_SETTINGS",
     "VIEW_FINANCIALS",
     "MANAGE_MEMBERS",
     "VIEW_AUDIT_LOGS",
@@ -27,10 +31,12 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_INVENTORY",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
+    "MANAGE_DELIVERIES",
+    "MANAGE_COMMERCE_SETTINGS",
     "VIEW_FINANCIALS",
     "VIEW_AUDIT_LOGS",
   ],
-  MEMBER: ["PROCESS_CHECKOUT", "MANAGE_CUSTOMERS"],
+  MEMBER: ["PROCESS_CHECKOUT", "MANAGE_CUSTOMERS", "MANAGE_DELIVERIES"],
 };
 
 export function hasPermission(user: Doc<"users">, permission: Permission): boolean {

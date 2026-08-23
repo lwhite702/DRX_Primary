@@ -4,6 +4,11 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 import { calculateTaxCents } from "./helpers/money";
+import {
+  validateSaleQuantity,
+  type SaleQuantityValidationReason,
+} from "./helpers/pricing";
+import { normalizeProductCommerceConfig } from "./helpers/productCommerce";
 
 const paymentMethod = v.union(v.literal("cash"), v.literal("credit"));
 const syncStatus = v.union(
@@ -17,6 +22,61 @@ const caseKind = v.union(
   v.literal("stale_price"),
   v.literal("clock_skew"),
 );
+const quarantineReason = v.union(
+  v.literal("authorization_missing"),
+  v.literal("authorization_identity_mismatch"),
+  v.literal("authorization_inactive"),
+  v.literal("authorization_time_window"),
+  v.literal("per_sale_limit_exceeded"),
+  v.literal("session_limit_exceeded"),
+  v.literal("queued_sale_limit_exceeded"),
+  v.literal("offline_credit_limit_exceeded"),
+  v.literal("customer_inactive"),
+  v.literal("quantity_invalid"),
+  v.literal("fractional_quantity_not_allowed"),
+  v.literal("fractional_configuration_missing"),
+  v.literal("quantity_configuration_invalid"),
+  v.literal("quantity_precision_exceeded"),
+  v.literal("quantity_below_minimum"),
+  v.literal("quantity_increment_mismatch"),
+);
+
+type QuarantineReason =
+  | "authorization_missing"
+  | "authorization_identity_mismatch"
+  | "authorization_inactive"
+  | "authorization_time_window"
+  | "per_sale_limit_exceeded"
+  | "session_limit_exceeded"
+  | "queued_sale_limit_exceeded"
+  | "offline_credit_limit_exceeded"
+  | "customer_inactive"
+  | SaleQuantityValidationReason;
+
+const QUARANTINE_REASONS = new Set<QuarantineReason>([
+  "authorization_missing",
+  "authorization_identity_mismatch",
+  "authorization_inactive",
+  "authorization_time_window",
+  "per_sale_limit_exceeded",
+  "session_limit_exceeded",
+  "queued_sale_limit_exceeded",
+  "offline_credit_limit_exceeded",
+  "customer_inactive",
+  "quantity_invalid",
+  "fractional_quantity_not_allowed",
+  "fractional_configuration_missing",
+  "quantity_configuration_invalid",
+  "quantity_precision_exceeded",
+  "quantity_below_minimum",
+  "quantity_increment_mismatch",
+]);
+
+function toQuarantineReason(value?: string): QuarantineReason | null {
+  return value && QUARANTINE_REASONS.has(value as QuarantineReason)
+    ? (value as QuarantineReason)
+    : null;
+}
 
 const policyFields = {
   enabled: v.boolean(),
@@ -55,6 +115,7 @@ const syncReturn = v.object({
   orderNumber: v.union(v.string(), v.null()),
   totalAmountCents: v.number(),
   conflicts: v.array(caseKind),
+  quarantineReason: v.union(quarantineReason, v.null()),
 });
 
 function requireOwnerOrAdmin(role: string) {
@@ -273,7 +334,7 @@ async function quarantine(
     paymentMethod: "cash" | "credit";
     totalAmountCents: number;
     itemCount: number;
-    reason: string;
+    reason: QuarantineReason;
   },
 ) {
   const submissionId = await ctx.db.insert("offlineSaleSubmissions", {
@@ -351,6 +412,7 @@ export const syncSale = mutation({
         orderNumber: duplicateSale?.orderNumber ?? null,
         totalAmountCents: duplicate.totalAmountCents,
         conflicts: [],
+        quarantineReason: toQuarantineReason(duplicate.quarantineReason),
       };
     }
 
@@ -376,6 +438,7 @@ export const syncSale = mutation({
         productId: Id<"products">;
         quantityGrams: number;
         unitPriceCents: number;
+        rawQuantities: number[];
       }
     >();
     for (const item of args.items) {
@@ -393,6 +456,10 @@ export const syncSale = mutation({
         productId: item.productId,
         quantityGrams: (existing?.quantityGrams ?? 0) + item.quantityGrams,
         unitPriceCents: item.unitPriceCents,
+        rawQuantities: [
+          ...(existing?.rawQuantities ?? []),
+          item.quantityGrams,
+        ],
       });
     }
     const currentProducts: Array<{
@@ -400,11 +467,12 @@ export const syncSale = mutation({
         productId: Id<"products">;
         quantityGrams: number;
         unitPriceCents: number;
+        rawQuantities: number[];
       };
       product: Doc<"products">;
       lineTotalCents: number;
     }> = [];
-    let permanentValidationReason: string | null = null;
+    let permanentValidationReason: QuarantineReason | null = null;
     const conflictInputs: Array<{
       kind:
         | "inventory_shortfall"
@@ -424,11 +492,28 @@ export const syncSale = mutation({
           "FORBIDDEN: Offline product is outside the active tenant",
         );
       }
-      if (
-        !product.allowFractionalWeight &&
-        !Number.isInteger(item.quantityGrams)
-      ) {
-        permanentValidationReason = "fractional_quantity_not_allowed";
+      const commerceConfig = normalizeProductCommerceConfig(product);
+      for (const rawQuantity of item.rawQuantities) {
+        const validation = validateSaleQuantity({
+          quantity: rawQuantity,
+          allowFractional: product.allowFractionalWeight,
+          quantityPrecision: commerceConfig.quantityPrecision,
+          minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
+          quantityIncrement: commerceConfig.quantityIncrement,
+        });
+        if (!validation.valid && !permanentValidationReason) {
+          permanentValidationReason = validation.reason;
+        }
+      }
+      const aggregateValidation = validateSaleQuantity({
+        quantity: item.quantityGrams,
+        allowFractional: product.allowFractionalWeight,
+        quantityPrecision: commerceConfig.quantityPrecision,
+        minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
+        quantityIncrement: commerceConfig.quantityIncrement,
+      });
+      if (!aggregateValidation.valid && !permanentValidationReason) {
+        permanentValidationReason = aggregateValidation.reason;
       }
       const lineTotalCents = Math.round(
         item.quantityGrams * item.unitPriceCents,
@@ -485,9 +570,10 @@ export const syncSale = mutation({
         orderNumber: null,
         totalAmountCents,
         conflicts: [],
+        quarantineReason: permanentValidationReason,
       };
     }
-    const invalidReason = !authorization
+    const invalidReason: QuarantineReason | null = !authorization
       ? "authorization_missing"
       : authorization.userId !== auth.userId ||
           authorization.deviceId !== args.deviceId
@@ -529,6 +615,7 @@ export const syncSale = mutation({
         orderNumber: null,
         totalAmountCents,
         conflicts: [],
+        quarantineReason: invalidReason,
       };
     }
 
@@ -570,6 +657,7 @@ export const syncSale = mutation({
         orderNumber: null,
         totalAmountCents,
         conflicts: [],
+        quarantineReason: "customer_inactive" as const,
       };
     }
     if (args.paymentMethod === "credit") {
@@ -613,6 +701,9 @@ export const syncSale = mutation({
       orderNumber,
       orderStatus: "completed",
       subtotalCents,
+      merchandiseSubtotalCents: subtotalCents,
+      merchandiseRevenueCents: subtotalCents,
+      loyaltyEligibleSpendCents: subtotalCents,
       taxableSubtotalCents,
       taxAmountCents,
       totalAmountCents,
@@ -688,6 +779,10 @@ export const syncSale = mutation({
     if (customer) {
       await ctx.db.patch(customer._id, {
         totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
+        loyaltyEligibleSpendCents:
+          (customer.loyaltyEligibleSpendCents ??
+            customer.totalPurchasesCents ??
+            0) + subtotalCents,
         totalCreditUsedCents:
           args.paymentMethod === "credit"
             ? customer.totalCreditUsedCents + totalAmountCents
@@ -747,6 +842,7 @@ export const syncSale = mutation({
       orderNumber,
       totalAmountCents,
       conflicts: conflictInputs.map((conflict) => conflict.kind),
+      quarantineReason: null,
     };
   },
 });

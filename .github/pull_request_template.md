@@ -4,6 +4,11 @@ _Summarize the change in plain language. Screenshots welcome for UI work._
 ## Why it matters *
 _What problem does this solve, and for whom?_
 
+Release impact: none
+Roadmap impact: none
+
+_Allowed values: Release impact `none|patch|minor|major`; Roadmap impact `none|add|move|remove`._
+
 ## Pre-merge checks
 - [ ] Tested locally
 - [ ] Docs updated where needed

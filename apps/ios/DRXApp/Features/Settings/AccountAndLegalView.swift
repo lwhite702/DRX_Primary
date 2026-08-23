@@ -113,6 +113,7 @@ struct AccountAndLegalView: View {
         }
 
         do {
+            await PushNotificationCoordinator.shared.unregister()
             try await user.delete()
             UserDefaultsOnboardingDraftStore().clear()
             await environment.signOut()

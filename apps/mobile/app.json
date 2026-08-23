@@ -3,7 +3,7 @@
     "name": "DRX",
     "owner": "wrelik",
     "slug": "deelrx-crm",
-    "version": "0.1.0",
+    "version": "0.6.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "drx",
@@ -49,6 +49,7 @@
       ],
       "expo-font",
       "expo-web-browser",
+      "expo-notifications",
       "expo-secure-store",
       [
         "expo-sqlite",

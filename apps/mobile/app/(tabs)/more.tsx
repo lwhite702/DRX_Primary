@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as Application from "expo-application";
 import { useAuth } from "../../src/contexts/AuthContext";
 import {
   COLORS,
@@ -42,6 +43,7 @@ export default function More() {
     {
       title: "POS Actions",
       items: [
+        { icon: "car-outline", label: "Deliveries", route: "/deliveries", disabled: false },
         { icon: "receipt-outline", label: "Sales History", route: "/sales-history", disabled: false },
         {
           icon: "cash-outline",
@@ -173,7 +175,9 @@ export default function More() {
 
         {/* Version */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>DRX Android v0.1.0</Text>
+          <Text style={styles.versionText}>
+            DRX {Application.applicationName ?? "Mobile"} v{Application.nativeApplicationVersion ?? "unknown"}
+          </Text>
           <Text style={styles.versionSubtext}>Secured and synchronized by Convex</Text>
         </View>
       </ScrollView>
