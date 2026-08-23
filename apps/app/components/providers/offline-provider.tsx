@@ -12,14 +12,32 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
     const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
+        let isMounted = true;
+
         // Initialize sync manager
-        offlineSyncManager.init().catch(console.error);
+        offlineSyncManager.init().catch(() => {});
 
         // Set initial state
-        setIsOnline(navigator.onLine);
+        if (typeof navigator !== "undefined") {
+            setIsOnline(navigator.onLine);
+        }
+
+        const updatePendingCount = async () => {
+            try {
+                const count = await offlineSyncManager.getPendingCount();
+                if (isMounted) {
+                    setPendingCount(count);
+                }
+            } catch {
+                if (isMounted) {
+                    setPendingCount(0);
+                }
+            }
+        };
 
         // Setup listeners
         const handleOnline = async () => {
+            if (!isMounted) return;
             setIsOnline(true);
             toast.success("Back online. Syncing data...");
             setIsSyncing(true);
@@ -32,15 +50,18 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
                 if (result.failed > 0) {
                     toast.error(`Failed to sync ${result.failed} transactions`);
                 }
-                setPendingCount(0);
+                await updatePendingCount();
             } catch (error) {
                 console.error("Sync failed:", error);
             } finally {
-                setIsSyncing(false);
+                if (isMounted) {
+                    setIsSyncing(false);
+                }
             }
         };
 
         const handleOffline = () => {
+            if (!isMounted) return;
             setIsOnline(false);
             toast.warning("You are offline. Changes will be saved locally.");
         };
@@ -48,13 +69,12 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
         window.addEventListener("online", handleOnline);
         window.addEventListener("offline", handleOffline);
 
-        // Check pending count periodically
-        const interval = setInterval(async () => {
-            const count = await offlineSyncManager.getPendingCount();
-            setPendingCount(count);
-        }, 5000);
+        // Check pending count initially and periodically
+        updatePendingCount();
+        const interval = setInterval(updatePendingCount, 5000);
 
         return () => {
+            isMounted = false;
             window.removeEventListener("online", handleOnline);
             window.removeEventListener("offline", handleOffline);
             clearInterval(interval);

@@ -12,7 +12,6 @@ import {
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
-import Script from 'next/script';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -114,10 +113,6 @@ export default function RootLayout({
             src="https://snippet.meticulous.ai/v1/meticulous.js"
           />
         ) : null}
-        <Script
-          src="https://www.vexo.co/analytics.js"
-          strategy="afterInteractive"
-        />
       </head>
       <body
         className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} ${plusJakartaSans.className} bg-background text-foreground antialiased`}

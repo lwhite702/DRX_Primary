@@ -3,14 +3,14 @@ import type { POSCheckout } from "@/lib/validations/schemas";
 
 const DB_NAME = "drx_crm_offline";
 const DB_VERSION = 1;
-const STORES = {
+export const STORES = {
   transactions: "transactions",
   inventory: "inventory",
   customers: "customers",
   credit: "credit",
-};
+} as const;
 
-interface OfflineTransaction {
+export interface OfflineTransaction {
   id: string;
   type: "pos_checkout" | "credit_extension" | "credit_payment" | "inventory_update";
   data: any;
@@ -19,42 +19,128 @@ interface OfflineTransaction {
   retry_count: number;
 }
 
-class OfflineSyncManager {
+export class OfflineSyncManager {
   private db: IDBDatabase | null = null;
+  private initPromise: Promise<IDBDatabase | null> | null = null;
 
-  async init(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
+  async init(): Promise<IDBDatabase | null> {
+    if (typeof window === "undefined" || typeof indexedDB === "undefined") {
+      return null;
+    }
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        this.db = request.result;
-        resolve();
-      };
+    if (this.db) {
+      return this.db;
+    }
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
-        // Create object stores
-        if (!db.objectStoreNames.contains(STORES.transactions)) {
-          const txStore = db.createObjectStore(STORES.transactions, { keyPath: "id" });
-          txStore.createIndex("synced", "synced");
-          txStore.createIndex("timestamp", "timestamp");
-        }
+    this.initPromise = new Promise<IDBDatabase | null>((resolve) => {
+      try {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        if (!db.objectStoreNames.contains(STORES.inventory)) {
-          db.createObjectStore(STORES.inventory, { keyPath: "id" });
-        }
+        request.onerror = () => {
+          this.initPromise = null;
+          this.db = null;
+          resolve(null);
+        };
 
-        if (!db.objectStoreNames.contains(STORES.customers)) {
-          db.createObjectStore(STORES.customers, { keyPath: "id" });
-        }
+        request.onblocked = () => {
+          this.initPromise = null;
+          this.db = null;
+          resolve(null);
+        };
 
-        if (!db.objectStoreNames.contains(STORES.credit)) {
-          db.createObjectStore(STORES.credit, { keyPath: "id" });
-        }
-      };
+        request.onsuccess = () => {
+          const db = request.result;
+          this.db = db;
+          this.initPromise = null;
+
+          db.onversionchange = () => {
+            try {
+              db.close();
+            } catch {}
+            this.db = null;
+          };
+
+          db.onclose = () => {
+            this.db = null;
+          };
+
+          db.onerror = () => {
+            this.db = null;
+          };
+
+          resolve(db);
+        };
+
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+
+          // Create object stores
+          if (!db.objectStoreNames.contains(STORES.transactions)) {
+            const txStore = db.createObjectStore(STORES.transactions, { keyPath: "id" });
+            txStore.createIndex("synced", "synced");
+            txStore.createIndex("timestamp", "timestamp");
+          }
+
+          if (!db.objectStoreNames.contains(STORES.inventory)) {
+            db.createObjectStore(STORES.inventory, { keyPath: "id" });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.customers)) {
+            db.createObjectStore(STORES.customers, { keyPath: "id" });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.credit)) {
+            db.createObjectStore(STORES.credit, { keyPath: "id" });
+          }
+        };
+      } catch {
+        this.initPromise = null;
+        this.db = null;
+        resolve(null);
+      }
     });
+
+    return this.initPromise;
+  }
+
+  // Execute an operation with an object store, handling connection lifecycle recovery
+  private async withStore<T>(
+    storeName: string,
+    mode: IDBTransactionMode,
+    operation: (store: IDBObjectStore, tx: IDBTransaction) => Promise<T>
+  ): Promise<T> {
+    const execute = async (retry: boolean): Promise<T> => {
+      const db = await this.init();
+      if (!db) {
+        throw new Error("IndexedDB is not available");
+      }
+
+      try {
+        const tx = db.transaction([storeName], mode);
+        const store = tx.objectStore(storeName);
+        return await operation(store, tx);
+      } catch (err: any) {
+        const isClosingOrClosed =
+          err?.name === "InvalidStateError" ||
+          (err?.message && (err.message.includes("closing") || err.message.includes("closed")));
+
+        if (retry && isClosingOrClosed) {
+          try {
+            db.close();
+          } catch {}
+          this.db = null;
+          this.initPromise = null;
+          return execute(false);
+        }
+        throw err;
+      }
+    };
+
+    return execute(true);
   }
 
   // Store transaction for offline sync
@@ -62,8 +148,6 @@ class OfflineSyncManager {
     type: OfflineTransaction["type"],
     data: any
   ): Promise<string> {
-    if (!this.db) await this.init();
-
     const transaction: OfflineTransaction = {
       id: `offline_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
@@ -73,119 +157,126 @@ class OfflineSyncManager {
       retry_count: 0,
     };
 
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readwrite");
-      const store = tx.objectStore(STORES.transactions);
-      const request = store.add(transaction);
-
-      request.onsuccess = () => resolve(transaction.id);
-      request.onerror = () => reject(request.error);
+    return await this.withStore(STORES.transactions, "readwrite", (store) => {
+      return new Promise<string>((resolve, reject) => {
+        const request = store.add(transaction);
+        request.onsuccess = () => resolve(transaction.id);
+        request.onerror = () => reject(request.error);
+      });
     });
   }
 
   // Get pending transactions
   async getPendingTransactions(): Promise<OfflineTransaction[]> {
-    if (!this.db) await this.init();
-
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readonly");
-      const store = tx.objectStore(STORES.transactions);
-      const index = store.index("synced");
-      const request = index.getAll(0);
-
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(request.error);
-    });
+    try {
+      return await this.withStore(STORES.transactions, "readonly", (store) => {
+        return new Promise<OfflineTransaction[]>((resolve, reject) => {
+          const index = store.index("synced");
+          const request = index.getAll(0);
+          request.onsuccess = () => resolve(request.result || []);
+          request.onerror = () => reject(request.error);
+        });
+      });
+    } catch {
+      return [];
+    }
   }
 
   // Get count of pending transactions
   async getPendingCount(): Promise<number> {
-    if (!this.db) await this.init();
-
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readonly");
-      const store = tx.objectStore(STORES.transactions);
-      const index = store.index("synced");
-      const request = index.count(IDBKeyRange.only(0));
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
+    try {
+      return await this.withStore(STORES.transactions, "readonly", (store) => {
+        return new Promise<number>((resolve, reject) => {
+          const index = store.index("synced");
+          const keyRange = typeof IDBKeyRange !== "undefined" ? IDBKeyRange.only(0) : (0 as any);
+          const request = index.count(keyRange);
+          request.onsuccess = () => resolve(request.result || 0);
+          request.onerror = () => reject(request.error);
+        });
+      });
+    } catch {
+      return 0;
+    }
   }
 
   // Mark transaction as synced
   async markSynced(transactionId: string): Promise<void> {
-    if (!this.db) await this.init();
-
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readwrite");
-      const store = tx.objectStore(STORES.transactions);
-      const getRequest = store.get(transactionId);
-
-      getRequest.onsuccess = () => {
-        const transaction = getRequest.result;
-        if (transaction) {
-          transaction.synced = 1;
-          const updateRequest = store.put(transaction);
-          updateRequest.onsuccess = () => resolve();
-          updateRequest.onerror = () => reject(updateRequest.error);
-        } else {
-          resolve();
-        }
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
+    try {
+      await this.withStore(STORES.transactions, "readwrite", (store) => {
+        return new Promise<void>((resolve, reject) => {
+          const getRequest = store.get(transactionId);
+          getRequest.onsuccess = () => {
+            const transaction = getRequest.result;
+            if (transaction) {
+              transaction.synced = 1;
+              const updateRequest = store.put(transaction);
+              updateRequest.onsuccess = () => resolve();
+              updateRequest.onerror = () => reject(updateRequest.error);
+            } else {
+              resolve();
+            }
+          };
+          getRequest.onerror = () => reject(getRequest.error);
+        });
+      });
+    } catch (err) {
+      console.error("Failed to mark transaction as synced:", err);
+    }
   }
 
   // Increment retry count
   async incrementRetry(transactionId: string): Promise<void> {
-    if (!this.db) await this.init();
-
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readwrite");
-      const store = tx.objectStore(STORES.transactions);
-      const getRequest = store.get(transactionId);
-
-      getRequest.onsuccess = () => {
-        const transaction = getRequest.result;
-        if (transaction) {
-          transaction.retry_count += 1;
-          const updateRequest = store.put(transaction);
-          updateRequest.onsuccess = () => resolve();
-          updateRequest.onerror = () => reject(updateRequest.error);
-        } else {
-          resolve();
-        }
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
+    try {
+      await this.withStore(STORES.transactions, "readwrite", (store) => {
+        return new Promise<void>((resolve, reject) => {
+          const getRequest = store.get(transactionId);
+          getRequest.onsuccess = () => {
+            const transaction = getRequest.result;
+            if (transaction) {
+              transaction.retry_count += 1;
+              const updateRequest = store.put(transaction);
+              updateRequest.onsuccess = () => resolve();
+              updateRequest.onerror = () => reject(updateRequest.error);
+            } else {
+              resolve();
+            }
+          };
+          getRequest.onerror = () => reject(getRequest.error);
+        });
+      });
+    } catch (err) {
+      console.error("Failed to increment transaction retry:", err);
+    }
   }
 
   // Delete synced transactions older than 7 days
   async cleanupOldTransactions(): Promise<void> {
-    if (!this.db) await this.init();
-
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-    return new Promise((resolve, reject) => {
-      const tx = this.db!.transaction([STORES.transactions], "readwrite");
-      const store = tx.objectStore(STORES.transactions);
-      const index = store.index("timestamp");
-      const request = index.openCursor(IDBKeyRange.upperBound(sevenDaysAgo));
+    try {
+      await this.withStore(STORES.transactions, "readwrite", (store) => {
+        return new Promise<void>((resolve, reject) => {
+          const index = store.index("timestamp");
+          const keyRange = typeof IDBKeyRange !== "undefined" ? IDBKeyRange.upperBound(sevenDaysAgo) : undefined;
+          const request = index.openCursor(keyRange);
 
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          if (cursor.value.synced === 1) {
-            cursor.delete();
-          }
-          cursor.continue();
-        } else {
-          resolve();
-        }
-      };
-      request.onerror = () => reject(request.error);
-    });
+          request.onsuccess = (event) => {
+            const cursor = (event.target as IDBRequest).result;
+            if (cursor) {
+              if (cursor.value.synced === 1) {
+                cursor.delete();
+              }
+              cursor.continue();
+            } else {
+              resolve();
+            }
+          };
+          request.onerror = () => reject(request.error);
+        });
+      });
+    } catch (err) {
+      console.error("Failed to cleanup old transactions:", err);
+    }
   }
 
   // Sync pending transactions
@@ -278,11 +369,13 @@ class OfflineSyncManager {
 
   // Check online status
   isOnline(): boolean {
-    return navigator.onLine;
+    if (typeof navigator === "undefined") return true;
+    return navigator.onLine ?? true;
   }
 
   // Setup online/offline listeners
   setupListeners(onOnline: () => void, onOffline: () => void): void {
+    if (typeof window === "undefined") return;
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
   }
