@@ -3,7 +3,7 @@
     "name": "DRX",
     "owner": "wrelik",
     "slug": "deelrx-crm",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "drx",
@@ -11,7 +11,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lwhite702.frontend",
+      "bundleIdentifier": "com.wrelik.drx",
       "config": {
         "usesNonExemptEncryption": false
       }

@@ -16,14 +16,14 @@ if [[ "${CI_XCODEBUILD_EXIT_CODE:-0}" != "0" || -z "${CI_ARCHIVE_PATH:-}" ]]; th
 fi
 
 if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
-  echo "error: SENTRY_AUTH_TOKEN is required to upload release symbols"
-  exit 1
+  echo "warning: SENTRY_AUTH_TOKEN is not set; skipping release symbol upload"
+  exit 0
 fi
 
 export SENTRY_ORG="${SENTRY_ORG:-wrelik-0y}"
 if [[ -z "${SENTRY_PROJECT:-}" ]]; then
-  echo "error: SENTRY_PROJECT must match the project that issued SENTRY_DSN"
-  exit 1
+  echo "warning: SENTRY_PROJECT is not set; skipping release symbol upload"
+  exit 0
 fi
 release="com.wrelik.drx@${MARKETING_VERSION:-0.0.0}+${CURRENT_PROJECT_VERSION:-${CI_BUILD_NUMBER:-0}}"
 

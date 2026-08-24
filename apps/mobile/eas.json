@@ -38,6 +38,9 @@
       "android": {
         "buildType": "apk"
       },
+      "ios": {
+        "simulator": false
+      },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
@@ -51,6 +54,9 @@
       "android": {
         "buildType": "app-bundle"
       },
+      "ios": {
+        "simulator": false
+      },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuZGVlbHJ4Y3JtLmFwcCQ",
@@ -58,10 +64,14 @@
       }
     },
     "production": {
+      "distribution": "store",
       "environment": "production",
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
       },
       "env": {
         "EAS_BUILD_NPM_CLIENT": "pnpm",

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-08-23
+
+### Fixed
+
+- **iOS TestFlight and Xcode Cloud Automation**: Hardened `ci_post_clone.sh`, `ci_pre_xcodebuild.sh`, and `ci_post_xcodebuild.sh` with root wrapper scripts, graceful Sentry token handling, fast Homebrew installs, and aligned Expo iOS bundle identifier `com.wrelik.drx` with EAS build profiles.
+
 ## [0.6.3] - 2026-08-23
 
 ### Fixed
