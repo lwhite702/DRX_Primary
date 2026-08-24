@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -165,10 +165,11 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@esbuild/darwin-arm64": "0.27.0",
+    "@esbuild/darwin-arm64": "0.21.5",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
+    "@rollup/rollup-darwin-arm64": "^4.62.5",
     "@tailwindcss/postcss": "^4.1.9",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
@@ -183,7 +184,7 @@
     "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.0.0",
     "dotenv": "^17.2.3",
-    "esbuild": "0.27.0",
+    "esbuild": "0.21.5",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.6",
     "eslint-plugin-jsx-a11y": "^6.10.2",
