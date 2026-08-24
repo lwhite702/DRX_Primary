@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-08-23
+
+### Fixed
+
+- **Quick POS Bootstrap Resilience**: Guarded `deliveryPolicy` and `creditPolicy` with optional chaining in `/pos/sale` page loader to prevent unhandled TypeError from aborting favorites rendering when policy payload fields are omitted.
+- **E2E Test Stability**: Added `test.setTimeout(60000)` and complete bootstrap mock schemas in `quick-pos-required.spec.ts` and `help-center-smoke.spec.ts` to accommodate cold server compilation on CI runners.
+
 ## [0.6.2] - 2026-08-23
 
 ### Fixed

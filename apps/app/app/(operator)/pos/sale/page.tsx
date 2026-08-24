@@ -53,8 +53,8 @@ export default function QuickPosSalePage() {
 
         const data = (await res.json()) as QuickPosBootstrapResponse;
         setBootstrap(data);
-        setCreditPolicy(data.creditPolicy.enabled);
-        setDeliveryFeeTaxable(data.deliveryPolicy.feeTaxable);
+        setCreditPolicy(Boolean(data.creditPolicy?.enabled));
+        setDeliveryFeeTaxable(Boolean(data.deliveryPolicy?.feeTaxable));
       } catch {
         setError("Unable to load POS");
       } finally {

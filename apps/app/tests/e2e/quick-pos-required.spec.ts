@@ -25,6 +25,7 @@ test.describe("Quick POS required flow", () => {
             { id: "p-3", name: "Recent Item", price: 12, quantity_on_hand: 10 },
           ],
           creditPolicy: { enabled: true },
+          deliveryPolicy: { feeTaxable: false },
         }),
       });
     });
@@ -86,6 +87,7 @@ test.describe("Quick POS required flow", () => {
   });
 
   test("sale -> payment -> complete -> next sale", async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto("/pos/sale");
 
     const favoriteButton = page
