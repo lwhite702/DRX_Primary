@@ -1,7 +1,7 @@
 {
   "name": "deelrxcrm-mobile",
   "main": "expo-router/entry",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "engines": {
     "node": "22.x"
   },
@@ -30,15 +30,15 @@
     "axios": "^1.13.5",
     "convex": "^1.42.3",
     "date-fns": "^4.1.0",
-    "expo": "~54.0.36",
+    "expo": "~54.0.37",
     "expo-application": "~7.0.8",
     "expo-auth-session": "~7.0.11",
     "expo-blur": "~15.0.8",
     "expo-build-properties": "~1.0.10",
-    "expo-constants": "~18.0.13",
+    "expo-constants": "~18.0.14",
     "expo-dev-client": "~6.0.21",
     "expo-device": "~8.0.10",
-    "expo-file-system": "~19.0.23",
+    "expo-file-system": "~19.0.24",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
     "expo-linking": "~8.0.12",

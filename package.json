@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -207,7 +207,12 @@
       "posthog-react-native-session-replay": "1.6.0",
       "react": "19.1.0",
       "react-dom": "19.1.0",
-      "@types/react": "~19.0.10",
+      "@types/react": "~19.1.10",
+      "expo": "~54.0.37",
+      "expo-constants": "~18.0.14",
+      "expo-file-system": "~19.0.24",
+      "@sentry/react-native": "~7.2.0",
+      "@expo/vector-icons": "^15.0.3",
       "@wrelik/auth": "file:packages/wrelik-auth-0.2.2.tgz",
       "@wrelik/db": "file:packages/wrelik-db-0.1.3.tgz",
       "@wrelik/storage": "file:packages/wrelik-storage-0.2.1.tgz",

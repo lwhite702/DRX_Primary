@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-08-23
+
+### Fixed
+
+- **Expo SDK 54 & Metro Configuration**: Aligned `expo`, `expo-constants`, `expo-file-system`, `@types/react`, and `@sentry/react-native` versions across monorepo dependencies and pnpm overrides, deduplicated native modules, and preserved Expo default `watchFolders` in `metro.config.js`.
+
 ## [0.6.4] - 2026-08-23
 
 ### Fixed
