@@ -15,7 +15,7 @@ Classify the work before editing release records:
 - **implemented**: matching source is verified in a branch/PR and required repository checks pass; pending merge/push to `main`.
 - **released**: the commit is merged and published to `main` (which automatically deploys and releases to production), or has verified store distribution.
 
-Use the lowest state supported by reproducible evidence. Pushing/publishing to `main` automatically triggers production deployment and release. Every push to `main` changes the version and release number automatically; no push can share the same version or release number as a previous push.
+Use the lowest state supported by reproducible evidence. Pushing/publishing product-behavior changes to `main` automatically triggers production deployment and release. Every product push to `main` changes the version and release number automatically; no push can share the same version or release number as a previous push. Pure documentation, test, or policy changes do not require a version change.
 
 ## SemVer decision
 
@@ -24,7 +24,7 @@ Apply the highest matching impact; DRX's pre-1.0 versions do not weaken these ru
 - **major**: any backward-incompatible removal or change to a public API, export, persisted data, operator workflow, or supported integration.
 - **minor**: a backward-compatible feature or user-visible behavior change.
 - **patch**: a backward-compatible bug fix.
-- **none**: documentation, tests, or internal-only work with no runtime behavior or version-surface change.
+- **none**: documentation, tests, or internal-only work with no runtime behavior or version-surface change (does not require a version change).
 
 The PR declaration must match this classification. Version-surface edits require `patch`, `minor`, or `major` and user-visible impacts require a substantive diff in the leading `[Unreleased]` section.
 
