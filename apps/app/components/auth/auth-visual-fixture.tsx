@@ -31,17 +31,15 @@ export function AuthVisualFixture({ mode }: AuthVisualFixtureProps) {
         <label htmlFor={`${mode}-email`} className="text-sm font-semibold text-[#E7E7E7]">
           Email address
         </label>
-        <div className="flex min-h-12 items-center gap-3 rounded-lg border border-white/15 bg-[#1A1A1A] px-3.5 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent">
-          <Mail className="size-4 text-white/35" aria-hidden />
+        <div className="flex min-h-12 items-center gap-3 rounded-lg border border-white/20 bg-[#1E1E1E] px-3.5 transition-colors hover:border-white/35 focus-within:border-accent focus-within:bg-[#242424] focus-within:ring-2 focus-within:ring-accent">
+          <Mail className="size-4 text-white/50" aria-hidden />
           <input
             id={`${mode}-email`}
             type="email"
             inputMode="email"
-            readOnly
-            autoComplete="off"
-            tabIndex={-1}
+            autoComplete="email"
             placeholder="operator@example.com"
-            className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#8A8A8A]"
+            className="min-w-0 flex-1 bg-transparent text-base text-white caret-[#CCFF00] outline-none placeholder:text-[#8A8A8A]"
           />
         </div>
       </div>
@@ -51,16 +49,14 @@ export function AuthVisualFixture({ mode }: AuthVisualFixtureProps) {
           <label htmlFor={`${mode}-password`} className="text-sm font-semibold text-[#E7E7E7]">
             {isSignUp ? "Create password" : "Password"}
           </label>
-          <div className="flex min-h-12 items-center gap-3 rounded-lg border border-white/15 bg-[#1A1A1A] px-3.5 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent">
-            <LockKeyhole className="size-4 text-white/35" aria-hidden />
+          <div className="flex min-h-12 items-center gap-3 rounded-lg border border-white/20 bg-[#1E1E1E] px-3.5 transition-colors hover:border-white/35 focus-within:border-accent focus-within:bg-[#242424] focus-within:ring-2 focus-within:ring-accent">
+            <LockKeyhole className="size-4 text-white/50" aria-hidden />
             <input
               id={`${mode}-password`}
               type="password"
-              readOnly
-              autoComplete="off"
-              tabIndex={-1}
+              autoComplete={isSignUp ? "new-password" : "current-password"}
               placeholder="••••••••••••"
-              className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#8A8A8A]"
+              className="min-w-0 flex-1 bg-transparent text-base text-white caret-[#CCFF00] outline-none placeholder:text-[#8A8A8A]"
             />
           </div>
         </div>

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-08-23
+
+### Fixed
+
+- **Authentication & Clerk Input Legibility**: Enhanced input background contrast (`#1E1E1E`/`#242424`), distinct border styling, and high-visibility neon lime caret (`caret-color: #CCFF00`, `cursorColor`) across Web Clerk themes, global form inputs, auth visual fixtures, React Native mobile login/signup, and native SwiftUI theme tokens.
+
 ## [0.6.5] - 2026-08-23
 
 ### Fixed

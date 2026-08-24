@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -192,6 +192,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "expo-dev-client": "~6.0.20",
     "jsdom": "^23.0.1",
+    "lightningcss-darwin-arm64": "1.30.1",
     "node-fetch": "^2.7.0",
     "postcss": "^8.5",
     "prisma": "^7.3.0",

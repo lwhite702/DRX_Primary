@@ -94,6 +94,8 @@ export default function Login() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
           </View>
 
@@ -112,6 +114,8 @@ export default function Login() {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
@@ -219,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   inputIcon: {
     paddingLeft: SPACING.md,

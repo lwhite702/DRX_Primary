@@ -69,6 +69,8 @@ export default function SignUpScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
             <TextInput
               style={styles.input}
@@ -78,6 +80,8 @@ export default function SignUpScreen() {
               placeholderTextColor={COLORS.textMuted}
               secureTextEntry
               autoComplete="new-password"
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
           </>
         ) : (
@@ -89,6 +93,8 @@ export default function SignUpScreen() {
             placeholderTextColor={COLORS.textMuted}
             keyboardType="number-pad"
             autoComplete="one-time-code"
+            cursorColor={COLORS.accent}
+            selectionColor={COLORS.accent}
           />
         )}
         <TouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>
@@ -108,7 +114,7 @@ const styles = StyleSheet.create({
   eyebrow: { color: COLORS.accent, fontSize: FONT_SIZES.sm, fontWeight: "700", letterSpacing: 1.4 },
   title: { color: COLORS.text, fontSize: FONT_SIZES.xxl, fontWeight: "700", marginTop: SPACING.sm },
   subtitle: { color: COLORS.textSecondary, fontSize: FONT_SIZES.md, marginTop: SPACING.sm, marginBottom: SPACING.lg },
-  input: { backgroundColor: COLORS.surfaceLight, borderColor: COLORS.border, borderWidth: 1, borderRadius: BORDER_RADIUS.md, color: COLORS.text, fontSize: FONT_SIZES.md, marginBottom: SPACING.md, padding: SPACING.md },
+  input: { backgroundColor: COLORS.surfaceLight, borderColor: COLORS.borderLight, borderWidth: 1, borderRadius: BORDER_RADIUS.md, color: COLORS.text, fontSize: FONT_SIZES.md, marginBottom: SPACING.md, padding: SPACING.md },
   primary: { alignItems: "center", backgroundColor: COLORS.accent, borderRadius: BORDER_RADIUS.md, padding: SPACING.md },
   primaryText: { color: COLORS.background, fontSize: FONT_SIZES.md, fontWeight: "800" },
   secondary: { alignItems: "center", paddingTop: SPACING.lg },

@@ -331,3 +331,52 @@
   padding: 2rem;
   display: inline-block;
 }
+
+/* ==========================================================================
+   Clerk & Auth Form Input Contrast, Background & Caret Legibility
+   ========================================================================== */
+
+input,
+textarea,
+select,
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  caret-color: #ccff00 !important;
+}
+
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 0.5rem !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cl-formFieldInput:hover,
+.cl-input:hover {
+  border-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+.cl-formFieldInput:focus,
+.cl-input:focus,
+.cl-otpCodeFieldInput:focus {
+  background-color: #242424 !important;
+  border-color: #ccff00 !important;
+  box-shadow: 0 0 0 2px #ccff00 !important;
+  outline: none !important;
+}
+
+.cl-formFieldLabel {
+  color: #e7e7e7 !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldInput::placeholder,
+.cl-input::placeholder {
+  color: #8a8a8a !important;
+  opacity: 1 !important;
+}
+
