@@ -374,25 +374,25 @@ export default function CustomerDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Sales (30 Days)
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.sales_30d || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Sales (90 Days)
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.sales_90d || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Total Sales</p>
-                  <p className="text-xl font-bold">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Sales</p>
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
                       customer.totalPurchases ||
@@ -401,11 +401,11 @@ export default function CustomerDetailPage() {
                     ).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Total Credit Used
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
                       customer.totalCreditUsed ||
@@ -414,17 +414,17 @@ export default function CustomerDetailPage() {
                     ).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Current Balance
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.current_credit_balance || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">On-Time Ratio</p>
-                  <p className="text-xl font-bold">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On-Time Ratio</p>
+                  <p className="text-xl font-bold font-mono text-[#4ADE80] mt-1">
                     {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
                     %
                   </p>

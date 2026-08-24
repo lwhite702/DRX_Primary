@@ -37,7 +37,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <TopNav />
             <div
               id="main-content"
-              className="min-w-0 flex-1 overflow-auto pb-20 md:pb-0 safe-bottom"
+              key={pathname}
+              className="min-w-0 flex-1 overflow-auto pb-20 md:pb-0 safe-bottom route-content-transition"
             >
               {children}
             </div>

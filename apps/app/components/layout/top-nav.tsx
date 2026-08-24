@@ -34,7 +34,8 @@ export function TopNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const filteredNav = primaryNav.filter((item) => {
-    if (loading) return false;
+    // Keep nav visible while permissions loading to prevent nav collapse/pop-in
+    if (loading) return true;
 
     switch (item.href) {
       case "/settings":
@@ -57,7 +58,8 @@ export function TopNav() {
 
   const showAdminConsole =
     hasPermission("system.manage") || hasPermission("users.manage_all");
-  const canQuickSale = !loading && hasPermission("sales.create");
+  // Default to true while loading to prevent layout shifts
+  const canQuickSale = loading || hasPermission("sales.create");
   const showDashboardViewSwitcher =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 

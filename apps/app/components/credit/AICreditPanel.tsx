@@ -192,10 +192,10 @@ export function AICreditPanel({
 
       {/* AI Recommendation Card */}
       {recommendation ? (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-500/20 bg-[#161616]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Zap className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-lg flex items-center gap-2 text-white">
+              <Zap className="h-4 w-4 text-blue-400" />
               AI Recommendation
             </CardTitle>
           </CardHeader>
@@ -203,13 +203,13 @@ export function AICreditPanel({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs text-muted-foreground">Recommended Limit</Label>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold font-mono text-blue-400">
                   ${recommendation.recommended_limit.toFixed(2)}
                 </div>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Risk Score</Label>
-                <div className={`text-2xl font-bold ${getRiskColor(recommendation.risk_score)}`}>
+                <div className={`text-2xl font-bold font-mono ${getRiskColor(recommendation.risk_score)}`}>
                   {recommendation.risk_score.toFixed(0)}/100
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -218,13 +218,13 @@ export function AICreditPanel({
               </div>
             </div>
 
-            <div className="bg-white p-3 rounded border border-blue-100">
-              <p className="text-sm text-gray-700">{recommendation.justification}</p>
+            <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
+              <p className="text-sm text-white/90 leading-relaxed">{recommendation.justification}</p>
             </div>
 
-            <div className="bg-white p-3 rounded border border-blue-100">
+            <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
               <Label className="text-xs text-muted-foreground">Suggested Range</Label>
-              <p className="text-sm font-medium mt-1">
+              <p className="text-sm font-mono font-medium text-white mt-1">
                 ${recommendation.range_min.toFixed(2)} - ${recommendation.range_max.toFixed(2)}
               </p>
             </div>

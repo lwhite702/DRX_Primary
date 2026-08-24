@@ -189,11 +189,13 @@
 .tour-target-highlight {
   position: relative;
   z-index: 45;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  outline: 3px solid var(--color-primary, #ccff00);
+  outline-offset: 6px;
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--color-primary) 75%, transparent),
-    0 0 0 8px color-mix(in srgb, var(--color-background) 70%, transparent);
-  transition: box-shadow 160ms var(--ease-out);
+    0 0 0 10px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(204, 255, 0, 0.25);
+  transition: outline-offset 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
 /* Reduced Motion */

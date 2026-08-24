@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-08-23
+
+### Fixed
+
+- **Administration Access**: Updated Admin layout authorization to recognize business owners, administrators, and local bypass sessions with an explicit access-denied fallback rather than looping back to `/dashboard`.
+- **Tour Highlight & Popover Buffer**: Added outline offset buffer (`outline-offset: 6px`) to `.tour-target-highlight` to prevent clipping target text and enlarged Tour popover internal padding and typography.
+- **Credit Tab & Contrast**: Replaced un-themed light `bg-slate-50` containers and `bg-white` cards in `CreditExposureDashboard`, `AICreditPanel`, and Customer Detail Credit tab with high-contrast `#161616` dark theme cards and badges, eliminating white-on-white text.
+- **Navigation & Loading State Transitions**: Prevented Quick Sale and navigation item pop-in during async permission loading, and added fluid Apple-style route content transitions keyed to `pathname`.
+
 ## [0.6.6] - 2026-08-23
 
 ### Fixed

@@ -5,6 +5,11 @@ import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { AdminNavShell } from "./_components/AdminNavShell";
 
+import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ShieldAlert } from "lucide-react";
+
 const getAdminRoleCached = (userId: string) => unstable_cache(
   async () => {
     const startTime = performance.now();
@@ -12,9 +17,19 @@ const getAdminRoleCached = (userId: string) => unstable_cache(
       where: { userId },
       select: { role: true },
     });
+    
+    // Also check if user is an owner or admin of any business
+    const businessAdmin = await db.businessUser.findFirst({
+      where: {
+        userId,
+        role: { in: ["owner", "admin"] },
+      },
+      select: { role: true },
+    });
+
     const duration = performance.now() - startTime;
-    console.log(`[Admin DB Query] db.adminUser.findFirst took ${duration.toFixed(2)}ms`);
-    return adminUser?.role ?? null;
+    console.log(`[Admin DB Query] admin role checks took ${duration.toFixed(2)}ms`);
+    return adminUser?.role || businessAdmin?.role || null;
   },
   ["admin-role", userId],
   { tags: ["admin-role"], revalidate: 300 }
@@ -29,16 +44,33 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isBypass = isAuthBypassEnabledServer();
   const { userId } = await auth();
 
-  if (!userId) {
+  if (!userId && !isBypass) {
     redirect("/login");
   }
 
-  const adminRole = await getAdminRole(userId);
+  const effectiveUserId = userId || "default-bypass-id";
+  const adminRole = isBypass ? "super_admin" : await getAdminRole(effectiveUserId);
 
-  if (adminRole !== "super_admin") {
-    redirect("/dashboard");
+  if (!adminRole) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center">
+        <div className="rounded-full bg-red-500/10 p-4 text-red-400">
+          <ShieldAlert className="size-10" />
+        </div>
+        <h2 className="mt-4 text-2xl font-bold text-white">Administrator Access Required</h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          You do not have administrative permissions to view the system administration console.
+        </p>
+        <div className="mt-6">
+          <Link href="/dashboard">
+            <Button variant="outline">Return to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return <AdminNavShell>{children}</AdminNavShell>;

@@ -136,35 +136,35 @@ export function CreditExposureDashboard({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Total Credit Limits */}
-            <div className="bg-slate-50 p-4 rounded">
-              <p className="text-xs text-muted-foreground">Total Credit Limits</p>
-              <p className="text-2xl font-bold mt-2">
+            <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Credit Limits</p>
+              <p className="text-2xl font-bold font-mono text-white mt-2">
                 ${(metrics?.total_credit_limits ?? 0).toFixed(2)}
               </p>
             </div>
 
             {/* Current Balance */}
-            <div className="bg-slate-50 p-4 rounded">
-              <p className="text-xs text-muted-foreground">Current Balance</p>
-              <p className="text-2xl font-bold mt-2">
+            <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Balance</p>
+              <p className="text-2xl font-bold font-mono text-white mt-2">
                 ${(metrics?.total_credit_balance ?? 0).toFixed(2)}
               </p>
             </div>
 
             {/* Utilization Ratio */}
-            <div className="bg-slate-50 p-4 rounded">
-              <p className="text-xs text-muted-foreground">Utilization Ratio</p>
-              <p className={`text-2xl font-bold mt-2 ${utilizationColor}`}>
+            <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Utilization Ratio</p>
+              <p className={`text-2xl font-bold font-mono mt-2 ${utilizationColor}`}>
                 {utilizationPercent}%
               </p>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+              <div className="w-full bg-white/10 rounded-full h-1.5 mt-2">
                 <div
                   className={`h-1.5 rounded-full ${
                     utilizationPercent > 80
-                      ? "bg-red-600"
+                      ? "bg-red-500"
                       : utilizationPercent > 60
-                      ? "bg-yellow-600"
-                      : "bg-green-600"
+                      ? "bg-yellow-500"
+                      : "bg-[#4ADE80]"
                   }`}
                   style={{ width: `${Math.min(utilizationPercent, 100)}%` }}
                 />
@@ -172,16 +172,16 @@ export function CreditExposureDashboard({
             </div>
 
             {/* Risk Status */}
-            <div className="bg-slate-50 p-4 rounded">
-              <p className="text-xs text-muted-foreground">Risk Status</p>
+            <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Risk Status</p>
               <div className="mt-2 flex items-center gap-2">
                 <RiskIcon
                   className={`h-5 w-5 ${
                     riskLevel === "critical"
-                      ? "text-red-600"
+                      ? "text-red-400"
                       : riskLevel === "high"
-                      ? "text-yellow-600"
-                      : "text-green-600"
+                      ? "text-yellow-400"
+                      : "text-[#4ADE80]"
                   }`}
                 />
                 <Badge
@@ -192,6 +192,7 @@ export function CreditExposureDashboard({
                       ? "outline"
                       : "secondary"
                   }
+                  className="font-bold uppercase tracking-wider text-xs"
                 >
                   {riskLevel === "critical"
                     ? "Critical"
@@ -205,15 +206,15 @@ export function CreditExposureDashboard({
 
           {/* At-Risk Customers Alert */}
           {metrics.at_risk_customers > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
-              <div className="flex gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-yellow-200">
+              <div className="flex gap-3 items-start">
+                <AlertCircle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-yellow-900">
+                  <p className="font-bold text-yellow-300 text-sm">
                     {metrics.at_risk_customers} customer
                     {metrics.at_risk_customers !== 1 ? "s" : ""} at high risk
                   </p>
-                  <p className="text-sm text-yellow-800">
+                  <p className="text-xs text-yellow-200/80 mt-0.5">
                     Review credit limits and repayment history for these customers
                   </p>
                 </div>
@@ -222,15 +223,15 @@ export function CreditExposureDashboard({
           )}
 
           {/* AI Review Status */}
-          <div className="bg-blue-50 border border-blue-200 rounded p-4">
-            <div className="flex gap-2">
-              <CheckCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-blue-200">
+            <div className="flex gap-3 items-start">
+              <CheckCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-900">
+                <p className="font-bold text-blue-300 text-sm">
                   {metrics.customers_reviewed_today} customer
                   {metrics.customers_reviewed_today !== 1 ? "s" : ""} reviewed today
                 </p>
-                <p className="text-sm text-blue-800">
+                <p className="text-xs text-blue-200/80 mt-0.5">
                   AI credit limits updated in today's scheduled refresh
                 </p>
               </div>
