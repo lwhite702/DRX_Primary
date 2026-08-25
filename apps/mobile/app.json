@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "DRX",
+    "name": "Deelrx CRM",
     "owner": "wrelik",
     "slug": "deelrx-crm",
-    "version": "0.6.8",
+    "version": "0.6.9",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "drx",

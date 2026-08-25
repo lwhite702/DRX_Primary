@@ -10,7 +10,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 import { openFeedbackWithFallback } from "@/lib/feedback";
 
 export function Sidebar() {
@@ -106,7 +106,7 @@ export function Sidebar() {
           </Link>
         )}
         <Link
-          href={featurebaseHelpdeskUrl}
+          href={docsHubUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"

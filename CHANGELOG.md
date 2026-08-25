@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.9] - 2026-08-25
+
+### Added
+
+- **Mintlify Documentation Hub**: Established canonical documentation hub at `https://docs.deelrxcrm.com` covering delivery fulfillment, fractional/bulk pricing, native mobile apps, and operator runbooks. Added `pnpm test:docs:mintlify` verifying 22 documentation pages (WRE-59).
+- **Native iOS Dashboard Identity & Switching**: Added `IdentityHeaderCard` displaying operator name, primary role badge, and active business name, with `UserIdentitySheet` for secure operator sign out and cache flushing (WRE-36).
+- **Support & Communication Alignment**: Preserved Help Scout (`support@deelrxcrm.com` / inbox 372443) for email/contact support across web, mobile, and iOS, with Loops dedicated strictly to marketing communications.
+- **Mobile Touch & PWA Resilience**: Hardened 44x44px touch targets, sticky mobile POS cart bar, and clean PWA service worker lifecycle updates (WRE-77).
+
 ## [0.6.8] - 2026-08-24
 
 ### Fixed

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Boxes, Gauge, UsersRound } from "lucide-react";
 import type { ReactNode } from "react";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
@@ -123,7 +123,7 @@ export function AuthShell({
             <Link className={footerLinkClassName} href={`${marketingUrl}/legal/terms`}>
               Terms
             </Link>
-            <Link className={footerLinkClassName} href={featurebaseHelpdeskUrl}>
+            <Link className={footerLinkClassName} href={docsHubUrl}>
               Support
             </Link>
           </nav>

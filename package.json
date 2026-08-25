@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -41,6 +41,7 @@
     "test:audit": "pnpm dlx tsx scripts/testing/audit-repo.ts",
     "test:matrix": "pnpm test:audit && pnpm dlx tsx scripts/testing/generate-test-matrix.ts",
     "test:policy": "npm_config_store_dir=${PNPM_DLX_STORE_DIR:-/tmp/drx-pnpm-dlx-store} corepack pnpm dlx tsx scripts/testing/policy-check.ts",
+    "test:docs:mintlify": "npm_config_store_dir=${PNPM_DLX_STORE_DIR:-/tmp/drx-pnpm-dlx-store} corepack pnpm dlx tsx scripts/testing/mintlify-docs-audit.ts",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
     "test:observability-contract": "npm_config_store_dir=${PNPM_DLX_STORE_DIR:-/tmp/drx-pnpm-dlx-store} corepack pnpm dlx tsx scripts/testing/observability-contract-check.ts",
     "test:doppler-sync": "pnpm dlx tsx scripts/testing/doppler-env-sync-check.ts",

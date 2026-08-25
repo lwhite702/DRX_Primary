@@ -1,0 +1,38 @@
+# Native mobile applications
+
+This guide covers installing, configuring, and operating DRX on iOS and Android native devices.
+
+## What this page is for
+
+Use this guide to set up native handheld terminals, enable offline sales queues, configure biometric authentication, and manage background notification reminders.
+
+## Supported platforms
+
+- **iOS Native**: Swift 6 & SwiftUI application with ClerkKit authentication, offline Convex synchronization, and native push notifications.
+- **Android Mobile**: Expo / React Native application with SQLite local storage, biometric security, and offline queueing.
+
+## Key native features
+
+### 1. Offline POS and sync queue
+When network connectivity is interrupted:
+- Cash sales continue to ring up locally.
+- Transactions are stored in encrypted SQLite storage.
+- When connection restores, orders automatically sync and reconcile with the backend.
+
+### 2. Biometric authentication and quick lock
+- Protect lanes with Face ID / Touch ID / Fingerprint unlock.
+- Operator sessions lock automatically after inactivity periods defined in store settings.
+
+### 3. Native delivery notifications
+- Background delivery reminders alert operators when courier drivers are arriving (T-2 minutes).
+- Direct deep-links open incoming delivery cards for fast handoff.
+
+### 4. Operator identity and switching
+- Tap the operator avatar on the dashboard to view current session permissions or switch business workspaces with zero data leakage.
+
+## Related docs
+
+- [Getting started](/getting-started)
+- [Quick Sale runbook](/quick-sale-runbook)
+- [Delivery fulfillment](/delivery-fulfillment)
+- [Keeping your data safe](/keeping-your-data-safe)

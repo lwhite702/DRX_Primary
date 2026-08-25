@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
 import { CtaRow } from "@/components/marketing/site/cta-row";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 
 export const metadata: Metadata = {
   title: "Resources | Deelrx CRM",
@@ -39,12 +39,12 @@ export default function ResourcesHubPage() {
           </Link>
           <Link
             className="rounded-xl border border-border p-4 hover:border-neon-lime/40"
-            href={featurebaseHelpdeskUrl}
+            href={docsHubUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <p className="font-semibold text-white">Help Desk</p>
-            <p className="mt-1 text-sm text-text-secondary">Featurebase support knowledge base.</p>
+            <p className="font-semibold text-white">Documentation</p>
+            <p className="mt-1 text-sm text-text-secondary">Mintlify operator documentation hub.</p>
           </Link>
           <Link
             className="rounded-xl border border-border p-4 hover:border-neon-lime/40"

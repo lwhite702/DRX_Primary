@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Deelrx CRM",
+  "name": "DRX",
   "theme": "mint",
   "colors": {
-    "primary": "#4ADE80",
-    "light": "#86EFAC",
-    "dark": "#22C55E"
+    "primary": "#CCFF00",
+    "light": "#E5FF80",
+    "dark": "#A3CC00"
   },
   "navigation": {
     "groups": [
@@ -14,7 +14,8 @@
         "pages": [
           "index",
           "getting-started",
-          "store-setup"
+          "store-setup",
+          "native-mobile-apps"
         ]
       },
       {
@@ -22,6 +23,8 @@
         "pages": [
           "how-sales-work",
           "quick-sale-runbook",
+          "fractional-and-bulk-pricing",
+          "delivery-fulfillment",
           "your-products",
           "your-customers",
           "payments-and-plans"

@@ -12,7 +12,7 @@ import {
   HelpCircle,
   type LucideIcon,
 } from "lucide-react";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 
 export type NavItem = {
   href: string;
@@ -31,6 +31,6 @@ export const primaryNav: NavItem[] = [
   { href: "/credit", label: "Store Credit", icon: Wallet },
   { href: "/insights", label: "Insights", icon: LineChart },
   { href: "/reports", label: "Reports", icon: BarChart2 },
-  { href: featurebaseHelpdeskUrl, label: "Help", icon: HelpCircle, external: true },
+  { href: docsHubUrl, label: "Help", icon: HelpCircle, external: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

@@ -32,7 +32,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
@@ -376,7 +376,7 @@ export function BottomNav() {
                 </p>
                 <div className="grid grid-cols-1 gap-1">
                   <Link
-                    href={featurebaseHelpdeskUrl}
+                    href={docsHubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMoreMenuOpen(false)}

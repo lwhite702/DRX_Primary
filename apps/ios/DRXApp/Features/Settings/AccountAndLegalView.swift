@@ -11,17 +11,17 @@ struct AccountAndLegalView: View {
     var body: some View {
         List {
             Section("Support") {
-                Link(destination: LegalLinks.support) {
-                    Label("Deelrx Support", systemImage: "lifepreserver")
+                Link(destination: LegalLinks.docs) {
+                    Label("DRX Documentation", systemImage: "book.pages")
                 }
-                .accessibilityIdentifier("supportLink")
+                .accessibilityIdentifier("docsLink")
 
                 Link(destination: LegalLinks.supportEmail) {
                     Label("Email support@deelrxcrm.com", systemImage: "envelope")
                 }
                 .accessibilityIdentifier("supportEmailLink")
 
-                Text("Support requests are handled through Help Scout. The support page lists current contact details and expected response times.")
+                Text("Documentation is hosted on the DRX Mintlify hub. Support requests are handled through Help Scout.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -128,7 +128,7 @@ struct AccountAndLegalView: View {
 private enum LegalLinks {
     static let privacy = URL(string: "https://www.deelrxcrm.com/legal/privacy")!
     static let terms = URL(string: "https://www.deelrxcrm.com/legal/terms")!
-    static let support = URL(string: "https://www.deelrxcrm.com/support")!
+    static let docs = URL(string: "https://docs.deelrxcrm.com")!
     static let supportEmail = URL(string: "mailto:support@deelrxcrm.com")!
     static let legalEmail = URL(string: "mailto:legal@wrelik.com")!
 }

@@ -33,6 +33,24 @@ Do not ship silent documentation updates.
 
 ## Current release notes
 
+## [Product Version 0.6.8] - 2026-08-25
+
+### Pages affected
+
+- /index
+- /native-mobile-apps
+- /delivery-fulfillment
+- /fractional-and-bulk-pricing
+- /legal-disclaimer
+- /CHANGELOG
+
+### Summary
+
+- Added native mobile application runbook covering iOS SwiftUI and Android handheld terminals, offline sync, biometric security, and background reminders.
+- Added delivery fulfillment guide covering courier dispatch, Uber quote allocation, and lifecycle tracking.
+- Added fractional selling and bulk pricing tier guide covering exact weight entry, reciprocal dollar entry presets, and loyalty rewards.
+- Unified brand identity and Mintlify theme colors (`#CCFF00`).
+
 ## [Product Version 0.5.3] - 2026-03-04
 
 ### Pages affected
