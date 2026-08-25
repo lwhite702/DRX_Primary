@@ -301,7 +301,7 @@ export default function CustomersPage() {
               <Button
                 onClick={handleNew}
                 id="tour-customer-add-btn"
-                className="laser-button bg-[#FFD700] text-black hover:bg-[#FFD700]/90 shadow-[0_0_15px_rgba(255,215,0,0.4)] border-none font-bold tracking-wider"
+                className="laser-button bg-accent text-black hover:bg-accent/90 shadow-[0_0_15px_rgba(204,255,0,0.3)] border-none font-bold tracking-wider h-11 px-4"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add customer
@@ -478,12 +478,12 @@ export default function CustomersPage() {
       {/* Search */}
       <div className="relative z-10">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#FFD700] h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="SEARCH CUSTOMERS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-[#FFD700]/50 text-foreground rounded-lg tracking-wider"
+            className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-accent text-foreground rounded-lg tracking-wider"
             aria-label="Search customers"
           />
         </div>
@@ -492,8 +492,8 @@ export default function CustomersPage() {
       {/* Customers Table */}
       <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
         <div className="p-6 border-b border-white/5 flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-[#FFD700] shadow-[0_0_10px_#FFD700]" />
-          <h2 className="headline-text text-lg tracking-wider text-[#FFD700]">
+          <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgba(204,255,0,0.4)]" />
+          <h2 className="headline-text text-lg tracking-wider text-accent">
             CUSTOMER LIST
           </h2>
         </div>
@@ -533,7 +533,7 @@ export default function CustomersPage() {
                 {filteredCustomers.map((customer) => (
                   <div
                     key={customer.id}
-                    className="p-4 border-b border-white/5 last:border-0 hover:bg-[#FFD700]/5 transition-colors"
+                    className="p-4 border-b border-white/5 last:border-0 hover:bg-accent/5 transition-colors"
                   >
                     <CardContent className="p-0">
                       <div className="flex items-start justify-between gap-3">
@@ -568,18 +568,19 @@ export default function CustomersPage() {
                           )}
                         </div>
                         {canManageCustomers ? (
-                          <div className="flex">
+                          <div className="flex gap-1">
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="icon-lg"
                               onClick={() => handleEdit(customer)}
                               aria-label="Edit customer"
+                              className="h-11 w-11"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="icon-lg"
                               disabled={lifecycleCustomerId === customer.id}
                               onClick={() =>
                                 void handleLifecycleChange(
@@ -592,6 +593,7 @@ export default function CustomersPage() {
                                   ? "Reactivate customer"
                                   : "Archive customer"
                               }
+                              className="h-11 w-11"
                             >
                               {viewStatus === "archived" ? (
                                 <RotateCcw className="h-4 w-4" />
@@ -671,13 +673,13 @@ export default function CustomersPage() {
                     {filteredCustomers.map((customer) => (
                       <TableRow
                         key={customer.id}
-                        className="border-white/5 hover:bg-[#FFD700]/5 transition-colors group"
+                        className="border-white/5 hover:bg-accent/5 transition-colors group"
                       >
                         <TableCell className="font-medium">
                           <div>
                             <Link
                               href={`/customers/${customer.id}`}
-                              className="text-blue-600 hover:underline"
+                              className="text-foreground hover:text-accent hover:underline"
                             >
                               {getCustomerDisplayName(
                                 customer,

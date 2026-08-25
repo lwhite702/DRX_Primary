@@ -9,7 +9,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const appPort = Number(process.env.PLAYWRIGHT_APP_PORT || 3000);
 const appBaseUrl = `http://localhost:${appPort}`;
-const useWebpackDevServer = process.env.PW_NEXT_WEBPACK === "1";
+const useWebpackDevServer = process.env.PW_NEXT_WEBPACK !== "0";
 const skipGlobalSetup = process.env.PW_SKIP_GLOBAL_SETUP === "1";
 const reuseExistingServer = process.env.PW_REUSE_EXISTING_SERVER === "1";
 const betaE2EEnabled = ["1", "true", "yes"].includes(

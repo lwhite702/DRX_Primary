@@ -282,7 +282,7 @@ export default function QuickPosSalePage() {
             onClick={() => router.push("/pos/payment")}
             disabled={state.cartItems.length === 0 || isBootstrapping}
             className="h-16 w-full rounded-lg bg-accent text-2xl font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Continue to payment"
+            aria-label="Continue to Payment"
           >
             Continue to Payment
           </button>
@@ -300,6 +300,31 @@ export default function QuickPosSalePage() {
           setError(null);
         }}
       />
+
+      {/* Sticky Mobile Cart Bar */}
+      {state.cartItems.length > 0 && (
+        <div className="md:hidden fixed bottom-16 inset-x-0 z-40 border-t border-border/80 bg-background/95 backdrop-blur-xl p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-2 duration-200">
+          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">
+                {state.cartItems.reduce((sum, item) => sum + item.qty, 0)} items in cart
+              </p>
+              <p className="text-lg font-bold font-mono text-accent">
+                ${total.toFixed(2)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/pos/payment")}
+              className="h-12 px-6 rounded-xl bg-accent text-black text-sm font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 active:scale-95 transition-all flex items-center gap-2"
+              aria-label={`Checkout with total ${total.toFixed(2)}`}
+            >
+              <span>Pay ${total.toFixed(2)}</span>
+              <span className="text-base font-bold">→</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

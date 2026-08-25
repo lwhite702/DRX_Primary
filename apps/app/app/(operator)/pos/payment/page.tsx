@@ -19,6 +19,7 @@ export default function QuickPosPaymentPage() {
   const router = useRouter();
   const [quote, setQuote] = useState<PosAuthoritativeQuote | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
+  const store = useQuickPosStore();
   const {
     state,
     total,
@@ -191,26 +192,26 @@ export default function QuickPosPaymentPage() {
           <dl className="mt-3 space-y-1 text-sm text-white/70">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
-              <dd>${quote.subtotal.toFixed(2)}</dd>
+              <dd>${(quote.subtotal ?? 0).toFixed(2)}</dd>
             </div>
-            {quote.loyaltyDiscountAmount > 0 ? (
+            {(quote.loyaltyDiscountAmount ?? 0) > 0 ? (
               <div className="flex justify-between text-emerald-300">
                 <dt>Discounts</dt>
-                <dd>-${quote.loyaltyDiscountAmount.toFixed(2)}</dd>
+                <dd>-${(quote.loyaltyDiscountAmount ?? 0).toFixed(2)}</dd>
               </div>
             ) : null}
             <div className="flex justify-between">
               <dt>Merchandise tax</dt>
-              <dd>${quote.merchandiseTaxAmount.toFixed(2)}</dd>
+              <dd>${(quote.merchandiseTaxAmount ?? quote.taxAmount ?? 0).toFixed(2)}</dd>
             </div>
-            {quote.deliveryRevenue > 0 ? (
-              <div className="flex justify-between"><dt>Delivery charged</dt><dd>${quote.deliveryRevenue.toFixed(2)}</dd></div>
+            {(quote.deliveryRevenue ?? 0) > 0 ? (
+              <div className="flex justify-between"><dt>Delivery charged</dt><dd>${(quote.deliveryRevenue ?? 0).toFixed(2)}</dd></div>
             ) : null}
-            {quote.deliveryTaxAmount > 0 ? (
-              <div className="flex justify-between"><dt>Delivery tax</dt><dd>${quote.deliveryTaxAmount.toFixed(2)}</dd></div>
+            {(quote.deliveryTaxAmount ?? 0) > 0 ? (
+              <div className="flex justify-between"><dt>Delivery tax</dt><dd>${(quote.deliveryTaxAmount ?? 0).toFixed(2)}</dd></div>
             ) : null}
-            {state.delivery.enabled && state.delivery.feeAllocation === "absorb" ? (
-              <div className="flex justify-between text-amber-200"><dt>Delivery absorbed</dt><dd>${quote.vendorDeliveryExpense.toFixed(2)} expense</dd></div>
+            {state.delivery.enabled && state.delivery.feeAllocation === "absorb" && (quote.vendorDeliveryExpense ?? 0) > 0 ? (
+              <div className="flex justify-between text-amber-200"><dt>Delivery absorbed</dt><dd>${(quote.vendorDeliveryExpense ?? 0).toFixed(2)} expense</dd></div>
             ) : null}
           </dl>
         ) : null}

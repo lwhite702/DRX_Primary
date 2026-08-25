@@ -181,8 +181,15 @@ export default function DeliveriesPage() {
               <button
                 key={delivery._id}
                 type="button"
-                onClick={() => setSelectedId(delivery._id)}
-                className={`w-full rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRow ? "border-primary bg-primary/5" : "bg-card hover:bg-muted/50"}`}
+                onClick={() => {
+                  setSelectedId(delivery._id);
+                  if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    setTimeout(() => {
+                      document.getElementById("selected-delivery-panel")?.scrollIntoView({ behavior: "smooth" });
+                    }, 50);
+                  }
+                }}
+                className={`w-full rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRow ? "border-accent bg-accent/10" : "bg-card hover:bg-muted/50"}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -203,8 +210,8 @@ export default function DeliveriesPage() {
           })}
         </section>
 
-        <aside aria-label="Selected delivery">
-          <Card className="lg:sticky lg:top-6">
+        <aside aria-label="Selected delivery" id="selected-delivery-panel">
+          <Card className="lg:sticky lg:top-6 border-border/80">
             {!selectedId ? (
               <CardContent className="p-8 text-center text-muted-foreground"><Truck className="mx-auto mb-3 h-8 w-8" />Select a delivery to assign it and record each handoff.</CardContent>
             ) : detail === undefined ? (
@@ -214,7 +221,21 @@ export default function DeliveriesPage() {
                 <CardHeader className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle>Order {selected.orderNumber}</CardTitle>
-                    <Badge variant="outline">{statusLabels[selected.status as DeliveryStatus]}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="lg:hidden text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setSelectedId(null);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        Back to queue
+                      </Button>
+                      <Badge variant="outline">{statusLabels[selected.status as DeliveryStatus]}</Badge>
+                    </div>
                   </div>
                   {selectedDueAt && (
                     <div className={`flex items-center gap-2 text-sm ${selectedDueAt < now && selected.status !== "delivered" && selected.status !== "canceled" ? "font-medium text-destructive" : "text-muted-foreground"}`}>

@@ -4,9 +4,9 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: true, // Temporarily disabled for debugging 404
-  register: false,
-  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: false,
 });
 
 /** @type {import('next').NextConfig} */

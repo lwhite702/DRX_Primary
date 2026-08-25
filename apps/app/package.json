@@ -1,6 +1,6 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "private": true,
   "engines": {
     "node": "22.x"
@@ -58,9 +58,9 @@
     "pos:backfill-lineage": "node scripts/backfill-pos-cost-lineage.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.0.8",
     "@clerk/ui": "1.27.0",
     "@deelrx/brand": "link:../../packages/brand",
-    "@clerk/nextjs": "^7.0.8",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@noble/ciphers": "^1.3.0",
@@ -140,6 +140,7 @@
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
+    "@tailwindcss/oxide-darwin-arm64": "4.1.9",
     "@tailwindcss/postcss": "^4.1.9",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
@@ -163,6 +164,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "expo-dev-client": "~6.0.20",
     "jsdom": "^23.0.1",
+    "lightningcss-darwin-arm64": "1.30.1",
     "node-fetch": "^2.7.0",
     "postcss": "^8.5",
     "prisma": "^7.3.0",

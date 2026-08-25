@@ -83,10 +83,6 @@ export function ChunkRecoveryProvider() {
   const [chunkFailure, setChunkFailure] = useState(false);
 
   useEffect(() => {
-    unregisterLegacyServiceWorkers().catch(() => {
-      // Keep startup resilient even if browser blocks SW/cache access.
-    });
-
     const handleChunkFailure = (reason: unknown) => {
       if (isChunkLoadFailure(reason)) setChunkFailure(true);
     };

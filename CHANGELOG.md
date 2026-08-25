@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.7] - 2026-08-23
+## [0.6.8] - 2026-08-24
+
+### Fixed
+
+- **Quick POS Navigation & Store State**: Converted `PosLayoutShell` to direct static import and removed destructive sub-tree remounting in `AppShell` to preserve in-memory cart and register state during `/pos/sale` $\leftrightarrow$ `/pos/payment` route transitions.
+- **Quote Breakdown Resilience**: Added safe fallback parsing for `merchandiseTaxAmount`, `taxAmount`, `deliveryRevenue`, `deliveryTaxAmount`, and `vendorDeliveryExpense` in `QuickPosPaymentPage` to prevent render errors when optional quote fields are omitted.
+- **Monorepo Build and E2E Test Suite**: Configured Tailwind oxide and LightningCSS native bindings for isolated pnpm workspaces, defaulted Playwright web server to Webpack for deterministic compilation, and added marketing unit test configuration to exclude Playwright specs from Vitest runs.
+
 
 ### Fixed
 

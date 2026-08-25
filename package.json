@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": {
@@ -170,6 +170,7 @@
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
     "@rollup/rollup-darwin-arm64": "^4.62.5",
+    "@tailwindcss/oxide-darwin-arm64": "4.1.9",
     "@tailwindcss/postcss": "^4.1.9",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",

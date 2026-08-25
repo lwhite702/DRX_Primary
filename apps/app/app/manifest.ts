@@ -5,10 +5,15 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Deelrx CRM",
     short_name: "DRX",
     description: "Operator-first POS, inventory, CRM, and reporting",
-    start_url: "/",
+    id: "/",
+    start_url: "/dashboard",
+    scope: "/",
     display: "standalone",
+    display_override: ["standalone", "minimal-ui"],
+    orientation: "portrait",
     background_color: "#0A0A0A",
     theme_color: "#0A0A0A",
+    categories: ["business", "finance", "productivity"],
     icons: [
       {
         src: "/brand/favicon-32.png",

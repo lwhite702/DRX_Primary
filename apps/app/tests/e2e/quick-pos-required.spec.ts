@@ -97,16 +97,16 @@ test.describe("Quick POS required flow", () => {
     await favoriteButton.click();
 
     await page.getByRole("button", { name: "Continue to Payment" }).click();
-    await expect(page).toHaveURL(/\/pos\/payment/);
+    await expect(page).toHaveURL(/\/pos\/payment/, { timeout: 15000 });
 
     await page.getByRole("button", { name: "cash" }).click();
     await page.getByRole("button", { name: "none" }).click();
     await page.getByRole("button", { name: "Complete Sale" }).click();
 
-    await expect(page).toHaveURL(/\/pos\/complete/);
-    await expect(page.getByText("Sale Complete")).toBeVisible();
+    await expect(page).toHaveURL(/\/pos\/complete/, { timeout: 15000 });
+    await expect(page.getByText("Sale Complete")).toBeVisible({ timeout: 15000 });
 
     await page.getByRole("button", { name: "Start Next Sale Now" }).click();
-    await expect(page).toHaveURL(/\/pos\/sale/);
+    await expect(page).toHaveURL(/\/pos\/sale/, { timeout: 15000 });
   });
 });

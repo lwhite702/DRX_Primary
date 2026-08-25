@@ -30,11 +30,11 @@ export function BusinessSwitcher() {
             variant="outline"
             role="combobox"
             aria-label="Select a business"
-            className="w-[200px] justify-between hidden md:flex"
+            className="max-w-[140px] sm:max-w-[180px] md:w-[200px] justify-between flex h-9 px-2.5 text-xs md:text-sm font-medium"
           >
-            <span className="truncate flex items-center gap-2">
-              <Building2 className="mr-2 h-4 w-4" />
-              {business.business_name}
+            <span className="truncate flex items-center gap-1.5 min-w-0">
+              <Building2 className="h-3.5 w-3.5 shrink-0 text-accent" />
+              <span className="truncate">{business.business_name}</span>
             </span>
           </Button>
         </DropdownMenuTrigger>

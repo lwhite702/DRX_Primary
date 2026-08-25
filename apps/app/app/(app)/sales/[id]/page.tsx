@@ -381,7 +381,7 @@ export default function SaleDetailPage() {
 
                 {newPaymentMethod === "credit" &&
                   (sale.paymentMethod || sale.payment_method) !== "credit" && (
-                    <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
+                    <div className="p-3 bg-amber-500/10 text-amber-200 text-sm rounded-lg border border-amber-500/20">
                       Warning: Switching to Credit will not automatically update
                       the customer's credit balance. Please ensure you manually
                       adjust the credit ledger if necessary.
@@ -556,8 +556,8 @@ export default function SaleDetailPage() {
             )}
 
             {(sale.paymentMethod || sale.payment_method) === "credit" && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-xs text-yellow-800">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <p className="text-xs text-amber-200">
                   ⚠️ This is a credit sale. Manager or owner role required to
                   reassign customer.
                 </p>

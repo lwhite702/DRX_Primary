@@ -87,7 +87,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 
             {/* Network Status Indicator */}
             <div className={cn(
-                "fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300",
+                "fixed bottom-20 md:bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300",
                 isOnline ? "bg-background border opacity-0 hover:opacity-100" : "bg-destructive text-destructive-foreground opacity-100",
                 (isSyncing || pendingCount > 0) && "opacity-100 bg-primary text-primary-foreground"
             )}>
