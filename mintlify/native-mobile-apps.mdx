@@ -1,34 +1,59 @@
-# Native mobile applications
+---
+title: "Native Mobile Applications"
+description: "Configure and operate DRX on native iOS and Android handheld POS devices."
+icon: "mobile"
+---
 
 This guide covers installing, configuring, and operating DRX on iOS and Android native devices.
 
 ## What this page is for
 
-Use this guide to set up native handheld terminals, enable offline sales queues, configure biometric authentication, and manage background notification reminders.
+Use this guide to set up native handheld terminals, enable offline sales queues, configure biometric lock, and manage background notification reminders.
 
-## Supported platforms
+## Before you start
 
-- **iOS Native**: Swift 6 & SwiftUI application with ClerkKit authentication, offline Convex synchronization, and native push notifications.
-- **Android Mobile**: Expo / React Native application with SQLite local storage, biometric security, and offline queueing.
+- **Recommended role**: Cashier, supervisor, or manager.
+- **Supported platforms**:
+  - **iOS Native**: Swift 6 and SwiftUI app with ClerkKit auth, Convex sync, and Apple Push Notifications.
+  - **Android Mobile**: Expo / React Native app with encrypted SQLite local queue and biometric lock.
+- **Required settings**:
+  - Verified operator account credentials.
+  - Camera permissions for barcode scanning.
+  - Notification permissions for delivery courier reminders.
 
-## Key native features
+## Fast path
 
-### 1. Offline POS and sync queue
-When network connectivity is interrupted:
-- Cash sales continue to ring up locally.
-- Transactions are stored in encrypted SQLite storage.
-- When connection restores, orders automatically sync and reconcile with the backend.
+1. **Sign in to native app**:
+   - Sign in with Clerk credentials or single sign-on.
+   - Select your active business workspace.
+2. **Enable biometric quick lock**:
+   - Activate Face ID, Touch ID, or fingerprint unlock in app settings for rapid counter resumption.
+3. **Ring sales on the floor**:
+   - Use Quick POS to scan barcodes or search inventory.
+   - Process cash, card, or store credit transactions.
+4. **Operate offline during network drops**:
+   - Transactions queue automatically in encrypted SQLite local storage.
+   - When connection restores, queued sales synchronize automatically with backend audit trails.
+5. **Manage courier deliveries**:
+   - Receive background push notifications when couriers arrive (T-2 minutes).
+   - Tap notification to open incoming delivery order for instant handoff.
+6. **Switch workspaces or sign out cleanly**:
+   - Tap operator avatar on dashboard to view active permissions or switch stores without session leakage.
 
-### 2. Biometric authentication and quick lock
-- Protect lanes with Face ID / Touch ID / Fingerprint unlock.
-- Operator sessions lock automatically after inactivity periods defined in store settings.
+## If blocked
 
-### 3. Native delivery notifications
-- Background delivery reminders alert operators when courier drivers are arriving (T-2 minutes).
-- Direct deep-links open incoming delivery cards for fast handoff.
+- **Biometric unlock fails repeatedly**:
+  - Use operator password or PIN fallback to regain register access.
+- **Offline sales not syncing upon reconnection**:
+  - Open "More" -> "Offline Control" and tap "Force Sync Queue".
+  - Verify network signal strength before taking additional offline transactions.
+- **Courier push notifications not delivering**:
+  - Verify system notification permissions in iOS Settings or Android App Info.
 
-### 4. Operator identity and switching
-- Tap the operator avatar on the dashboard to view current session permissions or switch business workspaces with zero data leakage.
+## What is beta here
+
+- Background Bluetooth thermal printer pairing is undergoing expanding hardware testing.
+- Core native POS, offline queueing, biometric locking, and delivery alerts are fully live.
 
 ## Related docs
 

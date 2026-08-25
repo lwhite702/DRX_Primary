@@ -1,4 +1,8 @@
-# Fractional selling and bulk pricing
+---
+title: "Fractional Selling and Bulk Pricing"
+description: "Weight-based precision checkout, reciprocal dollar presets, bulk pricing tiers, and loyalty discounts."
+icon: "scale-balanced"
+---
 
 This guide explains how DRX handles weight-based fractional selling, reciprocal dollar inputs, bulk price breaks, and loyalty rewards at checkout.
 
@@ -14,38 +18,42 @@ Use this guide to configure and operate fractional products (such as loose goods
   - `/pos/sale` (fractional and reciprocal checkout)
 - **Supported units**: Grams (`g`), Ounces (`oz`), Pounds (`lb`), Kilograms (`kg`), and discrete units (`each`).
 
-## Fractional selling workflows
+## Fast path
 
-### 1. Exact weight entry
-1. In POS cart, tap the product quantity or weight input.
-2. Enter the exact measured weight (for example `3.5g` or `0.25 oz`).
-3. Total price calculates automatically based on unit price and tier logic.
+1. **Exact weight entry**:
+   - In the POS cart, tap the product quantity or weight input.
+   - Enter the exact measured weight (for example `3.5g` or `0.25 oz`).
+   - Total price calculates automatically based on unit price and tier logic.
+2. **Reciprocal dollar amount entry**:
+   - When a customer requests a specific dollar amount (e.g., "$20 worth"), tap the dollar entry field or select a preset chip ($10, $20, $35, $50).
+   - DRX calculates the corresponding exact weight to 3 decimal places without roundoff error.
+   - The cart updates both weight and final line item cost simultaneously.
+3. **Automated bulk price tier breaks**:
+   - Products apply automatic volume price breaks when quantity thresholds are reached:
+     - **Eighth (3.5g)**: Tier 1 rate
+     - **Quarter (7.0g)**: Tier 2 rate
+     - **Half Ounce (14.0g)**: Tier 3 rate
+     - **Full Ounce (28.0g)**: Tier 4 rate
+4. **Apply loyalty discounts**:
+   - If the attached customer has available loyalty points, tap the Loyalty reward chip at checkout to apply discount credits against eligible items before final tax calculation.
 
-### 2. Reciprocal dollar amount entry
-When a customer requests a specific dollar amount (e.g., "$20 worth"):
-1. In POS cart, tap the dollar entry field or select a preset chip ($10, $20, $35, $50).
-2. DRX calculates the corresponding exact weight to 3 decimal places without roundoff error.
-3. The cart updates both weight and final line item cost simultaneously.
+## If blocked
 
-## Bulk price tiers
+- **Reciprocal dollar input generates unexpected weight**:
+  - Confirm the base price per gram or ounce configured on the product in `/inventory`.
+- **Bulk price tier not triggering**:
+  - Verify that the item quantity meets or exceeds the minimum tier threshold.
+- **Loyalty reward button disabled**:
+  - Confirm customer profile is attached to the active cart and has positive reward balance.
 
-Products can be configured with automated price breaks based on quantity thresholds:
-- **Eighth (3.5g)**: Tier 1 rate
-- **Quarter (7.0g)**: Tier 2 rate
-- **Half Ounce (14.0g)**: Tier 3 rate
-- **Full Ounce (28.0g)**: Tier 4 rate
+## What is beta here
 
-When a customer's cart reaches a tier threshold, the pricing engine applies the lower unit rate to the line item automatically.
-
-## Loyalty discounts
-
-If the attached customer has available loyalty points:
-1. Tap the Loyalty reward chip at checkout.
-2. The discount is applied against eligible items before final tax calculation.
-3. Used points are deducted upon successful completion of the transaction.
+- Custom mixed-tier combination discounts across disparate product families are beta-limited.
+- Standard weight-based fractional checkout, dollar reciprocal presets, single-product bulk tiers, and loyalty redemption are fully live.
 
 ## Related docs
 
 - [Your products](/your-products)
 - [How sales work](/how-sales-work)
 - [Quick Sale runbook](/quick-sale-runbook)
+- [Fixing issues](/fixing-issues)

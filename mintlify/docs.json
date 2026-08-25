@@ -5,7 +5,47 @@
   "colors": {
     "primary": "#CCFF00",
     "light": "#E5FF80",
-    "dark": "#A3CC00"
+    "dark": "#A3CC00",
+    "background": {
+      "dark": "#0A0A0A",
+      "light": "#FFFFFF"
+    }
+  },
+  "favicon": "/images/favicon.png",
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.svg",
+    "href": "https://deelrxcrm.com"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Web App",
+        "href": "https://deelrxcrm.app"
+      },
+      {
+        "label": "Email Support",
+        "href": "mailto:support@deelrxcrm.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open App",
+      "href": "https://deelrxcrm.app"
+    }
+  },
+  "footer": {
+    "socials": {
+      "website": "https://deelrxcrm.com",
+      "github": "https://github.com/lwhite702/DRX_Primary"
+    }
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "modeToggle": {
+    "default": "dark"
   },
   "navigation": {
     "groups": [

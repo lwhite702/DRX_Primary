@@ -1,4 +1,8 @@
-# Delivery fulfillment
+---
+title: "Delivery Fulfillment"
+description: "End-to-end delivery orders, courier dispatch, fee allocation, and ETA monitoring."
+icon: "truck-fast"
+---
 
 This guide covers end-to-end delivery orders, courier dispatch, fee allocation, and ETA monitoring in DRX.
 
@@ -17,34 +21,24 @@ Use this runbook when fulfilling customer deliveries from `/deliveries`, schedul
   - Courier quote or estimated delivery fee
   - Fee policy: whether the fee is charged to the customer or absorbed by the merchant
 
-## Delivery checkout flow
+## Fast path
 
-1. **Build the order** in Quick POS (`/pos/sale`) or standard Sales (`/sales`).
-2. **Toggle "Delivery Order"**:
+1. **Create delivery order at checkout**:
+   - In Quick POS (`/pos/sale`) or standard Sales (`/sales`), toggle "Delivery Order".
    - Enter destination street address, city, region, and postal code.
    - Enter courier delivery quote.
-   - Select fee distribution:
-     - **Charge customer**: adds courier fee and tax directly to order total.
-     - **Absorb fee**: records courier cost as merchant expense while keeping customer total unchanged.
-3. **Complete checkout**:
-   - The order enters the live fulfillment queue in status `ready_for_dispatch`.
-
-## Dispatch and tracking runbook
-
-From `/deliveries`:
-
-1. **Review incoming queue (`ready_for_dispatch`)**:
-   - Verify packaged order items against receipt summary.
-   - Order driver or dispatch courier via Uber Direct or internal logistics.
-2. **Advance to `uber_ordered`**:
-   - Enter courier driver identifier / tracking link and estimated pickup wait time.
-   - Local and push notification reminders are scheduled (T-2m driver arrival alert).
-3. **Advance to `handed_off`**:
-   - Package is handed to driver at counter.
-   - Driver signs or confirms custody.
-4. **Advance to `delivered`**:
-   - Courier confirms package handover at customer destination.
-   - Order closes and final delivery record is sealed in audit logs.
+   - Select fee distribution: **Charge customer** (adds fee to customer total) or **Absorb fee** (merchant covers delivery cost).
+   - Complete checkout; order enters fulfillment queue as `ready_for_dispatch`.
+2. **Review incoming queue (`ready_for_dispatch`)**:
+   - Open `/deliveries` and verify packaged order items against receipt summary.
+   - Dispatch courier via Uber Direct or internal driver fleet.
+3. **Advance to `uber_ordered`**:
+   - Enter courier driver identifier and pickup wait time.
+   - Local background reminders and arrival notifications (T-2 minutes) are scheduled automatically.
+4. **Advance to `handed_off`**:
+   - Driver arrives at counter, custody is verified, and package is transferred.
+5. **Advance to `delivered`**:
+   - Courier confirms delivery at destination. Final delivery record is sealed in audit logs.
 
 ## If blocked
 
@@ -55,6 +49,11 @@ From `/deliveries`:
   - If after dispatch, contact courier support and record incident in audit notes.
 - **Payment dispute on delivery fee**:
   - Check whether fee was marked as charged or absorbed in the original receipt breakdown.
+
+## What is beta here
+
+- Multi-stop clustered route optimization is currently in private testing.
+- Core single-order delivery queue, Uber Direct quotes, status transitions, and arrival alerts are fully live.
 
 ## Related docs
 

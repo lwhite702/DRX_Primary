@@ -1,6 +1,10 @@
-# Changelog
+---
+title: "Documentation Changelog"
+description: "History of updates to DRX customer-facing documentation, runbooks, and guides."
+icon: "clock-rotate-left"
+---
 
-This changelog tracks customer-facing Deelrx CRM documentation updates and ties each update to a product release.
+This changelog tracks customer-facing DRX documentation updates and ties each update to a product release.
 
 ## How to use this file
 
@@ -13,27 +17,9 @@ For every docs update, log:
 
 Do not ship silent documentation updates.
 
-## Template
-
-## [Product Version X.Y.Z] - YYYY-MM-DD
-
-### Pages affected
-
-- /getting-started
-- /how-sales-work
-
-### Summary
-
-- Updated setup flow to match current onboarding labels.
-- Corrected payment method list in sales workflow.
-
-### Notes
-
-- Source of truth reviewed: live app UI labels and current production workflows.
-
 ## Current release notes
 
-## [Product Version 0.6.8] - 2026-08-25
+## [Product Version 0.6.9] - 2026-08-25
 
 ### Pages affected
 
@@ -49,7 +35,7 @@ Do not ship silent documentation updates.
 - Added native mobile application runbook covering iOS SwiftUI and Android handheld terminals, offline sync, biometric security, and background reminders.
 - Added delivery fulfillment guide covering courier dispatch, Uber quote allocation, and lifecycle tracking.
 - Added fractional selling and bulk pricing tier guide covering exact weight entry, reciprocal dollar entry presets, and loyalty rewards.
-- Unified brand identity and Mintlify theme colors (`#CCFF00`).
+- Unified brand identity, logo assets, and Mintlify theme colors (`#CCFF00`).
 
 ## [Product Version 0.5.3] - 2026-03-04
 
