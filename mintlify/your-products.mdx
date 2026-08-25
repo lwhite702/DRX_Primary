@@ -1,79 +1,67 @@
 ---
-title: "Your Products"
-description: "Daily product records, inventory intake, stock adjustments, and audit history."
+title: "Your Products and Stock"
+description: "Daily product catalog management, receiving stock shipments, manual adjustments, and audit history."
 icon: "boxes-stacked"
 ---
 
-This page is the daily product and stock operating guide for DRX.
+This guide explains how to manage your product catalog, receive stock shipments, and correct inventory counts in DRX.
 
 ## What this page is for
 
-Use this guide to keep your catalog clean, stock counts accurate, and lane sell-through smooth.
+Use this guide to keep your store shelves organized, stock counts accurate, and product searches responsive on the sales floor.
 
-It covers how product records, intake records, adjustments, and audit history work together.
+It covers creating products, receiving incoming vendor shipments, logging manual stock adjustments, and reviewing audit trails.
 
 ## Before you start
 
 - **Recommended role**:
-  - Cashier: view and sell
-  - Manager/supervisor: intake and stock corrections
-- **Routes used in this flow**:
-  - `/inventory`
-  - `/inventory/intake`
-  - `/inventory/adjust`
-  - `/inventory/audit`
-- **Required data**:
-  - SKU and product name
-  - Unit and price
-  - Initial stock or intake plan
-- **Important habit**:
-  - Use intake and adjust routes instead of side edits when possible.
+  - Cashier: Browse products and sell items.
+  - Supervisor or Manager: Receive shipments and log stock adjustments.
+- **Key screens**:
+  - **Inventory** (`/inventory`): View and edit your product catalog.
+  - **Receive Stock** (`/inventory/intake`): Log incoming vendor deliveries and costs.
+  - **Adjust Stock** (`/inventory/adjust`): Log shrinkage, recount corrections, or damage.
+  - **Stock Audit Trail** (`/inventory/audit`): View the complete history of every stock change.
+- **Required product details**:
+  - Product name, SKU/barcode, selling price, and unit of measurement (each, g, oz, lb).
 
 ## Fast path
 
-1. **Create or review product records** in `/inventory`.
-   - Confirm SKU, name, and base sell values.
-   - Confirm product can appear in lane search.
-2. **Receive stock** in `/inventory/intake`.
-   - Select product.
-   - Enter total cost, total received weight, optional supplier, optional delivery cost.
-   - Confirm cost-per-unit calculation before submit.
-3. **Handle intake result**.
-   - If intake posts right away, verify quantity update in inventory list.
-   - If intake requires approval, track pending status and wait for manager action.
-4. **Correct stock when needed** in `/inventory/adjust`.
-   - Use clear reason text.
-   - Use decrease, increase, or set-to action carefully.
-5. **Review trail** in `/inventory/audit`.
-   - Confirm each stock movement has clear context.
-   - Use this route after any dispute.
-6. **Pre-shift low-stock check**.
-   - Review low-stock indicators before counter opens.
-   - Refill or adjust before lane pressure starts.
+1. **Add or update products in Inventory** (`/inventory`):
+   - Add the product name, barcode SKU, retail price, and reorder warning level.
+   - Attach a product nickname (e.g. "Green Tea 500ml") for faster search at the register.
+2. **Receive stock shipments** (`/inventory/intake`):
+   - Select the product being received.
+   - Enter the total invoice cost, received weight or quantity, and optional vendor name.
+   - Confirm the calculated cost-per-unit before saving.
+3. **Verify updated stock**:
+   - Stock quantities update automatically and become available at all registers immediately.
+   - If your store requires manager approvals for new shipments, the delivery appears in the pending intake queue until approved.
+4. **Correct counts when needed** (`/inventory/adjust`):
+   - If shelf counts differ from the system, select the item in **Adjust Stock**.
+   - Choose **Increase**, **Decrease**, or **Set Count to**.
+   - Enter a brief explanation (e.g., *"Physical recount on shelf 2"* or *"Broken bottle during restock"*).
+5. **Review the stock audit trail** (`/inventory/audit`):
+   - See who changed stock, when it was changed, the previous count, new count, and the reason.
+6. **Check low-stock warnings**:
+   - Items that fall below their reorder threshold display a yellow alert badge on your dashboard so you can reorder before running out.
 
 ## If blocked
 
-- **Intake submit fails**:
-  - Check product selection is valid.
-  - Check cost and weight are positive values.
-  - Retry once, then capture route + payload for support.
-- **Intake says approval required**:
-  - This is expected in some stores.
-  - Do not re-submit duplicate intake entries.
-  - Move pending item through approval workflow.
-- **Cart cannot sell item that looks in stock**:
-  - Re-open product and verify current quantity and unit mapping.
-  - Check business context did not switch.
-- **Audit trail has unclear entries**:
-  - Team is likely using vague reason text.
-  - Update shift policy: reason must explain what changed and why.
-- **Alias/nickname search misses product**:
-  - Check `/settings/inventory/aliases` for duplicates or disabled entries.
+- **Cannot save a stock intake shipment**:
+  - Ensure the selected product is active and total cost and received quantity are greater than zero.
+- **Shipment shows "Pending Approval"**:
+  - This is expected if your store requires a manager to sign off on incoming supplier invoices. Ask a store manager to review and approve the delivery.
+- **Item shows in stock on shelf but says 0 at checkout**:
+  - Open the item in **Inventory** to verify its digital count.
+  - If a physical count was not logged, submit a quick stock adjustment to bring digital inventory up to date.
+- **Cashiers cannot find a product by search**:
+  - Check the **Product Aliases** list in Settings to make sure customer slang or nicknames are linked to the correct SKU.
 
 ## What is beta here
 
-- Purchase-order style rollups and deep export layers are beta-limited.
-- Core inventory create/intake/adjust/audit routes are live and should be used for day-to-day operations.
+- Automated vendor purchase-order electronic data interchange (EDI) is in preview testing.
+- Manual product creation, barcode assignment, stock intake, shrinkage adjustments, and full audit logs are fully live.
 
 ## Related docs
 
@@ -83,16 +71,8 @@ It covers how product records, intake records, adjustments, and audit history wo
 - [Stay audit-ready](/staying-compliant)
 - [Fixing issues](/fixing-issues)
 
-## Shift checklist
+## Daily store habits
 
-- Check low-stock flags before opening lane.
-- Confirm one recent intake posted as expected.
-- Confirm adjustment reason quality from prior shift.
-- Confirm at least one top seller has accurate quantity.
-- Confirm alias mappings still match what staff say at the counter.
-
-## Team quality standards
-
-- Every adjustment reason must explain cause, not just outcome.
-- Intake entries should include enough cost detail for manager review.
-- If a SKU repeatedly drifts, open a manager-level review and stop patching the same item silently.
+- Run a quick low-stock check each morning before opening the front doors.
+- Log vendor deliveries immediately upon arrival rather than waiting until the end of the day.
+- Always include a clear reason note when adjusting stock counts to keep your audit records clean.

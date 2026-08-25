@@ -1,55 +1,55 @@
 ---
 title: "Fractional Selling and Bulk Pricing"
-description: "Weight-based precision checkout, reciprocal dollar presets, bulk pricing tiers, and loyalty discounts."
+description: "Weight-based precision checkout, quick dollar presets, bulk pricing tiers, and loyalty discounts."
 icon: "scale-balanced"
 ---
 
-This guide explains how DRX handles weight-based fractional selling, reciprocal dollar inputs, bulk price breaks, and loyalty rewards at checkout.
+This guide explains how DRX handles weight-based fractional sales, dollar-amount requests, bulk price breaks, and loyalty rewards at checkout.
 
 ## What this page is for
 
-Use this guide to configure and operate fractional products (such as loose goods sold by grams, fractions of an ounce, or custom weights) and understand automated bulk tier discounts.
+Use this guide to set up and sell items measured by weight (such as loose goods sold by grams, ounces, or pounds) and configure volume price breaks for customers buying in larger quantities.
 
 ## Before you start
 
 - **Recommended role**: Cashier, supervisor, or manager.
-- **Relevant routes**:
-  - `/inventory` (configure base price and bulk tiers)
-  - `/pos/sale` (fractional and reciprocal checkout)
-- **Supported units**: Grams (`g`), Ounces (`oz`), Pounds (`lb`), Kilograms (`kg`), and discrete units (`each`).
+- **Key screens**:
+  - **Inventory** (`/inventory`): Set up base prices and volume discount tiers.
+  - **Quick Sale** (`/pos/sale`): Ring up weight-based sales and tap dollar presets.
+- **Supported units of measurement**: Grams (`g`), Ounces (`oz`), Pounds (`lb`), Kilograms (`kg`), and individual counts (`each`).
 
 ## Fast path
 
-1. **Exact weight entry**:
-   - In the POS cart, tap the product quantity or weight input.
-   - Enter the exact measured weight (for example `3.5g` or `0.25 oz`).
-   - Total price calculates automatically based on unit price and tier logic.
-2. **Reciprocal dollar amount entry**:
-   - When a customer requests a specific dollar amount (e.g., "$20 worth"), tap the dollar entry field or select a preset chip ($10, $20, $35, $50).
-   - DRX calculates the corresponding exact weight to 3 decimal places without roundoff error.
-   - The cart updates both weight and final line item cost simultaneously.
-3. **Automated bulk price tier breaks**:
-   - Products apply automatic volume price breaks when quantity thresholds are reached:
+1. **Enter exact measured weight**:
+   - In your POS shopping cart, tap the weight or quantity field next to the product.
+   - Enter the scale reading (e.g. `3.5g` or `0.25 oz`).
+   - The total price calculates automatically based on your item's price per unit.
+2. **Use dollar amount presets ($10, $20, $35, $50)**:
+   - When a customer says *"Give me \$20 worth of this item"*, tap the **\$20** quick button or type `$20.00`.
+   - DRX calculates the exact weight down to 3 decimal places without rounding errors.
+   - The cart updates both the target weight to weigh on your scale and the exact \$20 total.
+3. **Automated bulk tier discounts**:
+   - Volume pricing applies automatically as customer quantities cross key thresholds:
      - **Eighth (3.5g)**: Tier 1 rate
      - **Quarter (7.0g)**: Tier 2 rate
      - **Half Ounce (14.0g)**: Tier 3 rate
      - **Full Ounce (28.0g)**: Tier 4 rate
-4. **Apply loyalty discounts**:
-   - If the attached customer has available loyalty points, tap the Loyalty reward chip at checkout to apply discount credits against eligible items before final tax calculation.
+4. **Redeem customer loyalty rewards**:
+   - If an attached customer has earned loyalty points, tap the **Loyalty Reward** button at checkout to deduct their discount before sales tax is applied.
 
 ## If blocked
 
-- **Reciprocal dollar input generates unexpected weight**:
-  - Confirm the base price per gram or ounce configured on the product in `/inventory`.
-- **Bulk price tier not triggering**:
-  - Verify that the item quantity meets or exceeds the minimum tier threshold.
-- **Loyalty reward button disabled**:
-  - Confirm customer profile is attached to the active cart and has positive reward balance.
+- **Dollar amount button gives an unexpected weight calculation**:
+  - Open the product in **Inventory** and verify the base price per gram or per ounce.
+- **Bulk price discount is not applying**:
+  - Check that the cart weight meets or exceeds the required tier threshold (e.g. 7.0g for a quarter).
+- **Loyalty reward button cannot be clicked**:
+  - Ensure the customer profile is attached to the cart and confirm they have an active points balance.
 
 ## What is beta here
 
-- Custom mixed-tier combination discounts across disparate product families are beta-limited.
-- Standard weight-based fractional checkout, dollar reciprocal presets, single-product bulk tiers, and loyalty redemption are fully live.
+- Mixed-and-matched multi-product bulk bundles across different product categories are in preview testing.
+- Single-item weight selling, dollar presets, standard tier price breaks, and loyalty redemption are fully live.
 
 ## Related docs
 

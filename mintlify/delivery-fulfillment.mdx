@@ -1,59 +1,61 @@
 ---
 title: "Delivery Fulfillment"
-description: "End-to-end delivery orders, courier dispatch, fee allocation, and ETA monitoring."
+description: "Fulfilling customer delivery orders, dispatching drivers, and tracking drop-offs."
 icon: "truck-fast"
 ---
 
-This guide covers end-to-end delivery orders, courier dispatch, fee allocation, and ETA monitoring in DRX.
+This guide covers creating delivery orders at the register, scheduling courier pickups (like Uber Direct or your in-house drivers), and tracking packages until delivered.
 
 ## What this page is for
 
-Use this runbook when fulfilling customer deliveries from `/deliveries`, scheduling courier handoffs (such as Uber Direct or in-house drivers), and tracking orders through final receipt.
+Use this runbook to manage the delivery queue in **Deliveries** (`/deliveries`), pack items accurately, hand off bags to couriers, and monitor customer arrival times.
 
 ## Before you start
 
-- **Recommended role**: Dispatcher, cashier, supervisor, or manager.
-- **Required routes**:
-  - `/pos/sale` or `/sales` (order creation with delivery tender toggle)
-  - `/deliveries` (fulfillment queue and order lifecycle)
+- **Recommended role**: Dispatcher, Cashier, Supervisor, or Manager.
+- **Key screens**:
+  - **Quick Sale** (`/pos/sale`) or **Sales** (`/sales`): Create the delivery order.
+  - **Deliveries** (`/deliveries`): Manage packaging, driver dispatch, and tracking.
 - **Required information**:
-  - Delivery street address and optional recipient contact
-  - Courier quote or estimated delivery fee
-  - Fee policy: whether the fee is charged to the customer or absorbed by the merchant
+  - Recipient drop-off address and contact phone number.
+  - Delivery quote or estimated courier fee.
+  - Delivery fee policy: whether the customer pays the delivery fee or your store covers it.
 
 ## Fast path
 
 1. **Create delivery order at checkout**:
-   - In Quick POS (`/pos/sale`) or standard Sales (`/sales`), toggle "Delivery Order".
-   - Enter destination street address, city, region, and postal code.
-   - Enter courier delivery quote.
-   - Select fee distribution: **Charge customer** (adds fee to customer total) or **Absorb fee** (merchant covers delivery cost).
-   - Complete checkout; order enters fulfillment queue as `ready_for_dispatch`.
-2. **Review incoming queue (`ready_for_dispatch`)**:
-   - Open `/deliveries` and verify packaged order items against receipt summary.
-   - Dispatch courier via Uber Direct or internal driver fleet.
-3. **Advance to `uber_ordered`**:
-   - Enter courier driver identifier and pickup wait time.
-   - Local background reminders and arrival notifications (T-2 minutes) are scheduled automatically.
-4. **Advance to `handed_off`**:
-   - Driver arrives at counter, custody is verified, and package is transferred.
-5. **Advance to `delivered`**:
-   - Courier confirms delivery at destination. Final delivery record is sealed in audit logs.
+   - In **Quick Sale** or **Sales**, turn on the **Delivery Order** switch.
+   - Enter the drop-off street address, apartment/unit number, city, and zip code.
+   - Enter the courier fee quote.
+   - Choose who pays: select **Charge Customer** (adds fee to customer receipt) or **Absorb Fee** (your store covers the delivery expense).
+   - Complete payment; the order is automatically sent to the **Deliveries** queue.
+2. **Pack and prepare order (`Ready for Dispatch`)**:
+   - Open **Deliveries** (`/deliveries`) and review the order packing slip.
+   - Bag items securely and attach the printed receipt or order ticket.
+   - Request a courier pickup (via Uber Direct or your in-house delivery fleet).
+3. **Driver on the way (`Driver Dispatched`)**:
+   - The driver's name, vehicle details, and estimated pickup time appear on the order card.
+   - Your register or handheld device receives an alert when the driver is 2 minutes away.
+4. **Hand off package (`Handed Off`)**:
+   - When the driver arrives at the counter, confirm the customer name and order number.
+   - Tap **Confirm Handoff** in the app.
+5. **Customer receives package (`Delivered`)**:
+   - The courier confirms drop-off at the customer's doorstep. The order completes automatically in your store records.
 
 ## If blocked
 
-- **Driver delayed or canceled**:
-  - Update courier wait time or reassign driver identifier in delivery panel.
-- **Customer address change**:
-  - If before handoff, edit address in order detail view.
-  - If after dispatch, contact courier support and record incident in audit notes.
-- **Payment dispute on delivery fee**:
-  - Check whether fee was marked as charged or absorbed in the original receipt breakdown.
+- **Driver is delayed or canceled**:
+  - Tap the delivery order card and tap **Reassign Driver** or update pickup notes.
+- **Customer calls to change drop-off address**:
+  - If the package is still at the store, tap **Edit Address** on the order card.
+  - If the driver is already on the road, message the courier directly.
+- **Customer questions the delivery fee**:
+  - Open the receipt summary in **Sales** to see whether the fee was added to their subtotal or covered by the store.
 
 ## What is beta here
 
-- Multi-stop clustered route optimization is currently in private testing.
-- Core single-order delivery queue, Uber Direct quotes, status transitions, and arrival alerts are fully live.
+- Multi-stop automated route clustering for fleet vans is in preview testing.
+- Single-order delivery queues, Uber Direct integrations, driver arrival alerts, and live status updates are fully live.
 
 ## Related docs
 

@@ -1,78 +1,72 @@
 ---
 title: "Store Setup"
-description: "Configure business profile details, tax behavior, team entry controls, and privacy defaults."
+description: "Configure business profile details, tax behavior, team permissions, and privacy defaults."
 icon: "sliders"
 ---
 
-Store setup is where DRX becomes your store system instead of a blank shell.
+Store setup is where you customize DRX for your store's specific brand, staff roles, tax requirements, and register rules.
 
 ## What this page is for
 
-Use this page to configure business profile details, tax behavior, team entry controls, and privacy defaults so your first live week is stable.
+Use this guide to set up your receipt details, tax rates, cashier permissions, and customer privacy preferences so your registers run smoothly on opening day.
 
-This is the setup route map for owners and managers. It focuses on what each settings surface controls and what to verify before you let staff ring sales.
+This guide explains what each setting controls and what to verify before your staff starts ringing customer sales.
 
 ## Before you start
 
-- **Recommended role**: Owner, super admin, or manager with settings rights.
-- **Routes you will use**:
-  - `/settings`
-  - `/settings/profile`
-  - `/settings/team`
-  - `/settings/inventory/aliases`
+- **Recommended role**: Store Owner or Manager with Settings rights.
+- **Key screens you will use**:
+  - **Store Profile** (`/settings/profile`)
+  - **General Settings** (`/settings`)
+  - **Manage Team** (`/settings/team`)
+  - **Product Aliases** (`/settings/inventory/aliases`)
 - **Have ready**:
-  - Legal business name and store contact fields
-  - Tax decision and tax rate
-  - Role assignment plan for cashier/supervisor/manager
-  - Manager PIN policy for sensitive POS actions
-- **Reality check**: Setup values affect receipts, totals, and who can do what.
+  - Official store name, phone number, email, and receipt address.
+  - Your local sales tax decision and tax rate percentage.
+  - Staff list and desired roles (Cashier, Supervisor, Manager).
+  - Your store's manager PIN policy for approving discounts or voids.
 
 ## Fast path
 
-1. **Business profile** (`/settings` or `/settings/profile`).
-   - Enter store name, phone, email, and address fields used in store records.
-   - Save and re-open to confirm values persisted.
-2. **Tax and POS controls** (`/settings`).
-   - Set collect tax on/off.
-   - Enter default tax rate if tax is on.
-   - Set manager PIN behavior for controlled actions.
-3. **Privacy profile and data handling** (`/settings`).
-   - Choose alias-first or broader profile based on store policy.
-   - Review field visibility, recommended fields, and screen masking mode.
-   - Review ephemeral profile defaults and retention behavior.
-4. **Inventory defaults** (`/settings/inventory/aliases`).
-   - Verify alias mappings used by staff for fast lookup.
-   - Remove duplicates before live shift starts.
-5. **Team controls** (`/settings/team`).
-   - Assign cashier, supervisor, and manager roles.
-   - Confirm owner role remains protected.
-6. **Sanity test**.
-   - Sign in as one lower role account.
-   - Verify expected denied actions are actually blocked.
-7. **Live test flow**.
-   - Add one inventory item, run one sale, then verify totals and inventory movement.
+1. **Set up your Store Profile** (`/settings/profile`):
+   - Enter your store name, contact phone, customer support email, and physical address.
+   - These details appear on customer receipts and store summaries.
+2. **Configure Taxes and Register Controls** (`/settings`):
+   - Turn the **Collect Tax** toggle on or off.
+   - If on, enter your default sales tax percentage.
+   - Choose whether sensitive register actions (such as manual discounts or voids) require a Manager PIN.
+3. **Choose your Customer Privacy Profile** (`/settings`):
+   - **Alias Mode**: Perfect for walk-in stores that only need a nickname or first name to track an order.
+   - **Standard Mode**: Great for stores that collect optional phone numbers for loyalty or delivery.
+   - **Business CRM Mode**: For operations that need full contact details.
+   - Turn on **Counter Screen Masking** if you want customer phone numbers partially hidden from nearby shoppers.
+4. **Set up Product Nicknames** (`/settings/inventory/aliases`):
+   - Add slang, shorthand, or common customer nicknames to items so cashiers can find products instantly when searching.
+5. **Invite Staff & Set Roles** (`/settings/team`):
+   - Add your staff members and assign their roles (Cashier, Supervisor, or Manager).
+   - Keep owner access protected.
+6. **Verify staff experience**:
+   - Sign in with a Cashier account to verify that restricted settings are properly hidden.
+7. **Run a quick test sale**:
+   - Ring up a sample item in **Quick Sale** to confirm that tax, line items, and receipts calculate as expected.
 
 ## If blocked
 
-- **Cannot edit settings**:
-  - Your role likely lacks settings/system scope.
-  - Use owner/super admin for initial store setup.
-- **Team screen opens but actions fail**:
-  - Role can view but not manage users.
-  - Confirm current user has user-management permissions.
-- **Tax totals look wrong in checkout**:
-  - Confirm collect-tax toggle and rate in settings.
-  - Confirm the sale route is in the correct business context.
-- **Inventory aliases not working in search**:
-  - Check alias screen for duplicates and disabled entries.
-  - Re-test from POS after saving.
-- **Masking or privacy view differs from expectation**:
-  - Recheck screen privacy mode and manual toggle behavior in settings.
+- **Cannot save changes in Settings**:
+  - Your account may not have manager or admin permissions. Sign in with an Owner account to adjust storewide settings.
+- **Team members cannot see invited stores**:
+  - Confirm the email address was entered correctly and verify that the user accepted their invitation.
+- **Tax is not calculating on sales**:
+  - Go to **Settings** (`/settings`) and verify that the **Collect Tax** toggle is enabled and the tax rate is above zero.
+- **Product nicknames are not appearing in search**:
+  - Check the **Product Aliases** screen to ensure nicknames are active and mapped to the right item.
+- **Customer details are hidden by stars or dots**:
+  - Screen masking mode is active to protect customer privacy on the counter. You can temporarily view full details with appropriate manager permissions.
 
 ## What is beta here
 
-- Some expanded reporting and multi-business controls remain beta-limited.
-- Core setup controls in `/settings` are live and should be treated as source of truth.
+- Advanced multi-location corporate reporting and central inventory pooling are in preview testing.
+- Core store profile, tax calculation, team permissions, product aliases, and privacy profiles are fully live.
 
 ## Related docs
 

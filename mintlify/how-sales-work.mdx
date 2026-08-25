@@ -1,71 +1,71 @@
 ---
 title: "How Sales Work"
-description: "Standard checkout flow, cart actions, customer attachment, and multi-tender completion."
+description: "Standard checkout flow, cart actions, customer profiles, and multi-tender completion."
 icon: "cart-shopping"
 ---
 
-This page covers the standard **Sales** screen flow for full checkout handling.
+This page covers the standard **Sales** screen for full order management and counter checkout.
 
 ## What this page is for
 
-Use this guide when your team runs checkout from `/sales` and needs the full cart workflow with customer attach, delivery context, fees, and tender selection.
+Use this guide when ringing customer sales from the **Sales** tab (`/sales`) when you need full order options—such as attaching detailed customer notes, managing delivery address fields, adding custom delivery fees, or splitting tenders.
 
-If your cashier lane uses the fast register flow, use [Quick Sale runbook](/quick-sale-runbook) instead.
+For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook](/quick-sale-runbook) instead.
 
 ## Before you start
 
-- **Recommended role**: Cashier or above for standard sales; supervisor/manager for restricted actions.
-- **Required route**: `/sales`
-- **Needed data state**:
-  - At least one sellable inventory item
-  - Optional customer profile (required for credit use)
-  - Tax behavior already set in settings
-- **Know your role limits**:
-  - Price overrides, void-style actions, and some reassignments can require higher roles.
+- **Recommended role**: Cashier or above for ringing sales; Supervisor or Manager for manual discounts and voids.
+- **Screen**: **Sales** (`/sales`).
+- **Required information**:
+  - Sellable products in inventory with active stock.
+  - An attached customer profile if accepting store credit as payment.
+  - Active tax settings (configured in Store Settings).
+- **Staff permissions**:
+  - Price overrides and manager voids may require a supervisor PIN depending on your store rules.
 
 ## Fast path
 
-1. **Open Sales** (`/sales`).
-2. **Add items** by search and cart actions.
-3. **Set quantity** or remove line items as needed.
-4. **Attach customer** when needed.
-   - Optional for normal cash/card sales.
-   - Required when using credit tender.
-5. **Set payment method**.
-   - Supported methods in this flow: cash, card, credit, zelle, mixed.
-   - Add payment reference when needed (for example zelle confirmation).
-6. **Review totals**.
-   - Check subtotal, tax, fees, and total before submit.
-7. **Complete checkout**.
-   - Confirm success message and sale record ID.
-8. **Verify side effects**.
-   - Inventory moved as expected.
-   - Customer balance updated if credit used.
+1. **Open Sales** (`/sales`):
+   - Access the main sales register from the navigation bar.
+2. **Add products to the cart**:
+   - Search by product name, SKU, or nickname, or browse categories.
+   - Adjust quantities or remove line items as needed.
+3. **Attach a customer profile (optional)**:
+   - Walk-in cash or card sales do not require a customer profile.
+   - Attach a customer if they want receipt texts, loyalty points, or are paying with store credit.
+4. **Choose payment tender**:
+   - Select **Cash**, **Card**, **Store Credit**, **Zelle**, or **Split Payment**.
+   - For electronic transfers like Zelle, enter the transfer confirmation code for shift reconciliation.
+5. **Review receipt totals**:
+   - Double-check the subtotal, applicable taxes, delivery charges, and final balance.
+6. **Complete the sale**:
+   - Tap **Complete Sale** once.
+   - A green confirmation badge with the receipt number will appear on screen.
+7. **Verify inventory and balance**:
+   - Inventory counts deduct automatically.
+   - If store credit was used, the customer's remaining balance updates immediately.
 
 ## If blocked
 
-- **Cannot checkout**:
-  - Confirm cart has at least one item.
-  - Confirm stock is available.
-  - Confirm payment method is selected.
-- **Credit method unavailable**:
-  - Attach a customer.
-  - Confirm credit is allowed for current context.
-- **Zelle flow rejected**:
-  - Enter payment reference field when prompted.
-- **Price override not available**:
-  - Role likely lacks override permission.
-  - Escalate to manager/supervisor route.
-- **Totals look off**:
-  - Check tax toggle in settings.
-  - Check for fee rows and delivery charge entries.
-- **Checkout error appears after click**:
-  - Retry once and check whether sale already completed before trying again.
+- **Cannot tap the checkout button**:
+  - Check that there is at least one item in the shopping cart.
+  - Verify that no item is listed as out-of-stock.
+  - Ensure a payment method has been selected.
+- **Store Credit option is greyed out**:
+  - Attach an active customer profile to the cart first, and ensure they have an approved credit limit.
+- **Zelle transfer submission fails**:
+  - Enter the reference or confirmation note from the customer's transfer app.
+- **Cannot discount an item or change price**:
+  - Your account may need a manager override. Call a supervisor to enter their PIN.
+- **Sales totals look incorrect**:
+  - Check whether sales tax is enabled in Store Settings and verify if custom delivery fees were added to the order.
+- **Register lagged after tapping Complete**:
+  - Check your recent sales list to see if the transaction already posted before attempting to charge the customer again.
 
 ## What is beta here
 
-- **Report exports and deeper trend drill-down** are still beta-limited and do not change live checkout behavior.
-- Some advanced cross-location reporting views remain beta surfaces.
+- Advanced multi-tender custom tip splits and scheduled layaway plans are in preview testing.
+- Standard cash, credit card, Zelle, store credit, customer attach, and receipt printing are fully live.
 
 ## Related docs
 
@@ -75,19 +75,9 @@ If your cashier lane uses the fast register flow, use [Quick Sale runbook](/quic
 - [Your customers](/your-customers)
 - [Fixing issues](/fixing-issues)
 
-## Shift checklist
+## Shift opening and closing checklist
 
-Use this quick list before and after each shift:
-
-- Confirm tax behavior is expected in first test cart.
-- Confirm one cash sale and one card sale can complete.
-- Confirm customer attach works from lookup.
-- Confirm credit method is only used when customer context is present.
-- Confirm last completed sale ID is visible for dispute follow-up.
-- At close, spot-check one sale detail route for tender correctness.
-
-## Operator notes
-
-- Keep one clear team rule for when to use standard Sales vs Quick Sale.
-- If your store allows manual fees or delivery charges, define who can apply them and when.
-- Keep route and click-path notes for recurring issues so new staff can recover faster.
+- Ring a quick 1-cent test transaction at opening to verify card terminal and cash drawer response.
+- Confirm tax rate is calculating properly on the subtotal.
+- Verify customer search finds active profiles quickly.
+- At closing, spot-check your payment breakdown in **Operations Insights** against your drawer cash and terminal batch slips.

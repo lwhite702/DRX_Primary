@@ -1,98 +1,56 @@
 ---
 title: "DRX Privacy ProteXion Protocol"
-description: "Data minimization model, field encryption, vault mode key management, and retention cleanup."
+description: "How DRX protects your customer records, masks counter screens, and automatically clears temporary data."
 icon: "lock"
 ---
 
-This page has two layers:
+DRX is built from the ground up with a **privacy-first design**. This guide explains how our built-in protections keep your customer information safe from prying eyes, data leaks, and unnecessary record hoarding.
 
-1. Operator summary (what to do day to day)
-2. Technical appendix (how the system applies protections)
+## What this page is for
 
-## Operator summary
+Use this guide to understand how customer privacy settings work, how to configure privacy levels for your store, and how to protect customer phone numbers on counter registers.
 
-### What this page is for
+## Core privacy principles for store operators
 
-Use this when deciding what customer data to collect, how long to keep it, and how to reduce on-screen exposure during live store work.
+1. **Collect only what you need**: Never ask a walk-in cash customer for their home address or phone number just to complete a basic sale.
+2. **Alias-first design**: Customers can be saved using simple nicknames or initials (e.g. "Jay M.") without requiring full legal names.
+3. **Screen masking at the counter**: Sensitive information (like phone numbers) is partially masked with stars so shoppers standing in line cannot read another customer's contact details off your screen.
+4. **Automatic temporary profile cleanup**: Walk-in profiles can be set to automatically expire and delete after 1, 7, or 30 days of inactivity.
 
-### Core operating rules
+## How to configure your store privacy level
 
-- Collect only what you need to run the sale and follow up on balances.
-- Alias-first profiles are valid and useful for many stores.
-- Sensitive fields should stay hidden when staff do not need full detail.
-- Temporary profiles should auto-expire based on store policy.
+Open **Settings** (`/settings`) to choose the privacy profile that matches your store's workflow:
 
-### Before you start
+### 1. Alias Mode (Highest Privacy)
+- **Best for**: Fast walk-in retail where customers value maximum discretion.
+- **How it works**: Only the alias field is shown by default. Phone numbers and home addresses are hidden.
+- **Customer experience**: Fast, private, and anonymous checkout.
 
-- Open `/settings`.
-- Confirm current privacy profile.
-- Confirm screen masking mode.
-- Confirm temporary profile retention defaults.
+### 2. Standard Mode (Balanced)
+- **Best for**: Retail stores that offer digital receipt text messages and loyalty point rewards.
+- **How it works**: Shows alias and an optional phone number field. Address and email remain optional.
+- **Customer experience**: Quick loyalty point lookup with masked phone numbers.
 
-### Fast path
+### 3. Business CRM Mode (Full Contact)
+- **Best for**: Operations that offer home delivery, invoicing, or commercial accounts.
+- **How it works**: Displays full contact fields including delivery address and billing details.
+- **Customer experience**: Complete profile with delivery tracking.
 
-1. Pick privacy profile that matches your real workflow.
-2. Keep non-essential fields off unless needed.
-3. Turn on screen masking mode where shared screens are common.
-4. Confirm temporary profile retention window (1, 7, or 30 days).
-5. Run data footprint checks in settings on a regular schedule.
+## Automatic data cleanup & expiration
 
-### If blocked
+You can prevent old customer lists from cluttering your store by configuring **Automatic Retention Cleanup**:
 
-- If profile behavior does not match expectation, recheck field visibility and recommendation settings.
-- If decryption-related errors appear in logs or vault indicators, escalate before editing sensitive records.
-- If temporary profile cleanup does not run, verify retention settings and cleanup trigger path.
+- **Temporary Walk-in Profiles**: Set to auto-delete after 1 day, 7 days, or 30 days of inactivity.
+- **Active Credit Protection**: Customers who have an outstanding store credit balance or active delivery order are automatically protected from deletion until their balance is settled.
 
-### What is beta here
+## Counter screen masking
 
-- Core profile, masking, retention, and encrypted field handling are live.
-- Some advanced reporting and exported views around privacy metrics are beta-limited.
+When **Screen Masking** is enabled in Store Settings:
 
-## Technical appendix
-
-### Data minimization model
-
-Supported profile modes:
-
-- `alias_mode`
-- `standard_mode`
-- `business_crm_mode`
-
-Each mode controls field visibility and recommendation behavior.
-
-### Sensitive fields
-
-The protocol applies protected handling to fields such as:
-
-- alias
-- first name
-- phone
-- email
-- address
-- notes
-
-### Encryption and lookup behavior
-
-- Sensitive field values are encrypted before storage.
-- Deterministic keyed hashes are used for exact-match lookup paths where needed.
-- Version tagging supports key rotation behavior.
-
-### Vault mode behavior
-
-- Keys are loaded from runtime environment variables.
-- Keys are not stored in primary database tables.
-- Decrypt path tries current key first, then previous key for rotation fallback.
-
-### Retention and cleanup behavior
-
-- Inactivity and temporary profile windows drive cleanup eligibility.
-- Temporary profile cleanup can run before broader retention cleanup.
-- Profiles with active balance can be skipped from deletion paths.
-
-### Session and account safeguards
-
-- Session list and revoke path exist.
-- Lockout safeguards are present for repeated failed login events.
+- Customer phone numbers appear as `(***) ***-5678`.
+- Email addresses appear as `a***@example.com`.
+- Cashiers can still verify customers by asking for the last 4 digits of their phone number.
+- Managers can tap to reveal full details if needed for delivery or order resolution.
 
 ## Related docs
 
@@ -100,7 +58,3 @@ The protocol applies protected handling to fields such as:
 - [Your customers](/your-customers)
 - [Team access](/team-access)
 - [Fixing issues](/fixing-issues)
-
-### Operator reminder
-
-Privacy settings should be reviewed whenever staffing model or customer policy changes. Do not set and forget.

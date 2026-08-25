@@ -4,77 +4,78 @@ description: "The fastest safe path from initial sign-in to your first completed
 icon: "rocket"
 ---
 
-This guide is the fastest safe path from first sign-in to first completed sale.
+This guide is the fastest, safest path from your first sign-in to ringing up your first customer sale.
 
 ## What this page is for
 
-Use this page when you are opening a new store in DRX, setting up a fresh business profile, or handing DRX to a new manager who must verify the system is ready before staff begin taking orders.
+Use this guide when opening a new store in DRX, setting up your business profile, or training a new manager to verify that the register is ready before staff begin taking customer orders.
 
-This guide is not deep setup detail for every setting. It is a launch checklist with route-level links so you can get live quickly without skipping steps that break checkout later.
+This is a launch checklist to get your store up and running quickly without skipping settings that might slow down checkout later.
 
 ## Before you start
 
-- **Recommended role**: Owner, super admin, or manager with settings access.
-- **Account access**: You can sign in and reach the app shell.
-- **Business context**: Confirm you are in the correct business/workspace before entering data.
-- **Required data on hand**:
-  - Store name and contact details
-  - Tax behavior decision (collect tax on/off and rate)
-  - At least one product you can add to inventory
-  - One test customer profile plan (alias-only or full profile)
-- **Prereq routes**:
-  - `/onboarding`
-  - `/settings`
-  - `/inventory`
-  - `/sales` or `/pos/sale`
+- **Recommended role**: Store Owner or Manager with Settings access.
+- **Account access**: Ensure you can sign in to DRX on your browser or mobile device.
+- **Store workspace**: Confirm your store name appears at the top of the screen before entering data.
+- **Information to have on hand**:
+  - Store name, address, phone number, and email.
+  - Tax collection settings (tax enabled/disabled and your local tax rate).
+  - Details for at least one initial product to stock in inventory.
+  - Your customer privacy preference (alias-only walk-ins vs full contact profiles).
+- **Key screens you will visit**:
+  - **Onboarding** (`/onboarding`)
+  - **Settings** (`/settings`)
+  - **Inventory** (`/inventory`)
+  - **Sales** (`/sales`) or **Quick Sale** (`/pos/sale`)
 
 ## Fast path
 
-1. **Finish onboarding first** in `/onboarding`.
-   - Complete business details.
-   - Choose privacy profile based on what data your team actually needs.
-2. **Open Settings** in `/settings`.
-   - Confirm business profile fields used on receipts.
-   - Set tax behavior and manager PIN policy.
-3. **Add your first product** in `/inventory`.
-   - Create at least one sellable item.
-   - Confirm unit, price, and current stock are set.
-4. **Run one intake check** in `/inventory/intake` if you are receiving stock now.
-   - Enter cost and weight.
-   - Confirm whether intake posts right away or goes to approval.
-5. **Create one customer profile** in `/customers`.
-   - Alias-only profiles are valid.
-   - Contact details are optional unless your store policy requires them.
-6. **Run a test sale**.
-   - Standard flow: `/sales`.
-   - Fast flow: `/pos/sale` -> `/pos/payment` -> `/pos/complete`.
-7. **Verify outcome**.
-   - Sale record appears in `/sales/[id]`.
-   - Stock changed in `/inventory`.
-   - If credit was used, balance changed in `/credit`.
-8. **Check live metrics** in `/insights`.
-   - Confirm totals and transaction count updated.
+1. **Complete store onboarding**:
+   - Fill in your business details on the **Onboarding** screen.
+   - Choose the customer privacy profile that best fits how your store operates.
+2. **Review your store settings**:
+   - Go to **Settings** (`/settings`) and verify your receipt header details.
+   - Turn on tax collection if applicable and enter your store tax percentage.
+   - Set up your manager PIN requirement for sensitive counter actions.
+3. **Add your first product**:
+   - Open **Inventory** (`/inventory`) and create a sellable item.
+   - Set its unit of measurement, retail selling price, and starting quantity.
+4. **Log an inventory intake**:
+   - If receiving a stock delivery, open **Receive Stock** (`/inventory/intake`).
+   - Enter your invoice cost, received quantity, and confirm cost-per-unit.
+5. **Create a customer profile**:
+   - Open **Customers** (`/customers`) and create a profile.
+   - Entering an alias or nickname is sufficient for most walk-in customers.
+6. **Ring up a test sale**:
+   - For fast counter checkout, tap **Quick Sale** (`/pos/sale`).
+   - Add your product, tap **Pay**, and complete a test cash or card transaction.
+7. **Verify your results**:
+   - Check that the completed transaction appears in **Sales**.
+   - Confirm stock decreased correctly in **Inventory**.
+   - If store credit was used, check the updated customer balance in **Credit**.
+8. **Check live numbers**:
+   - Open **Operations Insights** (`/insights`) to confirm your sales total and transaction count updated in real time.
 
 ## If blocked
 
-- **"No business found" appears on pages**:
-  - Return to `/onboarding` and complete missing required fields.
-- **Cannot access Settings or Team routes**:
-  - Your role is too limited. Use an owner/super admin account for initial setup.
-- **Checkout fails during first test sale**:
-  - Confirm cart is not empty.
-  - Confirm stock is above zero for each item.
-  - Retry once before rebuilding cart to avoid duplicate transactions.
-- **Inventory page shows items but checkout cannot sell them**:
-  - Verify item status and quantity.
-  - Confirm you are in the same business context in all pages.
-- **Credit sale path blocked**:
-  - Attach a customer and verify eligibility before selecting credit tender.
+- **"No business found" appears on screen**:
+  - Return to the **Onboarding** screen and complete all required store fields.
+- **Cannot access Settings or Team screens**:
+  - Your account permissions are restricted. Sign in with an Owner or Admin account for initial store setup.
+- **Checkout button is disabled during test sale**:
+  - Ensure you added at least one item to the shopping cart.
+  - Confirm the item has positive available stock.
+  - Tap once and wait for the confirmation screen rather than tapping repeatedly.
+- **Product appears in inventory but cannot be added to cart**:
+  - Open the product in **Inventory** and confirm its status is active with stock above zero.
+  - Verify you are logged into the correct store workspace.
+- **Cannot choose Store Credit as payment**:
+  - Attach a customer profile to the cart first, then verify their credit eligibility.
 
 ## What is beta here
 
-- **Reports depth** is still beta-limited. The `/reports` page is present but minimal.
-- Some multi-location or cross-business controls are beta surfaces. Keep store-level checks in your day-to-day routine until those surfaces expand.
+- Advanced multi-store cross-location rollups and custom report export builder are in preview testing.
+- Core store setup, product inventory, customer profiles, Quick Sale POS, and cash/card/credit checkout are fully live.
 
 ## Related docs
 

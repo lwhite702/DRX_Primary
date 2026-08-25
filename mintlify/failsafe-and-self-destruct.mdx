@@ -1,57 +1,55 @@
 ---
 title: "Failsafe and Safeguards"
-description: "Separating operational safeguard controls from unsupported destructive wipe assumptions."
+description: "Understanding store safeguards, data deletion policies, and emergency account procedures."
 icon: "triangle-exclamation"
 ---
 
-This page explains what safeguards are real in DRX and what is not a normal operator feature.
+This guide explains how security safeguards work in DRX and clarifies the difference between everyday account security and emergency data procedures.
 
 ## What this page is for
 
-Use this guide when a team member asks for a "panic wipe" or assumes the app has one-click destructive controls.
+Use this guide when a team member asks about emergency data removal, device loss procedures, or account safety controls.
 
-This page prevents dangerous mistakes by separating live safeguards from unsupported assumptions.
+This guide prevents costly mistakes by explaining the actual safeguards built into DRX.
 
 ## Before you start
 
-- **Recommended role**: Manager or owner for any destructive request review.
-- **Routes involved**:
-  - `/help`
-  - `/inventory/audit`
-  - session and account admin routes
-- **Ground rule**:
-  - Do not run destructive account actions during lane pressure without owner review.
+- **Recommended role**: Store Manager or Store Owner.
+- **Key screens**:
+  - **Help Center** (`/help`): Official support and emergency escalation.
+  - **Manage Team** (`/settings/team`): Deactivate employee accounts.
+  - **Active Devices**: Remotely sign out lost or compromised devices.
+- **Emergency ground rule**:
+  - Never perform hasty destructive actions on active store accounts during counter rush hours. Contact store ownership and official support first.
 
 ## Fast path
 
-1. **Confirm incident type**.
-   - Data error, account risk, device loss, or legal request.
-2. **Pause risky actions**.
-   - Stop manual overrides until issue is understood.
-3. **Use live safeguards**.
-   - Session revoke for account concerns.
-   - Audit review for stock/sale disputes.
-   - Support escalation for route failures.
-4. **Escalate destructive requests**.
-   - Owner/super admin decides if deletion path is required.
-5. **Document action and outcome**.
-   - Keep a clear trail for handoff.
+1. **Lost or stolen mobile device**:
+   - Open **Settings** -> **Active Devices**.
+   - Find the missing phone or tablet and tap **Sign Out Device**.
+   - This immediately locks the device out of your store workspace and revokes all cached register access.
+2. **Former employee departure**:
+   - Open **Manage Team** (`/settings/team`).
+   - Tap the employee's name and select **Deactivate Account**.
+   - Their PIN and login are immediately invalidated across all registers.
+3. **Suspected inventory count tampering**:
+   - Open **Stock Audit Trail** (`/inventory/audit`).
+   - Review recent adjustments to see exact timestamps, operator names, and reason notes.
+4. **Official store closure or data erasure requests**:
+   - Data erasure and workspace closure are handled through verified ownership support channels, not an accidental single-tap button on cashier registers.
 
 ## If blocked
 
-- **Team asks for full workspace destruction button**:
-  - That is not a normal operator feature.
-  - Use controlled admin/legal process.
-- **Assumption that offline queue means full rollback**:
-  - Offline queue helps continuity but does not replace careful incident handling.
-- **Unclear whether user deletion is appropriate**:
-  - Pause and escalate before action.
-  - Confirm legal and business policy path.
+- **Staff member asks for a "panic wipe" button**:
+  - DRX does not provide an unauthenticated "one-tap self-destruct" on cashier screens, as this would create severe operational risk for store owners.
+  - Device sign-out and account deactivation are the proper, controlled safety tools.
+- **Lost internet connection during shift**:
+  - Do not panic or attempt to reset the app. Mobile registers continue taking orders offline and upload automatically once your connection returns.
 
 ## What is beta here
 
-- Core safeguard behavior listed here is live.
-- Some broader incident analytics views are beta-limited and should not replace route-level checks.
+- Automated multi-store incident escalation workflows are in preview testing.
+- Remote device sign-out, instant staff deactivation, and detailed stock audit trails are fully live.
 
 ## Related docs
 
