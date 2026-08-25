@@ -1,59 +1,64 @@
 ---
 title: "Native Mobile Applications"
-description: "Configure and operate DRX on native iOS and Android handheld POS devices."
+description: "How to use DRX on iPhone, iPad, and Android handheld POS devices on the store floor."
 icon: "mobile"
 ---
 
-This guide covers installing, configuring, and operating DRX on iOS and Android native devices.
+This guide explains how staff and managers use DRX on iOS and Android handheld devices for floor sales, fast barcode scanning, and delivery handoffs.
 
 ## What this page is for
 
-Use this guide to set up native handheld terminals, enable offline sales queues, configure biometric lock, and manage background notification reminders.
+Use this guide to set up mobile registers, ring sales while moving around the store, take orders when Wi-Fi drops, and receive driver arrival reminders.
 
 ## Before you start
 
 - **Recommended role**: Cashier, supervisor, or manager.
-- **Supported platforms**:
-  - **iOS Native**: Swift 6 and SwiftUI app with ClerkKit auth, Convex sync, and Apple Push Notifications.
-  - **Android Mobile**: Expo / React Native app with encrypted SQLite local queue and biometric lock.
-- **Required settings**:
-  - Verified operator account credentials.
-  - Camera permissions for barcode scanning.
-  - Notification permissions for delivery courier reminders.
+- **Supported devices**:
+  - **Apple iOS**: iPhone and iPad devices running iOS 17 or newer.
+  - **Android**: Android phones, tablets, and dedicated handheld barcode terminals.
+- **Required device permissions**:
+  - **Camera**: Needed for scanning product barcodes and customer IDs.
+  - **Notifications**: Needed for courier arrival alerts and order reminders.
+- **What to have ready**:
+  - Your store sign-in email or phone number and password.
+  - Your assigned store location or workspace name.
 
 ## Fast path
 
-1. **Sign in to native app**:
-   - Sign in with Clerk credentials or single sign-on.
-   - Select your active business workspace.
-2. **Enable biometric quick lock**:
-   - Activate Face ID, Touch ID, or fingerprint unlock in app settings for rapid counter resumption.
+1. **Sign in to your account**:
+   - Open the DRX app on your device.
+   - Enter your login details and select your store workspace.
+2. **Turn on quick unlock**:
+   - Enable Face ID, Touch ID, or fingerprint unlock in Settings so you can wake and unlock the register instantly between customers.
 3. **Ring sales on the floor**:
-   - Use Quick POS to scan barcodes or search inventory.
-   - Process cash, card, or store credit transactions.
-4. **Operate offline during network drops**:
-   - Transactions queue automatically in encrypted SQLite local storage.
-   - When connection restores, queued sales synchronize automatically with backend audit trails.
-5. **Manage courier deliveries**:
-   - Receive background push notifications when couriers arrive (T-2 minutes).
-   - Tap notification to open incoming delivery order for instant handoff.
-6. **Switch workspaces or sign out cleanly**:
-   - Tap operator avatar on dashboard to view active permissions or switch stores without session leakage.
+   - Tap **Quick Sale** to scan items with your device camera or pick products from the list.
+   - Accept cash, credit card, or customer store credit.
+4. **Keep taking sales if the internet drops**:
+   - If your store Wi-Fi or cellular connection goes down, the app keeps ringing sales normally.
+   - All offline orders save securely on the device and upload to your store records automatically as soon as connection returns.
+5. **Receive courier arrival alerts**:
+   - When a delivery driver is 2 minutes away, your device receives a pop-up alert.
+   - Tap the alert to open the order details and hand off the package immediately.
+6. **Switch users or locations cleanly**:
+   - Tap your profile avatar in the dashboard header to check your active permissions, switch store locations, or sign out for shift change.
 
 ## If blocked
 
-- **Biometric unlock fails repeatedly**:
-  - Use operator password or PIN fallback to regain register access.
-- **Offline sales not syncing upon reconnection**:
-  - Open "More" -> "Offline Control" and tap "Force Sync Queue".
-  - Verify network signal strength before taking additional offline transactions.
-- **Courier push notifications not delivering**:
-  - Verify system notification permissions in iOS Settings or Android App Info.
+- **Device cannot scan barcodes**:
+  - Check that camera access is turned on in your device settings.
+  - Ensure the counter area has adequate lighting and hold the camera 4–6 inches from the barcode.
+- **Face ID or fingerprint unlock fails**:
+  - Enter your store passcode or PIN to unlock the screen.
+- **Offline sales are not uploading after reconnecting**:
+  - Tap the offline status banner or go to **Settings** and tap **Sync Now**.
+  - Check that the device is connected to active Wi-Fi or cellular data.
+- **Driver arrival alerts are not showing**:
+  - Check that notifications are enabled for DRX in your phone or tablet settings.
 
 ## What is beta here
 
-- Background Bluetooth thermal printer pairing is undergoing expanding hardware testing.
-- Core native POS, offline queueing, biometric locking, and delivery alerts are fully live.
+- Pairing directly with external Bluetooth thermal receipt printers is in preview testing.
+- Core mobile register checkout, camera barcode scanning, offline mode, quick biometric unlock, and driver reminders are fully live.
 
 ## Related docs
 
