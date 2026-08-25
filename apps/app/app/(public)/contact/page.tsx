@@ -6,7 +6,7 @@ export default function ContactPage() {
         <div className="text-foreground space-y-8">
           <section>
             <p className="text-lg text-muted-foreground">
-              Have questions about DRX CRM? We're here to help. Get in touch with our support team using any of the methods below.
+              Have questions about Deelrx CRM? We're here to help. Get in touch with our support team using any of the methods below.
             </p>
           </section>
 

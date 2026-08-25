@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.10] - 2026-08-25
+## [0.6.11] - 2026-08-25
+
+### Fixed
+
+- **Brand Discipline & Contact Alignment**: Replaced forbidden `DRX CRM` brand reference with `Deelrx CRM` on public contact page and codified strict naming rules across brand governance.
+- **Brand Voice & Pre-Release Posture**: Updated canonical brand strategy to codify `Deelrx CRM` / `DRX` split, pre-release beta status, and bounded marketing copy rules.
+
 
 ### Fixed
 

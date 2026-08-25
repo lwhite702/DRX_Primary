@@ -49,6 +49,11 @@ Deelrx CRM is for business that happens in person, not on a spreadsheet. It trac
 
 ## 5. Naming Discipline
 
-- **First Mention**: Deelrx CRM
-- **Subsequent**: DRX (allowed), Deelrx (allowed)
-- **Forbidden**: DRX CRM (Never)
+- **Primary / Formal Mention**: Deelrx CRM
+- **Operating / Short Brand**: DRX (allowed), Deelrx (allowed)
+- **Forbidden**: DRX CRM (Never use under any circumstance)
+
+## 6. Release State & Marketing Posture
+
+- **Current Status**: Not live yet (Closed Beta / Early Access / Waitlist).
+- **Marketing Scope**: Keep marketing copy limited and disciplined. Do not over-promise or describe future plans as shipped. Focus strictly on what works in beta: fast checkout, live stock, balances owed, and alias privacy.
