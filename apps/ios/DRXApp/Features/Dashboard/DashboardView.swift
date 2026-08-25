@@ -296,6 +296,13 @@ struct EmptyStateCard: View {
     }
 }
 
+private extension User {
+    var formattedFullName: String? {
+        let parts = [firstName, lastName].compactMap { $0 }.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+}
+
 // MARK: - Identity Components (WRE-36)
 
 private struct IdentityHeaderCard: View {
@@ -304,7 +311,7 @@ private struct IdentityHeaderCard: View {
     let onTap: () -> Void
 
     private var operatorName: String {
-        environment.session.operatorSession?.displayName ?? clerk.user?.fullName ?? "Operator"
+        environment.session.operatorSession?.displayName ?? clerk.user?.formattedFullName ?? "Operator"
     }
 
     private var roleName: String {
@@ -399,7 +406,7 @@ private struct UserIdentitySheet: View {
         NavigationStack {
             List {
                 Section("Signed In Operator") {
-                    LabeledContent("Name", value: session?.displayName ?? clerk.user?.fullName ?? "Operator")
+                    LabeledContent("Name", value: session?.displayName ?? clerk.user?.formattedFullName ?? "Operator")
                     if let email = session?.email ?? clerk.user?.primaryEmailAddress?.emailAddress {
                         LabeledContent("Email", value: email)
                     }
