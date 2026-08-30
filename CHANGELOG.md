@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Admin access (WRE-83):** Replaced the nonexistent business-role model lookup with the supported role store and avoided unnecessary business lookups for existing platform administrators.
 - **Reporting correctness (WRE-83):** Include active transitional web sales alongside canonical commerce, preserve source identity and mirrored-order deduplication, and label partial reports and exports when a ledger cannot be read. Report availability does not imply complete accounting coverage.
 - **Checkout retries (WRE-83):** Restore the completed web-sale lookup before canonical checkout so configuration changes cannot replay an already completed web sale into the canonical ledger.
+- **Checkout error privacy (WRE-83):** Return a fixed retry-verification error without exposing database/provider details when the completed-sale lookup fails.
 - **Inventory test gate (WRE-80):** Initialize inventory route fixtures inside the hoisted mock factory so the regression suite can execute.
 
 ## [0.6.12] - 2026-08-30

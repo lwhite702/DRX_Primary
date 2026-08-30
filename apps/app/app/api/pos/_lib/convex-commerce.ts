@@ -210,6 +210,10 @@ export async function checkoutCanonicalCommerce(
       orderStatus: "completed",
     },
     select: { id: true, orderNumber: true, totalAmount: true, changeAmount: true },
+  }).catch(() => {
+    // The route exposes error.message. Never pass provider details through it.
+    console.error("Checkout retry verification failed");
+    throw new Error("Checkout retry verification is temporarily unavailable. Please retry.");
   });
   if (existingLegacySale) {
     return {

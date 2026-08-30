@@ -161,7 +161,7 @@ describe("canonical web commerce bridge", () => {
 
   it("cannot create a second sale when the prior-sale check is unavailable", async () => {
     mocks.findLegacySale.mockRejectedValue(
-      new Error("Synthetic retry lookup unavailable"),
+      new Error("Synthetic provider detail that must remain private"),
     );
     await expect(
       checkoutCanonicalCommerce({
@@ -169,8 +169,9 @@ describe("canonical web commerce bridge", () => {
         idempotencyKey: "stable-key",
         paymentMethod: "cash",
       }),
-    ).rejects.toThrow("retry lookup unavailable");
+    ).rejects.toThrow("Checkout retry verification is temporarily unavailable. Please retry.");
     expect(mocks.mutation).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith("Checkout retry verification failed");
   });
 
   it("processes a new canonical checkout after checking for a prior web sale", async () => {
