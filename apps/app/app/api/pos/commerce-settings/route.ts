@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
 import {
@@ -47,11 +47,13 @@ type CommerceInventoryRow = {
 
 export async function GET() {
   try {
-    const { businessId } = await resolveAuthContext();
-    if (!businessId) {
+    const { userId, businessId } = await resolveAuthContext();
+    if (!userId || !businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
-    if (!(await hasPermission("settings.configure_pos"))) {
+    if (
+      !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
+    ) {
       return errorResponse("FORBIDDEN", "Forbidden", 403);
     }
 
@@ -141,11 +143,13 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { businessId } = await resolveAuthContext();
-    if (!businessId) {
+    const { userId, businessId } = await resolveAuthContext();
+    if (!userId || !businessId) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
-    if (!(await hasPermission("settings.configure_pos"))) {
+    if (
+      !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
+    ) {
       return errorResponse("FORBIDDEN", "Forbidden", 403);
     }
 
