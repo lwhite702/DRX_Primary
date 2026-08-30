@@ -18,8 +18,10 @@ const getAdminRoleCached = (userId: string) => unstable_cache(
       select: { role: true },
     });
     
-    // Also check if user is an owner or admin of any business
-    const businessAdmin = await db.businessUser.findFirst({
+    if (adminUser?.role) return adminUser.role;
+
+    // Business roles are persisted in UserRole, not a BusinessUser model.
+    const businessAdmin = await db.userRole.findFirst({
       where: {
         userId,
         role: { in: ["owner", "admin"] },
