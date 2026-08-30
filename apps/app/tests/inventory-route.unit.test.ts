@@ -1,22 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const mockDb: any = {
-  inventory: {
-    findFirst: vi.fn(),
-    update: vi.fn(),
-  },
-  inventoryLog: {
-    create: vi.fn(),
-  },
-  $transaction: vi.fn((callback: (tx: any) => any) => callback(mockDb)),
-};
+const mocks = vi.hoisted(() => {
+  // Hoisted factories run before module-level declarations are initialized.
+  const transactionDb = {
+    inventory: {
+      findFirst: vi.fn(),
+      update: vi.fn(),
+    },
+    inventoryLog: {
+      create: vi.fn(),
+    },
+  };
 
-const mocks = vi.hoisted(() => ({
-  resolveAuthContext: vi.fn(),
-  hasBusinessPermission: vi.fn(),
-  db: mockDb,
-}));
+  return {
+    resolveAuthContext: vi.fn(),
+    hasBusinessPermission: vi.fn(),
+    db: {
+      ...transactionDb,
+      $transaction: vi.fn((callback: (tx: typeof transactionDb) => unknown) =>
+        callback(transactionDb),
+      ),
+    },
+  };
+});
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
   resolveAuthContext: mocks.resolveAuthContext,
@@ -68,7 +75,7 @@ describe("inventory [id] route with Next.js 16 async params", () => {
     const context = { params: Promise.resolve({ id: testInventoryId }) };
     const response = await GET(
       request(`/api/inventory/${testInventoryId}`),
-      context as any,
+      context,
     );
 
     const json = await response.json();
@@ -86,11 +93,25 @@ describe("inventory [id] route with Next.js 16 async params", () => {
         product_name: "OG Kush Updated",
         quantity_on_hand: 20,
       }),
-      context as any,
+      context,
     );
 
     const json = await response.json();
     expect(response.status).toBe(200);
     expect(json.data.productName).toBe("OG Kush Updated");
+    expect(mocks.db.$transaction).toHaveBeenCalledOnce();
+    expect(mocks.db.inventory.update).toHaveBeenCalledWith({
+      where: { id: testInventoryId },
+      data: { productName: "OG Kush Updated", quantityOnHand: 20 },
+    });
+    expect(mocks.db.inventoryLog.create).toHaveBeenCalledWith({
+      data: {
+        inventoryId: testInventoryId,
+        transactionType: "adjustment",
+        quantityChange: 10,
+        reason: "Inventory update via /api/inventory/[id]",
+        createdBy: "user-1",
+      },
+    });
   });
 });
