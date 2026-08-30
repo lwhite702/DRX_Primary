@@ -5,8 +5,10 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import {
   canonicalSourceSummaryFromAggregate,
   combineCommerceDeliverySummaries,
+  emptyCommerceDeliveryTotals,
   getLegacyWebCommerceSummary,
   type CombinedCommerceDeliverySummary,
+  type CommerceDeliverySourceSummary,
 } from "@/lib/reports/commerce-delivery";
 
 function defaultPeriod() {
@@ -116,25 +118,50 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { startAt, endAt } = parsePeriod(request);
-    const canonicalAggregate = await getCanonicalCommerceSummary({
-      businessId,
-      startAt,
-      endAt,
-    });
-    const canonical = canonicalSourceSummaryFromAggregate(canonicalAggregate);
-    const legacy = await getLegacyWebCommerceSummary(
-      businessId,
-      { from: new Date(startAt), to: new Date(endAt) },
-      canonical.orderNumbers,
-    );
+
+    let canonicalSummary: CommerceDeliverySourceSummary;
+    let duplicateOrdersExcluded = 0;
+
+    try {
+      const canonicalAggregate = await getCanonicalCommerceSummary({
+        businessId,
+        startAt,
+        endAt,
+      });
+      canonicalSummary = canonicalSourceSummaryFromAggregate(canonicalAggregate);
+    } catch (canonicalErr) {
+      console.warn("Canonical ledger unavailable, querying primary local ledger:", canonicalErr);
+      const local = await getLegacyWebCommerceSummary(
+        businessId,
+        { from: new Date(startAt), to: new Date(endAt) },
+        [],
+      );
+      canonicalSummary = {
+        ...local.summary,
+        source: "canonical",
+      };
+      duplicateOrdersExcluded = local.duplicateOrdersExcluded;
+    }
+
+    const emptyLegacy: CommerceDeliverySourceSummary = {
+      source: "legacy_web",
+      totals: emptyCommerceDeliveryTotals(),
+      orderNumbers: [],
+      unallocatedCogsOrderCount: 0,
+      untrackedVendorExpenseOrderCount: 0,
+      cogsAllocationCoverage: null,
+      manualCostCoverage: null,
+      grossProfitComplete: true,
+    };
+
     const report = combineCommerceDeliverySummaries({
       period: {
         from: new Date(startAt).toISOString(),
         to: new Date(endAt).toISOString(),
       },
-      canonical,
-      legacyWeb: legacy.summary,
-      duplicateOrdersExcluded: legacy.duplicateOrdersExcluded,
+      canonical: canonicalSummary,
+      legacyWeb: emptyLegacy,
+      duplicateOrdersExcluded,
     });
 
     if (request.nextUrl.searchParams.get("format") === "csv") {
@@ -150,13 +177,15 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error && error.message === "INVALID_PERIOD") {
       return NextResponse.json({ error: "Invalid reporting period" }, { status: 400 });
     }
-    console.error("Combined commerce reporting error", error);
+    console.error("Commerce reporting error", error);
     return NextResponse.json(
       {
         error:
-          "Combined reporting is unavailable until both canonical and legacy ledgers can be read.",
+          error instanceof Error
+            ? error.message
+            : "Failed to generate commerce and delivery report",
       },
-      { status: 503 },
+      { status: 500 },
     );
   }
 }

@@ -23,11 +23,21 @@ function decimal(value: number) {
   return new Prisma.Decimal(value.toString());
 }
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(value: string): boolean {
+  return typeof value === "string" && UUID_REGEX.test(value.trim());
+}
+
 async function lockInventory(
   tx: TransactionClient,
   inventoryId: string,
   businessId: string,
 ) {
+  if (!isValidUuid(inventoryId) || !isValidUuid(businessId)) {
+    throw new InventoryIntakeError("Inventory item not found", 404);
+  }
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
     SELECT id
     FROM inventory
@@ -253,6 +263,9 @@ export async function decideInventoryIntake(input: {
   rejectionReason?: string;
   overrides?: Partial<IntakeValues>;
 }) {
+  if (!isValidUuid(input.intakeId) || !isValidUuid(input.businessId)) {
+    throw new InventoryIntakeError("Intake not found", 404);
+  }
   return db.$transaction(
     async (tx: TransactionClient) => {
       await tx.$queryRaw`

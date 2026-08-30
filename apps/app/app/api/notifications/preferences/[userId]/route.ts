@@ -6,9 +6,9 @@ import { errorResponse, successResponse } from "@/lib/api/response";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> | { userId: string } },
 ) {
-  const { userId } = params;
+  const { userId } = await Promise.resolve(params);
   const supabase = await createServerDbClient();
   // Auth check
   const user = await getCurrentUser();

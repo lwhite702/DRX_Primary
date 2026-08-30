@@ -200,31 +200,6 @@ export async function checkoutCanonicalCommerce(
     paymentMethod: QuickPosPaymentMethod;
   },
 ) {
-  // The web register historically wrote POS-<idempotency-key> rows to Prisma.
-  // Check that ledger before switching this checkout to Convex so a retry at a
-  // configuration boundary cannot create the same sale in both ledgers.
-  const existingLegacySale = await db.sales.findFirst({
-    where: {
-      businessId: input.businessId,
-      orderNumber: `POS-${input.idempotencyKey}`.slice(0, 50),
-      orderStatus: "completed",
-    },
-    select: {
-      id: true,
-      orderNumber: true,
-      totalAmount: true,
-      changeAmount: true,
-    },
-  });
-  if (existingLegacySale) {
-    return {
-      saleId: existingLegacySale.id,
-      orderNumber: existingLegacySale.orderNumber,
-      total: Number(existingLegacySale.totalAmount ?? 0),
-      changeAmount: Number(existingLegacySale.changeAmount ?? 0),
-    };
-  }
-
   const canonical = await resolveCanonicalInput(input);
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,

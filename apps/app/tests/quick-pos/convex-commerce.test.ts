@@ -133,12 +133,33 @@ describe("canonical web commerce bridge", () => {
     ).toBe(false);
   });
 
-  it("returns an existing legacy sale instead of duplicating it in Convex", async () => {
-    mocks.findLegacySale.mockResolvedValue({
-      id: "legacy-sale-id",
-      orderNumber: "POS-44444444-4444-4444-8444-444444444444",
-      totalAmount: 18.5,
-      changeAmount: 1.5,
+  it("processes canonical checkout directly on single ledger", async () => {
+    mocks.query
+      .mockResolvedValueOnce({
+        business: { legacyPrismaBusinessId: input.businessId },
+        settings: null,
+      })
+      .mockResolvedValueOnce([
+        {
+          _id: "canonical_product_id",
+          legacyPrismaId: input.items[0].inventoryId,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          _id: "canonical_customer_id",
+          legacyPrismaId: input.customerId,
+        },
+      ])
+      .mockResolvedValueOnce({
+        totalAmountCents: 1_850,
+      });
+
+    mocks.mutation.mockResolvedValueOnce({
+      saleId: "sale_123",
+      orderNumber: "WEB-44444444-4444-4444-8444-444444444444",
+      totalAmountCents: 1_850,
+      changeAmountCents: 150,
     });
 
     const result = await checkoutCanonicalCommerce({
@@ -148,13 +169,12 @@ describe("canonical web commerce bridge", () => {
     });
 
     expect(result).toEqual({
-      saleId: "legacy-sale-id",
-      orderNumber: "POS-44444444-4444-4444-8444-444444444444",
+      saleId: "sale_123",
+      orderNumber: "WEB-44444444-4444-4444-8444-444444444444",
       total: 18.5,
       changeAmount: 1.5,
     });
-    expect(mocks.query).not.toHaveBeenCalled();
-    expect(mocks.mutation).not.toHaveBeenCalled();
+    expect(mocks.mutation).toHaveBeenCalled();
   });
 
   it("requests canonical reporting with the exact half-open UTC period", async () => {

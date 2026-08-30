@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.11] - 2026-08-25
+## [0.6.12] - 2026-08-30
+
+### Fixed
+
+- **Single Ledger Commerce & Reporting Architecture**: Transitioned `/api/reports/commerce-delivery` to single authoritative ledger execution with direct local store fallback, removing the legacy dual-read requirement and eliminating the 503 "Combined reporting is unavailable until both canonical and legacy ledgers can be read" failure mode.
+- **Unified POS Checkout Pipeline**: Removed dual-ledger cross-checking in `checkoutCanonicalCommerce` to establish single-ledger transactions across all checkout modes.
+
 
 ### Fixed
 
