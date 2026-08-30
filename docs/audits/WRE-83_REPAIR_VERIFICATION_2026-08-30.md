@@ -54,3 +54,9 @@ The production build reused the current generated Prisma client (schema unchange
 ## Preservation
 
 Canonical main remains unchanged. No production data, roles, secrets, deployments, store releases, or public notifications were changed. Build-generated service-worker changes were excluded from the repair and restored to baseline. WRE-83 remains In Review until the outstanding acceptance criteria are verified.
+
+## Push and merge follow-up
+
+The user subsequently approved pushing and merging on 2026-08-30, with the automatic production deployment consequence disclosed. The branch prepares version 0.6.13 and repository iOS build 44. This is not store-safe submission evidence; provider-side version checks remain necessary before any separately approved native submission.
+
+The exact frozen-install preflight is being rerun with independent worktree dependencies. A PR will carry the genuine API-compatibility review requirement; approval will not be fabricated or replaced by a weaker release classification. GitHub branch protection and rulesets return HTTP 403 indicating a plan limitation, so their absence does not waive repository launch gates.
