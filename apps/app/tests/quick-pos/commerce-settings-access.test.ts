@@ -101,6 +101,39 @@ describe("commerce settings authorization", () => {
     expect(await (await GET()).json()).toMatchObject({ businessId, merchant });
   });
 
+  it.each([{ aud: "convex" }, { aud: ["convex", "other-service"] }])(
+    "uses the integrated session token for a Convex audience ($aud)",
+    async ({ aud }) => {
+      mocks.owned.mockResolvedValue({ id: businessId });
+      mocks.auth.mockResolvedValue({
+        userId: "operator-a",
+        orgId: "org-a",
+        sessionClaims: { aud },
+        getToken: mocks.getToken,
+      });
+      mocks.getToken.mockImplementation(async (options) => {
+        if (options?.template) throw new Error("JWT template not found");
+        return "synthetic-session-token";
+      });
+      expect((await GET()).status).toBe(200);
+      expect((await patch()).status).toBe(200);
+      expect(mocks.getToken).toHaveBeenCalledWith();
+      expect(mocks.getToken).not.toHaveBeenCalledWith({ template: "convex" });
+    },
+  );
+
+  it("returns a safe retryable response when the token provider throws", async () => {
+    mocks.owned.mockResolvedValue({ id: businessId });
+    mocks.getToken.mockRejectedValue(new Error("synthetic-private-provider-detail"));
+    const response = await GET();
+    expect(response.status).toBe(503);
+    expect(JSON.stringify(await response.json())).not.toContain("synthetic-private-provider-detail");
+    expect((await patch()).status).toBe(503);
+    expect(mocks.query).not.toHaveBeenCalled();
+    expect(mocks.settings).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it.each(["owner", "admin", "manager"])(
     "honors %s role defaults without explicit permissions",
     async (role) => {

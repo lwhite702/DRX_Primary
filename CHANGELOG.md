@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Commerce authentication compatibility**: Web commerce settings, fractional checkout, and canonical reporting use the current Clerk/Convex session-token integration while retaining support for legacy JWT templates. Token-provider failures fail closed without logging provider details (WRE-84).
 - **Commerce settings access and recovery**: Fractional-selling, bulk-pricing, loyalty, and delivery configuration now use the selected business’s existing owner and role permissions. Failed settings loads show an actionable error and a read-only retry instead of an endless loading message (WRE-84).
 - **Commerce tenant safety**: Disabled businesses and mismatched web/mobile business contexts are denied before settings reads or writes; saves revalidate business access before changing canonical settings (WRE-84).
 
