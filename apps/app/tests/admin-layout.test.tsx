@@ -18,7 +18,7 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/components/platform/platform-shell", () => ({
   PlatformShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-import PlatformLayout from "@/app/(platform)/control/[consoleKey]/layout";
+import PlatformLayout from "@/app/(platform)/control/[consoleKey]/(console)/layout";
 import RetiredAdminPage from "@/app/(retired)/admin/[[...path]]/page";
 import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 import { requirePlatformConsole } from "@/lib/auth/platform-console";

@@ -12,7 +12,7 @@ vi.mock("@/lib/hooks/use-permission", () => ({ usePermission: () => ({ hasPermis
 vi.mock("@/lib/auth/platform-console", () => ({ requirePlatformConsole: m.console }));
 vi.mock("@/lib/platform/queries", () => ({ getPlatformMetrics: m.metrics }));
 import { PlatformShell } from "@/components/platform/platform-shell";
-import Overview from "@/app/(platform)/control/[consoleKey]/page";
+import Overview from "@/app/(platform)/control/[consoleKey]/(console)/page";
 import { Sidebar } from "@/components/layout/sidebar";
 
 describe("separate platform presentation", () => {

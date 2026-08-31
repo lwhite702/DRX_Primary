@@ -72,6 +72,25 @@ describe("proxy auth and routing", () => {
     expect(res.status).toBe(404);
     expect(res.headers.get("location")).toBeNull();
   });
+  it("sends a signed-out private bookmark to its private sign-in page", async () => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}`, "deelrxcrm.app"), { userId: null });
+      expect(res.headers.get("location")).toBe(`https://deelrxcrm.app/control/${key}/sign-in`);
+      expect(res.headers.get("cache-control")).toBe("private, no-store");
+      expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    } finally { vi.unstubAllEnvs(); }
+  });
+  it.each(["", "/factor-one", "/sso-callback"])("allows only the configured private sign-in step %s before login", async suffix => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}/sign-in${suffix}`, "deelrxcrm.app"), { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+      expect(res.headers.get("location")).toBeNull();
+    } finally { vi.unstubAllEnvs(); }
+  });
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });

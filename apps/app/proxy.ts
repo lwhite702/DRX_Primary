@@ -198,10 +198,14 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       // operation independently require an explicit platform grant.
       if (pathname === "/control" || pathname.startsWith("/control/")) {
         const key = process.env.PLATFORM_CONSOLE_SLUG;
-        if (!userId || !key || !/^[a-f0-9]{32,64}$/.test(key) || pathname.split("/")[2] !== key) {
+        if (!key || !/^[a-f0-9]{32,64}$/.test(key) || pathname.split("/")[2] !== key) {
           return new NextResponse(null, { status: 404 });
         }
-        const response = NextResponse.next();
+        const signInPath = `/control/${key}/sign-in`;
+        const isPlatformSignIn = pathname === signInPath || pathname.startsWith(`${signInPath}/`);
+        const response = !userId && !isPlatformSignIn
+          ? NextResponse.redirect(new URL(signInPath, getAppOrigin(req, true)))
+          : NextResponse.next();
         response.headers.set("Cache-Control", "private, no-store");
         response.headers.set("X-Robots-Tag", "noindex, nofollow");
         response.headers.set("Referrer-Policy", "no-referrer");
