@@ -1,6 +1,6 @@
 # WRE-89: Fractional product setup
 
-Status: local implementation; not deployed or store-distributed. Release impact: minor. Roadmap impact: add. Version preparation is deferred to the separately approved publication step; no native build counter changes.
+Status: implementation verified locally; 0.7.0 prepared for user-approved web/backend deployment. Deployment is pending; no store distribution or native build counter changes. Release impact: minor. Roadmap impact: add.
 
 ## Operator workflow
 
@@ -24,7 +24,7 @@ Tracking: https://linear.app/wrelik/issue/WRE-89
 
 ## Local verification — 2026-08-31
 
-- Worktree branch: `codex/WRE-89-fractional-product-onboarding`, based on `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. Product metadata remains 0.6.14 / iOS build 43; no release cut.
+- Worktree branch: `codex/WRE-89-fractional-product-onboarding`, based on `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. Implementation commit: `98c3bde415091b5ff2e4b7a323b39bd97cb6bb62`. Product metadata was subsequently prepared as 0.7.0 after deployment approval; iOS build remains 43. No release cut or tag.
 - Web/backend unit tests: 101 files, 617 tests passed. Integration tests: 16 files, 85 tests passed. These use synthetic fixtures, not production checkout evidence.
 - Web and Expo TypeScript checks passed. Targeted web lint passed; Expo lint has one existing unused `handleAddTier` warning, no errors.
 - Next.js production build passed. Generated service-worker changes were restored and are not part of this change.

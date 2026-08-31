@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Release preparation**: Synchronized product metadata to 0.7.0 for the approved WRE-89 web/backend deployment. Native build identifiers are unchanged; store distribution and cross-platform acceptance are not implied.
+
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
