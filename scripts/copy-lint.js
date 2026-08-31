@@ -80,7 +80,9 @@ function checkFile(relativePath) {
     for (const term of FORBIDDEN_TERMS) {
       const regex = new RegExp(`\\b${term}\\b`, "i");
       if (regex.test(line)) {
-        console.error(`❌ Corporate term "${term}" in ${relativePath}:${index + 1}`);
+        console.error(
+          `❌ Corporate term "${term}" in ${relativePath}:${index + 1}`,
+        );
         console.error(`   > ${line.trim()}`);
         violationsCount += 1;
       }
@@ -88,7 +90,9 @@ function checkFile(relativePath) {
 
     for (const phrase of FORBIDDEN_PHRASES) {
       if (line.toLowerCase().includes(phrase.toLowerCase())) {
-        console.error(`❌ Off-brand phrase "${phrase}" in ${relativePath}:${index + 1}`);
+        console.error(
+          `❌ Off-brand phrase "${phrase}" in ${relativePath}:${index + 1}`,
+        );
         console.error(`   > ${line.trim()}`);
         violationsCount += 1;
       }
@@ -108,15 +112,40 @@ function checkRequiredFragments() {
     const content = fs.readFileSync(filePath, "utf8");
     for (const fragment of requirement.fragments) {
       if (!content.includes(fragment)) {
-        console.error(`❌ Required copy contract missing in ${requirement.file}: ${fragment}`);
+        console.error(
+          `❌ Required copy contract missing in ${requirement.file}: ${fragment}`,
+        );
         violationsCount += 1;
       }
     }
   }
 }
 
-console.log("🔍 Checking DRX core copy across marketing, web, Expo, and iOS...");
+console.log(
+  "🔍 Checking DRX core copy across marketing, web, Expo, and iOS...",
+);
 CORE_COPY_FILES.forEach(checkFile);
+const helpManifest = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "../docs/featurebase/help-center-manifest.json"),
+    "utf8",
+  ),
+);
+helpManifest.articles.forEach((article) => {
+  checkFile(article.sourcePath);
+  const content = fs.readFileSync(
+    path.join(__dirname, "..", article.sourcePath),
+    "utf8",
+  );
+  if (
+    /Business CRM Mode|DRX CRM|Settings\s*>\s*Staff|\]\([^)]*\/support\)/i.test(
+      content,
+    )
+  ) {
+    console.error(`Outdated Help Center term or route: ${article.sourcePath}`);
+    violationsCount += 1;
+  }
+});
 checkRequiredFragments();
 
 if (violationsCount > 0) {

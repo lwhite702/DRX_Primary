@@ -2,13 +2,19 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 
-dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), quiet: true });
 
-export const FEATUREBASE_API_BASE = process.env.FEATUREBASE_API_BASE ?? "https://do.featurebase.app/v2";
-export const FEATUREBASE_VERSION = process.env.FEATUREBASE_VERSION ?? "2026-01-01.nova";
+export const FEATUREBASE_API_BASE =
+  process.env.FEATUREBASE_API_BASE ?? "https://do.featurebase.app/v2";
+export const FEATUREBASE_VERSION =
+  process.env.FEATUREBASE_VERSION ?? "2026-01-01.nova";
 export const FEATUREBASE_API_KEY = process.env.FEATUREBASE_API_KEY;
 
-export type FbList<T> = { object: "list"; data: T[]; nextCursor: string | null };
+export type FbList<T> = {
+  object: "list";
+  data: T[];
+  nextCursor: string | null;
+};
 
 export function requireApiKey(): string {
   if (!FEATUREBASE_API_KEY) {
@@ -25,6 +31,7 @@ export async function fbRequest<T>(
   const apiKey = requireApiKey();
   const res = await fetch(`${FEATUREBASE_API_BASE}${endpoint}`, {
     method,
+    signal: AbortSignal.timeout(30000),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Featurebase-Version": FEATUREBASE_VERSION,
@@ -40,7 +47,7 @@ export async function fbRequest<T>(
     json = text;
   }
   if (!res.ok) {
-    throw new Error(`Featurebase ${method} ${endpoint} failed (${res.status}): ${text}`);
+    throw new Error(`Featurebase ${method} ${endpoint} failed (${res.status})`);
   }
   return json as T;
 }
@@ -54,4 +61,3 @@ export function writeText(filePath: string, content: string): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content, "utf8");
 }
-

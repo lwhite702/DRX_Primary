@@ -1,124 +1,183 @@
-import fs from "fs";
-import path from "path";
-import { fbRequest, type FbList, writeJson } from "./_client";
+import fs from "node:fs";
+import { fbRequest, writeJson } from "./_client";
+import { loadHelpContent, contentFingerprint } from "./_help-content.mjs";
+import {
+  exportHelpApi,
+  apiFingerprint,
+  checkManagedSet,
+  checkPublicBaseline,
+} from "./_help-api";
+import { inspectPublicHelpCenter } from "./_help-public.mjs";
 
-type Collection = { id: string; name: string };
-type Article = { id: string; title: string };
-
-const fileToCategory: Record<string, string> = {
-  "getting-started-first-week.md": "Getting Started",
-  "dashboard-daily-check.md": "Dashboard",
-  "quick-pos-run-sale.md": "Quick POS",
-  "sales-history-receipts.md": "Sales",
-  "inventory-manage-stock.md": "Inventory",
-  "inventory-audit-fixes.md": "Inventory",
-  "customers-profiles-history.md": "Customers",
-  "credit-balances-payments.md": "Front / Balances",
-  "reports-and-insights.md": "Reports",
-  "roles-permissions-staff-access.md": "Roles and Permissions",
-  "settings-and-aliases.md": "Settings",
-  "privacy-security-rtbf.md": "Privacy and Security",
-  "drx-intelligence.md": "DRX Intelligence",
-  "workspaces-and-tenants.md": "Getting Started",
-  "troubleshooting-fast-fixes.md": "Troubleshooting",
-  "admin-tools-overview.md": "Admin Tools",
-};
-
-function parseMd(filePath: string): { title: string; description: string; body: string } {
-  const md = fs.readFileSync(filePath, "utf8");
-  const title = md.split("\n").find((line) => line.startsWith("# "))?.replace(/^#\s+/, "").trim() ?? "Untitled";
-  const description =
-    md
-      .split("\n")
-      .map((line) => line.trim())
-      .find((line) => line && !line.startsWith("#")) ?? "DRX help article.";
-  const body = md
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      if (line.startsWith("# ")) return `<h1>${line.slice(2)}</h1>`;
-      if (line.startsWith("## ")) return `<h2>${line.slice(3)}</h2>`;
-      return `<p>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
-    })
-    .join("\n");
-  return { title, description, body };
-}
-
+const reportPath = ".featurebase/import-results.json";
 async function main() {
   const args = new Set(process.argv.slice(2));
-  const dryRun = args.has("--dry-run");
-  const finalDir = path.resolve(process.cwd(), "docs/help-center-export/final");
-  const reportPath = path.resolve(
-    process.cwd(),
-    "docs/help-center-export/reports/import-help-center-results.json",
+  if (
+    [...args].some((a) => !["--publish", "--dry-run"].includes(a)) ||
+    (args.has("--publish") && args.has("--dry-run"))
+  )
+    throw new Error("Use --dry-run (default) or --publish");
+  const publish = args.has("--publish");
+  if (!publish) fs.rmSync(".featurebase/import-dry-run.json", { force: true });
+  const content = loadHelpContent();
+  const before = await exportHelpApi(content.manifest);
+  writeJson(".featurebase/before-api/api-snapshot.json", before);
+  checkManagedSet(before, content.manifest);
+  const publicBefore = await inspectPublicHelpCenter();
+  checkPublicBaseline(publicBefore, content);
+  writeJson(".featurebase/before-api/public-snapshot.json", publicBefore);
+  const changes = content.articles.map((a: any) => {
+    const old = before.articles.find((b: any) => b.id === a.id);
+    return {
+      id: a.id,
+      title: a.title,
+      action:
+        contentFingerprint(old) === contentFingerprint(a)
+          ? "unchanged"
+          : "update",
+    };
+  });
+  const plan = {
+    ok: true,
+    method: "authenticated-api",
+    createdAt: new Date().toISOString(),
+    contentHash: content.contentHash,
+    baselineHash: apiFingerprint(before),
+    changes,
+  };
+  if (!publish) {
+    writeJson(".featurebase/import-dry-run.json", plan);
+    console.log(JSON.stringify({ ...plan, published: false }));
+    return;
+  }
+  const dry = JSON.parse(
+    fs.readFileSync(".featurebase/import-dry-run.json", "utf8"),
   );
-
-  const collections = await fbRequest<FbList<Collection>>(
-    "GET",
-    "/help_center/collections?limit=100",
+  const validation = JSON.parse(
+    fs.readFileSync(".featurebase/publication-validation.json", "utf8"),
   );
-  const articles = await fbRequest<FbList<Article>>(
-    "GET",
-    "/help_center/articles?state=all&limit=100",
-  );
-
-  const collectionByName = new Map(collections.data.map((c) => [c.name, c.id]));
-  const articleByTitle = new Map(articles.data.map((a) => [a.title, a.id]));
-  const report: Array<Record<string, string>> = [];
-
-  for (const fileName of fs.readdirSync(finalDir).filter((file) => file.endsWith(".md"))) {
-    const category = fileToCategory[fileName] ?? "Getting Started";
-    const categoryId = collectionByName.get(category);
-    const filePath = path.join(finalDir, fileName);
-    const parsed = parseMd(filePath);
-
-    if (!categoryId) {
-      if (dryRun) {
-        report.push({ file: fileName, title: parsed.title, action: "would-fail", reason: `missing-category:${category}` });
+  if (
+    !dry.ok ||
+    dry.method !== "authenticated-api" ||
+    dry.contentHash !== plan.contentHash ||
+    dry.baselineHash !== plan.baselineHash ||
+    Date.now() - Date.parse(dry.createdAt) > 3600000
+  )
+    throw new Error("Clean matching API dry run within one hour required");
+  if (
+    !validation.publishReady ||
+    validation.contentHash !== plan.contentHash ||
+    validation.unresolvedP1P2 !== 0 ||
+    Date.now() - Date.parse(validation.createdAt) > 3600000
+  )
+    throw new Error("Complete current publication validation required");
+  const results: any[] = [];
+  writeJson(reportPath, { ok: false, status: "started", results });
+  try {
+    for (const item of changes) {
+      if (item.action === "unchanged") {
+        results.push(item);
         continue;
       }
-      const created = await fbRequest<{ id: string }>("POST", "/help_center/collections", {
-        name: category,
-        description: `${category} articles`,
+      const article = content.articles.find((a: any) => a.id === item.id);
+      const old = before.articles.find((a: any) => a.id === item.id);
+      const current: any = await fbRequest(
+        "GET",
+        `/help_center/articles/${item.id}?state=live`,
+      );
+      if (
+        apiFingerprint({
+          helpCenterId: before.helpCenterId,
+          collections: [],
+          articles: [current],
+        }) !==
+        apiFingerprint({
+          helpCenterId: before.helpCenterId,
+          collections: [],
+          articles: [old],
+        })
+      )
+        throw new Error(`Concurrent article change: ${item.id}`);
+      // PATCH only editorial fields. IDs, parents, slugs, authors, icons and order stay untouched.
+      await fbRequest("PATCH", `/help_center/articles/${item.id}`, {
+        title: article.title,
+        description: article.description,
+        body: article.body,
+        formatter: "raw",
+        state: "live",
       });
-      collectionByName.set(category, created.id);
+      results.push({ ...item, status: "written-unverified" });
+      writeJson(reportPath, { ok: false, status: "in-progress", results });
+      const saved: any = await fbRequest(
+        "GET",
+        `/help_center/articles/${item.id}?state=live`,
+      );
+      if (
+        contentFingerprint(saved) !== contentFingerprint(article) ||
+        saved.slug !== old.slug ||
+        saved.parentId !== old.parentId ||
+        saved.order !== old.order ||
+        saved.isDraftDiffersFromLive
+      )
+        throw new Error(`Published article differs: ${item.id}`);
+      results.at(-1).status = "api-verified";
     }
-
-    const parentId = collectionByName.get(category) as string;
-    const existingId = articleByTitle.get(parsed.title);
-    const payload = {
-      title: parsed.title,
-      description: parsed.description,
-      body: parsed.body,
-      parentId,
-      state: "live",
-    };
-
-    if (dryRun) {
-      report.push({
-        file: fileName,
-        title: parsed.title,
-        action: existingId ? "would-update" : "would-create",
-        parentId,
-      });
-      continue;
+    const after = await exportHelpApi(content.manifest);
+    writeJson(".featurebase/after-api/api-snapshot.json", after);
+    checkManagedSet(after, content.manifest);
+    const publicAfter = await inspectPublicHelpCenter();
+    writeJson(".featurebase/after/public-snapshot.json", publicAfter);
+    if (publicAfter.articles.length !== content.articles.length)
+      throw new Error("Public article count differs");
+    for (const article of content.articles) {
+      const saved = publicAfter.articles.find((a: any) => a.id === article.id);
+      if (
+        !saved ||
+        contentFingerprint(saved) !== contentFingerprint(article) ||
+        saved.slug !== article.publicSlug ||
+        saved.publicOrder !== article.publicOrder ||
+        saved.parentId !== article.parentId
+      )
+        throw new Error(`Public verification mismatch: ${article.id}`);
     }
-
-    if (existingId) {
-      await fbRequest("PATCH", `/help_center/articles/${existingId}`, payload);
-      report.push({ file: fileName, title: parsed.title, action: "updated", id: existingId });
-    } else {
-      const created = await fbRequest<{ id: string }>("POST", "/help_center/articles", payload);
-      report.push({ file: fileName, title: parsed.title, action: "created", id: created.id });
-    }
+    if (
+      JSON.stringify(
+        publicAfter.collections.map((c: any) => [c.id, c.name, c.publicOrder]),
+      ) !==
+      JSON.stringify(
+        content.manifest.collections.map((c: any) => [
+          c.id,
+          c.name,
+          c.publicOrder,
+        ]),
+      )
+    )
+      throw new Error("Collection order or names changed");
+    writeJson(reportPath, {
+      ok: true,
+      status: "published-and-reexport-verified",
+      contentHash: content.contentHash,
+      results,
+    });
+    console.log(
+      JSON.stringify({
+        ok: true,
+        published: true,
+        reportPath,
+        count: results.length,
+      }),
+    );
+  } catch (error: any) {
+    writeJson(reportPath, {
+      ok: false,
+      status: "stopped-review-required",
+      error: error.message,
+      results,
+    });
+    throw error;
   }
-
-  writeJson(reportPath, report);
-  console.log(JSON.stringify({ ok: true, dryRun, reportPath, count: report.length }, null, 2));
 }
-
 main().catch((error) => {
-  console.error(error);
-  process.exit(1);
+  console.error(error.message);
+  process.exitCode = 1;
 });
-

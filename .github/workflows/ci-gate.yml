@@ -26,6 +26,8 @@ jobs:
       - run: pnpm test:matrix
       - run: pnpm test:policy
       - run: pnpm test:repo-hygiene
+      - run: pnpm test:featurebase:help
+      - run: pnpm docs:audit:gaps
       - run: pnpm test:marketing-claims
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,5 +1,5 @@
 # Dependencies
-node_modules/
+node_modules
 /.pnp
 .pnp.js
 
@@ -96,3 +96,6 @@ credentials.json
 .credentials
 # Native iOS telemetry values generated from Doppler/Xcode Cloud.
 apps/ios/Configuration/Telemetry.generated.xcconfig
+
+# Local Help Center exports and render previews; never commit raw API responses.
+.featurebase/

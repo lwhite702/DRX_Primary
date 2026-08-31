@@ -15,15 +15,22 @@ function walk(dirPath: string, matcher: (file: string) => boolean): string[] {
 }
 
 function toRoute(filePath: string): string {
-  const normalized = filePath.split("/app/")[1]?.replace(/\/page\.tsx$/, "") ?? filePath;
-  return `/${normalized.replace(/\(app\)\//g, "").replace(/\(operator\)\//g, "").replace(/index$/, "")}`;
+  const relative = path.relative(path.resolve("apps/app/app"), filePath);
+  return (
+    "/" +
+    relative
+      .split(path.sep)
+      .filter((segment) => !/^\(.*\)$/.test(segment))
+      .join("/")
+      .replace(/(?:^|\/)(?:page\.tsx|route\.ts)$/, "")
+  );
 }
 
 async function main() {
   const appRoot = path.resolve(process.cwd(), "apps/app/app");
   const reportPath = path.resolve(
     process.cwd(),
-    "docs/help-center-export/reports/drx-feature-audit-auto.md",
+    ".featurebase/feature-audit.md",
   );
   const pageFiles = walk(appRoot, (file) => file.endsWith("/page.tsx"));
   const routeFiles = walk(appRoot, (file) => file.endsWith("/route.ts"));
@@ -36,18 +43,37 @@ async function main() {
     `API routes found: ${routeFiles.length}`,
     "",
     "## Page routes",
-    ...pageFiles.sort().map((file) => `- ${toRoute(file)} (${file})`),
+    ...pageFiles
+      .sort()
+      .map(
+        (file) => `- ${toRoute(file)} (${path.relative(process.cwd(), file)})`,
+      ),
     "",
     "## API routes",
-    ...routeFiles.sort().map((file) => `- ${file}`),
+    ...routeFiles
+      .sort()
+      .map(
+        (file) => `- ${toRoute(file)} (${path.relative(process.cwd(), file)})`,
+      ),
     "",
   ];
+  fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, `${lines.join("\n")}\n`, "utf8");
-  console.log(JSON.stringify({ ok: true, reportPath, pageRoutes: pageFiles.length, apiRoutes: routeFiles.length }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        reportPath,
+        pageRoutes: pageFiles.length,
+        apiRoutes: routeFiles.length,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-

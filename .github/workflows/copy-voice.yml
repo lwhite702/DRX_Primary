@@ -7,6 +7,8 @@ on:
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "app-docs/**"
+      - "docs/featurebase/**"
       - "apps/app/lib/copy/**"
       - "apps/app/lib/privacy/profiles.ts"
       - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
@@ -20,6 +22,8 @@ on:
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "app-docs/**"
+      - "docs/featurebase/**"
       - "apps/app/lib/copy/**"
       - "apps/app/lib/privacy/profiles.ts"
       - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
