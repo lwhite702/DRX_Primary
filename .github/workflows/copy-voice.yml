@@ -1,0 +1,42 @@
+# Runs only when canonical customer-facing copy changes.
+name: Copy Voice Gate
+
+on:
+  push:
+    branches: [main, development, staging]
+    paths:
+      - "CHANGELOG.md"
+      - "docs/BRAND_VOICE.md"
+      - "apps/app/lib/copy/**"
+      - "apps/app/lib/privacy/profiles.ts"
+      - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
+      - "apps/marketing/**"
+      - "apps/mobile/app/login.tsx"
+      - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      - "scripts/copy-lint.js"
+      - ".github/workflows/copy-voice.yml"
+  pull_request:
+    branches: [main, development, staging]
+    paths:
+      - "CHANGELOG.md"
+      - "docs/BRAND_VOICE.md"
+      - "apps/app/lib/copy/**"
+      - "apps/app/lib/privacy/profiles.ts"
+      - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
+      - "apps/marketing/**"
+      - "apps/mobile/app/login.tsx"
+      - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      - "scripts/copy-lint.js"
+      - ".github/workflows/copy-voice.yml"
+
+concurrency:
+  group: copy-voice-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  copy-voice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check cross-surface copy
+        run: node scripts/copy-lint.js
