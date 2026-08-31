@@ -1,0 +1,282 @@
+name: Apply Final Brand Review Remediation
+
+on:
+  push:
+    branches:
+      - codex/cross-surface-brand-voice-alignment
+    paths:
+      - .github/workflows/remediate-brand-review.yml
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply review fixes and push clean commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              if old not in text:
+                  raise SystemExit(f"Missing expected text for {label}")
+              return text.replace(old, new, 1)
+
+          copy_workflow = Path(".github/workflows/copy-voice.yml")
+          copy_workflow.write_text('''# Runs only when canonical customer-facing copy changes.
+          name: Copy Voice Gate
+
+          on:
+            push:
+              branches: [main, development, staging]
+              paths:
+                - "CHANGELOG.md"
+                - "docs/BRAND_VOICE.md"
+                - "apps/app/lib/copy/**"
+                - "apps/app/lib/privacy/profiles.ts"
+                - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
+                - "apps/marketing/**"
+                - "apps/mobile/app/login.tsx"
+                - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+                - "scripts/copy-lint.js"
+                - ".github/workflows/copy-voice.yml"
+            pull_request:
+              branches: [main, development, staging]
+              paths:
+                - "CHANGELOG.md"
+                - "docs/BRAND_VOICE.md"
+                - "apps/app/lib/copy/**"
+                - "apps/app/lib/privacy/profiles.ts"
+                - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
+                - "apps/marketing/**"
+                - "apps/mobile/app/login.tsx"
+                - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+                - "scripts/copy-lint.js"
+                - ".github/workflows/copy-voice.yml"
+
+          concurrency:
+            group: copy-voice-${{ github.ref }}
+            cancel-in-progress: true
+
+          jobs:
+            copy-voice:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - name: Check cross-surface copy
+                  run: node scripts/copy-lint.js
+          '''.replace("          ", ""))
+
+          copy_path = Path("apps/app/lib/copy/drx.ts")
+          copy_text = copy_path.read_text()
+          copy_text = replace_once(
+              copy_text,
+              'body: "Pick how much customer info you want to keep. You can change it later.",',
+              'body: "Each preset controls which customer details you keep and permanently deletes inactive customer records after the listed window. You can change it later.",',
+              "privacy body",
+          )
+          copy_text = replace_once(
+              copy_text,
+              'desc: "Nicknames only. Keep customer data light.",',
+              'desc: "Aliases only. Inactive customer records are permanently deleted after 30 days.",',
+              "alias retention",
+          )
+          copy_text = replace_once(
+              copy_text,
+              'desc: "A little customer info when you need it.",',
+              'desc: "Optional contact details. Inactive customer records are permanently deleted after 180 days.",',
+              "standard retention",
+          )
+          copy_text = replace_once(
+              copy_text,
+              'desc: "Use the full customer record when it fits your business.",',
+              'desc: "Full customer details. Inactive customer records are permanently deleted after 365 days.",',
+              "full retention",
+          )
+          copy_text = replace_once(copy_text, 'title: "Stock",', 'title: "Inventory",', "inventory title")
+          copy_path.write_text(copy_text)
+
+          privacy_step = Path("apps/app/components/onboarding/steps/PrivacyStep.tsx")
+          privacy_step.write_text('''import { Label } from "@/components/ui/label";
+          import { CheckCircle2 } from "lucide-react";
+          import { StepProps } from "../types";
+          import { PRIVACY_PROFILE_OPTIONS } from "@/lib/privacy/profiles";
+          import { drxCopy } from "@/lib/copy/drx";
+
+          export function PrivacyStep({ formData, setFormData }: StepProps) {
+            return (
+              <div className="space-y-8">
+                <div className="space-y-2">
+                  <Label className="text-lg">{drxCopy.onboarding.privacy.title}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {drxCopy.onboarding.privacy.body}
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  {PRIVACY_PROFILE_OPTIONS.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all ${
+                        formData.privacyPreset === profile.id ? "border-accent bg-accent/5" : ""
+                      }`}
+                      onClick={() => setFormData({ ...formData, privacyPreset: profile.id })}
+                    >
+                      <div>
+                        <div className="font-bold">{profile.label}</div>
+                        <div className="text-sm text-muted-foreground">{profile.description}</div>
+                      </div>
+                      {formData.privacyPreset === profile.id && (
+                        <CheckCircle2 className="text-accent" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          '''.replace("          ", ""))
+
+          profiles_path = Path("apps/app/lib/privacy/profiles.ts")
+          profiles = profiles_path.read_text()
+          profiles = replace_once(
+              profiles,
+              '} from "@/lib/privacy/types";\n',
+              '} from "@/lib/privacy/types";\nimport { drxCopy } from "@/lib/copy/drx";\n',
+              "privacy copy import",
+          )
+          start = profiles.index("export const PRIVACY_PROFILE_OPTIONS")
+          end = profiles.index("\n\nfunction cloneProtocol", start)
+          options = '''const privacyPresetCopy = drxCopy.onboarding.privacy.presets;
+
+          export const PRIVACY_PROFILE_OPTIONS: Array<{
+            id: PrivacyProfile;
+            label: string;
+            description: string;
+          }> = [
+            {
+              id: "alias_mode",
+              label: privacyPresetCopy.aliasMode.label,
+              description: privacyPresetCopy.aliasMode.desc,
+            },
+            {
+              id: "standard_mode",
+              label: privacyPresetCopy.standardMode.label,
+              description: privacyPresetCopy.standardMode.desc,
+            },
+            {
+              id: "business_crm_mode",
+              label: privacyPresetCopy.businessCrmMode.label,
+              description: privacyPresetCopy.businessCrmMode.desc,
+            },
+          ];'''.replace("          ", "")
+          profiles = profiles[:start] + options + profiles[end:]
+          profiles_path.write_text(profiles)
+
+          brand_path = Path("docs/BRAND_VOICE.md")
+          brand = brand_path.read_text()
+          brand = replace_once(
+              brand,
+              "- Data deletion\n- Destructive actions\n",
+              "- Data deletion\n- Destructive actions\n\nPrivacy presets must state their retention window and clearly say when inactive customer records are permanently deleted.\n",
+              "privacy disclosure rule",
+          )
+          brand = replace_once(
+              brand,
+              "- Products\n- Stock\n- Orders\n",
+              "- Products\n- Inventory\n- Orders\n",
+              "feature name",
+          )
+          brand_path.write_text(brand)
+
+          lint_path = Path("scripts/copy-lint.js")
+          lint = lint_path.read_text()
+          lint = replace_once(
+              lint,
+              '  "apps/app/lib/copy/drx.ts",\n',
+              '  "apps/app/lib/copy/drx.ts",\n  "apps/app/lib/privacy/profiles.ts",\n',
+              "profile copy lint coverage",
+          )
+          marker = "let violationsCount = 0;\n"
+          required = '''const REQUIRED_FRAGMENTS = [
+            {
+              file: ".github/workflows/copy-voice.yml",
+              fragments: ["push:", "branches: [main, development, staging]"],
+            },
+            {
+              file: "apps/app/lib/copy/drx.ts",
+              fragments: [
+                'title: "Inventory"',
+                'label: "FULL CUSTOMER MODE"',
+                "permanently deleted after 30 days",
+                "permanently deleted after 180 days",
+                "permanently deleted after 365 days",
+              ],
+            },
+            {
+              file: "apps/app/lib/privacy/profiles.ts",
+              fragments: [
+                'import { drxCopy } from "@/lib/copy/drx";',
+                "const privacyPresetCopy = drxCopy.onboarding.privacy.presets;",
+              ],
+            },
+          ];
+
+          '''.replace("          ", "")
+          lint = replace_once(lint, marker, required + marker, "required copy checks")
+          before_log = 'console.log("🔍 Checking DRX core copy across marketing, web, Expo, and iOS...");\n'
+          required_check = '''function checkRequiredFragments() {
+            for (const requirement of REQUIRED_FRAGMENTS) {
+              const filePath = path.join(__dirname, "..", requirement.file);
+              if (!fs.existsSync(filePath)) {
+                console.error(`❌ Required source missing: ${requirement.file}`);
+                violationsCount += 1;
+                continue;
+              }
+
+              const content = fs.readFileSync(filePath, "utf8");
+              for (const fragment of requirement.fragments) {
+                if (!content.includes(fragment)) {
+                  console.error(`❌ Required copy contract missing in ${requirement.file}: ${fragment}`);
+                  violationsCount += 1;
+                }
+              }
+            }
+          }
+
+          '''.replace("          ", "")
+          lint = replace_once(lint, before_log, required_check + before_log, "required fragment function")
+          lint = replace_once(
+              lint,
+              "CORE_COPY_FILES.forEach(checkFile);\n",
+              "CORE_COPY_FILES.forEach(checkFile);\ncheckRequiredFragments();\n",
+              "required fragment invocation",
+          )
+          lint_path.write_text(lint)
+          PY
+
+          node scripts/copy-lint.js
+          git diff --check
+          rm .github/workflows/remediate-brand-review.yml
+          git add \
+            .github/workflows/copy-voice.yml \
+            .github/workflows/remediate-brand-review.yml \
+            apps/app/lib/copy/drx.ts \
+            apps/app/lib/privacy/profiles.ts \
+            apps/app/components/onboarding/steps/PrivacyStep.tsx \
+            docs/BRAND_VOICE.md \
+            scripts/copy-lint.js
+          git commit -m "fix(copy): resolve final cross-surface review findings"
+          git push origin HEAD:codex/cross-surface-brand-voice-alignment
