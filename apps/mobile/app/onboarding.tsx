@@ -55,6 +55,7 @@ export default function OnboardingScreen() {
         <Text style={styles.eyebrow}>SECURE BUSINESS SETUP</Text>
         <Text style={styles.title}>Name this DRX location</Text>
         <Text style={styles.subtitle}>This creates the isolated business workspace and your owner role.</Text>
+        <Text style={styles.subtitle}>Next, open Inventory → Add Product. Choose whole-unit sales or turn on Allow fractional sales for that product, then set its minimum, increment, and suggested amounts. Fractional sales are never enabled for every product automatically.</Text>
         <TextInput style={styles.input} value={ownerName} onChangeText={setOwnerName} placeholder="Your name (optional)" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
         <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} placeholder="Business name" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
         <TouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>

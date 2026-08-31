@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { getUnitForCategory } from "@/lib/utils/units";
+import { FractionalProductFields } from "@/components/inventory/fractional-product-fields";
+import { creationCommerceDefaults, newProductCommerceSchema } from "@/lib/commerce/product-creation";
 import {
   Select,
   SelectContent,
@@ -54,21 +56,25 @@ export function InventoryForm({
     formState: { errors, isSubmitting },
   } = useForm<Inventory>({
     resolver: zodResolver(inventorySchema),
-    defaultValues: initialData || {
+    defaultValues: {
       business_id: businessId,
       quantity_on_hand: 0,
       reorder_level: 10,
       unit_of_measure: "g", // Default
+      ...initialData,
+      ...(!initialData?.id ? { commerce_config: creationCommerceDefaults(initialData?.unit_of_measure || "g") } : {}),
     },
   });
 
-  const isGuided = isFirstProduct && !initialData;
+  const isGuided = isFirstProduct && !initialData?.id;
   const [wizardStep, setWizardStep] = React.useState(0);
 
   const handleNext = async () => {
-    let fieldsToValidate: ("sku" | "product_name")[] = [];
+    let fieldsToValidate: (keyof Inventory)[] = [];
     if (wizardStep === 0) {
       fieldsToValidate = ["sku", "product_name"];
+    } else if (wizardStep === 1) {
+      fieldsToValidate = ["quantity_on_hand", "reorder_level"];
     }
 
     const isValid = await trigger(fieldsToValidate);
@@ -86,6 +92,8 @@ export function InventoryForm({
   const category = watch("category");
   const unitCost = watch("unit_cost");
   const sellingPrice = watch("selling_price");
+  const commerceConfig = watch("commerce_config");
+  const invalidCommerce = commerceConfig && !newProductCommerceSchema.safeParse(commerceConfig).success;
 
   // Calculate margins in real time
   const cost = typeof unitCost === "number" && !isNaN(unitCost) ? unitCost : 0;
@@ -106,6 +114,7 @@ export function InventoryForm({
     if (category && !isExistingItem) {
       const unit = getUnitForCategory(category);
       setValue("unit_of_measure", unit);
+      if (commerceConfig) setValue("commerce_config.sellingUnit", unit);
     }
   }, [category, initialData, setValue]);
 
@@ -117,7 +126,7 @@ export function InventoryForm({
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
             <span>Step {wizardStep + 1} of 3</span>
             <span className="font-semibold text-accent uppercase tracking-wider">
-              {wizardStep === 0 ? "Product Identity" : wizardStep === 1 ? "Stock & Thresholds" : "Pricing Strategy"}
+              {wizardStep === 0 ? "Product Identity" : wizardStep === 1 ? "Stock & Thresholds" : "Pricing & Fractional Sales"}
             </span>
           </div>
           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -283,6 +292,7 @@ export function InventoryForm({
                 className="bg-black/50 border-white/10"
                 {...register("unit_cost", { valueAsNumber: true })}
               />
+              {errors.unit_cost && <p role="alert" className="text-sm text-destructive">{errors.unit_cost.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="selling_price" className="flex items-center gap-1">
@@ -297,8 +307,17 @@ export function InventoryForm({
                 className="bg-black/50 border-accent/30 focus:border-accent"
                 {...register("selling_price", { valueAsNumber: true })}
               />
+              {errors.selling_price && <p role="alert" className="text-sm text-destructive">{errors.selling_price.message}</p>}
             </div>
           </div>
+
+          {!initialData?.id && commerceConfig && <>
+            <FractionalProductFields value={commerceConfig} onChange={(config) => {
+              setValue("commerce_config", config, { shouldValidate: true, shouldDirty: true });
+              setValue("unit_of_measure", config.sellingUnit as Inventory["unit_of_measure"]);
+            }} />
+            {(errors.commerce_config || invalidCommerce) && <p role="alert" className="text-sm text-destructive">Check your selling rules: use positive quantities that fit the decimal places, and presets aligned to the minimum plus increments.</p>}
+          </>}
 
           {/* Dynamic Margin Calculator Widget */}
           <div className="mt-4 p-3 bg-black/60 rounded-lg border border-white/5 space-y-2 text-xs">
@@ -360,7 +379,7 @@ export function InventoryForm({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="bg-accent text-black hover:bg-accent/90">
-              {isSubmitting ? "Saving..." : initialData ? "Update Product" : "Add Product"}
+              {isSubmitting ? "Saving..." : initialData?.id ? "Update Product" : "Add Product"}
             </Button>
           </>
         )}

@@ -11,6 +11,7 @@ import {
   normalizeProductCommerceConfig,
 } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
+import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
 
 const productRecord = v.object({
   _id: v.id("products"),
@@ -382,6 +383,15 @@ export const createProduct = mutation({
     isTaxable: v.optional(v.boolean()),
     allowFractionalWeight: v.optional(v.boolean()),
     reorderLevelGrams: v.optional(v.number()),
+    commerceConfig: v.optional(v.object({
+      sellingUnit: v.string(),
+      decimalPrecision: v.number(),
+      minimumSaleQuantity: v.number(),
+      quantityIncrement: v.number(),
+      suggestedDollarAmounts: v.array(v.number()),
+      suggestedQuantities: v.array(v.number()),
+    })),
+    initialQuantity: v.optional(v.number()),
   },
   returns: v.id("products"),
   handler: async (ctx, args) => {
@@ -405,6 +415,27 @@ export const createProduct = mutation({
 
     const allowFractionalWeight = args.allowFractionalWeight ?? true;
     const commerceDefaults = defaultCommerceConfig(allowFractionalWeight);
+    const creationCommerce = args.commerceConfig ? canonicalCreationCommerce({
+      ...args.commerceConfig,
+      fractionalEnabled: allowFractionalWeight,
+      bulkPriceTiers: [],
+    }) : undefined;
+    if (creationCommerce && (
+      !Number.isSafeInteger(args.sellingPriceCents) || args.sellingPriceCents <= 0 ||
+      !Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0 ||
+      !Number.isFinite(args.reorderLevelGrams ?? 10) || (args.reorderLevelGrams ?? 10) < 0
+    )) throw new Error("INVALID_ARGUMENT: Enter valid integer-cent prices and a nonnegative reorder level");
+    const initialQuantity = args.initialQuantity ?? 0;
+    const scale = 10 ** (creationCommerce?.quantityPrecision ?? commerceDefaults.quantityPrecision);
+    if (!Number.isFinite(initialQuantity) || initialQuantity < 0 ||
+        !Number.isSafeInteger(Math.round(initialQuantity * scale)) ||
+        Math.abs(initialQuantity * scale - Math.round(initialQuantity * scale)) > 1e-6 ||
+        (!allowFractionalWeight && !Number.isInteger(initialQuantity))) {
+      throw new Error("INVALID_ARGUMENT: Starting stock must fit the product quantity precision");
+    }
+    if (initialQuantity > 0 && (!Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0)) {
+      throw new Error("INVALID_ARGUMENT: Starting stock requires a nonnegative integer-cent unit cost");
+    }
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
       sku: args.sku,
@@ -414,17 +445,27 @@ export const createProduct = mutation({
       sellingPriceCents: args.sellingPriceCents,
       unitCostCents: args.unitCostCents,
       isTaxable: args.isTaxable ?? true,
-      quantityOnHandGrams: 0,
-      reorderLevelGrams: args.reorderLevelGrams || 10,
+      quantityOnHandGrams: initialQuantity,
+      reorderLevelGrams: args.reorderLevelGrams ?? 10,
       allowFractionalWeight,
       ...commerceDefaults,
       suggestedQuantityPresets: [],
       suggestedDollarPresetsCents: [],
       bulkPriceTiers: [],
+      ...creationCommerce,
       isActive: true,
       createdAt: now,
       updatedAt: now,
     });
+
+    if (initialQuantity > 0) {
+      await ctx.db.insert("inventoryBatches", {
+        businessId: auth.businessId, productId,
+        originalQuantityGrams: initialQuantity, remainingQuantityGrams: initialQuantity,
+        unitCostPerGramCents: args.unitCostCents, receivedAt: now,
+        createdBy: auth.userId, createdAt: now, updatedAt: now,
+      });
+    }
 
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,

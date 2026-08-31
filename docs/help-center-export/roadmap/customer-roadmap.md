@@ -4,6 +4,9 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Fractional selling from product creation and onboarding** (`in progress`)
+  Choose whole-unit or fractional sales while adding a product, including the guided first-product setup. Configure the selling unit, minimum, increment, precision, and suggested amounts before checkout. Cross-client persistence and device verification remain rollout gates.
+
 - **0.6.0 mobile commerce and delivery fulfillment** (`planned`)
   Fractional quantity or dollar entry with serving suggestions, product-level presets, bulk pricing, spend-based loyalty tiers, delivery checkout and accounting, and an operator delivery queue with assignment, reminders, escalation, and reconciliation.
 
