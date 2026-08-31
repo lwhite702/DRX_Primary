@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  auth: vi.fn(),
   query: vi.fn(),
   mutation: vi.fn(),
   setAuth: vi.fn(),
@@ -13,15 +14,15 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("convex/browser", () => ({
-  ConvexHttpClient: vi.fn(() => ({
-    query: mocks.query,
-    mutation: mocks.mutation,
-    setAuth: mocks.setAuth,
-  })),
+  ConvexHttpClient: class {
+    query = mocks.query;
+    mutation = mocks.mutation;
+    setAuth = mocks.setAuth;
+  },
 }));
 
 vi.mock("@/lib/adapters/auth/server", () => ({
-  auth: vi.fn(async () => ({ getToken: mocks.getToken })),
+  auth: mocks.auth,
 }));
 
 import {
@@ -50,7 +51,8 @@ const input = {
 
 describe("canonical web commerce bridge", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    mocks.auth.mockResolvedValue({ userId: "synthetic-user", getToken: mocks.getToken });
     process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
     mocks.getToken.mockResolvedValue("synthetic-convex-token");
     mocks.findLegacySale.mockResolvedValue(null);
@@ -88,6 +90,7 @@ describe("canonical web commerce bridge", () => {
     const quote = await quoteCanonicalCommerce(input);
 
     expect(quote.total).toBe(12.15);
+    expect(mocks.getToken).toHaveBeenCalledWith({ template: "convex" });
     expect(mocks.query).toHaveBeenLastCalledWith(
       expect.anything(),
       {
@@ -98,6 +101,24 @@ describe("canonical web commerce bridge", () => {
         delivery: undefined,
       },
     );
+  });
+
+  it("uses integrated Clerk authentication for the reporting bridge", async () => {
+    mocks.auth.mockResolvedValue({
+      userId: "synthetic-user",
+      sessionClaims: { aud: "convex" },
+      getToken: mocks.getToken,
+    });
+    mocks.getToken.mockImplementation(async (options) => {
+      if (options?.template) throw new Error("JWT template not found");
+      return "synthetic-session-token";
+    });
+    mocks.query
+      .mockResolvedValueOnce({ business: { legacyPrismaBusinessId: input.businessId } })
+      .mockResolvedValueOnce({ orderNumbers: [], orderCount: 0 });
+    await getCanonicalCommerceSummary({ businessId: input.businessId, startAt: 1, endAt: 2 });
+    expect(mocks.getToken).toHaveBeenCalledWith();
+    expect(mocks.setAuth).toHaveBeenCalledWith("synthetic-session-token");
   });
 
   it("fails closed when the authenticated canonical tenant mapping differs", async () => {

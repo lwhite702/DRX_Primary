@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
-import { auth } from "@/lib/adapters/auth/server";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { db } from "@/lib/db";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { errorResponse, successResponse } from "@/lib/api/response";
@@ -80,18 +80,17 @@ async function resolveCommerceAccess() {
       ),
     };
   }
-  const { getToken } = await auth();
-  const token = await getToken({ template: "convex" });
-  if (!token) {
-    return {
-      response: errorResponse(
-        "UNAUTHORIZED",
-        "Commerce authentication is unavailable",
-        401,
-      ),
-    };
-  }
   try {
+    const token = await getConvexAuthToken();
+    if (!token) {
+      return {
+        response: errorResponse(
+          "UNAUTHORIZED",
+          "Commerce authentication is unavailable",
+          401,
+        ),
+      };
+    }
     const client = new ConvexHttpClient(url);
     client.setAuth(token);
     const canonical = await client.query(api.settings.getBusinessSettings, {});
