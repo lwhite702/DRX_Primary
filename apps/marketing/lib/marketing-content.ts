@@ -39,71 +39,72 @@ export type FooterContent = {
 
 export const marketingContent = {
   hero: {
-    preheadline: drxAudience.eyebrow,
-    headlineLead: drxAudience.headlineLead,
-    headlineAccent: drxAudience.headlineAccent,
-    subheadline: drxAudience.supportingPromise,
+    preheadline: "Built for people who actually run the business",
+    headlineLead: "Keep the count right.",
+    headlineAccent: "Keep the line moving.",
+    subheadline:
+      "Know what you have, what you sold, what you made, and who still owes you. No spreadsheet circus required.",
     proofLabels: drxAudience.proofLabels,
-    primaryCta: { label: "Join the Beta", href: "/waitlist" },
-    secondaryCta: { label: "See Deelrx in Action", href: "/#product" },
+    primaryCta: { label: "Get Early Access", href: "/waitlist" },
+    secondaryCta: { label: "See How It Works", href: "/#product" },
   } satisfies HeroContent,
   benefits: [
     {
       id: "checkout",
       title: "Keep the Line Moving",
-      body: "Search, scan, adjust, and finish checkout in one focused flow.",
+      body: "Find the product, set the amount, take payment, done.",
     },
     {
       id: "inventory",
-      title: "Know What's on Deck",
-      body: "See what sold, what is on hand, and what is running low.",
+      title: "Keep the Count Right",
+      body: "Know what you have, what moved, and what needs a reup.",
     },
     {
       id: "reporting",
-      title: "See the Shift Clearly",
-      body: "Review sales, best sellers, and low-stock signals without reporting theater.",
+      title: "Know Your Numbers",
+      body: "See sales, profit, and low stock without digging through reports.",
     },
     {
       id: "access",
-      title: "Control Team Access",
-      body: "Give each operator the tools their role requires and keep sensitive actions attributable.",
+      title: "Keep Your Crew in Check",
+      body: "Give people the access they need and keep a record of who did what.",
     },
   ] satisfies BenefitCard[],
   betaAccess: {
-    title: "Run the operation tighter.",
-    lead: "We are opening Deelrx CRM beta access to a focused group of operators who want speed, clarity, and control.",
-    cta: { label: "Join the Beta", href: "/waitlist" },
+    title: "Keep the count right.",
+    lead: "DRX is opening early access to operators who want a faster way to track stock, sales, and balances without the usual software nonsense.",
+    cta: { label: "Get Early Access", href: "/waitlist" },
   } satisfies BetaAccessSection,
   faq: [
     {
-      question: "What is Deelrx CRM (DRX)?",
+      question: "What is Deelrx CRM?",
       answer:
-        "Deelrx CRM, also known as DRX, helps independent retailers track sales, inventory, customer records, and team access in one place.",
+        "Deelrx CRM, or DRX, helps you track sales, stock, customers, payments, and open balances in one place.",
     },
     {
-      question: "Who is DRX built for?",
+      question: "Who is DRX for?",
       answer:
-        "Independent retailers, owner-operated shops, pop-ups, and service businesses that carry inventory and need the floor to keep moving.",
+        "DRX is built for owner-operators and small crews who sell in person, carry stock, and need the count to stay right.",
     },
     {
       question: "What is a customer store account?",
       answer:
-        "It is an optional merchant record for purchases, payments, and account balances. DRX does not present itself as a lender, payment network, or debt collector.",
+        "It is a record of what a customer bought, paid, and still owes your business. DRX records the balance. It is not a lender or payment network.",
     },
     {
-      question: "Is the beta available through the public App Store?",
+      question: "Can I get the iPhone app now?",
       answer:
-        "Beta access uses the waitlist and TestFlight. Public App Store copy is reserved for a complete release that matches the submitted app.",
+        "Not yet. We’ll announce iPhone early access after the current build is verified for TestFlight.",
     },
     {
-      question: "Does DRX provide legal or compliance advice?",
+      question: "Does DRX tell me what laws apply to my business?",
       answer:
-        "No. DRX supports business operations. Each business remains responsible for its laws, licenses, taxes, reporting, and customer account policies.",
+        "No. DRX helps you keep your records straight. You are responsible for the rules that apply to your business.",
     },
   ] satisfies FaqItem[],
   footer: {
     about:
-      "Deelrx CRM (DRX) is built for independent retailers who want speed, clarity, and control without complicated tools.",
+      "Deelrx CRM helps operators keep stock, sales, payments, and balances straight without complicated software.",
     menuLinks: [
       { label: "Home", href: "/" },
       { label: "Product", href: "/#product" },
@@ -113,12 +114,12 @@ export const marketingContent = {
     resourceLinks: [
       { label: "Getting Started", href: "/resources/guides" },
       { label: "Product Updates", href: "/resources/changelog" },
-      { label: "Support Center", href: "/resources" },
+      { label: "Help", href: "/resources" },
     ],
     contact: "support@deelrxcrm.com",
     legalLinks: [
       { label: "Privacy Policy", href: "/legal/privacy" },
-      { label: "Terms of Service", href: "/legal/terms" },
+      { label: "Terms of Use", href: "/legal/terms" },
     ],
     socialLinks: [
       { label: "Twitter / X", href: "https://x.com" },
@@ -126,6 +127,6 @@ export const marketingContent = {
       { label: "LinkedIn", href: "https://linkedin.com" },
     ],
     disclaimer:
-      "Deelrx CRM (DRX) is intended for use by lawful businesses and operators. Users are responsible for complying with all applicable laws and regulations. Deelrx CRM does not support or condone illegal activity.",
+      "Deelrx CRM is built for lawful business use. You are responsible for following the laws and rules that apply to your business.",
   } satisfies FooterContent,
 } as const;
