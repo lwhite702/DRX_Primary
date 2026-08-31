@@ -1,48 +1,7 @@
-# Dashboard: Daily Check in 2 Minutes
+# Moved: Dashboard and reports
 
-Use the dashboard to see what moved today, what needs attention, and what might break your shift later.
+This historical source is excluded from Featurebase imports. Use [Dashboard and reports](../../../app-docs/feature_overview/feature-overview-dashboard-and-reports.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Dashboard and reports](https://drx.featurebase.app/en/help/articles/2502678).
 
-Gives a fast read on sales flow, inventory pressure, and operation health.
-
-## Who can use it
-
-Owner, Manager
-
-## Before you start
-
-- You need access to the main app dashboard route.
-- Make sure data is syncing from sales and inventory flows.
-
-## Step-by-step
-
-1. Open `Dashboard`.
-2. Check high-level sales activity first.
-3. Review low-stock or risk signals tied to inventory.
-4. Spot-check credit or balance exposure if you run front/balance flows.
-5. Use dashboard findings to decide what to fix next in `Inventory`, `Sales`, or `Reports`.
-
-## What happens next
-
-You jump directly into the right queue instead of chasing problems blind.
-
-## Tips
-
-- Start every shift with dashboard first, reports second.
-- Use dashboard for triage, then verify details in route-specific pages.
-
-## Common mistakes
-
-- Treating dashboard numbers as final audit numbers without checking source pages.
-
-## Troubleshooting
-
-- If numbers look off, compare `Sales` records and inventory change history.
-- If cards are empty, verify role permissions and data ingestion.
-
-## Related articles
-
-- `reports-and-insights.md`
-- `inventory-audit-fixes.md`
-- `sales-history-receipts.md`
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

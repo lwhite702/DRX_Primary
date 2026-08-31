@@ -1,39 +1,40 @@
 ---
-title: "Switch Workspaces"
-description: "Learn how to confirm or change your active workspace in DRX so sales, inventory actions, and reports apply to the right business tenant."
-tags:
-  - workspaces
-  - multi-tenant
-  - context switching
+title: "Switch workspaces and check access"
+description: "Choose the correct business and give each team member only the access their work needs."
 ---
-## Overview
 
-Workspaces in DRX keep each business or location separate. Your active workspace controls where sales, inventory updates, payments, and reports are saved. Use this feature to quickly confirm you are in the right tenant before you check out customers, adjust stock, or pull reports.
+## Before you start
 
-If you have access to more than one workspace, you can change the active one at any time. The change takes effect immediately and all actions you take will apply to the newly selected workspace.
+These steps cover the web beta. Finish or safely leave open checkout and unsaved work before switching businesses. A workspace means the business whose records you are using.
 
-## When to use it
+## Switch businesses
 
-- You work across multiple stores, markets, or brands in DRX.
-- You need sales to post to the correct tenant before starting checkout.
-- You are recording inventory intake, adjustments, or audits for a specific location.
-- You are viewing dashboards or running reports for one workspace.
+1. Open **Select a business** in the header. Check the entries under **My Businesses**.
+2. Select the intended business from those attached to your account.
+3. Wait for the page to load and confirm the business name before opening **Inventory**, **Customers**, or **Orders & Receipts**.
+4. Check the business again before saving a payment, correction, or export.
 
-## How to use it
+Switching businesses does not give you a different person's role. Do not use device, location, or privacy badges on the workspace overview as a security report; some overview details are sample content in this beta.
 
-1. **Confirm your current workspace.** Look at the workspace name displayed in the app header or account area. This is your active workspace.
-2. **Open the workspace menu.** Select the workspace name to open the list of workspaces you can access.
-3. **Choose a workspace.** Select the name of the workspace you want to use. DRX switches your active tenant immediately.
-4. **Verify the change.** Confirm the new workspace name now shows as active in the same spot you opened the menu.
-5. **Continue your task.** Start checkout, update inventory, or run reports. All activity now applies to the selected workspace.
+## Invite a team member
 
-## Options and settings
+1. With the required permission, open **Settings**, then **Manage Team**.
+2. Under **Invite a Team Member**, enter **Email address**.
+3. Choose the approved **Role** from the options your account offers. The team page includes Cashier, Supervisor, Manager, and Staff; privileged options need separate authorization.
+4. Check the email and role, then choose **Send Invitation**. This sends an invitation to that person.
+5. Check **Team Members** and confirm the membership after the person accepts. They create their own password; do not share the owner's login.
 
-- Workspace list: Shows only the workspaces you have permission to access.
-- Active workspace indicator: The currently selected workspace name appears in the header or account area so you can confirm context at a glance.
+## Review or remove access
 
-## Tips
+Review the member's role in **Team Members** before changing it. Permissions can differ by business and task. Business ownership does not grant DRX platform administration.
 
-- Always confirm the active workspace before posting sales or making inventory changes; these actions cannot be moved between workspaces later.
-- If you do not see a workspace you expect, contact your administrator to request access.
-- Reports, dashboards, and histories reflect only the currently active workspace unless you switch again.
+For offboarding, ask the owner and private support to confirm the supported removal and session-revocation process. Do not assume changing a role signs out every device immediately. This guide does not invent a deactivation button that the current team page does not provide.
+
+## What happens next
+
+Confirm the member can perform the approved task with their own account. Stop if they can see unexpected business records or sensitive details and report it privately.
+
+## Related articles
+
+- [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807)
+- [Troubleshoot workspaces and access](https://drx.featurebase.app/en/help/articles/3948745)

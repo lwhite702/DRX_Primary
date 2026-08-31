@@ -1,47 +1,7 @@
-# Roles and Permissions: Keep Access Tight
+# Moved: Switch workspaces and check access
 
-Give people what they need to work, and nothing extra.
+This historical source is excluded from Featurebase imports. Use [Switch workspaces and check access](../../../app-docs/feature_overview/switch-workspaces.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Switch workspaces and check access](https://drx.featurebase.app/en/help/articles/4735029).
 
-Explains how to manage staff access safely in DRX.
-
-## Who can use it
-
-Owner, Manager (based on role control permissions)
-
-## Before you start
-
-- Confirm who should be staff vs manager.
-
-## Step-by-step
-
-1. Open `Settings > Team`.
-2. Add or update staff profiles.
-3. Assign the lowest role that still lets them do their job.
-4. Review sensitive-action permissions regularly.
-5. Remove access immediately on offboarding.
-
-## What happens next
-
-Cleaner permissions reduce risk and prevent accidental high-impact actions.
-
-## Tips
-
-- Review access during schedule changes and staffing updates.
-
-## Common mistakes
-
-- Leaving manager access active after role changes.
-
-## Troubleshooting
-
-- If a user can’t open expected pages, verify role mapping and permission checks.
-- If access is too broad, drop role level first, then test.
-
-## Related articles
-
-- `settings-and-aliases.md`
-- `privacy-security-rtbf.md`
-- `admin-tools-overview.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

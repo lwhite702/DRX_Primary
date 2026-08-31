@@ -1,91 +1,35 @@
 ---
-title: "Troubleshoot Workspace and Access"
-description: "Fix workspace mix-ups and permission denials in DRX so actions apply to the right tenant and you can continue your work."
-tags:
-  - DRX
-  - workspaces
-  - access
-  - troubleshooting
+title: "Troubleshoot workspaces and access"
+description: "Recover from an access problem without creating duplicate accounts or using someone else’s login."
 ---
-## Overview
 
-This guide helps you fix common workspace and access issues in DRX (Deelrx CRM). Use it when you can’t find the right data, you see a “no access” message, or you realize an action happened in the wrong workspace (tenant).
+## You cannot sign in
 
-## Before you start
+1. Use the account attached to your access invitation. When the field says **Username or email**, enter the username or email already on that account.
+2. Check spelling and complete the sign-in checks shown. Use the recovery option on that screen if you need to recover the account.
+3. If recovery is unavailable or access is still blocked, contact private support. Never send a password or verification code.
 
-- You have an active DRX account and can sign in.
-- You are a member of the workspace you want to use.
-- Your role in that workspace includes permission for the action (checkout, inventory, reports, etc.).
-- You know which workspace you intend to work in (for example, the correct store, region, or brand).
+Creating another owner account will not repair the original membership.
 
-## I don’t see the sales, products, or reports I expect
+## The business you need is missing
 
-This happens when you’re in the wrong active workspace. DRX keeps each workspace separate, so data only appears in the workspace you’ve selected.
+Confirm that you accepted the correct business invitation. Ask the owner to review your membership in **Settings** through **Manage Team**. Do not select another business as a substitute.
 
-1. **Confirm** your active workspace. Look for the current workspace indicator in the interface (often near your profile or app header).
-2. **Switch** to the correct workspace. Use the workspace selector to choose the business or location you intend to work in.
-   - Pick the exact workspace name that matches where the sale or inventory was recorded.
-3. **Refresh** the page or reopen the section you were using (for example, Sales History, Inventory, or Reports) to load the correct data.
-4. **Retry** your task in the correct workspace.
+## A page or action is blocked
 
-## I get a permission or access denied message
+1. Stop before submitting the action again.
+2. Confirm the active business and read the access message.
+3. Ask an authorized owner or manager to check the task's required permission in **Manage Team**.
+4. After a confirmed change, reopen the page with your own account. If access is still wrong, report it privately.
 
-You may be in the right workspace but lack the required role-based access for that action in that workspace.
+A role name alone does not prove access to every action. Owning a business does not grant access to DRX platform administration.
 
-1. **Check** you are in the intended workspace using the workspace indicator.
-2. **Try** a read-only view first (like Sales History or Dashboard) to confirm workspace access works at all.
-3. **Contact** your workspace admin and request the appropriate role for that workspace.
-   - Tell them the exact action you need (for example, inventory adjustments, processing checkouts, or pulling reports).
-4. **Sign out and sign in** after your role is updated, then **retry** the action.
+## The wrong business appears
 
-## I completed a task in the wrong workspace
+Do not record another sale, payment, or Inventory change. Leave unsaved work safely, switch to the intended business, and confirm its name before continuing. If a change may already have saved in the wrong business, have an authorized manager review it. Do not recreate it elsewhere as a correction.
 
-If you ran a checkout, inventory intake, adjustment, or other action in the wrong tenant, it will be recorded in that workspace’s audit trail.
+Workspace device, location, and privacy badges are not reliable account-security evidence in the beta. Use Settings and verified membership records for those checks.
 
-1. **Stop** further actions until you confirm the correct workspace to avoid more mistakes.
-2. **Note** the details of what happened: action type, time, item(s), quantity, amounts.
-3. **Switch** to the correct workspace using the workspace selector.
-4. **Correct** the impact according to your policy.
-   - For inventory: create an offsetting adjustment in the wrong workspace if needed, then apply the intended change in the correct workspace.
-   - For sales: follow your workspace’s reversal or refund process, then re-run the sale in the correct workspace.
-5. **Review** the audit trail and reports in both workspaces to ensure balances and history look correct.
+## Related articles
 
-## I can’t switch workspaces or a workspace is missing
-
-This occurs when your account isn’t linked to that workspace or your membership was removed.
-
-1. **Open** the workspace selector and **look** for the workspace name.
-2. If you don’t see it, **confirm** you were added to that workspace under the same email you use to sign in.
-3. **Contact** the workspace admin and request to be added.
-   - Share the exact workspace name you need and the role required for your tasks.
-4. **Sign out and sign in**, then **try** the workspace selector again.
-
-## My dashboard counts don’t match what I see in inventory or sales
-
-You might be comparing data across different workspaces or mixed time periods.
-
-1. **Confirm** the active workspace in both places you are comparing.
-2. **Match** filters and dates in each view (for example, Today vs. Last 7 Days) within the same workspace.
-3. **Refresh** both views after switching workspaces or changing filters.
-4. **Re-check** the totals. If they still differ, **review** recent actions in the audit trail for late changes in that workspace.
-
-## I’m asked to confirm a workspace and I’m not sure which one to pick
-
-DRX asks you to confirm your workspace so your actions apply to the right tenant.
-
-1. **Pause** and **identify** where the task should live (store, region, or brand).
-2. **Select** that workspace when prompted.
-3. **Verify** the workspace indicator before you continue with sensitive actions like inventory adjustments, payments, or refunds.
-
-## Best practices to avoid workspace mistakes
-
-- Always check the workspace indicator before checkouts, adjustments, refunds, or report exports.
-- Keep workspace names clear and distinct to reduce confusion.
-- Finish one workspace’s tasks before switching to another.
-- If you manage multiple locations, set a short routine: confirm workspace, confirm filters, then act.
-
-## Still need help
-
-- Recheck your active workspace and your role in that workspace.
-- If you cannot switch workspaces or continue seeing access errors, contact your workspace admin to confirm your membership and role.
-- If your business uses centralized IT, your admin may escalate to DRX support with your action details, timestamp, and workspace name.
+- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)

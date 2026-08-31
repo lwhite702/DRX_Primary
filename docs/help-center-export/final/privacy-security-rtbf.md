@@ -1,46 +1,7 @@
-# Privacy and Security: Daily Controls + RTBF
+# Moved: Privacy and minimal data
 
-Privacy in DRX is operational, not decorative. Use these controls to protect customer data and reduce risk.
+This historical source is excluded from Featurebase imports. Use [Privacy and minimal data](../../../app-docs/feature_overview/feature-overview-privacy-controls.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807).
 
-Covers privacy posture in normal usage plus user-deletion (RTBF) workflow.
-
-## Who can use it
-
-Owner, approved admin roles
-
-## Before you start
-
-- Confirm policy for data retention and deletion approvals.
-
-## Step-by-step
-
-1. Review privacy-sensitive access in team/role settings.
-2. Limit exposure of customer and financial data by role.
-3. Use audit/trace surfaces for sensitive action review.
-4. For deletion requests, run the RTBF path with tenant + user checks.
-5. Confirm follow-up validation after deletion actions.
-
-## What happens next
-
-You maintain compliance posture without breaking operator workflows.
-
-## Tips
-
-- Handle deletion actions with a second-person review when possible.
-
-## Common mistakes
-
-- Running deletions without validating tenant/user IDs.
-
-## Troubleshooting
-
-- If deletion fails, verify route parameters and authorization context first.
-
-## Related articles
-
-- `roles-permissions-staff-access.md`
-- `admin-tools-overview.md`
-- `troubleshooting-fast-fixes.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

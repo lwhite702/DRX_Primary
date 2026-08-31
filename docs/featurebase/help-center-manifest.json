@@ -1,0 +1,1115 @@
+{
+  "schemaVersion": 1,
+  "issue": "WRE-92",
+  "baseCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
+  "helpCenterId": "l4o5pamx855mr65p",
+  "origin": "https://drx.featurebase.app",
+  "baselineObservedAt": "2026-08-31T05:35:46.301Z",
+  "ordering": "preserve",
+  "collections": [
+    {
+      "id": "9257182",
+      "name": "Getting Started",
+      "url": "https://drx.featurebase.app/en/help/collections/9257182-getting-started",
+      "publicOrder": 1,
+      "articleCount": 4
+    },
+    {
+      "id": "5580893",
+      "name": "Privacy & Security",
+      "url": "https://drx.featurebase.app/en/help/collections/5580893-privacy-and-security",
+      "publicOrder": 2,
+      "articleCount": 1
+    },
+    {
+      "id": "4525056",
+      "name": "Roles",
+      "url": "https://drx.featurebase.app/en/help/collections/4525056-roles",
+      "publicOrder": 3,
+      "articleCount": 2
+    },
+    {
+      "id": "6393095",
+      "name": "Customers",
+      "url": "https://drx.featurebase.app/en/help/collections/6393095-customers",
+      "publicOrder": 4,
+      "articleCount": 2
+    },
+    {
+      "id": "7358320",
+      "name": "Inventory",
+      "url": "https://drx.featurebase.app/en/help/collections/7358320-inventory",
+      "publicOrder": 5,
+      "articleCount": 5
+    },
+    {
+      "id": "4883754",
+      "name": "POS & Sales",
+      "url": "https://drx.featurebase.app/en/help/collections/4883754-pos-and-sales",
+      "publicOrder": 6,
+      "articleCount": 5
+    }
+  ],
+  "articles": [
+    {
+      "id": "1633388",
+      "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1633388-get-started-with-drx",
+      "parentId": "9257182",
+      "publicOrder": 1,
+      "previousTitle": "Get started with DRX",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "lwfsx8t8k0i",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "f3p8e28ldm6",
+          "text": "What you need"
+        },
+        {
+          "level": "H2",
+          "id": "oo28cm6dkp5",
+          "text": "Steps"
+        },
+        {
+          "level": "H2",
+          "id": "12s8770pibx",
+          "text": "If something goes wrong"
+        },
+        {
+          "level": "H2",
+          "id": "lw8fkbzy3lw",
+          "text": "Next steps"
+        }
+      ],
+      "baselineBodySha256": "d5ac489b80369a530388a838549cdd7bdb80956c41e461782674921a00e8ee80",
+      "title": "Get started with DRX",
+      "description": "Set up your owner account and business before recording your first sale.",
+      "action": "update",
+      "publicSlug": "1633388-get-started-with-drx",
+      "baselinePublicFingerprint": "4195f6146a6f1469b98098043d2d163ddd085a4b74c12a3a398066ae04122eea"
+    },
+    {
+      "id": "2502678",
+      "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2502678-dashboard-and-reports",
+      "parentId": "9257182",
+      "publicOrder": 2,
+      "previousTitle": "Dashboard and reports",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "akrftt583fc",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "r0lcp6b2eit",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "4iqo0m41c7o",
+          "text": "Read the daily snapshot"
+        },
+        {
+          "level": "H2",
+          "id": "yp741czkxcw",
+          "text": "Review trends and best sellers"
+        },
+        {
+          "level": "H2",
+          "id": "izykst7wb7c",
+          "text": "Run and reconcile a report"
+        },
+        {
+          "level": "H2",
+          "id": "ali06a55lsz",
+          "text": "Reconcile the end of a shift"
+        },
+        {
+          "level": "H2",
+          "id": "154mk8xwcbk",
+          "text": "Export or share a report"
+        },
+        {
+          "level": "H2",
+          "id": "desq5y3fa1k",
+          "text": "Verify your work"
+        }
+      ],
+      "baselineBodySha256": "c40b4647dac2399e704744683062731a4e8787a7bcc4e86d7dec4622580ee2db",
+      "title": "Dashboard and reports",
+      "description": "Check saved sales, report totals, and the period each number covers.",
+      "action": "update",
+      "publicSlug": "2502678-dashboard-and-reports",
+      "baselinePublicFingerprint": "b67e068ab1e6b67078e97a2e553b740a2cf6b949035e8b5f7634ee3004a6bea2"
+    },
+    {
+      "id": "2070517",
+      "sourcePath": "app-docs/feature_overview/help-and-support.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2070517-help-and-support",
+      "parentId": "9257182",
+      "publicOrder": 3,
+      "previousTitle": "Help and support",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "521e15y1ik3",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "s5fl5tfyc8q",
+          "text": "Find an answer"
+        },
+        {
+          "level": "H2",
+          "id": "q7ra1s833d7",
+          "text": "Contact private support"
+        },
+        {
+          "level": "H2",
+          "id": "a1a4xcia2op",
+          "text": "Share a product idea"
+        },
+        {
+          "level": "H2",
+          "id": "w1rb8i3arxx",
+          "text": "Check setup before a first sale"
+        }
+      ],
+      "baselineBodySha256": "64efc196334201ef9cd27d4840e4d2262415cbf9b51179f05bc3e997b1b69104",
+      "title": "Help and support",
+      "description": "Find guidance or report a problem without sharing private business or customer records.",
+      "action": "update",
+      "publicSlug": "2070517-help-and-support",
+      "baselinePublicFingerprint": "81e67a46bdebf4e469350fab56bf9640a8b35a2fff4489f57675b189d3a05f74"
+    },
+    {
+      "id": "3489602",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3489602-troubleshoot-dashboard-and-reports",
+      "parentId": "9257182",
+      "publicOrder": 4,
+      "previousTitle": "Troubleshoot dashboard and reports",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "eixqcyqw2s5",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "skqdqqczf8d",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "t1c00b0xwd6",
+          "text": "Recent sales are missing or totals look delayed"
+        },
+        {
+          "level": "H2",
+          "id": "i0r4seqw88d",
+          "text": "Report totals do not match Sales"
+        },
+        {
+          "level": "H2",
+          "id": "xey8xmkfbwq",
+          "text": "Best sellers are empty or unexpected"
+        },
+        {
+          "level": "H2",
+          "id": "0sks4mmfm4m",
+          "text": "Category breakdowns do not match the total"
+        },
+        {
+          "level": "H2",
+          "id": "edpaqpd3rrl",
+          "text": "Location filters appear to mix stores"
+        },
+        {
+          "level": "H2",
+          "id": "b6psy553lad",
+          "text": "An export fails or contains the wrong period"
+        },
+        {
+          "level": "H2",
+          "id": "zk2it6m6zff",
+          "text": "Use the guide for the underlying task"
+        },
+        {
+          "level": "H2",
+          "id": "eec581s85bq",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "e89b4f6fa04f88dddacb7c86ef05c512a4201dec8b8d90cc5cf35bc95c8c948d",
+      "title": "Troubleshoot dashboard and reports",
+      "description": "Check missing totals or report differences without changing the underlying records.",
+      "action": "update",
+      "publicSlug": "3489602-troubleshoot-dashboard-and-reports",
+      "baselinePublicFingerprint": "3e40ec9413ac8ac8067aff1f72a29f7cb4506f2c58a90775563224c3539e337f"
+    },
+    {
+      "id": "6417807",
+      "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6417807-privacy-and-minimal-data",
+      "parentId": "5580893",
+      "publicOrder": 1,
+      "previousTitle": "Privacy and minimal data",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "mcq0lakpr01",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "54fd06b228e",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "ox35x40p34x",
+          "text": "Choose and review a privacy profile"
+        },
+        {
+          "level": "H2",
+          "id": "t7yb518ftm4",
+          "text": "Create and use a minimal customer profile"
+        },
+        {
+          "level": "H2",
+          "id": "33q75wle3fr",
+          "text": "Review masking and retention"
+        },
+        {
+          "level": "H2",
+          "id": "s0p8p7wqoyy",
+          "text": "Keep audit information and exports private"
+        },
+        {
+          "level": "H2",
+          "id": "8kc0stypae6",
+          "text": "Verify and get help"
+        }
+      ],
+      "baselineBodySha256": "5711fcacd445b209fe3bcb531c5ea05e235635312edc8b91bc333dfacded214f",
+      "title": "Privacy and minimal data",
+      "description": "Choose what customer information to keep and understand when retention cleanup permanently deletes it.",
+      "action": "update",
+      "publicSlug": "6417807-privacy-and-minimal-data",
+      "baselinePublicFingerprint": "f0be1416f77b83b9d20ae25a0df433856ba1a05e35a62bfd4d88f6130e67efd3"
+    },
+    {
+      "id": "3948745",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3948745-troubleshoot-workspaces-and-access",
+      "parentId": "4525056",
+      "publicOrder": 1,
+      "previousTitle": "Troubleshoot workspaces and access",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "fy5irrfez32",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "6371x2y1zdo",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "k5kzdm46swb",
+          "text": "A workspace or store is missing"
+        },
+        {
+          "level": "H2",
+          "id": "wteffk6amym",
+          "text": "Sales, stock, customers, or reports look wrong or empty"
+        },
+        {
+          "level": "H2",
+          "id": "ikd0kydta8e",
+          "text": "An action is blocked or a control is missing"
+        },
+        {
+          "level": "H2",
+          "id": "s857e122r11",
+          "text": "I completed work in the wrong workspace"
+        },
+        {
+          "level": "H2",
+          "id": "wd1dob13ew1",
+          "text": "Reports differ between teammates"
+        },
+        {
+          "level": "H2",
+          "id": "f47f1wtx6mk",
+          "text": "Prevent repeat mistakes"
+        },
+        {
+          "level": "H2",
+          "id": "zoctr7i3qxo",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "b365bba830428a3265ad1edfc0c0de0d78fcebf9c6e4350860ccd05bfe10cb9a",
+      "title": "Troubleshoot workspaces and access",
+      "description": "Recover from an access problem without creating duplicate accounts or using someone else’s login.",
+      "action": "update",
+      "publicSlug": "3948745-troubleshoot-workspaces-and-access",
+      "baselinePublicFingerprint": "b381f66c71867f94397301437b0c49d0276aeb9e2473eeaaef59f692ec7b73c8"
+    },
+    {
+      "id": "4735029",
+      "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/4735029-switch-workspaces-and-check-access",
+      "parentId": "4525056",
+      "publicOrder": 2,
+      "previousTitle": "Switch workspaces and check access",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "ka174780f8m",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "xtpzzsfi141",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "cpwcczdme7q",
+          "text": "Switch to another workspace"
+        },
+        {
+          "level": "H2",
+          "id": "8db743m5ew3",
+          "text": "Check the access you need"
+        },
+        {
+          "level": "H2",
+          "id": "4zo3r78kxeb",
+          "text": "Add, review, or remove staff access"
+        },
+        {
+          "level": "H2",
+          "id": "ilkxim1yi86",
+          "text": "Verify before a sensitive action"
+        },
+        {
+          "level": "H2",
+          "id": "c4ba8p7rbbw",
+          "text": "Related tasks"
+        }
+      ],
+      "baselineBodySha256": "658c00875a816b42487b3d0c4ed7342ce024b3103a995343fb0cc03403a31c90",
+      "title": "Switch workspaces and check access",
+      "description": "Choose the correct business and give each team member only the access their work needs.",
+      "action": "update",
+      "publicSlug": "4735029-switch-workspaces-and-check-access",
+      "baselinePublicFingerprint": "ce3ec301f64c42915a08f4ea02323da6cd9e264800d837825db540845f582e3d"
+    },
+    {
+      "id": "1831819",
+      "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1831819-customers-and-store-credit",
+      "parentId": "6393095",
+      "publicOrder": 1,
+      "previousTitle": "Customers and store credit",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "ombs0ctc7k8",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "cp56cq0ed3b",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "87i8srlko3z",
+          "text": "Create or find a customer"
+        },
+        {
+          "level": "H2",
+          "id": "ekffadbdl60",
+          "text": "Check limits and record a credit sale"
+        },
+        {
+          "level": "H2",
+          "id": "fo6i5i7s5qa",
+          "text": "Record a payment toward an existing balance"
+        },
+        {
+          "level": "H2",
+          "id": "stlf777iwdp",
+          "text": "Review overdue balances"
+        },
+        {
+          "level": "H2",
+          "id": "okxalo84sac",
+          "text": "Verify and get help"
+        }
+      ],
+      "baselineBodySha256": "3a1d8e7e2839cef4b2118ca322ad4c5fe7f352cf45553a7762b6df4975e5b563",
+      "title": "Customers and store credit",
+      "description": "Keep customer records minimal and record payments against the correct open balance.",
+      "action": "update",
+      "publicSlug": "1831819-customers-and-store-credit",
+      "baselinePublicFingerprint": "38529c74c604bfde70a61d544c5eb01fab84249de0caf6add517e5de03a8208e"
+    },
+    {
+      "id": "9156766",
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9156766-troubleshoot-customers-and-credit",
+      "parentId": "6393095",
+      "publicOrder": 2,
+      "previousTitle": "Troubleshoot customers and credit",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "wqwkotdxc51",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "7pm17csewza",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "pm4m43yqsdx",
+          "text": "A customer will not save or asks for unwanted personal details"
+        },
+        {
+          "level": "H2",
+          "id": "8extl0myaq2",
+          "text": "An existing customer or alias is missing"
+        },
+        {
+          "level": "H2",
+          "id": "moa0bdkbr8l",
+          "text": "There are duplicate customer profiles"
+        },
+        {
+          "level": "H2",
+          "id": "0rlri778k1c",
+          "text": "Purchase history is missing"
+        },
+        {
+          "level": "H2",
+          "id": "pds0efi57y3",
+          "text": "A customer will not attach to checkout"
+        },
+        {
+          "level": "H2",
+          "id": "w2y14k512yc",
+          "text": "Credit is unavailable or the balance looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "i827efq8y0f",
+          "text": "Customer or credit controls are hidden"
+        },
+        {
+          "level": "H2",
+          "id": "6op56li4pb5",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "bd531288ef401c336fb75d0c5e2802d56ff9d2574f07208e2729e59bc2da522f",
+      "title": "Troubleshoot customers and credit",
+      "description": "Check missing profiles or uncertain payments without duplicating records or changing a balance twice.",
+      "action": "update",
+      "publicSlug": "9156766-troubleshoot-customers-and-credit",
+      "baselinePublicFingerprint": "3deeb5c99125a24a18dc370632b975343ea1e60ae83e363e2503e4f93922bb3a"
+    },
+    {
+      "id": "6300641",
+      "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6300641-inventory-intake-and-adjustments",
+      "parentId": "7358320",
+      "publicOrder": 1,
+      "previousTitle": "Inventory intake and adjustments",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "q4zmfli7l72",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "i0dsaaoy0r8",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "5twtyrkokdk",
+          "text": "Create or find the product"
+        },
+        {
+          "level": "H2",
+          "id": "70yo5ksre88",
+          "text": "Maintain products, units, and aliases"
+        },
+        {
+          "level": "H2",
+          "id": "pifd3lbs3pa",
+          "text": "Import or receive multiple rows"
+        },
+        {
+          "level": "H2",
+          "id": "skyilxqz70d",
+          "text": "Receive incoming stock"
+        },
+        {
+          "level": "H2",
+          "id": "at6r27ielcl",
+          "text": "Correct a count"
+        },
+        {
+          "level": "H2",
+          "id": "re7f862fw2s",
+          "text": "Review history and low stock"
+        },
+        {
+          "level": "H2",
+          "id": "xxm35yp3yt3",
+          "text": "Keep counts accurate"
+        },
+        {
+          "level": "H2",
+          "id": "issfbpcotki",
+          "text": "If something goes wrong"
+        }
+      ],
+      "baselineBodySha256": "5a571415a3715736453565fcc41a1ea56ea498aacf2dec9cf9c674c2b7204902",
+      "title": "Inventory intake and adjustments",
+      "description": "Add products, record goods received, and correct a verified count in Inventory.",
+      "action": "update",
+      "publicSlug": "6300641-inventory-intake-and-adjustments",
+      "baselinePublicFingerprint": "4929ceaa806206b4fd3d25f4e8d5f82fe52f9696ac81a987ea606a245a90eed9"
+    },
+    {
+      "id": "0272622",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit",
+      "parentId": "7358320",
+      "publicOrder": 2,
+      "previousTitle": "Troubleshoot inventory and audit",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "wxqckrysd25",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "6fykmttq6f2",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "c1d12220sbd",
+          "text": "You can’t record incoming stock"
+        },
+        {
+          "level": "H2",
+          "id": "lrewxr7pib0",
+          "text": "Your intake was saved but stock didn’t increase"
+        },
+        {
+          "level": "H2",
+          "id": "tw8maq38mi8",
+          "text": "An adjustment saved but didn’t change the count"
+        },
+        {
+          "level": "H2",
+          "id": "ocxk8zooz1p",
+          "text": "You can’t submit an adjustment because of missing fields"
+        },
+        {
+          "level": "H2",
+          "id": "4lwk1rtdy1d",
+          "text": "Movement history is missing or incomplete in Audit"
+        },
+        {
+          "level": "H2",
+          "id": "ybaw27pp3y4",
+          "text": "You don’t see Inventory or Audit options"
+        },
+        {
+          "level": "H2",
+          "id": "02xz10o54it",
+          "text": "An approver can’t find your pending change"
+        },
+        {
+          "level": "H2",
+          "id": "tz0rlif2amy",
+          "text": "Stock looks wrong after a sale or a low-stock alert is missing"
+        },
+        {
+          "level": "H2",
+          "id": "ook725clrar",
+          "text": "A batch, supplier, or purchase-order reference looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "zr20a7za4le",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "f04ebcea53884dc42e455f0e0a052beb5ac8b7b8145cc0e2fcc996fdfbb56bd5",
+      "title": "Troubleshoot inventory and audit",
+      "description": "Check failed intake, incorrect counts, or missing movements before submitting another change.",
+      "action": "update",
+      "publicSlug": "0272622-troubleshoot-inventory-and-audit",
+      "baselinePublicFingerprint": "abebf0bf0e81a845b353afb8cd338093bda80aab3ebde0a9402397872511e468"
+    },
+    {
+      "id": "2995914",
+      "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2995914-drx-intelligence",
+      "parentId": "7358320",
+      "publicOrder": 3,
+      "previousTitle": "DRX Intelligence",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "14szefybdoc",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "rfbtzb87407",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "iwizaydkzfz",
+          "text": "Review a suggestion"
+        },
+        {
+          "level": "H2",
+          "id": "bfk5x5ww24q",
+          "text": "Decide and verify"
+        },
+        {
+          "level": "H2",
+          "id": "cqcrdeimwbf",
+          "text": "If suggestions are missing or outdated"
+        }
+      ],
+      "baselineBodySha256": "317b9118e10e65786513a9a2df8fa8ec062bd260a64a98f130c58c38d59d04ab",
+      "title": "DRX Intelligence",
+      "description": "Review beta suggestions against your saved records before making a business decision.",
+      "action": "update",
+      "publicSlug": "2995914-drx-intelligence",
+      "baselinePublicFingerprint": "0d09c37dd88acd6b3c860d741adcbfced0584144efbe6e30325920be2d5f5e8b"
+    },
+    {
+      "id": "3974136",
+      "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3974136-purchase-orders-beta",
+      "parentId": "7358320",
+      "publicOrder": 4,
+      "previousTitle": "Purchase orders (beta)",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "qz6o3aitrl0",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "mw3ya654w3y",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "sp5tmr3p1e6",
+          "text": "When purchase-order controls are available"
+        },
+        {
+          "level": "H2",
+          "id": "a6k1x4o6lom",
+          "text": "Receive and reconcile the delivery"
+        },
+        {
+          "level": "H2",
+          "id": "a4e3a6f20ff",
+          "text": "If a save or stock update is uncertain"
+        }
+      ],
+      "baselineBodySha256": "21da1cefce38f8611386bd182d22a84d1fff10beb75a19203472208b2a61ce80",
+      "title": "Purchase orders (beta)",
+      "description": "Keep expected supplier orders separate from Inventory you have actually received.",
+      "action": "update",
+      "publicSlug": "3974136-purchase-orders-beta",
+      "baselinePublicFingerprint": "2e7bc7e914c2a56578780accd25d78c6de3d01ceedcec6a4665b2d0eea275d35"
+    },
+    {
+      "id": "9003136",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9003136-troubleshoot-ai-intelligence",
+      "parentId": "7358320",
+      "publicOrder": 5,
+      "previousTitle": "Troubleshoot AI Intelligence",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "cie4cak1fey",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "c381qloltxe",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "rtf8pze0xwe",
+          "text": "Suggestions are missing"
+        },
+        {
+          "level": "H2",
+          "id": "ztw6d7mk7am",
+          "text": "Suggestions look outdated or incorrect"
+        },
+        {
+          "level": "H2",
+          "id": "s1qmw6odqcr",
+          "text": "Applying a suggestion fails or the result is uncertain"
+        },
+        {
+          "level": "H2",
+          "id": "kepw83y2ix8",
+          "text": "A history entry is missing"
+        },
+        {
+          "level": "H2",
+          "id": "7baio2e7yzl",
+          "text": "Continue work safely"
+        },
+        {
+          "level": "H2",
+          "id": "0r6kxadti3z",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "4c17289d7ca0e9e673b1be9ee6dca70c390aaf831c39359f3649837b83e46cb4",
+      "title": "Troubleshoot AI Intelligence",
+      "description": "Check unavailable or questionable beta suggestions without changing business records to force a result.",
+      "action": "update",
+      "publicSlug": "9003136-troubleshoot-ai-intelligence",
+      "baselinePublicFingerprint": "49c5e6f3d4772b772be9653cbe03524cf9a6de2757493b3408b76ab6ea0cb6c1"
+    },
+    {
+      "id": "0236106",
+      "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0236106-quick-sale-checkout",
+      "parentId": "4883754",
+      "publicOrder": 1,
+      "previousTitle": "Quick Sale checkout",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "fp02bfis4xe",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "z811o0rtr5i",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "lx26a656d5e",
+          "text": "Build and review the cart"
+        },
+        {
+          "level": "H2",
+          "id": "ssbk1iyfs8l",
+          "text": "Use search and quantity shortcuts"
+        },
+        {
+          "level": "H2",
+          "id": "kze4bifc63y",
+          "text": "Attach a customer when needed"
+        },
+        {
+          "level": "H2",
+          "id": "mm5ylirc38i",
+          "text": "Choose payment and receipt"
+        },
+        {
+          "level": "H2",
+          "id": "wmoz5te11r7",
+          "text": "Verify the completed sale"
+        },
+        {
+          "level": "H2",
+          "id": "4l4e5ptwplr",
+          "text": "If the result is uncertain"
+        }
+      ],
+      "baselineBodySha256": "83ffabea24fa4191385fea2bfdcc9f92bf889c0532a84ef94f4b0085ae159ac0",
+      "title": "Quick Sale checkout",
+      "description": "Record a sale through Point of Sale and confirm the saved order before starting another.",
+      "action": "update",
+      "publicSlug": "0236106-quick-sale-checkout",
+      "baselinePublicFingerprint": "6fd03eeb99fe2f8f9c8942a5214ca373f3441362de1c40be76c58aec1c48b731"
+    },
+    {
+      "id": "5281725",
+      "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/5281725-sales-history-and-receipts",
+      "parentId": "4883754",
+      "publicOrder": 2,
+      "previousTitle": "Sales history and receipts",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "8ftxk4b66ar",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "m1acmk3x3r8",
+          "text": "When to use it"
+        },
+        {
+          "level": "H2",
+          "id": "d4sz05xfw14",
+          "text": "How to use it"
+        },
+        {
+          "level": "H2",
+          "id": "11yceoydetf",
+          "text": "Handle a refund or correction"
+        },
+        {
+          "level": "H2",
+          "id": "xid6fl46liy",
+          "text": "Check receipt printing or delivery"
+        },
+        {
+          "level": "H2",
+          "id": "t44406qae6c",
+          "text": "Options and settings"
+        },
+        {
+          "level": "H2",
+          "id": "l5is78t72lp",
+          "text": "Tips"
+        }
+      ],
+      "baselineBodySha256": "575f7db3e9ba8607a8f84c8a4eccc44f1847468958767158fc744e2aad79a058",
+      "title": "Sales history and receipts",
+      "description": "Find a saved sale and check its items, customer, payment record, and total.",
+      "action": "update",
+      "publicSlug": "5281725-sales-history-and-receipts",
+      "baselinePublicFingerprint": "18cd5a226fc8ec0d24754bb1b26eb25a7c0d7d7f2d3ef19c243efd25d05959d2"
+    },
+    {
+      "id": "3230948",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3230948-troubleshoot-checkout-and-payments",
+      "parentId": "4883754",
+      "publicOrder": 3,
+      "previousTitle": "Troubleshoot checkout and payments",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "c8osi1e27ck",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "qpmc16kcore",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "ml56smbfy2i",
+          "text": "Items will not scan or add to the cart"
+        },
+        {
+          "level": "H2",
+          "id": "laazslsc5ad",
+          "text": "Discounts, fees, or totals look wrong"
+        },
+        {
+          "level": "H2",
+          "id": "azmz6l2dd8l",
+          "text": "A customer will not attach"
+        },
+        {
+          "level": "H2",
+          "id": "pttrwsf03ie",
+          "text": "A payment method or split payment is unavailable"
+        },
+        {
+          "level": "H2",
+          "id": "b3xiczqeqkf",
+          "text": "Credit is unavailable"
+        },
+        {
+          "level": "H2",
+          "id": "sed415328q4",
+          "text": "Payment failed, timed out, or has an uncertain result"
+        },
+        {
+          "level": "H2",
+          "id": "3w42leaf7x7",
+          "text": "The receipt did not print or send"
+        },
+        {
+          "level": "H2",
+          "id": "7kd3o41cl27",
+          "text": "The completed sale looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "zftx5xbf1ib",
+          "text": "The connection drops or offline status appears"
+        },
+        {
+          "level": "H2",
+          "id": "3z24e8wttrw",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "1292aa7176be70bbad200281783be53043dded8e29a14953a6273e46aa24da67",
+      "title": "Troubleshoot checkout and payments",
+      "description": "Check a blocked or uncertain sale before retrying or asking the customer to pay again.",
+      "action": "update",
+      "publicSlug": "3230948-troubleshoot-checkout-and-payments",
+      "baselinePublicFingerprint": "1008fb57cad9c918a33f68bde62a68d0bdee795c5053e782a06ad774e5f3149e"
+    },
+    {
+      "id": "7723456",
+      "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console",
+      "parentId": "4883754",
+      "publicOrder": 4,
+      "previousTitle": "Standard Sales console",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "wb0txeo4q1d",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "sz3di6aprdy",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "5828w3z4s02",
+          "text": "Build and review the sale"
+        },
+        {
+          "level": "H2",
+          "id": "ix8xo5pykza",
+          "text": "Record the payment correctly"
+        },
+        {
+          "level": "H2",
+          "id": "6zdstk627cc",
+          "text": "Verify the result"
+        },
+        {
+          "level": "H2",
+          "id": "q7wlko84sq8",
+          "text": "If something goes wrong"
+        }
+      ],
+      "baselineBodySha256": "8c6bf152ce463be5575ff5982402e3e388db7b2efd52b1d9dfca5b3cff7132d1",
+      "title": "Sales and deliveries (beta)",
+      "description": "Find the current sales screens and record delivery details without duplicating a sale.",
+      "action": "retitle-and-update",
+      "publicSlug": "7723456-standard-sales-console",
+      "baselinePublicFingerprint": "0db61aa9fd9b4f2007adf9e6666e753b1781fc557d59e9e3cc3844f0ae466c49"
+    },
+    {
+      "id": "2709969",
+      "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2709969-connect-barcode-scanners",
+      "parentId": "4883754",
+      "publicOrder": 5,
+      "previousTitle": "Connect barcode scanners",
+      "previousHeadings": [
+        {
+          "level": "H2",
+          "id": "sylzl14zcmx",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "41dwb76xqpr",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "zxbbzxdymkp",
+          "text": "Connect a USB scanner"
+        },
+        {
+          "level": "H2",
+          "id": "1bpm7irfzxq",
+          "text": "Connect a Bluetooth scanner"
+        },
+        {
+          "level": "H2",
+          "id": "sirfizotbtw",
+          "text": "Use a camera"
+        },
+        {
+          "level": "H2",
+          "id": "2yqm7l5c1rf",
+          "text": "Configure and verify"
+        },
+        {
+          "level": "H2",
+          "id": "t3kzr3m837q",
+          "text": "Nothing appears, the wrong item appears, or scans are unreliable"
+        },
+        {
+          "level": "H2",
+          "id": "f4dr3qp6rpl",
+          "text": "Disconnect or switch devices"
+        },
+        {
+          "level": "H2",
+          "id": "s33t8w5q0cs",
+          "text": "Still need help"
+        }
+      ],
+      "baselineBodySha256": "346d40d41a6042d020cc1a550414c6be72a167430ccfbddf0a9f5fddf1d6f0ee",
+      "title": "Connect barcode scanners",
+      "description": "Check that a scanner enters the correct product code before using it at checkout.",
+      "action": "update",
+      "publicSlug": "2709969-connect-barcode-scanners",
+      "baselinePublicFingerprint": "2dd91bb6d5545f9cba84fe8c0a0ab0032664934f7144d9c6d8efd22fa609da6e"
+    }
+  ],
+  "exclusions": [
+    "app-docs/_archive/**",
+    "docs/featurebase/archive/**",
+    "docs/help-center-export/**",
+    "apps/app/scripts/help-center-data.ts"
+  ]
+}

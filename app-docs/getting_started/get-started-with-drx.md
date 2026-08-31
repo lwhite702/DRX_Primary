@@ -1,78 +1,42 @@
 ---
 title: "Get started with DRX"
-description: "Sign in to DRX, set your store basics, add your first products, and complete your first sale in minutes."
-tags:
-  - DRX
-  - POS
-  - inventory
-  - getting started
+description: "Set up your owner account and business before recording your first sale."
 ---
-## Overview
 
-This guide helps you sign in, set up your store basics, add your first products, and run your first sale in DRX. Most shops complete these steps in under 15 minutes so you can start checking out customers right away.
+## Before you start
 
-## What you need
+DRX is in early access. These steps cover the desktop web beta for accounts with access. Staff should use their business invitation, not create another owner account.
 
-- A DRX account with Admin or Manager access.
-- Basic store details (store name, location names if you have more than one).
-- A list of a few products with prices, and optional barcodes/SKUs.
-- A way to accept payment (cash, card, or other methods supported by your shop’s setup).
+Have your business name, location, currency, time zone, and approved tax settings ready. Do not record practice sales in your real business records.
 
-## Steps
+## Sign in or create an owner account
 
-1. **Sign in**
-   - Go to the DRX login page and sign in with your account. You land on the dashboard with a daily snapshot of sales and activity tiles when available.
+1. Open the DRX sign-in page supplied with your access invitation.
+2. Sign in with your existing account. When a sign-in screen says **Username or email**, use either identifier already attached to that account.
+3. If you are the owner and do not have an account, follow the owner registration link in your invitation. Complete the checks shown on screen.
+4. If you have not received access, use the [early-access waitlist](https://deelrxcrm.com/waitlist). A registration page does not guarantee admission to the beta.
 
-2. **Review roles and access**
-   - Confirm your user role (Admin, Manager, or Operator) so you know which actions you can perform. Admins can set permissions and see activity logs for sensitive actions like refunds or inventory adjustments.
+## Set up your business
 
-3. **Set store basics**
-   - Open your account or store settings area and enter your store name and, if needed, add locations for separate storefronts. This ensures location-based reporting and accurate stock per location.
+1. At **Welcome to DRX**, choose **Set Up My Business**.
+2. Enter **Full name** and **Business name**. Use **Continue** to move through setup.
+3. Choose your business type. Check **Location name**, **City**, **State or region**, and **Country**.
+4. Check **Currency** and **Time zone**. If you collect sales tax, choose **Yes** and enter your approved **Tax rate (%)**.
+5. Choose whether to track Inventory. Choose **Invite someone now** only if you are ready to send an invitation; otherwise choose **I’ll do this later**.
+6. At **Review your setup**, use **Edit** for corrections. Choose **Create My Workspace** once and wait for the result.
 
-4. **Choose your privacy approach**
-   - Open Settings to review privacy controls. DRX uses Alias-First customer handling so you can track customers with minimal data. Keep customer fields optional if you prefer fast, privacy-first checkout.
+## What happens next
 
-5. **Create your first products**
-   - Go to “/inventory”.
-   - Select the action to add a product. Enter a product name, price, and optional SKU/barcode and category. Save. Repeat for a few top sellers so you can test checkout.
-   - Result: Products appear in your inventory list and can be found at checkout by scan or search.
+Open **Settings** and review your business details and privacy settings before adding customer information. Privacy choices can permanently delete qualifying inactive records when retention cleanup runs. Read [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807) first.
 
-6. **Receive stock (optional but recommended)**
-   - Go to “/inventory/intake”.
-   - Start an intake, pick products, enter received quantities, and add cost details if you track margins. Save.
-   - Result: On-hand counts update and are ready for sale.
+Use **Inventory** to add products and receive goods. Use **Point of Sale** for checkout and **Orders & Receipts** to check saved sales. These names describe the current web navigation; a phone screen may arrange controls differently.
 
-7. **Adjust counts if needed**
-   - Go to “/inventory/adjust”. Choose a product, enter the correct quantity change, and provide a clear reason (e.g., damaged, cycle count). Save.
-   - Result: The audit trail records who changed what and why, and counts are corrected.
+## If setup does not finish
 
-8. **Scan barcodes or test search**
-   - From your inventory list, confirm each item has a barcode or is easily searchable by name or SKU. If you use physical barcodes, test a quick scan to verify a match.
+Read the error and correct the field it names. Keep the setup page open while saving. Do not create a second account or business to work around an uncertain result. Ask private support to check it before trying again.
 
-9. **Run a Quick Sale from the counter**
-   - Click “Quick Sale” in the top navigation to open the streamlined POS.
-   - Scan a product or search by name/SKU to add it to the cart. Adjust quantity or apply a discount if needed.
-   - Optionally attach a customer using an alias. You can skip this step to keep checkout fast.
+## Related articles
 
-10. **Complete payment**
-    - In the POS, proceed through “/pos/sale” → “/pos/payment”. Select your payment method (for example, cash or card) and collect payment. Confirm the amount and finish the transaction.
-    - Result: You reach “/pos/complete” with a confirmation of the sale.
-
-11. **Review the sale**
-    - Open transaction history from the POS or dashboard area to confirm line items, discounts, and payment details. This helps validate your first end-to-end sale.
-
-12. **Check your dashboard and insights**
-    - Return to the dashboard to see today’s sales totals, transaction counts, average sale value, and any inventory alerts. Use Operations Insights to spot best sellers and category splits as you add more sales.
-
-## What’s next
-
-- Learn inventory best practices, including batches, vendors, and low‑stock alerts in [Inventory basics](moxie-doc:section/inventory-basics).
-- Explore customers, notes/tags (beta), and loyalty tracking (beta) in [Customers](moxie-doc:section/customers).
-- Set team roles and permissions, and review activity logs in [Team access and logs](moxie-doc:section/team-access-logs).
-- View and export sales trends in [Operations Insights](moxie-doc:section/operations-insights).
-
-## If something goes wrong
-
-- If you can’t add or adjust inventory, ask an Admin to confirm your role and permissions.
-- If a barcode doesn’t scan, try searching by product name or SKU and verify the barcode is saved on the product.
-- If payments don’t complete, confirm the selected payment method is supported by your shop and try again from “/pos/payment”.
+- [Inventory intake and adjustments](https://drx.featurebase.app/en/help/articles/6300641)
+- [Switch workspaces and check access](https://drx.featurebase.app/en/help/articles/4735029)
+- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)

@@ -1,80 +1,41 @@
 ---
-title: "Troubleshoot Checkout and Payments"
-description: "Fix cart, payment-method, customer-credit, and receipt-option issues in DRX Quick POS."
-tags:
-  - checkout
-  - payments
-  - POS
-  - receipts
+title: "Troubleshoot checkout and payments"
+description: "Check a blocked or uncertain sale before retrying or asking the customer to pay again."
 ---
-## Overview
 
-This guide helps you fix common problems in DRX Quick POS. Quick POS supports one payment method per sale: Cash, Card, or Credit.
+## The cart will not load or a product is missing
 
-## Before you start
+Confirm the business and read the loading or error message. Check your connection and search the product name or SKU. Do not create a duplicate product or assume an old displayed count is current.
 
-- You can open Quick POS and are signed in to the correct workspace.
-- Your role can take payment and use customer credit.
-- You know which receipt option (Print, SMS, None) your workspace supports.
+## You cannot continue
 
-## Items do not appear or totals look wrong in the cart
+Review the cart's product, quantity, unit, and price. Follow the specific error shown. Use **Continue to Payment** or **Pay** after the cart is valid.
 
-You may notice missing items, doubled lines, or taxes and discounts not reflecting after edits.
+If you cannot verify the total, stop. Do not change prices or Inventory counts to work around the failure.
 
-1. **Review** the cart line items.
-   - Confirm each item, quantity, and price.
-   - Check that discounts are visible in the cart and totals section.
-2. **Remove** incorrect lines.
-   - Delete any wrong item and add it back from scan or search.
-3. **Refresh** the totals.
-   - Confirm subtotal, tax, and total before moving to payment.
+## Complete Sale is disabled or rejected
 
-## The tender method you need is not available
+1. Wait for the total to finish loading. **Verifying prices, discounts, and tax...** means it is still being checked.
+2. Select **CASH**, **CARD**, or an available **CREDIT** option.
+3. For credit, confirm the eligible customer and **Confirm credit charge**.
+4. If delivery is included, check **Delivery address** and the fee details.
+5. Resolve the actual validation error before submitting once.
 
-Quick POS supports Cash, Card, and Credit. It does not show Zelle, split tenders, or other off-device methods.
+A payment-method choice records the method; it is not proof that money moved outside DRX.
 
-1. **Reopen** the payment screen.
-2. **Confirm** the cart total is greater than zero.
-3. **Select** Cash, Card, or Credit only.
-4. If you need a different method, use the approved workflow outside Quick POS.
+## The result is uncertain
 
-## Split or reference-based payment will not complete
+1. Keep the checkout open and note the time and any order reference.
+2. Check **Orders & Receipts** for a matching saved sale in the same business.
+3. Verify whether the payment was actually received through your shop's payment process.
+4. Ask an authorized manager to reconcile the sale and payment before retrying.
 
-Quick POS does not accept split tenders, Zelle, or tender references.
+Do not start a new cart, change payment methods, clear browser data, or take a second payment merely because confirmation was delayed. This guide does not promise that a failed connection queues a sale for later.
 
-1. Confirm that one full payment covers the total.
-2. Use one method: Cash, Card, or Credit.
-3. If the payment path requires references, use an approved workflow outside Quick POS.
+## A receipt did not arrive
 
-## Credit cannot be posted for the customer
+Check the saved sale first. The **PRINT** or **SMS** choice is not proof of delivery. Review the shop's printer or message service separately. Do not repeat checkout to resend a receipt.
 
-Credit uses the same flow as other payment methods and still requires a customer.
+## Related articles
 
-1. **Select** "Credit" as the payment method.
-2. **Attach** the correct customer before completing.
-3. **Confirm** the customer has enough credit and the credit confirmation checkbox is set.
-4. If credit is unavailable, use an approved non-credit workflow.
-
-## Receipt did not print or send
-
-Quick POS supports Print, SMS, and None.
-
-1. **Confirm** the sale is completed before retrying.
-2. If SMS is selected, confirm the customer contact is available on the sale.
-3. If Print is selected, confirm printer connection and paper.
-4. If issues continue, use Sales to resend from the sale record.
-
-## The sale looks wrong after completion
-
-If there is a mismatch, verify the final items and payment in Sales.
-
-1. **Open** the sale in Sales.
-2. **Review** items, subtotal, tax, payment method, and receipt status.
-3. **Do not** rerun the payment unless the sale did not complete.
-
-## Still need help
-
-- Recheck the customer is attached before using Credit.
-- Confirm the selected method is a full-amount payment.
-- Confirm printer and SMS contact details before retrying.
-- If problems continue, contact your workspace admin with sale time, location, and what changed before the stop.
+- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)

@@ -1,43 +1,32 @@
 ---
-title: "Help and Support"
-description: "Learn how to open in-app help in DRX, find policy and troubleshooting articles, and contact support when something isn’t working."
-tags:
-  - help
-  - support
-  - policies
-  - troubleshooting
+title: "Help and support"
+description: "Find guidance or report a problem without sharing private business or customer records."
 ---
-## Overview
 
-Use Help and Support in DRX to quickly find answers, read policy and troubleshooting articles, and report issues without leaving your workflow. This feature is for anyone using DRX to run checkouts, manage inventory, or review sales and needs guidance or assistance. You can search help topics, follow step-by-step fixes, review policies, and send a support request if the article doesn’t solve your issue—all in one place.
+## Get help with a private issue
 
-## When to use it
+1. Note the screen, action, approximate time, device, and exact error. Do not include passwords, verification codes, customer details, or payment credentials.
+2. For account access, balances, failed transactions, privacy, or deletion, email [DRX support](mailto:support@deelrxcrm.com).
+3. Describe what you expected and what happened. Start with a redacted description; send sensitive records only through an approved private process if support specifically needs them.
+4. If a sale, payment, or Inventory change has an uncertain result, check its saved record before retrying. Leave the original records unchanged while the issue is reviewed.
 
-- You need instructions for a task (checkout, inventory, reports, dashboard).
-- You want to review company or product policies that apply to DRX use.
-- You’re troubleshooting an error or unexpected behavior.
-- You need to contact support about an urgent issue or to report a bug.
+Screenshots can expose names, addresses, balances, and other records. Crop and redact them before sharing. Screen masking alone is not proof that an image contains no private data.
 
-## How to use it
+## Share product feedback
 
-1. **Open Help** from within DRX. Look for the help entry point in the interface and open the Help panel to access articles and support options.
-2. **Search for your topic.** Enter a few words (for example, “inventory intake,” “refund,” or “sales history”) to see relevant help and policy articles.
-3. **Select an article** from the results to open it in the Help panel.
-4. **Follow the steps** in the article to complete your task or fix the issue.
-5. **Rate the answer** when prompted to let us know if the article solved your problem.
-6. **Return to results** if you need a different article, then repeat steps 3–5.
-7. **Report an issue** if the articles don’t resolve your problem. Use the visible option in the Help panel to contact support and include a short description of what’s happening, what you expected, and any steps you already tried.
-8. **Attach relevant details** if the form allows (for example, a timestamp, affected workspace, or a brief screenshot) to help support investigate.
-9. **Submit your request** and keep DRX open. Support may follow up with clarifying questions; respond to speed up resolution.
+Use [DRX feedback](https://drx.featurebase.app) for general ideas. Do not post account problems, customer records, private transaction details, or security reports there. Public roadmap entries are plans, not proof that a feature is available to your account.
 
-## Options and settings
+## Check device availability
 
-- Search: Find help, troubleshooting, and policy content by keywords.
-- Articles: Step-by-step guides and policy pages that open inside the Help panel.
-- Issue reporting: A built-in path to contact support from the Help panel when you need more assistance.
+DRX remains in early access. These Help Center procedures describe the web beta unless an article says otherwise.
 
-## Tips
+- Desktop web: use the sign-in link supplied with your approved access.
+- Mobile web and PWA: use that same web address in your phone browser. A home-screen shortcut does not grant extra features or guarantee offline checkout. Confirm your needed workflow before relying on it during a shift.
+- iPhone: public early access has not been announced. Do not assume a TestFlight invitation or an available build. Use only an invitation that DRX has separately confirmed for you.
+- Expo and Android: code and test screens do not establish general availability or full workflow support. There is no full Android support claim in these guides.
 
-- Be specific in your search (include the action and area, like “adjust inventory” or “credit payment”).
-- When reporting an issue, note the impacted workspace and role if applicable; this speeds up troubleshooting in multi-workspace environments.
-- If an article solves part of the problem but not all, include that detail in your support request so the team can address gaps.
+Use the [early-access waitlist](https://deelrxcrm.com/waitlist) for access updates. Do not install builds from unofficial links.
+
+## What happens next
+
+Support can review the issue and explain the next step. Do not share another person's login or change privacy, balances, or access settings to bypass a problem.

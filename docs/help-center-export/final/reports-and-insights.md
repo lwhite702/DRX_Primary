@@ -1,46 +1,7 @@
-# Reports and Operations Insights
+# Moved: Dashboard and reports
 
-Use reports when you need the real numbers, not a quick glance.
+This historical source is excluded from Featurebase imports. Use [Dashboard and reports](../../../app-docs/feature_overview/feature-overview-dashboard-and-reports.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Dashboard and reports](https://drx.featurebase.app/en/help/articles/2502678).
 
-Shows how to use reporting routes to verify sales, trends, and operational pressure points.
-
-## Who can use it
-
-Manager, Owner
-
-## Before you start
-
-- Make sure the date range and workspace context are correct.
-
-## Step-by-step
-
-1. Open `Reports`.
-2. Set the time window first.
-3. Compare top-line totals against `Sales` when validating.
-4. Check operational signals from `Operations Insights`.
-5. Export/share results where policy allows.
-
-## What happens next
-
-Report findings drive staffing, purchasing, and cleanup actions.
-
-## Tips
-
-- Use the same date window across views when reconciling.
-
-## Common mistakes
-
-- Comparing mismatched ranges and assuming data is wrong.
-
-## Troubleshooting
-
-- If totals look off, verify filters, role scope, and workspace selection.
-
-## Related articles
-
-- `dashboard-daily-check.md`
-- `sales-history-receipts.md`
-- `inventory-audit-fixes.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

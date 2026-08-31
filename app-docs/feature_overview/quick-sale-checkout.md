@@ -1,62 +1,37 @@
 ---
 title: "Quick Sale checkout"
-description: "Use Quick Sale in DRX to scan or search items, apply discounts, attach a customer, use one tender, and print or SMS a receipt in one fast flow."
-tags:
-  - POS
-  - checkout
-  - retail
+description: "Record a sale through Point of Sale and confirm the saved order before starting another."
 ---
-## Overview
 
-Quick Sale lets you ring up items fast, apply discounts, attach a customer, use one payment method, and finish with a printed or SMS receipt. It’s designed for busy counters where you need to keep the line moving while keeping stock and customer records accurate.
+## Before you start
 
-The flow runs end to end: add items, adjust prices or discounts, choose a customer, collect one payment, and finish the receipt.
+These steps cover the web beta. Confirm the business, checkout access, products, and prices. Use the shop's approved process to receive a payment. Selecting a payment method in DRX records it; it does not by itself charge a card or transfer money.
 
-## When to use it
+Do not use real sales to test a device or connection. Offline checkout is not promised by this guide.
 
-- You need a fast checkout during busy periods.
-- You want to scan barcodes or quickly search to add items.
-- You need to apply a line-item or sale-level discount.
-- A customer will pay with Cash, Card, or Credit.
-- You want the receipt printed, sent by SMS, or skipped.
+## Build the sale
 
-## How to use it
+1. Open **Point of Sale** from web navigation.
+2. Use **Scan SKU / barcode or search products** or the available product choices to add items.
+3. Check each product, quantity, unit, and price. Review any displayed discount before continuing.
+4. If needed, use **Customer (Optional)**, enter an existing **Alias** or permitted **Phone number**, choose **Lookup**, and select the correct record. Confirm **Attached:**. Credit needs an eligible customer.
+5. Choose **Continue to Payment** or the **Pay** button showing the total, depending on the screen layout.
 
-1. **Open** Quick Sale from the top navigation by selecting "Quick Sale."
-2. **Add items** to the sale:
-   - **Scan** a barcode to add the item instantly, or
-   - **Search** by typing in the item name or SKU, then **Select** the correct item from results.
-   - If needed, **Adjust quantity** by increasing or decreasing the item count in the cart.
-3. **Apply discounts** as needed:
-   - To discount a single item, **Select** the item in the cart and **Apply discount** (enter a percentage or amount if prompted).
-   - To discount the whole sale, **Choose** the sale-level discount option and **Enter** the discount value.
-4. **Attach a customer** to the sale:
-   - **Select** "Attach customer" and **Search** for the customer by name, email, or phone.
-   - **Select** the matching customer. If no match appears, **Add customer** with the available fields, then **Save** to attach.
-5. **Review** the cart summary:
-   - Confirm items, quantities, discounts, taxes, and the sale total.
-6. **Proceed** to payment by selecting "Pay" to move from the sale screen to the payment screen.
-7. **Choose one tender** and take payment on the payment screen:
-   - **Select** a payment type (cash, card, or credit) and **Enter** the amount.
-   - You cannot add more than one payment type in Quick Sale.
-   - **Confirm** the payment is approved or completed.
-8. **Complete** the sale when the balance reaches $0.00. You’ll move to the completion screen.
-9. **Print or send the receipt** on the completion screen:
-   - **Select** "Print receipt" to send it to your connected printer, or
-   - **Select** "SMS receipt" to send it to the attached customer.
-10. **Finish** by returning to Quick Sale for the next customer.
+## Record payment and finish
 
-## Options and settings
+1. Wait for the verified total. Review **Subtotal**, **Merchandise tax**, and any delivery charges or tax shown.
+2. Choose the matching **Payment Method**: **CASH**, **CARD**, or **CREDIT** when offered. This checkout uses one method; it does not offer a mixed-payment or Zelle checkout option.
+3. For credit, review eligibility and select **Confirm credit charge**. Do not use credit to record repayment of an old balance.
+4. Under **Receipt**, choose **PRINT**, **SMS**, or **NONE**. These are receipt preferences; the choice alone does not prove a receipt was printed or sent.
+5. Choose **Complete Sale** once and wait for confirmation.
 
-- Cart controls: adjust quantity, remove an item, or apply a line-item discount from the cart.
-- Sale-level discount: apply a discount to the entire sale total when appropriate.
-- Attach customer: search and select an existing profile or add a new one during checkout.
-- Payment method: one of cash, card, or credit for the full sale.
-- Receipt delivery: choose print, SMS, or none on the completion screen.
+## What happens next
 
-## Tips
+Confirm the order reference and total on the completion screen. Check the saved order in **Orders & Receipts** if anything is unclear. Verify printing or delivery separately if your shop uses a receipt service.
 
-- Scan first to minimize search errors; if a barcode fails, fall back to search and confirm the item details.
-- Attach the customer before payment so their email and preferences carry through to the receipt.
-- Confirm the total after discounts and payment so there is no over‑ or under‑charge.
-- If you apply both line-item and sale-level discounts, review the total carefully so the final price reflects your store policy.
+If the result is uncertain, do not start another checkout or request payment again until the saved sale and actual payment have been checked.
+
+## Related articles
+
+- [Sales history and receipts](https://drx.featurebase.app/en/help/articles/5281725)
+- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)

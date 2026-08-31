@@ -1,45 +1,7 @@
-# DRX Intelligence: Using AI Support Features
+# Moved: DRX Intelligence
 
-DRX Intelligence helps surface decisions and risk signals without replacing operator judgment.
+This historical source is excluded from Featurebase imports. Use [DRX Intelligence](../../../app-docs/feature_overview/drx-intelligence.md) for the current guide.
 
-## What this does
+The existing Help Center article is [DRX Intelligence](https://drx.featurebase.app/en/help/articles/2995914).
 
-Explains the AI Intelligence page and how to use it safely in daily operations.
-
-## Who can use it
-
-Manager, Owner (or users granted access)
-
-## Before you start
-
-- Confirm feature visibility in your role and environment.
-
-## Step-by-step
-
-1. Open `AI Intelligence`.
-2. Review suggested signals or decisions.
-3. Cross-check with source pages (`Sales`, `Inventory`, `Credit`) before acting.
-4. Apply operational decision and document why when needed.
-
-## What happens next
-
-AI suggestions become decision support, not unverified auto-actions.
-
-## Tips
-
-- Treat AI output as guidance. Verify with route-level data.
-
-## Common mistakes
-
-- Acting on a suggestion without checking current transaction context.
-
-## Troubleshooting
-
-- If AI outputs look stale, refresh and verify underlying source data changed.
-
-## Related articles
-
-- `reports-and-insights.md`
-- `dashboard-daily-check.md`
-- `credit-balances-payments.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

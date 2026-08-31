@@ -1,47 +1,39 @@
 ---
-title: "Standard Sales console"
-description: "Use the Standard Sales console in DRX to build a detailed cart, add fees or delivery options, accept multiple payment tenders, attach a customer, and review the sale after checkout."
-tags:
-  - sales
-  - point of sale
-  - payments
-  - customers
+title: "Sales and deliveries (beta)"
+description: "Find the current sales screens and record delivery details without duplicating a sale."
 ---
-## Overview
 
-The Standard Sales console in DRX lets you handle full, detailed sales from start to finish. You can build a cart, add fees or delivery options, accept multiple payment methods in one sale, attach a customer, and complete a post‑sale review. It’s designed for staff at the register or on mobile who need accurate carts and flexible checkout.
+## Before you start
 
-## When to use it
+The old Standard Sales console instructions no longer match the web beta. Use **Point of Sale** to create a sale, **Orders & Receipts** to inspect it, and **Deliveries** for enabled delivery work.
 
-- Ring up sales that need itemized carts and accurate stock updates.
-- Add delivery, service, or handling fees to an order.
-- Split payment across multiple tenders in a single checkout.
-- Attach a customer for history, loyalty, or receipts.
-- Review and confirm sale details before finalizing.
+Confirm delivery access, the actual vendor quote, and who will pay the fee. DRX records delivery work; it does not automatically book an Uber or other vendor order.
 
-## How to use it
+## Include delivery in a sale
 
-1. **Open** the Standard Sales console from your DRX sales area to start a new sale.
-2. **Add items** to the cart by searching or scanning. Confirm quantities and variations as needed so stock and totals are correct.
-3. **Review the cart** and update line items. Adjust quantities or remove items if the customer changes their mind.
-4. **Add fees or delivery options** if applicable. Include any delivery, service, or handling charges so the order total reflects the customer’s choice.
-5. **Attach a customer** to the sale. Search for an existing customer or create a minimal new profile to keep the sale linked to the right person.
-6. **Apply discounts or tax settings** if your store policy requires them. Ensure the cart shows the correct subtotal, taxes, and total before payment.
-7. **Choose payment** and accept one or more tenders. Take the first payment method, then add an additional tender if the customer is splitting the total (for example, part card and part cash) until the balance is fully paid.
-8. **Confirm and complete** the sale when the balance reaches zero. Provide the receipt according to your store’s practice (printed or digital).
-9. **Post‑sale review** the order details. Verify items, totals, payment methods, and attached customer. Make any allowed corrections immediately while the sale is still open for review.
+1. Build the sale in **Point of Sale**, then continue to payment.
+2. In **Delivery**, turn on **Include delivery**.
+3. Enter **Delivery address** and the actual **Uber/vendor quote**. Do not put delivery details in public feedback or unrelated notes.
+4. Under **Who pays the vendor fee?**, choose **Charge customer** or **Business absorbs** according to the approved arrangement.
+5. Wait for the total to update. Review any **Delivery charged**, **Delivery tax**, or **Delivery absorbed** amount.
+6. Complete the sale once, then confirm its saved order and delivery task.
 
-## Options and settings
+For the complete payment procedure, use [Quick Sale checkout](https://drx.featurebase.app/en/help/articles/0236106).
 
-- Cart controls: update quantity, remove items, and view line totals and tax per item.
-- Fees and delivery: add optional delivery or service charges that appear in the order total.
-- Customer attach: search, select, or create a minimal new customer to link the sale.
-- Multiple tenders: split the total across different payment methods within the same checkout.
-- Post‑sale review: view final line items, totals, and payments after completing the sale.
+## Update an enabled delivery task
 
-## Tips
+1. Open **Deliveries** and select the task for the saved order.
+2. Use **Assign to me** or an authorized assignment action as needed. Reveal the address only when required for the delivery; **Reveal address (audited)** records that access.
+3. Place the vendor order through the shop's approved external process.
+4. Enter **Uber wait time / ETA (minutes)** and use **Mark ordered** only after the vendor order exists.
+5. Use **Mark handed off** and **Mark delivered** when those events actually happen.
 
-- Add the customer before taking payment to ensure receipts and history link correctly.
-- Confirm fees and delivery choices with the customer before you proceed to payment.
-- When splitting tenders, track the remaining balance after each payment to avoid over‑ or under‑charging.
-- Review the sale immediately after completion so you can correct simple entry mistakes right away.
+## What happens next
+
+Check the task's saved status. A delivery cancellation does not cancel the sale or refund money. **Manager cancellation** and **Record adjustment** need authorized review; a financial adjustment in DRX is a record, not proof that a refund or transfer occurred.
+
+Delivery is beta. If the controls are unavailable or a save is uncertain, stop and have the owner review the task before creating another sale or vendor order.
+
+## Related articles
+
+- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)

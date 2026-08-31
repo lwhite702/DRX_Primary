@@ -1,47 +1,46 @@
 ---
 title: "Customers and store credit"
-description: "Create alias‑first customer profiles, view purchase history, add notes and tags (beta), and issue, adjust, and redeem store credit in DRX."
-tags:
-  - customers
-  - store credit
-  - POS
-  - CRM
+description: "Keep customer records minimal and record payments against the correct open balance."
 ---
-## Overview
 
-Use Customers in DRX to track shopper relationships with minimal data. You can create an alias‑first profile, review purchase history, add lightweight notes or tags (beta), and manage store credit from one place. This workflow supports everyday retail tasks at the register or on the back office web app.
+## Before you start
 
-## When to use it
+Confirm the business, your customer and credit permissions, and the shop's approved credit policy. **Store Credit** in web navigation opens **Credit Management**. Here, credit means an amount a customer owes for later payment; it is not a gift card or proof that money was received.
 
-- Create a quick customer record without collecting personal data.
-- Look up past purchases to help with returns or recommendations.
-- Add a short note or apply tags (beta) to segment customers.
-- Issue, adjust, and redeem store credit during checkout or account servicing.
+## Find or add a customer
 
-## How to use it
+1. Open **Customers** and search for an existing profile before adding another.
+2. Use **Add customer** when you have permission and no matching profile exists.
+3. Enter the alias or other details allowed by the business's privacy settings. Leave unrelated optional information blank.
+4. Review the fields, choose **Add** once, and check the saved profile in the same business.
 
-1. **Open Customers.** From your DRX app, go to the area where you manage customer records.
-2. **Create a customer.** Choose the option to add a new customer. Enter an alias or nickname in the primary name field. Add only the minimal details your store requires.
-3. **Save the profile.** Confirm the new customer record so it is available across your locations.
-4. **Find a customer.** Use search to look up a customer by alias or other basic identifier and open their profile.
-5. **View purchase history.** In the customer profile, open the section that lists past orders. Review dates, items, and totals to answer questions or support returns.
-6. **Add a note (beta).** In the notes area, add a brief note to capture preferences or context relevant to service. Save your note.
-7. **Add tags (beta).** In the tags area, apply one or more tags to help your team identify customer groups. Save your changes.
-8. **Issue store credit.** In the customer profile, open the store credit area and add a credit amount with a short reason. Confirm to issue credit to the customer.
-9. **Adjust store credit.** From the same store credit area, increase or decrease the balance as needed. Add a reason and confirm the adjustment.
-10. **Redeem store credit at checkout.** Start a sale and attach the customer to the cart. In the payment step, select store credit and apply the available balance. Complete the sale. Any remaining credit stays on the customer’s profile.
-11. **Review the result.** Return to the customer profile to see updated notes, tags, purchase history, and the current store credit balance.
+If a form requires contact information that your privacy policy does not allow, stop and ask the owner to review it. Do not enter fake information or weaken privacy settings to pass validation.
 
-## Options and settings
+## Attach a customer at checkout
 
-- Alias‑first profiles: Create customers with a nickname or alias as the primary identifier to minimize personal data.
-- Notes (beta): Add short free‑form notes on the profile to share context with your team.
-- Tags (beta): Apply tags to group customers for quick filtering and service.
-- Store credit balance: View, issue, and adjust the customer’s credit in one place, and redeem it during checkout when the customer is attached to the sale.
+1. In **Point of Sale**, use **Customer (Optional)**.
+2. Enter the existing **Alias** or an allowed **Phone number**, then choose **Lookup**.
+3. Select the matching customer and confirm **Attached:** before continuing.
+4. Choose **CREDIT** only when offered and approved. Review the total and select **Confirm credit charge** before **Complete Sale**.
 
-## Tips
+**Quick Create** currently asks for a phone number. Do not use it for an alias-only record when collecting that number conflicts with the business's privacy policy. A sale without a customer still creates sales records.
 
-- Keep notes concise and relevant to in‑store service; avoid sensitive personal details.
-- Attach the customer to the cart before selecting store credit so the balance appears during payment.
-- Record a clear reason when issuing or adjusting credit to make future audits easier.
-- Use consistent tag names so your team can filter customers reliably.
+## Record a payment toward an existing balance
+
+1. Confirm the payment was actually received through the shop's approved process.
+2. Open **Store Credit** and choose **Record Payment**.
+3. Select **Customer**, enter **Amount ($)**, and choose the matching **Payment Method**: Cash, Check, Transfer, or Other.
+4. Use **Notes** only for a necessary reference. Do not enter card numbers or account credentials.
+5. Check the amount and previous payments, then choose **Record Payment** once.
+6. Reopen the account and confirm the saved payment and remaining balance before recording anything else.
+
+This action records a received payment. It does not transfer money. Do not create a new sale to record repayment of an old balance.
+
+## What happens next
+
+Have an authorized manager review unexplained balances, overdue amounts, or limit changes against the saved records. Do not raise limits or split a charge to bypass a restriction. Notes, loyalty, and related beta controls are available only where enabled; they are not required for a basic customer record.
+
+## Related articles
+
+- [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807)
+- [Troubleshoot customers and credit](https://drx.featurebase.app/en/help/articles/9156766)

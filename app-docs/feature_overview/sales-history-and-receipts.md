@@ -1,43 +1,37 @@
 ---
-title: "Sales History and Receipts"
-description: "Learn how to find past sales in DRX, open sale details, verify items and payments, and handle receipt reprints or disputes."
-tags:
-  - DRX
-  - sales history
-  - receipts
-  - point of sale
+title: "Sales history and receipts"
+description: "Find a saved sale and check its items, customer, payment record, and total."
 ---
-## Overview
 
-Use Sales history and receipt review in DRX to look up completed sales, open a sale’s details, and confirm items, totals, taxes, discounts, and payments. This helps you answer customer questions, reprint or share receipts, and resolve disputes or reconciliation checks from end to end in one place.
+## Before you start
 
-## When to use it
+These steps cover the web beta and require access to sales records. Confirm the business before opening or changing an order.
 
-- Verify what was purchased, returned, or discounted in a completed sale
-- Confirm payment method(s), amounts collected, and change given
-- Reprint or share a receipt with a customer
-- Review details during a payment dispute or daily reconciliation
+## Find a sale
 
-## How to use it
+1. Open **Orders & Receipts**.
+2. Under **Recent Orders**, use **Search by ID or payment...** to narrow the loaded list by ID, payment method, or order status.
+3. Open the matching order and check **Sale Details**.
+4. Compare its date, status, **Payment Method**, customer, quantities, prices, and total with the transaction you are reviewing.
 
-1. **Open Sales history.** Go to the area in DRX where completed sales are listed. You’ll see past transactions with key details like date, total, and status.
-2. **Search or filter for the sale.** Use the available search or filters to find the transaction by date, amount, receipt number, customer info, or staff. Narrow the list until you see the sale you need.
-3. **Open the sale details.** Select the sale to view its full record. The detail view shows items, quantities, line-level prices or discounts, taxes, subtotal, total, and any returns or adjustments tied to that sale.
-4. **Verify items and totals.** Review the line items and totals. Confirm quantities, discounts, taxes, and the final amount charged. If you are checking a dispute, compare these details to what the customer claims.
-5. **Check payments.** In the same sale detail, review the payment breakdown. Confirm payment method(s), amounts, any split tenders, and change given or refunds issued.
-6. **Reprint or share the receipt.** Use the receipt action in the sale detail to generate a copy. Choose the available option to print or share the receipt with the customer.
-7. **Add a note (if needed).** If your role allows adding notes for audit or follow-up, record what you verified or any next steps for the team.
-8. **Close the record.** When finished, return to the sales list or continue to the next sale you need to review.
+The recent list loads up to 50 orders. It does not provide the date, staff, amount, or customer filters described in older guides. If an older order is missing, ask private support to locate it rather than creating it again.
 
-## Options and settings
+## Review an authorized correction
 
-- Search and filters: Narrow results by date range, amount, staff, or other available criteria to find the correct sale quickly.
-- Receipt actions: From a sale detail, access the option to reprint or share a receipt copy.
-- Role-based access: What you can view or do (like adding notes or reprinting) depends on your assigned role in DRX.
-- Audit trail: Sale details include recorded actions for traceability, supporting reconciliation and dispute review.
+**Sale Details** can show **Assign Customer** or **Change Customer**. Credit-sale reassignment requires manager or owner review. A manager may also see payment-record editing controls.
 
-## Tips
+Use these only to correct a verified record under your business's process. Editing a payment method does not collect, refund, or transfer money. Do not turn a payment-label edit into an unverified balance correction.
 
-- If a search returns no results, expand the date range or remove filters you added and try again.
-- For disputes, gather the receipt and the sale detail’s item and payment breakdown before responding to the customer.
-- If you cannot see a receipt action or payment details, contact your administrator to confirm your role has access.
+## Check a receipt
+
+**PRINT**, **SMS**, and **NONE** at checkout record a receipt preference. A saved sale or selected preference does not prove that a printer or message service delivered a receipt.
+
+The current Sale Details page does not provide a verified universal reprint, email, or refund procedure. Follow your approved receipt and refund process and ask private support if you need to check a delivery or correction. Do not repeat a sale to produce another receipt.
+
+## What happens next
+
+Keep the original sale and payment evidence while an unexplained difference is reviewed. Store any exported records privately.
+
+## Related articles
+
+- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)

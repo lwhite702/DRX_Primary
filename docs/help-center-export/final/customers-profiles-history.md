@@ -1,47 +1,7 @@
-# Customers: Profiles and History
+# Moved: Customers and store credit
 
-Use customer records when you need better service history, balance tracking, or follow-up context.
+This historical source is excluded from Featurebase imports. Use [Customers and store credit](../../../app-docs/feature_overview/feature-overview-manage-customers-and-credit.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Customers and store credit](https://drx.featurebase.app/en/help/articles/1831819).
 
-Explains add/search/detail flows for customer data.
-
-## Who can use it
-
-Staff, Manager, Owner (scope varies by privacy and role settings)
-
-## Before you start
-
-- Confirm your role can view customer data.
-
-## Step-by-step
-
-1. Open `Customers`.
-2. Search existing profiles first to avoid duplicates.
-3. Add customer with minimal required info when speed matters.
-4. Open detail view to review history and linked transactions.
-5. Update fields only when needed and keep records clean.
-
-## What happens next
-
-Customer history supports credit/balance handling and faster issue resolution.
-
-## Tips
-
-- Minimal profile at counter, full profile later.
-- Keep names and contact format consistent.
-
-## Common mistakes
-
-- Creating duplicate customers during busy shifts.
-
-## Troubleshooting
-
-- If profile search misses obvious records, try alternate phone/name patterns.
-
-## Related articles
-
-- `credit-balances-payments.md`
-- `roles-permissions-staff-access.md`
-- `privacy-security-rtbf.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.
