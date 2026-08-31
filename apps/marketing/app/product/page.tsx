@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: "Product | DRX",
   description:
-    "Fast POS, inventory, customers, reporting, and team accountability for operators who run real businesses.",
+    "Sales, stock, customers, balances, reports, and team access for people who actually run the business.",
 };
 
 export default function ProductHubPage() {
@@ -21,10 +21,10 @@ export default function ProductHubPage() {
     <PageFrame>
       <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">What DRX Does</h1>
       <p className="mb-8 max-w-3xl text-text-secondary">
-        No bloated menus. No complicated setup. No enterprise energy.
+        Keep the count right. Keep the line moving. Skip the software nonsense.
       </p>
 
-      <SectionBlock title="Core product surfaces">
+      <SectionBlock title="What you can do">
         <div className="grid gap-3 md:grid-cols-2">
           {productHubCards.map((item) => (
             <TrackedLink
@@ -41,7 +41,7 @@ export default function ProductHubPage() {
         </div>
       </SectionBlock>
 
-      <SectionBlock title="Feature claim status" className="mt-6">
+      <SectionBlock title="What's ready" className="mt-6">
         <ul className="space-y-2">
           {marketingFeatureSections.map((section) => {
             const sectionStatus = section.bullets.some((bullet) => bullet.status === "planned")

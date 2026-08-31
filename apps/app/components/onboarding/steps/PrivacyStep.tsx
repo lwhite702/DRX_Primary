@@ -2,14 +2,15 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle2 } from "lucide-react";
 import { StepProps } from "../types";
 import { PRIVACY_PROFILE_OPTIONS } from "@/lib/privacy/profiles";
+import { drxCopy } from "@/lib/copy/drx";
 
 export function PrivacyStep({ formData, setFormData }: StepProps) {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <Label className="text-lg">Privacy profile</Label>
+        <Label className="text-lg">{drxCopy.onboarding.privacy.title}</Label>
         <p className="text-sm text-muted-foreground">
-          Choose how much customer data DRX recommends collecting during onboarding.
+          {drxCopy.onboarding.privacy.body}
         </p>
       </div>
 

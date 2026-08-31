@@ -1,8 +1,7 @@
 // ReportsView.swift
-// Native Reports screen — daily financial aggregates & sales history breakdown.
+// Native reports screen — sales totals and history.
 
 import SwiftUI
-import ClerkKit
 
 struct ReportsView: View {
     @Environment(AppEnvironment.self) private var environment
@@ -31,23 +30,22 @@ struct ReportsView: View {
 
     private var content: some View {
         VStack(spacing: 20) {
-            // Overview Cards
             if let agg = aggregate {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Financial Summary")
+                    Text("Daily totals (UTC)")
                         .font(.headline)
                         .foregroundStyle(DRXPalette.ink)
 
                     VStack(spacing: 0) {
-                        ReportSummaryRow(title: "Total Revenue", value: agg.totalRevenueFormatted, highlight: true)
+                        ReportSummaryRow(title: "Sales", value: agg.totalRevenueFormatted, highlight: true)
                         Divider()
                         ReportSummaryRow(title: "Subtotal", value: formatCents(agg.totalSubtotalCents))
                         Divider()
-                        ReportSummaryRow(title: "Tax Collected", value: agg.totalTaxFormatted)
+                        ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
                         Divider()
-                        ReportSummaryRow(title: "Average Order Value", value: agg.averageOrderFormatted)
+                        ReportSummaryRow(title: "Average sale", value: agg.averageOrderFormatted)
                         Divider()
-                        ReportSummaryRow(title: "Total Orders", value: "\(agg.orderCount)")
+                        ReportSummaryRow(title: "Orders", value: "\(agg.orderCount)")
                     }
                     .background(DRXPalette.card)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -57,14 +55,13 @@ struct ReportsView: View {
                 .padding(.top)
             }
 
-            // Sales History Section
             VStack(alignment: .leading, spacing: 12) {
-                Text("Sales History (\(salesHistory.count))")
+                Text("Sales history (\(salesHistory.count))")
                     .font(.headline)
                     .foregroundStyle(DRXPalette.ink)
 
                 if salesHistory.isEmpty {
-                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales records found.")
+                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales yet.")
                 } else {
                     LazyVStack(spacing: 0) {
                         ForEach(salesHistory) { sale in
@@ -85,7 +82,7 @@ struct ReportsView: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView().tint(DRXPalette.accent)
-            Text("Generating financial reports…")
+            Text("Loading your numbers…")
                 .font(.subheadline)
                 .foregroundStyle(DRXPalette.muted)
         }
@@ -94,12 +91,12 @@ struct ReportsView: View {
 
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
-            Label("Report Unavailable", systemImage: "exclamationmark.triangle.fill")
+            Label("Couldn't load reports", systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(DRXPalette.danger)
         } description: {
             Text(message).foregroundStyle(DRXPalette.muted)
         } actions: {
-            Button("Retry") { Task { await load() } }
+            Button("Try again") { Task { await load() } }
                 .buttonStyle(.drxPrimary)
         }
         .padding(.top, 60)
@@ -108,7 +105,6 @@ struct ReportsView: View {
     private func load() async {
         isLoading = true
         error = nil
-        let userId = await MainActor.run { Clerk.shared.user?.id }
         async let aggTask: DRXDailySalesAggregate = ConvexClient.shared.query(
             "reporting:getDailySalesAggregate",
             args: EmptyConvexArgs()
