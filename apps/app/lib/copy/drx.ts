@@ -44,19 +44,19 @@ export const drxCopy = {
     },
     privacy: {
       title: "Your records. Your call.",
-      body: "Pick how much customer info you want to keep. You can change it later.",
+      body: "Each preset controls which customer details you keep and permanently deletes inactive customer records after the listed window. You can change it later.",
       presets: {
         aliasMode: {
           label: "ALIAS MODE",
-          desc: "Nicknames only. Keep customer data light.",
+          desc: "Aliases only. Inactive customer records are permanently deleted after 30 days.",
         },
         standardMode: {
           label: "STANDARD MODE",
-          desc: "A little customer info when you need it.",
+          desc: "Optional contact details. Inactive customer records are permanently deleted after 180 days.",
         },
         businessCrmMode: {
           label: "FULL CUSTOMER MODE",
-          desc: "Use the full customer record when it fits your business.",
+          desc: "Full customer details. Inactive customer records are permanently deleted after 365 days.",
         },
       },
     },
@@ -78,7 +78,7 @@ export const drxCopy = {
     },
   },
   inventory: {
-    title: "Stock",
+    title: "Inventory",
     description: "Know what you have, what moved, and what needs a reup.",
     missingBusiness: "Finish setup before working with stock.",
     operationsLabel: "What do you need?",
