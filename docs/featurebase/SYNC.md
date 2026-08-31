@@ -2,7 +2,7 @@
 
 WRE-92 establishes one publication source: `help-center-manifest.json`. It lists the 19 existing DRX article IDs, canonical `app-docs` paths, public URL segments, collection IDs, and observed public order. Article titles are content, not identity.
 
-Never recursively import `app-docs`, the historical `docs/help-center-export` tree, an archive, or the old 50-entry seed list. The legacy app-level publisher now exits with instructions instead of writing. Its metadata adapter reads the canonical manifest for taxonomy tests.
+Never recursively import `app-docs`, the historical `docs/help-center-export` tree, an archive, or the old 50-entry seed list. The legacy app-level publisher now exits with instructions instead of writing. Its content adapter reads the canonical manifest for taxonomy tests.
 
 ## Credentials and exports
 

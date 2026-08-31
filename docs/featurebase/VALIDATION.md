@@ -14,7 +14,7 @@ Release impact: none. Roadmap impact: none. Product version remains `0.6.14`; th
 - One proposed retitle: **Standard Sales console → Sales and deliveries (beta)**, ID `7723456`.
 - Zero live merges, splits, reorders, archives, deletions, or publications. Existing IDs, public URL segments, collection placement, order, and historical heading anchors are retained.
 - 31 old source paths become reference stubs: 15 duplicate app-docs files and 16 legacy final files. Original content remains in Git at the base commit. These are repository references, not deployed redirects.
-- The 50-entry legacy seed body is replaced by a canonical metadata adapter. Its publisher is disabled. No old article is recreated.
+- The 50-entry legacy seed body is replaced by a canonical content adapter. Its publisher is disabled. No old article is recreated.
 - Zero embedded images/videos/iframes in the observed live article bodies; zero introduced. Hardware, camera, printing, and screenshot-related claims were reviewed separately.
 
 ## Article-level inventory
@@ -79,11 +79,15 @@ Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in 
 | `pnpm featurebase:export:help-center .featurebase/before-api`                                                                                                | Blocked: Missing FEATUREBASE_API_KEY; exit 1 before API request             |
 | `pnpm featurebase:import:help-center:dry`                                                                                                                    | Blocked: Missing FEATUREBASE_API_KEY; exit 1 before API request             |
 | `pnpm featurebase:reorder:help-center:dry`                                                                                                                   | Pass: public order verified; zero changes; not an API reorder claim         |
-| `pnpm --filter deelrxcrm-app exec vitest run tests/help/featurebase-taxonomy.test.ts`                                                                        | Pass: 3 tests                                                               |
+| `pnpm --filter deelrxcrm-app exec vitest run tests/help/featurebase-taxonomy.test.ts`                                                                        | Pass: 4 tests                                                               |
 | `tsc --noEmit --target es2022 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck` on the eight changed TypeScript tooling/test files | Pass                                                                        |
 | `git diff --check`                                                                                                                                           | Pass                                                                        |
 
 Release-integrity warnings correctly retain external App Store Connect/TestFlight and EAS/Play verification as separate gates. The existing Vite CJS deprecation warning appeared during the taxonomy test. Neither is evidence of a product release. New Help Center tests and gap checks are wired into CI; copy-path triggers now include app-docs and Featurebase audit files. Remote CI is separate from these local results.
+
+## PR compatibility follow-up
+
+The initial remote release check detected an exported-contract regression in the legacy adapter and formatting changes to API-client declarations. The adapter now preserves the original `HelpArticle` interface, typed array and nonempty rendered HTML content. API-client exported declarations retain their original contracts. A fourth taxonomy test covers the HTML compatibility contract. The repository's PR-specific release validator was rerun with the actual base SHA and PR declarations and passed without changing the release gate or requesting a major release. Remote CI rerun status is recorded in the PR.
 
 ## Publication blockers and held content
 
