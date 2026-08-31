@@ -198,6 +198,8 @@ Do not use humor for:
 - Data deletion
 - Destructive actions
 
+Privacy presets must state their retention window and clearly say when inactive customer records are permanently deleted.
+
 ## 10. Feature Naming
 
 Use the same public names across every surface:
@@ -205,7 +207,7 @@ Use the same public names across every surface:
 - Home
 - Customers
 - Products
-- Stock
+- Inventory
 - Orders
 - Sales
 - Payments
