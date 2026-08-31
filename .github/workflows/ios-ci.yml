@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "apps/ios/**"
+      - "!apps/ios/**/*.md"
       - ".github/workflows/ios-ci.yml"
   push:
     branches:
@@ -11,6 +12,7 @@ on:
       - "feat/native-ios-foundation"
     paths:
       - "apps/ios/**"
+      - "!apps/ios/**/*.md"
       - ".github/workflows/ios-ci.yml"
   workflow_dispatch:
 
@@ -46,8 +48,7 @@ jobs:
       - name: Install XcodeGen
         run: |
           set -euo pipefail
-          brew update
-          brew install xcodegen
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install xcodegen
           xcodegen --version
 
       - name: Generate Xcode project
@@ -90,18 +91,6 @@ jobs:
           open -a Simulator || true
           xcrun simctl bootstatus "$SIMULATOR_UDID" -b
 
-      - name: Build app
-        run: |
-          set -euo pipefail
-          xcodebuild \
-            -project DRXApp.xcodeproj \
-            -scheme DRXApp \
-            -configuration Debug \
-            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
-            CODE_SIGNING_ALLOWED=NO \
-            clean build
-
       - name: Run unit and UI tests
         run: |
           set -euo pipefail
@@ -116,6 +105,7 @@ jobs:
             test
 
       - name: Package simulator app
+        if: github.event_name != 'pull_request'
         id: package
         run: |
           set -euo pipefail
@@ -134,21 +124,22 @@ jobs:
           ls -lh "$PACKAGE_PATH"
 
       - name: Upload simulator build artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: DRXApp-simulator-${{ github.run_id }}
           path: ${{ steps.package.outputs.package_path }}
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 7
 
       - name: Upload test results
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: DRXApp-xcresult-${{ github.run_id }}
           path: ${{ runner.temp }}/DRXAppTests.xcresult
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 7
 
       - name: Upload derived logs
         if: failure()

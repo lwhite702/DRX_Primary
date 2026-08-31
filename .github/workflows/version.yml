@@ -11,8 +11,13 @@ on:
   push:
     branches: [main, development, staging]
 
+concurrency:
+  group: version-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version-check:
+    timeout-minutes: 5
     name: Check Release Integrity
     runs-on: ubuntu-latest
 
