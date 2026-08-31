@@ -3,6 +3,33 @@ import Testing
 @testable import DRXApp
 
 struct CheckoutMathTests {
+    @Test
+    func newProductRulesPreserveFractionalMinimumAndIncrement() throws {
+        let config = try #require(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10, 20", quantities: "0.1, 0.35, 0.6"))
+        #expect(config.minimumSaleQuantity == 0.1)
+        #expect(config.quantityIncrement == 0.25)
+        #expect(config.suggestedDollarAmounts == [10, 20])
+        let payload = try JSONSerialization.jsonObject(with: JSONEncoder().encode(config)) as? [String: Any]
+        #expect(payload?["decimalPrecision"] as? Int == 2)
+        #expect(payload?["suggestedQuantities"] as? [Double] == [0.1, 0.35, 0.6])
+    }
+
+    @Test
+    func newProductRulesRejectMalformedOrMisalignedPresets() {
+        for quantities in ["0.25", "0.1, bad", "0.1,", "0.1, 0.1001"] {
+            #expect(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10", quantities: quantities) == nil)
+        }
+        #expect(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10.001", quantities: "") == nil)
+    }
+
+    @Test
+    func wholeProductRulesDoNotEnableFractionalSelling() throws {
+        let config = try #require(NewProductCommerceConfig.make(fractional: false, unit: "unit", precision: 2, minimum: "0.01", increment: "0.01", dollars: "", quantities: "1, 2"))
+        #expect(config.decimalPrecision == 0)
+        #expect(config.minimumSaleQuantity == 1)
+        #expect(config.quantityIncrement == 1)
+    }
+
     private func product(
         price: Int = 1_000,
         precision: Int = 2,

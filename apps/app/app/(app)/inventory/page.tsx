@@ -41,6 +41,13 @@ export default function InventoryPage() {
   } = useInventoryActions(business?.id);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const openedFromSetup = React.useRef(false);
+  React.useEffect(() => {
+    if (!businessLoading && !inventoryLoading && business && !error && !openedFromSetup.current && new URLSearchParams(window.location.search).get("create") === "1") {
+      openedFromSetup.current = true;
+      handleAdd();
+    }
+  }, [businessLoading, inventoryLoading, business, error, handleAdd]);
 
   if (businessLoading || inventoryLoading) {
     return <AppPageSkeleton rows={5} />;
