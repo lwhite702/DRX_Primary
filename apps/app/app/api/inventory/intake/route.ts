@@ -14,11 +14,20 @@ export async function GET(request: NextRequest) {
     const { userId, businessId } = await resolveAuthContext(request);
     if (!userId || !businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (!(await hasBusinessPermission(userId, businessId, "inventory.manage"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    const rows = await (db as PrismaClient).inventoryIntake.findMany({
-      where: { businessId },
-      include: { inventory: { select: { productName: true, sku: true } } },
-      orderBy: { createdAt: "desc" }, take: 100,
-    });
+    // Outstanding work must never be displaced by newer completed history.
+    const [pending, history] = await Promise.all([
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: "pending" },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: { not: "pending" } },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" }, take: 100,
+      }),
+    ]);
+    const rows = [...pending, ...history];
     const items = rows.map(row => ({
       id: row.id, inventory_id: row.inventoryId, product_name: row.inventory.productName,
       sku: row.inventory.sku, unit_of_measure: "g",

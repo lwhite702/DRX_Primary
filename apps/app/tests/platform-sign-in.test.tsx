@@ -15,7 +15,7 @@ describe("private platform sign-in", () => {
     vi.resetAllMocks(); vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
     m.auth.mockResolvedValue({ userId: null }); m.bypass.mockReturnValue(false); m.admin.mockResolvedValue(null);
   });
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => { vi.unstubAllEnvs(); });
   it("shows sign-in and a red warning without exposing console data or navigation", async () => {
     const html = renderToStaticMarkup(await page());
     expect(html).toContain("PLATFORM ADMINISTRATION"); expect(html).toContain("bg-red-700");

@@ -111,7 +111,9 @@ describe("platform reads and writes reject tenant authority", () => {
     m.owner.mockResolvedValue({ id: "business-a" }); m.intakes.mockResolvedValue([]);
     const result = await getApprovals(new NextRequest("http://localhost/api/inventory/intake"));
     expect(result.status).toBe(200);
-    expect(m.intakes).toHaveBeenCalledWith(expect.objectContaining({ where: { businessId: "business-a" } }));
+    expect(m.intakes).toHaveBeenCalledTimes(2);
+    expect(m.intakes).toHaveBeenNthCalledWith(1, expect.objectContaining({ where: { businessId: "business-a", status: "pending" } }));
+    expect(m.intakes).toHaveBeenNthCalledWith(2, expect.objectContaining({ where: { businessId: "business-a", status: { not: "pending" } }, take: 100 }));
   });
   it("a platform grant alone gives no business approvals or business audit", async () => {
     m.admin.mockResolvedValue({ role: "super_admin" });

@@ -39,14 +39,14 @@ export function TopNav() {
 
       {/* Brand Logo & Beta badge on Mobile */}
       <div className="flex min-w-0 items-center gap-2">
-        <Link href="/dashboard" className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="max-w-[140px] sm:max-w-[200px] min-w-0">
-            <AppLogo showTagline={false} />
+            <AppLogo href="/dashboard" showTagline={false} />
           </div>
           <div className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">
             BETA
           </div>
-        </Link>
+        </div>
       </div>
 
       {/* Desktop search */}
