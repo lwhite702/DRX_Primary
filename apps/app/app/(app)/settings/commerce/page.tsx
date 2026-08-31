@@ -98,17 +98,24 @@ function CommerceSettingsPageInner() {
       const response = await fetch("/api/pos/commerce-settings", {
         signal: controller.signal,
       });
+      const data = (await response.json()) as CommerceResponse;
+      if (controller.signal.aborted) return;
       if (response.status === 401) {
         throw new Error("Sign in and select your business, then try again.");
       }
       if (response.status === 403) {
         throw new Error(
-          "You don’t have permission to configure commerce for this business. Ask an owner or administrator for access.",
+          data.error && data.error !== "Forbidden"
+            ? data.error
+            : "You don’t have permission to configure commerce for this business. Ask an owner or administrator for access.",
         );
       }
-      const data = (await response.json()) as CommerceResponse;
-      if (controller.signal.aborted) return;
       if (!response.ok || data.error) throw new Error(data.error || "Unable to load settings");
+      if (canonicalSettings.business.legacyPrismaBusinessId !== data.businessId) {
+        throw new Error(
+          "The selected business does not match the linked mobile business. Select the matching business before configuring commerce.",
+        );
+      }
       const canonicalByLegacyId = new Map(
         convexProducts
           .filter((product) => product.legacyPrismaId)
@@ -226,10 +233,31 @@ function CommerceSettingsPageInner() {
     setDraft(product ? structuredClone(product) : null);
   };
 
+  const verifySaveBusiness = async () => {
+    if (
+      !legacyBusinessId ||
+      canonicalSettings?.business.legacyPrismaBusinessId !== legacyBusinessId
+    ) {
+      throw new Error(
+        "Business selection changed. Reload commerce settings before saving.",
+      );
+    }
+    // Revalidate the current session before the first canonical mutation, not
+    // only when synchronizing its result back through PATCH.
+    const response = await fetch("/api/pos/commerce-settings");
+    const data = (await response.json()) as CommerceResponse;
+    if (!response.ok || data.error || data.businessId !== legacyBusinessId) {
+      throw new Error(
+        "Business access changed. Reload commerce settings before saving.",
+      );
+    }
+  };
+
   const saveProduct = async () => {
     if (!draft) return;
     setSavingProduct(true);
     try {
+      await verifySaveBusiness();
       const canonicalProduct = convexProducts?.find(
         (product) => product._id === draft.canonicalProductId,
       );
@@ -301,6 +329,7 @@ function CommerceSettingsPageInner() {
     }
     setSavingCustomerLink(true);
     try {
+      await verifySaveBusiness();
       await linkLegacyPrismaBusiness({
         legacyPrismaBusinessId: legacyBusinessId,
       });
@@ -322,6 +351,7 @@ function CommerceSettingsPageInner() {
     if (!merchant) return;
     setSavingMerchant(true);
     try {
+      await verifySaveBusiness();
       await updateCommerceSettings({
         loyaltyCombinationPolicy: merchant.loyaltyCombinationPolicy,
         loyaltyTiers: [...merchant.loyaltyTiers]

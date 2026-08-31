@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { errorResponse, successResponse } from "@/lib/api/response";
@@ -45,17 +48,79 @@ type CommerceInventoryRow = {
   quantityOnHand: number;
 };
 
+async function resolveCommerceAccess() {
+  const { userId, businessId } = await resolveAuthContext();
+  if (!userId || !businessId) {
+    return { response: errorResponse("UNAUTHORIZED", "Unauthorized", 401) };
+  }
+  const business = await db.businessProfile.findUnique({
+    where: { id: businessId },
+    select: { isActive: true },
+  });
+  if (!business?.isActive) {
+    return {
+      response: errorResponse("FORBIDDEN", "Business is unavailable", 403),
+    };
+  }
+  if (
+    !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
+  ) {
+    return { response: errorResponse("FORBIDDEN", "Forbidden", 403) };
+  }
+
+  // The browser's canonical queries use a separate tenant context. Never mix
+  // its settings with a different session-selected transitional business.
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  if (!url) {
+    return {
+      response: errorResponse(
+        "INTERNAL_ERROR",
+        "Commerce settings are unavailable",
+        503,
+      ),
+    };
+  }
+  const { getToken } = await auth();
+  const token = await getToken({ template: "convex" });
+  if (!token) {
+    return {
+      response: errorResponse(
+        "UNAUTHORIZED",
+        "Commerce authentication is unavailable",
+        401,
+      ),
+    };
+  }
+  try {
+    const client = new ConvexHttpClient(url);
+    client.setAuth(token);
+    const canonical = await client.query(api.settings.getBusinessSettings, {});
+    if (canonical.business.legacyPrismaBusinessId !== businessId) {
+      return {
+        response: errorResponse(
+          "FORBIDDEN",
+          "The selected business does not match the linked mobile business. Select the matching business before configuring commerce.",
+          403,
+        ),
+      };
+    }
+  } catch {
+    return {
+      response: errorResponse(
+        "INTERNAL_ERROR",
+        "Unable to verify the commerce business. Please try again.",
+        503,
+      ),
+    };
+  }
+  return { businessId };
+}
+
 export async function GET() {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-    if (
-      !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
-    ) {
-      return errorResponse("FORBIDDEN", "Forbidden", 403);
-    }
+    const access = await resolveCommerceAccess();
+    if (access.response) return access.response;
+    const businessId = access.businessId;
 
     const [settings, inventory, customers] = await Promise.all([
       db.businessSettings.findUnique({
@@ -97,7 +162,8 @@ export async function GET() {
       const config = stored ?? {
         ...fallback,
         fractionalEnabled:
-          item.allowFractionalWeight === true && toNumber(item.pricePerGram) > 0,
+          item.allowFractionalWeight === true &&
+          toNumber(item.pricePerGram) > 0,
         sellingUnit: item.baseUnit || fallback.sellingUnit,
         decimalPrecision: item.allowFractionalWeight === true ? 2 : 0,
         minimumSaleQuantity: item.allowFractionalWeight === true ? 0.01 : 1,
@@ -110,10 +176,9 @@ export async function GET() {
         sku: item.sku,
         baseUnitPrice:
           toNumber(item.pricePerGram) || toNumber(item.sellingPrice),
-        availableQuantity:
-          config.fractionalEnabled
-            ? toNumber(item.inventoryInGrams)
-            : item.quantityOnHand,
+        availableQuantity: config.fractionalEnabled
+          ? toNumber(item.inventoryInGrams)
+          : item.quantityOnHand,
         config,
       };
     });
@@ -122,36 +187,36 @@ export async function GET() {
       businessId,
       merchant: commerce.merchant,
       products,
-      customers: customers.map((customer: {
-        id: string;
-        alias: string | null;
-        firstName: string | null;
-        lastName: string | null;
-      }) => ({
-        id: customer.id,
-        label:
-          customer.alias ||
-          [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
-          `Customer ${customer.id.slice(0, 8)}`,
-      })),
+      customers: customers.map(
+        (customer: {
+          id: string;
+          alias: string | null;
+          firstName: string | null;
+          lastName: string | null;
+        }) => ({
+          id: customer.id,
+          label:
+            customer.alias ||
+            [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
+            `Customer ${customer.id.slice(0, 8)}`,
+        }),
+      ),
     });
   } catch (error) {
     console.error("GET commerce settings error", error);
-    return errorResponse("INTERNAL_ERROR", "Unable to load commerce settings", 500);
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Unable to load commerce settings",
+      500,
+    );
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-    if (
-      !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
-    ) {
-      return errorResponse("FORBIDDEN", "Forbidden", 403);
-    }
+    const access = await resolveCommerceAccess();
+    if (access.response) return access.response;
+    const businessId = access.businessId;
 
     const parsed = commercePatchSchema.safeParse(await request.json());
     if (!parsed.success) {
@@ -163,61 +228,63 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const saved = await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      const current = await tx.businessSettings.findUnique({
-        where: { businessId },
-        select: { settingsData: true },
-      });
-      const settingsData = asObject(current?.settingsData);
-      const commerce = readCommerceSettings(settingsData);
-
-      if (parsed.data.merchant) {
-        commerce.merchant = parsed.data.merchant;
-      }
-
-      if (parsed.data.product) {
-        const inventory = await tx.inventory.findFirst({
-          where: {
-            id: parsed.data.product.inventoryId,
-            businessId,
-          },
-          select: { id: true },
+    const saved = await db.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const current = await tx.businessSettings.findUnique({
+          where: { businessId },
+          select: { settingsData: true },
         });
-        if (!inventory) {
-          throw new Error("PRODUCT_NOT_FOUND");
+        const settingsData = asObject(current?.settingsData);
+        const commerce = readCommerceSettings(settingsData);
+
+        if (parsed.data.merchant) {
+          commerce.merchant = parsed.data.merchant;
         }
 
-        commerce.productConfigs[parsed.data.product.inventoryId] =
-          parsed.data.product.config;
-        await tx.inventory.update({
-          where: { id: parsed.data.product.inventoryId },
-          data: {
-            allowFractionalWeight:
-              parsed.data.product.config.fractionalEnabled,
-            baseUnit: parsed.data.product.config.sellingUnit,
-            pricePerGram: parsed.data.product.config.fractionalEnabled
-              ? new Prisma.Decimal(
-                  parsed.data.product.baseUnitPrice.toFixed(4),
-                )
-              : undefined,
+        if (parsed.data.product) {
+          const inventory = await tx.inventory.findFirst({
+            where: {
+              id: parsed.data.product.inventoryId,
+              businessId,
+            },
+            select: { id: true },
+          });
+          if (!inventory) {
+            throw new Error("PRODUCT_NOT_FOUND");
+          }
+
+          commerce.productConfigs[parsed.data.product.inventoryId] =
+            parsed.data.product.config;
+          await tx.inventory.update({
+            where: { id: parsed.data.product.inventoryId },
+            data: {
+              allowFractionalWeight:
+                parsed.data.product.config.fractionalEnabled,
+              baseUnit: parsed.data.product.config.sellingUnit,
+              pricePerGram: parsed.data.product.config.fractionalEnabled
+                ? new Prisma.Decimal(
+                    parsed.data.product.baseUnitPrice.toFixed(4),
+                  )
+                : undefined,
+            },
+          });
+        }
+
+        settingsData.commerce = commerce;
+        await tx.businessSettings.upsert({
+          where: { businessId },
+          update: {
+            settingsData: settingsData as Prisma.InputJsonValue,
+          },
+          create: {
+            businessId,
+            settingsData: settingsData as Prisma.InputJsonValue,
           },
         });
-      }
 
-      settingsData.commerce = commerce;
-      await tx.businessSettings.upsert({
-        where: { businessId },
-        update: {
-          settingsData: settingsData as Prisma.InputJsonValue,
-        },
-        create: {
-          businessId,
-          settingsData: settingsData as Prisma.InputJsonValue,
-        },
-      });
-
-      return commerce;
-    });
+        return commerce;
+      },
+    );
 
     return successResponse(saved);
   } catch (error) {
@@ -225,6 +292,10 @@ export async function PATCH(request: NextRequest) {
       return errorResponse("NOT_FOUND", "Product not found", 404);
     }
     console.error("PATCH commerce settings error", error);
-    return errorResponse("INTERNAL_ERROR", "Unable to save commerce settings", 500);
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Unable to save commerce settings",
+      500,
+    );
   }
 }

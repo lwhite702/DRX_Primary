@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
+  getToken: vi.fn(),
+  query: vi.fn(),
   business: vi.fn(),
   owned: vi.fn(),
   role: vi.fn(),
@@ -14,7 +16,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 // Keep the real route, tenant resolver and permission policy together.
-// Only the identity provider and database boundary use synthetic fixtures.
+// Only identity, database and canonical-service boundaries use fixtures.
+vi.mock("convex/browser", () => ({
+  ConvexHttpClient: class {
+    query = mocks.query;
+    setAuth = vi.fn();
+  },
+}));
 vi.mock("@/lib/adapters/auth/server", () => ({
   auth: mocks.auth,
   isAuthBypassEnabled: () => false,
@@ -48,10 +56,22 @@ const patch = () =>
   );
 
 describe("commerce settings authorization", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   beforeEach(() => {
     vi.resetAllMocks();
-    mocks.auth.mockResolvedValue({ userId: "operator-a", orgId: "org-a" });
-    mocks.business.mockResolvedValue({ id: businessId });
+    vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud");
+    mocks.auth.mockResolvedValue({
+      userId: "operator-a",
+      orgId: "org-a",
+      getToken: mocks.getToken,
+    });
+    mocks.getToken.mockResolvedValue("synthetic-token");
+    mocks.query.mockResolvedValue({
+      business: { legacyPrismaBusinessId: businessId },
+    });
+    mocks.business.mockResolvedValue({ id: businessId, isActive: true });
     mocks.owned.mockResolvedValue(null);
     mocks.role.mockResolvedValue(null);
     mocks.settings.mockResolvedValue(null);
@@ -152,6 +172,59 @@ describe("commerce settings authorization", () => {
     expect((await GET()).status).toBe(401);
     expect((await patch()).status).toBe(401);
     expect(mocks.business).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["owner", "admin", "manager"])(
+    "denies an inactive business even for %s",
+    async (role) => {
+      mocks.role.mockResolvedValue({
+        id: "membership-a",
+        role,
+        permissions: {},
+      });
+      mocks.business.mockResolvedValue({ id: businessId, isActive: false });
+      expect((await GET()).status).toBe(403);
+      expect((await patch()).status).toBe(403);
+      expect(mocks.query).not.toHaveBeenCalled();
+      expect(mocks.settings).not.toHaveBeenCalled();
+      expect(mocks.inventory).not.toHaveBeenCalled();
+      expect(mocks.customers).not.toHaveBeenCalled();
+      expect(mocks.transaction).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["business-b", undefined])(
+    "denies mismatched or missing canonical linkage (%s)",
+    async (linkedBusinessId) => {
+      mocks.owned.mockResolvedValue({ id: businessId });
+      mocks.query.mockResolvedValue({
+        business: { legacyPrismaBusinessId: linkedBusinessId },
+      });
+      expect((await GET()).status).toBe(403);
+      expect((await patch()).status).toBe(403);
+      expect(mocks.settings).not.toHaveBeenCalled();
+      expect(mocks.inventory).not.toHaveBeenCalled();
+      expect(mocks.customers).not.toHaveBeenCalled();
+      expect(mocks.transaction).not.toHaveBeenCalled();
+    },
+  );
+
+  it("fails closed when canonical verification is unavailable", async () => {
+    mocks.owned.mockResolvedValue({ id: businessId });
+    mocks.query.mockRejectedValue(new Error("Service unavailable"));
+    expect((await GET()).status).toBe(503);
+    expect((await patch()).status).toBe(503);
+    expect(mocks.settings).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("requires authenticated canonical access", async () => {
+    mocks.owned.mockResolvedValue({ id: businessId });
+    mocks.getToken.mockResolvedValue(null);
+    expect((await GET()).status).toBe(401);
+    expect((await patch()).status).toBe(401);
+    expect(mocks.query).not.toHaveBeenCalled();
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });

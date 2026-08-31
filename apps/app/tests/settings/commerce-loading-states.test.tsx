@@ -50,7 +50,10 @@ const payload = {
 };
 const empty: never[] = [];
 const directory = { members: [] };
-let settings = { settings: null as null };
+let settings = {
+  business: { legacyPrismaBusinessId: "business-a" },
+  settings: null as null,
+};
 let canonicalPending = false;
 const response = (status: number, body: unknown) => ({
   ok: status === 200,
@@ -76,7 +79,10 @@ describe("commerce settings load recovery", () => {
     vi.clearAllMocks();
     fetchMock.mockReset();
     canonicalPending = false;
-    settings = { settings: null };
+    settings = {
+      business: { legacyPrismaBusinessId: "business-a" },
+      settings: null,
+    };
     vi.stubGlobal("fetch", fetchMock);
     mocks.query.mockImplementation((reference) => {
       if (canonicalPending) return undefined;
@@ -165,7 +171,10 @@ describe("commerce settings load recovery", () => {
     );
     const { rerender } = render(<CommerceSettingsPage />);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    settings = { settings: null };
+    settings = {
+      business: { legacyPrismaBusinessId: "business-a" },
+      settings: null,
+    };
     fetchMock.mockResolvedValue(response(403, { error: "Forbidden" }));
     rerender(<CommerceSettingsPage />);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
@@ -176,5 +185,50 @@ describe("commerce settings load recovery", () => {
     expect(
       screen.queryByLabelText("Allow fractional sales"),
     ).not.toBeInTheDocument();
+  });
+
+  it("does not combine settings from different web and mobile businesses", async () => {
+    settings = {
+      business: { legacyPrismaBusinessId: "business-b" },
+      settings: null,
+    };
+    fetchMock.mockResolvedValue(response(200, payload));
+    render(<CommerceSettingsPage />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "does not match the linked mobile business",
+    );
+    expect(
+      screen.queryByLabelText("Allow fractional sales"),
+    ).not.toBeInTheDocument();
+    expect(mocks.mutation).not.toHaveBeenCalled();
+  });
+
+  it("preserves actionable business-unavailable errors", async () => {
+    fetchMock.mockResolvedValue(
+      response(403, { error: "Business is unavailable" }),
+    );
+    render(<CommerceSettingsPage />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Business is unavailable",
+    );
+  });
+
+  it("rechecks access before saving merchant settings and stops before any mutation on failure", async () => {
+    fetchMock.mockResolvedValue(response(200, payload));
+    render(<CommerceSettingsPage />);
+    await screen.findByLabelText("Allow fractional sales");
+    fetchMock.mockResolvedValue(
+      response(403, { error: "Business is unavailable" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Save.*loyalty|Save.*delivery|Save.*policy/i,
+      }),
+    );
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(2));
+    expect(mocks.mutation).not.toHaveBeenCalled();
+    expect(
+      fetchMock.mock.calls.some(([, options]) => options?.method === "PATCH"),
+    ).toBe(false);
   });
 });
