@@ -134,7 +134,7 @@ export default function Login() {
             disabled={loading}
             testID="login-button"
             accessibilityRole="button"
-            accessibilityLabel="Sign in"
+            accessibilityLabel="Sign In"
           >
             {loading ? (
               <ActivityIndicator color={COLORS.background} />
