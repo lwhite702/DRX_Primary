@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { getCurrentUser } from "@/lib/adapters/auth";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { errorResponse, successResponse } from "@/lib/api/response";
 
 export async function GET(
@@ -14,10 +14,7 @@ export async function GET(
   const user = await getCurrentUser();
   if (!user) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
 
-  const canManageUsers =
-    (await hasPermission("users.manage_all")) ||
-    (await hasPermission("staff.manage"));
-  if (!canManageUsers && user.id !== userId) {
+  if (!(await canManageNotificationRecipient(_request, user.id, userId))) {
     return errorResponse("FORBIDDEN", "Forbidden", 403);
   }
 

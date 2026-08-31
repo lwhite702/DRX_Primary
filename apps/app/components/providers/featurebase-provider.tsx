@@ -17,6 +17,7 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
   const appId = process.env.NEXT_PUBLIC_FEATUREBASE_APP_ID;
   const pathname = usePathname();
   const isAuthSurface =
+    pathname?.startsWith("/control") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/sign-in") ||

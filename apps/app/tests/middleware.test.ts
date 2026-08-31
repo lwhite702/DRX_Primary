@@ -50,6 +50,28 @@ async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: Au
 }
 
 describe("proxy auth and routing", () => {
+  it.each(["/admin", "/admin/users", "/admin/approvals"])("retires %s without disclosing a replacement", async path => {
+    const res = await runMiddleware(makeRequest(path, "deelrxcrm.app"), { userId: "owner" });
+    expect(res.status).toBe(404);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("does not require business onboarding for the configured platform entry", async () => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}`, "deelrxcrm.app"), { userId: "platform-user" });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+      expect(res.headers.get("cache-control")).toBe("private, no-store");
+      expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    } finally { vi.unstubAllEnvs(); }
+  });
+
+  it("returns 404 for guessed platform entry without redirecting", async () => {
+    const res = await runMiddleware(makeRequest("/control/admin", "deelrxcrm.app"), { userId: "owner" });
+    expect(res.status).toBe(404);
+    expect(res.headers.get("location")).toBeNull();
+  });
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { updateUserRole } from "@/app/actions/user-management";
 
 export async function PUT(
   request: NextRequest,
@@ -8,44 +10,16 @@ export async function PUT(
 ) {
   try {
     const { id: targetUserId } = await params;
-    const { userId: actorId } = await auth();
+    const admin = await getPlatformAdmin();
+    const actorId = admin?.userId;
 
     if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { role } = body;
-
-    // Update Role
-    // Note: Assuming there is only one role per user per business for now, or updating all?
-    // The legacy code used .eq('user_id', id) which implies updating ALL roles for that user?
-    // Or it assumes the user only has one role row.
-    // Prisma model `UserRole` allows multiple, but here we likely want to update the role for the current business context?
-    // However, the admin route path suggests a global user update?
-    // The legacy code syncs business_id from the ACTOR (user.id). This is weird.
-    // "Sync business_id for log ... select business_id ... eq user_id, user.id"
-    // It seems it logs against the admin's business.
-
-    // Let's update the user role.
-    await db.userRole.updateMany({
-      where: { userId: targetUserId },
-      data: { role },
-    });
-
-    // Log
-    await db.systemAuditLog.create({
-      data: {
-        entityId: targetUserId,
-        entityType: "user",
-        action: "update_user_role",
-        userId: actorId,
-        newValues: { role },
-        // businessId: ??? // We can fetch admin's business id if needed, for now logic is simplified
-      },
-    });
-
-    return NextResponse.json({ role }, { status: 200 });
+    const result = await updateUserRole(targetUserId, body.role, body.businessId);
+    return NextResponse.json(result, { status: result.error ? 400 : 200 });
   } catch (error) {
     console.error("Admin Update Error:", error);
     return NextResponse.json(
@@ -61,10 +35,14 @@ export async function DELETE(
 ) {
   try {
     const { id: targetUserId } = await params;
-    const { userId: actorId } = await auth();
+    const admin = await getPlatformAdmin();
+    const actorId = admin?.userId;
 
     if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    if (targetUserId === actorId || await db.adminUser.findFirst({ where: { userId: targetUserId } })) {
+      return NextResponse.json({ error: "Platform accounts cannot be deleted here" }, { status: 403 });
     }
 
     // Audit Log before deletion
@@ -95,7 +73,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Admin Delete Error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

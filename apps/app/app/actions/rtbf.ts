@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/adapters/auth/server";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -9,40 +9,17 @@ import { revalidatePath } from "next/cache";
  * This masks PII and removes tenant associations.
  */
 export async function initiateRTBF(tenantId: string, userId: string) {
-  const { userId: actorId } = await auth();
+  const admin = await getPlatformAdmin();
+  const actorId = admin?.userId;
 
   if (!actorId) {
-    return { error: "Not authenticated" };
+    return { error: "Global identity removal requires platform administration. Business owners manage memberships in Business Team." };
   }
 
   try {
-    // Check if actor is Owner of this tenant or Super Admin
-    const roleData = await db.userRole.findFirst({
-      where: {
-        userId: actorId,
-        businessId: tenantId,
-      },
-      select: { role: true },
-    });
-
-    const actorRole = roleData?.role?.toLowerCase() || "";
-    let isAuthorized = ["owner", "super_admin"].includes(actorRole);
-
-    if (!isAuthorized) {
-      // Fallback check in admin_users
-      const adminUser = await db.adminUser.findFirst({
-        where: { userId: actorId },
-        select: { role: true },
-      });
-      if (adminUser?.role === "super_admin") {
-        isAuthorized = true;
-      }
-    }
-
-    if (!isAuthorized) {
-      return {
-        error: "Unauthorized: Only Owners or Super Admins can initiate RTBF",
-      };
+    const target = await db.userRole.findFirst({ where: { userId, businessId: tenantId }, select: { id: true } });
+    if (!target || userId === actorId || await db.adminUser.findFirst({ where: { userId } })) {
+      return { error: "Target is unavailable or protected" };
     }
 
     // 1. Audit Log Initiation
@@ -85,10 +62,10 @@ export async function initiateRTBF(tenantId: string, userId: string) {
       },
     });
 
-    revalidatePath("/admin/users");
+    revalidatePath("/control/[consoleKey]/users", "page");
     return { success: true };
-  } catch (err: any) {
-    console.error("RTBF Action Error:", err);
-    return { error: err.message || "Failed to initiate RTBF" };
+  } catch {
+    console.error("RTBF action failed");
+    return { error: "Failed to initiate RTBF" };
   }
 }

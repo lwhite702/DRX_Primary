@@ -1,82 +1,89 @@
 import React from "react";
 import { Prisma } from "@prisma/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
-  admin: vi.fn(),
-  role: vi.fn(),
-  owner: vi.fn(),
+  auth: vi.fn(), admin: vi.fn(), role: vi.fn(), bypass: vi.fn(),
 }));
-vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth }));
-vi.mock("@/lib/auth/bypass", () => ({
-  isAuthBypassEnabledServer: () => false,
+vi.mock("@/lib/adapters/auth/server", () => ({
+  auth: mocks.auth, isAuthBypassEnabled: mocks.bypass,
 }));
-vi.mock("next/cache", () => ({ unstable_cache: (fn: unknown) => fn }));
 vi.mock("next/navigation", () => ({
-  redirect: () => {
-    throw new Error("REDIRECT_LOGIN");
-  },
+  notFound: () => { throw new Error("NOT_FOUND"); },
 }));
 vi.mock("@/lib/db", () => ({
-  db: {
-    adminUser: { findFirst: mocks.admin },
-    userRole: { findFirst: mocks.role },
-    businessProfile: { findFirst: mocks.owner },
-  },
+  db: { adminUser: { findFirst: mocks.admin }, userRole: { findFirst: mocks.role } },
 }));
-vi.mock("@/app/(app)/admin/_components/AdminNavShell", () => ({
-  AdminNavShell: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+vi.mock("@/components/platform/platform-shell", () => ({
+  PlatformShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-import AdminLayout from "@/app/(app)/admin/layout";
+import PlatformLayout from "@/app/(platform)/control/[consoleKey]/layout";
+import RetiredAdminPage from "@/app/(retired)/admin/[[...path]]/page";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { requirePlatformConsole } from "@/lib/auth/platform-console";
 
-describe("admin layout authorization", () => {
+const key = "a".repeat(32);
+describe("hard platform authorization boundary", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
     mocks.auth.mockResolvedValue({ userId: "synthetic-user" });
     mocks.admin.mockResolvedValue(null);
     mocks.role.mockResolvedValue(null);
-    mocks.owner.mockResolvedValue(null);
+    mocks.bypass.mockReturnValue(false);
   });
-  const render = async () =>
-    renderToStaticMarkup(
-      await AdminLayout({ children: <p>Protected admin content</p> }),
-    );
+  afterEach(() => { vi.unstubAllEnvs(); });
+  const render = async (consoleKey = key) => renderToStaticMarkup(
+    await PlatformLayout({ children: <p>Protected platform content</p>, params: Promise.resolve({ consoleKey }) }),
+  );
 
-  it("uses only real Prisma authorization models", () => {
-    const models = Prisma.dmmf.datamodel.models.map(({ name }) => name);
-    expect(models).toEqual(
-      expect.arrayContaining(["AdminUser", "UserRole", "BusinessProfile"]),
-    );
-    expect(models).not.toContain("BusinessUser");
+  it("uses the real platform grant model", () => {
+    expect(Prisma.dmmf.datamodel.models.map(({ name }) => name)).toContain("AdminUser");
   });
-  it("renders for an existing platform administrator without a business lookup", async () => {
+  it("renders for explicit platform admin without business membership", async () => {
     mocks.admin.mockResolvedValue({ role: "super_admin" });
-    expect(await render()).toContain("Protected admin content");
+    expect(await render()).toContain("Protected platform content");
+    expect(mocks.admin).toHaveBeenCalledWith({ where: { userId: "synthetic-user", role: "super_admin" }, select: { role: true } });
     expect(mocks.role).not.toHaveBeenCalled();
   });
-  it("renders for an existing business admin using the supported role model", async () => {
-    mocks.role.mockResolvedValue({ role: "admin" });
-    expect(await render()).toContain("Protected admin content");
-    expect(mocks.role).toHaveBeenCalledWith({
-      where: { userId: "synthetic-user", role: { in: ["owner", "admin"] } },
-      select: { role: true },
-    });
+  it.each(["owner", "admin", "staff", "manager", "super_admin"])("denies tenant %s even with forged platform permissions", async role => {
+    mocks.role.mockResolvedValue({ role, permissions: { "users.manage_all": true, all: true } });
+    await expect(render()).rejects.toThrow("NOT_FOUND");
+    expect(mocks.role).not.toHaveBeenCalled();
   });
-  it("does not expose admin content when no administrative role exists", async () => {
-    expect(await render()).toContain("Administrator Access Required");
-    expect(await render()).not.toContain("Protected admin content");
+  it.each(["owner", "admin", "", "unknown"])("rejects unrecognized platform grant %s", async role => {
+    mocks.admin.mockResolvedValue({ role });
+    await expect(render()).rejects.toThrow("NOT_FOUND");
   });
-  it("redirects anonymous requests before database access", async () => {
+  it("denies anonymous requests before database access", async () => {
     mocks.auth.mockResolvedValue({ userId: null });
-    await expect(render()).rejects.toThrow("REDIRECT_LOGIN");
+    await expect(render()).rejects.toThrow("NOT_FOUND");
     expect(mocks.admin).not.toHaveBeenCalled();
   });
-  it("does not grant access when authorization storage fails", async () => {
-    mocks.admin.mockRejectedValue(new Error("Synthetic database unavailable"));
-    await expect(render()).rejects.toThrow("Synthetic database unavailable");
+  it("does not allow development bypass into platform scope", async () => {
+    mocks.bypass.mockReturnValue(true);
+    mocks.admin.mockResolvedValue({ role: "super_admin" });
+    await expect(render()).rejects.toThrow("NOT_FOUND");
+    expect(mocks.auth).not.toHaveBeenCalled();
+  });
+  it("fails closed on storage failure without exposing provider details", async () => {
+    mocks.admin.mockRejectedValue(new Error("synthetic provider detail"));
+    await expect(render()).rejects.toThrow("NOT_FOUND");
+  });
+  it("checks grant again after revocation", async () => {
+    mocks.admin.mockResolvedValueOnce({ role: "super_admin" }).mockResolvedValueOnce(null);
+    expect(await getPlatformAdmin()).toEqual({ userId: "synthetic-user" });
+    expect(await getPlatformAdmin()).toBeNull();
+  });
+  it("does not reveal the console for guessed or unset routes", async () => {
+    await expect(render("admin")).rejects.toThrow("NOT_FOUND");
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", "");
+    await expect(requirePlatformConsole(key)).rejects.toThrow("NOT_FOUND");
+    expect(mocks.admin).not.toHaveBeenCalled();
+  });
+  it("retires /admin without a redirect or data access", () => {
+    expect(() => RetiredAdminPage()).toThrow("NOT_FOUND");
+    expect(mocks.admin).not.toHaveBeenCalled();
   });
 });

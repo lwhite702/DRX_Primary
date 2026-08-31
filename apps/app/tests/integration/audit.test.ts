@@ -3,7 +3,9 @@ import { GET } from "@/app/api/admin/audit-logs/route";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/adapters/auth/server";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+vi.mock("@/lib/auth/platform-admin", () => ({ getPlatformAdmin: vi.fn() }));
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
@@ -31,7 +33,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/auth/server-guards", () => ({
-  hasPermission: vi.fn(),
+  hasBusinessPermission: vi.fn(),
 }));
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
@@ -47,7 +49,8 @@ describe("Audit Logs API Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (hasPermission as any).mockResolvedValue(true);
+    vi.mocked(hasBusinessPermission).mockResolvedValue(true);
+    vi.mocked(getPlatformAdmin).mockResolvedValue(null);
     (resolveAuthContext as any).mockResolvedValue({
       userId: "admin-1",
       businessId: null,
@@ -57,7 +60,8 @@ describe("Audit Logs API Integration", () => {
     (db.businessProfile.findFirst as any).mockResolvedValue(null);
   });
 
-  it("should allow super_admin (or any authorized user) to fetch latest logs", async () => {
+  it("does not grant a platform admin implicit business-audit access", async () => {
+    vi.mocked(getPlatformAdmin).mockResolvedValue({ userId: "admin-1" });
     // Mock Auth
     (auth as any).mockResolvedValue({ userId: "admin-1" });
     (db.userRole.findFirst as any).mockResolvedValue({ id: "role-1" });
@@ -71,15 +75,9 @@ describe("Audit Logs API Integration", () => {
     const res = await GET(req);
     const data = await res.json();
 
-    expect(db.systemAuditLog.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderBy: { createdAt: "desc" },
-        take: 100,
-      }),
-    );
-
-    expect(data.items).toHaveLength(1);
-    expect(res.status).toBe(200);
+    expect(db.systemAuditLog.findMany).not.toHaveBeenCalled();
+    expect(data.items).toBeUndefined();
+    expect(res.status).toBe(403);
   });
 
   it("should filter logs by business_id", async () => {

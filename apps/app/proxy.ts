@@ -96,6 +96,8 @@ function middlewareWithoutClerk(
     return NextResponse.next();
   }
   const pathname = nextUrlLike.pathname;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return new NextResponse(null, { status: 404 });
+  if (pathname === "/control" || pathname.startsWith("/control/")) return new NextResponse(null, { status: 404 });
   const hostname = req.headers.get("host") || "";
   const hostKind = classifyDrxHost(hostname);
 
@@ -147,6 +149,7 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
   ? clerkMiddleware(async (auth, req) => {
       const url = req.nextUrl;
       const pathname = url.pathname;
+      if (pathname === "/admin" || pathname.startsWith("/admin/")) return new NextResponse(null, { status: 404 });
       const hostname = req.headers.get("host") || "";
       const hostKind = classifyDrxHost(hostname);
 
@@ -191,6 +194,19 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
       }
 
       const { userId, sessionClaims } = await auth();
+      // Platform staff need no merchant onboarding. The page and every data
+      // operation independently require an explicit platform grant.
+      if (pathname === "/control" || pathname.startsWith("/control/")) {
+        const key = process.env.PLATFORM_CONSOLE_SLUG;
+        if (!userId || !key || !/^[a-f0-9]{32,64}$/.test(key) || pathname.split("/")[2] !== key) {
+          return new NextResponse(null, { status: 404 });
+        }
+        const response = NextResponse.next();
+        response.headers.set("Cache-Control", "private, no-store");
+        response.headers.set("X-Robots-Tag", "noindex, nofollow");
+        response.headers.set("Referrer-Policy", "no-referrer");
+        return response;
+      }
       const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
         hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
@@ -231,9 +247,7 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
     })
   : null;
 
-export const proxy = (
-  hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk
-)!;
+export const proxy = (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
 
 export const config = {
   matcher: [

@@ -1,5 +1,7 @@
 # WRE-83 repair verification
 
+Follow-up: the user subsequently approved a hard platform/business distinction in WRE-87. The historical owner/admin console fallback described below is superseded by [WRE-87 platform separation](WRE-87_PLATFORM_BOUNDARY.md). Do not merge that fallback independently of the replacement authorization policy.
+
 Date: 2026-08-30. Status: local repairs verified; not merged, deployed, or launch-ready.
 
 Issue: https://linear.app/wrelik/issue/WRE-83/repair-admin-render-crash-and-commerce-reportingretry-regressions

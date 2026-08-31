@@ -2,6 +2,7 @@ import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { Permission, Role, ROLE_PERMISSIONS } from "./permissions";
 import { redirect } from "next/navigation";
+import { getPlatformAdmin } from "./platform-admin";
 
 export async function getCurrentUserRole(
   businessId?: string,
@@ -49,6 +50,7 @@ export async function hasPermission(
   permission: Permission,
   businessId?: string,
 ): Promise<boolean> {
+  if (permission === "users.manage_all") return Boolean(await getPlatformAdmin());
   if (isAuthBypassEnabled()) {
     return true;
   }
@@ -82,6 +84,8 @@ export async function hasBusinessPermission(
   businessId: string,
   permission: Permission,
 ): Promise<boolean> {
+  // No tenant assignment or explicit permission JSON can confer platform scope.
+  if (permission === "users.manage_all") return false;
   if (isAuthBypassEnabled()) return true;
 
   const ownedBusiness = await db.businessProfile.findFirst({

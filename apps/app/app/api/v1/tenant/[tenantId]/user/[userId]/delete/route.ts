@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 
 export async function POST(
   request: NextRequest,
@@ -8,32 +9,12 @@ export async function POST(
 ) {
   try {
     const { tenantId, userId } = await params;
-    const { userId: actorId } = await auth();
-
-    if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Role check: Only Owner/Super Admin can trigger RTBF / Permanent Deletion
-    const roleData = await db.userRole.findFirst({
-      where: {
-        userId: actorId,
-        businessId: tenantId,
-      },
-      select: { role: true },
-    });
-
-    if (
-      !roleData ||
-      !["owner", "super_admin"].includes(roleData.role?.toLowerCase() || "")
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Forbidden: Only Owners or Super Admins can initiate RTBF deletion",
-        },
-        { status: 403 },
-      );
+    const admin = await getPlatformAdmin();
+    if (!admin) return NextResponse.json({ error: "Global identity deletion requires platform administration" }, { status: 403 });
+    const actorId = admin.userId;
+    const target = await db.userRole.findFirst({ where: { userId, businessId: tenantId }, select: { id: true } });
+    if (!target || userId === actorId || await db.adminUser.findFirst({ where: { userId } })) {
+      return NextResponse.json({ error: "Target is unavailable or protected" }, { status: 403 });
     }
 
     // 1. Log the initiation

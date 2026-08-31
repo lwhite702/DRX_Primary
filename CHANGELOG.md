@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.
+- WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. This branch is not deployed; entry-path and role-policy migration require release review.
+
 ### Fixed
 
 - **Admin access (WRE-83):** Replaced the nonexistent business-role model lookup with the supported role store and avoided unnecessary business lookups for existing platform administrators.

@@ -21,8 +21,8 @@ export function TopNav() {
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
 
-  const showAdminConsole =
-    hasPermission("system.manage") || hasPermission("users.manage_all");
+  const showBusinessSettings =
+    hasPermission("settings.configure_pos");
   // Default to true while loading to prevent layout shifts
   const canQuickSale = loading || hasPermission("sales.create");
   const showDashboardViewSwitcher =
@@ -80,7 +80,7 @@ export function TopNav() {
           <BusinessSwitcher />
           {role && (
             <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">
-              {role.replace("_", " ")}
+              {role === "super_admin" ? "Business admin (legacy)" : `Business ${role.replace("_", " ")}`}
             </span>
           )}
 
@@ -92,12 +92,12 @@ export function TopNav() {
               },
             }}
           >
-            {showAdminConsole && (
+            {showBusinessSettings && (
               <UserButton.MenuItems>
                 <UserButton.Action
-                  label="Administration"
+                  label="Business settings"
                   labelIcon={<Settings className="w-4 h-4" />}
-                  onClick={() => router.push("/admin")}
+                  onClick={() => router.push("/settings")}
                 />
               </UserButton.MenuItems>
             )}
@@ -107,4 +107,3 @@ export function TopNav() {
     </header>
   );
 }
-

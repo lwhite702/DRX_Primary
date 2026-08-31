@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initiateRTBF } from "@/app/actions/rtbf";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+vi.mock("@/lib/auth/platform-admin", () => ({ getPlatformAdmin: vi.fn() }));
 
 const mockDb = {
   userRole: {
@@ -36,6 +38,7 @@ describe("RTBF Privacy Integration", () => {
     vi.clearAllMocks();
 
     mockAuth.mockResolvedValue({ userId: "owner-1" });
+    vi.mocked(getPlatformAdmin).mockResolvedValue({ userId: "platform-1" });
 
     // Setup default positive mocks
     mockDb.userRole.findFirst.mockResolvedValue({ role: "owner" });
@@ -45,7 +48,7 @@ describe("RTBF Privacy Integration", () => {
     mockDb.userRole.deleteMany.mockResolvedValue({ count: 1 });
   });
 
-  it("should mask user PII and remove roles when initiated by owner", async () => {
+  it("should mask user PII and remove the selected membership when initiated by a platform admin", async () => {
     // Start RTBF
     const result = await initiateRTBF("tenant-1", "user-shred");
 
@@ -83,12 +86,13 @@ describe("RTBF Privacy Integration", () => {
   });
 
   it("should block non-owners from initiating RTBF", async () => {
+    vi.mocked(getPlatformAdmin).mockResolvedValue(null);
     mockDb.userRole.findFirst.mockResolvedValue({ role: "cashier" });
     mockDb.adminUser.findFirst.mockResolvedValue(null);
 
     const result = await initiateRTBF("tenant-1", "user-shred");
 
-    expect(result.error).toContain("Only Owners or Super Admins");
+    expect(result.error).toContain("requires platform administration");
     expect(mockDb.user.update).not.toHaveBeenCalled();
     expect(mockDb.userRole.deleteMany).not.toHaveBeenCalled();
   });
