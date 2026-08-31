@@ -2,7 +2,7 @@
 
 Status: local implementation; not deployed or approved for launch.
 
-Branch: `codex/WRE-87-platform-boundary`, based on WRE-83 repair commit `12efe625a6ada6c25a463fc2cf16d26f46b20a75`. Canonical checkout and production are not modified by this work.
+Branch: `codex/WRE-87-platform-boundary`, originally based on WRE-83 repair commit `12efe625a6ada6c25a463fc2cf16d26f46b20a75`. Platform separation was committed locally as `2429af297`. Main advanced independently during implementation; the branch incorporates main commit `7233b5d7accd8d0353cb53856d6925bf344b35b1`, preserving the WRE-84 commerce-context and Clerk/Convex session-token fixes alongside the WRE-83 retry safeguards. This task does not modify the canonical checkout or deploy these changes.
 
 Authoritative direction: [DRX Official Product Document](https://docs.google.com/document/d/1h7E_coDctQ9Dp4Lu4_JiNGymnUaDGF5cqYbcVkaTQcs), updated in place with the user's explicit platform/business distinction. Engineering record: [WRE-87](https://linear.app/wrelik/issue/WRE-87/separate-platform-administration-from-business-ownership-and-isolate).
 
@@ -31,7 +31,7 @@ Platform operational summaries exclude customer content, AI prompts/results, pro
 6. Verify existing platform records without auto-promoting any business role. Provisioning or changing a real grant requires a separate explicit account/permission action.
 7. Review this change with WRE-83 before merging. Do not merge the earlier business-owner-to-platform fallback by itself. The old PR compatibility gate is not waived.
 
-Release impact: major under the repository policy because the operator entry path and formerly accepted authorization paths are intentionally incompatible. Roadmap impact: none. The inherited 0.6.13/build 44 metadata is not a newly approved release cut for WRE-87. Final version/build preparation, PR release review, production configuration and deployment remain pending; do not label this released.
+Release impact: major under the repository policy because the operator entry path and formerly accepted authorization paths are intentionally incompatible. Roadmap impact: none. Merge resolution keeps main's newer 0.6.14 version and the branch's existing native build 44 rather than regressing it to 43. This inherited metadata is not a newly approved release cut for WRE-87; the next native counter must be checked against distribution records. Final version/build preparation, PR release review, production configuration and deployment remain pending; do not label this released.
 
 ## Evidence and limitations
 
@@ -39,7 +39,7 @@ Release impact: major under the repository policy because the operator entry pat
 - Focused platform authorization, scope and presentation tests cover explicit grants, denied tenant roles/forged permission JSON, anonymous/bypass access, revocation, provider failure, opaque-path validation, retired paths, platform-only navigation and unavailable metrics.
 - Existing tenant team and inventory processing tests are retained. Additional hierarchy, RTBF and audit integration fixtures exercise the changed policy; these are mocked integration tests, not credentialed database evidence.
 - Automated verification results are recorded in WRE-87 after the final runs. Release-integrity repository checks do not substitute for PR-context compatibility/release review.
-- Final local root suite: `pnpm test:run` — 623 tests across 99 files passed. Explicit hierarchy/RTBF/audit integration run — 7 tests across 3 files passed. App typecheck passed; production build includes isolated dynamic platform routes. Changed-file ESLint passed with warnings in inherited/relocated code; warnings are not counted as a clean lint result.
+- Final local root suite after integrating main: `pnpm test:run` — 662 tests across 102 files passed. Explicit hierarchy/RTBF/audit integration run — 7 tests across 3 files passed. Merged-branch app typecheck (`tsc --noEmit --incremental false`) and mobile typecheck passed. Changed-file ESLint passed with 22 warnings in inherited/relocated code and fixtures; warnings are not counted as a clean lint result.
 - `pnpm release:integrity` passed repository consistency and fixture checks for inherited metadata. No PR-context major release approval, version cut, rollout, or native distribution is implied.
 - Final web build generated 112 static entries and dynamic platform/approval routes. Mobile `tsc --noEmit` passed. Local unauthenticated HTTP probes of `/admin`, `/admin/users`, and `/control/admin` returned 404 with no redirect. These negative probes are not authenticated UI evidence.
 - Still required: real platform-admin and business-owner browser sessions, second-business negatives, keyboard/mobile viewport inspection, sign-out/back/offline cache checks, configured-entry verification and reviewed deployment. No live role grants, business mutations, customer records, native builds, store submissions or production deployment were performed.

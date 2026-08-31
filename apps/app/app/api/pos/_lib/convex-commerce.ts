@@ -2,7 +2,7 @@ import { ConvexHttpClient } from "convex/browser";
 
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { auth } from "@/lib/adapters/auth/server";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { db } from "@/lib/db";
 import type { QuickPosDeliveryState, QuickPosPaymentMethod } from "@/lib/quick-pos/types";
 
@@ -40,8 +40,7 @@ async function authenticatedClient() {
   if (!url) {
     throw new Error("Canonical checkout is unavailable in this environment");
   }
-  const { getToken } = await auth();
-  const token = await getToken({ template: "convex" });
+  const token = await getConvexAuthToken();
   if (!token) {
     throw new Error("Canonical checkout authentication is unavailable");
   }
