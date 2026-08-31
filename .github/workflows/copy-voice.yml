@@ -1,3 +1,4 @@
+# Runs only when canonical customer-facing copy changes.
 name: Copy Voice Gate
 
 on:
