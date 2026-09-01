@@ -1,6 +1,6 @@
 # WRE-89: Fractional product setup
 
-Status: implementation verified locally; 0.7.0 prepared for user-approved web/backend deployment. Deployment is pending; no store distribution or native build counter changes. Release impact: minor. Roadmap impact: add.
+Status: 0.7.0 web/backend deployed with user approval on 2026-08-31; authenticated cross-client/device acceptance and native distribution remain pending. The subsequent product-dialog repair is verified locally and 0.7.1 is prepared with explicit deployment approval; publication evidence is pending. Original release impact: minor; roadmap impact: add. Dialog repair release impact: patch; roadmap impact: none.
 
 ## Operator workflow
 
@@ -31,3 +31,19 @@ Tracking: https://linear.app/wrelik/issue/WRE-89
 - Unsigned arm64 iOS simulator build passed; `CheckoutMathTests` passed all 17 tests, including three new product-configuration tests. The generic simulator build's x86_64 dependency link failure does not affect the verified arm64 destination; signed devices are still unverified.
 - Android Metro/Hermes export passed after installing isolated worktree dependencies with the frozen lockfile. The initial shared dependency symlinks were removed; no dependency versions changed. This is bundle evidence, not a signed Android build or device test.
 - `pnpm release:integrity` passed, including version, changelog, behavioral, release-evidence, and read-only Featurebase fixtures. Official product requirements were updated and read back. No Featurebase publication, production mutation, push, tag, or store submission occurred.
+
+## Approved web/backend deployment — 2026-08-31
+
+- PR [173](https://github.com/lwhite702/DRX_Primary/pull/173) merged as `6d5c8b70626cd592e9f2231ec390c2a61b39e1fd`. The deployed source commit `237bcead08fc9d747753728f8b0129f2d90ddad2` and merge commit have identical tree `0e5981ff40407b99e84f83bbf562bd0218e6fcf5`.
+- Vercel deployment `dpl_8JjMA9kifxpSLgtefQ2bxBqhueGr` reached READY and was aliased to `www.deelrxcrm.app`, `deelrxcrm.app`, and `app.deelrxcrm.app`. Convex production `brainy-mouse-884` deployed with strict TypeScript/schema checks and no index deletions.
+- The authenticated browser showed the fractional configuration fields and a healthy database health response. No real product or checkout was submitted during that inspection.
+- GitHub Actions could not start because of its usage budget. The user approved proceeding without Actions; local gates passed, and no branch protection or authorization control was disabled.
+- This is web/backend deployment evidence, not full release acceptance. No tag, Featurebase publication, store submission, or signed-device acceptance was established.
+
+## Product-dialog follow-up — 2026-08-31
+
+- Branch `codex/WRE-89-product-dialog-polish`, based on the merge above. Scope is only the creation/edit caption, inventory-dialog viewport containment, and the required 0.7.1 product metadata; pricing, persistence, permissions, schemas, native behavior and native build identifiers are unchanged.
+- Cause: creation pre-fills a SKU in a truthy draft object without a persisted ID; the dialog incorrectly treated the object as an existing product. It now checks `editingItem.id`, consistent with the form/save flow.
+- A synthetic local browser fixture using the real page, hook, form, dialog and CSS reproduced the expanded dialog at 1,428 pixels high in a 1280×720 viewport. Close was above the viewport and Cancel below it. The fix limits the dialog to 688 pixels (16-pixel top/bottom margins) and scrolls only the form, retaining the header and Close control. Browser Cancel, Close and Escape all dismissed successfully after expansion. No backend writes were made; the temporary fixture was removed.
+- Seven new tests cover generated-SKU creation, guided first-product creation, persisted-product editing, scroll containment, and all three dismissal paths without setup-link reopening. The focused run passed 12 tests across three files, including existing fractional-form and inventory-adapter tests. The initial red run reproduced the wrong title; the layout contract also failed before the fix.
+- The user approved 0.7.1 production deployment on 2026-09-01. Publication must still be read back against the exact merge SHA. Keep WRE-89 In Review until its remaining runtime, tenant-isolation and native acceptance gates are verified.
