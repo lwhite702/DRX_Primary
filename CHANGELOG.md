@@ -9,15 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Pending deployment and authenticated cross-client/device verification.
+- **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Web/backend deployed on 2026-08-31; authenticated cross-client/device verification and native distribution remain pending.
 
 ### Changed
+
+- **Patch release preparation**: Synchronized product metadata to 0.7.1 for the approved WRE-89 product-dialog deployment. Native build identifiers are unchanged; store distribution and full cross-platform acceptance are not implied.
 
 - **Release preparation**: Synchronized product metadata to 0.7.0 for the approved WRE-89 web/backend deployment. Native build identifiers are unchanged; store distribution and cross-platform acceptance are not implied.
 
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
+
+- **Product dialog usability**: New products with a generated SKU use Add product copy instead of Edit product. The expanded fractional-selling form scrolls within the viewport while its header and Close control remain visible; Cancel, Close, and Escape dismiss without reopening from the onboarding link (WRE-89).
 
 - **Commerce authentication compatibility**: Web commerce settings, fractional checkout, and canonical reporting use the current Clerk/Convex session-token integration while retaining support for legacy JWT templates. Token-provider failures fail closed without logging provider details (WRE-84).
 - **Commerce settings access and recovery**: Fractional-selling, bulk-pricing, loyalty, and delivery configuration now use the selected business’s existing owner and role permissions. Failed settings loads show an actionable error and a read-only retry instead of an endless loading message (WRE-84).
