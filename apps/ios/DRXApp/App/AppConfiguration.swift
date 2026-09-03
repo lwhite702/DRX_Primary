@@ -52,20 +52,8 @@ struct AppConfiguration: Sendable, Equatable {
         self.apiBaseURL = apiBaseURL
         self.convexDeploymentURL = convexDeploymentURL
         let sentryDSN = Self.optionalHTTPSURL(for: "SENTRY_DSN", in: info)
-        let postHogAPIKey = Self.value(for: "POSTHOG_API_KEY", in: info)
+        let postHogAPIKey = Self.optionalPostHogAPIKey(in: info)
         let postHogHost = Self.optionalHTTPSURL(for: "POSTHOG_HOST", in: info)
-
-        if environment == .production {
-            guard sentryDSN != nil else {
-                throw ConfigurationError.missingOrInvalid("SENTRY_DSN")
-            }
-            guard postHogAPIKey?.hasPrefix("phc_") == true else {
-                throw ConfigurationError.missingOrInvalid("POSTHOG_API_KEY")
-            }
-            guard postHogHost != nil else {
-                throw ConfigurationError.missingOrInvalid("POSTHOG_HOST")
-            }
-        }
 
         self.sentryDSN = sentryDSN
         self.postHogAPIKey = postHogAPIKey
@@ -85,6 +73,14 @@ struct AppConfiguration: Sendable, Equatable {
         guard let value = value(for: key, in: info) else { return nil }
         guard let url = URL(string: value), url.scheme == "https", url.host != nil else { return nil }
         return url
+    }
+
+    private static func optionalPostHogAPIKey(in info: [String: Any]) -> String? {
+        guard let value = value(for: "POSTHOG_API_KEY", in: info),
+              value.hasPrefix("phc_") else {
+            return nil
+        }
+        return value
     }
 
     private static func canonicalAPIBaseURL(_ url: URL) -> URL? {

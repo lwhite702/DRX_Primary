@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
+
 - **Patch release preparation**: Synchronized product metadata to 0.7.1 for the approved WRE-89 product-dialog deployment. Native build identifiers are unchanged; store distribution and full cross-platform acceptance are not implied.
 
 - **Release preparation**: Synchronized product metadata to 0.7.0 for the approved WRE-89 web/backend deployment. Native build identifiers are unchanged; store distribution and cross-platform acceptance are not implied.
@@ -20,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
+
+- **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
 
 - **Product dialog usability**: New products with a generated SKU use Add product copy instead of Edit product. The expanded fractional-selling form scrolls within the viewport while its header and Close control remain visible; Cancel, Close, and Escape dismiss without reopening from the onboarding link (WRE-89).
 
