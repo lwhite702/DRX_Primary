@@ -50,6 +50,9 @@ jobs:
           brew install xcodegen
           xcodegen --version
 
+      - name: Validate telemetry configuration contract
+        run: ci_scripts/test_sync_telemetry_xcconfig.sh
+
       - name: Generate Xcode project
         run: |
           set -euo pipefail
