@@ -32,7 +32,7 @@ export default function ResourcesHubPage() {
       </SectionBlock>
 
       <SectionBlock title="Proof from live product behavior" className="mt-6">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           <Link className="rounded-xl border border-border p-4 hover:border-neon-lime/40" href="/resources/guides">
             <p className="font-semibold text-white">Guides</p>
             <p className="mt-1 text-sm text-text-secondary">Operational how-to content.</p>
@@ -63,6 +63,10 @@ export default function ResourcesHubPage() {
           <Link className="rounded-xl border border-border p-4 hover:border-neon-lime/40" href="/beta">
             <p className="font-semibold text-white">Beta details</p>
             <p className="mt-1 text-sm text-text-secondary">Current release posture and limits.</p>
+          </Link>
+          <Link className="rounded-xl border border-accent/30 bg-accent/[0.04] p-4 hover:border-accent/60" href="/resources/mobile-testing">
+            <p className="font-semibold text-white">Mobile test companion</p>
+            <p className="mt-1 text-sm text-text-secondary">iOS, Android, and required mobile-web checks in one report.</p>
           </Link>
         </div>
       </SectionBlock>

@@ -34,6 +34,19 @@ This runbook is for authorized internal testers using synthetic data only. Do no
 10. Sign in with a second synthetic tenant and confirm no data from the first tenant appears.
 11. Open **Help & Support** and record whether both the documentation and email actions work.
 
+## Required mobile-web pass
+
+Every Android tester must also open `https://deelrxcrm.app` in Chrome or their primary phone browser and complete the mobile-web section of the Mobile Test Companion at `https://deelrxcrm.com/resources/mobile-testing`:
+
+1. Sign in to the same synthetic tenant and confirm the expected business and role.
+2. Confirm the synthetic product and customer created natively appear on mobile web.
+3. Complete a synthetic cash sale on mobile web and verify native readback exactly once.
+4. Check navigation, forms, keyboard behavior, scrolling, and portrait layout.
+5. Sign out, reload, and verify a second synthetic tenant cannot see first-tenant data.
+6. Open Resources, Privacy, and Terms and report any broken destination.
+
+The test is incomplete until both the native Android and mobile-web sections have outcomes.
+
 ## Evidence to return
 
 For each device, report:
@@ -42,9 +55,9 @@ For each device, report:
 - DRX app version and Android build number;
 - tester Google account only as a redacted identifier, for example `l***@example.com`;
 - pass/fail for each required check;
+- mobile browser name and pass/fail for every required mobile-web check;
 - time and timezone of the run;
 - sanitized screenshots of failures only; and
 - exact reproduction steps, expected result, and observed result.
 
 Report blockers through the approved DRX support channel. The verified public support destination is [Resources](https://deelrxcrm.com/resources); the public privacy and terms pages are [Privacy Policy](https://deelrxcrm.com/legal/privacy) and [Terms of Service](https://deelrxcrm.com/legal/terms).
-

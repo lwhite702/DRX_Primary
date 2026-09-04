@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mobile internal testing companion**: Added a private-index guided web checklist for authorized iOS and Android testers with synthetic-data safeguards, device/build fields, per-workflow outcomes, progress tracking, and local-only copy/download reporting. Every tester is also guided through a required mobile-web parity pass on the same phone (WRE-49).
+
 - **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Web/backend deployed on 2026-08-31; authenticated cross-client/device verification and native distribution remain pending.
 
 ### Changed
