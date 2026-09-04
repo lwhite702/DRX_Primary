@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 1,
+  "helpCenterId": "l4o5pamx855mr65p",
+  "assetCount": 20,
+  "publicationState": "prepared-not-uploaded",
+  "assets": [
+    {
+      "id": "getting-started-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/getting-started.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "1633388",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 19308,
+      "sha256": "1c7f8024f3ea2d94502fb22d272aba6bf26e552635212a07eb07329deee73040",
+      "promptSummary": "Setup, Inventory, and a saved sale connected by one clear operating path.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "privacy-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/privacy-and-minimal-data.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "6417807",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 28546,
+      "sha256": "379dfe14fb4d8f11acfff20d32e96b153784b0546def09321dcc7a85d9915d09",
+      "promptSummary": "Privacy choices, time, and a permanent deletion boundary.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "workspace-access-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/workspaces-and-access.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "4735029",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "Two workspaces connect to separate groups of scoped team access.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 18276,
+      "sha256": "c2a39fe2e119bb9ea3f1781c12a8b2e416e4f65fbf6614b58618d727147b158b",
+      "promptSummary": "Workspace selection and scoped team access.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "customers-credit-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/customers-and-credit.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "1831819",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "A customer alias card connects to a purchase and received-payment ledger.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 10352,
+      "sha256": "a115444212e89ddd53683089b4986c1912bbc69c61e7faee3f2960f61b95e9b2",
+      "promptSummary": "Customer identity and balance records without implying money transfer.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "inventory-intake-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/inventory-intake.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "6300641",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 22824,
+      "sha256": "c4555f456e856b73de581b83e92e3b4f04d9c0408dbbab54f044cf9f2ce9bfc3",
+      "promptSummary": "Goods received, organized, and counted.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "quick-sale-header",
+      "kind": "header",
+      "sourcePath": "app-docs/_assets/help-center/headers/quick-sale.webp",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "0236106",
+          "placement": "lead",
+          "heading": null
+        }
+      ],
+      "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
+      "caption": null,
+      "provenance": "generated",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1600,
+      "height": 640,
+      "bytes": 23960,
+      "sha256": "1452d89be8955922abc9435e1a0bd03151f4b049a79a3ef20995bbd35a99d150",
+      "promptSummary": "A sale moves from item selection to a saved record.",
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "dashboard-reports-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/dashboard-reports.png",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "2502678",
+          "placement": "before-heading",
+          "heading": "Check your numbers"
+        },
+        {
+          "articleId": "3489602",
+          "placement": "before-heading",
+          "heading": "A total looks wrong"
+        }
+      ],
+      "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/visual-fixtures/dashboard"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1160,
+      "height": 760,
+      "bytes": 83167,
+      "sha256": "f08a54002faf3b157c288aaeab718ff0243e61fbd7c13707db68320ffac4dd6d",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "privacy-settings-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/privacy-settings.png",
+      "editableSourcePath": "app-docs/_assets/help-center/screenshots/source/privacy-settings.svg",
+      "articlePlacements": [
+        {
+          "articleId": "6417807",
+          "placement": "before-heading",
+          "heading": "Review and save the settings"
+        }
+      ],
+      "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/settings"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 107322,
+      "sha256": "3f998604463c074bd80555efba24ac45721611cbc61dc80909f8c251fcf97193",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "workspace-team-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/workspace-team.png",
+      "editableSourcePath": "app-docs/_assets/help-center/screenshots/source/workspace-team.svg",
+      "articlePlacements": [
+        {
+          "articleId": "4735029",
+          "placement": "before-heading",
+          "heading": "Switch businesses"
+        }
+      ],
+      "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/workspaces", "/settings/team"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 109159,
+      "sha256": "41ba04fd3e7651ccb09338eb9b48167b27faee44014687efa86ede835439a1f8",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "customers-credit-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/customers-credit.png",
+      "editableSourcePath": "app-docs/_assets/help-center/screenshots/source/customers-credit.svg",
+      "articlePlacements": [
+        {
+          "articleId": "1831819",
+          "placement": "before-heading",
+          "heading": "Find or add a customer"
+        },
+        {
+          "articleId": "9156766",
+          "placement": "before-heading",
+          "heading": "A customer will not save or appear"
+        }
+      ],
+      "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/customers", "/credit"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 113621,
+      "sha256": "1f92878954bf994233964b06f74ca1b77238bdf6ce159518216ef388e1b03cd9",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "inventory-intake-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/inventory-intake.png",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "6300641",
+          "placement": "before-heading",
+          "heading": "Add or edit a product"
+        }
+      ],
+      "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/visual-fixtures/inventory"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1160,
+      "height": 760,
+      "bytes": 74985,
+      "sha256": "bead94e6bd5faaef708081676b32f97b7547d458b769064916a4d82b70ffa51d",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "quick-sale-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/quick-sale.png",
+      "editableSourcePath": null,
+      "articlePlacements": [
+        {
+          "articleId": "0236106",
+          "placement": "before-heading",
+          "heading": "Build the sale"
+        }
+      ],
+      "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/visual-fixtures/pos-sale"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1160,
+      "height": 760,
+      "bytes": 77769,
+      "sha256": "c9fe2259e44402d12314ec9c016ef40c51addb83cf7fda73bd462c8dfbbcd82a",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "sales-history-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/sales-history.png",
+      "editableSourcePath": "app-docs/_assets/help-center/screenshots/source/sales-history.svg",
+      "articlePlacements": [
+        {
+          "articleId": "5281725",
+          "placement": "before-heading",
+          "heading": "Find a sale"
+        }
+      ],
+      "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/sales"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 97633,
+      "sha256": "de05701dc513f01c12ae81702fb4fbafc9abd5ba01ffe0828bacd4521d66bff7",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "deliveries-screen",
+      "kind": "screenshot",
+      "sourcePath": "app-docs/_assets/help-center/screenshots/deliveries.png",
+      "editableSourcePath": "app-docs/_assets/help-center/screenshots/source/deliveries.svg",
+      "articlePlacements": [
+        {
+          "articleId": "7723456",
+          "placement": "before-heading",
+          "heading": "Include delivery in a sale"
+        }
+      ],
+      "alt": "Illustrative completed sale linked to fictional delivery details.",
+      "caption": "Illustrative screen with fictional data.",
+      "provenance": "fixture",
+      "verifiedRoutes": ["/sales", "/deliveries"],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 102590,
+      "sha256": "5dfb26cc23a4626108ef20b17cf9d38ae81d02858a7476c45d3ca98fca22247b",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "safe-support-screenshot",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/safe-support-screenshot.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/safe-support-screenshot.svg",
+      "articlePlacements": [
+        {
+          "articleId": "2070517",
+          "placement": "before-heading",
+          "heading": "Get help with a private issue"
+        }
+      ],
+      "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 96802,
+      "sha256": "023f52e71ecc5ac8ba7ab515b911891251dbd8b513f97ef2d373aedf73c7b08f",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "privacy-retention-timeline",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/privacy-retention-timeline.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/privacy-retention-timeline.svg",
+      "articlePlacements": [
+        {
+          "articleId": "6417807",
+          "placement": "before-heading",
+          "heading": "Choose a privacy preset"
+        }
+      ],
+      "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 77461,
+      "sha256": "81451cb52c506697ac007a71443d7db89ab2560b239c74581fcbb26cb66b0f9a",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "workspace-access-recovery",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/workspace-access-recovery.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/workspace-access-recovery.svg",
+      "articlePlacements": [
+        {
+          "articleId": "3948745",
+          "placement": "before-heading",
+          "heading": "You cannot sign in"
+        }
+      ],
+      "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 88930,
+      "sha256": "3e43a52b31cfb16f7b1c4071beb113cd908382038aac6e79596ce53fc09f4250",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "inventory-save-and-count",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/inventory-save-and-count.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/inventory-save-and-count.svg",
+      "articlePlacements": [
+        {
+          "articleId": "0272622",
+          "placement": "before-heading",
+          "heading": "Intake will not save"
+        }
+      ],
+      "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 91269,
+      "sha256": "8e3ca37e3b3d787ca52a6bf78af4fa878af775a9a5f974123d276d9e4d2e2b94",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "uncertain-checkout-payment",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/uncertain-checkout-payment.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/uncertain-checkout-payment.svg",
+      "articlePlacements": [
+        {
+          "articleId": "3230948",
+          "placement": "before-heading",
+          "heading": "The result is uncertain"
+        },
+        {
+          "articleId": "9156766",
+          "placement": "before-heading",
+          "heading": "A payment or balance looks wrong"
+        }
+      ],
+      "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 88667,
+      "sha256": "7b070ad0dfa38e0a1971bfcbbd56a626c056eb46fa1d1b58cf983fd7a5c5cfee",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    },
+    {
+      "id": "barcode-keyboard-path",
+      "kind": "diagram",
+      "sourcePath": "app-docs/_assets/help-center/diagrams/barcode-keyboard-path.png",
+      "editableSourcePath": "app-docs/_assets/help-center/diagrams/barcode-keyboard-path.svg",
+      "articlePlacements": [
+        {
+          "articleId": "2709969",
+          "placement": "before-heading",
+          "heading": "Connect and check a scanner"
+        }
+      ],
+      "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+      "caption": null,
+      "provenance": "code-native",
+      "verifiedRoutes": [],
+      "verifiedAtCommit": "66dc79f963c8c0d3dc7a075bc69fec04e2893426",
+      "width": 1400,
+      "height": 800,
+      "bytes": 88992,
+      "sha256": "d5b5dd56642318696aa181cb1583d6d3af6ab39e0bc3db72a9cba2eae51a46ea",
+      "promptSummary": null,
+      "featurebase": {
+        "state": "prepared",
+        "attachmentIdentity": null,
+        "publicUrl": null
+      }
+    }
+  ]
+}
