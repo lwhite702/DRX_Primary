@@ -110,7 +110,7 @@ export default function More() {
         {businessId && (
           <View style={styles.businessCard}>
             <Ionicons name="storefront" size={20} color={COLORS.accent} />
-            <Text style={styles.businessLabel}>Connected to business</Text>
+            <Text style={styles.businessLabel}>{session?.businessName || "Connected to business"}</Text>
           </View>
         )}
 

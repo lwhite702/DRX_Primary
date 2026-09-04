@@ -103,6 +103,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Run the full suite once: same coverage as both former shards, one setup.
       - run: pnpm --filter deelrxcrm-app exec vitest run
+      - run: pnpm --filter deelrxcrm-marketing test
       - run: pnpm test:coverage:strict
 
   required-ux:

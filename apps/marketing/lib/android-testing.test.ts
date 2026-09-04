@@ -117,6 +117,21 @@ describe("first-time tester guidance", () => {
     expect(webCheckout?.steps.join(" ")).toContain("Quick Sale");
   });
 
+  it("only asks Android testers to verify controls the app exposes", () => {
+    const identity = nativeTestChecks.find((check) => check.id === "identity");
+    const onboarding = nativeTestChecks.find((check) => check.id === "onboarding");
+    const customer = nativeTestChecks.find((check) => check.id === "customer");
+    const signout = nativeTestChecks.find((check) => check.id === "signout");
+
+    expect(identity?.steps.join(" ")).toContain("Open More");
+    expect(onboarding?.steps.join(" ")).toContain("owner name and shop name");
+    expect(onboarding?.steps.join(" ")).not.toContain("tax choice");
+    expect(customer?.steps.join(" ")).toContain("available credit");
+    expect(customer?.steps.join(" ")).not.toContain("reopen the customer");
+    expect(signout?.steps.join(" ")).toContain("tap Sign Out");
+    expect(signout?.steps.join(" ")).not.toContain("then Settings");
+  });
+
   it("offers broad choices for common phones and tablets", () => {
     expect(deviceSuggestions.android.length).toBeGreaterThanOrEqual(50);
     expect(deviceSuggestions.ios.length).toBeGreaterThanOrEqual(30);

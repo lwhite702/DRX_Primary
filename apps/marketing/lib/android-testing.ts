@@ -5,7 +5,7 @@ export const nativeTestChecks = [
     prompt: "Sign in and make sure you see the right test shop and job role.",
     steps: [
       "Open the DRX app and sign in with the invite you received.",
-      "Check the shop name near the top of the screen.",
+      "Open More and check that the shop name matches your test invite.",
       "Make sure the screens you can open fit the job role you were given.",
     ],
   },
@@ -15,10 +15,9 @@ export const nativeTestChecks = [
     prompt: "Treat the welcome flow as the first test: finish every step and make sure the new workspace opens correctly.",
     steps: [
       "Start with a new invited test account so you see the welcome flow.",
-      "Use a made-up owner name, business name, and location.",
-      "Choose a business type, region, tax choice, and whether DRX should track inventory.",
-      "If asked about a teammate, skip it unless you received another made-up test address.",
-      "Review the setup summary, finish, and make sure the new workspace opens.",
+      "Enter a made-up owner name and shop name.",
+      "Answer any other questions shown on your phone. It is okay if your app goes straight to the new workspace after the names.",
+      "Finish setup and make sure the new workspace opens.",
       "Tell us if any question is confusing, too small, cut off, or hard to answer.",
     ],
   },
@@ -36,12 +35,13 @@ export const nativeTestChecks = [
   {
     id: "customer",
     title: "Add a customer",
-    prompt: "Add a made-up customer, then make sure their details and credit limit are still there.",
+    prompt: "Add a made-up customer, then make sure they stay in the customer list with the right available credit.",
     steps: [
       "Tap Customers, then Add.",
       "Enter a made-up name. Leave the phone and email blank, or use clearly made-up details.",
       "Add a small credit limit so you can try a credit sale later.",
-      "Save, reopen the customer, and make sure the details still match.",
+      "Save the customer, close and reopen DRX, then find them in the customer list.",
+      "Make sure the available credit matches the limit you entered. You do not need to reopen contact details if your phone app does not offer that yet.",
     ],
   },
   {
@@ -53,7 +53,7 @@ export const nativeTestChecks = [
       "Tap Checkout, choose Cash, enter enough cash, and finish the sale.",
       "Check Sales History and Inventory. The sale should appear once and stock should go down.",
       "Start another sale, pick your made-up customer, choose Credit, and finish it.",
-      "Check the customer's balance and Sales History. The numbers should match the sale.",
+      "Check the customer's available credit and Sales History. The numbers should match the sale.",
     ],
   },
   {
@@ -94,7 +94,7 @@ export const nativeTestChecks = [
     title: "Sign out and come back",
     prompt: "Sign out, close DRX, and reopen it. The last shop's customer and sales details should be gone.",
     steps: [
-      "Open More, then Settings, and sign out.",
+      "Open More, scroll down, and tap Sign Out.",
       "Close DRX completely and open it again.",
       "Before signing back in, make sure you cannot see the last shop's products, customers, or sales.",
     ],

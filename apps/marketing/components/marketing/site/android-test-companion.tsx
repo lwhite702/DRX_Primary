@@ -35,9 +35,9 @@ const statuses: Array<{ value: AndroidTestStatus; label: string }> = [
   { value: "blocked", label: "Couldn't test" },
 ];
 
-function freshReport(): AndroidTestReportInput {
+function freshReport(platform: AndroidTestReportInput["platform"] = "android"): AndroidTestReportInput {
   return {
-    platform: "android",
+    platform,
     testerAlias: "",
     deviceModel: "",
     androidVersion: "",
@@ -65,7 +65,12 @@ export function MobileTestCompanion() {
   const [saveState, setSaveState] = useState<"saved" | "error">("saved");
 
   useEffect(() => {
-    const saved = parseMobileTestProgress(window.localStorage.getItem(mobileTestStorageKey) ?? "");
+    let saved = null;
+    try {
+      saved = parseMobileTestProgress(window.localStorage.getItem(mobileTestStorageKey) ?? "");
+    } catch {
+      setSaveState("error");
+    }
     if (saved) {
       setReport(saved.report);
       setSyntheticConfirmed(saved.syntheticConfirmed);
@@ -165,8 +170,12 @@ export function MobileTestCompanion() {
 
   const reset = () => {
     if (!window.confirm("Clear this local test report and start over?")) return;
-    window.localStorage.removeItem(mobileTestStorageKey);
-    setReport(freshReport());
+    try {
+      window.localStorage.removeItem(mobileTestStorageKey);
+    } catch {
+      setSaveState("error");
+    }
+    setReport(freshReport(report.platform));
     setSyntheticConfirmed(false);
     setSavedAt("");
   };

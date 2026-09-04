@@ -23,10 +23,10 @@ This runbook is for authorized internal testers using synthetic data only. Do no
 ## Required checks
 
 1. Sign in and confirm the expected business and role are shown.
-2. Complete onboarding/business setup if the synthetic account is new.
+2. Complete the owner-name and shop-name setup if the synthetic account is new, then confirm the workspace opens.
 3. Add a synthetic inventory item and confirm its quantity and price persist after relaunch.
-4. Add a synthetic customer and confirm the name, optional contact fields, and credit limit persist.
-5. Complete one online cash sale and one online credit sale; verify totals, inventory movement, customer balance, sales history, and audit behavior.
+4. Add a synthetic customer, relaunch, and confirm the customer remains in the list with the expected available credit.
+5. Complete one online cash sale and one online credit sale; verify totals, inventory movement, available credit, and sales history.
 6. Put the phone offline, complete an authorized cash sale, relaunch the app, reconnect, and verify the queued sale synchronizes exactly once.
 7. If the account is authorized for offline credit, repeat the offline test within its configured limits and verify the balance reconciles exactly once.
 8. Open Deliveries, grant notification permission when prompted, and verify synthetic delivery reminders reveal no customer data on the lock screen.
