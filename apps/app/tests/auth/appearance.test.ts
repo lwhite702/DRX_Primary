@@ -1,5 +1,25 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
+
+const globalStyles = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
+
+function cssRule(selectors: string, occurrence = 0) {
+  let ruleStart = -1;
+
+  for (let index = 0; index <= occurrence; index += 1) {
+    ruleStart = globalStyles.indexOf(selectors, ruleStart + 1);
+  }
+
+  const ruleEnd = globalStyles.indexOf("}", ruleStart);
+
+  if (ruleStart === -1 || ruleEnd === -1) {
+    throw new Error(`Expected to find CSS rule for ${selectors}`);
+  }
+
+  return globalStyles.slice(ruleStart, ruleEnd);
+}
 
 function channelToLinear(channel: number) {
   const normalized = channel / 255;
@@ -43,5 +63,25 @@ describe("Clerk authentication appearance", () => {
     expect(drxClerkAuthAppearance.variables.colorInputBackground).toBe("#262626");
     expect(drxClerkAuthAppearance.variables.colorInputText).toBe("#FFFFFF");
     expect(contrastRatio("#FFFFFF", "#262626")).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps global Clerk overrides aligned with the accessible auth theme", () => {
+    const baseRule = cssRule(
+      ".cl-formFieldInput,\n.cl-input,\n.cl-otpCodeFieldInput {",
+      1,
+    );
+    const hoverRule = cssRule(".cl-formFieldInput:hover,\n.cl-input:hover {");
+    const focusRule = cssRule(
+      ".cl-formFieldInput:focus,\n.cl-input:focus,\n.cl-otpCodeFieldInput:focus {",
+    );
+    const placeholderRule = cssRule(
+      ".cl-formFieldInput::placeholder,\n.cl-input::placeholder {",
+    );
+
+    expect(baseRule).toContain("background-color: #262626 !important;");
+    expect(baseRule).toContain("border: 1px solid #737373 !important;");
+    expect(hoverRule).toContain("border-color: #8a8a8a !important;");
+    expect(focusRule).toContain("background-color: #2c2c2c !important;");
+    expect(placeholderRule).toContain("color: #b3b3b3 !important;");
   });
 });

@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
 
-- **Login field visibility**: Raised the unfocused Clerk login-field boundary contrast above 3:1 and strengthened field and placeholder separation from the surrounding dark panel so email and password boxes remain visible across display conditions (WRE-98).
+- **Login field visibility**: Raised the unfocused Clerk login-field boundary contrast above 3:1 and aligned the higher-priority global Clerk overrides with the shared auth theme, strengthening field and placeholder separation from the surrounding dark panel so email and password boxes remain visible across display conditions (WRE-98).
 
 - **Product dialog usability**: New products with a generated SKU use Add product copy instead of Edit product. The expanded fractional-selling form scrolls within the viewport while its header and Close control remain visible; Cancel, Close, and Escape dismiss without reopening from the onboarding link (WRE-89).
 
