@@ -3,9 +3,15 @@ title: "Customers and store credit"
 description: "Keep customer records minimal and record payments against the correct open balance."
 ---
 
+![A customer alias card connects to a purchase and received-payment ledger.](../_assets/help-center/headers/customers-and-credit.webp)
+
 ## Before you start
 
 Confirm the business, your customer and credit permissions, and the shop's approved credit policy. **Store Credit** in web navigation opens **Credit Management**. Here, credit means an amount a customer owes for later payment; it is not a gift card or proof that money was received.
+
+![Illustrative customer and Record Payment forms using a fictional alias and balance.](../_assets/help-center/screenshots/customers-credit.png)
+
+Illustrative screen with fictional data.
 
 ## Find or add a customer
 

@@ -3,6 +3,8 @@ title: "Help and support"
 description: "Find guidance or report a problem without sharing private business or customer records."
 ---
 
+![Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.](../_assets/help-center/diagrams/safe-support-screenshot.png)
+
 ## Get help with a private issue
 
 1. Note the screen, action, approximate time, device, and exact error. Do not include passwords, verification codes, customer details, or payment credentials.

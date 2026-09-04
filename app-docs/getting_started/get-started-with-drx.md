@@ -3,6 +3,8 @@ title: "Get started with DRX"
 description: "Set up your owner account and business before recording your first sale."
 ---
 
+![A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.](../_assets/help-center/headers/getting-started.webp)
+
 ## Before you start
 
 DRX is in early access. These steps cover the desktop web beta for accounts with access. Staff should use their business invitation, not create another owner account.

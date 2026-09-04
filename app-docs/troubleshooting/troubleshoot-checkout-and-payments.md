@@ -23,6 +23,8 @@ If you cannot verify the total, stop. Do not change prices or Inventory counts t
 
 A payment-method choice records the method; it is not proof that money moved outside DRX.
 
+![For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
+
 ## The result is uncertain
 
 1. Keep the checkout open and note the time and any order reference.

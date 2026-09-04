@@ -2,8 +2,8 @@
   "issue": "WRE-92",
   "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
   "publicInspectionTime": "2026-08-31T05:35:46.301Z",
-  "contentHash": "96eeb38b615935f3c6eb7d7894e326346e25dac017fa84ee3940ea6b7fd7b596",
-  "scope": "19 visible published articles; API-only content and drafts still blocked",
+  "contentHash": "9ef9545787817dec073f98bf82a3cf7b81ff7189296754af64028809d76e3106",
+  "scope": "19 published text articles audited; 20 visual assets with 23 placements prepared; API-only content, drafts, and visual publication remain blocked",
   "collections": [
     {
       "id": "9257182",
@@ -67,14 +67,16 @@
     "articleDestinationAdditions": 15,
     "articleDestinationRemovals": 26,
     "visualsBefore": 0,
-    "visualsAfter": 0
+    "visualsAfter": 23,
+    "preparedVisualAssets": 20,
+    "articlesWithVisuals": 16
   },
   "articles": [
     {
       "id": "1633388",
       "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
-      "sourceSha256": "541c35597512167d1047f700028bd72522bf0ded554c31fb47b3335a5808eee5",
-      "renderedFingerprint": "58b2223dc38c334fcaf44ac852a53ab8dc4aec12435dbf46dcb021c92a621503",
+      "sourceSha256": "b764e19dc6ba476c313b90c853d929bb6cfe469bd42c88716f01288e9ad386ae",
+      "renderedFingerprint": "ab2237734eef65b70a72b6782b0583ee8c81f740e2b8a2f737a03a337956e170",
       "oldTitle": "Get started with DRX",
       "title": "Get started with DRX",
       "action": "update",
@@ -148,7 +150,16 @@
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "getting-started-header",
+          "kind": "header",
+          "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -257,13 +268,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "2502678",
       "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
-      "sourceSha256": "cb9e1bbcc9696aefc4293ccc6882be03d7bf8867f28afff0580ff5f780e4fb86",
-      "renderedFingerprint": "68c7bcbb40e83ef3ee7b5a9c8141e1ac30ae3518d1f76d0e31d27de7d57186c3",
+      "sourceSha256": "49edbf641080f53cbeda3df9fe2e089f7d56eafb49cd90239db0f0466ffb2703",
+      "renderedFingerprint": "b3e9f328d4fce8e528daea885a6290938336602c998208510bb7a1ae87e569a4",
       "oldTitle": "Dashboard and reports",
       "title": "Dashboard and reports",
       "action": "update",
@@ -297,13 +309,20 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/5281725"
-        ],
+        "added": ["https://drx.featurebase.app/articles/5281725"],
         "removed": []
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "dashboard-reports-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "placement": "before-heading",
+          "heading": "Check your numbers",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -395,13 +414,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "2070517",
       "sourcePath": "app-docs/feature_overview/help-and-support.md",
-      "sourceSha256": "80b9ac47827e3074e3dcbba741212dd8a3e7a4b65b3a276408e09ce6d44f37cc",
-      "renderedFingerprint": "39fd4ea6bba1f4e0490818d1600916871ea74b41af214a329017493341437340",
+      "sourceSha256": "f16019c39118a27b44719ccaf24fbc32a92e6d010cf776ebd510bf8ce9c683f9",
+      "renderedFingerprint": "15428b15981a66d8f0da41e482732b612a4f9ab762b4d0de4c10da202f582356",
       "oldTitle": "Help and support",
       "title": "Help and support",
       "action": "update",
@@ -459,9 +479,7 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://deelrxcrm.com/waitlist"
-        ],
+        "added": ["https://deelrxcrm.com/waitlist"],
         "removed": [
           "https://drx.featurebase.app/en/help",
           "https://drx.featurebase.app/roadmap",
@@ -470,7 +488,16 @@
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "safe-support-screenshot",
+          "kind": "diagram",
+          "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
+          "placement": "before-heading",
+          "heading": "Get help with a private issue",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -533,13 +560,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "3489602",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
-      "sourceSha256": "2b16f0ef28128710240d91821fdf422998ad800343ebde1780da7ab3fba2bed8",
-      "renderedFingerprint": "b34aab2d39ca688e8923fefd78fa0cef99c58af27d8575834c2579d01508de7d",
+      "sourceSha256": "9aecd45df6764a649d145b4a4cedaaf99e38c140a822d5566de24052588cb2ac",
+      "renderedFingerprint": "7ad27af6d186caffaefa60b4e6b337c167253650934eaa4bb14830dd518bd0ad",
       "oldTitle": "Troubleshoot dashboard and reports",
       "title": "Troubleshoot dashboard and reports",
       "action": "update",
@@ -584,9 +612,7 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/2070517"
-        ],
+        "added": ["https://drx.featurebase.app/articles/2070517"],
         "removed": [
           "https://drx.featurebase.app/articles/3948745",
           "https://drx.featurebase.app/articles/3230948",
@@ -596,7 +622,16 @@
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "dashboard-reports-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "placement": "before-heading",
+          "heading": "A total looks wrong",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -686,13 +721,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "6417807",
       "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
-      "sourceSha256": "80137d3b4d5cbd96485f153642d12f5d074e57af856fbe58ede7f89b59123a41",
-      "renderedFingerprint": "13db37cefdec2bbfce5904e7de371e77014bd3b6d701f00be19416f381623895",
+      "sourceSha256": "40eb239555c132a2ef4f7a8829df7e72f302041c9d71699b2f27f28d155e380b",
+      "renderedFingerprint": "30f9c49125d315aa039e59888adb91429b6206ce038236b699e2226f0bc400cd",
       "oldTitle": "Privacy and minimal data",
       "title": "Privacy and minimal data",
       "action": "update",
@@ -727,12 +763,35 @@
       ],
       "linkChanges": {
         "added": [],
-        "removed": [
-          "https://drx.featurebase.app/articles/4735029"
-        ]
+        "removed": ["https://drx.featurebase.app/articles/4735029"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "privacy-header",
+          "kind": "header",
+          "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "privacy-retention-timeline",
+          "kind": "diagram",
+          "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
+          "placement": "before-heading",
+          "heading": "Choose a privacy preset",
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "privacy-settings-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
+          "placement": "before-heading",
+          "heading": "Review and save the settings",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -833,13 +892,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "3948745",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
-      "sourceSha256": "600e7a82fabfa27b6f3214ede9f66a3dcab4e7d41b7a23b3540bd8adbcb24dbe",
-      "renderedFingerprint": "8761cf44f2c36f1fc12facd6adaca33cb0b8d1cef9133a37c8ca2467f8af3d3f",
+      "sourceSha256": "7420017c4fe047d79e40a546ff8ec10f0fad6c2a51b17b3ad69e725d700f944a",
+      "renderedFingerprint": "f3f65cfddb50fa8c9cbbaa2cac84018a0760b95ffe12071d1fb4f04921239c47",
       "oldTitle": "Troubleshoot workspaces and access",
       "title": "Troubleshoot workspaces and access",
       "action": "update",
@@ -869,15 +929,20 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/2070517"
-        ],
-        "removed": [
-          "https://drx.featurebase.app/articles/3489602"
-        ]
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": ["https://drx.featurebase.app/articles/3489602"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "workspace-access-recovery",
+          "kind": "diagram",
+          "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
+          "placement": "before-heading",
+          "heading": "You cannot sign in",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -965,13 +1030,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "4735029",
       "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
-      "sourceSha256": "49aaca7622870eddc517f6031465cd61bab4cea1e4dd4b38c0225aafda6325b5",
-      "renderedFingerprint": "984bf5c91a2fd5d5ca0fb0f22eee4895f10b324213dd259786fa6182539436a9",
+      "sourceSha256": "9631e67637fe2b17a4ef664fc4ba97ecb4363c5fbb8911423e9f0e6a63fa19a3",
+      "renderedFingerprint": "f2653fbb2b0649970c2756a5f362b24690b3b1d1735f330f3f1bd7e4ff485d53",
       "oldTitle": "Switch workspaces and check access",
       "title": "Switch workspaces and check access",
       "action": "update",
@@ -1013,16 +1079,31 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/6417807"
-        ],
+        "added": ["https://drx.featurebase.app/articles/6417807"],
         "removed": [
           "https://drx.featurebase.app/articles/1831819",
           "https://drx.featurebase.app/articles/2502678"
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "workspace-access-header",
+          "kind": "header",
+          "alt": "Two workspaces connect to separate groups of scoped team access.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "workspace-team-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
+          "placement": "before-heading",
+          "heading": "Switch businesses",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -1110,13 +1191,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "1831819",
       "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
-      "sourceSha256": "35f5a45585fafbb4a63f4965104e7096dd01e42486e46bea57c1c15f3be8b366",
-      "renderedFingerprint": "b0ca7540d164750c0808f428417668b4303cea46d1bb18bd042e81607d4078bf",
+      "sourceSha256": "5d8e00e201cd80970279820b4aa708f49e10fa67d1c105027dda3eb6b63eac5f",
+      "renderedFingerprint": "547e4dee35c543723821f1c630deddcd9e14f5cd57d9d79058863f9fed7ab3cb",
       "oldTitle": "Customers and store credit",
       "title": "Customers and store credit",
       "action": "update",
@@ -1154,15 +1236,28 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/6417807"
-        ],
-        "removed": [
-          "https://drx.featurebase.app/articles/0236106"
-        ]
+        "added": ["https://drx.featurebase.app/articles/6417807"],
+        "removed": ["https://drx.featurebase.app/articles/0236106"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "customers-credit-header",
+          "kind": "header",
+          "alt": "A customer alias card connects to a purchase and received-payment ledger.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "customers-credit-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "placement": "before-heading",
+          "heading": "Find or add a customer",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -1267,13 +1362,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "9156766",
       "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
-      "sourceSha256": "9ee35398067ba1199b1f353150c2a01b26aec3858ff09034eafe458c85475e2e",
-      "renderedFingerprint": "0eb34de1b25436e034bb8cfe1f6e2aa48ce71944fecc010ee3c1e8ad5d5089dc",
+      "sourceSha256": "32aeafc884af7ec6ba869d9b54e3cfeab7028f9c0824fc7ec6d97d0ef63b0e87",
+      "renderedFingerprint": "263d3ed7e83e8f46b8b7b1d082b80f642bd8f100ac23f89a5b1a27915372dd61",
       "oldTitle": "Troubleshoot customers and credit",
       "title": "Troubleshoot customers and credit",
       "action": "update",
@@ -1303,15 +1399,28 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/2070517"
-        ],
-        "removed": [
-          "https://drx.featurebase.app/articles/3230948"
-        ]
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": ["https://drx.featurebase.app/articles/3230948"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "customers-credit-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "placement": "before-heading",
+          "heading": "A customer will not save or appear",
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "uncertain-checkout-payment",
+          "kind": "diagram",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "placement": "before-heading",
+          "heading": "A payment or balance looks wrong",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -1406,13 +1515,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "6300641",
       "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
-      "sourceSha256": "c92fcb87fd5b983bb7c0a69ef42ccd1f8c009ac4057e33c0fd5d6b53e62a0157",
-      "renderedFingerprint": "526b9c0c88c8a227fa2d0333fc316a8e103d7a370f2896b49af5b2cceb142a51",
+      "sourceSha256": "6dfa2e51a4ff62274094bd9a39099e0642b10ab3748c1f02a67f6e42218fe3e0",
+      "renderedFingerprint": "3af46fb7c7f9a7e5b932dee2d252331dd13355e29fee8084c814b0d1f0b130ef",
       "oldTitle": "Inventory intake and adjustments",
       "title": "Inventory intake and adjustments",
       "action": "update",
@@ -1446,7 +1556,24 @@
         "removed": []
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "inventory-intake-header",
+          "kind": "header",
+          "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "inventory-intake-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
+          "placement": "before-heading",
+          "heading": "Add or edit a product",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -1576,13 +1703,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "0272622",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
-      "sourceSha256": "d952cfd44566d8b7e84b59b7c51ea925b52e0591187bec28bbbece9fe76fae20",
-      "renderedFingerprint": "8a04b0d1b7361d3718284f6d24f78eb0b46010c4e237cee4fc2647e7bed79295",
+      "sourceSha256": "22711ced00888bebe96ae83a5d56fc83682e93dfc465ccfc8b3387ce98b959d4",
+      "renderedFingerprint": "b50ecd55f872c7245c2e886182bde194043e364cb69ebe7d330484b1c44e2fa1",
       "oldTitle": "Troubleshoot inventory and audit",
       "title": "Troubleshoot inventory and audit",
       "action": "update",
@@ -1607,13 +1735,20 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/2070517"
-        ],
+        "added": ["https://drx.featurebase.app/articles/2070517"],
         "removed": []
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "inventory-save-and-count",
+          "kind": "diagram",
+          "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
+          "placement": "before-heading",
+          "heading": "Intake will not save",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -1756,13 +1891,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "2995914",
       "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
       "sourceSha256": "9d86e4266f43394a5d13a7add8423489cc6f17d162f24bc2a2540771b524a074",
-      "renderedFingerprint": "31530fdc93b078f24509ed5347f4dc010ff1048119713007a28195f471c382db",
+      "renderedFingerprint": "bcf1fbc284712be7887a4edc17e8cdf4a6cd8a6de610c6bdcf4aa7e9f7c4f864",
       "oldTitle": "DRX Intelligence",
       "title": "DRX Intelligence",
       "action": "update",
@@ -1843,23 +1979,19 @@
         }
       ],
       "previousEmphasizedLabels": [],
-      "intendedEmphasizedLabels": [
-        "Inventory",
-        "Orders & Receipts"
-      ],
-      "sourceEvidence": [
-        "apps/app/app/(app)/ai-intelligence/page.tsx"
-      ],
+      "intendedEmphasizedLabels": ["Inventory", "Orders & Receipts"],
+      "sourceEvidence": ["apps/app/app/(app)/ai-intelligence/page.tsx"],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
     },
     {
       "id": "3974136",
       "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
       "sourceSha256": "1d3188cf452c4f74f3789058d6dd121d2e2fa9b6c9c3bd5f12cb1188fc31715f",
-      "renderedFingerprint": "638dba92f6ad156b7369159c84ff044db603a4895ec3176da3185de414b7fa1e",
+      "renderedFingerprint": "ceb19c59d5b72fa8c20b02ec2c3cf14c37b8be664dcb651ab5795460136d4e78",
       "oldTitle": "Purchase orders (beta)",
       "title": "Purchase orders (beta)",
       "action": "update",
@@ -1947,11 +2079,7 @@
         }
       ],
       "previousEmphasizedLabels": [],
-      "intendedEmphasizedLabels": [
-        "Inventory",
-        "Add stock",
-        "Total Cost"
-      ],
+      "intendedEmphasizedLabels": ["Inventory", "Add stock", "Total Cost"],
       "sourceEvidence": [
         "docs/BRAND_VOICE.md",
         "apps/marketing/lib/feature-canon.ts",
@@ -1965,13 +2093,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
     },
     {
       "id": "9003136",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
       "sourceSha256": "141c3b80f236893b2ed38b14b0eb46955dd4c71777f80053295c90ea6b980160",
-      "renderedFingerprint": "0d2100cac0d2a252c6bbdb27b19a02b4397a6958e23a4f4b86d10c30a1cf526d",
+      "renderedFingerprint": "9001188dbef4242d21226e2e317390ea90c4b46033b09d95ef1914066eda3a45",
       "oldTitle": "Troubleshoot AI Intelligence",
       "title": "Troubleshoot AI Intelligence",
       "action": "update",
@@ -2005,9 +2134,7 @@
       ],
       "linkChanges": {
         "added": [],
-        "removed": [
-          "https://drx.featurebase.app/articles/3230948"
-        ]
+        "removed": ["https://drx.featurebase.app/articles/3230948"]
       },
       "beforeVisuals": [],
       "intendedVisuals": [],
@@ -2073,19 +2200,18 @@
       ],
       "previousEmphasizedLabels": [],
       "intendedEmphasizedLabels": [],
-      "sourceEvidence": [
-        "apps/app/app/(app)/ai-intelligence/page.tsx"
-      ],
+      "sourceEvidence": ["apps/app/app/(app)/ai-intelligence/page.tsx"],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
     },
     {
       "id": "0236106",
       "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
-      "sourceSha256": "f95e2835d08a505db232f6fd0fe3f46039d8a05a6871cddefc4a1c76d552fe73",
-      "renderedFingerprint": "971a4a372f42fa015c7bcb0ce65c09692c5df0393d3c35f5b4a5bef2a2f30271",
+      "sourceSha256": "7e08952eb24c715108f4a4aabb53053bc93dda293d0944259a179789350bccbe",
+      "renderedFingerprint": "1bbe5674b0b729e0f0c4045212cec8d434009dc8d188375c577208ad7028347b",
       "oldTitle": "Quick Sale checkout",
       "title": "Quick Sale checkout",
       "action": "update",
@@ -2123,15 +2249,28 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/5281725"
-        ],
-        "removed": [
-          "https://drx.featurebase.app/articles/7723456"
-        ]
+        "added": ["https://drx.featurebase.app/articles/5281725"],
+        "removed": ["https://drx.featurebase.app/articles/7723456"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "quick-sale-header",
+          "kind": "header",
+          "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "prepared"
+        },
+        {
+          "assetId": "quick-sale-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
+          "placement": "before-heading",
+          "heading": "Build the sale",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -2238,13 +2377,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "5281725",
       "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
-      "sourceSha256": "2f389a3e7c0a5a9f8fcb5496c6e338ea1c5a9e6f13523915ccb66f9afcf9f6f0",
-      "renderedFingerprint": "e18847a7382b9a84db72ec8e2b1436551e1a3bd84296d0957e8a4dbbf2a3fcff",
+      "sourceSha256": "4e8c440974185bcd3f840c7c39234318b1d8e0c485e3ffd9c5adf69fe52a2e4c",
+      "renderedFingerprint": "9bc949166a8c28d500c798a056c50ee1887464b71fdde22ccef6516a4ab17bd7",
       "oldTitle": "Sales history and receipts",
       "title": "Sales history and receipts",
       "action": "update",
@@ -2278,7 +2418,16 @@
         "removed": []
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "sales-history-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
+          "placement": "before-heading",
+          "heading": "Find a sale",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -2373,13 +2522,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "3230948",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
-      "sourceSha256": "f8e617ee7130dc34949db31c735636b60b1d6dbb7ee2ad4999f3d8f63b9e80d9",
-      "renderedFingerprint": "e07c42dff33f36338503406bd7870fd007651537bd3aa5f4bb9ddd6bb01dccd3",
+      "sourceSha256": "d4229b6560abeca7fe87bdd0173962cb1725c6888bcd9cd45cd8eca5f2f4da2d",
+      "renderedFingerprint": "3829ce1c2c460f669d3335ac7fcbf7bbc3b02337775269b6d91ce113489327ab",
       "oldTitle": "Troubleshoot checkout and payments",
       "title": "Troubleshoot checkout and payments",
       "action": "update",
@@ -2417,9 +2567,7 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/2070517"
-        ],
+        "added": ["https://drx.featurebase.app/articles/2070517"],
         "removed": [
           "https://drx.featurebase.app/articles/2709969",
           "https://drx.featurebase.app/articles/9156766",
@@ -2427,7 +2575,16 @@
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "uncertain-checkout-payment",
+          "kind": "diagram",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "placement": "before-heading",
+          "heading": "The result is uncertain",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -2516,10 +2673,7 @@
           "text": "Related articles"
         }
       ],
-      "previousEmphasizedLabels": [
-        "Quick POS:",
-        "Standard Sales:"
-      ],
+      "previousEmphasizedLabels": ["Quick POS:", "Standard Sales:"],
       "intendedEmphasizedLabels": [
         "Continue to Payment",
         "Pay",
@@ -2541,13 +2695,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "7723456",
       "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
-      "sourceSha256": "d73a86516bc839145a1cba284e194c545808b0140e9fe1de7c384dc8dd7a3f0a",
-      "renderedFingerprint": "a7739510ef0e20f97e41bfa0bd891b0c29750560a127722cc872681cde8f2e4c",
+      "sourceSha256": "9e398aff05a298fb9bb27f878c73b3df079026c64eea806d85c52907ec396f6a",
+      "renderedFingerprint": "cdadef5fa0a8d0ce44ca60f7e4d8b04b326e59988794cad047354b685e4d57db",
       "oldTitle": "Standard Sales console",
       "title": "Sales and deliveries (beta)",
       "action": "retitle-and-update",
@@ -2585,15 +2740,20 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/0236106"
-        ],
-        "removed": [
-          "https://drx.featurebase.app/articles/5281725"
-        ]
+        "added": ["https://drx.featurebase.app/articles/0236106"],
+        "removed": ["https://drx.featurebase.app/articles/5281725"]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "deliveries-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative completed sale linked to fictional delivery details.",
+          "placement": "before-heading",
+          "heading": "Include delivery in a sale",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -2648,9 +2808,7 @@
           "text": "Related articles"
         }
       ],
-      "previousEmphasizedLabels": [
-        "Mixed"
-      ],
+      "previousEmphasizedLabels": ["Mixed"],
       "intendedEmphasizedLabels": [
         "Point of Sale",
         "Orders & Receipts",
@@ -2683,13 +2841,14 @@
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "Verified one redirect from https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console to https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta; final HTTP status 200",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     },
     {
       "id": "2709969",
       "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
-      "sourceSha256": "b6e271d958772f3de69f958060c74d8bad5ef87a6f70da26218597ebaefcb51d",
-      "renderedFingerprint": "fd736fbe2f0434224fd55d33b714740f7bc2831497a2df89954c403abfa884df",
+      "sourceSha256": "758ce083773487803a08a51ed044f5ef0609308a96c094e67da74c59b808b6af",
+      "renderedFingerprint": "99d4d07ffd59643f25388b97d7fc917a4d497f91b053003efb76365fccdadfd0",
       "oldTitle": "Connect barcode scanners",
       "title": "Connect barcode scanners",
       "action": "update",
@@ -2723,16 +2882,23 @@
         }
       ],
       "linkChanges": {
-        "added": [
-          "https://drx.featurebase.app/articles/0236106"
-        ],
+        "added": ["https://drx.featurebase.app/articles/0236106"],
         "removed": [
           "https://drx.featurebase.app/articles/5281725",
           "https://drx.featurebase.app/articles/3230948"
         ]
       },
       "beforeVisuals": [],
-      "intendedVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "barcode-keyboard-path",
+          "kind": "diagram",
+          "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+          "placement": "before-heading",
+          "heading": "Connect and check a scanner",
+          "publicationState": "prepared"
+        }
+      ],
       "oldHeadingAnchors": [
         {
           "level": "H2",
@@ -2807,13 +2973,13 @@
         "Point of Sale",
         "Scan SKU / barcode or search products"
       ],
-      "sourceEvidence": [
-        "apps/app/components/quick-pos/product-search.tsx"
-      ],
+      "sourceEvidence": ["apps/app/components/quick-pos/product-search.tsx"],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
       "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
       "publicationMethod": "authenticated-browser-editor",
-      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
     }
-  ]
+  ],
+  "visualPreflightPublicInspectionTime": "2026-09-04T09:51:23.114Z"
 }

@@ -9,6 +9,8 @@ These steps cover keyboard-style scanners with the web beta. Compatibility depen
 
 Use the manufacturer's pairing instructions for your model. Do not use customer records or a completed sale to test the connection.
 
+![A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.](../_assets/help-center/diagrams/barcode-keyboard-path.png)
+
 ## Connect and check a scanner
 
 1. Connect the USB scanner, or pair a Bluetooth scanner through your device's settings.

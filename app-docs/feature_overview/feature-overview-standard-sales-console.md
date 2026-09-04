@@ -9,6 +9,10 @@ The old Standard Sales console instructions no longer match the web beta. Use **
 
 Confirm delivery access, the actual vendor quote, and who will pay the fee. DRX records delivery work; it does not automatically book an Uber or other vendor order.
 
+![Illustrative completed sale linked to fictional delivery details.](../_assets/help-center/screenshots/deliveries.png)
+
+Illustrative screen with fictional data.
+
 ## Include delivery in a sale
 
 1. Build the sale in **Point of Sale**, then continue to payment.

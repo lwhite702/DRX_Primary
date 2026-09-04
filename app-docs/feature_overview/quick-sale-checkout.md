@@ -3,11 +3,17 @@ title: "Quick Sale checkout"
 description: "Record a sale through Point of Sale and confirm the saved order before starting another."
 ---
 
+![Neutral boxed goods move through a basket to a saved receipt record.](../_assets/help-center/headers/quick-sale.webp)
+
 ## Before you start
 
 These steps cover the web beta. Confirm the business, checkout access, products, and prices. Use the shop's approved process to receive a payment. Selecting a payment method in DRX records it; it does not by itself charge a card or transfer money.
 
 Do not use real sales to test a device or connection. Offline checkout is not promised by this guide.
+
+![Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.](../_assets/help-center/screenshots/quick-sale.png)
+
+Illustrative screen with fictional data.
 
 ## Build the sale
 

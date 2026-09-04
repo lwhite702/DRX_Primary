@@ -3,6 +3,10 @@ title: "Troubleshoot dashboard and reports"
 description: "Check missing totals or report differences without changing the underlying records."
 ---
 
+![Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.](../_assets/help-center/screenshots/dashboard-reports.png)
+
+Illustrative screen with fictional data.
+
 ## A total looks wrong
 
 1. Confirm the active business.

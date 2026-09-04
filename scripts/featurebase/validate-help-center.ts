@@ -9,7 +9,9 @@ async function main() {
   const publication = process.argv.includes("--publication");
   if (publication)
     fs.rmSync(".featurebase/publication-validation.json", { force: true });
-  const { manifest, articles, contentHash } = loadHelpContent();
+  const { manifest, articles, contentHash } = loadHelpContent(process.cwd(), {
+    requirePublishedVisuals: publication,
+  });
   const links = [
     ...new Set(articles.flatMap((a: any) => a.links.map((l: any) => l.url))),
   ] as string[];
@@ -60,7 +62,7 @@ async function main() {
   for (const article of articles) {
     writeText(
       `.featurebase/preview/${article.id}.html`,
-      `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(article.title)}</title><style>body{font:17px/1.6 system-ui;max-width:760px;margin:auto;padding:32px;color:#1f2937}h1,h2,h3{line-height:1.25}a{color:#2259b5}li{margin:8px 0}</style><body><article><header><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(article.description)}</p></header>${article.body}</article></body></html>`,
+      `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(article.title)}</title><style>body{font:17px/1.6 system-ui;max-width:760px;margin:auto;padding:32px;color:#f5f5f5;background:#0a0a0a}h1,h2,h3{line-height:1.25}a{color:#ccff00}li{margin:8px 0}img{display:block;width:100%;height:auto;margin:28px 0 12px;border-radius:14px;border:1px solid #343434}img+p{color:#a3a3a3;font-size:14px;margin-top:0}</style><body><article><header><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(article.description)}</p></header>${article.body}</article></body></html>`,
     );
   }
   const report: any = {
@@ -72,6 +74,10 @@ async function main() {
       (n: number, a: any) =>
         n +
         a.links.filter((l: any) => /\/en\/help\/articles\//.test(l.url)).length,
+      0,
+    ),
+    visuals: articles.reduce(
+      (count: number, article: any) => count + article.visuals.length,
       0,
     ),
     links: linkResults,

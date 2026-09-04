@@ -3,6 +3,8 @@ title: "Troubleshoot workspaces and access"
 description: "Recover from an access problem without creating duplicate accounts or using someone else’s login."
 ---
 
+![Access recovery checks the invited account, active business, and permission before contacting the owner or private support.](../_assets/help-center/diagrams/workspace-access-recovery.png)
+
 ## You cannot sign in
 
 1. Use the account attached to your access invitation. When the field says **Username or email**, enter the username or email already on that account.

@@ -45,7 +45,24 @@ pnpm release:integrity
 
 Import defaults to dry run, including the command without a suffix. It matches only existing IDs and never creates, deletes, archives, or moves articles. A missing ID, foreign Help Center, extra live article, unreviewed draft, or parent/known API-slug drift stops the entire preflight. Dry-run output distinguishes updates from unchanged content; it does not silently skip a missing category.
 
-The renderer supports JSON-string frontmatter, paragraphs, level-two/three headings, sequential numbered lists, bullets, bold text, inline code, and absolute HTTPS/mailto links. Unsupported syntax fails rather than becoming literal Markdown or losing links. New visuals need an explicit supported renderer change and review. Historical heading fragment IDs remain as anchors when a section changes.
+The renderer supports JSON-string frontmatter, paragraphs, level-two/three headings, sequential numbered lists, bullets, bold text, inline code, absolute HTTPS/mailto links, and standalone Markdown images declared in `help-center-visuals.json`. Unsupported syntax fails rather than becoming literal Markdown or losing links. Inline images, undeclared assets, local paths in published HTML, missing or changed alt text, data URLs, unknown image hosts, and signed or expiring URLs fail validation. Historical heading fragment IDs remain as anchors when a section changes.
+
+## Visual assets
+
+The versioned visual manifest is `docs/featurebase/help-center-visuals.json`. It is the source of truth for each asset key, repository source, article placement, alt text, caption, dimensions, checksum, provenance, screenshot route and commit, and Featurebase attachment identity. Canonical articles may use standalone Markdown image syntax with a repository-relative path. The renderer resolves that path through the manifest and never publishes it directly.
+
+Build and validate the committed sources with:
+
+```sh
+pnpm featurebase:build:help-visuals
+pnpm featurebase:validate:help-visuals
+```
+
+Headers are 1600×640 WebP files. Diagrams retain editable SVG sources plus 1400×800 PNG renderings. Screenshots are cropped PNGs and must contain fictional or redacted data. Generated UI cannot be used as evidence of product behavior. Screenshot captions must disclose illustrative fixtures, and screenshot manifest entries must record the route and verified commit used to check their labels.
+
+Before uploading the complete set, upload one canary image to an unpublished draft in the authenticated Featurebase editor. Reopen the saved draft, inspect the stored attachment URL and HTML, record the stable attachment identity and public URL in the manifest, then confirm the exporter and renderer preserve the image, alt text, caption, and position. Do not publish the canary. Do not use an unreviewed draft or bypass the authenticated export requirement to create one.
+
+Upload the remaining assets only after the canary round trip passes. Use stable Featurebase-hosted attachment URLs without signature query parameters. Record each returned identity in the manifest and change its state to `uploaded` only after the saved draft has been re-read. Run `pnpm featurebase:validate:help-visuals --publication` before the Help Center publication gate. The importer requires every referenced visual to be uploaded, which prevents a future content sync from replacing browser-hosted images with local paths or silently dropping them.
 
 Reorder currently verifies the existing public order and makes zero writes. The documented update API does not expose an order field. Any order difference fails with an explanation; it is never reported as a successful reorder. Collection names and ordering remain unchanged in WRE-92.
 

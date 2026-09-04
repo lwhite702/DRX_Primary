@@ -7,6 +7,10 @@ description: "Check saved sales, report totals, and the period each number cover
 
 These steps cover the desktop web beta. You need access to the business and its reports. An empty chart does not prove there were no sales.
 
+![Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.](../_assets/help-center/screenshots/dashboard-reports.png)
+
+Illustrative screen with fictional data.
+
 ## Check your numbers
 
 1. Confirm the active business, then open **Dashboard** for its summary.

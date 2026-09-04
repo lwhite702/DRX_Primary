@@ -3,9 +3,15 @@ title: "Switch workspaces and check access"
 description: "Choose the correct business and give each team member only the access their work needs."
 ---
 
+![Two workspaces connect to separate groups of scoped team access.](../_assets/help-center/headers/workspaces-and-access.webp)
+
 ## Before you start
 
 These steps cover the web beta. Finish or safely leave open checkout and unsaved work before switching businesses. A workspace means the business whose records you are using.
+
+![Illustrative workspace selector and Manage Team panels with fictional business and member names.](../_assets/help-center/screenshots/workspace-team.png)
+
+Illustrative screen with fictional data.
 
 ## Switch businesses
 

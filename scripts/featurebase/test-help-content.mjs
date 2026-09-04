@@ -7,6 +7,7 @@ import { JSDOM } from "jsdom";
 import {
   renderArticle,
   loadHelpContent,
+  loadHelpVisuals,
   contentFingerprint,
 } from "./_help-content.mjs";
 const md = (body) =>
@@ -48,6 +49,35 @@ test("preserves old heading IDs and fragment destinations when sections change",
     renderArticle(md("## Save\n\nText"), [{ id: '"><script>', text: "Save" }]),
   );
 });
+test("renders only declared standalone Help Center images", () => {
+  const visualManifest = {
+    assets: [
+      {
+        id: "guide-image",
+        sourcePath: "app-docs/_assets/help/guide.png",
+        alt: "The useful part of the guide.",
+        featurebase: {
+          publicUrl:
+            "https://fb-usercontent.fra1.cdn.digitaloceanspaces.com/guide.png",
+        },
+      },
+    ],
+  };
+  const article = renderArticle(
+    md("![The useful part of the guide.](_assets/help/guide.png)"),
+    [],
+    { sourcePath: "app-docs/guide.md", visualManifest },
+  );
+  const image = new JSDOM(article.body).window.document.querySelector("img");
+  assert.equal(image.getAttribute("data-help-visual"), "guide-image");
+  assert.equal(image.alt, "The useful part of the guide.");
+  assert.throws(() =>
+    renderArticle(md("![Wrong alt.](_assets/help/guide.png)"), [], {
+      sourcePath: "app-docs/guide.md",
+      visualManifest,
+    }),
+  );
+});
 test("comparison detects lost links, lists, anchors and metadata", () => {
   const a = renderArticle(
     md("## Save\n\n1. [Help](https://drx.featurebase.app)"),
@@ -70,15 +100,25 @@ test("comparison detects lost links, lists, anchors and metadata", () => {
   ])
     assert.notEqual(contentFingerprint(a), contentFingerprint(b));
 });
+test("comparison ignores temporary Featurebase image signatures", () => {
+  const first = renderArticle(md("Text"));
+  const second = renderArticle(md("Text"));
+  first.body +=
+    '<img data-help-visual="guide" src="https://cdn.featurebase-attachments.com/guide.png?signature=one" alt="Guide">';
+  second.body +=
+    '<img data-help-visual="guide" src="https://cdn.featurebase-attachments.com/guide.png?signature=two" alt="Guide">';
+  assert.deepEqual(contentFingerprint(first), contentFingerprint(second));
+});
 test("entire canonical publication set renders, has unique stable IDs, and no link cycles", () => {
   const { articles } = loadHelpContent();
   assert.equal(articles.length, 19);
   assert.equal(new Set(articles.map((a) => a.id)).size, 19);
-  assert.ok(
-    articles.every(
-      (a) => a.links.length && a.headings.length && !a.visuals.length,
-    ),
+  assert.ok(articles.every((a) => a.links.length && a.headings.length));
+  assert.equal(
+    articles.reduce((sum, article) => sum + article.visuals.length, 0),
+    23,
   );
+  assert.equal(loadHelpVisuals().assets.length, 20);
   const privacy = articles.find((a) => a.id === "6417807");
   const text = new JSDOM(privacy.body).window.document.body.textContent;
   for (const term of [
@@ -96,12 +136,41 @@ test("entire canonical publication set renders, has unique stable IDs, and no li
     /Business CRM Mode|DRX CRM|https:\/\/deelrxcrm.com\/support/,
   );
 });
+test("rejects unsafe and expiring Featurebase image URLs", () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "drx-help-visual-test-"));
+  try {
+    fs.cpSync(
+      "docs/featurebase/help-center-visuals.json",
+      path.join(temp, "docs/featurebase/help-center-visuals.json"),
+      { recursive: true },
+    );
+    fs.cpSync("app-docs/_assets", path.join(temp, "app-docs/_assets"), {
+      recursive: true,
+    });
+    const manifestPath = path.join(
+      temp,
+      "docs/featurebase/help-center-visuals.json",
+    );
+    const manifest = JSON.parse(fs.readFileSync(manifestPath));
+    manifest.assets[0].featurebase.publicUrl =
+      "https://example.com/image.png?token=secret";
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    assert.throws(() => loadHelpVisuals(temp), /Unsafe or expiring/);
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
 test("rejects title-based duplicate identities and archived sources", () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "drx-help-test-"));
   try {
     fs.cpSync(
       "docs/featurebase/help-center-manifest.json",
       path.join(temp, "docs/featurebase/help-center-manifest.json"),
+      { recursive: true },
+    );
+    fs.cpSync(
+      "docs/featurebase/help-center-visuals.json",
+      path.join(temp, "docs/featurebase/help-center-visuals.json"),
       { recursive: true },
     );
     fs.cpSync("app-docs", path.join(temp, "app-docs"), { recursive: true });

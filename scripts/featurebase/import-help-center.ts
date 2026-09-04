@@ -19,7 +19,9 @@ async function main() {
     throw new Error("Use --dry-run (default) or --publish");
   const publish = args.has("--publish");
   if (!publish) fs.rmSync(".featurebase/import-dry-run.json", { force: true });
-  const content = loadHelpContent();
+  const content = loadHelpContent(process.cwd(), {
+    requirePublishedVisuals: true,
+  });
   const before = await exportHelpApi(content.manifest);
   writeJson(".featurebase/before-api/api-snapshot.json", before);
   checkManagedSet(before, content.manifest);

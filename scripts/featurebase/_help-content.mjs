@@ -25,8 +25,7 @@ export function safeUrl(value) {
   return value;
 }
 function inline(value) {
-  if (value.includes("!["))
-    fail("Images need a supported and reviewed visual migration");
+  if (value.includes("![")) fail("Images must be standalone blocks");
   // Deliberately small, lossless subset. Unsupported Markdown fails instead of publishing literal syntax.
   const tokens =
     /\[([^\[\]\n]+)\]\(([^\s()]+)\)|\*\*([^*\n]+)\*\*|`([^`\n]+)`/g;
@@ -46,7 +45,102 @@ function inline(value) {
   }
   return html + plain(value.slice(position));
 }
-export function renderArticle(markdown, previousHeadings = []) {
+function isApprovedFeaturebaseImageUrl(value) {
+  const url = new URL(value);
+  return (
+    url.protocol === "https:" &&
+    !url.username &&
+    !url.password &&
+    !url.search &&
+    !url.hash &&
+    (url.hostname === "drx.featurebase.app" ||
+      url.hostname === "fb-usercontent.fra1.cdn.digitaloceanspaces.com" ||
+      url.hostname.endsWith(".featurebase-attachments.com"))
+  );
+}
+
+export function loadHelpVisuals(
+  root = process.cwd(),
+  { requirePublished = false } = {},
+) {
+  const manifestPath = path.join(
+    root,
+    "docs/featurebase/help-center-visuals.json",
+  );
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  if (
+    manifest.schemaVersion !== 1 ||
+    manifest.helpCenterId !== "l4o5pamx855mr65p" ||
+    manifest.assetCount !== manifest.assets?.length ||
+    manifest.assets.length !== 20
+  )
+    fail("Wrong Help Center visual manifest");
+  const ids = new Set(),
+    sourcePaths = new Set();
+  for (const asset of manifest.assets) {
+    if (
+      !/^[a-z0-9-]+$/.test(asset.id) ||
+      ids.has(asset.id) ||
+      sourcePaths.has(asset.sourcePath) ||
+      !["header", "screenshot", "diagram"].includes(asset.kind) ||
+      !asset.sourcePath.startsWith("app-docs/_assets/help-center/") ||
+      asset.sourcePath.includes("..") ||
+      !asset.alt?.trim() ||
+      !asset.sha256?.match(/^[a-f0-9]{64}$/)
+    )
+      fail("Invalid or duplicate Help Center visual");
+    const sourcePath = path.join(root, asset.sourcePath);
+    if (!fs.existsSync(sourcePath))
+      fail(`Missing Help Center visual: ${asset.id}`);
+    const bytes = fs.readFileSync(sourcePath);
+    if (asset.bytes !== bytes.length || asset.sha256 !== sha256(bytes))
+      fail(`Help Center visual checksum differs: ${asset.id}`);
+    if (
+      !Array.isArray(asset.articlePlacements) ||
+      !asset.articlePlacements.length
+    )
+      fail(`Help Center visual has no placement: ${asset.id}`);
+    const placementKeys = new Set();
+    for (const placement of asset.articlePlacements) {
+      const placementKey = `${placement.articleId}:${placement.placement}:${placement.heading ?? ""}`;
+      if (
+        !/^\d{7}$/.test(placement.articleId) ||
+        !["lead", "before-heading"].includes(placement.placement) ||
+        (placement.placement === "lead" && placement.heading !== null) ||
+        (placement.placement === "before-heading" &&
+          !placement.heading?.trim()) ||
+        placementKeys.has(placementKey)
+      )
+        fail(`Invalid or duplicate Help Center visual placement: ${asset.id}`);
+      placementKeys.add(placementKey);
+    }
+    if (
+      asset.caption &&
+      asset.caption !== "Illustrative screen with fictional data."
+    )
+      fail(`Unexpected Help Center visual caption: ${asset.id}`);
+    if (
+      asset.provenance === "fixture" &&
+      asset.caption !== "Illustrative screen with fictional data."
+    )
+      fail(`Fixture caption is missing: ${asset.id}`);
+    const publishedUrl = asset.featurebase?.publicUrl;
+    if (publishedUrl && !isApprovedFeaturebaseImageUrl(publishedUrl))
+      fail(`Unsafe or expiring Featurebase visual URL: ${asset.id}`);
+    if (
+      requirePublished &&
+      (asset.featurebase?.state !== "uploaded" ||
+        !publishedUrl ||
+        !asset.featurebase.attachmentIdentity)
+    )
+      fail(`Featurebase visual is not uploaded: ${asset.id}`);
+    ids.add(asset.id);
+    sourcePaths.add(asset.sourcePath);
+  }
+  return manifest;
+}
+
+export function renderArticle(markdown, previousHeadings = [], options = {}) {
   const match = markdown.match(
     /^---\n(title: .+)\n(description: .+)\n---\n\n([\s\S]+)$/,
   );
@@ -62,6 +156,13 @@ export function renderArticle(markdown, previousHeadings = []) {
   )
     fail("Empty article metadata");
   const used = new Set();
+  const visualManifest = options.visualManifest;
+  const visualByPath = new Map(
+    visualManifest?.assets.map((asset) => [asset.sourcePath, asset]) ?? [],
+  );
+  const sourceDirectory = options.sourcePath
+    ? path.posix.dirname(options.sourcePath)
+    : undefined;
   const anchor = (label) => {
     let id =
       previousHeadings.find((h) => h.text.toLowerCase() === label.toLowerCase())
@@ -79,6 +180,19 @@ export function renderArticle(markdown, previousHeadings = []) {
     .trim()
     .split(/\n\s*\n/)
     .map((block) => {
+      const image = block.match(/^!\[([^\]\n]+)\]\(([^\s()]+)\)$/);
+      if (image) {
+        if (!visualManifest || !sourceDirectory)
+          fail("Standalone images require the Help Center visual manifest");
+        const resolved = path.posix.normalize(
+          path.posix.join(sourceDirectory, image[2]),
+        );
+        const asset = visualByPath.get(resolved);
+        if (!asset || image[1] !== asset.alt)
+          fail(`Undeclared Help Center visual: ${image[2]}`);
+        const src = asset.featurebase?.publicUrl || `../../${asset.sourcePath}`;
+        return `<img data-help-visual="${escapeHtml(asset.id)}" src="${escapeHtml(src)}" alt="${escapeHtml(asset.alt)}">`;
+      }
       if (/^#{2,3} /.test(block)) {
         if (block.includes("\n")) fail("Heading must be separated from text");
         const [, marks, text] = block.match(/^(#{2,3}) (.+)$/);
@@ -128,9 +242,23 @@ export function contentFingerprint(article) {
     if (node.nodeType === 3) return node.textContent.replace(/\s+/g, " ");
     if (node.nodeType !== 1) return "";
     const tag = node.tagName.toLowerCase();
-    const attrs = ["href", "id", "src", "alt"]
+    const attrs = ["href", "id", "src", "alt", "data-help-visual"]
       .filter((key) => node.hasAttribute(key))
-      .map((key) => [key, node.getAttribute(key)]);
+      .map((key) => {
+        let value = node.getAttribute(key);
+        if (key === "src" && /^https:\/\//.test(value)) {
+          const url = new URL(value);
+          if (
+            url.hostname.endsWith(".featurebase-attachments.com") ||
+            url.hostname === "fb-usercontent.fra1.cdn.digitaloceanspaces.com"
+          ) {
+            url.search = "";
+            url.hash = "";
+            value = url.toString();
+          }
+        }
+        return [key, value];
+      });
     return [
       tag,
       attrs,
@@ -145,7 +273,7 @@ export function contentFingerprint(article) {
     ]),
   );
 }
-export function loadHelpContent(root = process.cwd()) {
+export function loadHelpContent(root = process.cwd(), options = {}) {
   const manifest = JSON.parse(
     fs.readFileSync(
       path.join(root, "docs/featurebase/help-center-manifest.json"),
@@ -158,6 +286,9 @@ export function loadHelpContent(root = process.cwd()) {
     manifest.helpCenterId !== "l4o5pamx855mr65p"
   )
     fail("Wrong Help Center manifest");
+  const visualManifest = loadHelpVisuals(root, {
+    requirePublished: options.requirePublishedVisuals === true,
+  });
   const ids = new Set(),
     sources = new Set();
   const articles = manifest.articles.map((entry) => {
@@ -184,7 +315,10 @@ export function loadHelpContent(root = process.cwd()) {
     ids.add(entry.id);
     sources.add(entry.sourcePath);
     const source = fs.readFileSync(path.join(root, entry.sourcePath), "utf8");
-    const rendered = renderArticle(source, entry.previousHeadings);
+    const rendered = renderArticle(source, entry.previousHeadings, {
+      sourcePath: entry.sourcePath,
+      visualManifest,
+    });
     if (
       rendered.title !== entry.title ||
       rendered.description !== entry.description
@@ -206,8 +340,12 @@ export function loadHelpContent(root = process.cwd()) {
     article.labels = [...doc.querySelectorAll("strong,code")].map(
       (e) => e.textContent,
     );
-    article.visuals = [...doc.querySelectorAll("img,video,iframe")].map(
-      (e) => e.outerHTML,
+    article.visuals = [...doc.querySelectorAll("img[data-help-visual]")].map(
+      (e) => ({
+        id: e.getAttribute("data-help-visual"),
+        alt: e.getAttribute("alt"),
+        src: e.getAttribute("src"),
+      }),
     );
     for (const link of article.links) {
       const url = new URL(link.url);
@@ -231,6 +369,59 @@ export function loadHelpContent(root = process.cwd()) {
         fail("Nonexistent marketing support route");
     }
   }
+  const expectedPlacements = visualManifest.assets.flatMap((asset) =>
+    asset.articlePlacements.map((placement) => ({ ...placement, asset })),
+  );
+  if (expectedPlacements.some((placement) => !ids.has(placement.articleId)))
+    fail("Help Center visual references an unknown article");
+  let observedPlacementCount = 0;
+  for (const article of articles) {
+    const doc = new JSDOM(article.body).window.document;
+    const expected = expectedPlacements.filter(
+      (placement) => placement.articleId === article.id,
+    );
+    const observed = [...doc.querySelectorAll("img[data-help-visual]")];
+    observedPlacementCount += observed.length;
+    if (
+      observed.length !== expected.length ||
+      new Set(observed.map((image) => image.getAttribute("data-help-visual")))
+        .size !== observed.length
+    )
+      fail(`Help Center visual count differs: ${article.id}`);
+    for (const placement of expected) {
+      const image = observed.find(
+        (candidate) =>
+          candidate.getAttribute("data-help-visual") === placement.asset.id,
+      );
+      if (!image || image.getAttribute("alt") !== placement.asset.alt)
+        fail(`Help Center visual differs: ${placement.asset.id}`);
+      const elements = [...doc.body.children].filter(
+        (element) => element.tagName !== "A",
+      );
+      const index = elements.indexOf(image);
+      if (placement.placement === "lead" && index !== 0)
+        fail(`Help Center lead visual moved: ${placement.asset.id}`);
+      if (placement.placement === "before-heading") {
+        const heading = elements[index + (placement.asset.caption ? 2 : 1)];
+        if (
+          !heading ||
+          !["H2", "H3"].includes(heading.tagName) ||
+          heading.textContent !== placement.heading
+        )
+          fail(`Help Center visual placement differs: ${placement.asset.id}`);
+      }
+      if (placement.asset.caption) {
+        const caption = elements[index + 1];
+        if (
+          caption?.tagName !== "P" ||
+          caption.textContent !== placement.asset.caption
+        )
+          fail(`Help Center visual caption differs: ${placement.asset.id}`);
+      }
+    }
+  }
+  if (observedPlacementCount !== expectedPlacements.length)
+    fail("Help Center visual placement total differs");
   // Related links form a directed workflow; fail circular article chains.
   const visit = (id, stack = new Set(), done = new Set()) => {
     if (stack.has(id)) fail(`Circular related-article chain: ${id}`);
@@ -250,6 +441,7 @@ export function loadHelpContent(root = process.cwd()) {
     contentHash: sha256(
       JSON.stringify({
         manifest,
+        visualManifest,
         sources: articles.map((a) => [a.id, a.sourceSha256]),
       }),
     ),

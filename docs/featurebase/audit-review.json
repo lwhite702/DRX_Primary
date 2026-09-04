@@ -234,6 +234,20 @@
       "finding": "This PR updates Featurebase source and tooling only. Moxie/Mintlify synchronization and prior marketing deployment are not implied."
     }
   ],
+  "helpCenterVisuals": {
+    "state": "prepared-not-uploaded",
+    "assetCount": 20,
+    "placementCount": 23,
+    "headers": 6,
+    "screenshots": 8,
+    "diagrams": 6,
+    "articlesWithVisuals": 16,
+    "intentionallyTextOnlyArticleIds": ["2995914", "3974136", "9003136"],
+    "canaryRoundTripVerified": false,
+    "authenticatedDryRunVerified": false,
+    "livePublicationVerified": false,
+    "blocker": "FEATUREBASE_API_KEY is unavailable, so the authenticated pre-upload audit cannot pass and no canary or full asset upload was attempted."
+  },
   "browserPublication": {
     "publishedAt": "2026-09-04T05:04:10.093Z",
     "method": "authenticated-browser-editor",

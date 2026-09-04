@@ -3,6 +3,10 @@ title: "Troubleshoot customers and credit"
 description: "Check missing profiles or uncertain payments without duplicating records or changing a balance twice."
 ---
 
+![Illustrative customer and Record Payment forms using a fictional alias and balance.](../_assets/help-center/screenshots/customers-credit.png)
+
+Illustrative screen with fictional data.
+
 ## A customer will not save or appear
 
 1. Confirm the active business and search the agreed alias or another permitted identifier.
@@ -23,6 +27,8 @@ An authorized user can review **Assign Customer** or **Change Customer** in **Sa
 ## Credit is unavailable
 
 Confirm the attached customer, business, and permission. Read the available credit amount and the current total. If **CREDIT** is missing or blocked, ask an authorized manager to check eligibility and limits. Do not split a transaction or change the limit to bypass the restriction.
+
+![For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
 
 ## A payment or balance looks wrong
 

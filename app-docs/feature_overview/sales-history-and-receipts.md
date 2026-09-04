@@ -7,6 +7,10 @@ description: "Find a saved sale and check its items, customer, payment record, a
 
 These steps cover the web beta and require access to sales records. Confirm the business before opening or changing an order.
 
+![Illustrative Orders and Receipts page showing fictional Sale Details.](../_assets/help-center/screenshots/sales-history.png)
+
+Illustrative screen with fictional data.
+
 ## Find a sale
 
 1. Open **Orders & Receipts**.

@@ -15,7 +15,41 @@ Release impact: none. Roadmap impact: none. Product version remains `0.6.14`; th
 - All 19 canonical IDs were updated and published. Zero articles were created, merged, split, reordered, archived, or deleted. Collection placement and order remain unchanged.
 - 31 old source paths become reference stubs: 15 duplicate app-docs files and 16 legacy final files. Original content remains in Git at the base commit. These are repository references, not deployed redirects.
 - The 50-entry legacy seed body is replaced by a canonical content adapter. Its publisher is disabled. No old article is recreated.
-- Zero embedded images/videos/iframes in the observed live article bodies; zero introduced. Hardware, camera, printing, and screenshot-related claims were reviewed separately.
+- Zero embedded images/videos/iframes were present in the last observed live article bodies. This branch now prepares 20 original visual assets for a later authenticated upload: 6 headers, 8 screenshots, and 6 diagrams, with 23 declared article placements. None is claimed live until the canary round trip, authenticated dry run, publication, and fresh export all pass.
+
+## Visual inventory and publication state
+
+The versioned [visual manifest](help-center-visuals.json) records all 20 assets, checksums, alt text, captions, placements, provenance, screenshot routes and verification commit, and Featurebase attachment state. Sixteen articles receive at least one visual. DRX Intelligence, Purchase orders (beta), and Troubleshoot AI Intelligence intentionally remain text-only because their current product surfaces cannot support verified screenshots.
+
+- 6 branded headers: Get started with DRX; Privacy and minimal data; Switch workspaces and check access; Customers and store credit; Inventory intake and adjustments; Quick Sale checkout.
+- 8 fictional-data product views: Dashboard and reports; Privacy settings; Workspace selector and Manage Team; Customer creation and Record Payment; Inventory intake; Quick Sale; Sales history; Delivery workflow.
+- 6 literal diagrams: safe support screenshots; privacy retention; access recovery; inventory save and count; uncertain checkout or payment results; barcode keyboard input.
+- Screenshots are labeled and captioned as illustrative when they use repository fixtures. No real customer, staff, balance, address, transaction, credential, or regulated-retail data is included.
+- Repository validation passes independently of publication state. The publication validator intentionally fails while any attachment identity or Featurebase URL is missing.
+- The Privacy and minimal data preview loaded all three declared images at a 1280-pixel viewport with no horizontal overflow. Featurebase light-theme and mobile-width checks remain part of post-upload verification; the local dark preview does not satisfy them.
+- Current state: **prepared, not uploaded**. `FEATUREBASE_API_KEY` remains unavailable, so the required authenticated export, canary upload, saved-representation inspection, authenticated dry run, and live publication have not run.
+
+| Article                            | Planned visual placement                                     |
+| ---------------------------------- | ------------------------------------------------------------ |
+| Get started with DRX               | Branded header                                               |
+| Dashboard and reports              | Dashboard and reports screen                                 |
+| Help and support                   | Safe support screenshot diagram                              |
+| Troubleshoot dashboard and reports | Reused Dashboard and reports screen                          |
+| Privacy and minimal data           | Branded header; retention timeline; privacy settings screen  |
+| Troubleshoot workspaces and access | Workspace access recovery diagram                            |
+| Switch workspaces and check access | Branded header; workspace and team screen                    |
+| Customers and store credit         | Branded header; customer and credit screen                   |
+| Troubleshoot customers and credit  | Reused customer and credit screen; uncertain payment diagram |
+| Inventory intake and adjustments   | Branded header; Inventory intake screen                      |
+| Troubleshoot inventory and audit   | Inventory save and count diagram                             |
+| DRX Intelligence                   | Text only until the product surface is verified              |
+| Purchase orders (beta)             | Text only until the product surface is verified              |
+| Troubleshoot AI Intelligence       | Text only until the product surface is verified              |
+| Quick Sale checkout                | Branded header; Quick Sale screen                            |
+| Sales history and receipts         | Sales history screen                                         |
+| Troubleshoot checkout and payments | Uncertain checkout and payment diagram                       |
+| Sales and deliveries (beta)        | Delivery workflow screen                                     |
+| Connect barcode scanners           | Barcode keyboard input diagram                               |
 
 ## Article-level inventory
 
@@ -65,24 +99,28 @@ Removed or bounded unsupported claims about native availability, automatic offli
 
 Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in this worktree.
 
-| Command                                                                                                                                                      | Result                                                                      |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `pnpm featurebase:export:help-center --public .featurebase/before`                                                                                           | Pass: six public collections, 19 articles; no API/draft coverage            |
-| `pnpm featurebase:export:help-center --public .featurebase/after-browser`                                                                                    | Pass: six public collections, 19 live articles after browser publication    |
-| `pnpm featurebase:validate:help-center`                                                                                                                      | Pass: 19 rendered drafts, 15 destinations; publishReady=false               |
-| `pnpm test:featurebase:help`                                                                                                                                 | Pass: 12 tests, zero failed or skipped                                      |
-| `pnpm docs:audit:features`                                                                                                                                   | Pass: 54 page routes, 83 API routes                                         |
-| `pnpm docs:audit:gaps`                                                                                                                                       | Pass: 100 source dispositions and 20 coverage groups; product gaps retained |
-| `pnpm copy:lint`                                                                                                                                             | Pass                                                                        |
-| `pnpm test:policy`                                                                                                                                           | Pass: zero current findings                                                 |
-| `pnpm test:repo-hygiene`                                                                                                                                     | Pass                                                                        |
-| `pnpm release:integrity`                                                                                                                                     | Pass                                                                        |
-| `pnpm featurebase:export:help-center .featurebase/before-api`                                                                                                | Blocked: Missing FEATUREBASE_API_KEY; exit 1 before API request             |
-| `pnpm featurebase:import:help-center:dry`                                                                                                                    | Blocked: Missing FEATUREBASE_API_KEY; exit 1 before API request             |
-| `pnpm featurebase:reorder:help-center:dry`                                                                                                                   | Pass: public order verified; zero changes; not an API reorder claim         |
-| `pnpm --filter deelrxcrm-app exec vitest run tests/help/featurebase-taxonomy.test.ts`                                                                        | Pass: 4 tests                                                               |
-| `tsc --noEmit --target es2022 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck` on the eight changed TypeScript tooling/test files | Pass                                                                        |
-| `git diff --check`                                                                                                                                           | Pass                                                                        |
+| Command                                                                                                                                                    | Result                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `pnpm featurebase:export:help-center --public .featurebase/before`                                                                                         | Pass: six public collections, 19 articles; no API/draft coverage                 |
+| `pnpm featurebase:export:help-center --public .featurebase/after-browser`                                                                                  | Pass: six public collections, 19 live articles after browser publication         |
+| `pnpm featurebase:export:help-center --public .featurebase/visual-before`                                                                                  | Pass: six public collections, 19 articles; visual preflight baseline             |
+| `pnpm featurebase:validate:help-center`                                                                                                                    | Pass: 19 rendered drafts, 15 destinations; publishReady=false                    |
+| Skill creator validation for both repository skills                                                                                                        | Pass                                                                             |
+| `pnpm test:featurebase:help`                                                                                                                               | Pass: 15 renderer/API tests, including declared image handling                   |
+| `pnpm featurebase:validate:help-visuals`                                                                                                                   | Pass: 20 assets and 23 declared placements; publicationReady=false               |
+| `pnpm featurebase:validate:help-visuals --publication`                                                                                                     | Blocked as designed until Featurebase attachment identities are recorded         |
+| `pnpm docs:audit:features`                                                                                                                                 | Pass: 54 page routes, 83 API routes                                              |
+| `pnpm docs:audit:gaps`                                                                                                                                     | Pass: 100 source dispositions and 20 coverage groups; product gaps retained      |
+| `pnpm copy:lint`                                                                                                                                           | Pass                                                                             |
+| `pnpm test:policy`                                                                                                                                         | Pass: zero current findings                                                      |
+| `pnpm test:repo-hygiene`                                                                                                                                   | Pass                                                                             |
+| `pnpm release:integrity`                                                                                                                                   | Pass                                                                             |
+| `pnpm featurebase:export:help-center .featurebase/before-api`                                                                                              | Blocked: Missing FEATUREBASE_API_KEY; exit 1 before API request                  |
+| `pnpm featurebase:import:help-center:dry`                                                                                                                  | Blocked: first visual has no uploaded attachment; authenticated gate not reached |
+| `pnpm featurebase:reorder:help-center:dry`                                                                                                                 | Pass: public order verified; zero changes; not an API reorder claim              |
+| `pnpm --filter deelrxcrm-app exec vitest run tests/help/featurebase-taxonomy.test.ts`                                                                      | Pass: 4 tests                                                                    |
+| `tsc --noEmit --target es2022 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck` on the changed TypeScript importer and validator | Pass                                                                             |
+| `git diff --check`                                                                                                                                         | Pass                                                                             |
 
 Release-integrity warnings correctly retain external App Store Connect/TestFlight and EAS/Play verification as separate gates. The existing Vite CJS deprecation warning appeared during the taxonomy test. Neither is evidence of a product release. New Help Center tests and gap checks are wired into CI; copy-path triggers now include app-docs and Featurebase audit files. Remote CI is separate from these local results.
 
@@ -120,4 +158,4 @@ These gaps are disclosed or have their unsupported procedures held back; this do
 
 The audit used the specified current brand/copy/privacy/onboarding/marketing/mobile/iOS files, the feature canon, VERSION and changelog, current routes and components, and the [official product document](https://docs.google.com/document/d/1h7E_coDctQ9Dp4Lu4_JiNGymnUaDGF5cqYbcVkaTQcs). The older documentation-index governance conflict is recorded in WRE-92/WRE-59; this work does not change approved product or governance direction.
 
-Audit content hash: `96eeb38b615935f3c6eb7d7894e326346e25dac017fa84ee3940ea6b7fd7b596`. Public baseline captured at `2026-08-31T05:35:46.301Z`; post-publication public export captured at `2026-09-04T05:04:10.093Z`.
+Prepared visual content hash: `9ef9545787817dec073f98bf82a3cf7b81ff7189296754af64028809d76e3106`. The visual preflight public snapshot was captured at `2026-09-04T09:51:23.114Z` and still observed the 19 previously published text-only articles. It is not authenticated publication evidence.

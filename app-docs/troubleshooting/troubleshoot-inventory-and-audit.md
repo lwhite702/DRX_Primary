@@ -3,6 +3,8 @@ title: "Troubleshoot inventory and audit"
 description: "Check failed intake, incorrect counts, or missing movements before submitting another change."
 ---
 
+![Inventory troubleshooting checks the business, item, saved movement, and current count before another change.](../_assets/help-center/diagrams/inventory-save-and-count.png)
+
 ## Intake will not save
 
 1. Confirm the business and permission to manage **Inventory**.

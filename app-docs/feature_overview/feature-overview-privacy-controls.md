@@ -3,11 +3,15 @@ title: "Privacy and minimal data"
 description: "Choose what customer information to keep and understand when retention cleanup permanently deletes it."
 ---
 
+![Three retention choices lead to a clear permanent-deletion boundary.](../_assets/help-center/headers/privacy-and-minimal-data.webp)
+
 ## Before you start
 
 You need permission to change the business's privacy settings. Check outstanding balances, retention needs, and any required hold before changing a preset or running deletion. Do not use real customer records to test deletion.
 
 Privacy settings apply to the selected business. Screen masking, retention cleanup, and account access are separate controls.
+
+![Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.](../_assets/help-center/diagrams/privacy-retention-timeline.png)
 
 ## Choose a privacy preset
 
@@ -18,6 +22,10 @@ The current presets are:
 - **Full Customer Mode**: full customer details. The default retention period is **365 days**.
 
 Use the least information your business needs. An alias can still identify someone; it is not a guarantee of anonymity. Optional fields do not have to be filled in.
+
+![Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.](../_assets/help-center/screenshots/privacy-settings.png)
+
+Illustrative screen with fictional data.
 
 ## Review and save the settings
 

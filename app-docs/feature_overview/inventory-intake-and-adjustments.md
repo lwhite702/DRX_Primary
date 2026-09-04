@@ -3,9 +3,15 @@ title: "Inventory intake and adjustments"
 description: "Add products, record goods received, and correct a verified count in Inventory."
 ---
 
+![Generic boxed goods move from intake into an organized and verified Inventory count.](../_assets/help-center/headers/inventory-intake.webp)
+
 ## Before you start
 
 These steps cover the web beta. Confirm the business and your permission to manage Inventory. Know the product, unit, received quantity, and costs. Count the goods before recording them.
+
+![Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.](../_assets/help-center/screenshots/inventory-intake.png)
+
+Illustrative screen with fictional data.
 
 ## Add or edit a product
 
