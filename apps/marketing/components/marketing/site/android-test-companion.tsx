@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check,
   ClipboardCopy,
@@ -13,18 +13,22 @@ import {
 } from "lucide-react";
 
 import {
+  browserSuggestions,
   createAndroidTestReport,
+  deviceSuggestions,
   mobileWebTestChecks,
   nativeTestChecks,
+  osSuggestions,
+  suggestTestSetup,
   type AndroidTestReportInput,
   type AndroidTestStatus,
 } from "@/lib/android-testing";
 
 const statuses: Array<{ value: AndroidTestStatus; label: string }> = [
-  { value: "not_tested", label: "Not tested" },
-  { value: "pass", label: "Pass" },
-  { value: "fail", label: "Fail" },
-  { value: "blocked", label: "Blocked" },
+  { value: "not_tested", label: "Not yet" },
+  { value: "pass", label: "Worked" },
+  { value: "fail", label: "Didn't work" },
+  { value: "blocked", label: "Couldn't test" },
 ];
 
 function freshReport(): AndroidTestReportInput {
@@ -37,7 +41,7 @@ function freshReport(): AndroidTestReportInput {
     buildNumber: "",
     browserName: "",
     testedAt: "",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: "",
     overallNotes: "",
     results: Object.fromEntries(
       [...nativeTestChecks, ...mobileWebTestChecks].map((check) => [check.id, { status: "not_tested", notes: "" }]),
@@ -50,8 +54,20 @@ const fieldClass =
 
 export function MobileTestCompanion() {
   const [report, setReport] = useState<AndroidTestReportInput>(freshReport);
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [syntheticConfirmed, setSyntheticConfirmed] = useState(false);
+
+  useEffect(() => {
+    const suggestion = suggestTestSetup(navigator.userAgent);
+    setReport((current) => ({
+      ...current,
+      platform: suggestion.platform,
+      browserName: current.browserName || suggestion.browserName,
+      androidVersion: current.androidVersion || suggestion.osVersion,
+      testedAt: current.testedAt || suggestion.testedAt,
+      timezone: current.timezone || suggestion.timezone,
+    }));
+  }, []);
 
   const completed = useMemo(
     () => [...nativeTestChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status !== "not_tested").length,
@@ -80,9 +96,13 @@ export function MobileTestCompanion() {
   };
 
   const copyReport = async () => {
-    await navigator.clipboard.writeText(generatedReport);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2200);
+    try {
+      await navigator.clipboard.writeText(generatedReport);
+      setCopyState("copied");
+      window.setTimeout(() => setCopyState("idle"), 2200);
+    } catch {
+      setCopyState("error");
+    }
   };
 
   const downloadReport = () => {
@@ -111,10 +131,9 @@ export function MobileTestCompanion() {
             </div>
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">Before you begin</p>
-              <h2 className="mt-2 text-xl font-bold text-white">Keep the test fictional</h2>
+              <h2 className="mt-2 text-xl font-bold text-white">Use made-up info only</h2>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Use an authorized test account and unmistakably synthetic customers, products, addresses,
-                and transactions. Never enter real customer or business records.
+                Use your invited test account. Make up every customer, product, address, and sale. Please do not enter anything from a real shop.
               </p>
               <label className="mt-4 flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white">
                 <input
@@ -123,7 +142,7 @@ export function MobileTestCompanion() {
                   onChange={(event) => setSyntheticConfirmed(event.target.checked)}
                   className="mt-0.5 size-5 accent-[var(--color-accent)]"
                 />
-                <span>I will use synthetic data only and keep credentials out of notes and screenshots.</span>
+                <span>I&apos;ll use made-up info and keep passwords and real customer details out of my notes and screenshots.</span>
               </label>
             </div>
           </div>
@@ -134,46 +153,58 @@ export function MobileTestCompanion() {
             <Smartphone aria-hidden="true" className="size-5 text-accent" />
             <h2 id="device-heading" className="text-xl font-bold text-white">Your test setup</h2>
           </div>
-          <p className="mt-2 text-sm text-text-secondary">Use a nickname—not your full Google account address.</p>
+          <p className="mt-2 text-sm text-text-secondary">We&apos;ll fill in what this phone can tell us. Just check it and add what&apos;s missing.</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <fieldset className="sm:col-span-2">
-              <legend className="mb-2 text-sm text-text-secondary">Native platform</legend>
+              <legend className="mb-2 text-sm text-text-secondary">Which app are you testing?</legend>
               <div className="grid grid-cols-2 gap-2">
                 {(["android", "ios"] as const).map((platform) => (
                   <label key={platform} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-4 text-sm font-bold transition ${report.platform === platform ? "border-accent bg-accent text-black" : "border-white/15 text-text-secondary hover:border-white/30 hover:text-white"}`}>
-                    <input className="sr-only" type="radio" name="platform" value={platform} checked={report.platform === platform} onChange={() => setReport((current) => ({ ...current, platform }))} />
-                    {platform === "ios" ? "iOS / TestFlight" : "Android / Google Play"}
+                    <input className="sr-only" type="radio" name="platform" value={platform} checked={report.platform === platform} onChange={() => setReport((current) => ({ ...current, platform, androidVersion: "", browserName: platform === "ios" ? "Safari" : "Chrome" }))} />
+                    {platform === "ios" ? "iPhone or iPad" : "Android"}
                   </label>
                 ))}
               </div>
             </fieldset>
             <label className="grid gap-2 text-sm text-text-secondary">
-              Tester alias
-              <input className={fieldClass} value={report.testerAlias} onChange={(e) => updateField("testerAlias", e.target.value)} placeholder="Example: Lee-A1" />
+              Your test nickname
+              <input autoComplete="nickname" className={fieldClass} value={report.testerAlias} onChange={(e) => updateField("testerAlias", e.target.value)} placeholder="Example: Lee-A1" />
             </label>
             <label className="grid gap-2 text-sm text-text-secondary">
-              Phone model
-              <input className={fieldClass} value={report.deviceModel} onChange={(e) => updateField("deviceModel", e.target.value)} placeholder="Example: Pixel 9" />
+              Your phone or tablet
+              <input autoComplete="off" className={fieldClass} list="device-options" value={report.deviceModel} onChange={(e) => updateField("deviceModel", e.target.value)} placeholder="Start typing or pick one" />
+              <datalist id="device-options">
+                {deviceSuggestions[report.platform].map((device) => <option key={device} value={device} />)}
+              </datalist>
             </label>
             <label className="grid gap-2 text-sm text-text-secondary">
-              {report.platform === "ios" ? "iOS version" : "Android version"}
-              <input className={fieldClass} value={report.androidVersion} onChange={(e) => updateField("androidVersion", e.target.value)} placeholder={report.platform === "ios" ? "Example: iOS 19" : "Example: Android 16"} />
+              Phone software
+              <input autoComplete="off" className={fieldClass} list="os-options" value={report.androidVersion} onChange={(e) => updateField("androidVersion", e.target.value)} placeholder="Pick a version" />
+              <datalist id="os-options">
+                {osSuggestions[report.platform].map((version) => <option key={version} value={version} />)}
+              </datalist>
             </label>
             <label className="grid gap-2 text-sm text-text-secondary">
               DRX app version
-              <input className={fieldClass} value={report.appVersion} onChange={(e) => updateField("appVersion", e.target.value)} placeholder="Shown in App info" />
+              <input autoComplete="off" className={fieldClass} list="app-version-options" value={report.appVersion} onChange={(e) => updateField("appVersion", e.target.value)} placeholder="Pick one or type it" />
+              <datalist id="app-version-options">
+                {["0.7.3", "0.7.2", "0.7.1", "Not sure"].map((version) => <option key={version} value={version} />)}
+              </datalist>
             </label>
             <label className="grid gap-2 text-sm text-text-secondary">
-              Native build number
-              <input className={fieldClass} inputMode="numeric" value={report.buildNumber} onChange={(e) => updateField("buildNumber", e.target.value)} placeholder="Shown in App info" />
+              Build number
+              <input autoComplete="off" className={fieldClass} inputMode="numeric" value={report.buildNumber} onChange={(e) => updateField("buildNumber", e.target.value)} placeholder={report.platform === "ios" ? "Find it in TestFlight" : "Find it in App info"} />
             </label>
             <label className="grid gap-2 text-sm text-text-secondary">
-              Test date and time
+              When did you test?
               <input className={fieldClass} type="datetime-local" value={report.testedAt} onChange={(e) => updateField("testedAt", e.target.value)} />
             </label>
             <label className="grid gap-2 text-sm text-text-secondary sm:col-span-2">
-              Mobile browser used for the required web test
-              <input className={fieldClass} value={report.browserName} onChange={(e) => updateField("browserName", e.target.value)} placeholder={report.platform === "ios" ? "Example: Safari" : "Example: Chrome"} />
+              Which browser will you use?
+              <select className={fieldClass} value={report.browserName} onChange={(e) => updateField("browserName", e.target.value)}>
+                <option value="">Pick a browser</option>
+                {browserSuggestions[report.platform].map((browser) => <option key={browser} value={browser}>{browser}</option>)}
+              </select>
             </label>
           </div>
         </section>
@@ -181,16 +212,16 @@ export function MobileTestCompanion() {
         {[
           {
             id: "native-checks",
-            eyebrow: `${report.platform === "ios" ? "iOS" : "Android"} app`,
-            title: "Run the native checks",
-            description: "Test the installed release build before moving to the browser.",
+            eyebrow: `${report.platform === "ios" ? "iPhone or iPad" : "Android"} app`,
+            title: "Try the phone app",
+            description: "Work through these in the app you installed. Then we'll do a shorter check in your phone's browser.",
             checks: nativeTestChecks,
           },
           {
             id: "web-checks",
-            eyebrow: "Required second pass",
-            title: "Now test mobile web",
-            description: "Use this same phone to verify cross-client persistence, usability, and tenant isolation at deelrxcrm.app.",
+            eyebrow: "One more quick round",
+            title: "Now try DRX in your browser",
+            description: "On this same phone, open deelrxcrm.app and make sure your work carries over cleanly.",
             checks: mobileWebTestChecks,
           },
         ].map((group) => (
@@ -201,7 +232,7 @@ export function MobileTestCompanion() {
               <h2 id={`${group.id}-heading`} className="mt-2 text-2xl font-bold text-white">{group.title}</h2>
               <p className="mt-2 text-sm leading-6 text-text-secondary">{group.description}</p>
             </div>
-            <p className="text-sm text-text-secondary">{completed} of {totalChecks} total checked</p>
+            <p className="text-sm text-text-secondary">{completed} of {totalChecks} done</p>
           </div>
 
           <div className="mt-5 space-y-4">
@@ -220,7 +251,7 @@ export function MobileTestCompanion() {
                   </div>
 
                   <fieldset className="mt-5">
-                    <legend className="sr-only">Outcome for {check.title}</legend>
+                    <legend className="sr-only">How did {check.title} go?</legend>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {statuses.map((status) => (
                         <label key={status.value} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-3 text-center text-xs font-bold uppercase tracking-wide transition ${result.status === status.value ? status.value === "pass" ? "border-accent bg-accent text-black" : status.value === "fail" ? "border-red-400/70 bg-red-400/10 text-red-200" : status.value === "blocked" ? "border-amber-300/70 bg-amber-300/10 text-amber-100" : "border-white/30 bg-white/10 text-white" : "border-white/10 text-text-secondary hover:border-white/25 hover:text-white"}`}>
@@ -232,8 +263,8 @@ export function MobileTestCompanion() {
                   </fieldset>
 
                   <label className="mt-4 grid gap-2 text-sm text-text-secondary">
-                    Notes <span className="sr-only">for {check.title}</span>
-                    <textarea className={`${fieldClass} min-h-24 resize-y`} value={result.notes} onChange={(e) => updateResult(check.id, "notes", e.target.value)} placeholder="What happened? Add sanitized reproduction steps for failures or blockers." />
+                    Anything to add? <span className="sr-only">for {check.title}</span>
+                    <textarea className={`${fieldClass} min-h-24 resize-y`} value={result.notes} onChange={(e) => updateResult(check.id, "notes", e.target.value)} placeholder="Tell us what happened. Please leave out passwords and real customer details." />
                   </label>
                 </article>
               );
@@ -245,33 +276,34 @@ export function MobileTestCompanion() {
         <section aria-labelledby="finish-heading" className="rounded-3xl border border-white/10 bg-surface p-5 md:p-7">
           <div className="flex items-center gap-3">
             <Sparkles aria-hidden="true" className="size-5 text-accent" />
-            <h2 id="finish-heading" className="text-xl font-bold text-white">Finish and share</h2>
+            <h2 id="finish-heading" className="text-xl font-bold text-white">Wrap it up</h2>
           </div>
           <label className="mt-5 grid gap-2 text-sm text-text-secondary">
-            Overall notes
-            <textarea className={`${fieldClass} min-h-32 resize-y`} value={report.overallNotes} onChange={(e) => updateField("overallNotes", e.target.value)} placeholder="Summarize the experience, rough edges, and anything the release team should know." />
+            Anything else we should know?
+            <textarea className={`${fieldClass} min-h-32 resize-y`} value={report.overallNotes} onChange={(e) => updateField("overallNotes", e.target.value)} placeholder="What felt smooth? What got in your way?" />
           </label>
 
           <div className="mt-5 flex flex-wrap gap-3">
             <button type="button" onClick={copyReport} disabled={!syntheticConfirmed} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-5 py-2 text-sm font-bold text-black transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-40">
-              {copied ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
-              {copied ? "Copied" : "Copy report"}
+              {copyState === "copied" ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
+              {copyState === "copied" ? "Copied" : "Copy my report"}
             </button>
             <button type="button" onClick={downloadReport} disabled={!syntheticConfirmed} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-5 py-2 text-sm font-semibold text-white transition hover:border-accent/50 disabled:cursor-not-allowed disabled:opacity-40">
-              <Download className="size-4" /> Download .txt
+              <Download className="size-4" /> Save my report
             </button>
             <button type="button" onClick={reset} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm text-text-secondary transition hover:text-white">
-              <RotateCcw className="size-4" /> Start over
+              <RotateCcw className="size-4" /> Clear and start over
             </button>
           </div>
-          {!syntheticConfirmed ? <p className="mt-3 text-xs text-amber-200">Confirm synthetic-data use before copying or downloading.</p> : null}
+          {!syntheticConfirmed ? <p className="mt-3 text-xs text-amber-200">Check the made-up-info box before you copy or save.</p> : null}
+          {copyState === "error" ? <p className="mt-3 text-xs text-red-200">Copy did not work here. Save the report instead.</p> : null}
         </section>
       </div>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-3xl border border-white/10 bg-black/60 p-5 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3">
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-text-secondary">Progress</span>
+            <span className="font-mono text-xs uppercase tracking-[0.18em] text-text-secondary">Your progress</span>
             <span className="text-2xl font-bold text-white">{progress}%</span>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10" aria-label={`${progress}% complete`} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
@@ -280,16 +312,16 @@ export function MobileTestCompanion() {
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-white/[0.04] p-3">
               <p className="text-2xl font-bold text-white">{completed}</p>
-              <p className="text-xs text-text-secondary">Checked</p>
+              <p className="text-xs text-text-secondary">Done</p>
             </div>
             <div className="rounded-2xl bg-accent/[0.08] p-3">
               <p className="text-2xl font-bold text-accent">{passed}</p>
-              <p className="text-xs text-text-secondary">Passed</p>
+              <p className="text-xs text-text-secondary">Worked</p>
             </div>
           </div>
           <div className="mt-5 flex gap-3 border-t border-white/10 pt-5 text-xs leading-5 text-text-secondary">
             <LockKeyhole aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>Your entries stay in this browser. Native and required mobile-web results are combined into one report.</p>
+            <p>What you type stays on this phone. Your app and browser checks go into one simple report.</p>
           </div>
         </div>
       </aside>

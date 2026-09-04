@@ -4,6 +4,7 @@ import {
   createAndroidTestReport,
   mobileWebTestChecks,
   nativeTestChecks,
+  suggestTestSetup,
   type AndroidTestReportInput,
 } from "./android-testing";
 
@@ -27,20 +28,20 @@ function report(overrides: Partial<AndroidTestReportInput> = {}): AndroidTestRep
 }
 
 describe("createAndroidTestReport", () => {
-  it("formats progress and sanitized test outcomes for sharing", () => {
+  it("formats progress and clear test outcomes for sharing", () => {
     const input = report();
     input.results.identity = { status: "pass", notes: "Correct synthetic tenant." };
     input.results.inventory = { status: "blocked", notes: "Catalog did not load." };
 
     const output = createAndroidTestReport(input);
 
-    expect(output).toContain("Tester alias: Tester-A1");
-    expect(output).toContain(`Progress: 2/${nativeTestChecks.length + mobileWebTestChecks.length} checked; 1 passed`);
-    expect(output).toContain("Native platform: iOS");
-    expect(output).toContain("Required mobile-web checks");
-    expect(output).toContain("[PASS] Identity and access");
-    expect(output).toContain("[BLOCKED] Inventory persistence");
-    expect(output).toContain("synthetic test data only");
+    expect(output).toContain("Tester nickname: Tester-A1");
+    expect(output).toContain(`Finished: 2/${nativeTestChecks.length + mobileWebTestChecks.length}; worked: 1`);
+    expect(output).toContain("Phone app: iPhone or iPad");
+    expect(output).toContain("DRX in the phone browser");
+    expect(output).toContain("[WORKED] Open the right shop");
+    expect(output).toContain("[COULDN'T TEST] Add a product");
+    expect(output).toContain("made-up information only");
   });
 
   it("uses safe placeholders for blank fields", () => {
@@ -48,8 +49,32 @@ describe("createAndroidTestReport", () => {
       report({ testerAlias: " ", deviceModel: "", overallNotes: "" }),
     );
 
-    expect(output).toContain("Tester alias: Not provided");
-    expect(output).toContain("Device: Not provided");
-    expect(output).toContain("Overall notes\n-------------\nNot provided");
+    expect(output).toContain("Tester nickname: Not provided");
+    expect(output).toContain("Phone or tablet: Not provided");
+    expect(output).toContain("Anything else to share\n----------------------\nNot provided");
+  });
+});
+
+describe("suggestTestSetup", () => {
+  it("suggests iPhone and Safari details from the phone", () => {
+    const suggestion = suggestTestSetup(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/18.6 Mobile/15E148 Safari/604.1",
+      new Date("2026-09-03T20:30:00-04:00"),
+    );
+
+    expect(suggestion.platform).toBe("ios");
+    expect(suggestion.browserName).toBe("Safari");
+    expect(suggestion.osVersion).toBe("iOS 18.6");
+    expect(suggestion.testedAt).toHaveLength(16);
+  });
+
+  it("suggests Android and Samsung Internet details from the phone", () => {
+    const suggestion = suggestTestSetup(
+      "Mozilla/5.0 (Linux; Android 16; SM-S938U) AppleWebKit/537.36 SamsungBrowser/28.0 Chrome/130.0 Mobile Safari/537.36",
+    );
+
+    expect(suggestion.platform).toBe("android");
+    expect(suggestion.browserName).toBe("Samsung Internet");
+    expect(suggestion.osVersion).toBe("Android 16");
   });
 });

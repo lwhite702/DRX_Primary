@@ -1,95 +1,96 @@
 export const nativeTestChecks = [
   {
     id: "identity",
-    title: "Identity and access",
-    prompt: "Sign in and confirm the expected synthetic business and role appear.",
+    title: "Open the right shop",
+    prompt: "Sign in and make sure you see the right test shop and job role.",
   },
   {
     id: "onboarding",
-    title: "Onboarding",
-    prompt: "Complete onboarding or confirm the existing synthetic business setup loads correctly.",
+    title: "Finish setup",
+    prompt: "Finish the welcome steps, or make sure your test shop opens the way you expect.",
   },
   {
     id: "inventory",
-    title: "Inventory persistence",
-    prompt: "Add a synthetic product, relaunch the app, and confirm its quantity and price persist.",
+    title: "Add a product",
+    prompt: "Add a made-up product, close and reopen DRX, then check its price and amount.",
   },
   {
     id: "customer",
-    title: "Customer persistence",
-    prompt: "Add a synthetic customer and confirm its optional contact fields and credit limit persist.",
+    title: "Add a customer",
+    prompt: "Add a made-up customer, then make sure their details and credit limit are still there.",
   },
   {
     id: "online-checkout",
-    title: "Online checkout",
-    prompt: "Complete synthetic cash and credit sales; verify totals, inventory, balances, and history.",
+    title: "Make two sales",
+    prompt: "While online, make one cash sale and one credit sale. Check the totals, stock, balance, and sales list.",
   },
   {
     id: "offline-cash",
-    title: "Offline cash",
-    prompt: "Complete an authorized cash sale offline, reconnect, and verify it synchronizes exactly once.",
+    title: "Try cash without internet",
+    prompt: "Turn off the internet, make an allowed cash sale, reconnect, and make sure the sale shows up once.",
   },
   {
     id: "offline-credit",
-    title: "Offline credit",
-    prompt: "If authorized, repeat offline with credit inside configured limits and verify one reconciliation.",
+    title: "Try credit without internet",
+    prompt: "If your test account allows it, make a small credit sale offline. Reconnect and make sure it shows up once.",
   },
   {
     id: "notifications",
     title: "Delivery reminders",
-    prompt: "Grant notification access and confirm synthetic reminders expose no customer data on the lock screen.",
+    prompt: "Allow reminders and make sure the lock screen never shows a customer's private details.",
   },
   {
     id: "signout",
-    title: "Sign-out reset",
-    prompt: "Sign out and relaunch; confirm the previous tenant's cached data is no longer visible.",
+    title: "Sign out and come back",
+    prompt: "Sign out, close DRX, and reopen it. The last shop's customer and sales details should be gone.",
   },
   {
     id: "isolation",
-    title: "Second-tenant isolation",
-    prompt: "Sign in to a second synthetic tenant and confirm no data from the first tenant appears.",
+    title: "Switch test shops",
+    prompt: "Sign in to a second test shop and make sure nothing from the first shop appears.",
   },
   {
     id: "support",
-    title: "Help and support",
-    prompt: "Open Help & Support and record whether the documentation and email actions work.",
+    title: "Get help",
+    prompt: "Open Help & Support and try both the guide and email buttons.",
   },
 ] as const;
 
 export const mobileWebTestChecks = [
   {
     id: "web-identity",
-    title: "Mobile-web identity",
-    prompt: "Open the DRX web app in the phone browser, sign in, and confirm the same synthetic business and role.",
+    title: "Open the same shop on the web",
+    prompt: "Open DRX in your phone's browser, sign in, and make sure you see the same test shop and role.",
   },
   {
     id: "web-native-readback",
-    title: "Native-to-web readback",
-    prompt: "Confirm the synthetic product and customer created in the native app appear correctly on mobile web.",
+    title: "Check your phone-app changes",
+    prompt: "Find the made-up product and customer you added in the phone app. Their details should match.",
   },
   {
     id: "web-checkout",
-    title: "Mobile-web checkout",
-    prompt: "Complete a synthetic cash sale on mobile web and verify totals, inventory, history, and native readback.",
+    title: "Make a sale in the browser",
+    prompt: "Make a made-up cash sale. Check the total, stock, and sales list, then find it once in the phone app.",
   },
   {
     id: "web-usability",
-    title: "Small-screen usability",
-    prompt: "Check navigation, forms, the on-screen keyboard, scrolling, and portrait orientation for blocked controls.",
+    title: "Use it on a small screen",
+    prompt: "Move around, fill out a form, open the keyboard, and scroll. Nothing important should be hidden or hard to tap.",
   },
   {
     id: "web-isolation",
-    title: "Mobile-web sign-out and isolation",
-    prompt: "Sign out, reload, and use a second synthetic tenant; confirm no first-tenant data is visible.",
+    title: "Sign out and switch shops",
+    prompt: "Sign out, refresh the page, and open a second test shop. Nothing from the first shop should appear.",
   },
   {
     id: "web-support",
-    title: "Public help and legal links",
-    prompt: "Open Resources, Privacy, and Terms from the phone browser and record any missing or broken destination.",
+    title: "Open the helpful links",
+    prompt: "Open Resources, Privacy, and Terms. Tell us if anything is missing or does not open.",
   },
 ] as const;
 
 export type AndroidTestStatus = "not_tested" | "pass" | "fail" | "blocked";
+export type MobileTestPlatform = "android" | "ios";
 
 export type AndroidTestResult = {
   status: AndroidTestStatus;
@@ -97,7 +98,7 @@ export type AndroidTestResult = {
 };
 
 export type AndroidTestReportInput = {
-  platform: "android" | "ios";
+  platform: MobileTestPlatform;
   testerAlias: string;
   deviceModel: string;
   androidVersion: string;
@@ -111,11 +112,81 @@ export type AndroidTestReportInput = {
 };
 
 const statusLabels: Record<AndroidTestStatus, string> = {
-  not_tested: "NOT TESTED",
-  pass: "PASS",
-  fail: "FAIL",
-  blocked: "BLOCKED",
+  not_tested: "NOT YET",
+  pass: "WORKED",
+  fail: "DIDN'T WORK",
+  blocked: "COULDN'T TEST",
 };
+
+export const deviceSuggestions: Record<MobileTestPlatform, readonly string[]> = {
+  android: [
+    "Google Pixel 10",
+    "Google Pixel 9",
+    "Google Pixel 8",
+    "Samsung Galaxy S25",
+    "Samsung Galaxy S24",
+    "Samsung Galaxy Z Fold 7",
+    "Samsung Galaxy Z Flip 7",
+    "OnePlus 13",
+    "Motorola Razr",
+  ],
+  ios: [
+    "iPhone 17 Pro Max",
+    "iPhone 17 Pro",
+    "iPhone 17",
+    "iPhone Air",
+    "iPhone 16 Pro Max",
+    "iPhone 16 Pro",
+    "iPhone 16",
+    "iPad Air 13-inch",
+    "iPad Pro 13-inch",
+  ],
+};
+
+export const osSuggestions: Record<MobileTestPlatform, readonly string[]> = {
+  android: ["Android 16", "Android 15", "Android 14"],
+  ios: ["iOS 19", "iOS 18", "iPadOS 19", "iPadOS 18"],
+};
+
+export const browserSuggestions: Record<MobileTestPlatform, readonly string[]> = {
+  android: ["Chrome", "Samsung Internet", "Firefox", "Microsoft Edge", "Other"],
+  ios: ["Safari", "Chrome", "Firefox", "Microsoft Edge", "Other"],
+};
+
+function localDateTime(date: Date) {
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+export function suggestTestSetup(userAgent: string, now = new Date()) {
+  const ios = /iPad|iPhone|iPod/i.test(userAgent);
+  const platform: MobileTestPlatform = ios ? "ios" : "android";
+  const androidVersion = userAgent.match(/Android\s([\d.]+)/i)?.[1];
+  const appleVersion = userAgent.match(/OS\s(\d+(?:[_\d]+)?)/i)?.[1]?.replaceAll("_", ".");
+  const browserName = /SamsungBrowser/i.test(userAgent)
+    ? "Samsung Internet"
+    : /EdgA|EdgiOS/i.test(userAgent)
+      ? "Microsoft Edge"
+      : /FxiOS|Firefox/i.test(userAgent)
+        ? "Firefox"
+        : /CriOS|Chrome/i.test(userAgent)
+          ? "Chrome"
+          : ios
+            ? "Safari"
+            : "Other";
+
+  return {
+    platform,
+    browserName,
+    osVersion: androidVersion
+      ? `Android ${androidVersion}`
+      : appleVersion
+        ? `iOS ${appleVersion}`
+        : "",
+    testedAt: localDateTime(now),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+}
 
 function printable(value: string) {
   return value.trim() || "Not provided";
@@ -138,31 +209,31 @@ export function createAndroidTestReport(input: AndroidTestReportInput) {
   });
 
   return [
-    "DRX mobile internal test report",
-    "===============================",
-    `Native platform: ${input.platform === "ios" ? "iOS" : "Android"}`,
-    `Tester alias: ${printable(input.testerAlias)}`,
-    `Device: ${printable(input.deviceModel)}`,
-    `OS version: ${printable(input.androidVersion)}`,
+    "DRX phone test report",
+    "=====================",
+    `Phone app: ${input.platform === "ios" ? "iPhone or iPad" : "Android"}`,
+    `Tester nickname: ${printable(input.testerAlias)}`,
+    `Phone or tablet: ${printable(input.deviceModel)}`,
+    `Software version: ${printable(input.androidVersion)}`,
     `DRX version: ${printable(input.appVersion)}`,
-    `Native build: ${printable(input.buildNumber)}`,
-    `Mobile browser: ${printable(input.browserName)}`,
-    `Tested at: ${printable(input.testedAt)}`,
-    `Timezone: ${printable(input.timezone)}`,
-    `Progress: ${completed}/${allChecks.length} checked; ${passed} passed`,
+    `Build number: ${printable(input.buildNumber)}`,
+    `Browser: ${printable(input.browserName)}`,
+    `When tested: ${printable(input.testedAt)}`,
+    `Time zone: ${printable(input.timezone)}`,
+    `Finished: ${completed}/${allChecks.length}; worked: ${passed}`,
     "",
-    `${input.platform === "ios" ? "iOS" : "Android"} native checks`,
-    "---------------------",
+    `${input.platform === "ios" ? "iPhone and iPad" : "Android"} app checks`,
+    "----------------------",
     ...formatChecks(nativeTestChecks),
     "",
-    "Required mobile-web checks",
-    "--------------------------",
+    "DRX in the phone browser",
+    "------------------------",
     ...formatChecks(mobileWebTestChecks),
     "",
-    "Overall notes",
-    "-------------",
+    "Anything else to share",
+    "----------------------",
     printable(input.overallNotes),
     "",
-    "Data statement: This report used synthetic test data only and contains no credentials or customer records.",
+    "Privacy note: This test used made-up information only. The report has no passwords or real customer details.",
   ].join("\n");
 }

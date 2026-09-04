@@ -6,8 +6,8 @@ import { MobileTestCompanion } from "@/components/marketing/site/android-test-co
 import { PageFrame } from "@/components/marketing/site/page-frame";
 
 export const metadata: Metadata = {
-  title: "Mobile Internal Testing | Deelrx CRM",
-  description: "A guided, privacy-safe companion for authorized DRX iOS and Android testers.",
+  title: "Help Test DRX on Your Phone | Deelrx CRM",
+  description: "A friendly test guide for invited DRX iPhone, iPad, and Android testers.",
   robots: { index: false, follow: false },
 };
 
@@ -25,21 +25,21 @@ export default function MobileTestingPage() {
               Let&apos;s give DRX a great test run.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-text-secondary md:text-lg">
-              Choose iOS or Android, test the installed app, then complete the required mobile-web pass on the same phone. You&apos;ll leave with one clean report the release team can act on.
+              Pick your phone, try the DRX app, then do one quick round in your phone&apos;s browser. We&apos;ll turn your answers into a clear report for the team.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="https://play.google.com/apps/internaltest/4701275532742360674" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-5 py-2 text-sm font-bold text-black shadow-[0_16px_32px_rgba(204,255,0,0.16)] transition hover:brightness-95">
-                Android: join on Google Play <ExternalLink aria-hidden="true" className="size-4" />
+                Android: get DRX <ExternalLink aria-hidden="true" className="size-4" />
               </Link>
               <Link href="https://apps.apple.com/app/testflight/id899247664" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-5 py-2 text-sm font-semibold text-white transition hover:border-accent/50">
-                iOS: open TestFlight <ExternalLink aria-hidden="true" className="size-4" />
+                iPhone or iPad: get DRX <ExternalLink aria-hidden="true" className="size-4" />
               </Link>
               <a href="#test-companion" className="inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-text-secondary transition hover:text-white">
-                Start walkthrough <ArrowRight aria-hidden="true" className="size-4" />
+                Start testing <ArrowRight aria-hidden="true" className="size-4" />
               </a>
             </div>
             <p className="mt-4 text-xs leading-5 text-text-muted">
-              Android requires a Google account in the Friends tester list. iOS requires the TestFlight invitation supplied by the release coordinator. Installed builds run without a development computer.
+              On Android, use the Google account that got the invite. On iPhone or iPad, open the TestFlight invite we sent you. After that, DRX works like a normal app.
             </p>
           </div>
         </section>
@@ -51,4 +51,3 @@ export default function MobileTestingPage() {
     </PageFrame>
   );
 }
-
