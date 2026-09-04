@@ -1001,7 +1001,7 @@
     {
       "id": "7723456",
       "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
-      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console",
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
       "parentId": "4883754",
       "publicOrder": 4,
       "previousTitle": "Standard Sales console",
@@ -1041,8 +1041,11 @@
       "title": "Sales and deliveries (beta)",
       "description": "Find the current sales screens and record delivery details without duplicating a sale.",
       "action": "retitle-and-update",
-      "publicSlug": "7723456-standard-sales-console",
-      "baselinePublicFingerprint": "0db61aa9fd9b4f2007adf9e6666e753b1781fc557d59e9e3cc3844f0ae466c49"
+      "publicSlug": "7723456-sales-and-deliveries-beta",
+      "baselinePublicFingerprint": "0db61aa9fd9b4f2007adf9e6666e753b1781fc557d59e9e3cc3844f0ae466c49",
+      "redirectsFrom": [
+        "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console"
+      ]
     },
     {
       "id": "2709969",

@@ -78,7 +78,7 @@
       "oldTitle": "Get started with DRX",
       "title": "Get started with DRX",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/1633388-get-started-with-drx",
       "publicSlug": "1633388-get-started-with-drx",
       "parentId": "9257182",
@@ -255,7 +255,9 @@
         "CHANGELOG.md"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "2502678",
@@ -265,7 +267,7 @@
       "oldTitle": "Dashboard and reports",
       "title": "Dashboard and reports",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/2502678-dashboard-and-reports",
       "publicSlug": "2502678-dashboard-and-reports",
       "parentId": "9257182",
@@ -391,7 +393,9 @@
         "apps/app/app/(app)/settings/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "2070517",
@@ -401,7 +405,7 @@
       "oldTitle": "Help and support",
       "title": "Help and support",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/2070517-help-and-support",
       "publicSlug": "2070517-help-and-support",
       "parentId": "9257182",
@@ -527,7 +531,9 @@
         "apps/marketing/lib/docs-links.ts"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "3489602",
@@ -537,7 +543,7 @@
       "oldTitle": "Troubleshoot dashboard and reports",
       "title": "Troubleshoot dashboard and reports",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/3489602-troubleshoot-dashboard-and-reports",
       "publicSlug": "3489602-troubleshoot-dashboard-and-reports",
       "parentId": "9257182",
@@ -678,7 +684,9 @@
         "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "6417807",
@@ -688,7 +696,7 @@
       "oldTitle": "Privacy and minimal data",
       "title": "Privacy and minimal data",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/6417807-privacy-and-minimal-data",
       "publicSlug": "6417807-privacy-and-minimal-data",
       "parentId": "5580893",
@@ -823,7 +831,9 @@
         "apps/app/app/(app)/reports/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "3948745",
@@ -833,7 +843,7 @@
       "oldTitle": "Troubleshoot workspaces and access",
       "title": "Troubleshoot workspaces and access",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/3948745-troubleshoot-workspaces-and-access",
       "publicSlug": "3948745-troubleshoot-workspaces-and-access",
       "parentId": "4525056",
@@ -953,7 +963,9 @@
         "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "4735029",
@@ -963,7 +975,7 @@
       "oldTitle": "Switch workspaces and check access",
       "title": "Switch workspaces and check access",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/4735029-switch-workspaces-and-check-access",
       "publicSlug": "4735029-switch-workspaces-and-check-access",
       "parentId": "4525056",
@@ -1096,7 +1108,9 @@
         "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "1831819",
@@ -1106,7 +1120,7 @@
       "oldTitle": "Customers and store credit",
       "title": "Customers and store credit",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/1831819-customers-and-store-credit",
       "publicSlug": "1831819-customers-and-store-credit",
       "parentId": "6393095",
@@ -1251,7 +1265,9 @@
         "apps/app/components/quick-pos/payment-methods.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "9156766",
@@ -1261,7 +1277,7 @@
       "oldTitle": "Troubleshoot customers and credit",
       "title": "Troubleshoot customers and credit",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/9156766-troubleshoot-customers-and-credit",
       "publicSlug": "9156766-troubleshoot-customers-and-credit",
       "parentId": "6393095",
@@ -1388,7 +1404,9 @@
         "apps/app/components/quick-pos/payment-methods.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "6300641",
@@ -1398,7 +1416,7 @@
       "oldTitle": "Inventory intake and adjustments",
       "title": "Inventory intake and adjustments",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/6300641-inventory-intake-and-adjustments",
       "publicSlug": "6300641-inventory-intake-and-adjustments",
       "parentId": "7358320",
@@ -1556,7 +1574,9 @@
         "apps/marketing/lib/feature-canon.ts"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "0272622",
@@ -1566,7 +1586,7 @@
       "oldTitle": "Troubleshoot inventory and audit",
       "title": "Troubleshoot inventory and audit",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit",
       "publicSlug": "0272622-troubleshoot-inventory-and-audit",
       "parentId": "7358320",
@@ -1734,7 +1754,9 @@
         "apps/app/app/(app)/inventory/audit/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "2995914",
@@ -1744,7 +1766,7 @@
       "oldTitle": "DRX Intelligence",
       "title": "DRX Intelligence",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/2995914-drx-intelligence",
       "publicSlug": "2995914-drx-intelligence",
       "parentId": "7358320",
@@ -1829,7 +1851,9 @@
         "apps/app/app/(app)/ai-intelligence/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "3974136",
@@ -1839,7 +1863,7 @@
       "oldTitle": "Purchase orders (beta)",
       "title": "Purchase orders (beta)",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/3974136-purchase-orders-beta",
       "publicSlug": "3974136-purchase-orders-beta",
       "parentId": "7358320",
@@ -1939,7 +1963,9 @@
         "apps/app/app/(app)/inventory/intake/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "9003136",
@@ -1949,7 +1975,7 @@
       "oldTitle": "Troubleshoot AI Intelligence",
       "title": "Troubleshoot AI Intelligence",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/9003136-troubleshoot-ai-intelligence",
       "publicSlug": "9003136-troubleshoot-ai-intelligence",
       "parentId": "7358320",
@@ -2051,7 +2077,9 @@
         "apps/app/app/(app)/ai-intelligence/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "0236106",
@@ -2061,7 +2089,7 @@
       "oldTitle": "Quick Sale checkout",
       "title": "Quick Sale checkout",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/0236106-quick-sale-checkout",
       "publicSlug": "0236106-quick-sale-checkout",
       "parentId": "4883754",
@@ -2208,7 +2236,9 @@
         "apps/app/app/(operator)/pos/complete/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "5281725",
@@ -2218,7 +2248,7 @@
       "oldTitle": "Sales history and receipts",
       "title": "Sales history and receipts",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/5281725-sales-history-and-receipts",
       "publicSlug": "5281725-sales-history-and-receipts",
       "parentId": "4883754",
@@ -2341,7 +2371,9 @@
         "apps/app/components/quick-pos/receipt-choice.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "3230948",
@@ -2351,7 +2383,7 @@
       "oldTitle": "Troubleshoot checkout and payments",
       "title": "Troubleshoot checkout and payments",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/3230948-troubleshoot-checkout-and-payments",
       "publicSlug": "3230948-troubleshoot-checkout-and-payments",
       "parentId": "4883754",
@@ -2507,7 +2539,9 @@
         "apps/app/app/(operator)/pos/complete/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "7723456",
@@ -2517,14 +2551,14 @@
       "oldTitle": "Standard Sales console",
       "title": "Sales and deliveries (beta)",
       "action": "retitle-and-update",
-      "publishedInThisChange": false,
-      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console",
-      "publicSlug": "7723456-standard-sales-console",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
+      "publicSlug": "7723456-sales-and-deliveries-beta",
       "parentId": "4883754",
       "collection": "POS & Sales",
       "publicOrder": 4,
       "orderAction": "preserve",
-      "slugAction": "preserve; API field still requires export",
+      "slugAction": "Featurebase regenerated the slug after the title change",
       "notes": [
         "Retitle Standard Sales console to Sales and deliveries (beta)",
         "Move checkout detail to canonical Quick Sale guide without creating another article",
@@ -2647,7 +2681,9 @@
         "apps/app/app/(app)/deliveries/page.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "Verified one redirect from https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console to https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta; final HTTP status 200",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     },
     {
       "id": "2709969",
@@ -2657,7 +2693,7 @@
       "oldTitle": "Connect barcode scanners",
       "title": "Connect barcode scanners",
       "action": "update",
-      "publishedInThisChange": false,
+      "publishedInThisChange": true,
       "publicUrl": "https://drx.featurebase.app/en/help/articles/2709969-connect-barcode-scanners",
       "publicSlug": "2709969-connect-barcode-scanners",
       "parentId": "4883754",
@@ -2775,7 +2811,9 @@
         "apps/app/components/quick-pos/product-search.tsx"
       ],
       "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
-      "redirectAction": "No article URL change planned; historical section IDs kept as anchors"
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z"
     }
   ]
 }

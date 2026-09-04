@@ -3,10 +3,11 @@
   "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
   "completePublicAudit": true,
   "completeApiAudit": false,
-  "unresolvedP1P2": 1,
-  "publicationStatus": "held-all-19",
+  "unresolvedP1P2": 2,
+  "publicationStatus": "published-via-browser-public-verified",
   "blockers": [
-    "FEATUREBASE_API_KEY is unavailable; authenticated complete export, draft review, API dry run and post-publication verification remain unexecuted."
+    "FEATUREBASE_API_KEY is unavailable; authenticated API export, draft-body review and API comparison remain unexecuted.",
+    "Featurebase regenerated all heading IDs during browser editing; 0 of 150 historical heading fragment IDs remain in the 97 live headings."
   ],
   "coverage": [
     {
@@ -232,5 +233,35 @@
       "source": "apps/marketing/lib/docs-links.ts",
       "finding": "This PR updates Featurebase source and tooling only. Moxie/Mintlify synchronization and prior marketing deployment are not implied."
     }
-  ]
+  ],
+  "browserPublication": {
+    "publishedAt": "2026-09-04T05:04:10.093Z",
+    "method": "authenticated-browser-editor",
+    "canonicalArticleCount": 19,
+    "publicArticleCount": 19,
+    "publicCollectionCount": 6,
+    "contentStructureMatches": 19,
+    "createdArticles": 0,
+    "deletedArticles": 0,
+    "reorderedArticles": 0,
+    "unchangedDrafts": [
+      { "id": "0023434", "title": "Untitled document" },
+      { "id": "6969477", "title": "Test Article with parentId" },
+      { "id": "4502473", "title": "Test Article Payload 2" }
+    ],
+    "retitledArticle": {
+      "id": "7723456",
+      "oldTitle": "Standard Sales console",
+      "title": "Sales and deliveries (beta)",
+      "oldUrl": "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console",
+      "url": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
+      "oldUrlRedirectStatus": 200,
+      "oldUrlRedirectCount": 1
+    },
+    "historicalHeadingFragments": {
+      "previousIds": 150,
+      "liveHeadings": 97,
+      "preservedPreviousIds": 0
+    }
+  }
 }

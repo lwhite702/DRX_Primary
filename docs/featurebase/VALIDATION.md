@@ -1,6 +1,6 @@
 # DRX Help Center validation — WRE-92
 
-Status: **repository changes prepared; all 19 articles held from publication**. No live article, collection, slug, order, or draft was changed in this task.
+Status: **19 canonical articles published through the authenticated Featurebase browser editor and verified by a fresh public export**. The authenticated API audit remains blocked, and historical heading fragments were not preserved.
 
 Source: PR [#165](https://github.com/lwhite702/DRX_Primary/pull/165), current `origin/main` at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. Dedicated branch: `codex/WRE-92-featurebase-help-overhaul`. Tracking: [WRE-92](https://linear.app/wrelik/issue/WRE-92/audit-and-sync-the-complete-drx-help-center-after-brand-voice-pr-165).
 
@@ -11,8 +11,8 @@ Release impact: none. Roadmap impact: none. Product version remains `0.6.14`; th
 - 19 public articles inspected in six collections, with declared public counts checked.
 - 100 repository source records reviewed: 34 app-docs files, 16 legacy final files, and 50 seed entries. These overlap the public library; they are not 100 additional live articles.
 - 19 canonical articles rewritten; zero left unchanged.
-- One proposed retitle: **Standard Sales console → Sales and deliveries (beta)**, ID `7723456`.
-- Zero live merges, splits, reorders, archives, deletions, or publications. Existing IDs, public URL segments, collection placement, order, and historical heading anchors are retained.
+- One completed retitle: **Standard Sales console → Sales and deliveries (beta)**, ID `7723456`.
+- All 19 canonical IDs were updated and published. Zero articles were created, merged, split, reordered, archived, or deleted. Collection placement and order remain unchanged.
 - 31 old source paths become reference stubs: 15 duplicate app-docs files and 16 legacy final files. Original content remains in Git at the base commit. These are repository references, not deployed redirects.
 - The 50-entry legacy seed body is replaced by a canonical content adapter. Its publisher is disabled. No old article is recreated.
 - Zero embedded images/videos/iframes in the observed live article bodies; zero introduced. Hardware, camera, printing, and screenshot-related claims were reviewed separately.
@@ -58,7 +58,7 @@ Removed or bounded unsupported claims about native availability, automatic offli
 - 15 unique intended destinations checked: 14 HTTPS GETs returned 200, and the support mailto matches canonical contact copy. SMTP delivery was not tested and no message was sent.
 - All 19 existing full article URLs returned the correct article ID. No article points to a nonexistent marketing `/support` route.
 - The marketing waitlist redirects successfully to the app waitlist with its marketing source parameter. App workflows use named navigation rather than unexplained authenticated deep links. The report CSV explicitly requires sign-in.
-- Strict Markdown rendering produces actual headings, paragraphs, numbered steps, bullets, emphasis, links, and retained fragment anchors. Unsupported input is rejected.
+- The public articles contain the intended headings, paragraphs, numbered steps, bullets, emphasis, and links. Featurebase regenerated heading IDs during browser editing: none of the 150 historical fragment IDs remain among the 97 live headings.
 - All 19 local HTML previews were opened in the browser and checked for headings, steps, links, and horizontal overflow; none overflowed at the observed desktop viewport. Privacy and checkout previews were visually inspected. No browser console errors or warnings were observed. This is local preview evidence, not final Featurebase rendering evidence.
 
 ## Validation results
@@ -68,6 +68,7 @@ Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in 
 | Command                                                                                                                                                      | Result                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | `pnpm featurebase:export:help-center --public .featurebase/before`                                                                                           | Pass: six public collections, 19 articles; no API/draft coverage            |
+| `pnpm featurebase:export:help-center --public .featurebase/after-browser`                                                                                    | Pass: six public collections, 19 live articles after browser publication    |
 | `pnpm featurebase:validate:help-center`                                                                                                                      | Pass: 19 rendered drafts, 15 destinations; publishReady=false               |
 | `pnpm test:featurebase:help`                                                                                                                                 | Pass: 12 tests, zero failed or skipped                                      |
 | `pnpm docs:audit:features`                                                                                                                                   | Pass: 54 page routes, 83 API routes                                         |
@@ -89,13 +90,17 @@ Release-integrity warnings correctly retain external App Store Connect/TestFligh
 
 The initial remote release check detected an exported-contract regression in the legacy adapter and formatting changes to API-client declarations. The adapter now preserves the original `HelpArticle` interface, typed array and nonempty rendered HTML content. API-client exported declarations retain their original contracts. A fourth taxonomy test covers the HTML compatibility contract. The repository's PR-specific release validator was rerun with the actual base SHA and PR declarations and passed without changing the release gate or requesting a major release. Remote CI rerun status is recorded in the PR.
 
-## Publication blockers and held content
+## Publication outcome and remaining verification blockers
 
-**Exact blocker:** `FEATUREBASE_API_KEY` is absent from the current environment and all four checked DRX Doppler configurations (`dev`, `dev_personal`, `stg`, `prd`). The authenticated export and required API import dry run cannot run. A public export cannot establish the current unpublished/draft inventory or metadata.
+All 19 canonical article IDs were updated and published through the authenticated Featurebase browser editor. Each draft was checked for its title, description, headings, lists, emphasized labels, and destination links before publication. A fresh public export observed six collections and 19 live articles; all 19 bodies matched the intended semantic structure. No article was created, deleted, archived, merged, split, moved, or reordered.
 
-All 19 revised articles are intentionally held. The authenticated complete audit, review of any additional/differing drafts, API dry run, publication validation receipt, live import, and post-publication API/public re-export comparison remain outstanding. Do not mark this issue Done or say the Help Center overhaul is complete.
+Featurebase changed article `7723456` from the public segment `7723456-standard-sales-console` to `7723456-sales-and-deliveries-beta` after the retitle. The old full URL redirects once to the new URL and returns HTTP 200. The manifest records both URLs.
 
-Once the key is supplied through the secure environment, follow [SYNC.md](SYNC.md). Recheck the API and public baselines before any write; the importer now rejects content changed since the audit, missing/moved IDs, unreviewed drafts, and stale dry-run receipts. It never creates articles or silently ignores failed actions. A partial write or a publication mismatch is recorded as a failure requiring review.
+Three unrelated drafts were left untouched: `0023434` Untitled document, `6969477` Test Article with parentId, and `4502473` Test Article Payload 2. Their bodies were not inspected in this browser publication pass.
+
+Two verification gaps remain. `FEATUREBASE_API_KEY` is absent from the current environment and all four checked DRX Doppler configurations (`dev`, `dev_personal`, `stg`, `prd`), so the authenticated API export and API-level comparison have not run. The browser editor also regenerated heading IDs and stripped the supplied legacy anchor aliases: none of 150 historical fragment IDs remain among 97 live headings. Full article URLs work, but old section-fragment links are not verified and should be treated as broken until repaired through a supported publishing path.
+
+The sanitized browser publication receipt is [browser-publication-2026-09-04.json](browser-publication-2026-09-04.json). Raw browser state and public export bodies remain excluded from Git.
 
 ## Remaining product and documentation gaps
 
@@ -109,10 +114,10 @@ Once the key is supplied through the secure environment, follow [SYNC.md](SYNC.m
 - **G8 — Whole-account deletion and exports:** Inactive customer cleanup is narrower than every financial/audit/exported copy. No account-wide recovery, erasure, compliance or encryption guarantee. Source: `apps/app/app/api/privacy/cleanup/route.ts`.
 - **G9 — Legacy Moxie and other docs destinations:** This PR updates Featurebase source and tooling only. Moxie/Mintlify synchronization and prior marketing deployment are not implied. Source: `apps/marketing/lib/docs-links.ts`.
 
-These gaps are disclosed or have their unsupported procedures held back; this documentation change does not repair product behavior or establish credentialed workflow parity. The required authenticated Help Center review remains the unresolved publication gate.
+These gaps are disclosed or have their unsupported procedures held back; this documentation change does not repair product behavior or establish credentialed workflow parity. The authenticated API audit and historical-fragment repair remain open verification work.
 
 ## Source authority
 
 The audit used the specified current brand/copy/privacy/onboarding/marketing/mobile/iOS files, the feature canon, VERSION and changelog, current routes and components, and the [official product document](https://docs.google.com/document/d/1h7E_coDctQ9Dp4Lu4_JiNGymnUaDGF5cqYbcVkaTQcs). The older documentation-index governance conflict is recorded in WRE-92/WRE-59; this work does not change approved product or governance direction.
 
-Audit content hash: `96eeb38b615935f3c6eb7d7894e326346e25dac017fa84ee3940ea6b7fd7b596`. Public baseline captured at `2026-08-31T05:35:46.301Z`.
+Audit content hash: `96eeb38b615935f3c6eb7d7894e326346e25dac017fa84ee3940ea6b7fd7b596`. Public baseline captured at `2026-08-31T05:35:46.301Z`; post-publication public export captured at `2026-09-04T05:04:10.093Z`.
