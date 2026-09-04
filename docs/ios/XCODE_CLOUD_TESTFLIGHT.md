@@ -19,6 +19,12 @@ installs XcodeGen when needed, writes an ignored
 project, and resolves Swift packages. The pre-build script validates telemetry
 and symbol-upload configuration.
 
+Release and archive preparation validates Sentry and PostHog again immediately
+before Xcode builds. Missing or malformed telemetry fails the build before an
+archive can be distributed. Local Debug generation may use disabled telemetry
+stubs so an observability configuration problem never becomes an operator
+lockout in an installed app.
+
 ## One-time App Store Connect setup
 
 1. In App Store Connect, create or confirm an iOS app named **Deelrx CRM** with

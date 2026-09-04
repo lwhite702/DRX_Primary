@@ -41,6 +41,14 @@ export default function InventoryPage() {
   } = useInventoryActions(business?.id);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const isEditingProduct = Boolean(editingItem?.id);
+  const openedFromSetup = React.useRef(false);
+  React.useEffect(() => {
+    if (!businessLoading && !inventoryLoading && business && !error && !openedFromSetup.current && new URLSearchParams(window.location.search).get("create") === "1") {
+      openedFromSetup.current = true;
+      handleAdd();
+    }
+  }, [businessLoading, inventoryLoading, business, error, handleAdd]);
 
   if (businessLoading || inventoryLoading) {
     return <AppPageSkeleton rows={5} />;
@@ -104,22 +112,24 @@ export default function InventoryPage() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-xl bg-[#1a1a1a] border-white/10 text-foreground">
-          <DialogHeader>
+        <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-xl flex-col overflow-hidden bg-[#1a1a1a] border-white/10 text-foreground">
+          <DialogHeader className="shrink-0 pr-10">
             <DialogTitle className="text-xl font-bold tracking-wide">
-              {editingItem ? drxCopy.inventory.dialog.editTitle : drxCopy.inventory.dialog.addTitle}
+              {isEditingProduct ? drxCopy.inventory.dialog.editTitle : drxCopy.inventory.dialog.addTitle}
             </DialogTitle>
             <DialogDescription>
-              {editingItem ? drxCopy.inventory.dialog.editBody : drxCopy.inventory.dialog.addBody}
+              {isEditingProduct ? drxCopy.inventory.dialog.editBody : drxCopy.inventory.dialog.addBody}
             </DialogDescription>
           </DialogHeader>
-          <InventoryForm
-            initialData={editingItem || undefined}
-            onSuccess={handleSave}
-            onCancel={() => setShowDialog(false)}
-            businessId={business?.id || ""}
-            isFirstProduct={inventory.length === 0}
-          />
+          <div className="min-h-0 overflow-y-auto p-1">
+            <InventoryForm
+              initialData={editingItem || undefined}
+              onSuccess={handleSave}
+              onCancel={() => setShowDialog(false)}
+              businessId={business?.id || ""}
+              isFirstProduct={inventory.length === 0}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 

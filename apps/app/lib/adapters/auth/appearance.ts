@@ -7,7 +7,7 @@ export const drxClerkAuthAppearance = {
     colorText: "#FFFFFF",
     colorTextSecondary: "#B3B3B3",
     colorBackground: "transparent",
-    colorInputBackground: "#1E1E1E",
+    colorInputBackground: "#262626",
     colorInputText: "#FFFFFF",
     colorDanger: "#F87171",
     colorSuccess: "#34D399",
@@ -34,7 +34,7 @@ export const drxClerkAuthAppearance = {
     formField: "gap-2",
     formFieldLabel: "text-sm font-semibold leading-5 text-[#E7E7E7]",
     formFieldInput:
-      "min-h-12 rounded-lg border border-white/20 bg-[#1E1E1E] px-3.5 text-base text-white caret-[#CCFF00] placeholder:text-[#8A8A8A] hover:border-white/35 focus:border-[#CCFF00] focus:bg-[#242424] focus:ring-2 focus:ring-[#CCFF00] focus:ring-offset-2 focus:ring-offset-[#121212]",
+      "min-h-12 rounded-lg border border-[#737373] bg-[#262626] px-3.5 text-base text-white caret-[#CCFF00] placeholder:text-[#B3B3B3] hover:border-[#8A8A8A] focus:border-[#CCFF00] focus:bg-[#2C2C2C] focus:ring-2 focus:ring-[#CCFF00] focus:ring-offset-2 focus:ring-offset-[#121212]",
     formFieldInputShowPasswordButton:
       "min-h-11 min-w-11 text-[#C7C7C7] hover:text-[#CCFF00] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]",
     formFieldErrorText: "mt-1 text-sm font-medium leading-5 text-[#FCA5A5]",
