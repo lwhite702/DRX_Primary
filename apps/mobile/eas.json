@@ -5,6 +5,8 @@
   },
   "build": {
     "development": {
+      "node": "22.23.1",
+      "pnpm": "10.17.1",
       "developmentClient": true,
       "distribution": "internal",
       "environment": "development",
@@ -19,6 +21,8 @@
       }
     },
     "development-simulator": {
+      "node": "22.23.1",
+      "pnpm": "10.17.1",
       "developmentClient": true,
       "distribution": "internal",
       "environment": "development",
@@ -33,6 +37,8 @@
       }
     },
     "preview": {
+      "node": "22.23.1",
+      "pnpm": "10.17.1",
       "distribution": "internal",
       "environment": "preview",
       "android": {
@@ -48,6 +54,8 @@
       }
     },
     "closed-test": {
+      "node": "22.23.1",
+      "pnpm": "10.17.1",
       "distribution": "store",
       "environment": "preview",
       "autoIncrement": true,
@@ -64,6 +72,8 @@
       }
     },
     "production": {
+      "node": "22.23.1",
+      "pnpm": "10.17.1",
       "distribution": "store",
       "environment": "production",
       "autoIncrement": true,

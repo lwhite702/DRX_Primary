@@ -5,7 +5,8 @@
 ## Runtime Policy
 
 - **Node.js:** `22.23.1` (exact, matches monorepo policy)
-- **pnpm:** `9.15.9`
+- **pnpm:** `10.17.1`
+- EAS build profiles pin the same Node.js and pnpm versions as local development and CI.
 
 ## Development
 

@@ -30,7 +30,7 @@ jobs:
         if: steps.sentry_token.outputs.has_token == 'true'
         uses: pnpm/action-setup@v4
         with:
-          version: 9.15.9
+          version: 10.17.1
 
       - name: Setup Node
         if: steps.sentry_token.outputs.has_token == 'true'

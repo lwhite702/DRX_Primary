@@ -1,21 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const requiredJobs = [
-  "repo-audit",
-  "preflight",
-  "lint",
-  "typecheck",
-  "build",
-  "required-auth-data",
-  "required-ux",
-  "unit",
-  "integration",
-  "security",
-  "perf-smoke",
-  "coverage-gate",
-];
-
+// Only a successful classifier on a PR can allow intentional runtime skips.
+// Push/manual runs always require the complete integrated-tree gates.
+const scope = process.env.CI_SCOPE;
+const docsOnly = scope === "docs" && process.env.CI_EVENT_NAME === "pull_request";
+const runtimeJobs = ["quality", "unit", "required-ux"];
+const requiredJobs = ["changes", ...runtimeJobs];
 const supportingJobs = ["e2e-web", "a11y", "auth-e2e"];
 const rawNeeds = process.env.CI_NEEDS_JSON;
 
@@ -34,10 +25,15 @@ try {
   process.exit(1);
 }
 
-const statusFor = (job) => needs[job]?.result ?? "missing";
-const failedRequired = requiredJobs.filter(
-  (job) => statusFor(job) !== "success",
-);
+const statusFor = (job) => {
+  if (["e2e-web", "a11y"].includes(job)) return needs["required-ux"]?.outputs?.[job] || "skipped";
+  return needs[job]?.result ?? "missing";
+};
+const expectedFor = (job) => docsOnly && runtimeJobs.includes(job) ? "skipped" : "success";
+const failedRequired = requiredJobs.filter((job) => statusFor(job) !== expectedFor(job));
+if (!["runtime", "docs"].includes(scope) || (scope === "docs" && !docsOnly)) {
+  failedRequired.push("invalid-scope");
+}
 const generatedAt = new Date().toISOString();
 const recommendation = failedRequired.length === 0 ? "GO" : "NO-GO";
 const reportDir = path.join(process.cwd(), "docs/testing");
@@ -50,15 +46,17 @@ const markdown = [
   `Generated: ${generatedAt}`,
   `Recommendation: **${recommendation}**`,
   "",
-  "This report aggregates the isolated CI jobs declared in the workflow. Live",
+  `Scope: **${scope ?? "missing"}**. Documentation-only PRs intentionally skip runtime jobs.`,
+  "Release integrity is checked by the changes job even for documentation-only PRs.",
+  "This report aggregates the consolidated CI jobs declared in the workflow. Live",
   "production-account checks remain part of the operator-run `pnpm test:readiness`",
   "gate and are not re-executed on an uncredentialed GitHub runner.",
   "",
   "## Required jobs",
   "",
-  "| Job | Result |",
-  "|---|---|",
-  ...requiredJobs.map((job) => `| ${job} | ${statusFor(job)} |`),
+  "| Job | Result | Expected |",
+  "|---|---|---|",
+  ...requiredJobs.map((job) => `| ${job} | ${statusFor(job)} | ${expectedFor(job)} |`),
   "",
   "## Supporting jobs",
   "",
@@ -69,12 +67,14 @@ const markdown = [
   "## Outcome",
   "",
   failedRequired.length === 0
-    ? "All required CI jobs completed successfully."
+    ? "All required CI jobs matched the verified change scope."
     : `Required jobs not successful: ${failedRequired.join(", ")}.`,
   "",
 ].join("\n");
 
 const json = {
+  scope,
+  docsOnly,
   generatedAt,
   recommendation,
   requiredJobs: Object.fromEntries(
