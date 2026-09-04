@@ -39,8 +39,8 @@ This runbook is for authorized internal testers using synthetic data only. Do no
 Every Android tester must also open `https://deelrxcrm.app` in Chrome or their primary phone browser and complete the mobile-web section of the Mobile Test Companion at `https://deelrxcrm.com/resources/mobile-testing`:
 
 1. Sign in to the same synthetic tenant and confirm the expected business and role.
-2. Confirm the synthetic product and customer created natively appear on mobile web.
-3. Complete a synthetic cash sale on mobile web and verify native readback exactly once.
+2. Find the preloaded synthetic browser product and customer supplied in the test notes.
+3. Complete a synthetic cash sale on mobile web and confirm it appears exactly once in browser Sales.
 4. Check navigation, forms, keyboard behavior, scrolling, and portrait layout.
 5. Sign out, reload, and verify a second synthetic tenant cannot see first-tenant data.
 6. Open Resources, Privacy, and Terms and report any broken destination.

@@ -5,6 +5,7 @@ import {
   deviceSuggestions,
   mobileWebTestChecks,
   nativeTestChecks,
+  nativeTestChecksFor,
   parseMobileTestProgress,
   serializeMobileTestProgress,
   suggestTestSetup,
@@ -39,7 +40,7 @@ describe("createAndroidTestReport", () => {
     const output = createAndroidTestReport(input);
 
     expect(output).toContain("Tester nickname: Tester-A1");
-    expect(output).toContain(`Finished: 2/${nativeTestChecks.length + mobileWebTestChecks.length}; worked: 1`);
+    expect(output).toContain(`Finished: 2/${nativeTestChecksFor("ios").length + mobileWebTestChecks.length}; worked: 1`);
     expect(output).toContain("Phone app: iPhone or iPad");
     expect(output).toContain("DRX in the phone browser");
     expect(output).toContain("[WORKED] Open the right shop");
@@ -79,6 +80,17 @@ describe("suggestTestSetup", () => {
     expect(suggestion.platform).toBe("android");
     expect(suggestion.browserName).toBe("Samsung Internet");
     expect(suggestion.osVersion).toBe("Android 16");
+  });
+
+  it("recognizes an iPad using Safari's desktop-style identity", () => {
+    const suggestion = suggestTestSetup(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 Version/18.6 Safari/605.1.15",
+      new Date("2026-09-03T20:30:00-04:00"),
+      { platform: "MacIntel", maxTouchPoints: 5 },
+    );
+
+    expect(suggestion.platform).toBe("ios");
+    expect(suggestion.browserName).toBe("Safari");
   });
 });
 
@@ -130,6 +142,12 @@ describe("first-time tester guidance", () => {
     expect(customer?.steps.join(" ")).not.toContain("reopen the customer");
     expect(signout?.steps.join(" ")).toContain("tap Sign Out");
     expect(signout?.steps.join(" ")).not.toContain("then Settings");
+  });
+
+  it("keeps Android-only offline sales out of the iOS report", () => {
+    expect(nativeTestChecksFor("android").map((check) => check.id)).toContain("offline-cash");
+    expect(nativeTestChecksFor("ios").map((check) => check.id)).not.toContain("offline-cash");
+    expect(createAndroidTestReport(report())).not.toContain("Try cash without internet");
   });
 
   it("offers broad choices for common phones and tablets", () => {

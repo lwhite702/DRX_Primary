@@ -1,4 +1,15 @@
-export const nativeTestChecks = [
+export type AndroidTestStatus = "not_tested" | "pass" | "fail" | "blocked";
+export type MobileTestPlatform = "android" | "ios";
+
+type MobileTestCheck = {
+  id: string;
+  title: string;
+  prompt: string;
+  steps: readonly string[];
+  platforms?: readonly MobileTestPlatform[];
+};
+
+export const nativeTestChecks: readonly MobileTestCheck[] = [
   {
     id: "identity",
     title: "Open the right shop",
@@ -27,7 +38,8 @@ export const nativeTestChecks = [
     prompt: "Add a made-up product, close and reopen DRX, then check its price and amount.",
     steps: [
       "Tap Inventory, then Add Product.",
-      "Use a made-up name and SKU. Add a cost, selling price, and starting amount.",
+      "Use a made-up name and SKU. Add a cost and selling price.",
+      "On Android, add a starting amount now. On iPhone or iPad, save first, open the product, tap Record Intake, and add the starting amount there.",
       "Save the product, close DRX, and open it again.",
       "Find the product and make sure its price and amount still match.",
     ],
@@ -58,6 +70,7 @@ export const nativeTestChecks = [
   },
   {
     id: "offline-cash",
+    platforms: ["android"],
     title: "Try cash without internet",
     prompt: "Turn off the internet, make an allowed cash sale, reconnect, and make sure the sale shows up once.",
     steps: [
@@ -70,6 +83,7 @@ export const nativeTestChecks = [
   },
   {
     id: "offline-credit",
+    platforms: ["android"],
     title: "Try credit without internet",
     prompt: "If your test account allows it, make a small credit sale offline. Reconnect and make sure it shows up once.",
     steps: [
@@ -86,7 +100,9 @@ export const nativeTestChecks = [
     steps: [
       "Allow reminders when DRX asks.",
       "Create a made-up delivery if your test shop has deliveries turned on.",
-      "Lock the phone and check the reminder. It should not show a name, address, or sale details.",
+      "Open Deliveries, open the new delivery, and tap Assign to Me if it is shown.",
+      "Tap Mark Uber Ordered, enter a 2-minute wait, and confirm.",
+      "Lock the phone and wait up to 2 minutes. The reminder should not show a name, address, or sale details.",
     ],
   },
   {
@@ -122,7 +138,11 @@ export const nativeTestChecks = [
   },
 ] as const;
 
-export const mobileWebTestChecks = [
+export function nativeTestChecksFor(platform: MobileTestPlatform) {
+  return nativeTestChecks.filter((check) => !check.platforms || check.platforms.includes(platform));
+}
+
+export const mobileWebTestChecks: readonly MobileTestCheck[] = [
   {
     id: "web-identity",
     title: "Open the same shop on the web",
@@ -135,23 +155,23 @@ export const mobileWebTestChecks = [
   },
   {
     id: "web-native-readback",
-    title: "Check your phone-app changes",
-    prompt: "Find the made-up product and customer you added in the phone app. Their details should match.",
+    title: "Check the web catalog",
+    prompt: "Use the made-up browser records your test coordinator provided. Phone-app records may not appear here yet.",
     steps: [
-      "Open Inventory and find your made-up product.",
-      "Open Customers and find your made-up customer.",
-      "Compare the price, stock amount, customer details, and credit balance with the phone app.",
+      "Open Inventory and find the made-up browser product from your test notes.",
+      "Open Customers and find the made-up browser customer from your test notes.",
+      "Check the price, stock amount, customer details, and available credit. Tell us if anything is missing or confusing.",
     ],
   },
   {
     id: "web-checkout",
     title: "Make a sale in the browser",
-    prompt: "Make a made-up cash sale. Check the total, stock, and sales list, then find it once in the phone app.",
+    prompt: "Make a made-up cash sale in the browser. Check the total, stock, and sales list.",
     steps: [
       "Open Quick Sale and add your made-up product.",
       "Continue to payment, choose Cash, enter enough cash, and finish the sale.",
       "Open Sales and make sure the sale appears once.",
-      "Return to the phone app and make sure that same sale appears once there too.",
+      "Refresh Sales and make sure the sale still appears only once.",
     ],
   },
   {
@@ -186,9 +206,6 @@ export const mobileWebTestChecks = [
     ],
   },
 ] as const;
-
-export type AndroidTestStatus = "not_tested" | "pass" | "fail" | "blocked";
-export type MobileTestPlatform = "android" | "ios";
 
 export type AndroidTestResult = {
   status: AndroidTestStatus;
@@ -249,8 +266,15 @@ function localDateTime(date: Date) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
-export function suggestTestSetup(userAgent: string, now = new Date()) {
-  const ios = /iPad|iPhone|iPod/i.test(userAgent);
+export function suggestTestSetup(
+  userAgent: string,
+  now = new Date(),
+  device: { platform?: string; maxTouchPoints?: number } = {},
+) {
+  const desktopModeIPad = /Macintosh/i.test(userAgent)
+    && device.platform === "MacIntel"
+    && (device.maxTouchPoints ?? 0) > 1;
+  const ios = /iPad|iPhone|iPod/i.test(userAgent) || desktopModeIPad;
   const platform: MobileTestPlatform = ios ? "ios" : "android";
   const androidVersion = userAgent.match(/Android\s([\d.]+)/i)?.[1];
   const appleVersion = userAgent.match(/OS\s(\d+(?:[_\d]+)?)/i)?.[1]?.replaceAll("_", ".");
@@ -284,7 +308,8 @@ function printable(value: string) {
 }
 
 export function createAndroidTestReport(input: AndroidTestReportInput) {
-  const allChecks = [...nativeTestChecks, ...mobileWebTestChecks];
+  const activeNativeChecks = nativeTestChecksFor(input.platform);
+  const allChecks = [...activeNativeChecks, ...mobileWebTestChecks];
   const completed = allChecks.filter(
     (check) => input.results[check.id]?.status !== "not_tested",
   ).length;
@@ -315,7 +340,7 @@ export function createAndroidTestReport(input: AndroidTestReportInput) {
     "",
     `${input.platform === "ios" ? "iPhone and iPad" : "Android"} app checks`,
     "----------------------",
-    ...formatChecks(nativeTestChecks),
+    ...formatChecks(activeNativeChecks),
     "",
     "DRX in the phone browser",
     "------------------------",

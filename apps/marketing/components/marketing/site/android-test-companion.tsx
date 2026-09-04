@@ -20,6 +20,7 @@ import {
   mobileWebTestChecks,
   mobileTestStorageKey,
   nativeTestChecks,
+  nativeTestChecksFor,
   osSuggestions,
   parseMobileTestProgress,
   serializeMobileTestProgress,
@@ -78,7 +79,10 @@ export function MobileTestCompanion() {
       setStorageReady(true);
       return;
     }
-    const suggestion = suggestTestSetup(navigator.userAgent);
+    const suggestion = suggestTestSetup(navigator.userAgent, new Date(), {
+      platform: navigator.platform,
+      maxTouchPoints: navigator.maxTouchPoints,
+    });
     setReport((current) => ({
       ...current,
       platform: suggestion.platform,
@@ -108,15 +112,16 @@ export function MobileTestCompanion() {
     return () => window.clearTimeout(timer);
   }, [report, storageReady, syntheticConfirmed]);
 
+  const activeNativeChecks = useMemo(() => nativeTestChecksFor(report.platform), [report.platform]);
   const completed = useMemo(
-    () => [...nativeTestChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status !== "not_tested").length,
-    [report.results],
+    () => [...activeNativeChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status !== "not_tested").length,
+    [activeNativeChecks, report.results],
   );
   const passed = useMemo(
-    () => [...nativeTestChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status === "pass").length,
-    [report.results],
+    () => [...activeNativeChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status === "pass").length,
+    [activeNativeChecks, report.results],
   );
-  const totalChecks = nativeTestChecks.length + mobileWebTestChecks.length;
+  const totalChecks = activeNativeChecks.length + mobileWebTestChecks.length;
   const progress = Math.round((completed / totalChecks) * 100);
   const generatedReport = useMemo(() => createAndroidTestReport(report), [report]);
 
@@ -238,7 +243,7 @@ export function MobileTestCompanion() {
               <legend className="mb-2 text-sm text-text-secondary">Which app are you testing?</legend>
               <div className="grid grid-cols-2 gap-2">
                 {(["android", "ios"] as const).map((platform) => (
-                  <label key={platform} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-4 text-sm font-bold transition ${report.platform === platform ? "border-accent bg-accent text-black" : "border-white/15 text-text-secondary hover:border-white/30 hover:text-white"}`}>
+                  <label key={platform} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-4 text-sm font-bold transition focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 focus-within:ring-offset-black ${report.platform === platform ? "border-accent bg-accent text-black" : "border-white/15 text-text-secondary hover:border-white/30 hover:text-white"}`}>
                     <input className="sr-only" type="radio" name="platform" value={platform} checked={report.platform === platform} onChange={() => setReport((current) => ({ ...current, platform, androidVersion: "", browserName: platform === "ios" ? "Safari" : "Chrome" }))} />
                     {platform === "ios" ? "iPhone or iPad" : "Android"}
                   </label>
@@ -294,20 +299,20 @@ export function MobileTestCompanion() {
             eyebrow: "Start here",
             title: "Sign in and set up your first workspace",
             description: "Onboarding is the first part of the test. Take your time and tell us about any question that does not feel clear.",
-            checks: nativeTestChecks.slice(0, 2),
+            checks: activeNativeChecks.slice(0, 2),
           },
           {
             id: "native-checks",
             eyebrow: `${report.platform === "ios" ? "iPhone or iPad" : "Android"} app`,
             title: "Try the everyday work",
             description: "Work through these in the app you installed. Then we'll do a shorter check in your phone's browser.",
-            checks: nativeTestChecks.slice(2),
+            checks: activeNativeChecks.slice(2),
           },
           {
             id: "web-checks",
             eyebrow: "One more quick round",
             title: "Now try DRX in your browser",
-            description: "On this same phone, open deelrxcrm.app and make sure your work carries over cleanly.",
+            description: "On this same phone, open deelrxcrm.app and make sure the browser experience works cleanly.",
             checks: mobileWebTestChecks,
           },
         ].map((group) => (
@@ -351,7 +356,7 @@ export function MobileTestCompanion() {
                     <legend className="sr-only">How did {check.title} go?</legend>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {statuses.map((status) => (
-                        <label key={status.value} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-3 text-center text-xs font-bold uppercase tracking-wide transition ${result.status === status.value ? status.value === "pass" ? "border-accent bg-accent text-black" : status.value === "fail" ? "border-red-400/70 bg-red-400/10 text-red-200" : status.value === "blocked" ? "border-amber-300/70 bg-amber-300/10 text-amber-100" : "border-white/30 bg-white/10 text-white" : "border-white/10 text-text-secondary hover:border-white/25 hover:text-white"}`}>
+                        <label key={status.value} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-3 text-center text-xs font-bold uppercase tracking-wide transition focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 focus-within:ring-offset-black ${result.status === status.value ? status.value === "pass" ? "border-accent bg-accent text-black" : status.value === "fail" ? "border-red-400/70 bg-red-400/10 text-red-200" : status.value === "blocked" ? "border-amber-300/70 bg-amber-300/10 text-amber-100" : "border-white/30 bg-white/10 text-white" : "border-white/10 text-text-secondary hover:border-white/25 hover:text-white"}`}>
                           <input className="sr-only" type="radio" name={`status-${check.id}`} value={status.value} checked={result.status === status.value} onChange={() => updateResult(check.id, "status", status.value)} />
                           {status.label}
                         </label>
