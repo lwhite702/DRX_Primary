@@ -350,22 +350,22 @@ select,
 .cl-formFieldInput,
 .cl-input,
 .cl-otpCodeFieldInput {
-  background-color: #1e1e1e !important;
+  background-color: #262626 !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid #737373 !important;
   border-radius: 0.5rem !important;
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .cl-formFieldInput:hover,
 .cl-input:hover {
-  border-color: rgba(255, 255, 255, 0.38) !important;
+  border-color: #8a8a8a !important;
 }
 
 .cl-formFieldInput:focus,
 .cl-input:focus,
 .cl-otpCodeFieldInput:focus {
-  background-color: #242424 !important;
+  background-color: #2c2c2c !important;
   border-color: #ccff00 !important;
   box-shadow: 0 0 0 2px #ccff00 !important;
   outline: none !important;
@@ -378,7 +378,6 @@ select,
 
 .cl-formFieldInput::placeholder,
 .cl-input::placeholder {
-  color: #8a8a8a !important;
+  color: #b3b3b3 !important;
   opacity: 1 !important;
 }
-
