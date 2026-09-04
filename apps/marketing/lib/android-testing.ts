@@ -3,56 +3,122 @@ export const nativeTestChecks = [
     id: "identity",
     title: "Open the right shop",
     prompt: "Sign in and make sure you see the right test shop and job role.",
+    steps: [
+      "Open the DRX app and sign in with the invite you received.",
+      "Check the shop name near the top of the screen.",
+      "Make sure the screens you can open fit the job role you were given.",
+    ],
   },
   {
     id: "onboarding",
-    title: "Finish setup",
-    prompt: "Finish the welcome steps, or make sure your test shop opens the way you expect.",
+    title: "Walk through your first setup",
+    prompt: "Treat the welcome flow as the first test: finish every step and make sure the new workspace opens correctly.",
+    steps: [
+      "Start with a new invited test account so you see the welcome flow.",
+      "Use a made-up owner name, business name, and location.",
+      "Choose a business type, region, tax choice, and whether DRX should track inventory.",
+      "If asked about a teammate, skip it unless you received another made-up test address.",
+      "Review the setup summary, finish, and make sure the new workspace opens.",
+      "Tell us if any question is confusing, too small, cut off, or hard to answer.",
+    ],
   },
   {
     id: "inventory",
     title: "Add a product",
     prompt: "Add a made-up product, close and reopen DRX, then check its price and amount.",
+    steps: [
+      "Tap Inventory, then Add Product.",
+      "Use a made-up name and SKU. Add a cost, selling price, and starting amount.",
+      "Save the product, close DRX, and open it again.",
+      "Find the product and make sure its price and amount still match.",
+    ],
   },
   {
     id: "customer",
     title: "Add a customer",
     prompt: "Add a made-up customer, then make sure their details and credit limit are still there.",
+    steps: [
+      "Tap Customers, then Add.",
+      "Enter a made-up name. Leave the phone and email blank, or use clearly made-up details.",
+      "Add a small credit limit so you can try a credit sale later.",
+      "Save, reopen the customer, and make sure the details still match.",
+    ],
   },
   {
     id: "online-checkout",
     title: "Make two sales",
     prompt: "While online, make one cash sale and one credit sale. Check the totals, stock, balance, and sales list.",
+    steps: [
+      "Open POS and tap the made-up product you added.",
+      "Tap Checkout, choose Cash, enter enough cash, and finish the sale.",
+      "Check Sales History and Inventory. The sale should appear once and stock should go down.",
+      "Start another sale, pick your made-up customer, choose Credit, and finish it.",
+      "Check the customer's balance and Sales History. The numbers should match the sale.",
+    ],
   },
   {
     id: "offline-cash",
     title: "Try cash without internet",
     prompt: "Turn off the internet, make an allowed cash sale, reconnect, and make sure the sale shows up once.",
+    steps: [
+      "While online, open the offline status card and make sure this phone is allowed to sell offline.",
+      "Turn on airplane mode, return to POS, and make a small cash sale.",
+      "Look for the message that says the sale is waiting to sync.",
+      "Turn the internet back on and wait for syncing to finish.",
+      "Check Sales History. The sale should appear once, not twice.",
+    ],
   },
   {
     id: "offline-credit",
     title: "Try credit without internet",
     prompt: "If your test account allows it, make a small credit sale offline. Reconnect and make sure it shows up once.",
+    steps: [
+      "Check that this phone is allowed to take credit sales offline.",
+      "Turn on airplane mode and start a small sale for your made-up customer.",
+      "Choose Credit and finish the sale. If DRX says this is not allowed, mark Couldn't test and copy the message into your notes.",
+      "Reconnect, wait for syncing, then check the sale and customer balance.",
+    ],
   },
   {
     id: "notifications",
     title: "Delivery reminders",
     prompt: "Allow reminders and make sure the lock screen never shows a customer's private details.",
+    steps: [
+      "Allow reminders when DRX asks.",
+      "Create a made-up delivery if your test shop has deliveries turned on.",
+      "Lock the phone and check the reminder. It should not show a name, address, or sale details.",
+    ],
   },
   {
     id: "signout",
     title: "Sign out and come back",
     prompt: "Sign out, close DRX, and reopen it. The last shop's customer and sales details should be gone.",
+    steps: [
+      "Open More, then Settings, and sign out.",
+      "Close DRX completely and open it again.",
+      "Before signing back in, make sure you cannot see the last shop's products, customers, or sales.",
+    ],
   },
   {
     id: "isolation",
     title: "Switch test shops",
     prompt: "Sign in to a second test shop and make sure nothing from the first shop appears.",
+    steps: [
+      "Sign out of the first test shop.",
+      "Sign in with the second test-shop invite you received.",
+      "Look through POS, Inventory, Customers, and Sales History.",
+      "Make sure none of the first shop's made-up records appear.",
+    ],
   },
   {
     id: "support",
     title: "Get help",
     prompt: "Open Help & Support and try both the guide and email buttons.",
+    steps: [
+      "Open More, then Help & Support.",
+      "Open a guide and make sure it is useful on this phone.",
+      "Try the email button. You do not need to send the message.",
+    ],
   },
 ] as const;
 
@@ -61,31 +127,63 @@ export const mobileWebTestChecks = [
     id: "web-identity",
     title: "Open the same shop on the web",
     prompt: "Open DRX in your phone's browser, sign in, and make sure you see the same test shop and role.",
+    steps: [
+      "Open deelrxcrm.app in the browser you picked above.",
+      "Sign in with the same test account.",
+      "Check the shop name and the screens available to you.",
+    ],
   },
   {
     id: "web-native-readback",
     title: "Check your phone-app changes",
     prompt: "Find the made-up product and customer you added in the phone app. Their details should match.",
+    steps: [
+      "Open Inventory and find your made-up product.",
+      "Open Customers and find your made-up customer.",
+      "Compare the price, stock amount, customer details, and credit balance with the phone app.",
+    ],
   },
   {
     id: "web-checkout",
     title: "Make a sale in the browser",
     prompt: "Make a made-up cash sale. Check the total, stock, and sales list, then find it once in the phone app.",
+    steps: [
+      "Open Quick Sale and add your made-up product.",
+      "Continue to payment, choose Cash, enter enough cash, and finish the sale.",
+      "Open Sales and make sure the sale appears once.",
+      "Return to the phone app and make sure that same sale appears once there too.",
+    ],
   },
   {
     id: "web-usability",
     title: "Use it on a small screen",
     prompt: "Move around, fill out a form, open the keyboard, and scroll. Nothing important should be hidden or hard to tap.",
+    steps: [
+      "Open the menu and visit Inventory, Customers, Sales, and Settings.",
+      "Tap into a form and open the keyboard.",
+      "Rotate the phone once and scroll to the bottom of a longer page.",
+      "Tell us about anything cut off, tiny, or hard to tap.",
+    ],
   },
   {
     id: "web-isolation",
     title: "Sign out and switch shops",
     prompt: "Sign out, refresh the page, and open a second test shop. Nothing from the first shop should appear.",
+    steps: [
+      "Sign out, then refresh the browser page.",
+      "Make sure the first shop's details are no longer visible.",
+      "Sign in to the second test shop and check Inventory, Customers, and Sales.",
+    ],
   },
   {
     id: "web-support",
     title: "Open the helpful links",
     prompt: "Open Resources, Privacy, and Terms. Tell us if anything is missing or does not open.",
+    steps: [
+      "Open Resources and try the DRX, testing, and help links.",
+      "Open Privacy and Terms.",
+      "Use the back button after each page and make sure you return to the right place.",
+    ],
   },
 ] as const;
 
@@ -120,26 +218,19 @@ const statusLabels: Record<AndroidTestStatus, string> = {
 
 export const deviceSuggestions: Record<MobileTestPlatform, readonly string[]> = {
   android: [
-    "Google Pixel 10",
-    "Google Pixel 9",
-    "Google Pixel 8",
-    "Samsung Galaxy S25",
-    "Samsung Galaxy S24",
-    "Samsung Galaxy Z Fold 7",
-    "Samsung Galaxy Z Flip 7",
-    "OnePlus 13",
-    "Motorola Razr",
+    "Google Pixel 10 Pro Fold", "Google Pixel 10 Pro XL", "Google Pixel 10 Pro", "Google Pixel 10",
+    "Google Pixel 9 Pro Fold", "Google Pixel 9 Pro XL", "Google Pixel 9 Pro", "Google Pixel 9a", "Google Pixel 9",
+    "Google Pixel 8 Pro", "Google Pixel 8a", "Google Pixel 8", "Google Pixel 7 Pro", "Google Pixel 7a", "Google Pixel 7", "Google Pixel 6 Pro", "Google Pixel 6a", "Google Pixel 6", "Google Pixel Fold", "Google Pixel Tablet",
+    "Samsung Galaxy S25 Ultra", "Samsung Galaxy S25+", "Samsung Galaxy S25", "Samsung Galaxy S24 Ultra", "Samsung Galaxy S24+", "Samsung Galaxy S24", "Samsung Galaxy S23 Ultra", "Samsung Galaxy S23+", "Samsung Galaxy S23", "Samsung Galaxy S22", "Samsung Galaxy S21",
+    "Samsung Galaxy A56", "Samsung Galaxy A55", "Samsung Galaxy A54", "Samsung Galaxy A36", "Samsung Galaxy A35", "Samsung Galaxy A25", "Samsung Galaxy A16", "Samsung Galaxy A15",
+    "Samsung Galaxy Z Fold 7", "Samsung Galaxy Z Fold 6", "Samsung Galaxy Z Fold 5", "Samsung Galaxy Z Flip 7", "Samsung Galaxy Z Flip 6", "Samsung Galaxy Z Flip 5", "Samsung Galaxy Tab S10", "Samsung Galaxy Tab S9",
+    "OnePlus 13", "OnePlus 12", "OnePlus 11", "OnePlus Nord 4", "Motorola Razr Ultra", "Motorola Razr", "Motorola Edge", "Moto G Power", "Nothing Phone (3)", "Nothing Phone (2)", "Sony Xperia 1", "Xiaomi 15", "Redmi Note 14", "Other Android phone or tablet",
   ],
   ios: [
-    "iPhone 17 Pro Max",
-    "iPhone 17 Pro",
-    "iPhone 17",
-    "iPhone Air",
-    "iPhone 16 Pro Max",
-    "iPhone 16 Pro",
-    "iPhone 16",
-    "iPad Air 13-inch",
-    "iPad Pro 13-inch",
+    "iPhone 17 Pro Max", "iPhone 17 Pro", "iPhone 17", "iPhone Air",
+    "iPhone 16 Pro Max", "iPhone 16 Pro", "iPhone 16 Plus", "iPhone 16", "iPhone 16e",
+    "iPhone 15 Pro Max", "iPhone 15 Pro", "iPhone 15 Plus", "iPhone 15", "iPhone 14 Pro Max", "iPhone 14 Pro", "iPhone 14 Plus", "iPhone 14", "iPhone 13 Pro Max", "iPhone 13 Pro", "iPhone 13 mini", "iPhone 13", "iPhone 12 Pro Max", "iPhone 12 Pro", "iPhone 12 mini", "iPhone 12", "iPhone 11 Pro Max", "iPhone 11 Pro", "iPhone 11", "iPhone SE (3rd generation)", "iPhone SE (2nd generation)",
+    "iPad Pro 13-inch", "iPad Pro 11-inch", "iPad Air 13-inch", "iPad Air 11-inch", "iPad (11th generation)", "iPad (10th generation)", "iPad mini", "Other iPhone or iPad",
   ],
 };
 
@@ -236,4 +327,54 @@ export function createAndroidTestReport(input: AndroidTestReportInput) {
     "",
     "Privacy note: This test used made-up information only. The report has no passwords or real customer details.",
   ].join("\n");
+}
+
+export const mobileTestStorageKey = "drx.mobile-test.v1";
+
+export type SavedMobileTest = {
+  report: AndroidTestReportInput;
+  syntheticConfirmed: boolean;
+  savedAt: string;
+};
+
+const allowedStatuses = new Set<AndroidTestStatus>(["not_tested", "pass", "fail", "blocked"]);
+
+export function serializeMobileTestProgress(saved: SavedMobileTest) {
+  return JSON.stringify(saved);
+}
+
+export function parseMobileTestProgress(raw: string): SavedMobileTest | null {
+  try {
+    const value = JSON.parse(raw) as Partial<SavedMobileTest>;
+    const candidate = value.report as Partial<AndroidTestReportInput> | undefined;
+    if (!candidate || (candidate.platform !== "android" && candidate.platform !== "ios")) return null;
+
+    const allChecks = [...nativeTestChecks, ...mobileWebTestChecks];
+    const results = Object.fromEntries(allChecks.map((check) => {
+      const result = candidate.results?.[check.id];
+      const status = result && allowedStatuses.has(result.status) ? result.status : "not_tested";
+      return [check.id, { status, notes: typeof result?.notes === "string" ? result.notes : "" }];
+    }));
+    const text = (field: keyof AndroidTestReportInput) => typeof candidate[field] === "string" ? candidate[field] as string : "";
+
+    return {
+      report: {
+        platform: candidate.platform,
+        testerAlias: text("testerAlias"),
+        deviceModel: text("deviceModel"),
+        androidVersion: text("androidVersion"),
+        appVersion: text("appVersion"),
+        buildNumber: text("buildNumber"),
+        browserName: text("browserName"),
+        testedAt: text("testedAt"),
+        timezone: text("timezone"),
+        overallNotes: text("overallNotes"),
+        results,
+      },
+      syntheticConfirmed: value.syntheticConfirmed === true,
+      savedAt: typeof value.savedAt === "string" ? value.savedAt : "",
+    };
+  } catch {
+    return null;
+  }
 }

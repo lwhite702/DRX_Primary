@@ -7,6 +7,7 @@ import {
   Download,
   LockKeyhole,
   RotateCcw,
+  Save,
   ShieldCheck,
   Sparkles,
   Smartphone,
@@ -17,8 +18,11 @@ import {
   createAndroidTestReport,
   deviceSuggestions,
   mobileWebTestChecks,
+  mobileTestStorageKey,
   nativeTestChecks,
   osSuggestions,
+  parseMobileTestProgress,
+  serializeMobileTestProgress,
   suggestTestSetup,
   type AndroidTestReportInput,
   type AndroidTestStatus,
@@ -56,8 +60,19 @@ export function MobileTestCompanion() {
   const [report, setReport] = useState<AndroidTestReportInput>(freshReport);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [syntheticConfirmed, setSyntheticConfirmed] = useState(false);
+  const [storageReady, setStorageReady] = useState(false);
+  const [savedAt, setSavedAt] = useState("");
+  const [saveState, setSaveState] = useState<"saved" | "error">("saved");
 
   useEffect(() => {
+    const saved = parseMobileTestProgress(window.localStorage.getItem(mobileTestStorageKey) ?? "");
+    if (saved) {
+      setReport(saved.report);
+      setSyntheticConfirmed(saved.syntheticConfirmed);
+      setSavedAt(saved.savedAt);
+      setStorageReady(true);
+      return;
+    }
     const suggestion = suggestTestSetup(navigator.userAgent);
     setReport((current) => ({
       ...current,
@@ -67,7 +82,26 @@ export function MobileTestCompanion() {
       testedAt: current.testedAt || suggestion.testedAt,
       timezone: current.timezone || suggestion.timezone,
     }));
+    setStorageReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!storageReady) return;
+    const timer = window.setTimeout(() => {
+      const now = new Date().toISOString();
+      try {
+        window.localStorage.setItem(
+          mobileTestStorageKey,
+          serializeMobileTestProgress({ report, syntheticConfirmed, savedAt: now }),
+        );
+        setSavedAt(now);
+        setSaveState("saved");
+      } catch {
+        setSaveState("error");
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [report, storageReady, syntheticConfirmed]);
 
   const completed = useMemo(
     () => [...nativeTestChecks, ...mobileWebTestChecks].filter((check) => report.results[check.id].status !== "not_tested").length,
@@ -115,15 +149,51 @@ export function MobileTestCompanion() {
     URL.revokeObjectURL(url);
   };
 
+  const saveProgress = () => {
+    const now = new Date().toISOString();
+    try {
+      window.localStorage.setItem(
+        mobileTestStorageKey,
+        serializeMobileTestProgress({ report, syntheticConfirmed, savedAt: now }),
+      );
+      setSavedAt(now);
+      setSaveState("saved");
+    } catch {
+      setSaveState("error");
+    }
+  };
+
   const reset = () => {
     if (!window.confirm("Clear this local test report and start over?")) return;
+    window.localStorage.removeItem(mobileTestStorageKey);
     setReport(freshReport());
     setSyntheticConfirmed(false);
+    setSavedAt("");
   };
+
+  const savedMessage = saveState === "error"
+    ? "This browser could not save your progress."
+    : savedAt
+      ? `Saved on this phone at ${new Date(savedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+      : "Your answers will save on this phone.";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="space-y-8">
+        <section className="rounded-2xl border border-white/10 bg-black/60 p-4 lg:hidden" aria-label="Test progress">
+          <div className="flex items-center gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between text-xs text-text-secondary">
+                <span>{completed} of {totalChecks} done</span><span>{progress}%</span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} /></div>
+            </div>
+            <button type="button" onClick={saveProgress} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-bold text-black">
+              <Save className="size-4" /> Save
+            </button>
+          </div>
+          <p className={`mt-3 text-xs ${saveState === "error" ? "text-red-200" : "text-text-secondary"}`}>{savedMessage}</p>
+        </section>
         <section className="rounded-3xl border border-accent/25 bg-accent/[0.06] p-5 md:p-7">
           <div className="flex gap-4">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-black">
@@ -211,11 +281,18 @@ export function MobileTestCompanion() {
 
         {[
           {
+            id: "getting-started-checks",
+            eyebrow: "Start here",
+            title: "Sign in and set up your first workspace",
+            description: "Onboarding is the first part of the test. Take your time and tell us about any question that does not feel clear.",
+            checks: nativeTestChecks.slice(0, 2),
+          },
+          {
             id: "native-checks",
             eyebrow: `${report.platform === "ios" ? "iPhone or iPad" : "Android"} app`,
-            title: "Try the phone app",
+            title: "Try the everyday work",
             description: "Work through these in the app you installed. Then we'll do a shorter check in your phone's browser.",
-            checks: nativeTestChecks,
+            checks: nativeTestChecks.slice(2),
           },
           {
             id: "web-checks",
@@ -247,6 +324,17 @@ export function MobileTestCompanion() {
                     <div className="min-w-0 flex-1">
                       <h3 className="font-bold text-white">{check.title}</h3>
                       <p className="mt-1 text-sm leading-6 text-text-secondary">{check.prompt}</p>
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                        <p className="text-sm font-bold text-white">Here&apos;s how</p>
+                        <ol className="mt-3 space-y-2 text-sm leading-6 text-text-secondary">
+                          {check.steps.map((step, stepIndex) => (
+                            <li key={step} className="flex gap-3">
+                              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">{stepIndex + 1}</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
                     </div>
                   </div>
 
@@ -284,6 +372,9 @@ export function MobileTestCompanion() {
           </label>
 
           <div className="mt-5 flex flex-wrap gap-3">
+            <button type="button" onClick={saveProgress} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-5 py-2 text-sm font-bold text-accent transition hover:bg-accent/15">
+              <Save className="size-4" /> Save my progress
+            </button>
             <button type="button" onClick={copyReport} disabled={!syntheticConfirmed} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-5 py-2 text-sm font-bold text-black transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-40">
               {copyState === "copied" ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
               {copyState === "copied" ? "Copied" : "Copy my report"}
@@ -297,6 +388,7 @@ export function MobileTestCompanion() {
           </div>
           {!syntheticConfirmed ? <p className="mt-3 text-xs text-amber-200">Check the made-up-info box before you copy or save.</p> : null}
           {copyState === "error" ? <p className="mt-3 text-xs text-red-200">Copy did not work here. Save the report instead.</p> : null}
+          <p className={`mt-3 text-xs ${saveState === "error" ? "text-red-200" : "text-text-secondary"}`}>{savedMessage}</p>
         </section>
       </div>
 
@@ -321,10 +413,14 @@ export function MobileTestCompanion() {
           </div>
           <div className="mt-5 flex gap-3 border-t border-white/10 pt-5 text-xs leading-5 text-text-secondary">
             <LockKeyhole aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>What you type stays on this phone. Your app and browser checks go into one simple report.</p>
+            <p>{savedMessage} Come back with this browser and your answers will be waiting.</p>
           </div>
+          <button type="button" onClick={saveProgress} className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-bold text-black">
+            <Save className="size-4" /> Save my progress
+          </button>
         </div>
       </aside>
+
     </div>
   );
 }

@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   createAndroidTestReport,
+  deviceSuggestions,
   mobileWebTestChecks,
   nativeTestChecks,
+  parseMobileTestProgress,
+  serializeMobileTestProgress,
   suggestTestSetup,
   type AndroidTestReportInput,
 } from "./android-testing";
@@ -76,5 +79,48 @@ describe("suggestTestSetup", () => {
     expect(suggestion.platform).toBe("android");
     expect(suggestion.browserName).toBe("Samsung Internet");
     expect(suggestion.osVersion).toBe("Android 16");
+  });
+});
+
+describe("mobile test progress", () => {
+  it("restores saved answers and safely fills any missing checks", () => {
+    const savedReport = report();
+    savedReport.results.identity = { status: "pass", notes: "Opened the right test shop." };
+    delete savedReport.results["web-support"];
+
+    const restored = parseMobileTestProgress(serializeMobileTestProgress({
+      report: savedReport,
+      syntheticConfirmed: true,
+      savedAt: "2026-09-03T21:00:00.000Z",
+    }));
+
+    expect(restored?.syntheticConfirmed).toBe(true);
+    expect(restored?.report.results.identity).toEqual({ status: "pass", notes: "Opened the right test shop." });
+    expect(restored?.report.results["web-support"]).toEqual({ status: "not_tested", notes: "" });
+  });
+
+  it("ignores broken or unrecognized saved data", () => {
+    expect(parseMobileTestProgress("not-json")).toBeNull();
+    expect(parseMobileTestProgress(JSON.stringify({ report: { platform: "desktop" } }))).toBeNull();
+  });
+});
+
+describe("first-time tester guidance", () => {
+  it("includes step-by-step onboarding and transaction help", () => {
+    const onboarding = nativeTestChecks.find((check) => check.id === "onboarding");
+    const checkout = nativeTestChecks.find((check) => check.id === "online-checkout");
+    const webCheckout = mobileWebTestChecks.find((check) => check.id === "web-checkout");
+
+    expect(onboarding?.steps.length).toBeGreaterThanOrEqual(5);
+    expect(checkout?.steps.join(" ")).toContain("Cash");
+    expect(checkout?.steps.join(" ")).toContain("Credit");
+    expect(webCheckout?.steps.join(" ")).toContain("Quick Sale");
+  });
+
+  it("offers broad choices for common phones and tablets", () => {
+    expect(deviceSuggestions.android.length).toBeGreaterThanOrEqual(50);
+    expect(deviceSuggestions.ios.length).toBeGreaterThanOrEqual(30);
+    expect(deviceSuggestions.android).toContain("Other Android phone or tablet");
+    expect(deviceSuggestions.ios).toContain("Other iPhone or iPad");
   });
 });
