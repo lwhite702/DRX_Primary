@@ -65,6 +65,18 @@ describe("Clerk authentication appearance", () => {
     expect(contrastRatio("#FFFFFF", "#262626")).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("uses dark, readable type on the lime primary button", () => {
+    const buttonRule = cssRule(
+      ".cl-formButtonPrimary,\n.cl-formButtonPrimary:hover,\n.cl-formButtonPrimary:focus,\n.cl-formButtonPrimary:active {",
+    );
+
+    expect(drxClerkAuthAppearance.variables.colorPrimaryForeground).toBe("#0A0A0A");
+    expect(drxClerkAuthAppearance.elements.formButtonPrimary).toContain("text-base");
+    expect(buttonRule).toContain("color: #0a0a0a !important;");
+    expect(buttonRule).toContain("font-size: 1rem !important;");
+    expect(contrastRatio("#0A0A0A", "#CCFF00")).toBeGreaterThanOrEqual(7);
+  });
+
   it("keeps global Clerk overrides aligned with the accessible auth theme", () => {
     const baseRule = cssRule(
       ".cl-formFieldInput,\n.cl-input,\n.cl-otpCodeFieldInput {",
