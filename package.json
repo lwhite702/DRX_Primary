@@ -90,7 +90,9 @@
     "test:featurebase:help": "pnpm dlx tsx --test scripts/featurebase/test-help-content.mjs scripts/featurebase/test-help-api.ts",
     "featurebase:validate:help-center": "pnpm dlx tsx scripts/featurebase/validate-help-center.ts",
     "featurebase:build:help-visuals": "node scripts/featurebase/build-help-visuals.mjs",
-    "featurebase:validate:help-visuals": "node scripts/featurebase/validate-help-visuals.mjs"
+    "featurebase:validate:help-visuals": "node scripts/featurebase/validate-help-visuals.mjs",
+    "featurebase:prepare:help-center:browser": "node scripts/featurebase/prepare-help-browser-import.mjs",
+    "featurebase:verify:help-center:browser": "node scripts/featurebase/verify-help-browser-receipt.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",

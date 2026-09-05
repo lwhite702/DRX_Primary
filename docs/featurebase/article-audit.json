@@ -3,7 +3,7 @@
   "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
   "publicInspectionTime": "2026-08-31T05:35:46.301Z",
   "contentHash": "9ef9545787817dec073f98bf82a3cf7b81ff7189296754af64028809d76e3106",
-  "scope": "19 published text articles audited; 20 visual assets with 23 placements prepared; API-only content, drafts, and visual publication remain blocked",
+  "scope": "19 published text articles audited; 20 visual assets with 23 placements uploaded through the authenticated editor; final draft verification and visual publication remain pending",
   "collections": [
     {
       "id": "9257182",
@@ -157,7 +157,7 @@
           "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -320,7 +320,7 @@
           "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
           "placement": "before-heading",
           "heading": "Check your numbers",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -495,7 +495,7 @@
           "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
           "placement": "before-heading",
           "heading": "Get help with a private issue",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -629,7 +629,7 @@
           "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
           "placement": "before-heading",
           "heading": "A total looks wrong",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -773,7 +773,7 @@
           "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "privacy-retention-timeline",
@@ -781,7 +781,7 @@
           "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
           "placement": "before-heading",
           "heading": "Choose a privacy preset",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "privacy-settings-screen",
@@ -789,7 +789,7 @@
           "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
           "placement": "before-heading",
           "heading": "Review and save the settings",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -940,7 +940,7 @@
           "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
           "placement": "before-heading",
           "heading": "You cannot sign in",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -1093,7 +1093,7 @@
           "alt": "Two workspaces connect to separate groups of scoped team access.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "workspace-team-screen",
@@ -1101,7 +1101,7 @@
           "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
           "placement": "before-heading",
           "heading": "Switch businesses",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -1247,7 +1247,7 @@
           "alt": "A customer alias card connects to a purchase and received-payment ledger.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "customers-credit-screen",
@@ -1255,7 +1255,7 @@
           "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
           "placement": "before-heading",
           "heading": "Find or add a customer",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -1410,7 +1410,7 @@
           "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
           "placement": "before-heading",
           "heading": "A customer will not save or appear",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "uncertain-checkout-payment",
@@ -1418,7 +1418,7 @@
           "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
           "placement": "before-heading",
           "heading": "A payment or balance looks wrong",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -1563,7 +1563,7 @@
           "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "inventory-intake-screen",
@@ -1571,7 +1571,7 @@
           "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
           "placement": "before-heading",
           "heading": "Add or edit a product",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -1746,7 +1746,7 @@
           "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
           "placement": "before-heading",
           "heading": "Intake will not save",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -2260,7 +2260,7 @@
           "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
           "placement": "lead",
           "heading": null,
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         },
         {
           "assetId": "quick-sale-screen",
@@ -2268,7 +2268,7 @@
           "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
           "placement": "before-heading",
           "heading": "Build the sale",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -2425,7 +2425,7 @@
           "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
           "placement": "before-heading",
           "heading": "Find a sale",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -2582,7 +2582,7 @@
           "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
           "placement": "before-heading",
           "heading": "The result is uncertain",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -2751,7 +2751,7 @@
           "alt": "Illustrative completed sale linked to fictional delivery details.",
           "placement": "before-heading",
           "heading": "Include delivery in a sale",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [
@@ -2896,7 +2896,7 @@
           "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
           "placement": "before-heading",
           "heading": "Connect and check a scanner",
-          "publicationState": "prepared"
+          "publicationState": "uploaded"
         }
       ],
       "oldHeadingAnchors": [

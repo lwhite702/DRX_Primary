@@ -235,7 +235,7 @@
     }
   ],
   "helpCenterVisuals": {
-    "state": "prepared-not-uploaded",
+    "state": "uploaded-not-published",
     "assetCount": 20,
     "placementCount": 23,
     "headers": 6,
@@ -243,10 +243,10 @@
     "diagrams": 6,
     "articlesWithVisuals": 16,
     "intentionallyTextOnlyArticleIds": ["2995914", "3974136", "9003136"],
-    "canaryRoundTripVerified": false,
+    "canaryRoundTripVerified": true,
     "authenticatedDryRunVerified": false,
     "livePublicationVerified": false,
-    "blocker": "FEATUREBASE_API_KEY is unavailable, so the authenticated pre-upload audit cannot pass and no canary or full asset upload was attempted."
+    "blocker": "The API key is unavailable. The browser alternative uploaded all 20 assets and passed the canary round trip, but final draft placement verification and live publication remain pending."
   },
   "browserPublication": {
     "publishedAt": "2026-09-04T05:04:10.093Z",
