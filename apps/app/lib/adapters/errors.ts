@@ -5,6 +5,7 @@
  */
 
 import { captureError as capture, setUserContext } from "@wrelik/errors/server";
+export type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
 /**
  * Capture an error
