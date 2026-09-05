@@ -176,7 +176,7 @@ export default function More() {
         {/* Version */}
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>
-            DRX {Application.applicationName ?? "Mobile"} v{Application.nativeApplicationVersion ?? "unknown"}
+            DRX {Application.applicationName ?? "Mobile"} v{Application.nativeApplicationVersion ?? "unknown"} ({Application.nativeBuildVersion ?? "unknown build"})
           </Text>
           <Text style={styles.versionSubtext}>Secured and synchronized by Convex</Text>
         </View>

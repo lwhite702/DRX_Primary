@@ -22,8 +22,8 @@ This runbook is for authorized internal testers using synthetic data only. Do no
 
 ## Required checks
 
-1. Sign in and confirm the expected business and role are shown.
-2. Complete the owner-name and shop-name setup if the synthetic account is new, then confirm the workspace opens.
+1. Sign in and complete the owner-name and shop-name setup if the synthetic account is new, then confirm the workspace opens.
+2. Open **More** and confirm the expected business and role are shown.
 3. Add a synthetic inventory item and confirm its quantity and price persist after relaunch.
 4. Add a synthetic customer, relaunch, and confirm the customer remains in the list with the expected available credit.
 5. Complete one online cash sale and one online credit sale; verify totals, inventory movement, available credit, and sales history.
@@ -38,7 +38,7 @@ This runbook is for authorized internal testers using synthetic data only. Do no
 
 Every Android tester must also open `https://deelrxcrm.app` in Chrome or their primary phone browser and complete the mobile-web section of the Mobile Test Companion at `https://deelrxcrm.com/resources/mobile-testing`:
 
-1. Sign in to the same synthetic tenant and confirm the expected business and role.
+1. Sign in to the same synthetic tenant and confirm the expected business and screens.
 2. Find the preloaded synthetic browser product and customer supplied in the test notes.
 3. Complete a synthetic cash sale on mobile web and confirm it appears exactly once in browser Sales.
 4. Check navigation, forms, keyboard behavior, scrolling, and portrait layout.

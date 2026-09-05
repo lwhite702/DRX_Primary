@@ -142,12 +142,23 @@ describe("first-time tester guidance", () => {
     expect(customer?.steps.join(" ")).not.toContain("reopen the customer");
     expect(signout?.steps.join(" ")).toContain("tap Sign Out");
     expect(signout?.steps.join(" ")).not.toContain("then Settings");
+    expect(nativeTestChecks[0]?.id).toBe("onboarding");
   });
 
   it("keeps Android-only offline sales out of the iOS report", () => {
     expect(nativeTestChecksFor("android").map((check) => check.id)).toContain("offline-cash");
     expect(nativeTestChecksFor("ios").map((check) => check.id)).not.toContain("offline-cash");
     expect(createAndroidTestReport(report())).not.toContain("Try cash without internet");
+  });
+
+  it("checks offline persistence before reconnecting and avoids hidden web-role evidence", () => {
+    const offlineCash = nativeTestChecks.find((check) => check.id === "offline-cash");
+    const webIdentity = mobileWebTestChecks.find((check) => check.id === "web-identity");
+
+    expect(offlineCash?.steps.join(" ")).toContain("close DRX completely");
+    expect(offlineCash?.steps.join(" ").indexOf("close DRX completely"))
+      .toBeLessThan(offlineCash?.steps.join(" ").indexOf("internet back on") ?? -1);
+    expect(webIdentity?.prompt).not.toContain("role");
   });
 
   it("offers broad choices for common phones and tablets", () => {

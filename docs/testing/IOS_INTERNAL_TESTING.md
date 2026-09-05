@@ -21,8 +21,8 @@ This runbook is for authorized TestFlight testers using synthetic data only. Do 
 
 ## Required native checks
 
-1. Sign in and confirm the expected business and role are shown.
-2. Complete onboarding/business setup if the synthetic account is new.
+1. Sign in and complete onboarding/business setup if the synthetic account is new.
+2. Confirm the expected business and role are shown after setup.
 3. Add a synthetic inventory item, open it, record a starting intake, and confirm its quantity and price persist after relaunch.
 4. Add a synthetic customer and confirm the customer remains in the list with the expected available credit.
 5. Complete online cash and credit sales; verify totals, inventory, available credit, and sales history.
@@ -35,7 +35,7 @@ This runbook is for authorized TestFlight testers using synthetic data only. Do 
 
 Every iOS tester must also open `https://deelrxcrm.app` in Safari or their primary phone browser and complete the companion's mobile-web section:
 
-1. Sign in to the same synthetic tenant and confirm the expected business and role.
+1. Sign in to the same synthetic tenant and confirm the expected business and screens.
 2. Find the preloaded synthetic browser product and customer supplied in the test notes.
 3. Complete a synthetic cash sale on mobile web and confirm it appears exactly once in browser Sales.
 4. Check navigation, forms, keyboard behavior, scrolling, and portrait layout.

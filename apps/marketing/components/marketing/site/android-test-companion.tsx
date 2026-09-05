@@ -427,7 +427,7 @@ export function MobileTestCompanion() {
           </div>
           <div className="mt-5 flex gap-3 border-t border-white/10 pt-5 text-xs leading-5 text-text-secondary">
             <LockKeyhole aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>{savedMessage} Come back with this browser and your answers will be waiting.</p>
+            <p>{savedMessage} {saveState === "error" ? "Copy or download your report before leaving this page." : "Come back with this browser and your answers will be waiting."}</p>
           </div>
           <button type="button" onClick={saveProgress} className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-bold text-black">
             <Save className="size-4" /> Save my progress

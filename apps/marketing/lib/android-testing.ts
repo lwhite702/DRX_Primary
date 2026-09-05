@@ -11,16 +11,6 @@ type MobileTestCheck = {
 
 export const nativeTestChecks: readonly MobileTestCheck[] = [
   {
-    id: "identity",
-    title: "Open the right shop",
-    prompt: "Sign in and make sure you see the right test shop and job role.",
-    steps: [
-      "Open the DRX app and sign in with the invite you received.",
-      "Open More and check that the shop name matches your test invite.",
-      "Make sure the screens you can open fit the job role you were given.",
-    ],
-  },
-  {
     id: "onboarding",
     title: "Walk through your first setup",
     prompt: "Treat the welcome flow as the first test: finish every step and make sure the new workspace opens correctly.",
@@ -30,6 +20,15 @@ export const nativeTestChecks: readonly MobileTestCheck[] = [
       "Answer any other questions shown on your phone. It is okay if your app goes straight to the new workspace after the names.",
       "Finish setup and make sure the new workspace opens.",
       "Tell us if any question is confusing, too small, cut off, or hard to answer.",
+    ],
+  },
+  {
+    id: "identity",
+    title: "Open the right shop",
+    prompt: "After setup, make sure you see the right test shop and job role.",
+    steps: [
+      "Open More and check that the shop name matches your test invite.",
+      "Make sure the screens you can open fit the job role you were given.",
     ],
   },
   {
@@ -77,6 +76,7 @@ export const nativeTestChecks: readonly MobileTestCheck[] = [
       "While online, open the offline status card and make sure this phone is allowed to sell offline.",
       "Turn on airplane mode, return to POS, and make a small cash sale.",
       "Look for the message that says the sale is waiting to sync.",
+      "Keep airplane mode on, close DRX completely, reopen it, and make sure the waiting sale is still there.",
       "Turn the internet back on and wait for syncing to finish.",
       "Check Sales History. The sale should appear once, not twice.",
     ],
@@ -146,11 +146,11 @@ export const mobileWebTestChecks: readonly MobileTestCheck[] = [
   {
     id: "web-identity",
     title: "Open the same shop on the web",
-    prompt: "Open DRX in your phone's browser, sign in, and make sure you see the same test shop and role.",
+    prompt: "Open DRX in your phone's browser, sign in, and make sure you see the expected test shop and screens.",
     steps: [
       "Open deelrxcrm.app in the browser you picked above.",
       "Sign in with the same test account.",
-      "Check the shop name and the screens available to you.",
+      "Check the shop name and make sure the expected screens are available.",
     ],
   },
   {
