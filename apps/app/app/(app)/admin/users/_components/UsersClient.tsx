@@ -125,7 +125,7 @@ export function UsersClient() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("User role updated successfully");
+        toast.success("Team member role updated.");
         setIsDialogOpen(false);
         loadData();
       }

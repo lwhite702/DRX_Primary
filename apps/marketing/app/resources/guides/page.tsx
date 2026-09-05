@@ -8,7 +8,7 @@ import { TrackedLink } from "@/components/marketing/site/tracked-link";
 export const metadata: Metadata = {
   title: "Guides | Deelrx CRM",
   description:
-    "Operational guides for inventory, checkout, customer store accounts, privacy presets, and team roles in DRX.",
+    "Plain guides for products, stock, sales, payments, privacy, and team access in DRX.",
 };
 
 export default function GuidesHubPage() {
@@ -29,7 +29,9 @@ export default function GuidesHubPage() {
           <TrackedLink
             href="/resources/guides/inventory-intake-and-adjustments"
             eventName="click_guide"
-            payload={{ href: "/resources/guides/inventory-intake-and-adjustments" }}
+            payload={{
+              href: "/resources/guides/inventory-intake-and-adjustments",
+            }}
             className="rounded-xl border border-border p-4 hover:border-neon-lime/40"
           >
             Inventory intake and adjustments
@@ -45,7 +47,9 @@ export default function GuidesHubPage() {
           <TrackedLink
             href="/resources/guides/privacy-presets-and-team-roles"
             eventName="click_guide"
-            payload={{ href: "/resources/guides/privacy-presets-and-team-roles" }}
+            payload={{
+              href: "/resources/guides/privacy-presets-and-team-roles",
+            }}
             className="rounded-xl border border-border p-4 hover:border-neon-lime/40"
           >
             Privacy presets and team roles
@@ -53,9 +57,16 @@ export default function GuidesHubPage() {
         </div>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
+      <SectionBlock
+        title="What's in beta / current limitations"
+        className="mt-6"
+      >
         <p>Guides are limited to live routes and currently shipped behavior.</p>
-        <CtaRow location="guides_hub" secondaryLabel="See product" secondaryHref="/product" />
+        <CtaRow
+          location="guides_hub"
+          secondaryLabel="See product"
+          secondaryHref="/product"
+        />
       </SectionBlock>
     </PageFrame>
   );

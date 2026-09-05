@@ -21,22 +21,18 @@ export function QuickActions({ className }: QuickActionsProps) {
   return (
     <Card className={cn("p-6", className)}>
       <div className="flex flex-col gap-1 mb-6">
-        <h2 className="headline-text text-lg">Quick Actions</h2>
+        <h2 className="headline-text text-lg">Quick actions</h2>
         <p className="text-muted-foreground text-sm">
-          Common operational tasks.
+          Get to the work you do most.
         </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <ActionButton label="Inventory" icon={Package} href="/inventory" />
-        <ActionButton label="Credit" icon={CreditCard} href="/credit" />
+        <ActionButton label="Products" icon={Package} href="/inventory" />
+        <ActionButton label="Payments" icon={CreditCard} href="/credit" />
+        <ActionButton label="New sale" icon={ScanLine} href="/pos/sale" />
         <ActionButton
-          label="Quick Sale"
-          icon={ScanLine}
-          href="/pos/sale"
-        />
-        <ActionButton
-          label="Add Customer"
+          label="Add customer"
           icon={UserPlus}
           href="/customers/new" // Assuming this route, fallback to /customers
         />
@@ -46,12 +42,12 @@ export function QuickActions({ className }: QuickActionsProps) {
           href="/settings"
           variant="secondary"
         />
-            <ActionButton
+        <ActionButton
           label="More"
           icon={MoreHorizontal}
           href="/inventory" // Fallback or expanded menu
           variant="ghost"
-            />
+        />
       </div>
     </Card>
   );

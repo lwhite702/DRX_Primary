@@ -141,7 +141,7 @@ export function AuditClient() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`Exported ${format.toUpperCase()} successfully`);
+    toast.success(`${format.toUpperCase()} exported.`);
   };
 
   if (loading) {
@@ -295,7 +295,8 @@ export function AuditClient() {
                                     <button
                                       type="button"
                                       onClick={(e) => {
-                                        const details = e.currentTarget.closest("details");
+                                        const details =
+                                          e.currentTarget.closest("details");
                                         if (details) {
                                           details.open = false;
                                         }

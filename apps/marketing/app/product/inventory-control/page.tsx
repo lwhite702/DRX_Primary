@@ -9,7 +9,7 @@ import { productDetailCanon } from "@/lib/feature-canon";
 const content = productDetailCanon["inventory-control"];
 
 export const metadata: Metadata = {
-  title: "Inventory Control | DRX",
+  title: "Products and Stock | DRX",
   description: content.metaDescription,
 };
 
@@ -22,14 +22,17 @@ export default function InventoryControlPage() {
         <p>{content.what}</p>
       </SectionBlock>
 
-      <SectionBlock title="Why it matters operationally" className="mt-6">
+      <SectionBlock title="Why it matters" className="mt-6">
         <p>{content.why}</p>
       </SectionBlock>
 
-      <SectionBlock title="Current feature scope" className="mt-6">
+      <SectionBlock title="What you can do" className="mt-6">
         <ul className="space-y-2">
           {content.proof.map((item) => (
-            <li key={item.text} className="flex items-start justify-between gap-2">
+            <li
+              key={item.text}
+              className="flex items-start justify-between gap-2"
+            >
               <span>{item.text}</span>
               <FeatureStatusChip status={item.status} />
             </li>
@@ -37,10 +40,13 @@ export default function InventoryControlPage() {
         </ul>
       </SectionBlock>
 
-      <SectionBlock title="Beta constraints" className="mt-6">
+      <SectionBlock title="Still in beta" className="mt-6">
         <ul className="space-y-2">
           {content.limitations.map((item) => (
-            <li key={item.text} className="flex items-start justify-between gap-2">
+            <li
+              key={item.text}
+              className="flex items-start justify-between gap-2"
+            >
               <span>{item.text}</span>
               <FeatureStatusChip status={item.status} />
             </li>

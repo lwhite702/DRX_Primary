@@ -39,7 +39,10 @@ export function TopNav() {
 
       {/* Brand Logo & Beta badge on Mobile */}
       <div className="flex min-w-0 items-center gap-2">
-        <Link href="/dashboard" className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+        >
           <div className="max-w-[140px] sm:max-w-[200px] min-w-0">
             <AppLogo showTagline={false} />
           </div>
@@ -68,7 +71,7 @@ export function TopNav() {
           <Link href="/pos/sale" className="hidden md:block">
             <Button className="bg-accent hover:bg-accent/90 text-black font-semibold">
               <ScanLine className="mr-2 h-4 w-4" />
-              Quick Sale
+              New sale
             </Button>
           </Link>
         ) : null}
@@ -107,4 +110,3 @@ export function TopNav() {
     </header>
   );
 }
-

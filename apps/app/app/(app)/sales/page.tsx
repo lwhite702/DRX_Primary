@@ -17,7 +17,15 @@ import {
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ShoppingCart, Plus, Search, Eye, Calendar, CreditCard, ChevronRight } from "lucide-react";
+import {
+  ShoppingCart,
+  Plus,
+  Search,
+  Eye,
+  Calendar,
+  CreditCard,
+  ChevronRight,
+} from "lucide-react";
 import { useBusiness } from "@/lib/hooks/use-business";
 
 interface SaleRecord {
@@ -73,12 +81,15 @@ export default function SalesHistoryPage() {
     <div className="p-4 md:p-8 space-y-6 animate-in fade-in-0 duration-200">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Orders & Receipts</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Sales</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Review completed sales, receipts, and order history
           </p>
         </div>
-        <Button asChild className="gap-2 bg-accent text-black hover:bg-accent/90 font-semibold h-11 px-4">
+        <Button
+          asChild
+          className="gap-2 bg-accent text-black hover:bg-accent/90 font-semibold h-11 px-4"
+        >
           <Link href="/pos/sale">
             <Plus className="w-4 h-4" />
             Open Point of Sale
@@ -89,7 +100,7 @@ export default function SalesHistoryPage() {
       <Card className="border-border/80">
         <CardHeader className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-lg md:text-xl">Recent Orders</CardTitle>
+            <CardTitle className="text-lg md:text-xl">Recent sales</CardTitle>
             <div className="relative w-full md:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -105,13 +116,13 @@ export default function SalesHistoryPage() {
           {filteredSales.length === 0 ? (
             <EmptyState
               icon={ShoppingCart}
-              title="No Sales Found"
+              title="No sales found"
               description={
                 searchTerm
                   ? "No sales match your search term."
-                  : "Completed transactions will appear here after checkout."
+                  : "Saved sales will appear here."
               }
-              actionLabel="Go to Quick POS"
+              actionLabel="New sale"
               onAction={() => router.push("/pos/sale")}
             />
           ) : (
@@ -152,7 +163,10 @@ export default function SalesHistoryPage() {
 
                       <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="capitalize text-[11px] py-0.5 px-2">
+                          <Badge
+                            variant="outline"
+                            className="capitalize text-[11px] py-0.5 px-2"
+                          >
                             <CreditCard className="w-3 h-3 mr-1" />
                             {sale.payment_method || "cash"}
                           </Badge>
@@ -185,7 +199,9 @@ export default function SalesHistoryPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredSales.map((sale) => {
-                      const dateStr = new Date(sale.created_at).toLocaleString();
+                      const dateStr = new Date(
+                        sale.created_at,
+                      ).toLocaleString();
                       const itemCount = sale.items?.length || 0;
                       return (
                         <TableRow key={sale.id}>
@@ -231,4 +247,3 @@ export default function SalesHistoryPage() {
     </div>
   );
 }
-

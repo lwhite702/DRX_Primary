@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Deelrx CRM",
     short_name: "DRX",
-    description: "Operator-first POS, inventory, CRM, and reporting",
+    description: "Customers, products, stock, sales, and payments in one place",
     id: "/",
     start_url: "/dashboard",
     scope: "/",

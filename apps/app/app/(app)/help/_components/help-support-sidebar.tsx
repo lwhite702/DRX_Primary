@@ -4,7 +4,13 @@ import { HelpCircle, Package, Receipt, ScanLine } from "lucide-react";
 import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DEFAULT_HELP_TOPIC,
   HelpTopicId,
@@ -15,7 +21,9 @@ type HelpSupportSidebarProps = {
   topic?: HelpTopicId;
 };
 
-export function HelpSupportSidebar({ topic = DEFAULT_HELP_TOPIC }: HelpSupportSidebarProps) {
+export function HelpSupportSidebar({
+  topic = DEFAULT_HELP_TOPIC,
+}: HelpSupportSidebarProps) {
   return (
     <Card className="lg:sticky lg:top-4 border-accent/20 bg-accent/5">
       <CardHeader>
@@ -51,7 +59,7 @@ export function HelpSupportSidebar({ topic = DEFAULT_HELP_TOPIC }: HelpSupportSi
             <Link href="/pos/sale">
               <Button variant="outline" className="w-full justify-start">
                 <ScanLine className="mr-2 h-4 w-4" />
-                Open Quick Sale
+                Open New sale
               </Button>
             </Link>
 
@@ -65,7 +73,7 @@ export function HelpSupportSidebar({ topic = DEFAULT_HELP_TOPIC }: HelpSupportSi
             <Link href="/inventory">
               <Button variant="outline" className="w-full justify-start">
                 <Package className="mr-2 h-4 w-4" />
-                Verify Inventory
+                Check Stock
               </Button>
             </Link>
           </div>
@@ -81,7 +89,7 @@ export function HelpSupportSidebar({ topic = DEFAULT_HELP_TOPIC }: HelpSupportSi
             <li>Page/route where issue happened (example: `/pos/payment`).</li>
             <li>Action right before failure.</li>
             <li>Whether sale ID, receipt, or confirmation appeared.</li>
-            <li>Active business/workspace context.</li>
+            <li>Active business.</li>
             <li>Screenshot if UI state is unexpected.</li>
           </ul>
         </div>

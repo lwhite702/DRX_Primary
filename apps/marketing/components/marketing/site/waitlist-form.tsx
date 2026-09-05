@@ -92,7 +92,7 @@ export function WaitlistForm() {
         <textarea
           value={form.tooling}
           onChange={(e) => setForm({ ...form, tooling: e.target.value })}
-          placeholder="What are you using today for POS, inventory, and customer tracking?"
+          placeholder="How do you track sales, stock, and customers today?"
           className="min-h-28 rounded-lg border border-border bg-black/30 px-3 py-2 text-white"
         />
       </label>

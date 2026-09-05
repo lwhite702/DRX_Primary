@@ -4,7 +4,7 @@ description: "Daily product catalog management, receiving stock shipments, manua
 icon: "boxes-stacked"
 ---
 
-This guide explains how to manage your product catalog, receive stock shipments, and correct inventory counts in DRX.
+This guide explains how to manage your product catalog, receive stock shipments, and correct stock counts in DRX.
 
 ## What this page is for
 
@@ -18,7 +18,7 @@ It covers creating products, receiving incoming vendor shipments, logging manual
   - Cashier: Browse products and sell items.
   - Supervisor or Manager: Receive shipments and log stock adjustments.
 - **Key screens**:
-  - **Inventory** (`/inventory`): View and edit your product catalog.
+  - **Products** (`/inventory`): View and edit your product catalog.
   - **Receive Stock** (`/inventory/intake`): Log incoming vendor deliveries and costs.
   - **Adjust Stock** (`/inventory/adjust`): Log shrinkage, recount corrections, or damage.
   - **Stock Audit Trail** (`/inventory/audit`): View the complete history of every stock change.
@@ -27,7 +27,7 @@ It covers creating products, receiving incoming vendor shipments, logging manual
 
 ## Fast path
 
-1. **Add or update products in Inventory** (`/inventory`):
+1. **Add or update products** (`/inventory`):
    - Add the product name, barcode SKU, retail price, and reorder warning level.
    - Attach a product nickname (e.g. "Green Tea 500ml") for faster search at the register.
 2. **Receive stock shipments** (`/inventory/intake`):
@@ -40,11 +40,11 @@ It covers creating products, receiving incoming vendor shipments, logging manual
 4. **Correct counts when needed** (`/inventory/adjust`):
    - If shelf counts differ from the system, select the item in **Adjust Stock**.
    - Choose **Increase**, **Decrease**, or **Set Count to**.
-   - Enter a brief explanation (e.g., *"Physical recount on shelf 2"* or *"Broken bottle during restock"*).
+   - Enter a brief explanation (e.g., _"Physical recount on shelf 2"_ or _"Broken bottle during restock"_).
 5. **Review the stock audit trail** (`/inventory/audit`):
    - See who changed stock, when it was changed, the previous count, new count, and the reason.
 6. **Check low-stock warnings**:
-   - Items that fall below their reorder threshold display a yellow alert badge on your dashboard so you can reorder before running out.
+   - Items below their reorder point show an alert on Home so you can restock before running out.
 
 ## If blocked
 
@@ -53,20 +53,20 @@ It covers creating products, receiving incoming vendor shipments, logging manual
 - **Shipment shows "Pending Approval"**:
   - This is expected if your store requires a manager to sign off on incoming supplier invoices. Ask a store manager to review and approve the delivery.
 - **Item shows in stock on shelf but says 0 at checkout**:
-  - Open the item in **Inventory** to verify its digital count.
-  - If a physical count was not logged, submit a quick stock adjustment to bring digital inventory up to date.
+  - Open the item in **Products** to verify its digital count.
+  - If a physical count was not logged, submit a quick stock adjustment to bring digital stock up to date.
 - **Cashiers cannot find a product by search**:
   - Check the **Product Aliases** list in Settings to make sure customer slang or nicknames are linked to the correct SKU.
 
 ## What is beta here
 
 - Automated vendor purchase-order electronic data interchange (EDI) is in preview testing.
-- Manual product creation, barcode assignment, stock intake, shrinkage adjustments, and full audit logs are fully live.
+- Manual product creation, barcode assignment, stock intake, shrinkage adjustments, and full audit logs are available in early access.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
-- [Quick Sale runbook](/quick-sale-runbook)
+- [New sale runbook](/quick-sale-runbook)
 - [Numbers that matter](/numbers-that-matter)
 - [Stay audit-ready](/staying-compliant)
 - [Fixing issues](/fixing-issues)

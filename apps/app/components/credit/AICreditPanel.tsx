@@ -86,9 +86,7 @@ export function AICreditPanel({
         toast.success("AI recommendation updated");
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to refresh"
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to refresh");
     } finally {
       setLoading(false);
     }
@@ -113,12 +111,16 @@ export function AICreditPanel({
 
       const data = await response.json();
       setDisplayedLimit(
-        Number(data.new_limit ?? recommendation?.recommended_limit ?? displayedLimit),
+        Number(
+          data.new_limit ?? recommendation?.recommended_limit ?? displayedLimit,
+        ),
       );
-      toast.success("Credit limit updated successfully");
+      toast.success("Balance limit updated.");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to apply recommendation"
+        error instanceof Error
+          ? error.message
+          : "Failed to apply recommendation",
       );
     } finally {
       setApplying(false);
@@ -151,11 +153,11 @@ export function AICreditPanel({
 
       const data = await response.json();
       setDisplayedLimit(Number(data.new_limit ?? overrideLimit));
-      toast.success("Credit limit overridden successfully");
+      toast.success("Balance limit changed.");
       setShowOverrideDialog(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to override limit"
+        error instanceof Error ? error.message : "Failed to override limit",
       );
     } finally {
       setApplying(false);
@@ -186,7 +188,9 @@ export function AICreditPanel({
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">${displayedLimit.toFixed(2)}</div>
-          <p className="text-sm text-muted-foreground mt-1">Approved maximum credit exposure</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Approved maximum credit exposure
+          </p>
         </CardContent>
       </Card>
 
@@ -202,14 +206,20 @@ export function AICreditPanel({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs text-muted-foreground">Recommended Limit</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Recommended Limit
+                </Label>
                 <div className="text-2xl font-bold font-mono text-blue-400">
                   ${recommendation.recommended_limit.toFixed(2)}
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Risk Score</Label>
-                <div className={`text-2xl font-bold font-mono ${getRiskColor(recommendation.risk_score)}`}>
+                <Label className="text-xs text-muted-foreground">
+                  Risk Score
+                </Label>
+                <div
+                  className={`text-2xl font-bold font-mono ${getRiskColor(recommendation.risk_score)}`}
+                >
                   {recommendation.risk_score.toFixed(0)}/100
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -219,13 +229,18 @@ export function AICreditPanel({
             </div>
 
             <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
-              <p className="text-sm text-white/90 leading-relaxed">{recommendation.justification}</p>
+              <p className="text-sm text-white/90 leading-relaxed">
+                {recommendation.justification}
+              </p>
             </div>
 
             <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
-              <Label className="text-xs text-muted-foreground">Suggested Range</Label>
+              <Label className="text-xs text-muted-foreground">
+                Suggested Range
+              </Label>
               <p className="text-sm font-mono font-medium text-white mt-1">
-                ${recommendation.range_min.toFixed(2)} - ${recommendation.range_max.toFixed(2)}
+                ${recommendation.range_min.toFixed(2)} - $
+                {recommendation.range_max.toFixed(2)}
               </p>
             </div>
 
@@ -263,8 +278,11 @@ export function AICreditPanel({
               <div className="flex gap-2 p-3 bg-green-50 border border-green-200 rounded">
                 <TrendingUp className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-green-800">
-                  <strong>Opportunity:</strong> Customer qualifies for increase of $
-                  {(recommendation.recommended_limit - displayedLimit).toFixed(2)}
+                  <strong>Opportunity:</strong> Customer qualifies for increase
+                  of $
+                  {(recommendation.recommended_limit - displayedLimit).toFixed(
+                    2,
+                  )}
                 </p>
               </div>
             )}
@@ -273,8 +291,11 @@ export function AICreditPanel({
               <div className="flex gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded">
                 <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-yellow-800">
-                  <strong>Caution:</strong> Recent activity suggests reducing limit by $
-                  {(displayedLimit - recommendation.recommended_limit).toFixed(2)}
+                  <strong>Caution:</strong> Recent activity suggests reducing
+                  limit by $
+                  {(displayedLimit - recommendation.recommended_limit).toFixed(
+                    2,
+                  )}
                 </p>
               </div>
             )}

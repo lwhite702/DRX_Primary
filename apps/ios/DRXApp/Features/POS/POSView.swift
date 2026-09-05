@@ -181,7 +181,7 @@ struct POSView: View {
                 CompactCartBar(store: store)
             }
         }
-        .navigationTitle("POS")
+        .navigationTitle(DRXContent.Navigation.newSale)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { cartButton }
         .sheet(isPresented: $store.showCheckout) {
@@ -550,7 +550,7 @@ private struct SaleAmountSheet: View {
                         policy: loyaltyPolicy
                     )))
                     if enteredQuantity >= product.quantityOnHandGrams {
-                        Text("Quantity is limited to current available inventory.")
+                        Text("You can’t sell more than the stock on hand.")
                             .font(.footnote)
                             .foregroundStyle(DRXPalette.warning)
                     }

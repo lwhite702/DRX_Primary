@@ -114,7 +114,7 @@ export function BusinessesClient() {
         throw new Error(result.error || "Failed to create business");
       }
 
-      toast.success(`Business "${businessName}" created successfully`);
+      toast.success(`Business "${businessName}" created.`);
       setShowCreateDialog(false);
       setBusinessName("");
       setBusinessType("");

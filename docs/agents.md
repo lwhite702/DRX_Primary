@@ -32,4 +32,4 @@ If this file conflicts with any root policy file, the root policy file wins.
 - `./MARKETING_FEATURE_CLAIM_MATRIX.md`
 - Marketing copy changes must start from the canonical feature list and remain aligned with matrix status.
 - No claim may be promoted from `Beta` or `Planned` to `Live` without updating the claim matrix and adding evidence paths in the same change.
-- DRX Privacy ProteXion claims must be sourced from the canonical list + matrix and kept non-jargon, operator-first, and plain-language.
+- Privacy claims must be sourced from the canonical list and claim matrix, then written in plain operator language.

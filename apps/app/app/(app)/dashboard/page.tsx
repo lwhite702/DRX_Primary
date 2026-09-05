@@ -38,22 +38,22 @@ export default function DashboardPage() {
 
   if (!business) {
     return (
-        <EmptyState
+      <EmptyState
         icon={PackageOpen}
         title="No Business Found"
         description="You haven't set up a business yet. Create one to get started."
         actionLabel="Create Business"
-          onAction={() => router.push("/onboarding")}
-          className="m-8"
-        />
-      );
+        onAction={() => router.push("/onboarding")}
+        className="m-8"
+      />
+    );
   }
 
   if (!stats) {
     return (
       <div className="p-4 md:p-8">
         <ErrorState
-          message={error || "Failed to load dashboard data"}
+          message={error || "Couldn’t load today’s numbers. Try again."}
           onRetry={refresh}
         />
       </div>
@@ -80,7 +80,11 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => void refresh()}
             disabled={refreshing}
-            aria-label={refreshing ? "Refreshing dashboard data" : "Refresh dashboard data"}
+            aria-label={
+              refreshing
+                ? "Refreshing today’s numbers"
+                : "Refresh today’s numbers"
+            }
           >
             <RefreshCw
               className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
@@ -95,8 +99,15 @@ export default function DashboardPage() {
             role="status"
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3 text-sm text-white/80"
           >
-            <span>Could not refresh the dashboard. Showing the last loaded values.</span>
-            <Button type="button" variant="outline" size="sm" onClick={() => void refresh()}>
+            <span>
+              Could not refresh the dashboard. Showing the last loaded values.
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void refresh()}
+            >
               Try again
             </Button>
           </div>

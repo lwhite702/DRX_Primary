@@ -10,7 +10,7 @@ import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 
 export const metadata: Metadata = {
   title: "Sign in | Deelrx CRM",
-  description: "Sign in to your Deelrx CRM retail operations workspace.",
+  description: "Sign in to your Deelrx CRM business.",
 };
 
 export default async function LoginPage() {
@@ -22,11 +22,14 @@ export default async function LoginPage() {
   return (
     <AuthShell
       eyebrow="Operator access"
-      description="Sign in to continue to your workspace."
+      description="Sign in to open your business."
       footer={
         <p className="text-center text-sm leading-6 text-[#B8B8B8]">
           New to Deelrx?{" "}
-          <Link className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href="/waitlist">
+          <Link
+            className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            href="/waitlist"
+          >
             Join the beta
           </Link>
         </p>

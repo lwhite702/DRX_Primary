@@ -76,7 +76,7 @@ export default function InventoryAdjustPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to adjust");
 
-      toast.success("Inventory adjusted successfully");
+      toast.success("Stock count fixed.");
       // Reset form
       setValue("");
       setReason("");
@@ -99,14 +99,15 @@ export default function InventoryAdjustPage() {
         <div className="noise-overlay" />
         <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
           <div>
-          <h1 className="text-3xl font-bold">
-            Adjust inventory
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Correct a count and record the reason
-          </p>
+            <h1 className="text-3xl font-bold">Adjust inventory</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Correct a count and record the reason
+            </p>
           </div>
-          <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
+          <DataSyncStatus
+            status={syncStatus}
+            onRefresh={() => void refreshInventory()}
+          />
         </div>
 
         <div className="max-w-2xl luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
@@ -184,7 +185,7 @@ export default function InventoryAdjustPage() {
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="e.g. Broken jar, Spillage, Inventory Count Correction"
+                placeholder="Example: Broken jar, spill, or count was wrong"
               />
             </div>
 

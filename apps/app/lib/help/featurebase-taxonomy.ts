@@ -7,12 +7,12 @@ export type CategoryMap = Record<string, string>;
 
 export const FEATUREBASE_CATEGORY_MAP: CategoryMap = {
   "getting-started": "Getting Started",
-  pos: "POS & Sales",
-  inventory: "Inventory",
+  pos: "New sale & Sales",
+  inventory: "Stock",
   products: "Products",
   customers: "Customers",
-  credit: "Credit & Payments",
-  roles: "Roles & Permissions",
+  credit: "Payments",
+  roles: "Team access",
   privacy: "Privacy & Security",
 };
 
@@ -86,8 +86,10 @@ export function sortHelpArticlesDeterministically<T extends HelpArticleLike>(
     const categoryA = extractCategoryFromTags(a.tags) ?? "";
     const categoryB = extractCategoryFromTags(b.tags) ?? "";
 
-    const categoryScoreA = categoryRank.get(categoryA) ?? Number.MAX_SAFE_INTEGER;
-    const categoryScoreB = categoryRank.get(categoryB) ?? Number.MAX_SAFE_INTEGER;
+    const categoryScoreA =
+      categoryRank.get(categoryA) ?? Number.MAX_SAFE_INTEGER;
+    const categoryScoreB =
+      categoryRank.get(categoryB) ?? Number.MAX_SAFE_INTEGER;
 
     if (categoryScoreA !== categoryScoreB) {
       return categoryScoreA - categoryScoreB;

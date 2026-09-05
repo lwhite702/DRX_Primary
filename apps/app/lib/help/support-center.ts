@@ -33,31 +33,31 @@ export type HelpLibraryContext = {
 export const HELP_SECTION_ROUTES: HelpSectionRoute[] = [
   {
     id: "start",
-    label: "Start Shift",
-    description: "Get a new store or operator ready without setup loops.",
+    label: "Get started",
+    description: "Set up your business and team.",
     href: "/help/start",
-    libraryHint: "Getting-started setup guides and role basics.",
+    libraryHint: "Business setup and team access.",
   },
   {
     id: "sell",
-    label: "Run Sale",
-    description: "Fast checkout flow, tender handling, and receipts.",
+    label: "New sale",
+    description: "Add products, take payment, and save the sale.",
     href: "/help/sell",
-    libraryHint: "POS and checkout references.",
+    libraryHint: "Sales, payments, and receipts.",
   },
   {
     id: "operations",
-    label: "Run Operations",
-    description: "Inventory, customers, credit follow-up, and reporting checks.",
+    label: "Keep things straight",
+    description: "Check products, customers, payments, and reports.",
     href: "/help/operations",
-    libraryHint: "Inventory, products, customer, and credit workflows.",
+    libraryHint: "Products, customers, payments, and reports.",
   },
   {
     id: "troubleshoot",
-    label: "Fix Problems",
-    description: "High-signal checks before escalation.",
+    label: "Fix a problem",
+    description: "Try the fastest checks first.",
     href: "/help/troubleshoot",
-    libraryHint: "Troubleshooting articles and escalation guidance.",
+    libraryHint: "Quick fixes and ways to get help.",
   },
 ];
 
@@ -72,82 +72,86 @@ export const HELP_SECTION_BY_ID: Record<HelpTopicId, HelpSectionRoute> =
 
 export const HELP_START_CHECKLIST: HelpChecklistItem[] = [
   {
-    title: "Create or verify business profile",
+    title: "Check your business details",
     route: "/onboarding",
-    summary: "Business details power receipt identity, roles, and reporting context.",
-    details: "Confirm branding, business metadata, and privacy defaults before launch.",
+    summary: "These details appear on receipts and reports.",
+    details:
+      "Check the business name, location, and privacy choices before your first sale.",
   },
   {
-    title: "Load inventory with Intake",
+    title: "Add your first stock",
     route: "/inventory/intake",
-    summary: "Use intake to capture quantity and cost history before first sale.",
-    details: "Avoid direct manual quantity edits when adding initial stock.",
+    summary: "Add what came in and what it cost.",
+    details:
+      "Use Add stock so the quantity and cost stay in the product history.",
   },
   {
-    title: "Create operator accounts with proper role",
+    title: "Add team members",
     route: "/settings/team",
-    summary: "Assign owner/manager/staff roles to avoid permission friction mid-shift.",
-    details: "Use least privilege and validate each role can reach expected workflows.",
+    summary: "Give each person the access they need.",
+    details: "Check what each role can see before the team starts working.",
   },
   {
-    title: "Dry-run one checkout",
+    title: "Try one sale",
     route: "/pos/sale",
-    summary: "Run one controlled sale to validate tax, tender, and receipt behavior.",
-    details: "If totals look off, stop and verify workspace scope and pricing before opening.",
+    summary: "Check the tax, payment type, total, and receipt.",
+    details:
+      "If the total looks wrong, stop and check the business, price, and tax settings.",
   },
 ];
 
 export const HELP_SELL_CHECKLIST: HelpChecklistItem[] = [
   {
-    title: "Start in Quick Sale",
+    title: "Open New sale",
     route: "/pos/sale",
-    summary: "Search or scan item, confirm quantity, then move to payment.",
-    details: "Use Quick Sale as the default path for speed and consistency.",
+    summary: "Find or scan a product, check the amount, then take payment.",
+    details: "New sale is the main way to record a sale.",
   },
   {
-    title: "Pick tender and confirm customer context",
+    title: "Choose a payment type",
     route: "/credit",
-    summary: "Credit tender requires an eligible customer account.",
-    details: "Cash/card can proceed without customer profile for walk-ins.",
+    summary: "A balance due needs a customer.",
+    details: "Cash or card can be used without adding a walk-in customer.",
   },
   {
-    title: "Complete receipt flow",
+    title: "Check the saved sale",
     route: "/sales",
-    summary: "Confirm receipt status before starting the next transaction.",
-    details: "If uncertain, check recent sales to avoid accidental duplicate charge attempts.",
+    summary: "Make sure the receipt is ready before starting another sale.",
+    details: "If you’re not sure it saved, check Sales before trying again.",
   },
   {
-    title: "Handle blocked checkout",
+    title: "Fix a blocked sale",
     route: "/help/troubleshoot",
-    summary: "Use troubleshooting checks before rebuilding the cart from scratch.",
-    details: "Stock and context mismatches are the most common blockers.",
+    summary: "Check the message before rebuilding the sale.",
+    details: "The most common causes are low stock or the wrong business.",
   },
 ];
 
 export const HELP_OPERATIONS_CHECKLIST: HelpChecklistItem[] = [
   {
-    title: "Review low stock and intake queue",
+    title: "Check what’s running low",
     route: "/inventory",
-    summary: "Check thresholds and pending intake to prevent shift interruptions.",
-    details: "Low-stock signals are threshold-based, not velocity-based.",
+    summary: "Check low-stock limits and stock waiting to be added.",
+    details: "A product appears low when its count reaches the limit you set.",
   },
   {
     title: "Keep product data clean",
     route: "/inventory",
-    summary: "Prevent duplicate SKUs and validate pricing before publish.",
-    details: "Accurate catalog data reduces checkout and reporting defects.",
+    summary: "Avoid duplicate SKUs and check prices before selling.",
+    details: "Clean product details make sales and reports easier to trust.",
   },
   {
-    title: "Track customer and credit follow-up",
+    title: "Check customer balances",
     route: "/customers",
-    summary: "Use customer history to reconcile partial credit payments.",
-    details: "Missing contact data slows collections and support resolution.",
+    summary: "Use customer history to check partial payments.",
+    details: "Only save contact details when you need them.",
   },
   {
-    title: "Close with reporting checks",
+    title: "Check the day’s numbers",
     route: "/reports",
-    summary: "Verify business scope and date filters before acting on totals.",
-    details: "Unexpected zeros usually indicate scope mismatch or incomplete checkout.",
+    summary: "Check the business and date before trusting the total.",
+    details:
+      "A zero may mean the wrong date, the wrong business, or an unfinished sale.",
   },
 ];
 
@@ -156,12 +160,12 @@ export const HELP_TROUBLESHOOT_ISSUES: HelpIssue[] = [
     title: "Checkout blocked: insufficient stock",
     severity: "Operational",
     checks: [
-      "Confirm on-hand quantity in Inventory.",
+      "Check the on-hand count in Products.",
       "Reduce line quantity or remove unavailable items.",
-      "If stock should exist, record intake/adjustment first.",
+      "If stock should exist, use Add stock or Fix count first.",
     ],
     recovery:
-      "Fix stock records first. Avoid manual sale workarounds that break inventory and reporting alignment.",
+      "Fix the stock count first. Don’t force the sale through with the wrong count.",
   },
   {
     title: "Customer create/update fails",
@@ -169,61 +173,61 @@ export const HELP_TROUBLESHOOT_ISSUES: HelpIssue[] = [
     checks: [
       "Ensure alias or name is present.",
       "Check that contact fields are valid if provided.",
-      "Confirm current business workspace context.",
+      "Check that you’re in the right business.",
     ],
     recovery:
-      "Retry with alias-only profile first, then enrich profile details after record creation.",
+      "Try saving an alias first. Add other details after the customer is created.",
   },
   {
-    title: "Dashboard or report totals look wrong",
+    title: "Home or report totals look wrong",
     severity: "Reporting",
     checks: [
-      "Verify active business/workspace context.",
+      "Check that you’re in the right business.",
       "Check date range and filters.",
       "Confirm the sale fully completed (receipt/sale ID).",
     ],
     recovery:
-      "Cross-check recent sales activity before escalating as a reporting defect.",
+      "Check recent Sales first. If the numbers still look wrong, contact support.",
   },
   {
     title: "Unexpected error during checkout/save",
     severity: "High",
     checks: [
       "Retry once before refreshing.",
-      "Check if transaction already completed.",
-      "Capture exact route, action, and tender/product context.",
+      "Check whether the sale already saved.",
+      "Write down what you tapped and which payment type you used.",
     ],
     recovery:
-      "Escalate with route, action sequence, expected vs actual outcome, and receipt/sale evidence.",
+      "Contact support with the time, steps, expected result, and sale or receipt ID.",
   },
 ];
 
 export const HELP_LIBRARY_CONTEXT: Record<HelpTopicId, HelpLibraryContext> = {
   start: {
     topic: "start",
-    label: "Getting Started Library",
-    subtitle: "Setup, onboarding, and role basics.",
+    label: "Getting started",
+    subtitle: "Business setup and team access.",
     filters: "tag:category:getting-started",
     path: "/",
   },
   sell: {
     topic: "sell",
-    label: "Sales Library",
-    subtitle: "POS workflows, tenders, and checkout guidance.",
+    label: "Sales help",
+    subtitle: "New sales, payments, and receipts.",
     filters: "tag:category:pos",
     path: "/",
   },
   operations: {
     topic: "operations",
-    label: "Operations Library",
-    subtitle: "Inventory, products, customers, credit, and reporting help.",
+    label: "Daily work",
+    subtitle: "Products, customers, payments, and reports.",
     filters: "tag:category:inventory",
     path: "/",
   },
   troubleshoot: {
     topic: "troubleshoot",
-    label: "Troubleshooting Library",
-    subtitle: "Issue resolution and escalation playbooks.",
+    label: "Fix a problem",
+    subtitle: "Quick checks and ways to get help.",
     filters: "tag:category:pos",
     path: "/",
   },
@@ -231,7 +235,9 @@ export const HELP_LIBRARY_CONTEXT: Record<HelpTopicId, HelpLibraryContext> = {
 
 export const DEFAULT_HELP_TOPIC: HelpTopicId = "start";
 
-export function normalizeHelpTopic(topic: string | null | undefined): HelpTopicId {
+export function normalizeHelpTopic(
+  topic: string | null | undefined,
+): HelpTopicId {
   if (!topic) return DEFAULT_HELP_TOPIC;
   if (topic in HELP_SECTION_BY_ID) {
     return topic as HelpTopicId;

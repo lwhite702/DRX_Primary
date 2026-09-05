@@ -14,7 +14,12 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
 import { getProducts, recordShrinkage } from "../src/services/apiClient";
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from "../src/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZES,
+  BORDER_RADIUS,
+} from "../src/constants/theme";
 
 export default function Shrinkage() {
   const insets = useSafeAreaInsets();
@@ -48,9 +53,15 @@ export default function Shrinkage() {
     try {
       setLoading(true);
       const token = await getToken();
-      await recordShrinkage(token, selectedItemId, Number(quantity), reason, note);
-      Alert.alert("Success", "Shrinkage event recorded successfully.", [
-        { text: "OK", onPress: () => router.back() }
+      await recordShrinkage(
+        token,
+        selectedItemId,
+        Number(quantity),
+        reason,
+        note,
+      );
+      Alert.alert("Loss recorded", "The stock count is up to date.", [
+        { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error(error);
@@ -60,7 +71,9 @@ export default function Shrinkage() {
     }
   };
 
-  const selectedItemName = inventory.find(i => i.id === selectedItemId)?.product_name || "Select an Item";
+  const selectedItemName =
+    inventory.find((i) => i.id === selectedItemId)?.product_name ||
+    "Select an Item";
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -75,23 +88,27 @@ export default function Shrinkage() {
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.label}>Item</Text>
         <View style={styles.pickerContainer}>
-           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-             {inventory.map(item => (
-                <TouchableOpacity
-                  key={item.id}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {inventory.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.chip,
+                  selectedItemId === item.id && styles.chipSelected,
+                ]}
+                onPress={() => setSelectedItemId(item.id)}
+              >
+                <Text
                   style={[
-                    styles.chip,
-                    selectedItemId === item.id && styles.chipSelected
-                  ]}
-                  onPress={() => setSelectedItemId(item.id)}
-                >
-                  <Text style={[
                     styles.chipText,
-                    selectedItemId === item.id && styles.chipTextSelected
-                  ]}>{item.product_name}</Text>
-                </TouchableOpacity>
-             ))}
-           </ScrollView>
+                    selectedItemId === item.id && styles.chipTextSelected,
+                  ]}
+                >
+                  {item.product_name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
         <Text style={styles.selectedLabel}>Selected: {selectedItemName}</Text>
 
@@ -107,13 +124,21 @@ export default function Shrinkage() {
 
         <Text style={styles.label}>Reason</Text>
         <View style={styles.reasonRow}>
-          {["personal_use", "damage", "spillage"].map(r => (
+          {["personal_use", "damage", "spillage"].map((r) => (
             <TouchableOpacity
               key={r}
-              style={[styles.reasonBtn, reason === r && styles.reasonBtnSelected]}
+              style={[
+                styles.reasonBtn,
+                reason === r && styles.reasonBtnSelected,
+              ]}
               onPress={() => setReason(r)}
             >
-              <Text style={[styles.reasonBtnText, reason === r && styles.reasonBtnTextSelected]}>
+              <Text
+                style={[
+                  styles.reasonBtnText,
+                  reason === r && styles.reasonBtnTextSelected,
+                ]}
+              >
                 {r.replace("_", " ").toUpperCase()}
               </Text>
             </TouchableOpacity>
@@ -157,11 +182,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "700" },
   content: { padding: SPACING.md },
-  label: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: SPACING.xs, marginTop: SPACING.lg },
-  selectedLabel: { color: COLORS.accent, fontSize: FONT_SIZES.sm, marginTop: SPACING.sm, fontWeight: "600" },
+  label: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.sm,
+    marginBottom: SPACING.xs,
+    marginTop: SPACING.lg,
+  },
+  selectedLabel: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.sm,
+    marginTop: SPACING.sm,
+    fontWeight: "600",
+  },
   pickerContainer: { flexDirection: "row", marginTop: SPACING.xs },
   chip: {
     backgroundColor: COLORS.surface,
@@ -170,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.full,
     marginRight: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.borderLight
+    borderColor: COLORS.borderLight,
   },
   chipSelected: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
   chipText: { color: COLORS.text, fontSize: FONT_SIZES.sm },
@@ -193,10 +233,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.borderLight,
     borderRadius: BORDER_RADIUS.md,
-    minWidth: '30%',
+    minWidth: "30%",
   },
-  reasonBtnSelected: { backgroundColor: COLORS.accent + '20', borderColor: COLORS.accent },
-  reasonBtnText: { color: COLORS.textSecondary, fontSize: 12, fontWeight: "600" },
+  reasonBtnSelected: {
+    backgroundColor: COLORS.accent + "20",
+    borderColor: COLORS.accent,
+  },
+  reasonBtnText: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
   reasonBtnTextSelected: { color: COLORS.accent },
   actionBtn: {
     backgroundColor: COLORS.accent,
@@ -206,5 +253,9 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
     marginBottom: SPACING.xxl,
   },
-  actionBtnText: { color: COLORS.background, fontSize: FONT_SIZES.md, fontWeight: "700" }
+  actionBtnText: {
+    color: COLORS.background,
+    fontSize: FONT_SIZES.md,
+    fontWeight: "700",
+  },
 });

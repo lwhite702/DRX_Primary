@@ -124,7 +124,7 @@ export function useDashboardData(businessId: string | undefined) {
         signal: controller.signal,
       });
       if (!res.ok) {
-        throw new Error("Failed to load dashboard report");
+        throw new Error("Couldn’t load today’s report.");
       }
 
       const report = (await res.json()) as BaselineResponse;
@@ -151,7 +151,10 @@ export function useDashboardData(businessId: string | undefined) {
         salesToday: report.today.salesTotal,
         cashCollected: report.today.cashCollected,
         transactionsCount: report.today.salesCount,
-        salesGrowth: calcGrowth(report.week.salesTotal, report.previousWeek.salesTotal),
+        salesGrowth: calcGrowth(
+          report.week.salesTotal,
+          report.previousWeek.salesTotal,
+        ),
         lowStockCount: report.lowStock.count,
         overdueBalance: report.credit.outstandingBalance,
         overdueCount: report.credit.activeBalances,
@@ -167,7 +170,7 @@ export function useDashboardData(businessId: string | undefined) {
         return;
       }
       console.error("Dashboard Fetch Error:", err);
-      setError("Failed to load dashboard data");
+      setError("Couldn’t load today’s numbers. Try again.");
     } finally {
       if (requestControllerRef.current === controller) {
         requestControllerRef.current = null;

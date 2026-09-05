@@ -1,6 +1,6 @@
 ---
 title: "Your Customers"
-description: "Creating customer profiles, alias-first walk-ins, optional contact details, and store credit limits."
+description: "Creating customer profiles, alias-first walk-ins, optional contact details, and balance due limits."
 icon: "users"
 ---
 
@@ -16,29 +16,29 @@ DRX supports an **alias-first design**, meaning you can create functional profil
 
 - **Recommended role**:
   - Cashier: Search for existing customers and attach them to sales.
-  - Supervisor or Manager: Edit profiles, extend credit limits, and review purchase history.
+  - Supervisor or Manager: Edit profiles, extend balance limits, and review purchase history.
 - **Key screens**:
   - **Customers** (`/customers`): Search and view all customer profiles.
-  - **Customer Details** (`/customers/[id]`): View order history, loyalty points, and credit balance.
-  - **Quick Sale** (`/pos/sale`): Attach a customer directly to an active counter order.
-  - **Credit** (`/credit`): Manage outstanding balances and customer credit extensions.
+  - **Customer Details** (`/customers/[id]`): View order history, loyalty points, and balance due.
+  - **New sale** (`/pos/sale`): Attach a customer to the current sale.
+  - **Payments** (`/credit`): Manage balances due and customer limits.
 - **Customer privacy policy**:
   - You can create a complete customer profile with an alias alone. Phone numbers, email addresses, and home addresses are entirely optional.
 
 ## Fast path
 
 1. **Create a customer profile** (`/customers`):
-   - Tap **Add Customer**.
+   - Tap **Add customer**.
    - Enter an alias or nickname (e.g. "Alex T.").
    - Add phone number or email only if the customer wants digital receipts or delivery updates.
 2. **Attach customer at checkout**:
-   - In **Quick Sale** or **Sales**, tap **Add Customer**.
+   - In **New sale** or **Sales**, tap **Add customer**.
    - Type their name, phone number, or alias in search.
    - Tap their name to attach them to the current cart.
 3. **View customer details & purchase history**:
    - Open a customer profile to view previous receipts, favorite items, loyalty point balance, and payment history.
-4. **Grant or manage store credit**:
-   - If a trusted regular customer uses store credit, open the **Credit** tab on their profile to set an approved credit limit.
+4. **Manage a balance due**:
+   - Open **Payments** on the customer profile to set a balance limit or record a payment.
 5. **Handle temporary walk-in profiles**:
    - If your store enabled temporary profiles in Privacy Settings, walk-in records automatically clean up after 1, 7, or 30 days of inactivity, keeping your database fast and clutter-free.
 
@@ -50,24 +50,24 @@ DRX supports an **alias-first design**, meaning you can create functional profil
   - Open the duplicate profile and merge or archive the inactive record to keep customer balances accurate.
 - **Customer cannot be found in search**:
   - Search by phone number or alternative nickname.
-  - Check that you are in the correct store workspace.
-- **Store Credit payment is blocked after attaching customer**:
-  - Check their profile in **Credit** (`/credit`) to confirm they have an approved credit limit and no overdue payment locks.
-- **Phone numbers appear as `(***) ***-1234` on screen**:
+  - Check that you have the correct business open.
+- **A customer payment option is blocked**:
+  - Check their profile in **Payments** (`/credit`) to confirm the limit and balance status.
+- **Phone numbers appear as `(\***) **\*-1234` on screen**:
   - Screen masking mode is turned on in Store Settings to protect customer privacy from shoppers standing at the counter.
 
 ## What is beta here
 
 - Custom customer segmentation tags and targeted SMS campaigns are in preview testing.
-- Profile creation, alias lookups, order history, loyalty point redemption, and store credit tracking are fully live.
+- Customer profiles, search, order history, loyalty points, and balances due are available in early access.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
-- [Quick Sale runbook](/quick-sale-runbook)
+- [New sale runbook](/quick-sale-runbook)
 - [Payments and plans](/payments-and-plans)
 - [Keeping your data safe](/keeping-your-data-safe)
-- [DRX Privacy ProteXion Protocol](/drx-privacy-protexion-protocol)
+- [Privacy](/drx-privacy-protexion-protocol)
 
 ## Store privacy principles
 

@@ -67,24 +67,22 @@ export default function WorkspacesClient() {
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 md:p-12 font-sans selection:bg-[#4ADE80] selection:text-black">
       <div className="max-w-5xl mx-auto space-y-12">
-        {/* Tenant Isolation Warning */}
+        {/* Business separation notice */}
         <div className="bg-[#1A1500]/50 border border-[#423D00] rounded-xl p-6 flex items-start gap-5 relative overflow-hidden">
           <div className="text-[#FFD600] mt-1">
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div className="space-y-2 relative z-10">
             <h3 className="text-[#FFD600] font-bold text-sm tracking-wider uppercase">
-              Tenant Isolation Active
+              Businesses stay separate
             </h3>
             <p className="text-sm text-[#CCAB00] leading-relaxed max-w-3xl">
-              All data, settings, inventory, customers, and transactions are
-              strictly scoped to each business tenant. Switching businesses is
-              an intentional action that changes your entire operational
-              context.
+              Each business has its own products, stock, customers, sales, and
+              settings. Check the business name before making changes.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mt-4 text-xs text-[#998000]">
               <li className="flex items-center gap-2">
-                No data sharing between tenants
+                No data sharing between businesses
               </li>
               <li className="flex items-center gap-2">
                 Your role and permissions may differ per business
@@ -93,7 +91,7 @@ export default function WorkspacesClient() {
                 Privacy settings are business-specific
               </li>
               <li className="flex items-center gap-2">
-                All switches are logged and audited
+                Business changes are added to History
               </li>
             </div>
           </div>
@@ -102,13 +100,13 @@ export default function WorkspacesClient() {
 
         {/* Header */}
         <PageHeader
-          title="Choose Your Workspace"
-          description="You have access to multiple business tenants. Select the business you want to operate within. Only tenants you have explicit membership to are shown."
+          title="Choose a business"
+          description="Pick the business you want to open. You’ll only see businesses you can access."
         >
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#4ADE80] animate-pulse" />
             <span className="text-[10px] font-bold tracking-widest text-[#4ADE80] uppercase">
-              Select Business Tenant
+              Choose business
             </span>
           </div>
         </PageHeader>
@@ -145,9 +143,7 @@ export default function WorkspacesClient() {
             <div className="bg-[#4ADE80]/20 p-2 rounded-lg text-[#4ADE80]">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold">
-              Understanding Tenant Isolation
-            </h3>
+            <h3 className="text-lg font-bold">How businesses stay separate</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,11 +151,11 @@ export default function WorkspacesClient() {
               <Database className="w-5 h-5 text-muted-foreground shrink-0" />
               <div>
                 <h4 className="font-bold text-sm text-white mb-1">
-                  Separate Data Silos
+                  Separate business records
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Products, inventory, customers, sales, and reports are unique
-                  to each tenant. No cross-tenant visibility.
+                  Products, stock, customers, sales, and reports belong to one
+                  business at a time.
                 </p>
               </div>
             </div>
@@ -168,11 +164,10 @@ export default function WorkspacesClient() {
               <History className="w-5 h-5 text-muted-foreground shrink-0" />
               <div>
                 <h4 className="font-bold text-sm text-white mb-1">
-                  Audit Trail
+                  Change history
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  All tenant switches are logged with timestamp, device, and
-                  location for security and compliance purposes.
+                  Business changes can be reviewed in History.
                 </p>
               </div>
             </div>
@@ -181,11 +176,11 @@ export default function WorkspacesClient() {
               <Search className="w-5 h-5 text-muted-foreground shrink-0" />
               <div>
                 <h4 className="font-bold text-sm text-white mb-1">
-                  No Cross-Tenant Search
+                  Search one business at a time
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Search, filters, and reports are scoped exclusively to the
-                  active tenant. You cannot search across tenants.
+                  Search, filters, and reports use the business you currently
+                  have open.
                 </p>
               </div>
             </div>
@@ -204,12 +199,11 @@ export default function WorkspacesClient() {
               </div>
               <div>
                 <h4 className="font-bold text-sm text-white mb-1">
-                  Full Administrative Control
+                  Full business access
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Access to all features including settings, privacy controls,
-                  failsafes, role management, compliance exports, and billing.
-                  Can manage all users and data.
+                  Can manage settings, privacy, team members, exports, and
+                  billing.
                 </p>
               </div>
             </div>
@@ -219,12 +213,11 @@ export default function WorkspacesClient() {
               </div>
               <div>
                 <h4 className="font-bold text-sm text-white mb-1">
-                  Operational Management
+                  Manage daily work
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Access to inventory management, reporting, advanced workflows,
-                  and customer credit. Limited settings access. Cannot modify
-                  privacy or failsafe configurations.
+                  Can manage stock, reports, daily work, and customer balances.
+                  Some settings remain owner-only.
                 </p>
               </div>
             </div>
@@ -233,13 +226,9 @@ export default function WorkspacesClient() {
                 STAFF
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white mb-1">
-                  Point-of-Sale Operations
-                </h4>
+                <h4 className="font-bold text-sm text-white mb-1">Run sales</h4>
                 <p className="text-xs text-muted-foreground">
-                  Primary focus on fast sales transactions. Limited inventory
-                  intake access if enabled by owner. Minimal data exposure and
-                  no export capabilities.
+                  Can run sales and may add stock when the owner allows it.
                 </p>
               </div>
             </div>
@@ -249,70 +238,62 @@ export default function WorkspacesClient() {
         {/* Privacy Preset Overview */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">
-            Privacy Preset Overview
+            Privacy choices
           </h3>
           <div className="grid grid-cols-1 gap-2">
             <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
               <div className="w-24 shrink-0 text-right">
                 <span className="bg-[#4ADE80]/10 text-[#4ADE80] px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-[#4ADE80]/20">
-                  OPEN
+                  KEEP
                 </span>
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">
-                  Full Transparency Mode
-                </h4>
+                <h4 className="font-bold text-sm text-white">Keep details</h4>
                 <p className="text-xs text-muted-foreground">
-                  All customer details visible to authorized roles. Broader
-                  export permissions.
+                  Save the customer details your business chooses to collect.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
               <div className="w-24 shrink-0 text-right">
                 <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-blue-500/20">
-                  BALANCED
+                  PROTECT
                 </span>
               </div>
               <div>
                 <h4 className="font-bold text-sm text-white">
-                  Standard Protection
+                  Protect details
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Normal operations with guardrails. Role-limited exports.
-                  Recommended for most businesses.
+                  Limit sensitive details by team role.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
               <div className="w-24 shrink-0 text-right">
                 <span className="bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-yellow-500/20">
-                  PRIVATE
+                  HIDE
                 </span>
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">
-                  Enhanced Privacy
-                </h4>
+                <h4 className="font-bold text-sm text-white">Hide details</h4>
                 <p className="text-xs text-muted-foreground">
-                  Reduced PII in standard views. Stricter export controls.
-                  Optional inactivity deletion timer.
+                  Save only the minimum customer information needed.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
               <div className="w-24 shrink-0 text-right">
                 <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-red-500/20">
-                  MAX SECURE
+                  DELETE
                 </span>
               </div>
               <div>
                 <h4 className="font-bold text-sm text-white">
-                  Maximum Security Mode
+                  Delete old records
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Alias-only workflows. Minimal PII capture. Strict export
-                  lockdown. Failsafes and doomsday mode available.
+                  Choose when temporary customer records are removed.
                 </p>
               </div>
             </div>
@@ -320,7 +301,7 @@ export default function WorkspacesClient() {
         </div>
 
         <div className="text-center text-[10px] uppercase tracking-widest text-muted-foreground/40 font-mono">
-          DRX • Tenant Isolation Active • v2.4.1
+          DRX • Business separation active • v2.4.1
         </div>
       </div>
     </div>

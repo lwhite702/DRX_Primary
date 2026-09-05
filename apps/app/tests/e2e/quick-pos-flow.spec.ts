@@ -125,9 +125,7 @@ test.describe("Quick POS @smoke", () => {
     const startedAt = Date.now();
 
     await page.goto("/pos/sale");
-    await expect(
-      page.getByRole("heading", { name: "Quick Sale" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "New sale" })).toBeVisible();
 
     await page
       .getByRole("button", { name: /Favorite Item/i })
@@ -162,14 +160,14 @@ test.describe("Quick POS @smoke", () => {
     }
     await page.goto("/pos/sale");
 
-    await page.getByRole("button", { name: "Exit Quick Sale" }).click();
+    await page.getByRole("button", { name: "Exit New sale" }).click();
     await expect(
       page.getByText(
         "Enter the manager PIN if one is configured, then confirm to return to your workspace.",
       ),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Confirm Exit" }).click();
+    await page.getByRole("button", { name: "Confirm exit" }).click();
     await expect(page).toHaveURL(/\/dashboard/);
   });
 });

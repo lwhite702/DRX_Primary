@@ -85,7 +85,7 @@ struct NativeOnboardingView: View {
         VStack(alignment: .leading, spacing: 20) {
             if model.resumed && model.draft.currentStep != .welcome { Text("Welcome back. Let’s finish setting up your business.").font(.callout).padding().background(DRXPalette.surface, in: RoundedRectangle(cornerRadius: 12)) }
             switch model.draft.currentStep {
-            case .welcome: prompt("Welcome to DRX", "Let’s set up the essentials so you can start managing products, inventory, customers, and transactions.")
+            case .welcome: prompt("Welcome to DRX", "Let’s set up your business so you can track products, stock, customers, and sales.")
             case .ownerProfile:
                 prompt("What should your team call you?", "This name appears in activity history and transaction records.")
                 TextField("Full name", text: $model.draft.ownerName).textContentType(.name).textFieldStyle(.roundedBorder).accessibilityIdentifier("onboardingOwnerName")
@@ -111,8 +111,8 @@ struct NativeOnboardingView: View {
                 prompt("What default tax rate should DRX use?", "You can configure supported product and location overrides later.")
                 TextField("8.25%", text: $model.draft.taxRate).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).accessibilityIdentifier("onboardingTaxRate")
             case .inventoryDecision:
-                prompt("Would you like DRX to track inventory quantities?", "Inventory tracking helps prevent overselling and records stock changes. Selling by weight or part of a unit? Turn on Allow fractional sales when adding each product, then choose its unit, minimum, increment, and suggested amounts.")
-                choice("Yes, track inventory", selected: model.draft.tracksInventory == true) { model.draft.tracksInventory = true }
+                prompt("Should DRX track stock counts?", "DRX records what comes in, what sells, and what changes. You can also set up products sold by weight or partial units.")
+                choice("Yes, track stock", selected: model.draft.tracksInventory == true) { model.draft.tracksInventory = true }
                 choice("Not yet", selected: model.draft.tracksInventory == false) { model.draft.tracksInventory = false }
             case .teamDecision:
                 prompt("Will anyone else use DRX with you?", "You can assign different access levels later.")
@@ -124,7 +124,7 @@ struct NativeOnboardingView: View {
                 Picker("Role", selection: $model.draft.invitedUserRole) { ForEach(["Manager", "Operator", "Inventory"], id: \.self) { Text($0) } }
             case .review: review
             case .completed: workspaceReady
-            default: ProgressView("Creating your DRX workspace…")
+            default: ProgressView("Creating your business…")
             }
             if let message = model.validationMessage { Text(message).foregroundStyle(DRXPalette.danger).accessibilityLabel("Error: \(message)") }
         }
@@ -142,7 +142,7 @@ struct NativeOnboardingView: View {
             Spacer()
             if model.draft.currentStep == .completed {
                 onboardingActionButton(
-                    model.draft.businessType == .service ? "Create First Service" : "Add First Product",
+                    model.draft.businessType == .service ? "Create first service" : DRXContent.Actions.addProduct,
                     identifier: "onboardingFirstAction",
                     action: {
                         environment.telemetry.capture(
@@ -159,9 +159,9 @@ struct NativeOnboardingView: View {
             } else {
                 onboardingActionButton(
                     model.draft.currentStep == .welcome
-                        ? "Set Up My Business"
+                        ? "Set up my business"
                         : model.draft.currentStep == .review
-                        ? "Create My Workspace"
+                        ? "Create my business"
                         : "Continue",
                     identifier: "onboardingContinue",
                     isDisabled: environment.isSubmittingOnboarding,
@@ -208,9 +208,9 @@ struct NativeOnboardingView: View {
     }
     private func prompt(_ title: String, _ body: String) -> some View { VStack(alignment: .leading, spacing: 10) { Text(title).font(.largeTitle.bold()); Text(body).foregroundStyle(DRXPalette.muted) } }
     private func choice(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View { Button(action: action) { HStack { Text(title).foregroundStyle(DRXPalette.ink); Spacer(); Image(systemName: selected ? "checkmark.circle.fill" : "circle").accessibilityHidden(true) }.padding().frame(minHeight: 56).background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 14)).overlay { RoundedRectangle(cornerRadius: 14).stroke(selected ? DRXPalette.accent : DRXPalette.border) } }.accessibilityAddTraits(selected ? .isSelected : []) }
-    private var review: some View { VStack(alignment: .leading, spacing: 14) { prompt("Review your setup", "Everything here can be changed later in Business Settings."); summary("Owner", model.draft.ownerName, .ownerProfile); summary("Business", model.draft.businessName, .businessName); summary("Location", model.draft.locationName, .location); summary("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled", .taxDecision); summary("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled", model.draft.businessType?.tracksProducts == false ? .businessType : .inventoryDecision); summary("Team", model.draft.inviteTeam == true ? model.draft.invitedUserEmail : "Just me for now", .teamDecision) } }
+    private var review: some View { VStack(alignment: .leading, spacing: 14) { prompt("Review your setup", "Everything here can be changed later in Business Settings."); summary("Owner", model.draft.ownerName, .ownerProfile); summary(DRXContent.Terms.business, model.draft.businessName, .businessName); summary(DRXContent.Terms.location, model.draft.locationName, .location); summary("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled", .taxDecision); summary(DRXContent.Terms.stock, model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled", model.draft.businessType?.tracksProducts == false ? .businessType : .inventoryDecision); summary(DRXContent.Navigation.team, model.draft.inviteTeam == true ? model.draft.invitedUserEmail : "Just me for now", .teamDecision) } }
     private func summary(_ title: String, _ value: String, _ step: OnboardingStep) -> some View { HStack { VStack(alignment: .leading) { Text(title).font(.caption).foregroundStyle(DRXPalette.muted); Text(value) }; Spacer(); Button("Edit") { navigationDirection = .backward; withAnimation(stepAnimation) { model.edit(step) } } }.padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
-    private var workspaceReady: some View { VStack(alignment: .leading, spacing: 16) { Text("Setup complete").font(.caption.bold()).foregroundStyle(DRXPalette.accent); prompt("Your DRX workspace is ready", "Here’s what we created. You can change these settings whenever you need to."); summaryValue("Business", model.draft.businessName); summaryValue("Owner", "\(model.draft.ownerName) · Owner"); summaryValue("Location", model.draft.locationName); summaryValue("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled"); summaryValue("Inventory", model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled"); Text("For your first product, choose whole-unit or fractional sales. Set the selling unit, minimum quantity, increment, and suggested amounts in Add Product.").foregroundStyle(DRXPalette.muted); Text("What would you like to do first?").font(.title3.bold()) } }
+    private var workspaceReady: some View { VStack(alignment: .leading, spacing: 16) { Text("Setup complete").font(.caption.bold()).foregroundStyle(DRXPalette.accent); prompt("Your DRX business is ready", "Here’s what we created. You can change these settings whenever you need to."); summaryValue(DRXContent.Terms.business, model.draft.businessName); summaryValue("Owner", "\(model.draft.ownerName) · Owner"); summaryValue(DRXContent.Terms.location, model.draft.locationName); summaryValue("Tax", model.draft.taxChoice == .yes ? "Enabled at \(model.draft.taxRate)%" : "Not enabled"); summaryValue(DRXContent.Terms.stock, model.draft.tracksInventory == true ? "Tracking enabled" : "Not enabled"); Text("Selling by weight or partial units? Choose those options when you add the product.").foregroundStyle(DRXPalette.muted); Text("What would you like to do first?").font(.title3.bold()) } }
     private func summaryValue(_ title: String, _ value: String) -> some View { LabeledContent(title, value: value).padding().background(DRXPalette.card, in: RoundedRectangle(cornerRadius: 12)) }
     private func submit() {
         let draft = model.draft

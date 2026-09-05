@@ -17,39 +17,39 @@ struct ProductDetailView: View {
         NavigationStack {
             List {
                 // Overview
-                Section("Product Info") {
+                Section("Product details") {
                     LabeledContent("SKU", value: product.sku)
                     LabeledContent("Category", value: product.category ?? "General")
-                    LabeledContent("Selling Price", value: product.sellingPriceFormatted)
-                    LabeledContent("Unit Cost", value: product.unitCostFormatted)
+                    LabeledContent("Price", value: product.sellingPriceFormatted)
+                    LabeledContent("Cost", value: product.unitCostFormatted)
                     LabeledContent("Status", value: product.isActive ? "Active" : "Inactive")
                 }
 
                 // Stock
                 Section("Stock") {
                     HStack {
-                        Text("On Hand")
+                        Text("On hand")
                         Spacer()
                         Text(product.stockFormatted)
                             .font(.subheadline.bold())
                             .foregroundStyle(stockColor)
                     }
-                    LabeledContent("Reorder Level", value: formatGrams(product.reorderLevelGrams))
+                    LabeledContent("Low-stock limit", value: formatGrams(product.reorderLevelGrams))
 
                     Button {
                         showIntake = true
                     } label: {
-                        Label("Record Intake", systemImage: "plus.circle.fill")
+                        Label(DRXContent.Actions.addStock, systemImage: "plus.circle.fill")
                             .foregroundStyle(DRXPalette.accent)
                     }
                 }
 
                 // FIFO Batches
-                Section("Inventory Batches (FIFO)") {
+                Section("Stock batches") {
                     if isLoadingBatches {
                         ProgressView().frame(maxWidth: .infinity)
                     } else if batches.isEmpty {
-                        Text("No batches recorded.")
+                        Text("No stock batches yet.")
                             .font(.subheadline)
                             .foregroundStyle(DRXPalette.muted)
                     } else {

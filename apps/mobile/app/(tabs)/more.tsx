@@ -41,44 +41,84 @@ export default function More() {
 
   const menuItems = [
     {
-      title: "POS Actions",
+      title: "Sales",
       items: [
-        { icon: "car-outline", label: "Deliveries", route: "/deliveries", disabled: false },
-        { icon: "receipt-outline", label: "Sales History", route: "/sales-history", disabled: false },
+        {
+          icon: "car-outline",
+          label: "Deliveries",
+          route: "/deliveries",
+          disabled: false,
+        },
+        {
+          icon: "receipt-outline",
+          label: "Sales",
+          route: "/sales-history",
+          disabled: false,
+        },
         {
           icon: "cash-outline",
-          label: "No Sale / Open Drawer",
+          label: "Open drawer",
           route: "/no-sale",
           disabled: false,
         },
         {
           icon: "leaf-outline",
-          label: "Personal Use / Shrinkage",
+          label: "Record shrinkage",
           route: "/shrinkage",
           disabled: false,
         },
-        { icon: "clipboard-outline", label: "Inventory Check", route: "/inventory-check", disabled: false },
+        {
+          icon: "clipboard-outline",
+          label: "Check stock",
+          route: "/inventory-check",
+          disabled: false,
+        },
       ],
     },
     {
       title: "Reports",
       items: [
-        { icon: "stats-chart-outline", label: "Daily Summary", route: "/daily-summary", disabled: false },
-        { icon: "calendar-outline", label: "End of Shift", route: "/end-of-shift", disabled: false },
+        {
+          icon: "stats-chart-outline",
+          label: "Today’s numbers",
+          route: "/daily-summary",
+          disabled: false,
+        },
+        {
+          icon: "calendar-outline",
+          label: "End of day",
+          route: "/end-of-shift",
+          disabled: false,
+        },
       ],
     },
     {
       title: "Account",
       items: [
-        { icon: "person-outline", label: "Profile", route: "/settings", disabled: false },
-        { icon: "settings-outline", label: "Settings", route: "/settings", disabled: false },
+        {
+          icon: "person-outline",
+          label: "Profile",
+          route: "/settings",
+          disabled: false,
+        },
+        {
+          icon: "settings-outline",
+          label: "Settings",
+          route: "/settings",
+          disabled: false,
+        },
         {
           icon: "chatbubbles-outline",
           label: "Feedback & Roadmap",
           route: "/feedback",
           disabled: false,
         },
-        { icon: "help-circle-outline", label: "Help", route: "/help", disabled: false },
+        {
+          icon: "help-circle-outline",
+          label: "Help",
+          route: "/help",
+          disabled: false,
+        },
       ],
     },
   ];
@@ -97,8 +137,12 @@ export default function More() {
             <Ionicons name="person" size={32} color={COLORS.accent} />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userEmail}>{session?.email || session?.displayName || "Operator"}</Text>
-            <Text style={styles.userRole}>{session?.roles.join(", ") || "operator"}</Text>
+            <Text style={styles.userEmail}>
+              {session?.email || session?.displayName || "Operator"}
+            </Text>
+            <Text style={styles.userRole}>
+              {session?.roles.join(", ") || "operator"}
+            </Text>
           </View>
           <View style={styles.statusBadge}>
             <View style={styles.statusDot} />
@@ -176,9 +220,12 @@ export default function More() {
         {/* Version */}
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>
-            DRX {Application.applicationName ?? "Mobile"} v{Application.nativeApplicationVersion ?? "unknown"}
+            DRX {Application.applicationName ?? "Mobile"} v
+            {Application.nativeApplicationVersion ?? "unknown"}
           </Text>
-          <Text style={styles.versionSubtext}>Secured and synchronized by Convex</Text>
+          <Text style={styles.versionSubtext}>
+            Secured and synchronized by Convex
+          </Text>
         </View>
       </ScrollView>
     </View>

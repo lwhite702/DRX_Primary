@@ -32,31 +32,34 @@ export interface AppStoreScreenshotSpec {
 export const appStoreScreenshotPlan: readonly AppStoreScreenshotSpec[] = [
   {
     caption: "Keep checkout moving",
-    requiredState: "POS with a populated cart, fictional products, and a reviewable total",
+    requiredState: "New sale screen with fictional products and a clear total",
     source: "native_ios",
     dataPolicy: "fictional",
   },
   {
     caption: "Know what's in stock",
-    requiredState: "Inventory list with SKU context and a visible low-stock state",
+    requiredState: "Products list with a visible low-stock state",
     source: "native_ios",
     dataPolicy: "fictional",
   },
   {
     caption: "See today's numbers",
-    requiredState: "Dashboard with current sales, best-seller, and low-stock context",
+    requiredState:
+      "Home with current sales, best seller, and low-stock details",
     source: "native_ios",
     dataPolicy: "fictional",
   },
   {
     caption: "Control team access",
-    requiredState: "Team access screen with clearly labeled roles and permissions",
+    requiredState:
+      "Team access screen with clearly labeled roles and permissions",
     source: "native_ios",
     dataPolicy: "fictional",
   },
   {
-    caption: "Review activity history",
-    requiredState: "Activity history with fictional users, actions, and timestamps",
+    caption: "See who changed what",
+    requiredState:
+      "Activity history with fictional users, actions, and timestamps",
     source: "native_ios",
     dataPolicy: "fictional",
   },
@@ -66,27 +69,29 @@ export const appStoreCopy: AppStoreCopyContract = {
   schemaVersion: 1,
   status: "blocked_pending_product_review",
   name: "Deelrx CRM",
-  subtitle: "POS & Inventory for Retail",
+  subtitle: "Sales & Stock for Retail",
   primaryCategory: "Business",
   secondaryCategory: "Productivity",
   keywords: "pos,inventory,retail,checkout,stock,sales,customers,store",
   promotionalText:
-    "Keep checkout moving, know what is in stock, and control who can do what.",
-  description: `Deelrx CRM is an operator-first point-of-sale and inventory workspace for independent retailers, owner-operated shops, pop-ups, and service businesses that carry stock.
+    "Know what you have, what you sold, what you made, and who still owes you.",
+  description: `Keep track of customers, products, stock, sales, payments, and money owed. Deelrx CRM helps you see what came in, what went out, and what you made.
 
-Keep checkout moving with product search, barcode support, quantity adjustments, discounts, multiple tender types, customer lookup, and reviewable sale history.
+Start a new sale with product search, barcode scanning, quantity changes, discounts, supported payment types, customer lookup, and clear sale history.
 
-Know what is on deck with stock-count visibility, low-stock alerts, SKU and barcode workflows, intake context, and logged inventory adjustments.
+See what is in stock and what is running low. Add stock, check SKUs and barcodes, and review count changes.
 
-Run a tighter shift with operational dashboards, customer records, role-based access, and user activity context.
+See today’s numbers, keep customer records together, choose what each team member can do, and check who made supported changes.
 
 Deelrx CRM is a merchant operations tool for physical-goods sales. It is not a consumer marketplace, delivery service, payment network, lender, debt collector, or legal, tax, financial, or compliance advisor.`,
-  screenshotCaptions: appStoreScreenshotPlan.map((screenshot) => screenshot.caption),
+  screenshotCaptions: appStoreScreenshotPlan.map(
+    (screenshot) => screenshot.caption,
+  ),
   screenshotPlan: appStoreScreenshotPlan,
   marketingUrl: "https://deelrxcrm.com",
   supportUrl: "https://deelrxcrm.com/resources",
   privacyPolicyUrl: "https://deelrxcrm.com/legal/privacy",
-  reviewNotes: `Deelrx CRM is a merchant-facing operations tool for physical-goods sales at a merchant's own location. It is not a consumer marketplace and does not provide consumer product discovery or delivery ordering.
+  reviewNotes: `Deelrx CRM helps merchants keep records for physical-goods sales at their own locations. It is not a consumer marketplace and does not provide consumer product discovery or delivery ordering.
 
 The app supports unit-based and weight-based inventory. Optional customer store-account features record merchant-managed purchases, payments, and balances. Reviewer credentials must be supplied in the secure App Store Connect review fields and the review environment must remain available for the full review window.
 

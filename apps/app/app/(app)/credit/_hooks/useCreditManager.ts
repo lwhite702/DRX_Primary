@@ -6,7 +6,12 @@ import { AgingData } from "../_components/CreditAgingTable";
 import { CreditTransaction as LocalCreditTransaction } from "../_components/CreditTransactionsList";
 import { Customer, CreditLimit } from "@/lib/validations/schemas";
 
-type CreditLoadStatus = "loading" | "refreshing" | "success" | "empty" | "error";
+type CreditLoadStatus =
+  | "loading"
+  | "refreshing"
+  | "success"
+  | "empty"
+  | "error";
 
 export function useCreditManager(businessId: string | undefined) {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -14,7 +19,9 @@ export function useCreditManager(businessId: string | undefined) {
     new Map(),
   );
   const [agingData, setAgingData] = useState<AgingData[]>([]);
-  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>([]);
+  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>(
+    [],
+  );
   const [status, setStatus] = useState<CreditLoadStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [mutating, setMutating] = useState(false);
@@ -139,11 +146,13 @@ export function useCreditManager(businessId: string | undefined) {
       if (!result.success) {
         throw new Error(result.error || "Failed to extend credit");
       }
-      toast.success("Credit extended successfully");
+      toast.success("Balance limit updated.");
       setShowExtensionDialog(false);
       await refreshData();
     } catch (caught) {
-      toast.error(caught instanceof Error ? caught.message : "Failed to extend credit");
+      toast.error(
+        caught instanceof Error ? caught.message : "Failed to extend credit",
+      );
     } finally {
       setMutating(false);
     }
@@ -167,11 +176,13 @@ export function useCreditManager(businessId: string | undefined) {
       if (!result.success) {
         throw new Error(result.error || "Failed to record payment");
       }
-      toast.success("Payment recorded successfully");
+      toast.success("Payment added.");
       setShowPaymentDialog(false);
       await refreshData();
     } catch (caught) {
-      toast.error(caught instanceof Error ? caught.message : "Failed to record payment");
+      toast.error(
+        caught instanceof Error ? caught.message : "Failed to record payment",
+      );
     } finally {
       setMutating(false);
     }

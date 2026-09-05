@@ -8,7 +8,7 @@ export default function HelpOperationsPage() {
   return (
     <HelpPageShell
       title="Run Operations"
-      description="Daily operations checks across inventory, product hygiene, customers, credit, and reports."
+      description="Daily checks for products, stock, customers, payments, and reports."
       topic="operations"
       badge="Task Guide"
     >
