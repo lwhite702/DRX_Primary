@@ -1,6 +1,6 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.7.2",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": "22.x"

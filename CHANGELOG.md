@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.
+
 - WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
 - WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.
-- WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. This branch is not deployed; entry-path and role-policy migration require release review.
+- WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. The production candidate remains subject to exact-SHA deployment and credentialed role-boundary verification.
 
 - **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
 
