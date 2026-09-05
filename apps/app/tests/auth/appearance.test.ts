@@ -1,9 +1,13 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
 
-const globalStyles = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
+const workspaceStyles = resolve(process.cwd(), "apps/app/app/globals.css");
+const globalStyles = readFileSync(
+  existsSync(workspaceStyles) ? workspaceStyles : resolve(process.cwd(), "app/globals.css"),
+  "utf8",
+);
 
 function cssRule(selectors: string, occurrence = 0) {
   let ruleStart = -1;
