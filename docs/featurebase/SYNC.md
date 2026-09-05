@@ -116,7 +116,15 @@ Featurebase updates are not an atomic batch. A later failure can leave earlier a
 
 ## Browser publication gate
 
-After `pnpm featurebase:verify:help-center:browser` passes for the saved drafts, rerun the repository checks listed above. Publishing is a separate action in Featurebase and requires action-time approval. After approval, use **Publish changes** only on the 16 article IDs in the verified receipt. Do not publish the three unrelated drafts or any article that changed after the receipt.
+After `pnpm featurebase:verify:help-center:browser` passes for the saved drafts, set `completeBrowserDraftAudit` only from that authenticated evidence and run:
+
+```sh
+pnpm featurebase:validate:help-center:browser
+```
+
+This browser-specific publication gate replaces the unavailable API dry run with the exact saved-draft receipt. It still reruns ordering, feature, gap, copy, Featurebase, policy, repository-hygiene, and release-integrity checks. It does not publish an article or make the API-only workflow appear complete.
+
+Publishing is a separate action in Featurebase and requires action-time approval. After approval, use **Publish changes** only on the 16 article IDs in the verified receipt. Do not publish the three unrelated drafts or any article that changed after the receipt.
 
 Reopen every published article, then run a fresh public export. Record a second receipt with `phase: published` and verify it with the same command. The published receipt must cover all 19 canonical articles and confirm 20 assets, 23 placements, zero missing articles, and zero unexpected articles. A browser upload, autosave indicator, or visible draft is not live publication evidence.
 

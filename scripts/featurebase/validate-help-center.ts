@@ -7,6 +7,9 @@ import { writeJson, writeText } from "./_client";
 
 async function main() {
   const publication = process.argv.includes("--publication");
+  const browser = process.argv.includes("--browser");
+  if (browser && !publication)
+    throw new Error("Browser validation requires --publication");
   if (publication)
     fs.rmSync(".featurebase/publication-validation.json", { force: true });
   const { manifest, articles, contentHash } = loadHelpContent(process.cwd(), {
@@ -90,12 +93,20 @@ async function main() {
     const review = JSON.parse(
       fs.readFileSync("docs/featurebase/audit-review.json", "utf8"),
     );
-    if (!review.completeApiAudit || review.unresolvedP1P2 !== 0)
+    if (
+      (!browser && !review.completeApiAudit) ||
+      (browser && !review.completeBrowserDraftAudit) ||
+      review.unresolvedP1P2 !== 0
+    )
       throw new Error(
-        "Complete API and unpublished-content audit is still required",
+        browser
+          ? "Complete browser draft audit with no unresolved P1/P2 issue is still required"
+          : "Complete API and unpublished-content audit is still required",
       );
     const commands = [
-      "featurebase:import:help-center:dry",
+      browser
+        ? "featurebase:verify:help-center:browser"
+        : "featurebase:import:help-center:dry",
       "featurebase:reorder:help-center:dry",
       "docs:audit:features",
       "docs:audit:gaps",
@@ -120,6 +131,9 @@ async function main() {
         throw new Error(`Publication check failed: ${command}`);
     }
     report.publishReady = true;
+    report.publicationMethod = browser
+      ? "authenticated-browser-editor"
+      : "featurebase-api";
     report.unresolvedP1P2 = 0;
     report.createdAt = new Date().toISOString();
     writeJson(".featurebase/publication-validation.json", report);

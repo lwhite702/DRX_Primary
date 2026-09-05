@@ -1,6 +1,6 @@
 # DRX Help Center validation — WRE-92
 
-Status: **19 canonical articles published through the authenticated Featurebase browser editor and verified by a fresh public export**. The authenticated API audit remains blocked, and historical heading fragments were not preserved.
+Status: **19 canonical text articles are live, and all 16 visual article drafts passed the authenticated browser audit**. The 20 assets and 23 placements remain unpublished pending action-time approval. The authenticated API audit remains unavailable; the browser receipt is the approved alternative for this visual publication.
 
 Source: PR [#165](https://github.com/lwhite702/DRX_Primary/pull/165), current `origin/main` at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. Dedicated branch: `codex/WRE-92-featurebase-help-overhaul`. Tracking: [WRE-92](https://linear.app/wrelik/issue/WRE-92/audit-and-sync-the-complete-drx-help-center-after-brand-voice-pr-165).
 
@@ -15,7 +15,7 @@ Release impact: none. Roadmap impact: none. Product version remains `0.6.14`; th
 - All 19 canonical IDs were updated and published. Zero articles were created, merged, split, reordered, archived, or deleted. Collection placement and order remain unchanged.
 - 31 old source paths become reference stubs: 15 duplicate app-docs files and 16 legacy final files. Original content remains in Git at the base commit. These are repository references, not deployed redirects.
 - The 50-entry legacy seed body is replaced by a canonical content adapter. Its publisher is disabled. No old article is recreated.
-- Zero embedded images/videos/iframes were present in the last observed live article bodies. The authenticated browser editor accepted all 20 original visual assets: 6 headers, 8 screenshots, and 6 diagrams, with 23 declared placements. None is claimed live until the saved drafts pass the browser receipt, publication is approved, and a fresh public export passes.
+- Zero embedded images/videos/iframes were present in the last observed live article bodies. The authenticated browser editor accepted all 20 original visual assets: 6 headers, 8 screenshots, and 6 diagrams, with 23 declared placements. All 16 saved drafts passed the browser receipt; none is claimed live until publication is approved and a fresh public export passes.
 
 ## Visual inventory and publication state
 
@@ -26,8 +26,9 @@ The versioned [visual manifest](help-center-visuals.json) records all 20 assets,
 - 6 literal diagrams: safe support screenshots; privacy retention; access recovery; inventory save and count; uncertain checkout or payment results; barcode keyboard input.
 - Screenshots are labeled and captioned as illustrative when they use repository fixtures. No real customer, staff, balance, address, transaction, credential, or regulated-retail data is included.
 - Repository validation passes independently of publication state. The visual publication validator now passes for all 20 recorded staging attachments.
-- The Privacy and minimal data preview loaded all three declared images at a 1280-pixel viewport with no horizontal overflow. Featurebase light-theme and mobile-width checks remain part of post-upload verification; the local dark preview does not satisfy them.
-- Current state: **uploaded, not published**. The barcode diagram canary survived a saved-draft reload with its attachment identity, alt text, five headings, and no empty uploader block. `FEATUREBASE_API_KEY` remains unavailable, so publication now uses the documented authenticated browser package and receipt path. Final draft placement verification and live publication are still pending.
+- The Privacy and minimal data editor loaded all three declared images at the observed 1280×720 viewport with no document overflow. The available browser viewport override did not change that attached tab to a mobile width, so public mobile-width verification remains a post-publication check.
+- Current state: **drafts verified, not published**. Every visual article survived a saved-draft reload with exact title, description, heading order, links, emphasized labels, image order, alt text, caption, and placement. All current public heading IDs were preserved. `FEATUREBASE_API_KEY` remains unavailable, so publication uses the documented authenticated browser package and receipt path.
+- Sanitized evidence: [browser-visual-drafts-2026-09-04.json](browser-visual-drafts-2026-09-04.json). The three unrelated drafts remain untouched.
 
 | Article                            | Planned visual placement                                     |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -111,9 +112,11 @@ Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in 
 | `pnpm featurebase:validate:help-visuals --publication`                                                                                                     | Pass: 20 uploaded staging identities and 23 declared placements                   |
 | `pnpm featurebase:prepare:help-center:browser`                                                                                                             | Pass: 19 articles, 16 with visuals, 20 assets, 23 placements                      |
 | `pnpm featurebase:verify:help-center:browser --receipt .featurebase/browser-import/browser-receipt.test.json`                                              | Pass: draft receipt schema and exact 16-article set                               |
+| `pnpm featurebase:verify:help-center:browser`                                                                                                              | Pass: 16 saved article drafts, 20 assets, 23 placements, exact content hash       |
+| `pnpm featurebase:validate:help-center:browser`                                                                                                            | Pass: authenticated browser publication gate; publishReady=true                   |
 | `pnpm docs:audit:features`                                                                                                                                 | Pass: 54 page routes, 83 API routes                                               |
 | `pnpm docs:audit:gaps`                                                                                                                                     | Pass: 100 source dispositions and 20 coverage groups; product gaps retained       |
-| `pnpm lint:copy`                                                                                                                                           | Pass                                                                              |
+| `pnpm copy:lint`                                                                                                                                           | Pass                                                                              |
 | `pnpm test:policy`                                                                                                                                         | Pass: zero current findings                                                       |
 | `pnpm test:repo-hygiene`                                                                                                                                   | Pass                                                                              |
 | `pnpm release:integrity`                                                                                                                                   | Pass                                                                              |

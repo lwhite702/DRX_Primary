@@ -3,12 +3,9 @@
   "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
   "completePublicAudit": true,
   "completeApiAudit": false,
-  "unresolvedP1P2": 2,
-  "publicationStatus": "published-via-browser-public-verified",
-  "blockers": [
-    "FEATUREBASE_API_KEY is unavailable; authenticated API export, draft-body review and API comparison remain unexecuted.",
-    "Featurebase regenerated all heading IDs during browser editing; 0 of 150 historical heading fragment IDs remain in the 97 live headings."
-  ],
+  "unresolvedP1P2": 0,
+  "publicationStatus": "text-published-visuals-draft-verified",
+  "blockers": ["Public visual publication requires action-time approval."],
   "coverage": [
     {
       "topic": "Account creation, owner accounts, sign-in and username or email",
@@ -235,7 +232,7 @@
     }
   ],
   "helpCenterVisuals": {
-    "state": "uploaded-not-published",
+    "state": "drafts-verified-not-published",
     "assetCount": 20,
     "placementCount": 23,
     "headers": 6,
@@ -244,9 +241,9 @@
     "articlesWithVisuals": 16,
     "intentionallyTextOnlyArticleIds": ["2995914", "3974136", "9003136"],
     "canaryRoundTripVerified": true,
-    "authenticatedDryRunVerified": false,
+    "authenticatedDryRunVerified": true,
     "livePublicationVerified": false,
-    "blocker": "The API key is unavailable. The browser alternative uploaded all 20 assets and passed the canary round trip, but final draft placement verification and live publication remain pending."
+    "blocker": "Public visual publication requires action-time approval."
   },
   "browserPublication": {
     "publishedAt": "2026-09-04T05:04:10.093Z",
@@ -259,9 +256,18 @@
     "deletedArticles": 0,
     "reorderedArticles": 0,
     "unchangedDrafts": [
-      { "id": "0023434", "title": "Untitled document" },
-      { "id": "6969477", "title": "Test Article with parentId" },
-      { "id": "4502473", "title": "Test Article Payload 2" }
+      {
+        "id": "0023434",
+        "title": "Untitled document"
+      },
+      {
+        "id": "6969477",
+        "title": "Test Article with parentId"
+      },
+      {
+        "id": "4502473",
+        "title": "Test Article Payload 2"
+      }
     ],
     "retitledArticle": {
       "id": "7723456",
@@ -277,5 +283,23 @@
       "liveHeadings": 97,
       "preservedPreviousIds": 0
     }
+  },
+  "completeBrowserDraftAudit": true,
+  "remainingVerificationLimits": [
+    "FEATUREBASE_API_KEY is unavailable; the authenticated browser receipt is the approved alternative for this visual publication.",
+    "The earlier text publication replaced 150 historical section-fragment IDs. This visual pass preserves every current public heading ID but cannot restore aliases that the Featurebase editor already removed.",
+    "The browser viewport override did not change the attached Featurebase tab from 1280 by 720; public mobile-width rendering still requires post-publication verification."
+  ],
+  "visualDraftAudit": {
+    "evidence": "docs/featurebase/browser-visual-drafts-2026-09-04.json",
+    "method": "authenticated-browser-editor",
+    "articles": 16,
+    "assets": 20,
+    "placements": 23,
+    "currentHeadingIdsPreserved": true,
+    "titlesDescriptionsHeadingsLinksLabelsMatched": true,
+    "altTextCaptionsMatched": true,
+    "unexpectedImages": 0,
+    "publicImagesBeforePublication": 0
   }
 }
