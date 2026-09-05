@@ -1,5 +1,7 @@
 "use server";
 
+/* eslint-disable @typescript-eslint/no-explicit-any -- Preserve this legacy exported action contract. */
+
 import { auth } from "@/lib/adapters/auth/server";
 import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
 import type { PrivacyProfile } from "@/lib/privacy/types";
@@ -15,13 +17,9 @@ export type SetupBusinessData = {
   zipCode: string;
   ownerPhone: string;
   defaultUnit: string;
-  // Keep this legacy server-action contract stable while validating values at the Convex boundary.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   quickQuantities: any[];
   privacyPreset: PrivacyProfile;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inventoryReasons: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nicknames: any[];
   ownerName: string;
 };
