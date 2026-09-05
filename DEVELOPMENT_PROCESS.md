@@ -39,7 +39,7 @@ This process covers local setup through production promotion and complements `WR
 
 ### 2. Local setup and sync
 
-- Ensure your environment matches repository requirements (`node@22.23.1`, `pnpm@9.15.9`).
+- Ensure your environment matches repository requirements (`node@22.23.1`, `pnpm@10.17.1`).
 - Sync with `development`:
 
   ```bash

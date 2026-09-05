@@ -7,14 +7,10 @@ if [[ "${CONFIGURATION:-}" != "Release" && "${CI_XCODEBUILD_ACTION:-}" != "archi
 fi
 
 SCRIPT_DIR="${0:A:h}"
-IOS_ROOT="${SCRIPT_DIR:h}"
 
-# Ensure Telemetry config exists
-if [[ ! -s "${IOS_ROOT}/Configuration/Telemetry.generated.xcconfig" &&
-      ! -s "${CI_PRIMARY_REPOSITORY_PATH:-${PWD}}/apps/ios/Configuration/Telemetry.generated.xcconfig" &&
-      ! -s "${PWD}/Configuration/Telemetry.generated.xcconfig" ]]; then
-  "${SCRIPT_DIR}/sync_telemetry_xcconfig.sh" || true
-fi
+# A distributable build must never inherit the local-development telemetry
+# stubs produced during project generation.
+"${SCRIPT_DIR}/sync_telemetry_xcconfig.sh" --require-all
 
 missing=()
 for name in SENTRY_AUTH_TOKEN SENTRY_ORG SENTRY_PROJECT; do

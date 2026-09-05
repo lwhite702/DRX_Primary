@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Web/backend deployed on 2026-08-31; authenticated cross-client/device verification and native distribution remain pending.
+
 ### Changed
 
 - WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
 - WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.
 - WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. This branch is not deployed; entry-path and role-policy migration require release review.
+
+- **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
+
+- **Patch release preparation**: Synchronized product metadata to 0.7.1 for the approved WRE-89 product-dialog deployment. Native build identifiers are unchanged; store distribution and full cross-platform acceptance are not implied.
+
+- **Release preparation**: Synchronized product metadata to 0.7.0 for the approved WRE-89 web/backend deployment. Native build identifiers are unchanged; store distribution and cross-platform acceptance are not implied.
+
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
@@ -23,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Checkout retries (WRE-83):** Restore the completed web-sale lookup before canonical checkout so configuration changes cannot replay an already completed web sale into the canonical ledger.
 - **Checkout error privacy (WRE-83):** Return a fixed retry-verification error without exposing database/provider details when the completed-sale lookup fails.
 - **Inventory test gate (WRE-80):** Initialize inventory route fixtures inside the hoisted mock factory so the regression suite can execute.
+
+- **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
+
+- **Login field visibility**: Raised the unfocused Clerk login-field boundary contrast above 3:1 and aligned the higher-priority global Clerk overrides with the shared auth theme, strengthening field and placeholder separation from the surrounding dark panel so email and password boxes remain visible across display conditions (WRE-98).
+
+- **Product dialog usability**: New products with a generated SKU use Add product copy instead of Edit product. The expanded fractional-selling form scrolls within the viewport while its header and Close control remain visible; Cancel, Close, and Escape dismiss without reopening from the onboarding link (WRE-89).
+
 - **Commerce authentication compatibility**: Web commerce settings, fractional checkout, and canonical reporting use the current Clerk/Convex session-token integration while retaining support for legacy JWT templates. Token-provider failures fail closed without logging provider details (WRE-84).
 - **Commerce settings access and recovery**: Fractional-selling, bulk-pricing, loyalty, and delivery configuration now use the selected business’s existing owner and role permissions. Failed settings loads show an actionable error and a read-only retry instead of an endless loading message (WRE-84).
 - **Commerce tenant safety**: Disabled businesses and mismatched web/mobile business contexts are denied before settings reads or writes; saves revalidate business access before changing canonical settings (WRE-84).

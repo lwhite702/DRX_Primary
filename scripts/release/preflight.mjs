@@ -23,7 +23,7 @@ function assertNodeVersion() {
   const actual = process.versions.node;
   if (actual !== REQUIRED_NODE) {
     console.error(
-      `[preflight] Node.js ${REQUIRED_NODE} is required, current is ${actual}. Run \`nvm use\` before release checks.`,
+      `[preflight] Node.js ${REQUIRED_NODE} is required, current is ${actual}. Run \`fnm use\` (or \`nvm use\`) before release checks.`,
     );
     process.exit(1);
   }
@@ -38,7 +38,7 @@ function assertRootInstallCommand() {
   const appVercel = JSON.parse(readFileSync(appVercelPath, "utf8"));
 
   const expected =
-    "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --frozen-lockfile";
+    "corepack enable && corepack prepare pnpm@10.17.1 --activate && pnpm install --frozen-lockfile";
 
   if (rootVercel.installCommand !== expected) {
     console.error("[preflight] Root vercel installCommand is not release-safe.");

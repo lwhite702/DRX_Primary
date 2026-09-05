@@ -1,8 +1,8 @@
 {
   "name": "deelrx-crm",
-  "version": "0.6.14",
+  "version": "0.7.2",
   "private": true,
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.17.1",
   "engines": {
     "node": "22.x"
   },
@@ -44,6 +44,7 @@
     "test:docs:mintlify": "npm_config_store_dir=${PNPM_DLX_STORE_DIR:-/tmp/drx-pnpm-dlx-store} corepack pnpm dlx tsx scripts/testing/mintlify-docs-audit.ts",
     "test:marketing-claims": "node --experimental-strip-types scripts/testing/marketing-claims-check.ts || pnpm dlx tsx scripts/testing/marketing-claims-check.ts",
     "test:observability-contract": "npm_config_store_dir=${PNPM_DLX_STORE_DIR:-/tmp/drx-pnpm-dlx-store} corepack pnpm dlx tsx scripts/testing/observability-contract-check.ts",
+    "test:ios:telemetry-config": "apps/ios/ci_scripts/test_sync_telemetry_xcconfig.sh",
     "test:doppler-sync": "pnpm dlx tsx scripts/testing/doppler-env-sync-check.ts",
     "doppler:sync:missing": "pnpm dlx tsx scripts/testing/doppler-sync-missing-from-env.ts",
     "test:feature-flags-contract": "pnpm dlx tsx scripts/testing/feature-flags-parity-check.ts",
