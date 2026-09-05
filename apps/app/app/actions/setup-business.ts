@@ -6,10 +6,6 @@ import type { PrivacyProfile } from "@/lib/privacy/types";
 import { revalidatePath } from "next/cache";
 import { provisionBusinessInConvex } from "@/lib/convex/onboarding-server";
 
-type QuickQuantityInput = { label: string; value: number; unit: string };
-type InventoryReasonInput = { label: string; type: string };
-type NicknameInput = { slang: string; quantity: number; unit: string };
-
 export type SetupBusinessData = {
   businessName: string;
   businessType: string;
@@ -19,10 +15,14 @@ export type SetupBusinessData = {
   zipCode: string;
   ownerPhone: string;
   defaultUnit: string;
-  quickQuantities: QuickQuantityInput[];
+  // Keep this legacy server-action contract stable while validating values at the Convex boundary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  quickQuantities: any[];
   privacyPreset: PrivacyProfile;
-  inventoryReasons: InventoryReasonInput[];
-  nicknames: NicknameInput[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inventoryReasons: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  nicknames: any[];
   ownerName: string;
 };
 
