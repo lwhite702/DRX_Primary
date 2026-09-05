@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Plain-language product vocabulary**: Replaced complex public privacy labels with `Privacy`, `Hide details`, `Protect details`, `What's saved`, and `Delete old records`; aligned navigation, sales, stock, payment, onboarding, help, marketing, Expo, and native iOS copy through a shared DRX content catalog. Provider-controlled copy remains draft-only pending publication approval (WRE-107).
+
 - **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
 
 - **Patch release preparation**: Synchronized product metadata to 0.7.1 for the approved WRE-89 product-dialog deployment. Native build identifiers are unchanged; store distribution and full cross-platform acceptance are not implied.

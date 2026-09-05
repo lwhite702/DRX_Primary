@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "7fe4b1a69d0d8e293c050b427ec8a75752b1556f",
+  "status": "reviewed-compatible",
+  "reviewedBy": "lwhite702",
+  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/179#pullrequestreview-5119597017",
+  "rationale": "WRE-107 changes public copy inside existing components and helpers without changing their call signatures. Removed exports were unused internal marketing-canon names tied to retired terminology, so existing product consumers remain compatible.",
+  "signals": [
+    "export-contract-changed:apps/app/app/(app)/help/_components/help-support-sidebar.tsx:HelpSupportSidebar",
+    "export-contract-changed:apps/app/app/onboarding/_components/OnboardingForm.tsx:OnboardingCompletionRedirect",
+    "export-contract-changed:apps/app/components/ai/ai-intelligence-dashboard.tsx:AIIntelligenceDashboard",
+    "export-contract-changed:apps/app/components/ui/error-state.tsx:ErrorState",
+    "export-contract-changed:apps/app/lib/help/support-center.ts:normalizeHelpTopic",
+    "export-contract-changed:apps/marketing/components/marketing/landing/sections.tsx:LandingPageSections",
+    "export-contract-changed:apps/marketing/lib/feature-canon.ts:productDetailCanon",
+    "export-contract-changed:apps/marketing/lib/feature-canon.ts:productHubCards",
+    "export-contract-changed:apps/mobile/app/(tabs)/inventory/index.tsx:default",
+    "export-contract-removed:apps/marketing/lib/feature-canon.ts:PrivacyProtexionBlock",
+    "export-contract-removed:apps/marketing/lib/feature-canon.ts:PrivacyProtexionExample",
+    "export-contract-removed:apps/marketing/lib/feature-canon.ts:drxPrivacyProtexion"
+  ]
+}
