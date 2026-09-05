@@ -3,7 +3,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ["@deelrx/ui", "@deelrx/brand"],
+  transpilePackages: ["@deelrx/ui", "@deelrx/brand", "@deelrx/content"],
 };
 
 export default nextConfig;
