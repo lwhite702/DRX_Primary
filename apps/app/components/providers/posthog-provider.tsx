@@ -26,7 +26,7 @@ function PostHogPageView() {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
   useEffect(() => {
-    if (!key || !pathname) return;
+    if (!key || !pathname || pathname.startsWith("/control")) return;
     
     const isAuthSurface =
       pathname?.startsWith("/login") ||
@@ -51,6 +51,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
   const isAuthSurface =
+    pathname?.startsWith("/control") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/sign-in") ||

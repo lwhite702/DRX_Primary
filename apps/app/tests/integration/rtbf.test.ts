@@ -1,95 +1,108 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { initiateRTBF } from "@/app/actions/rtbf";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 
-const mockDb = {
-  userRole: {
-    findFirst: vi.fn(),
-    deleteMany: vi.fn(),
-  },
-  adminUser: {
-    findFirst: vi.fn(),
-  },
-  systemAuditLog: {
-    create: vi.fn(),
-  },
-  user: {
-    update: vi.fn(),
-  },
-};
+vi.mock("@/lib/auth/platform-admin", () => ({ getPlatformAdmin: vi.fn() }));
 
-vi.mock("@/lib/db", () => ({
-  db: new Proxy({}, {
-    get(target, prop) {
-      return (mockDb as any)[prop];
-    }
-  }),
+const { deleteIdentity, mockDb } = vi.hoisted(() => ({
+  deleteIdentity: vi.fn(),
+  mockDb: {
+    adminUser: { findFirst: vi.fn() },
+    businessProfile: { findFirst: vi.fn() },
+    userRole: { findFirst: vi.fn(), deleteMany: vi.fn() },
+    notification: { deleteMany: vi.fn() },
+    systemAuditLog: { create: vi.fn() },
+    user: { updateMany: vi.fn() },
+    $transaction: vi.fn(),
+  },
 }));
-
-const mockAuth = vi.fn();
-
 vi.mock("@/lib/adapters/auth/server", () => ({
-  auth: () => mockAuth(),
+  clerkClient: vi.fn(async () => ({ users: { deleteUser: deleteIdentity } })),
 }));
 
-describe("RTBF Privacy Integration", () => {
+vi.mock("@/lib/db", () => ({ db: mockDb }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+
+describe("platform identity removal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockAuth.mockResolvedValue({ userId: "owner-1" });
-
-    // Setup default positive mocks
-    mockDb.userRole.findFirst.mockResolvedValue({ role: "owner" });
+    vi.mocked(getPlatformAdmin).mockResolvedValue({ userId: "platform-1" });
     mockDb.adminUser.findFirst.mockResolvedValue(null);
+    mockDb.businessProfile.findFirst.mockResolvedValue(null);
+    mockDb.userRole.findFirst.mockResolvedValue({ id: "membership-1" });
     mockDb.systemAuditLog.create.mockResolvedValue({});
-    mockDb.user.update.mockResolvedValue({});
-    mockDb.userRole.deleteMany.mockResolvedValue({ count: 1 });
+    deleteIdentity.mockResolvedValue({});
+    mockDb.$transaction.mockImplementation(async (callback) => callback({
+      user: { updateMany: mockDb.user.updateMany },
+      userRole: { deleteMany: mockDb.userRole.deleteMany },
+      notification: { deleteMany: mockDb.notification.deleteMany },
+      systemAuditLog: { create: mockDb.systemAuditLog.create },
+    }));
   });
 
-  it("should mask user PII and remove roles when initiated by owner", async () => {
-    // Start RTBF
-    const result = await initiateRTBF("tenant-1", "user-shred");
+  it("removes the provider identity, masks local PII, and revokes every membership", async () => {
+    const result = await initiateRTBF("tenant-1", "clerk-user-1");
 
-    expect(result.success).toBe(true);
-
-    // Verify user database update was called with masked metadata
-    expect(mockDb.user.update).toHaveBeenCalledWith({
-      where: { id: "user-shred" },
+    expect(result).toEqual({ success: true });
+    expect(deleteIdentity).toHaveBeenCalledWith("clerk-user-1");
+    expect(mockDb.user.updateMany).toHaveBeenCalledWith({
+      where: { OR: [{ clerkUserId: "clerk-user-1" }, { id: "clerk-user-1" }] },
       data: expect.objectContaining({
+        clerkUserId: null,
         name: "DELETED_USER_RTBF",
-        email: expect.stringContaining("deleted_user-shr@deleted.deelrx.com"),
+        email: expect.stringMatching(/^deleted_[a-f0-9]{32}@deleted\.deelrxcrm\.com$/),
         status: "ARCHIVED",
       }),
     });
-
-    // Verify audit logs were written
+    expect(mockDb.userRole.deleteMany).toHaveBeenCalledWith({ where: { userId: "clerk-user-1" } });
+    expect(mockDb.notification.deleteMany).toHaveBeenCalledWith({ where: { userId: "clerk-user-1" } });
     expect(mockDb.systemAuditLog.create).toHaveBeenCalledTimes(2);
-    expect(mockDb.systemAuditLog.create).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        data: expect.objectContaining({
-          action: "rtbf_initiated",
-          entityId: "user-shred",
-        }),
-      })
-    );
-
-    // Verify role removal
-    expect(mockDb.userRole.deleteMany).toHaveBeenCalledWith({
-      where: {
-        userId: "user-shred",
-        businessId: "tenant-1",
-      },
+    expect(mockDb.systemAuditLog.create).toHaveBeenLastCalledWith({
+      data: expect.objectContaining({ action: "rtbf_completed", entityId: "clerk-user-1" }),
     });
   });
 
-  it("should block non-owners from initiating RTBF", async () => {
-    mockDb.userRole.findFirst.mockResolvedValue({ role: "cashier" });
-    mockDb.adminUser.findFirst.mockResolvedValue(null);
+  it("blocks non-platform actors before reading or mutating target data", async () => {
+    vi.mocked(getPlatformAdmin).mockResolvedValue(null);
 
-    const result = await initiateRTBF("tenant-1", "user-shred");
+    const result = await initiateRTBF("tenant-1", "clerk-user-1");
 
-    expect(result.error).toContain("Only Owners or Super Admins");
-    expect(mockDb.user.update).not.toHaveBeenCalled();
-    expect(mockDb.userRole.deleteMany).not.toHaveBeenCalled();
+    expect(result.error).toContain("requires platform administration");
+    expect(mockDb.userRole.findFirst).not.toHaveBeenCalled();
+    expect(deleteIdentity).not.toHaveBeenCalled();
+    expect(mockDb.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks business owners until ownership is explicitly resolved", async () => {
+    mockDb.businessProfile.findFirst.mockResolvedValue({ id: "owned-business" });
+
+    const result = await initiateRTBF("tenant-1", "clerk-owner-1");
+
+    expect(result.code).toBe("OWNER_CONFLICT");
+    expect(deleteIdentity).not.toHaveBeenCalled();
+    expect(mockDb.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks platform accounts and self-removal", async () => {
+    mockDb.adminUser.findFirst.mockResolvedValue({ id: "admin-record" });
+    expect((await initiateRTBF("tenant-1", "other-platform-admin")).code).toBe("PROTECTED_TARGET");
+    expect((await initiateRTBF("tenant-1", "platform-1")).code).toBe("INVALID_TARGET");
+    expect(deleteIdentity).not.toHaveBeenCalled();
+  });
+
+  it("accepts an already-absent provider identity and finishes local cleanup", async () => {
+    deleteIdentity.mockRejectedValue({ status: 404 });
+
+    expect(await initiateRTBF("tenant-1", "clerk-user-1")).toEqual({ success: true });
+    expect(mockDb.$transaction).toHaveBeenCalledOnce();
+  });
+
+  it("stops before local cleanup when provider removal fails", async () => {
+    deleteIdentity.mockRejectedValue({ status: 503 });
+
+    const result = await initiateRTBF("tenant-1", "clerk-user-1");
+
+    expect(result.code).toBe("PROVIDER_FAILURE");
+    expect(mockDb.$transaction).not.toHaveBeenCalled();
   });
 });

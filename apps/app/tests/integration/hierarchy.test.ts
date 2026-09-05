@@ -1,73 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { updateUserRole } from "@/app/actions/user-management";
-import { createLegacyServerDbClient } from "@/lib/data-access/server";
-import { getCurrentUser } from "@/lib/adapters/auth";
-
-vi.mock("@/lib/data-access/server", () => ({
-  createLegacyServerDbClient: vi.fn(),
-}));
-vi.mock("@/lib/adapters/auth", () => ({
-  getCurrentUser: vi.fn(),
-}));
-
-describe("Role Hierarchy Integration", () => {
+const m = vi.hoisted(() => ({ grant: vi.fn(), business: vi.fn(), update: vi.fn(), audit: vi.fn(), tx: vi.fn() }));
+vi.mock("@/lib/auth/platform-admin", () => ({ requirePlatformAdmin: m.grant }));
+vi.mock("@/lib/db", () => ({ db: { businessProfile: { findUnique: m.business }, $transaction: m.tx } }));
+describe("Platform and business role separation integration", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    m.business.mockResolvedValue({ ownerId: "owner" });
+    m.update.mockResolvedValue({ count: 1 });
+    m.tx.mockImplementation(fn => fn({ userRole: { updateMany: m.update }, systemAuditLog: { create: m.audit } }));
   });
-
-  it("should block managers from assigning super_admin role", async () => {
-    (getCurrentUser as any).mockResolvedValue({ id: "manager-1" });
-    const mockSupabase = {
-      auth: {
-        getUser: vi
-          .fn()
-          .mockResolvedValue({
-            data: { user: { id: "manager-1" } },
-            error: null,
-          }),
-      },
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi
-        .fn()
-        .mockResolvedValue({ data: { role: "manager" }, error: null }),
-      update: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ error: null }),
-    };
-    (createLegacyServerDbClient as any).mockResolvedValue(mockSupabase);
-
-    const result = await updateUserRole("target-user", "super_admin");
-
-    expect(result.error).toContain("Managers cannot assign Super Admin");
-    expect(mockSupabase.update).not.toHaveBeenCalled();
+  it("blocks business managers from global role changes", async () => {
+    m.grant.mockRejectedValue(new Error("Platform administrator access required"));
+    expect((await updateUserRole("target", "manager", "tenant")).error).toBeTruthy();
+    expect(m.update).not.toHaveBeenCalled();
   });
-
-  it("should allow super_admin to update any role", async () => {
-    (getCurrentUser as any).mockResolvedValue({ id: "admin-1" });
-    const mockSupabase = {
-      auth: {
-        getUser: vi
-          .fn()
-          .mockResolvedValue({
-            data: { user: { id: "admin-1" } },
-            error: null,
-          }),
-      },
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi
-        .fn()
-        .mockResolvedValue({ data: { role: "super_admin" }, error: null }),
-      update: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ error: null }),
-    };
-    (createLegacyServerDbClient as any).mockResolvedValue(mockSupabase);
-
-    const result = await updateUserRole("target-user", "manager");
-
-    expect(result.success).toBe(true);
-    expect(mockSupabase.update).toHaveBeenCalledWith({ role: "manager" });
+  it("allows explicit platform authority to update only a selected tenant role", async () => {
+    m.grant.mockResolvedValue({ userId: "platform" });
+    expect((await updateUserRole("target", "manager", "tenant")).success).toBe(true);
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ userId: "target", businessId: "tenant" }) }));
+    expect(m.audit).toHaveBeenCalledOnce();
+  });
+  it("never grants platform access through business role management", async () => {
+    m.grant.mockResolvedValue({ userId: "platform" });
+    expect((await updateUserRole("target", "super_admin", "tenant")).error).toBeTruthy();
+    expect(m.update).not.toHaveBeenCalled();
   });
 });

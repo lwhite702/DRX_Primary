@@ -22,6 +22,8 @@ export interface CommerceDeliveryTotals {
 
 export interface CommerceDeliverySourceSummary {
   source: "canonical" | "legacy_web";
+  /** False means this source could not be read, not that it had zero sales. */
+  available?: boolean;
   totals: CommerceDeliveryTotals;
   orderNumbers: string[];
   unallocatedCogsOrderCount: number;
@@ -178,6 +180,12 @@ export function combineCommerceDeliverySummaries(input: {
 }) {
   const duplicateOrdersExcluded = input.duplicateOrdersExcluded ?? 0;
   const warnings: string[] = [];
+  if (input.canonical.available === false) {
+    warnings.push("Canonical ledger is unavailable. These are partial totals from legacy web sales only; canonical sales and costs are not included.");
+  }
+  if (input.legacyWeb.available === false) {
+    warnings.push("Legacy web ledger is unavailable. These are partial totals from canonical sales only; legacy web sales and costs are not included.");
+  }
   if (input.legacyWeb.unallocatedCogsOrderCount > 0) {
     warnings.push(
       `${input.legacyWeb.unallocatedCogsOrderCount} legacy web order(s) have no FIFO allocation, so known gross profit excludes their missing COGS.`,
@@ -225,6 +233,8 @@ export function combineCommerceDeliverySummaries(input: {
     combined: addTotals(input.canonical.totals, input.legacyWeb.totals),
     duplicateOrdersExcluded,
     grossProfitComplete:
+      input.canonical.available !== false &&
+      input.legacyWeb.available !== false &&
       input.legacyWeb.unallocatedCogsOrderCount === 0 &&
       input.legacyWeb.untrackedVendorExpenseOrderCount === 0 &&
       input.canonical.grossProfitComplete &&

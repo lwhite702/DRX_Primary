@@ -199,6 +199,30 @@ export async function checkoutCanonicalCommerce(
     paymentMethod: QuickPosPaymentMethod;
   },
 ) {
+  // A retry may move here after product configuration changes. Until the
+  // transitional web writer is retired, its completed sale remains authoritative
+  // for that idempotency key. A failed lookup must never allow another sale.
+  const existingLegacySale = await db.sales.findFirst({
+    where: {
+      businessId: input.businessId,
+      orderNumber: `POS-${input.idempotencyKey}`.slice(0, 50),
+      orderStatus: "completed",
+    },
+    select: { id: true, orderNumber: true, totalAmount: true, changeAmount: true },
+  }).catch(() => {
+    // The route exposes error.message. Never pass provider details through it.
+    console.error("Checkout retry verification failed");
+    throw new Error("Checkout retry verification is temporarily unavailable. Please retry.");
+  });
+  if (existingLegacySale) {
+    return {
+      saleId: existingLegacySale.id,
+      orderNumber: existingLegacySale.orderNumber,
+      total: Number(existingLegacySale.totalAmount ?? 0),
+      changeAmount: Number(existingLegacySale.changeAmount ?? 0),
+    };
+  }
+
   const canonical = await resolveCanonicalInput(input);
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,

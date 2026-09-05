@@ -2,10 +2,43 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { db } from "@/lib/db";
+import type { PrismaClient } from "@prisma/client";
 import {
   createInventoryIntake,
   InventoryIntakeError,
 } from "@/lib/inventory/intake-service";
+
+export async function GET(request: NextRequest) {
+  try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(await hasBusinessPermission(userId, businessId, "inventory.manage"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Outstanding work must never be displaced by newer completed history.
+    const [pending, history] = await Promise.all([
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: "pending" },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: { not: "pending" } },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" }, take: 100,
+      }),
+    ]);
+    const rows = [...pending, ...history];
+    const items = rows.map(row => ({
+      id: row.id, inventory_id: row.inventoryId, product_name: row.inventory.productName,
+      sku: row.inventory.sku, unit_of_measure: "g",
+      total_cost: Number(row.totalCost), total_weight_grams: Number(row.totalWeightGrams),
+      calculated_cost_per_gram: Number(row.calculatedCostPerGram), delivery_cost: Number(row.deliveryCost ?? 0),
+      supplier: row.supplier, created_at: row.createdAt.toISOString(), status: row.status,
+      created_by_email: "Business staff", // Do not expose staff email in the approval queue.
+    }));
+    return NextResponse.json({ items }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch { return NextResponse.json({ error: "Approval queue unavailable" }, { status: 503 }); }
+}
 
 export async function POST(request: NextRequest) {
   try {
