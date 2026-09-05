@@ -134,7 +134,7 @@ struct SessionStoreTests {
         await environment.checkProvisioning()
 
         #expect(environment.rootState == .recoverableError)
-        #expect(environment.provisioningMessage?.contains("workspace details") == true)
+        #expect(environment.provisioningMessage?.contains("business details") == true)
     }
 
     @Test
