@@ -29,7 +29,7 @@ describe("onboarding fractional setup guidance", () => {
     render(<OnboardingForm />);
     expect(
       await screen.findByText(
-        /choose Allow fractional sales when adding each product/,
+        /set up products sold by weight or partial units/,
       ),
     ).toBeInTheDocument();
   });
@@ -50,7 +50,7 @@ describe("onboarding fractional setup guidance", () => {
     };
     render(<OnboardingForm />);
     expect(
-      screen.getByRole("link", { name: "Add Your First Product" }),
+      screen.getByRole("link", { name: "Add first product" }),
     ).toHaveAttribute("href", "/inventory?create=1");
     expect(
       screen.getByText(/Whole-unit selling stays the default/),
