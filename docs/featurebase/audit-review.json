@@ -4,8 +4,8 @@
   "completePublicAudit": true,
   "completeApiAudit": false,
   "unresolvedP1P2": 0,
-  "publicationStatus": "text-published-visuals-draft-verified",
-  "blockers": ["Public visual publication requires action-time approval."],
+  "publicationStatus": "text-and-visuals-published-verified",
+  "blockers": [],
   "coverage": [
     {
       "topic": "Account creation, owner accounts, sign-in and username or email",
@@ -232,7 +232,7 @@
     }
   ],
   "helpCenterVisuals": {
-    "state": "drafts-verified-not-published",
+    "state": "published-and-publicly-verified",
     "assetCount": 20,
     "placementCount": 23,
     "headers": 6,
@@ -242,8 +242,8 @@
     "intentionallyTextOnlyArticleIds": ["2995914", "3974136", "9003136"],
     "canaryRoundTripVerified": true,
     "authenticatedDryRunVerified": true,
-    "livePublicationVerified": false,
-    "blocker": "Public visual publication requires action-time approval."
+    "livePublicationVerified": true,
+    "blocker": null
   },
   "browserPublication": {
     "publishedAt": "2026-09-04T05:04:10.093Z",
@@ -282,13 +282,19 @@
       "previousIds": 150,
       "liveHeadings": 97,
       "preservedPreviousIds": 0
-    }
+    },
+    "visualPublishedAt": "2026-09-05T03:29:18.102Z",
+    "publicVisualAssets": 20,
+    "publicVisualPlacements": 23,
+    "publicImageRequestsChecked": 23,
+    "publicImageRequestsSuccessful": 23
   },
   "completeBrowserDraftAudit": true,
   "remainingVerificationLimits": [
     "FEATUREBASE_API_KEY is unavailable; the authenticated browser receipt is the approved alternative for this visual publication.",
-    "The earlier text publication replaced 150 historical section-fragment IDs. This visual pass preserves every current public heading ID but cannot restore aliases that the Featurebase editor already removed.",
-    "The browser viewport override did not change the attached Featurebase tab from 1280 by 720; public mobile-width rendering still requires post-publication verification."
+    "The earlier text publication replaced 150 historical section-fragment IDs. The public export records the current 97 heading IDs, but the Featurebase editor cannot restore the removed aliases.",
+    "The published Help Center is configured with a dark theme. Emulating a light system preference did not expose a light variant, so light-theme readability could not be verified.",
+    "A clean public article load emits Featurebase React hydration errors 418 and 423. The 19-article semantic audit, image checks, and mobile rendering checks still passed; this is a hosted-platform warning."
   ],
   "visualDraftAudit": {
     "evidence": "docs/featurebase/browser-visual-drafts-2026-09-04.json",
@@ -296,10 +302,28 @@
     "articles": 16,
     "assets": 20,
     "placements": 23,
-    "currentHeadingIdsPreserved": true,
+    "currentHeadingIdsPreserved": false,
     "titlesDescriptionsHeadingsLinksLabelsMatched": true,
     "altTextCaptionsMatched": true,
     "unexpectedImages": 0,
     "publicImagesBeforePublication": 0
+  },
+  "visualPublicAudit": {
+    "evidence": "docs/featurebase/browser-visual-publication-2026-09-04.json",
+    "method": "public-html-export-and-browser",
+    "collections": 6,
+    "articles": 19,
+    "assets": 20,
+    "placements": 23,
+    "uniqueVisualKeys": 20,
+    "imageRequestsChecked": 23,
+    "imageRequestsSuccessful": 23,
+    "mobileViewport": "390x844",
+    "mobileOverflowFailures": 0,
+    "darkThemeVerified": true,
+    "lightThemeVerified": false,
+    "unexpectedImages": 0,
+    "missingArticles": 0,
+    "unexpectedArticles": 0
   }
 }

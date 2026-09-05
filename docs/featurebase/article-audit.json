@@ -1,9 +1,9 @@
 {
   "issue": "WRE-92",
   "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
-  "publicInspectionTime": "2026-08-31T05:35:46.301Z",
-  "contentHash": "9ef9545787817dec073f98bf82a3cf7b81ff7189296754af64028809d76e3106",
-  "scope": "19 published text articles audited; 20 visual assets with 23 placements uploaded through the authenticated editor; final draft verification and visual publication remain pending",
+  "publicInspectionTime": "2026-09-05T03:29:18.102Z",
+  "contentHash": "004a05606fc5c20b4d5ae9cc4c6a972aa13bcb70348e65f4be9ea80789d5d6f1",
+  "scope": "19 published articles audited; 20 visual assets with 23 placements published through the authenticated editor and verified by a fresh public export",
   "collections": [
     {
       "id": "9257182",

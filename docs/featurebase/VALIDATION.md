@@ -1,6 +1,6 @@
 # DRX Help Center validation — WRE-92
 
-Status: **19 canonical text articles are live, and all 16 visual article drafts passed the authenticated browser audit**. The 20 assets and 23 placements remain unpublished pending action-time approval. The authenticated API audit remains unavailable; the browser receipt is the approved alternative for this visual publication.
+Status: **All 19 canonical articles are live, including 20 visual assets across 23 placements in 16 articles**. The authenticated browser publication receipt and a fresh public export match the repository content. The authenticated API audit remains unavailable; the browser receipt is the approved alternative for this publication.
 
 Source: PR [#165](https://github.com/lwhite702/DRX_Primary/pull/165), current `origin/main` at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. Dedicated branch: `codex/WRE-92-featurebase-help-overhaul`. Tracking: [WRE-92](https://linear.app/wrelik/issue/WRE-92/audit-and-sync-the-complete-drx-help-center-after-brand-voice-pr-165).
 
@@ -15,7 +15,7 @@ Release impact: none. Roadmap impact: none. Product version remains `0.6.14`; th
 - All 19 canonical IDs were updated and published. Zero articles were created, merged, split, reordered, archived, or deleted. Collection placement and order remain unchanged.
 - 31 old source paths become reference stubs: 15 duplicate app-docs files and 16 legacy final files. Original content remains in Git at the base commit. These are repository references, not deployed redirects.
 - The 50-entry legacy seed body is replaced by a canonical content adapter. Its publisher is disabled. No old article is recreated.
-- Zero embedded images/videos/iframes were present in the last observed live article bodies. The authenticated browser editor accepted all 20 original visual assets: 6 headers, 8 screenshots, and 6 diagrams, with 23 declared placements. All 16 saved drafts passed the browser receipt; none is claimed live until publication is approved and a fresh public export passes.
+- Zero embedded images/videos/iframes were present before the visual publication. The authenticated browser editor published all 20 original visual assets: 6 headers, 8 screenshots, and 6 diagrams, with 23 declared placements. The fresh public export confirms every placement, alt text, caption, and attachment identity.
 
 ## Visual inventory and publication state
 
@@ -26,9 +26,9 @@ The versioned [visual manifest](help-center-visuals.json) records all 20 assets,
 - 6 literal diagrams: safe support screenshots; privacy retention; access recovery; inventory save and count; uncertain checkout or payment results; barcode keyboard input.
 - Screenshots are labeled and captioned as illustrative when they use repository fixtures. No real customer, staff, balance, address, transaction, credential, or regulated-retail data is included.
 - Repository validation passes independently of publication state. The visual publication validator now passes for all 20 recorded staging attachments.
-- The Privacy and minimal data editor loaded all three declared images at the observed 1280×720 viewport with no document overflow. The available browser viewport override did not change that attached tab to a mobile width, so public mobile-width verification remains a post-publication check.
-- Current state: **drafts verified, not published**. Every visual article survived a saved-draft reload with exact title, description, heading order, links, emphasized labels, image order, alt text, caption, and placement. All current public heading IDs were preserved. `FEATUREBASE_API_KEY` remains unavailable, so publication uses the documented authenticated browser package and receipt path.
-- Sanitized evidence: [browser-visual-drafts-2026-09-04.json](browser-visual-drafts-2026-09-04.json). The three unrelated drafts remain untouched.
+- Representative public articles for privacy, Quick Sale, and workspace access were checked at 390×844. Every image completed, scaled to the 358-pixel article width, captions fit, and document width remained 390 pixels with no horizontal overflow.
+- Current state: **published and publicly verified**. Every visual article first survived a saved-draft reload with exact title, description, heading order, links, emphasized labels, image order, alt text, caption, and placement. After publication, the public export confirmed all 19 articles, all 23 placements, and zero unexpected articles or images. `FEATUREBASE_API_KEY` remains unavailable, so publication used the documented authenticated browser package and receipt path.
+- Sanitized evidence: [browser-visual-drafts-2026-09-04.json](browser-visual-drafts-2026-09-04.json) and [browser-visual-publication-2026-09-04.json](browser-visual-publication-2026-09-04.json). The three unrelated drafts remain untouched.
 
 | Article                            | Planned visual placement                                     |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -94,7 +94,7 @@ Removed or bounded unsupported claims about native availability, automatic offli
 - All 19 existing full article URLs returned the correct article ID. No article points to a nonexistent marketing `/support` route.
 - The marketing waitlist redirects successfully to the app waitlist with its marketing source parameter. App workflows use named navigation rather than unexplained authenticated deep links. The report CSV explicitly requires sign-in.
 - The public articles contain the intended headings, paragraphs, numbered steps, bullets, emphasis, and links. Featurebase regenerated heading IDs during browser editing: none of the 150 historical fragment IDs remain among the 97 live headings.
-- All 19 local HTML previews were opened in the browser and checked for headings, steps, links, and horizontal overflow; none overflowed at the observed desktop viewport. Privacy and checkout previews were visually inspected. No browser console errors or warnings were observed. This is local preview evidence, not final Featurebase rendering evidence.
+- All 19 local HTML previews were opened in the browser and checked for headings, steps, links, and horizontal overflow; none overflowed at the observed desktop viewport. The final public privacy article was visually inspected at mobile width, and public privacy, Quick Sale, and workspace articles passed measured mobile checks. A clean public Featurebase load emits vendor React hydration errors 418 and 423, but the rendered content, all images, captions, and measured layout remained intact.
 
 ## Validation results
 
@@ -105,6 +105,7 @@ Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in 
 | `pnpm featurebase:export:help-center --public .featurebase/before`                                                                                         | Pass: six public collections, 19 articles; no API/draft coverage                  |
 | `pnpm featurebase:export:help-center --public .featurebase/after-browser`                                                                                  | Pass: six public collections, 19 live articles after browser publication          |
 | `pnpm featurebase:export:help-center --public .featurebase/visual-before`                                                                                  | Pass: six public collections, 19 articles; visual preflight baseline              |
+| `pnpm featurebase:export:help-center --public .featurebase/visual-after-browser`                                                                           | Pass: six public collections, 19 articles, 20 assets, 23 placements               |
 | `pnpm featurebase:validate:help-center`                                                                                                                    | Pass: 19 rendered drafts, 15 destinations; publishReady=false                     |
 | Skill creator validation for both repository skills                                                                                                        | Pass                                                                              |
 | `pnpm test:featurebase:help`                                                                                                                               | Pass: 15 renderer/API tests, including declared image handling                    |
@@ -112,7 +113,7 @@ Commands used Node 22 through `npm exec --yes --package=node@22 -- pnpm …` in 
 | `pnpm featurebase:validate:help-visuals --publication`                                                                                                     | Pass: 20 uploaded staging identities and 23 declared placements                   |
 | `pnpm featurebase:prepare:help-center:browser`                                                                                                             | Pass: 19 articles, 16 with visuals, 20 assets, 23 placements                      |
 | `pnpm featurebase:verify:help-center:browser --receipt .featurebase/browser-import/browser-receipt.test.json`                                              | Pass: draft receipt schema and exact 16-article set                               |
-| `pnpm featurebase:verify:help-center:browser`                                                                                                              | Pass: 16 saved article drafts, 20 assets, 23 placements, exact content hash       |
+| `pnpm featurebase:verify:help-center:browser`                                                                                                              | Pass: published receipt covers all 19 articles, 20 assets, and 23 placements      |
 | `pnpm featurebase:validate:help-center:browser`                                                                                                            | Pass: authenticated browser publication gate; publishReady=true                   |
 | `pnpm docs:audit:features`                                                                                                                                 | Pass: 54 page routes, 83 API routes                                               |
 | `pnpm docs:audit:gaps`                                                                                                                                     | Pass: 100 source dispositions and 20 coverage groups; product gaps retained       |
@@ -135,15 +136,15 @@ The initial remote release check detected an exported-contract regression in the
 
 ## Publication outcome and remaining verification blockers
 
-All 19 canonical article IDs were updated and published through the authenticated Featurebase browser editor. Each draft was checked for its title, description, headings, lists, emphasized labels, and destination links before publication. A fresh public export observed six collections and 19 live articles; all 19 bodies matched the intended semantic structure. No article was created, deleted, archived, merged, split, moved, or reordered.
+All 19 canonical article IDs were updated and published through the authenticated Featurebase browser editor. Each visual draft was checked for its title, description, headings, lists, emphasized labels, destination links, images, alt text, captions, and placement before publication. A fresh public export observed six collections and 19 live articles; all 19 bodies matched the intended semantic structure, all 23 image requests returned PNG responses successfully, and no visual was skipped. No article was created, deleted, archived, merged, split, moved, or reordered.
 
 Featurebase changed article `7723456` from the public segment `7723456-standard-sales-console` to `7723456-sales-and-deliveries-beta` after the retitle. The old full URL redirects once to the new URL and returns HTTP 200. The manifest records both URLs.
 
 Three unrelated drafts were left untouched: `0023434` Untitled document, `6969477` Test Article with parentId, and `4502473` Test Article Payload 2. Their bodies were not inspected in this browser publication pass.
 
-Two verification gaps remain. `FEATUREBASE_API_KEY` is absent from the current environment and all four checked DRX Doppler configurations (`dev`, `dev_personal`, `stg`, `prd`), so the authenticated API export and API-level comparison have not run. The browser editor also regenerated heading IDs and stripped the supplied legacy anchor aliases: none of 150 historical fragment IDs remain among 97 live headings. Full article URLs work, but old section-fragment links are not verified and should be treated as broken until repaired through a supported publishing path.
+Three verification limits remain. `FEATUREBASE_API_KEY` is absent from the current environment and all four checked DRX Doppler configurations (`dev`, `dev_personal`, `stg`, `prd`), so the authenticated API export and API-level comparison have not run. The earlier browser text publication regenerated heading IDs and stripped the supplied legacy anchor aliases: none of 150 historical fragment IDs remain among 97 live headings. Full article URLs work, but old section-fragment links are not verified and should be treated as broken until repaired through a supported publishing path. The public Help Center is configured with a dark theme; a light system preference did not expose a light variant. Featurebase also emits React hydration errors 418 and 423 on a clean public load even though the content and image verification passed.
 
-The sanitized browser publication receipt is [browser-publication-2026-09-04.json](browser-publication-2026-09-04.json). Raw browser state and public export bodies remain excluded from Git.
+The sanitized text publication receipt is [browser-publication-2026-09-04.json](browser-publication-2026-09-04.json). The final visual publication evidence is [browser-visual-publication-2026-09-04.json](browser-visual-publication-2026-09-04.json). Raw browser state, signed attachment query strings, and public export bodies remain excluded from Git.
 
 ## Remaining product and documentation gaps
 
@@ -157,10 +158,10 @@ The sanitized browser publication receipt is [browser-publication-2026-09-04.jso
 - **G8 — Whole-account deletion and exports:** Inactive customer cleanup is narrower than every financial/audit/exported copy. No account-wide recovery, erasure, compliance or encryption guarantee. Source: `apps/app/app/api/privacy/cleanup/route.ts`.
 - **G9 — Legacy Moxie and other docs destinations:** This PR updates Featurebase source and tooling only. Moxie/Mintlify synchronization and prior marketing deployment are not implied. Source: `apps/marketing/lib/docs-links.ts`.
 
-These gaps are disclosed or have their unsupported procedures held back; this documentation change does not repair product behavior or establish credentialed workflow parity. The authenticated API audit and historical-fragment repair remain open verification work.
+These gaps are disclosed or have their unsupported procedures held back; this documentation change does not repair product behavior or establish credentialed workflow parity. The authenticated API audit, historical-fragment repair, hosted light-theme coverage, and Featurebase hydration warning remain open verification work.
 
 ## Source authority
 
 The audit used the specified current brand/copy/privacy/onboarding/marketing/mobile/iOS files, the feature canon, VERSION and changelog, current routes and components, and the [official product document](https://docs.google.com/document/d/1h7E_coDctQ9Dp4Lu4_JiNGymnUaDGF5cqYbcVkaTQcs). The older documentation-index governance conflict is recorded in WRE-92/WRE-59; this work does not change approved product or governance direction.
 
-Prepared visual content hash: `9ef9545787817dec073f98bf82a3cf7b81ff7189296754af64028809d76e3106`. The visual preflight public snapshot was captured at `2026-09-04T09:51:23.114Z` and still observed the 19 previously published text-only articles. It is not authenticated publication evidence.
+Published visual content hash: `004a05606fc5c20b4d5ae9cc4c6a972aa13bcb70348e65f4be9ea80789d5d6f1`. The fresh public snapshot was captured at `2026-09-05T03:29:18.102Z` and observed all 19 live articles with 20 distinct visual keys across 23 placements.
