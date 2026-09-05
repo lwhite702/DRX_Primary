@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Shield, Smartphone, Users } from "lucide-react";
+import { Loader2, PackageOpen, Shield, SlidersHorizontal, Smartphone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
+import { Tour } from "@/components/ui/tour";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getDefaultPrivacyProtocol,
   PRIVACY_PROFILE_OPTIONS,
@@ -23,6 +27,7 @@ import {
   type PrivacyProtocolSettings,
   type ScreenPrivacyMode,
 } from "@/lib/privacy/types";
+import appPackage from "../../../package.json";
 
 interface DeviceSession {
   id: string;
@@ -223,7 +228,6 @@ export default function SettingsPage() {
 
       toast.success("Settings saved successfully");
       await refreshBusiness();
-      router.refresh();
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error(error?.message || "Failed to save settings. Please try again.");
@@ -383,14 +387,19 @@ export default function SettingsPage() {
   };
 
   if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+    return <AppPageSkeleton />;
   }
 
   if (!business) {
     return (
-      <div className="p-4 md:p-8">
-        No business found. Please set up your business first.
-      </div>
+      <EmptyState
+        icon={PackageOpen}
+        title="Finish business setup"
+        description="Create your business profile before changing business settings."
+        actionLabel="Continue setup"
+        onAction={() => router.push("/onboarding")}
+        className="m-4 md:m-8"
+      />
     );
   }
 
@@ -402,8 +411,16 @@ export default function SettingsPage() {
           <p className="text-muted-foreground mt-2">Configure your business settings</p>
         </div>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-          <p className="text-xs text-muted-foreground">v0.4.0</p>
+          <p className="text-xs text-muted-foreground">v{appPackage.version}</p>
           <div className="flex gap-2">
+            {hasPermission("settings.configure_pos") && (
+              <Link href="/settings/commerce">
+                <Button variant="outline" className="gap-2">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Commerce & Delivery
+                </Button>
+              </Link>
+            )}
             {hasPermission("inventory.manage") && (
               <Link href="/settings/inventory/aliases">
                 <Button variant="outline" className="gap-2">
@@ -442,7 +459,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <Card className={mobileStep === 1 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-profile" className={mobileStep === 1 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle>Business Profile</CardTitle>
           </CardHeader>
@@ -606,7 +623,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-privacy" className={mobileStep === 2 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
@@ -964,7 +981,11 @@ export default function SettingsPage() {
                 </select>
               </div>
               {inventoryLoading ? (
-                <p className="text-xs text-muted-foreground">Loading inventory snapshot...</p>
+                <div className="grid grid-cols-2 gap-3" aria-label="Loading privacy inventory" aria-busy="true">
+                  {[0, 1, 2, 3].map((item) => (
+                    <Skeleton key={item} className="h-12 w-full" />
+                  ))}
+                </div>
               ) : inventorySnapshot ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                   <p>
@@ -1048,7 +1069,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card id="tour-settings-sessions" className={mobileStep === 2 ? "" : "hidden md:block"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
@@ -1057,7 +1078,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {sessionsLoading ? (
-              <div className="text-sm text-muted-foreground">Loading sessions...</div>
+              <div className="space-y-3" aria-label="Loading device sessions" aria-busy="true">
+                {[0, 1, 2].map((item) => (
+                  <Skeleton key={item} className="h-14 w-full" />
+                ))}
+              </div>
             ) : sessions.length === 0 ? (
               <div className="text-sm text-muted-foreground">No active sessions found.</div>
             ) : (
@@ -1133,6 +1158,28 @@ export default function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Tour
+        tourId="settings_v1"
+        onComplete={() => {}}
+        steps={[
+          {
+            targetId: "tour-settings-profile",
+            title: "Your business.",
+            description: "Update your name, contact info, and address. This shows up on receipts and reports.",
+          },
+          {
+            targetId: "tour-settings-privacy",
+            title: "Privacy controls.",
+            description: "Set how customer data is collected and masked. Alias-only mode keeps it tight.",
+          },
+          {
+            targetId: "tour-settings-sessions",
+            title: "Active sessions.",
+            description: "See every device logged in. Revoke anything you don't recognize.",
+          },
+        ]}
+      />
     </div>
   );
 }

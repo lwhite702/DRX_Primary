@@ -124,10 +124,12 @@ export function CustomerSelectorModal({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
+              type="search"
+              autoComplete="off"
               placeholder="Search by name, phone, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 text-base md:text-sm"
             />
           </div>
 
@@ -143,7 +145,7 @@ export function CustomerSelectorModal({
                   key={customer.id}
                   className={`p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors ${
                     selectedCustomerId === customer.id
-                      ? "border-primary bg-primary/5"
+                      ? "border-accent bg-accent/10"
                       : ""
                   }`}
                   onClick={() => handleSelect(customer.id)}
@@ -198,7 +200,7 @@ export function CustomerSelectorModal({
                         )}
                         {customer.credit_balance !== undefined &&
                           customer.credit_balance > 0 && (
-                            <span className="text-yellow-600 font-medium flex items-center gap-1">
+                            <span className="text-accent font-medium flex items-center gap-1">
                               <CreditCard className="h-3 w-3" />
                               Credit: ${customer.credit_balance.toFixed(2)}
                             </span>
@@ -208,6 +210,7 @@ export function CustomerSelectorModal({
 
                     <Button
                       size="sm"
+                      className="h-10 px-3"
                       variant={
                         selectedCustomerId === customer.id
                           ? "default"
@@ -230,13 +233,13 @@ export function CustomerSelectorModal({
 
           {/* Actions */}
           <div className="flex gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={handleClear} className="flex-1">
+            <Button variant="outline" onClick={handleClear} className="flex-1 h-11">
               Clear Customer
             </Button>
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-11"
             >
               Cancel
             </Button>

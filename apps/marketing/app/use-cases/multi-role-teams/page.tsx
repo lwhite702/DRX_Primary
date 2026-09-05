@@ -7,7 +7,7 @@ import { CtaRow } from "@/components/marketing/site/cta-row";
 export const metadata: Metadata = {
   title: "Multi-Role Teams Use Case | Deelrx CRM",
   description:
-    "How DRX supports mixed-role dispensary teams with role boundaries and auditable operations.",
+    "How DRX supports independent-retail teams with role boundaries and reviewable operating activity.",
 };
 
 export default function MultiRoleTeamsUseCasePage() {
@@ -16,7 +16,7 @@ export default function MultiRoleTeamsUseCasePage() {
       <h1 className="mb-8 text-4xl font-bold text-white">Multi-role teams</h1>
       <SectionBlock title="What this does">
         <p>
-          Aligns staff execution through role boundaries, auditable actions, and
+          Aligns staff execution through role boundaries, reviewable actions, and
           shared operating context.
         </p>
       </SectionBlock>
@@ -29,7 +29,7 @@ export default function MultiRoleTeamsUseCasePage() {
       <SectionBlock title="Proof from live product behavior" className="mt-6">
         <ul className="list-disc space-y-2 pl-5">
           <li>Role permissions restrict settings, inventory, and report access.</li>
-          <li>Inventory and credit transactions are logged for review.</li>
+          <li>Inventory adjustments and supported customer account actions retain user context.</li>
           <li>Help/support flow is available in app for issue escalation.</li>
         </ul>
       </SectionBlock>

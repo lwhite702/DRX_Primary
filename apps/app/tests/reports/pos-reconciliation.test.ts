@@ -28,6 +28,7 @@ describe("getPosReconciliationReport", () => {
     mockedDb.sales.findMany.mockResolvedValue([
       {
         id: "sale_1",
+        subtotal: 30,
         totalAmount: 30,
         createdAt: new Date("2026-03-25T10:00:00.000Z"),
         items: [
@@ -58,6 +59,7 @@ describe("getPosReconciliationReport", () => {
     mockedDb.sales.findMany.mockResolvedValue([
       {
         id: "sale_2",
+        subtotal: 30,
         totalAmount: 30,
         createdAt: new Date("2026-03-26T10:00:00.000Z"),
         items: [

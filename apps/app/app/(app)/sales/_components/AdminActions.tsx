@@ -2,6 +2,7 @@ import { Lock, Package, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NoSaleButton } from "@/components/pos/no-sale-button";
+import Link from "next/link";
 
 interface AdminActionsProps {
   businessId: string;
@@ -37,14 +38,11 @@ export function AdminActions({
           <Package className="h-4 w-4" />
           Inv. Check
         </Button>
-        <Button
-          onClick={() => (window.location.href = "/reports")}
-          size="sm"
-          variant="outline"
-          className="gap-1"
-        >
-          <BarChart3 className="h-4 w-4" />
-          Reports
+        <Button asChild size="sm" variant="outline" className="gap-1">
+          <Link href="/reports">
+            <BarChart3 className="h-4 w-4" />
+            Reports
+          </Link>
         </Button>
       </div>
     </div>

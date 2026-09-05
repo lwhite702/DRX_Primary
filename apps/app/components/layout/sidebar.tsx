@@ -10,7 +10,8 @@ import { AppLogo } from "@/components/layout/app-logo";
 
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
+import { openFeedbackWithFallback } from "@/lib/feedback";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -19,14 +20,12 @@ export function Sidebar() {
 
   // Filter nav items
   const filteredNav = primaryNav.filter((item) => {
-    // If loading, maintain current state or show all?
-    // To prevent flicker, we might want to show all initially or hide sensitive ones.
-    // But since authentication is required, default to hidden for restricted is safer.
-    if (loading) return false;
+    // Keep nav visible while permissions loading to prevent nav collapse
+    if (loading) return true;
 
     switch (item.href) {
       case "/settings":
-        return hasPermission("settings.manage");
+        return hasPermission("settings.configure_pos");
       case "/reports":
         // Cashier cannot access reports (per prompt)
         return (
@@ -36,7 +35,7 @@ export function Sidebar() {
       case "/inventory":
         return hasPermission("catalog.view");
       case "/sales":
-        return hasPermission("sales.create") || hasPermission("sales.view_all");
+        return hasPermission("sales.create");
       case "/pos/sale":
         return hasPermission("sales.create");
       case "/customers":
@@ -46,8 +45,7 @@ export function Sidebar() {
     }
   });
 
-  const showAdminConsole =
-    hasPermission("system.manage") || hasPermission("users.manage_all"); // Super admin permissions
+  const showBusinessTeam = hasPermission("staff.manage");
 
   return (
     <aside
@@ -97,17 +95,19 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-border space-y-2">
-        {showAdminConsole && (
+        {hasPermission("inventory.manage") && <Link href="/inventory/approvals" className="block rounded-lg px-4 py-2 text-sm hover:bg-border">Inventory approvals</Link>}
+        {hasPermission("audit.view") && <Link href="/settings/audit" className="block rounded-lg px-4 py-2 text-sm hover:bg-border">Business audit</Link>}
+        {showBusinessTeam && (
           <Link
-            href="/admin"
+            href="/settings/team"
             className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
           >
             <Settings className="w-5 h-5" />
-            Admin Console
+            Business team
           </Link>
         )}
         <Link
-          href={featurebaseHelpdeskUrl}
+          href={docsHubUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
@@ -130,9 +130,9 @@ export function Sidebar() {
         <button
           onClick={() => {
             const feedback = (window as any).Sentry?.getFeedback?.();
-            if (feedback) {
-              feedback.createWidget();
-            }
+            void openFeedbackWithFallback(
+              feedback ? () => feedback.createWidget() : null,
+            );
           }}
           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
         >
@@ -153,10 +153,6 @@ export function Sidebar() {
         </button>
         <LogoutButton />
 
-        {/* Version */}
-        <div className="mt-4 pt-4 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center">v0.4.12</p>
-        </div>
       </div>
     </aside>
   );

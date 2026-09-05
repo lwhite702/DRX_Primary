@@ -5,8 +5,10 @@ import {
   UserPlus,
   CreditCard,
   Receipt,
-  List,
   FileText,
+  ClipboardCheck,
+  SlidersHorizontal,
+  PackageSearch,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,8 +19,8 @@ interface ActionCardProps {
   title: string;
   description: string;
   href: string;
-  color: string; // Tailwind text color class like "text-[#4ADE80]"
-  bgColor: string; // Tailwind bg color class like "bg-[#4ADE80]/10"
+  color: string;
+  bgColor: string;
   compact?: boolean;
 }
 
@@ -35,7 +37,7 @@ function ActionCard({
     <Link
       href={href}
       className={cn(
-        "flex flex-col rounded-xl border border-white/10 bg-[#0A0A0A] transition-all group hover:border-white/20 hover:bg-[#111]",
+        "group flex flex-col rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-white/20 hover:bg-card",
         compact ? "gap-2 p-3" : "gap-3 p-4",
       )}
     >
@@ -66,91 +68,125 @@ export function QuickActions({
   preset?: DashboardViewPreset;
   compact?: boolean;
 }) {
-  const checkoutMode = preset === "checkout";
+  const actions: ActionCardProps[] =
+    preset === "inventory"
+      ? [
+          {
+            icon: PackagePlus,
+            title: "Receive Stock",
+            description: "Inventory intake",
+            href: "/inventory/intake",
+            color: "text-blue-500",
+            bgColor: "bg-blue-500/10",
+          },
+          {
+            icon: SlidersHorizontal,
+            title: "Adjust Stock",
+            description: "Correct on-hand counts",
+            href: "/inventory/adjust",
+            color: "text-warning",
+            bgColor: "bg-warning/10",
+          },
+          {
+            icon: ClipboardCheck,
+            title: "Inventory Audit",
+            description: "Review stock events",
+            href: "/inventory/audit",
+            color: "text-success",
+            bgColor: "bg-success/10",
+          },
+          {
+            icon: PackageSearch,
+            title: "Find Product",
+            description: "Search inventory",
+            href: "/inventory",
+            color: "text-accent",
+            bgColor: "bg-accent/10",
+          },
+        ]
+      : preset === "checkout"
+        ? [
+            {
+              icon: ShoppingCart,
+              title: "Start Sale",
+              description: "New transaction",
+              href: "/pos/sale",
+              color: "text-accent",
+              bgColor: "bg-accent/10",
+            },
+            {
+              icon: UserPlus,
+              title: "Add Customer",
+              description: "New customer record",
+              href: "/customers",
+              color: "text-info",
+              bgColor: "bg-info/10",
+            },
+            {
+              icon: Receipt,
+              title: "Record Payment",
+              description: "Settle a balance",
+              href: "/credit",
+              color: "text-success",
+              bgColor: "bg-success/10",
+            },
+            {
+              icon: FileText,
+              title: "Sales Reports",
+              description: "Review completed sales",
+              href: "/reports",
+              color: "text-gray-400",
+              bgColor: "bg-gray-400/10",
+            },
+          ]
+        : [
+            {
+              icon: ShoppingCart,
+              title: "Start Sale",
+              description: "New transaction",
+              href: "/pos/sale",
+              color: "text-accent",
+              bgColor: "bg-accent/10",
+            },
+            {
+              icon: PackagePlus,
+              title: "Receive Stock",
+              description: "Inventory intake",
+              href: "/inventory/intake",
+              color: "text-blue-500",
+              bgColor: "bg-blue-500/10",
+            },
+            {
+              icon: UserPlus,
+              title: "Add Customer",
+              description: "New customer record",
+              href: "/customers",
+              color: "text-info",
+              bgColor: "bg-info/10",
+            },
+            {
+              icon: CreditCard,
+              title: "Manage Credit",
+              description: "Balances and payments",
+              href: "/credit",
+              color: "text-warning",
+              bgColor: "bg-warning/10",
+            },
+          ];
 
   return (
     <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.15)] md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-        SECTION B: QUICK OPERATIONS
+        Common actions
       </div>
       <p className="text-xs text-white/70">
-        High-frequency actions for counter staff and operators.
+        The four most-used tasks for this dashboard view.
       </p>
 
-      <div
-        className={cn(
-          "grid gap-4",
-          checkoutMode
-            ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
-            : "grid-cols-2 md:grid-cols-4",
-        )}
-      >
-        <ActionCard
-          icon={ShoppingCart}
-          title="Start Sale"
-          description="New Transaction"
-          href="/sales"
-          color="text-[#4ADE80]"
-          bgColor="bg-[#4ADE80]/10"
-          compact={compact}
-        />
-        <ActionCard
-          icon={PackagePlus}
-          title="Intake Inventory"
-          description="Add Stock"
-          href="/inventory"
-          color="text-blue-500"
-          bgColor="bg-blue-500/10"
-          compact={compact}
-        />
-        <ActionCard
-          icon={UserPlus}
-          title="Add Customer"
-          description="New Record"
-          href="/customers"
-          color="text-purple-500"
-          bgColor="bg-purple-500/10"
-          compact={compact}
-        />
-        <ActionCard
-          icon={CreditCard}
-          title="Extend Credit"
-          description="Front Product"
-          href="/credit"
-          color="text-orange-500"
-          bgColor="bg-orange-500/10"
-          compact={compact}
-        />
-
-        {/* Secondary Row */}
-        <ActionCard
-          icon={Receipt}
-          title="Record Payment"
-          description="Settle Balance"
-          href="/credit"
-          color="text-[#4ADE80]"
-          bgColor="bg-[#4ADE80]/10"
-          compact={compact}
-        />
-        <ActionCard
-          icon={List}
-          title="Low Stock List"
-          description="View Items"
-          href="/inventory"
-          color="text-orange-500"
-          bgColor="bg-orange-500/10"
-          compact={compact}
-        />
-        <ActionCard
-          icon={FileText}
-          title="Recent Audit"
-          description="Last 3 Months"
-          href="/reports"
-          color="text-gray-400"
-          bgColor="bg-gray-400/10"
-          compact={compact}
-        />
-        {!checkoutMode ? <div className="hidden md:block" /> : null}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {actions.map((action) => (
+          <ActionCard key={action.href + action.title} {...action} compact={compact} />
+        ))}
       </div>
     </section>
   );

@@ -1,431 +1,234 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
-
-// Hooks
-import { useSalesCart } from "./_hooks/useSalesCart";
-import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
-import { useBusiness } from "@/lib/hooks/use-business";
-import { useUserRole } from "@/lib/hooks/use-user-role";
-import { useCustomerContext } from "@/components/providers/customer-provider";
-
-// Utils
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
-  type DeliveryOption,
-  type AIPricingRecommendation,
-} from "@/lib/utils/pos-engine";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TableSkeleton } from "@/components/skeletons/table-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ShoppingCart, Plus, Search, Eye, Calendar, CreditCard, ChevronRight } from "lucide-react";
+import { useBusiness } from "@/lib/hooks/use-business";
 
-// Components
-import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
-import { ShrinkageForm } from "@/components/pos/shrinkage-form";
-import { InventoryCheckModal } from "@/components/pos/inventory-check-modal";
-import { WeightEntryModal } from "@/components/pos/weight-entry-modal";
-import { PriceOverrideModal } from "@/components/pos/price-override-modal";
-import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
-import { POSReviewModal } from "@/components/pos/pos-review-modal";
+interface SaleRecord {
+  id: string;
+  total_amount: number;
+  payment_method?: string;
+  order_status?: string;
+  created_at: string;
+  items?: any[];
+}
 
-// Refactored sub-components
-import { ProductSearch } from "./_components/ProductSearch";
-import { AIPricingWidget } from "./_components/AIPricingWidget";
-import { CartCustomer } from "./_components/CartCustomer";
-import { CartItems } from "./_components/CartItems";
-import { CartDelivery } from "./_components/CartDelivery";
-import { CartFees } from "./_components/CartFees";
-import { CartTotals } from "./_components/CartTotals";
-import { PaymentSection } from "./_components/PaymentSection";
-import { AdminActions } from "./_components/AdminActions";
-import { drxCopy } from "@/lib/copy/drx";
-
-export default function SalesPage() {
+export default function SalesHistoryPage() {
+  const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
-  const { customers } = useCustomerContext();
-  const { canOverridePrice } = useUserRole(business?.id);
-
-  // Custom hook for cart logic
-  const {
-    posEngine,
-    cart,
-    fees,
-    setFees,
-    processing,
-    addToCart,
-    addWeightedItem,
-    updateQuantity,
-    setQuantity,
-    removeFromCart,
-    setCustomer,
-    overridePrice,
-    setDelivery,
-    setTaxEnabled,
-    applyAIPricing,
-    // setAmountPaid: setEngineAmountPaid - unused
-  } = useSalesCart(business?.id);
-
-  // Local UI State
+  const [sales, setSales] = useState<SaleRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<
-    string | undefined
-  >();
-  // const [showCustomerDialog, setShowCustomerDialog] = useState(false); - unused
-  const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
-  const [aiRecommendations, setAiRecommendations] = useState<
-    AIPricingRecommendation[]
-  >([]);
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [deliveryPrice, setDeliveryPrice] = useState(0);
-  const [amountPaid, setAmountPaid] = useState("");
-  const [showAmountPaidMode, setShowAmountPaidMode] = useState(false);
 
-  // Modals State
-  const [showShrinkageForm, setShowShrinkageForm] = useState(false);
-  const [showInventoryCheck, setShowInventoryCheck] = useState(false);
-  const [showWeightEntry, setShowWeightEntry] = useState(false);
-  const [selectedProductForWeight, setSelectedProductForWeight] =
-    useState<any>(null);
-  const [customerLoyalty, setCustomerLoyalty] = useState<any>(null);
-
-  // Price Override State
-  const [showPriceOverride, setShowPriceOverride] = useState(false);
-  const [selectedItemForOverride, setSelectedItemForOverride] =
-    useState<any>(null);
-  const [showCustomerSelector, setShowCustomerSelector] = useState(false);
-  // const [aliases, setAliases] = useState<any[]>([]); - unused
-  // const [managerPin, setManagerPin] = useState("1234"); - unused
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [taxEnabledLocal, setTaxEnabledLocal] = useState(true);
-
-  // --- Effects ---
-
-  // Load aliases - unused
-  /*
-  useEffect(() => {
-    if (business?.id && supabase) {
-      supabase
-        .from("product_unit_aliases")
-        .select("*")
-        .eq("business_id", business.id)
-        .eq("is_enabled", true)
-        .then(({ data }) => setAliases(data || []));
-    }
-  }, [business?.id, supabase]);
-  */
-
-  // Load customer loyalty
-  useEffect(() => {
-    if (!selectedCustomer || !business?.id) {
-      setCustomerLoyalty(null);
-      return;
-    }
-    const loadLoyalty = async () => {
-      const loyalty = await posWeightEngine.getLoyaltyInfo(
-        business.id,
-        selectedCustomer,
-      );
-      setCustomerLoyalty(loyalty);
-    };
-    loadLoyalty();
-  }, [selectedCustomer, business?.id]);
-
-  // NOTE:
-  // Random-check prompts should be tied to successful checkout commits.
-  // This legacy sales page only redirects to /pos checkout, so we avoid
-  // incrementing transaction counters on mere page load here.
-
-  // Load delivery options & AI recommendations
   useEffect(() => {
     if (!business?.id) return;
-    const loadData = async () => {
-      const options = await posEngine.getDeliveryOptions(business.id);
-      setDeliveryOptions(options);
-
-      const recs = await posEngine.getAIPricingRecommendations(business.id);
-      setAiRecommendations(recs);
-    };
-    loadData();
-  }, [business?.id, posEngine]);
-
-  // Load tax settings
-  useEffect(() => {
-    if (!business?.id) return;
-    const loadTaxSettings = async () => {
+    const fetchSales = async () => {
       try {
-        const res = await fetch("/api/business/settings");
-        if (!res.ok) throw new Error("Failed to load settings");
-        const data = await res.json();
-
-        if (data) {
-          const enabled = data.collect_tax !== false;
-          setTaxEnabledLocal(enabled);
-          setTaxEnabled(enabled);
+        setLoading(true);
+        const res = await fetch("/api/sales?limit=50");
+        if (res.ok) {
+          const json = await res.json();
+          setSales(json.data || []);
         }
-      } catch (error) {
-        console.error("Error loading tax settings:", error);
+      } catch (err) {
+        console.error("Failed to load sales history:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    loadTaxSettings();
-  }, [business?.id, setTaxEnabled]);
+    fetchSales();
+  }, [business?.id]);
 
-  // --- Handlers ---
+  const filteredSales = sales.filter((sale) => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      sale.id.toLowerCase().includes(term) ||
+      (sale.payment_method || "").toLowerCase().includes(term) ||
+      (sale.order_status || "").toLowerCase().includes(term)
+    );
+  });
 
-  const handleDeliveryChange = (deliveryId: string) => {
-    if (deliveryId === "no-delivery") {
-      setDelivery(undefined, "", 0);
-      setDeliveryPrice(0);
-      setDeliveryAddress("");
-    } else {
-      const selected = deliveryOptions.find((d) => d.id === deliveryId);
-      if (selected) {
-        setDelivery(deliveryId, deliveryAddress, selected.base_price);
-        setDeliveryPrice(selected.base_price);
-      }
-    }
-  };
-
-  const handleAddressChange = (addr: string) => {
-    setDeliveryAddress(addr);
-    // Update delivery with new address but same ID and price
-    if (cart.delivery_management_id) {
-      setDelivery(cart.delivery_management_id, addr, deliveryPrice);
-    }
-  };
-
-  const handleApplyAIPricingWrapper = async (rec: AIPricingRecommendation) => {
-    if (!business?.id) return;
-    try {
-      const result = await applyAIPricing(business.id, rec.id);
-      if (result.success) {
-        toast.success(
-          `${drxCopy.pos.cart.priceUpdatedTo} ${result.newPrice?.toFixed(2)}`,
-        );
-        setAiRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
-      } else {
-        toast.error(result.message || drxCopy.pos.cart.priceApplyFailed);
-      }
-    } catch (e: any) {
-      toast.error(e.message);
-    }
-  };
-
-  const handleCustomerSelect = (customerId: string) => {
-    setSelectedCustomer(customerId || undefined);
-    setCustomer(customerId || undefined);
-  };
-
-  const handleCheckoutWrapper = async () => {
-    toast.info("Primary checkout has moved to /pos for cashier operations.");
-    window.location.assign("/pos");
-  };
-
-  if (businessLoading) return <SalesSkeleton />;
-
-  if (!business) {
-    return <div className="p-4 md:p-8">{drxCopy.pos.missingBusiness}</div>;
+  if (businessLoading || loading) {
+    return <TableSkeleton columnCount={5} rowCount={8} />;
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-6 space-y-6 page-transition">
-      <div className="noise-overlay" />
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in-0 duration-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            {drxCopy.pos.title}
-          </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            {drxCopy.pos.subtitlePrefix}{" "}
-            {business?.name?.toUpperCase() || "MAIN"} •{" "}
-            {new Date().toLocaleDateString()}
+          <h1 className="text-2xl md:text-3xl font-bold">Orders & Receipts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Review completed sales, receipts, and order history
           </p>
         </div>
+        <Button asChild className="gap-2 bg-accent text-black hover:bg-accent/90 font-semibold h-11 px-4">
+          <Link href="/pos/sale">
+            <Plus className="w-4 h-4" />
+            Open Point of Sale
+          </Link>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-        {/* Left Column: Inventory & AI */}
-        <div className="lg:col-span-8 space-y-6">
-          <ProductSearch
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            inventory={inventory}
-            onAddToCart={addToCart}
-            onWeightEntry={(item) => {
-              setSelectedProductForWeight(item);
-              setShowWeightEntry(true);
-            }}
-          />
-
-          <AIPricingWidget
-            recommendations={aiRecommendations}
-            onApply={handleApplyAIPricingWrapper}
-          />
-        </div>
-
-        {/* Right Column: Cart */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="luminosity-card rounded-xl bg-card border-border h-full flex flex-col shadow-2xl shadow-black/50">
-            <div className="p-4 border-b border-white/10 bg-white/5">
-              <div className="flex items-center gap-2 text-accent">
-                <ShoppingCart className="h-5 w-5" />
-                <h2 className="headline-text text-lg tracking-wider">
-                  CURRENT CART
-                </h2>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Sales checkout from this screen is deprecated. Use `/pos` for live cashier transactions.
-              </p>
-            </div>
-
-            <div className="p-4 flex-1 flex flex-col space-y-4">
-              <CartCustomer
-                selectedCustomer={selectedCustomer}
-                customers={customers}
-                customerLoyalty={customerLoyalty}
-                onSelectClick={() => setShowCustomerSelector(true)}
-              />
-
-              <CartItems
-                cart={cart}
-                onUpdateQuantity={updateQuantity}
-                onSetQuantity={setQuantity}
-                onRemoveItem={removeFromCart}
-                onOverridePrice={(item) => {
-                  setSelectedItemForOverride(item);
-                  setShowPriceOverride(true);
-                }}
-                canOverridePrice={canOverridePrice}
-              />
-
-              <CartDelivery
-                selectedDeliveryId={cart.delivery_management_id}
-                deliveryOptions={deliveryOptions}
-                deliveryAddress={deliveryAddress}
-                deliveryPrice={deliveryPrice}
-                onDeliveryChange={handleDeliveryChange}
-                onAddressChange={handleAddressChange}
-              />
-
-              <CartFees fees={fees} setFees={setFees} />
-
-              <CartTotals
-                cart={cart}
-                fees={fees}
-                taxEnabled={taxEnabledLocal}
-                amountPaid={amountPaid}
-                setAmountPaid={setAmountPaid}
-                showAmountPaidMode={showAmountPaidMode}
-                processing={processing}
-                onCheckout={() => {
-                  if (cart.items.length === 0) {
-                    toast.error("Cart is empty");
-                    return;
-                  }
-                  setReviewModalOpen(true);
-                }}
-              />
-
-              <PaymentSection
-                paymentMethod={cart.payment_method}
-                onMethodChange={(val) => {
-                  posEngine.setPaymentMethod(val);
-                }}
-                paymentRef={cart.payment_ref}
-                onRefChange={(val) => {
-                  posEngine.setPaymentRef(val);
-                }}
-              />
-
-              <AdminActions
-                businessId={business.id}
-                onShrinkageClick={() => setShowShrinkageForm(true)}
-                onInvCheckClick={() => setShowInventoryCheck(true)}
+      <Card className="border-border/80">
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-lg md:text-xl">Recent Orders</CardTitle>
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by ID or payment..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-11 text-base md:text-sm"
               />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Modals */}
-      <ShrinkageForm
-        open={showShrinkageForm}
-        onClose={() => setShowShrinkageForm(false)}
-        businessId={business?.id || ""}
-        onSuccess={() => setShowShrinkageForm(false)}
-      />
-      <InventoryCheckModal
-        open={showInventoryCheck}
-        onClose={() => setShowInventoryCheck(false)}
-        businessId={business?.id || ""}
-        onSuccess={() => setShowInventoryCheck(false)}
-      />
-      <WeightEntryModal
-        open={showWeightEntry}
-        onClose={() => {
-          setShowWeightEntry(false);
-          setSelectedProductForWeight(null);
-        }}
-        product={selectedProductForWeight}
-        businessId={business?.id || ""}
-        onAddToCart={addWeightedItem}
-      />
-
-      <PriceOverrideModal
-        open={showPriceOverride}
-        onOpenChange={setShowPriceOverride}
-        productName={selectedItemForOverride?.product_name || ""}
-        currentPrice={selectedItemForOverride?.unit_price || 0}
-        onConfirm={(price, reason) =>
-          overridePrice(selectedItemForOverride.inventory_id, price, reason)
-        }
-      />
-
-      <CustomerSelectorModal
-        open={showCustomerSelector}
-        onOpenChange={setShowCustomerSelector}
-        customers={customers}
-        onSelect={handleCustomerSelect}
-        selectedCustomerId={selectedCustomer}
-      />
-
-      <POSReviewModal
-        open={reviewModalOpen}
-        onOpenChange={setReviewModalOpen}
-        items={cart.items.map((item) => {
-          const invItem = inventory.find((i) => i.id === item.inventory_id);
-          return {
-            id: item.inventory_id,
-            name: item.product_name,
-            quantity: item.quantity,
-            price: item.unit_price,
-            unit: invItem?.base_unit || "ea",
-            weightGrams: invItem?.base_unit === "g" ? item.quantity : undefined,
-          };
-        })}
-        subtotal={cart.subtotal}
-        tax={cart.tax_amount}
-        total={cart.total}
-        customer={
-          selectedCustomer
-            ? {
-                name:
-                  customers.find((c) => c.id === selectedCustomer)?.alias ||
-                  [
-                    customers.find((c) => c.id === selectedCustomer)?.first_name,
-                    customers.find((c) => c.id === selectedCustomer)?.last_name,
-                  ]
-                    .filter(Boolean)
-                    .join(" ") ||
-                  "Customer",
-                id: selectedCustomer,
+        </CardHeader>
+        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+          {filteredSales.length === 0 ? (
+            <EmptyState
+              icon={ShoppingCart}
+              title="No Sales Found"
+              description={
+                searchTerm
+                  ? "No sales match your search term."
+                  : "Completed transactions will appear here after checkout."
               }
-            : undefined
-        }
-        onConfirm={async () => {
-          await handleCheckoutWrapper();
-          setReviewModalOpen(false);
-        }}
-      />
+              actionLabel="Go to Quick POS"
+              onAction={() => router.push("/pos/sale")}
+            />
+          ) : (
+            <>
+              {/* Mobile Stacked Cards */}
+              <div className="md:hidden space-y-3">
+                {filteredSales.map((sale) => {
+                  const dateStr = new Intl.DateTimeFormat("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(new Date(sale.created_at));
+                  const itemCount = sale.items?.length || 0;
+
+                  return (
+                    <Link
+                      key={sale.id}
+                      href={`/sales/${sale.id}`}
+                      className="block p-4 rounded-xl border border-border/80 bg-card hover:bg-muted/40 active:bg-muted/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-mono text-xs font-semibold text-accent truncate">
+                            #{sale.id.slice(0, 8)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {dateStr}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-mono text-base font-bold text-accent">
+                            ${Number(sale.total_amount || 0).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize text-[11px] py-0.5 px-2">
+                            <CreditCard className="w-3 h-3 mr-1" />
+                            {sale.payment_method || "cash"}
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            {itemCount} {itemCount === 1 ? "item" : "items"}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-muted-foreground font-medium">
+                          <span>Details</span>
+                          <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date & Time</TableHead>
+                      <TableHead>Sale ID</TableHead>
+                      <TableHead>Payment Method</TableHead>
+                      <TableHead>Items</TableHead>
+                      <TableHead className="text-right">Total Amount</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSales.map((sale) => {
+                      const dateStr = new Date(sale.created_at).toLocaleString();
+                      const itemCount = sale.items?.length || 0;
+                      return (
+                        <TableRow key={sale.id}>
+                          <TableCell className="text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-muted-foreground" />
+                              {dateStr}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {sale.id.slice(0, 8)}...
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              <CreditCard className="w-3 h-3 mr-1" />
+                              {sale.payment_method || "cash"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {itemCount} {itemCount === 1 ? "item" : "items"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono font-bold text-accent">
+                            ${Number(sale.total_amount || 0).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button asChild size="sm" variant="ghost">
+                              <Link href={`/sales/${sale.id}`}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
+

@@ -2,22 +2,11 @@ import { NotificationsPopover } from "@/components/layout/notifications-popover"
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, ScanLine, Search, Settings } from "lucide-react";
-import { useState } from "react";
+import { ScanLine, Search, Settings } from "lucide-react";
 import { UserButton } from "@/lib/adapters/auth/ui";
 
-import { LogoutButton } from "@/components/layout/logout-button";
-import { primaryNav } from "@/components/layout/nav-items";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { SentryFeedbackButton } from "@/components/sentry-feedback-button";
 import { BusinessSwitcher } from "@/components/layout/business-switcher";
 import { DashboardViewSwitcher } from "@/components/layout/dashboard-view-switcher";
 import { useBusiness } from "@/lib/hooks/use-business";
@@ -31,38 +20,16 @@ export function TopNav() {
   const { business } = useBusiness();
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const filteredNav = primaryNav.filter((item) => {
-    if (loading) return false;
-
-    switch (item.href) {
-      case "/settings":
-        return hasPermission("settings.manage");
-      case "/reports":
-        return (
-          hasPermission("reports.view_daily") ||
-          hasPermission("reports.view_all")
-        );
-      case "/inventory":
-        return hasPermission("catalog.view");
-      case "/sales":
-        return hasPermission("sales.create") || hasPermission("sales.view_all");
-      case "/customers":
-        return hasPermission("customers.view");
-      default:
-        return true;
-    }
-  });
-
-  const showAdminConsole =
-    hasPermission("system.manage") || hasPermission("users.manage_all");
-  const canQuickSale = !loading && hasPermission("sales.create");
+  const showBusinessSettings =
+    hasPermission("settings.configure_pos");
+  // Default to true while loading to prevent layout shifts
+  const canQuickSale = loading || hasPermission("sales.create");
   const showDashboardViewSwitcher =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   return (
-    <header className="flex h-14 min-w-0 items-center justify-between gap-3 border-b border-border bg-muted px-4 md:h-16 md:px-6">
+    <header className="flex h-14 min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/80 backdrop-blur px-3 md:h-16 md:px-6">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-background focus:p-2 focus:rounded focus:z-50"
@@ -70,105 +37,15 @@ export function TopNav() {
         Skip to main content
       </a>
 
-      {/* Mobile menu */}
-      <div className="md:hidden">
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-lg"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0">
-            <SheetHeader className="p-4 border-b border-border">
-              <SheetTitle className="text-left">
-                <AppLogo showTagline />
-              </SheetTitle>
-            </SheetHeader>
-            <div className="p-2 overflow-y-auto">
-              <nav className="space-y-1" aria-label="Main menu">
-                {filteredNav.map((item) => {
-                  const Icon = item.icon;
-                  const isExternal = Boolean(item.external);
-                  const isActive =
-                    !isExternal &&
-                    (pathname === item.href ||
-                      pathname.startsWith(item.href + "/"));
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={
-                        "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors " +
-                        (isActive
-                          ? "bg-accent text-background"
-                          : "text-foreground hover:bg-border")
-                      }
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="min-w-0 truncate">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              <div className="mt-3 pt-3 border-t border-border space-y-1">
-                {showAdminConsole && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border"
-                  >
-                    <Settings className="h-5 w-5" />
-                    <span className="min-w-0 truncate">Admin Console</span>
-                  </Link>
-                )}
-                <SentryFeedbackButton
-                  asChild
-                  source="navigation"
-                  placeholder="Found a bug? Let us know what happened."
-                >
-                  <button className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span className="min-w-0 truncate">Report a Bug</span>
-                  </button>
-                </SentryFeedbackButton>
-                <div className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-border cursor-pointer">
-                  <LogoutButton className="p-0 flex items-center gap-3" />
-                </div>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Logo */}
-      <div className="flex min-w-0 items-center gap-2 md:hidden">
-        <div className="max-w-[220px] min-w-0">
-          <AppLogo showTagline={false} />
-        </div>
-        <div className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">
-          BETA
+      {/* Brand Logo & Beta badge on Mobile */}
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="max-w-[140px] sm:max-w-[200px] min-w-0">
+            <AppLogo href="/dashboard" showTagline={false} />
+          </div>
+          <div className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">
+            BETA
+          </div>
         </div>
       </div>
 
@@ -185,7 +62,8 @@ export function TopNav() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:ml-auto md:gap-4">
+      {/* Right controls */}
+      <div className="flex items-center gap-1.5 md:gap-3">
         {canQuickSale ? (
           <Link href="/pos/sale" className="hidden md:block">
             <Button className="bg-accent hover:bg-accent/90 text-black font-semibold">
@@ -195,36 +73,14 @@ export function TopNav() {
           </Link>
         ) : null}
 
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="Search"
-          className="md:hidden"
-        >
-          <Search className="w-5 h-5" />
-        </Button>
-
         <NotificationsPopover />
 
-        {canQuickSale ? (
-          <Link href="/pos/sale" className="md:hidden">
-            <Button
-              variant="outline"
-              size="icon-lg"
-              aria-label="Open Quick Sale"
-              className="border-accent/40 text-accent hover:bg-accent/10"
-            >
-              <ScanLine className="w-5 h-5" />
-            </Button>
-          </Link>
-        ) : null}
-
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2">
           {showDashboardViewSwitcher ? <DashboardViewSwitcher /> : null}
           <BusinessSwitcher />
           {role && (
             <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">
-              {role.replace("_", " ")}
+              {role === "super_admin" ? "Business admin (legacy)" : `Business ${role.replace("_", " ")}`}
             </span>
           )}
 
@@ -232,16 +88,16 @@ export function TopNav() {
             afterSignOutUrl="/login"
             appearance={{
               elements: {
-                userButtonAvatarBox: "w-9 h-9",
+                userButtonAvatarBox: "w-8 h-8 md:w-9 md:h-9",
               },
             }}
           >
-            {showAdminConsole && (
+            {showBusinessSettings && (
               <UserButton.MenuItems>
                 <UserButton.Action
-                  label="Admin Console"
+                  label="Business settings"
                   labelIcon={<Settings className="w-4 h-4" />}
-                  onClick={() => router.push("/admin")}
+                  onClick={() => router.push("/settings")}
                 />
               </UserButton.MenuItems>
             )}

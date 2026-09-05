@@ -1,60 +1,71 @@
-# Team access
+---
+title: "Team Access and Staff Permissions"
+description: "Assigning staff roles, setting permission boundaries, and managing register access."
+icon: "user-gear"
+---
 
-This page explains how DRX role access works in daily operations.
+This guide explains how to invite staff members to your store, assign job roles, and manage register permissions in DRX.
 
 ## What this page is for
 
-Use this guide to assign roles, verify action boundaries, and reduce avoidable mistakes caused by over-permissioned accounts.
+Use this guide to assign appropriate staff permissions (Cashier, Supervisor, Manager, Owner), protect sensitive store settings, and prevent accidental data errors caused by over-permissioned accounts.
 
-Team access is managed from **Settings -> Manage Team** and the **Team Management** route.
+Manage your staff permissions from **Settings** -> **Manage Team** (`/settings/team`).
 
 ## Before you start
 
-- **Recommended role**: Owner, super admin, or manager with user-management scope.
-- **Primary route**: `/settings/team`
-- **Reference route**: `/settings`
-- **Policy prep**:
-  - Decide who should be cashier, supervisor, manager.
-  - Decide who can approve sensitive actions on live shift.
+- **Recommended role**: Store Owner or Manager with team management permissions.
+- **Key screen**: **Manage Team** (`/settings/team`).
+- **Staff role overview**:
+  - **Cashier**: Ring sales, scan barcodes, accept payments, search customers, and apply basic promotions.
+  - **Supervisor**: Cashier abilities plus manual discounts, order voids, price overrides, and customer credit reviews.
+  - **Manager**: Full store operations including inventory intake, manual stock adjustments, team invites, and store profile editing.
+  - **Owner**: Full access across all stores, billing, and system controls.
 
 ## Fast path
 
-1. **Open Team Management** (`/settings/team`).
-2. **Review current members and roles**.
-3. **Assign least-needed role first**.
-   - Start low, then expand only if workflow requires it.
-4. **Save and verify live behavior**.
-   - Log in as that role and test one allowed action and one blocked action.
-5. **Document role changes** in your shift handoff notes.
+1. **Open Team Management** (`/settings/team`):
+   - Review your current list of active staff members.
+2. **Invite new staff member**:
+   - Tap **Invite Team Member**.
+   - Enter their work email address or mobile phone number.
+   - Choose their starting role (e.g. Cashier).
+3. **Save and send invitation**:
+   - The team member receives an invite link to create their password and set up their PIN.
+4. **Change or update roles as responsibilities grow**:
+   - When promoting a staff member to shift lead, tap their profile and update their role to Supervisor.
+5. **Remove or deactivate former staff**:
+   - When a team member leaves your store, deactivate their account immediately to revoke register access and sign out active mobile devices.
 
-## Role-task matrix (live behavior)
+## Role permission matrix
 
-| Task | Cashier | Supervisor | Manager | Owner / Super admin |
-| --- | --- | --- | --- | --- |
-| Create sale | Yes | Yes | Yes | Yes |
-| Process payment | Yes | Yes | Yes | Yes |
-| Void/discount sensitive actions | No | Yes | Yes | Yes |
-| Manage customers | View only | Yes | Yes | Yes |
-| Manage inventory levels | No | No | Yes | Yes |
-| Change store settings | No | No | Yes | Yes |
-| Manage staff roles | No | No | Yes | Yes |
-| System-level controls | No | No | No | Yes |
+| Store Task | Cashier | Supervisor | Manager | Store Owner |
+| :--- | :---: | :---: | :---: | :---: |
+| Ring sales & scan items | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| Accept payments & print receipts | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| Approve voids & price overrides | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes |
+| Look up customer purchase history | View Only | ✅ Yes | ✅ Yes | ✅ Yes |
+| Receive stock & log adjustments | ❌ No | ❌ No | ✅ Yes | ✅ Yes |
+| Edit store tax & receipt settings | ❌ No | ❌ No | ✅ Yes | ✅ Yes |
+| Invite staff & manage team roles | ❌ No | ❌ No | ✅ Yes | ✅ Yes |
+| Account billing & store ownership | ❌ No | ❌ No | ❌ No | ✅ Yes |
 
 ## If blocked
 
-- **Team page opens but role change controls are disabled**:
-  - Current account likely lacks user-management scope.
-- **User can view a page but action fails**:
-  - This is expected when route visibility and action rights differ.
-- **Owner role cannot be reassigned in normal flow**:
-  - Expected safeguard. Use approved admin path only.
-- **Live workflow broke after role downgrade**:
-  - Re-run role-task check and restore only missing rights.
+- **"Manage Team" screen is greyed out or view-only**:
+  - Your account is a Cashier or Supervisor profile. Only Managers and Store Owners can manage team permissions.
+- **Invited team member did not receive invite**:
+  - Double-check the email address for typos and ask them to check their spam or promotions folder.
+  - Tap **Resend Invitation** in the team list.
+- **Owner account cannot be modified**:
+  - This is an intentional security safeguard. Store ownership cannot be reassigned from a standard staff screen.
+- **Staff member cannot perform an action they need**:
+  - Check their assigned role in the matrix above and upgrade their role if their daily duties require additional permissions.
 
 ## What is beta here
 
-- Core role assignment and route/action checks are live.
-- Some cross-business admin surfaces are beta-limited and should not be your day-to-day role management path.
+- Custom granular per-button permission toggles are in preview testing.
+- Standard 4-tier role assignments (Cashier, Supervisor, Manager, Owner) and PIN overrides are fully live.
 
 ## Related docs
 
@@ -63,17 +74,8 @@ Team access is managed from **Settings -> Manage Team** and the **Team Managemen
 - [Stay audit-ready](/staying-compliant)
 - [Fixing issues](/fixing-issues)
 
-## Weekly role hygiene check
+## Store security recommendations
 
-- Remove elevated access for staff who changed duties.
-- Confirm supervisor and manager counts match current staffing.
-- Verify at least one denied-action test for each role still behaves correctly.
-
-## Handoff rule
-
-When roles change, include this in shift handoff:
-
-- User ID changed
-- Old role -> new role
-- Why it changed
-- Which route/action was validated after change
+- Give each staff member their own individual login rather than sharing a single storewide cashier password.
+- Review your active team list on the first of every month to remove seasonal or former employees.
+- Keep the Store Owner login secure and use a Manager account for everyday store operations.

@@ -20,7 +20,7 @@ export function Hero() {
       <div className="relative z-10 max-w-5xl mx-auto space-y-8">
         <h1 className="text-5xl md:text-8xl font-bold tracking-tighter leading-[0.9] text-white">
           RUN REAL <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BFFF00] to-[#8FBF00] animate-pulse">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ccff00] to-[#a3cc00] animate-pulse">
             TRANSACTIONS.
           </span>
         </h1>
@@ -35,7 +35,7 @@ export function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
           <Button
             size="lg"
-            className="bg-[#BFFF00] text-black hover:bg-[#8FBF00] text-lg px-8 py-6 rounded-none font-bold tracking-widest uppercase hover:shadow-[0_0_20px_rgba(191,255,0,0.5)] transition-all"
+            className="bg-[#ccff00] text-black hover:bg-[#a3cc00] text-lg px-8 py-6 rounded-none font-bold tracking-widest uppercase hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all"
           >
             Get Set Up Quietly
           </Button>

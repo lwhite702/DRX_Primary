@@ -39,7 +39,7 @@ interface CreditWithCustomer {
 
 export default function Credits() {
   const insets = useSafeAreaInsets();
-  const { businessId, getToken } = useAuth();
+  const { legacyBusinessId, getToken } = useAuth();
 
   const [transactions, setTransactions] = useState<CreditWithCustomer[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -67,13 +67,13 @@ export default function Credits() {
     useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!businessId) return;
+    if (!legacyBusinessId) return;
 
     try {
       const token = await getToken();
       const [txData, customerData] = await Promise.all([
-        getCreditTransactions(businessId, token),
-        getCustomers(businessId, token),
+        getCreditTransactions(legacyBusinessId, token),
+        getCustomers(legacyBusinessId, token),
       ]);
       setTransactions(txData);
       setCustomers(customerData);
@@ -83,7 +83,7 @@ export default function Credits() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [businessId, getToken]);
+  }, [legacyBusinessId, getToken]);
 
   useEffect(() => {
     fetchData();
@@ -127,7 +127,7 @@ export default function Credits() {
   );
 
   const handleRecordPayment = async () => {
-    if (!businessId || !selectedCustomer) return;
+    if (!legacyBusinessId || !selectedCustomer) return;
 
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount) || amount <= 0) {
@@ -143,7 +143,7 @@ export default function Credits() {
 
     try {
       const token = await getToken();
-      await recordCreditPayment(businessId, selectedCustomer.id, amount, token);
+      await recordCreditPayment(legacyBusinessId, selectedCustomer.id, amount, token);
       setPaymentModalVisible(false);
       setSelectedCustomer(null);
       setPaymentAmount("");
@@ -155,7 +155,7 @@ export default function Credits() {
   };
 
   const handleExtendCredit = async () => {
-    if (!businessId || !extensionCustomer) {
+    if (!legacyBusinessId || !extensionCustomer) {
       Alert.alert("Error", "Please select a customer");
       return;
     }
@@ -169,7 +169,7 @@ export default function Credits() {
     try {
       const token = await getToken();
       await extendCredit(
-        businessId,
+        legacyBusinessId,
         extensionCustomer.id,
         amount,
         extensionDescription,
@@ -208,7 +208,7 @@ export default function Credits() {
             <Text style={styles.avatarText}>{avatarInitial}</Text>
           </View>
           <View style={styles.customerInfo}>
-            <Text style={styles.customerName}>{customerName}</Text>
+            <Text style={styles.customerName} numberOfLines={1} ellipsizeMode="tail">{customerName}</Text>
             <Text style={styles.creditLimit}>
               Limit: {formatCurrency(item.credit_limit)}
             </Text>

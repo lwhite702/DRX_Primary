@@ -12,18 +12,21 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { ReportsTour } from "./_components/ReportsTour";
+import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
 
 const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     from?: string;
     to?: string;
-  };
+  }>;
 }) {
   const { businessId } = await resolveAuthContext();
+  const resolvedSearchParams = await searchParams;
 
   if (!businessId) {
     return (
@@ -36,8 +39,12 @@ export default async function ReportsPage({
     );
   }
 
-  const from = searchParams?.from ? new Date(searchParams.from) : undefined;
-  const to = searchParams?.to ? new Date(searchParams.to) : undefined;
+  const from = resolvedSearchParams?.from
+    ? new Date(resolvedSearchParams.from)
+    : undefined;
+  const to = resolvedSearchParams?.to
+    ? new Date(resolvedSearchParams.to)
+    : undefined;
   const range = {
     from: from && !Number.isNaN(from.getTime()) ? from : undefined,
     to: to && !Number.isNaN(to.getTime()) ? to : undefined,
@@ -66,7 +73,14 @@ export default async function ReportsPage({
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <CommerceDeliverySummary
+        from={report.period.from}
+        toExclusive={new Date(
+          new Date(report.period.to).getTime() + 1,
+        ).toISOString()}
+      />
+
+      <div id="tour-reports-stats" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">Today Sales</CardTitle>
@@ -126,37 +140,39 @@ export default async function ReportsPage({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Sales Margin</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sale</TableHead>
-                  <TableHead className="text-right">Revenue</TableHead>
-                  <TableHead className="text-right">COGS</TableHead>
-                  <TableHead className="text-right">Gross Profit</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {report.recentSales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-mono text-xs">{sale.id.slice(0, 8)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(sale.total)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(sale.costOfGoodsSold)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(sale.grossProfit)}
-                    </TableCell>
+        <div id="tour-reports-margin">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Sales Margin</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Sale</TableHead>
+                    <TableHead className="text-right">Revenue</TableHead>
+                    <TableHead className="text-right">COGS</TableHead>
+                    <TableHead className="text-right">Gross Profit</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {report.recentSales.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-mono text-xs">{sale.id.slice(0, 8)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(sale.total)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(sale.costOfGoodsSold)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(sale.grossProfit)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
@@ -190,30 +206,32 @@ export default async function ReportsPage({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Low Stock</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {report.lowStock.count} products are at or below reorder level.
-            </p>
-            <div className="space-y-2">
-              {report.lowStock.items.slice(0, MAX_LOW_STOCK_ITEMS_DISPLAY).map((item) => (
-                <div key={item.id} className="flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-muted-foreground">{item.sku}</div>
+        <div id="tour-reports-lowstock">
+          <Card>
+            <CardHeader>
+              <CardTitle>Low Stock</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {report.lowStock.count} products are at or below reorder level.
+              </p>
+              <div className="space-y-2">
+                {report.lowStock.items.slice(0, MAX_LOW_STOCK_ITEMS_DISPLAY).map((item) => (
+                  <div key={item.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-muted-foreground">{item.sku}</div>
+                    </div>
+                    <div className="text-right">
+                      <div>{item.quantityOnHand} on hand</div>
+                      <div className="text-muted-foreground">Reorder at {item.lowStockThreshold}</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div>{item.quantityOnHand} on hand</div>
-                    <div className="text-muted-foreground">Reorder at {item.lowStockThreshold}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
@@ -284,6 +302,8 @@ export default async function ReportsPage({
           </CardContent>
         </Card>
       </div>
+
+      <ReportsTour />
     </div>
   );
 }

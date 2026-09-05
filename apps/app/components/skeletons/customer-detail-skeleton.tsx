@@ -62,7 +62,7 @@ export function CustomerDetailSkeleton() {
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="bg-slate-50 p-4 rounded border border-slate-100"
+                    className="bg-[#161616] p-4 rounded-xl border border-white/10"
                   >
                     <Skeleton className="h-3 w-32 mb-2" />
                     <Skeleton className="h-7 w-24" />

@@ -26,7 +26,10 @@ testsprite_tests/
 *.tsbuildinfo
 *.vercel
 android/
-ios/
+/ios/
+apps/ios/DerivedData/
+apps/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+apps/ios/*.xcodeproj/xcuserdata/
 android_backup/
 
 # Misc
@@ -91,3 +94,5 @@ credentials.json
 *.pem
 *.key
 .credentials
+# Native iOS telemetry values generated from Doppler/Xcode Cloud.
+apps/ios/Configuration/Telemetry.generated.xcconfig

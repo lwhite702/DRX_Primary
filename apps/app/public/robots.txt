@@ -17,4 +17,4 @@ Allow: /
 Disallow: /admin
 Disallow: /login
 
-Sitemap: https://deelrx.com/sitemap.xml
+Sitemap: https://deelrxcrm.app/sitemap.xml

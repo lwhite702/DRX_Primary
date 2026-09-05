@@ -35,7 +35,9 @@ __export(node_exports, {
   PermissionDeniedError: () => PermissionDeniedError,
   TenantRequiredError: () => TenantRequiredError,
   ValidationError: () => ValidationError,
+  addBreadcrumb: () => addBreadcrumb2,
   captureError: () => captureError,
+  captureMessage: () => captureMessage2,
   initErrors: () => initErrors,
   setUserContext: () => setUserContext
 });
@@ -77,6 +79,18 @@ var ValidationError = class extends AppError {
 };
 
 // src/node.ts
+function initErrors(config) {
+  if (!config.dsn) {
+    console.warn("[wrelik/errors] No DSN provided, skipping Sentry initialization");
+    return;
+  }
+  Sentry.init({
+    dsn: config.dsn,
+    environment: config.environment || process.env.NODE_ENV || "development",
+    tracesSampleRate: config.tracesSampleRate ?? 1,
+    sendDefaultPii: config.sendDefaultPii ?? true
+  });
+}
 function captureError(err, context) {
   if (err instanceof AppError) {
     console.warn(`[${err.code}] ${err.message}`, { context: err.context, ...context });
@@ -91,11 +105,15 @@ function captureError(err, context) {
 function setUserContext(user) {
   Sentry.setUser(user);
 }
-function initErrors(dsn) {
-  Sentry.init({
-    dsn,
-    tracesSampleRate: 1
+function addBreadcrumb2(message, category, data) {
+  Sentry.addBreadcrumb({
+    message,
+    category,
+    data
   });
+}
+function captureMessage2(message, level = "error") {
+  Sentry.captureMessage(message, level);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -104,7 +122,9 @@ function initErrors(dsn) {
   PermissionDeniedError,
   TenantRequiredError,
   ValidationError,
+  addBreadcrumb,
   captureError,
+  captureMessage,
   initErrors,
   setUserContext
 });

@@ -105,6 +105,9 @@ export function ShrinkageForm({
     try {
       // Verify supervisor PIN if required
       if (requiresSupervisorPin) {
+        if (!supabase) {
+          throw new Error("Supervisor verification is unavailable");
+        }
         const { data: supervisors } = await supabase
           .from("admin_users")
           .select("id")
@@ -123,7 +126,7 @@ export function ShrinkageForm({
         selectedInventory,
         parseFloat(quantityGrams),
         shrinkageType,
-        note
+        note,
       );
 
       if (result.success) {
@@ -167,7 +170,10 @@ export function ShrinkageForm({
             {/* Product Selection */}
             <div>
               <Label htmlFor="product">Product</Label>
-              <Select value={selectedInventory} onValueChange={setSelectedInventory}>
+              <Select
+                value={selectedInventory}
+                onValueChange={setSelectedInventory}
+              >
                 <SelectTrigger id="product">
                   <SelectValue placeholder="Select product..." />
                 </SelectTrigger>
@@ -189,7 +195,9 @@ export function ShrinkageForm({
 
             {/* Quantity */}
             <div>
-              <Label htmlFor="quantity">Quantity ({selectedItem?.base_unit || "g"})</Label>
+              <Label htmlFor="quantity">
+                Quantity ({selectedItem?.base_unit || "g"})
+              </Label>
               <Input
                 id="quantity"
                 type="number"
@@ -254,8 +262,8 @@ export function ShrinkageForm({
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded flex gap-3">
               <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
               <p className="text-sm text-destructive">
-                This action is audited and cannot be undone. All shrinkage is logged
-                for inventory reconciliation.
+                This action is audited and cannot be undone. All shrinkage is
+                logged for inventory reconciliation.
               </p>
             </div>
 

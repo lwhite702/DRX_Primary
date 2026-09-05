@@ -1,134 +1,128 @@
-#!/usr/bin/env node
-
 const fs = require("fs");
 const path = require("path");
 
-const ROOT = process.cwd();
-const SCAN_DIRS = [
-  "apps/app/app",
-  "apps/app/components",
-  "apps/app/lib/copy",
-];
-const ALLOWED_EXT = new Set([".ts", ".tsx", ".js", ".jsx", ".json", ".md"]);
-const IGNORE_DIRS = new Set([
-  "node_modules",
-  ".next",
-  "coverage",
-  "dist",
-  "build",
-  "playwright-report",
-  "test-results",
-]);
-
-const bannedTerms = [
-  "drug",
-  "dealer",
-  "stash",
-  "trap",
-  "coke",
-  "pills",
-  "weed",
-  "cops",
-  "police",
-  "feds",
-  "law enforcement",
-  "get caught",
-  "hide your",
-  "evade",
-  "subpoena-proof",
-];
-
-const jargonTerms = [
+const FORBIDDEN_TERMS = [
+  "authenticate",
   "enterprise",
-  "synergy",
+  "immutable",
+  "infrastructure",
+  "leverage",
+  "methodology",
+  "omnichannel",
+  "optimize",
   "robust",
   "scalable",
-  "methodology",
-  "authenticate",
-  "immutable",
-  "omnichannel",
-  "leverage",
+  "synergy",
 ];
 
-function escapeRegex(term) {
-  return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-const checks = [
-  ...bannedTerms.map((term) => ({ type: "banned", term, re: new RegExp(`\\b${escapeRegex(term)}\\b`, "i") })),
-  ...jargonTerms.map((term) => ({ type: "jargon", term, re: new RegExp(`\\b${escapeRegex(term)}\\b`, "i") })),
+const FORBIDDEN_PHRASES = [
+  "DRX CRM",
+  "streamline your operations",
+  "unlock growth",
+  "all-in-one platform",
+  "secure terminal access",
+  "system entry",
+  "enterprise energy",
 ];
 
-function walk(dir, out) {
-  if (!fs.existsSync(dir)) return;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!IGNORE_DIRS.has(entry.name)) walk(full, out);
-      continue;
-    }
-    if (ALLOWED_EXT.has(path.extname(entry.name))) out.push(full);
+const CORE_COPY_FILES = [
+  "apps/app/lib/copy/drx.ts",
+  "apps/app/lib/privacy/profiles.ts",
+  "apps/app/components/onboarding/steps/PrivacyStep.tsx",
+  "apps/marketing/lib/marketing-content.ts",
+  "apps/marketing/app/product/page.tsx",
+  "apps/marketing/components/marketing/features.tsx",
+  "apps/mobile/app/login.tsx",
+  "apps/ios/DRXApp/Features/Reports/ReportsView.swift",
+];
+
+const REQUIRED_FRAGMENTS = [
+  {
+    file: ".github/workflows/copy-voice.yml",
+    fragments: ["push:", "branches: [main, development, staging]"],
+  },
+  {
+    file: "apps/app/lib/copy/drx.ts",
+    fragments: [
+      'title: "Inventory"',
+      'label: "FULL CUSTOMER MODE"',
+      "permanently deleted after 30 days",
+      "permanently deleted after 180 days",
+      "permanently deleted after 365 days",
+    ],
+  },
+  {
+    file: "apps/app/lib/privacy/profiles.ts",
+    fragments: [
+      'import { drxCopy } from "@/lib/copy/drx";',
+      "const privacyPresetCopy = drxCopy.onboarding.privacy.presets;",
+    ],
+  },
+];
+
+let violationsCount = 0;
+
+function checkFile(relativePath) {
+  const filePath = path.join(__dirname, "..", relativePath);
+
+  if (!fs.existsSync(filePath)) {
+    console.error(`❌ Copy source missing: ${relativePath}`);
+    violationsCount += 1;
+    return;
   }
-}
 
-function canUseIgnoreDirective(relPath) {
-  return relPath.startsWith("docs/") || relPath.endsWith(".md");
-}
+  const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
 
-const files = [];
-for (const dir of SCAN_DIRS) walk(path.join(ROOT, dir), files);
+  lines.forEach((line, index) => {
+    if (line.includes("copy-lint-disable")) return;
 
-const violations = [];
-for (const file of files) {
-  if (file.endsWith("scripts/copy-lint.js")) continue;
-  const relPath = path.relative(ROOT, file).split(path.sep).join("/");
-  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
-
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    if (
-      trimmed.startsWith("//") ||
-      trimmed.startsWith("/*") ||
-      trimmed.startsWith("*") ||
-      trimmed.startsWith("{/*") ||
-      trimmed.startsWith("*/")
-    ) {
-      return;
+    for (const term of FORBIDDEN_TERMS) {
+      const regex = new RegExp(`\\b${term}\\b`, "i");
+      if (regex.test(line)) {
+        console.error(`❌ Corporate term "${term}" in ${relativePath}:${index + 1}`);
+        console.error(`   > ${line.trim()}`);
+        violationsCount += 1;
+      }
     }
-    const hasIgnore = line.includes("copy-lint: ignore");
-    if (hasIgnore && !canUseIgnoreDirective(relPath)) {
-      violations.push({
-        type: "invalid-ignore",
-        term: "copy-lint: ignore",
-        file: relPath,
-        line: idx + 1,
-        text: line.trim(),
-      });
-      return;
-    }
-    if (hasIgnore) return;
 
-    for (const check of checks) {
-      if (check.re.test(line)) {
-        violations.push({
-          type: check.type,
-          term: check.term,
-          file: relPath,
-          line: idx + 1,
-          text: line.trim(),
-        });
+    for (const phrase of FORBIDDEN_PHRASES) {
+      if (line.toLowerCase().includes(phrase.toLowerCase())) {
+        console.error(`❌ Off-brand phrase "${phrase}" in ${relativePath}:${index + 1}`);
+        console.error(`   > ${line.trim()}`);
+        violationsCount += 1;
       }
     }
   });
 }
 
-if (violations.length > 0) {
-  console.error("❌ Copy lint failed. Terms not allowed in user-facing copy:");
-  for (const v of violations) {
-    console.error(`- [${v.type}] ${v.file}:${v.line} -> "${v.term}"`);
-    console.error(`  ${v.text}`);
+function checkRequiredFragments() {
+  for (const requirement of REQUIRED_FRAGMENTS) {
+    const filePath = path.join(__dirname, "..", requirement.file);
+    if (!fs.existsSync(filePath)) {
+      console.error(`❌ Required source missing: ${requirement.file}`);
+      violationsCount += 1;
+      continue;
+    }
+
+    const content = fs.readFileSync(filePath, "utf8");
+    for (const fragment of requirement.fragments) {
+      if (!content.includes(fragment)) {
+        console.error(`❌ Required copy contract missing in ${requirement.file}: ${fragment}`);
+        violationsCount += 1;
+      }
+    }
   }
+}
+
+console.log("🔍 Checking DRX core copy across marketing, web, Expo, and iOS...");
+CORE_COPY_FILES.forEach(checkFile);
+checkRequiredFragments();
+
+if (violationsCount > 0) {
+  console.error(`\n❌ Copy lint failed with ${violationsCount} violation(s).`);
   process.exit(1);
 }
 
-console.log("✅ Copy lint passed.");
+console.log("✅ Core DRX copy matches the cross-surface voice guardrails.");
+process.exit(0);

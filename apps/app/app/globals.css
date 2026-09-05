@@ -1,16 +1,20 @@
 @import "tailwindcss";
+@import "@clerk/ui/themes/shadcn.css";
+@import "@deelrx/brand/tokens.css";
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  --font-body: "Inter", "Geist", "Geist Fallback";
+  --font-sans: var(--drx-font-sans);
+  --font-mono: var(--drx-font-mono);
+  --font-body: var(--drx-font-body);
 
-  /* Neon Velocity - DRX Street Cut Color System */
-  --color-background: #050505;
-  --color-foreground: #f5f5f5;
-  --color-accent: #bfff00;
-  --color-accent-dark: #a3cc00;
-  --color-accent-light: #d9ff4d;
+  /* DRX Operator Console */
+  --color-background: var(--drx-color-background);
+  --color-foreground: var(--drx-color-foreground);
+  --color-surface: var(--drx-color-surface);
+  --color-surface-elevated: var(--drx-color-surface-elevated);
+  --color-accent: var(--drx-color-accent);
+  --color-accent-dark: var(--drx-color-accent-dark);
+  --color-accent-light: var(--drx-color-accent-light);
 
   /* Text colors */
   --color-text-primary: #f5f5f5;
@@ -18,29 +22,29 @@
   --color-text-meta: #9ca3af;
 
   /* Borders */
-  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border: var(--drx-color-border);
   --color-border-hover: rgba(255, 255, 255, 0.2);
 
   /* Neutral grays */
   --color-muted: #0c0c0c;
   --color-muted-foreground: #9ca3af;
   --color-input: #1a1a1a;
-  --color-ring: #bfff00;
+  --color-ring: var(--drx-color-accent);
 
   /* Semantic colors */
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #f5f5f5;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  --color-destructive: var(--drx-color-destructive);
+  --color-destructive-foreground: var(--drx-color-foreground);
+  --color-success: var(--drx-color-success);
+  --color-warning: var(--drx-color-warning);
+  --color-info: var(--drx-color-info);
 
   /* Shadcn standard colors */
-  --color-popover: #050505;
+  --color-popover: #121212;
   --color-popover-foreground: #f5f5f5;
-  --color-card: #0c0c0c;
+  --color-card: #121212;
   --color-card-foreground: #f5f5f5;
-  --color-primary: #bfff00;
-  --color-primary-foreground: #050505;
+  --color-primary: #ccff00;
+  --color-primary-foreground: #0a0a0a;
   --color-secondary: #1a1a1a;
   --color-secondary-foreground: #f5f5f5;
 
@@ -49,9 +53,9 @@
   --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
   --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
 
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
+  --duration-fast: var(--drx-motion-fast);
+  --duration-normal: var(--drx-motion-standard);
+  --duration-slow: var(--drx-motion-deliberate);
 }
 
 @layer base {
@@ -156,20 +160,42 @@
   }
 }
 
-/* Page Transitions */
-.page-transition {
-  animation: fadeIn var(--duration-normal) var(--ease-out) forwards;
+:root {
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
+/* Motion vocabulary: Apple-style fluid SF Pro transitions. */
+.page-transition {
+  min-width: 0;
+}
+
+.route-content-transition {
+  animation: routeContentIn 220ms var(--ease-apple) both;
+  will-change: opacity, transform;
+}
+
+@keyframes routeContentIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(4px) scale(0.998);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
+}
+
+.tour-target-highlight {
+  position: relative;
+  z-index: 45;
+  border-radius: 0.75rem;
+  outline: 3px solid var(--color-primary, #ccff00);
+  outline-offset: 6px;
+  box-shadow:
+    0 0 0 10px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(204, 255, 0, 0.25);
+  transition: outline-offset 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
 /* Reduced Motion */
@@ -205,7 +231,7 @@
   border-radius: 9999px;
   filter: blur(40px);
   opacity: 0.1;
-  background: var(--color-accent);
+  background: var(--drx-color-accent);
   pointer-events: none;
 }
 
@@ -233,7 +259,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(191, 255, 0, 0.2),
+    color-mix(in srgb, var(--drx-color-accent) 20%, transparent),
     transparent
   );
   transition: left 0.5s ease-in-out;
@@ -253,7 +279,7 @@
 
 .luminosity-card:hover {
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 20px rgba(191, 255, 0, 0.05);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--drx-color-accent) 5%, transparent);
 }
 
 .luminosity-card::after {
@@ -264,7 +290,7 @@
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--drx-color-accent);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--ease-out);
   pointer-events: none;
@@ -306,4 +332,71 @@
   border: 1px solid var(--color-accent);
   padding: 2rem;
   display: inline-block;
+}
+
+/* ==========================================================================
+   Clerk & Auth Form Input Contrast, Background & Caret Legibility
+   ========================================================================== */
+
+input,
+textarea,
+select,
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  caret-color: #ccff00 !important;
+}
+
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  background-color: #262626 !important;
+  color: #ffffff !important;
+  border: 1px solid #737373 !important;
+  border-radius: 0.5rem !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cl-formFieldInput:hover,
+.cl-input:hover {
+  border-color: #8a8a8a !important;
+}
+
+.cl-formFieldInput:focus,
+.cl-input:focus,
+.cl-otpCodeFieldInput:focus {
+  background-color: #2c2c2c !important;
+  border-color: #ccff00 !important;
+  box-shadow: 0 0 0 2px #ccff00 !important;
+  outline: none !important;
+}
+
+.cl-formFieldLabel {
+  color: #e7e7e7 !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldInput::placeholder,
+.cl-input::placeholder {
+  color: #b3b3b3 !important;
+  opacity: 1 !important;
+}
+
+.cl-formButtonPrimary,
+.cl-formButtonPrimary:hover,
+.cl-formButtonPrimary:focus,
+.cl-formButtonPrimary:active {
+  min-height: 3rem !important;
+  background-color: #ccff00 !important;
+  color: #0a0a0a !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+}
+
+.cl-formFieldLabel,
+.cl-footerAction,
+.cl-footerActionLink,
+.cl-socialButtonsBlockButtonText {
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
 }

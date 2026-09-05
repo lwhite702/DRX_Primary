@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   initAnalytics,
@@ -13,6 +13,7 @@ import {
   reset,
 } from "@wrelik/analytics/client";
 import { useAuth, useUser } from "@/lib/adapters/auth/ui";
+import * as Sentry from "@sentry/nextjs";
 
 let analyticsInitialized = false;
 
@@ -25,7 +26,7 @@ function PostHogPageView() {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
   useEffect(() => {
-    if (!key || !pathname) return;
+    if (!key || !pathname || pathname.startsWith("/control")) return;
     
     const isAuthSurface =
       pathname?.startsWith("/login") ||
@@ -45,10 +46,12 @@ function PostHogPageView() {
 }
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const identifiedUserId = useRef<string | null>(null);
   const pathname = usePathname();
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
   const isAuthSurface =
+    pathname?.startsWith("/control") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/sign-in") ||
@@ -81,8 +84,15 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     if (!authLoaded || !userLoaded) return;
 
     if (isSignedIn && userId) {
+      if (identifiedUserId.current && identifiedUserId.current !== userId) {
+        reset();
+        Sentry.setUser(null);
+      }
       // Build user traits
-      const traits: Record<string, any> = {};
+      const traits: Record<string, any> = {
+        platform: "web",
+        distribution_channel: "web",
+      };
 
       if (user?.primaryEmailAddress?.emailAddress) {
         traits.email = user.primaryEmailAddress.emailAddress;
@@ -101,9 +111,21 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       }
 
       identify(userId, traits);
+      identifiedUserId.current = userId;
+      Sentry.setUser({
+        id: userId,
+        email: user?.primaryEmailAddress?.emailAddress,
+        username: user?.fullName || undefined,
+      });
+      Sentry.setTag("platform", "web");
+      Sentry.setTag("distribution_channel", "web");
+      Sentry.setTag("business_id", orgId || "none");
     } else if (!isSignedIn) {
       // Reset analytics when user signs out
       reset();
+      Sentry.setUser(null);
+      Sentry.setTag("business_id", "none");
+      identifiedUserId.current = null;
     }
   }, [key, authLoaded, userLoaded, isSignedIn, userId, orgId, user]);
 

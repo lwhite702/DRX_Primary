@@ -18,10 +18,16 @@ import { useBusiness } from "@/lib/hooks/use-business";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 export default function InventoryAdjustPage() {
   const { business, loading: businessLoading } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
+  const {
+    inventory,
+    loading: inventoryLoading,
+    syncStatus,
+    refresh: refreshInventory,
+  } = useRealtimeInventory(business?.id || null);
   const [processing, setProcessing] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -82,7 +88,7 @@ export default function InventoryAdjustPage() {
     }
   };
 
-  if (businessLoading) return <SalesSkeleton />;
+  if (businessLoading || inventoryLoading) return <SalesSkeleton />;
 
   return (
     <PermissionGuard
@@ -91,20 +97,23 @@ export default function InventoryAdjustPage() {
     >
       <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
         <div className="noise-overlay" />
-        <div className="relative z-10">
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            INVENTORY ADJUSTMENT
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
+          <div>
+          <h1 className="text-3xl font-bold">
+            Adjust inventory
           </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            CORRECTION & LOSS MANAGEMENT
+          <p className="mt-1 text-sm text-muted-foreground">
+            Correct a count and record the reason
           </p>
+          </div>
+          <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
         </div>
 
         <div className="max-w-2xl luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
           <div className="p-6 border-b border-white/5 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-yellow-500 shadow-[0_0_10px_#EAB308]" />
-            <h2 className="headline-text text-lg tracking-wider text-yellow-500">
-              ADJUSTMENT DETAILS
+            <div className="h-2 w-2 rounded-full bg-warning" />
+            <h2 className="headline-text text-lg tracking-wider text-warning">
+              Adjustment details
             </h2>
           </div>
           <CardContent className="space-y-6 p-6">
@@ -182,7 +191,7 @@ export default function InventoryAdjustPage() {
             <Button
               onClick={handleAdjust}
               disabled={processing || !selectedProductId}
-              className="w-full h-12 text-lg font-bold tracking-wider uppercase bg-yellow-500 text-black hover:bg-yellow-400"
+              className="h-12 w-full bg-warning text-lg font-bold uppercase tracking-wider text-black hover:brightness-110"
             >
               {processing ? "Updating..." : "Confirm Adjustment"}
             </Button>

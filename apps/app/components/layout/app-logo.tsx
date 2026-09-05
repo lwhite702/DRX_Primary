@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export function AppLogo({
-  href = "/dashboard",
+  href = "/pos/sale",
   showTagline = false,
   size = "default",
 }: {
@@ -27,11 +27,7 @@ export function AppLogo({
         }
       >
         <Image
-          src={
-            isSidebar
-              ? "/brand/DRX Wordmark Color Tight.svg"
-              : "/brand/DRX Wordmark Color.svg"
-          }
+          src="/brand/drx-wordmark.svg"
           alt="Deelrx CRM"
           fill
           className="object-contain"

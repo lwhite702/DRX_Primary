@@ -1,10 +1,12 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { toast } from "sonner";
 import { creditSystem } from "@/lib/utils/credit-system";
 import { AgingData } from "../_components/CreditAgingTable";
-import { CreditTransaction as LocalCreditTransaction } from "../_components/CreditTransactionsList"; // Renaming to avoid conflict
-import { Customer, CreditLimit } from "@/lib/validations/schemas"; // Import from schemas (CreditTransaction might conflict, I'll alias local)
+import { CreditTransaction as LocalCreditTransaction } from "../_components/CreditTransactionsList";
+import { Customer, CreditLimit } from "@/lib/validations/schemas";
+
+type CreditLoadStatus = "loading" | "refreshing" | "success" | "empty" | "error";
 
 export function useCreditManager(businessId: string | undefined) {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -12,80 +14,110 @@ export function useCreditManager(businessId: string | undefined) {
     new Map(),
   );
   const [agingData, setAgingData] = useState<AgingData[]>([]);
-  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>([]);
+  const [status, setStatus] = useState<CreditLoadStatus>("loading");
+  const [error, setError] = useState<string | null>(null);
+  const [mutating, setMutating] = useState(false);
 
-  // Dialog states
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
-  const supabase = createAppClient();
-
-  const fetchCustomers = useCallback(async () => {
-    if (!businessId || !supabase) return;
-    const { data } = await supabase
-      .from("customers")
-      .select("id, first_name, last_name")
-      .eq("business_id", businessId)
-      .eq("is_active", true)
-      .eq("ephemeral", false)
-      .order("first_name");
-
-    if (data) setCustomers(data as unknown as Customer[]);
-  }, [businessId, supabase]);
-
-  const fetchCreditLimits = useCallback(async () => {
-    if (!businessId || !supabase) return;
-    const { data } = await supabase
-      .from("credit_limits")
-      .select("customer_id, max_credit_limit, current_balance")
-      .eq("business_id", businessId);
-
-    if (data) {
-      const map = new Map();
-      data.forEach((limit: CreditLimit) => map.set(limit.customer_id, limit));
-      setCreditLimits(map);
-    }
-  }, [businessId, supabase]);
-
-  const fetchAgingData = useCallback(async () => {
-    if (!businessId) return;
-    const result = await creditSystem.getCreditAging(businessId);
-    if (result.success && result.data) {
-      setAgingData(result.data as AgingData[]);
-    }
-  }, [businessId]);
-
-  const fetchTransactions = useCallback(async () => {
-    if (!businessId || !supabase) return;
-    // Fetch recent transactions with customer details
-    const { data } = await supabase
-      .from("credit_transactions")
-      .select(`*, customers(first_name, last_name)`)
-      .order("created_at", { ascending: false }) // changing to created_at to match original page pattern?
-      .limit(50);
-
-    if (data) setTransactions(data as unknown as LocalCreditTransaction[]);
-  }, [businessId, supabase]);
+  const supabase = useMemo(() => createAppClient(), []);
+  const requestVersion = useRef(0);
+  const loadedBusinessId = useRef<string | undefined>(undefined);
 
   const refreshData = useCallback(async () => {
-    setLoading(true);
-    await Promise.all([
-      fetchCustomers(),
-      fetchCreditLimits(),
-      fetchAgingData(),
-      fetchTransactions(),
-    ]);
-    setLoading(false);
-  }, [fetchCustomers, fetchCreditLimits, fetchAgingData, fetchTransactions]);
+    const version = ++requestVersion.current;
+    if (!businessId || !supabase) {
+      setCustomers([]);
+      setCreditLimits(new Map());
+      setAgingData([]);
+      setTransactions([]);
+      loadedBusinessId.current = undefined;
+      setStatus("empty");
+      setError(null);
+      return;
+    }
+
+    const refreshInPlace = loadedBusinessId.current === businessId;
+    setStatus(refreshInPlace ? "refreshing" : "loading");
+    setError(null);
+    if (!refreshInPlace) {
+      setCustomers([]);
+      setCreditLimits(new Map());
+      setAgingData([]);
+      setTransactions([]);
+    }
+
+    try {
+      const [customerResult, limitResult, agingResult, transactionResult] =
+        await Promise.all([
+          supabase
+            .from("customers")
+            .select("id, first_name, last_name")
+            .eq("business_id", businessId)
+            .eq("is_active", true)
+            .eq("ephemeral", false)
+            .order("first_name"),
+          supabase
+            .from("credit_limits")
+            .select("customer_id, max_credit_limit, current_balance")
+            .eq("business_id", businessId),
+          creditSystem.getCreditAging(businessId),
+          supabase
+            .from("credit_transactions")
+            .select("*, customers(first_name, last_name)")
+            .eq("business_id", businessId)
+            .order("created_at", { ascending: false })
+            .limit(50),
+        ]);
+
+      if (version !== requestVersion.current) return;
+      if (customerResult.error) throw customerResult.error;
+      if (limitResult.error) throw limitResult.error;
+      if (transactionResult.error) throw transactionResult.error;
+      if (!agingResult.success) {
+        throw new Error(agingResult.error || "Failed to load credit aging");
+      }
+
+      const nextLimits = new Map<string, CreditLimit>();
+      for (const limit of limitResult.data ?? []) {
+        nextLimits.set(limit.customer_id, {
+          ...limit,
+          business_id: businessId,
+        });
+      }
+
+      setCustomers((customerResult.data ?? []) as unknown as Customer[]);
+      setCreditLimits(nextLimits);
+      setAgingData((agingResult.data ?? []) as AgingData[]);
+      setTransactions(
+        (transactionResult.data ?? []) as unknown as LocalCreditTransaction[],
+      );
+      loadedBusinessId.current = businessId;
+      const hasData = Boolean(
+        customerResult.data?.length ||
+          limitResult.data?.length ||
+          agingResult.data?.length ||
+          transactionResult.data?.length,
+      );
+      setStatus(hasData ? "success" : "empty");
+    } catch (caught) {
+      if (version !== requestVersion.current) return;
+      console.error("Failed to load credit data", {
+        errorType: caught instanceof Error ? caught.name : "UnknownError",
+      });
+      setError("Credit data could not be refreshed. Try again.");
+      setStatus("error");
+    }
+  }, [businessId, supabase]);
 
   useEffect(() => {
-    if (businessId) {
-      refreshData();
-    }
-  }, [businessId, refreshData]);
+    void refreshData();
+    return () => {
+      requestVersion.current += 1;
+    };
+  }, [refreshData]);
 
   const handleExtension = async (data: {
     customer_id: string;
@@ -94,21 +126,26 @@ export function useCreditManager(businessId: string | undefined) {
     due_date?: string;
   }) => {
     if (!businessId) return;
+    setMutating(true);
+    try {
+      const result = await creditSystem.extendCredit(
+        businessId,
+        data.customer_id,
+        data.amount,
+        data.notes || "",
+        data.due_date || new Date().toISOString(),
+      );
 
-    const result = await creditSystem.extendCredit(
-      businessId,
-      data.customer_id,
-      data.amount,
-      data.notes || "",
-      data.due_date || new Date().toISOString(), // Fallback if undefined, though form should provide it
-    );
-
-    if (result.success) {
+      if (!result.success) {
+        throw new Error(result.error || "Failed to extend credit");
+      }
       toast.success("Credit extended successfully");
       setShowExtensionDialog(false);
-      refreshData();
-    } else {
-      toast.error(result.error || "Failed to extend credit");
+      await refreshData();
+    } catch (caught) {
+      toast.error(caught instanceof Error ? caught.message : "Failed to extend credit");
+    } finally {
+      setMutating(false);
     }
   };
 
@@ -118,25 +155,34 @@ export function useCreditManager(businessId: string | undefined) {
     notes?: string;
   }) => {
     if (!businessId) return;
+    setMutating(true);
+    try {
+      const result = await creditSystem.processPayment(
+        businessId,
+        data.customer_id,
+        data.amount,
+        data.notes || "",
+      );
 
-    const result = await creditSystem.processPayment(
-      businessId,
-      data.customer_id,
-      data.amount,
-      data.notes || "",
-    );
-
-    if (result.success) {
+      if (!result.success) {
+        throw new Error(result.error || "Failed to record payment");
+      }
       toast.success("Payment recorded successfully");
       setShowPaymentDialog(false);
-      refreshData();
-    } else {
-      toast.error(result.error || "Failed to record payment");
+      await refreshData();
+    } catch (caught) {
+      toast.error(caught instanceof Error ? caught.message : "Failed to record payment");
+    } finally {
+      setMutating(false);
     }
   };
 
   return {
-    loading,
+    status,
+    loading: status === "loading",
+    refreshing: status === "refreshing",
+    mutating,
+    error,
     customers,
     creditLimits,
     agingData,

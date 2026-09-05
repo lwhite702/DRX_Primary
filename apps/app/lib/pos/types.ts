@@ -39,6 +39,8 @@ export interface PosCart {
   deliveryManagementId?: string | null;
   deliveryAddress?: string | null;
   deliveryPrice?: number;
+  deliveryVendorCost?: number;
+  deliveryTaxable?: boolean;
 }
 
 export interface PosQuote {
@@ -46,6 +48,16 @@ export interface PosQuote {
   taxAmount: number;
   feesTotal: number;
   total: number;
+}
+
+export interface PosAuthoritativeQuote extends PosQuote {
+  subtotalAfterDiscount: number;
+  loyaltyDiscountAmount: number;
+  loyaltyDiscountRate: number;
+  merchandiseTaxAmount: number;
+  deliveryTaxAmount: number;
+  deliveryRevenue: number;
+  vendorDeliveryExpense: number;
 }
 
 export interface PosCheckoutResult {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,23 +9,8 @@ export async function POST(request: NextRequest) {
     const { businessName, businessType, ownerEmail } = body;
 
     // 1. Verify Authentication & Admin Permissions
-    const { userId: actorId } = await auth();
-
-    if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is admin (super_admin)
-    const adminRole = await db.userRole.findFirst({
-      where: {
-        userId: actorId,
-        role: "super_admin",
-      },
-    });
-
-    if (!adminRole) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const admin = await getPlatformAdmin();
+    if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     // 2. Client init
     const client = await clerkClient();

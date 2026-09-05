@@ -1,12 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/lib/db";
+import {
+  requestedBusinessMatches,
+  resolveAiBusinessContext,
+} from "../_lib/server";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
-interface InventoryHealthRequest {
-  business_id: string;
-}
+const inventoryHealthSchema = z.object({
+  business_id: z.string().min(1),
+});
 
 interface MappedInventoryItem {
   id: string;
@@ -18,30 +23,46 @@ interface MappedInventoryItem {
   selling_price: number;
 }
 
+interface InventoryRecord {
+  id: string;
+  productName: string;
+  sku: string;
+  quantityOnHand: number;
+  reorderLevel: number;
+  unitCost: unknown;
+  sellingPrice: unknown;
+}
+
 interface MappedSaleItem {
   inventory_id: string | null;
   quantity: number;
   created_at: string;
 }
 
+interface SaleItemRecord {
+  inventoryId: string | null;
+  quantity: number;
+  createdAt: Date;
+}
+
 type LogLevel = "info" | "error";
 
-function jsonResponse(payload: Record<string, any>, status = 200) {
+function jsonResponse(payload: Record<string, unknown>, status = 200) {
   return NextResponse.json(payload, { status });
 }
 
 function toErrorContext(error: unknown) {
   if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    };
+    return { errorType: error.name };
   }
-  return { message: String(error) };
+  return { errorType: "UnknownError" };
 }
 
-function log(level: LogLevel, message: string, context: Record<string, any> = {}) {
+function log(
+  level: LogLevel,
+  message: string,
+  context: Record<string, unknown> = {},
+) {
   const entry = JSON.stringify({
     timestamp: new Date().toISOString(),
     level,
@@ -57,20 +78,35 @@ function log(level: LogLevel, message: string, context: Record<string, any> = {}
 }
 
 export async function POST(req: NextRequest) {
+  const context = await resolveAiBusinessContext(req, "inventory.manage");
+  if (!context.ok) {
+    return jsonResponse({ error: context.error }, context.status);
+  }
+
+  let requestBody: unknown;
+  try {
+    requestBody = await req.json();
+  } catch {
+    return jsonResponse({ error: "Invalid request body" }, 400);
+  }
+
+  const parsed = inventoryHealthSchema.safeParse(requestBody);
+  if (!parsed.success) {
+    return jsonResponse({ error: "business_id is required" }, 400);
+  }
+  if (
+    !requestedBusinessMatches(parsed.data.business_id, context.businessId)
+  ) {
+    return jsonResponse({ error: "Business access denied" }, 403);
+  }
+
   const requestId = crypto.randomUUID();
-  let body: InventoryHealthRequest | null = null;
+  const businessId = context.businessId;
 
   try {
-    body = (await req.json()) as InventoryHealthRequest;
-    const { business_id } = body;
-
-    if (!business_id) {
-      return jsonResponse({ error: "business_id is required" }, 400);
-    }
-
     // Fetch inventory data
     const inventory = await db.inventory.findMany({
-      where: { businessId: business_id },
+      where: { businessId },
       select: {
         id: true,
         productName: true,
@@ -82,7 +118,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const mappedInventory: MappedInventoryItem[] = (inventory as any[]).map((item) => ({
+    const mappedInventory: MappedInventoryItem[] = (
+      inventory as InventoryRecord[]
+    ).map((item) => ({
       id: item.id,
       product_name: item.productName,
       sku: item.sku,
@@ -99,7 +137,7 @@ export async function POST(req: NextRequest) {
       where: {
         createdAt: { gte: thirtyDaysAgo },
         sale: {
-          businessId: business_id,
+          businessId,
           createdAt: { gte: thirtyDaysAgo },
         },
       },
@@ -110,7 +148,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const mappedRecentSales: MappedSaleItem[] = (recentSales as any[]).map((item) => ({
+    const mappedRecentSales: MappedSaleItem[] = (
+      recentSales as SaleItemRecord[]
+    ).map((item) => ({
       inventory_id: item.inventoryId,
       quantity: item.quantity,
       created_at: item.createdAt.toISOString(),
@@ -222,7 +262,7 @@ Focus on items that need immediate attention.`;
             // Store insight
             await db.aiInsight.create({
               data: {
-                businessId: business_id,
+                businessId,
                 insightType: "inventory",
                 insightTitle: aiInsight.insight_title || "Inventory Health Analysis",
                 insightContent: aiInsight.insight_content || content,
@@ -268,11 +308,12 @@ Focus on items that need immediate attention.`;
     try {
       await db.aiInsightFailure.create({
         data: {
-          businessId: body?.business_id ?? null,
+          businessId,
           functionName: "inventory_health",
-          errorMessage: error instanceof Error ? error.message : String(error),
-          errorStack: error instanceof Error ? error.stack : undefined,
-          inputData: body as any,
+          errorMessage:
+            error instanceof Error ? error.name : "UnknownError",
+          errorStack: null,
+          inputData: null,
         },
       });
     } catch (logError) {
@@ -285,7 +326,7 @@ Focus on items that need immediate attention.`;
     return jsonResponse(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Internal Server Error",
       },
       500
     );

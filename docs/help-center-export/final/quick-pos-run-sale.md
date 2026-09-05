@@ -20,9 +20,9 @@ Staff, Manager, Owner (based on role permissions)
 1. Open `Quick Sale`.
 2. Add items by search or saved aliases.
 3. Confirm quantities and remove mistakes before payment.
-4. Continue to `Payment`.
-5. Select payment method and confirm.
-6. Finish on `Complete` and return for next sale.
+4. Continue to `Payment` and review the verified subtotal, loyalty discount, and tax.
+5. Select the payment method and confirm the displayed total.
+6. Finish on `Complete` and return for the next sale.
 
 ## What happens next
 
@@ -36,16 +36,15 @@ The sale posts to history and downstream reporting.
 ## Common mistakes
 
 - Ringing with stale product info.
-- Skipping final total check in rush periods.
+- Skipping the verified final total check in rush periods.
 
 ## Troubleshooting
 
 - If item lookup is slow, simplify search terms or use aliases.
-- If payment fails to post, confirm route state and session auth.
+- If payment fails to post, keep the cart open and retry; Quick Sale reuses the same sale key so an already-committed sale resolves without duplicating inventory or totals.
 
 ## Related articles
 
 - `sales-history-receipts.md`
 - `settings-and-aliases.md`
 - `troubleshooting-fast-fixes.md`
-

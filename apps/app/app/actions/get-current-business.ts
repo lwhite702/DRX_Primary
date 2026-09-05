@@ -49,7 +49,7 @@ export async function getCurrentBusinessProfile() {
       }
     }
 
-    if (bypass && userId) {
+    if (userId) {
       try {
         const byOwner = await db.businessProfile.findFirst({
           where: { ownerId: userId },
@@ -58,13 +58,29 @@ export async function getCurrentBusinessProfile() {
         });
         if (byOwner) return { ...byOwner, clerkOrgId: null };
       } catch (error) {
-        // Older local schemas may also miss ownerId or related columns.
-        // In bypass mode, prefer a best-effort local profile instead of repeated request failures.
         if (!isMissingColumnError(error)) {
           throw error;
         }
       }
 
+      try {
+        const role = await db.userRole.findFirst({
+          where: { userId },
+          select: {
+            business: {
+              select: businessProfileSelect,
+            },
+          },
+        });
+        if (role?.business) return { ...role.business, clerkOrgId: null };
+      } catch (error) {
+        if (!isMissingColumnError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    if (bypass && userId) {
       try {
         const firstProfile = await db.businessProfile.findFirst({
           orderBy: { createdAt: "desc" },

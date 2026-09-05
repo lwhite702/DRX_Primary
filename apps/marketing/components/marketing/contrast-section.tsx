@@ -3,21 +3,21 @@
 const steps = [
   {
     id: "01",
-    title: "Verify Identity",
+    title: "Protect Access",
     description:
-      "Multi-layered verification ensuring only authorized personnel access the system.",
+      "Secure sign-in and role checks protect supported team actions.",
   },
   {
     id: "02",
-    title: "Secure Transaction",
+    title: "Protect Sensitive Fields",
     description:
-      "End-to-end encryption for every credit and inventory movement.",
+      "Configured encryption protects sensitive customer fields without making blanket claims about every record.",
   },
   {
     id: "03",
-    title: "Immutable Ledger",
+    title: "Review Activity",
     description:
-      "Permanent, tamper-proof record keeping for absolute accountability.",
+      "Supported adjustments and team actions retain user context for operational review.",
   },
 ];
 
@@ -28,9 +28,9 @@ export function ContrastSection() {
         {/* Left: Methodology Steps */}
         <div className="space-y-12">
           <h2 className="text-5xl md:text-7xl font-sans font-bold tracking-tighter mb-16">
-            SYSTEM
+            OPERATOR
             <br />
-            METHODOLOGY
+            CONTROL
           </h2>
 
           <div className="space-y-10">
@@ -65,8 +65,8 @@ export function ContrastSection() {
                 Philosophy
               </p>
               <p className="text-xl font-medium leading-tight">
-                "We build tools for those who operate in the shadows of the
-                standard economy."
+                "Built for independent retailers who need speed on the floor
+                and clear records after the rush."
               </p>
             </div>
           </div>

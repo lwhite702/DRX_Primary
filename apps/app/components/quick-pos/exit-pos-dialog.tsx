@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 export function ExitPosDialog({
   open,
@@ -11,14 +12,38 @@ export function ExitPosDialog({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const bypassMode = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const bypassMode = useIsBypassActive();
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [hasPinConfigured, setHasPinConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!open || bypassMode) return;
+    let active = true;
+    fetch("/api/pos/exit/verify")
+      .then((res) => res.json())
+      .then((data: { hasPinConfigured?: boolean }) => {
+        if (active && typeof data.hasPinConfigured === "boolean") {
+          setHasPinConfigured(data.hasPinConfigured);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [open, bypassMode]);
 
   if (!open) return null;
 
+  const requiresPin = !bypassMode && hasPinConfigured !== false;
+
   const verify = async () => {
+    if (!requiresPin) {
+      onSuccess();
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
@@ -29,9 +54,13 @@ export function ExitPosDialog({
         body: JSON.stringify({ pin }),
       });
 
-      const data = (await res.json()) as { allowed?: boolean };
+      const data = (await res.json()) as { allowed?: boolean; error?: string };
       if (!data.allowed) {
-        setError("Invalid PIN");
+        setError(
+          res.status === 401
+            ? "Your session expired. Sign in again to continue."
+            : data.error || "Enter the configured manager PIN and try again.",
+        );
         return;
       }
 
@@ -50,21 +79,26 @@ export function ExitPosDialog({
         <p className="mt-2 text-sm text-muted-foreground">
           {bypassMode
             ? "Bypass mode is active. You can exit without a PIN."
-            : "Confirm and enter PIN to leave Quick Sale mode."}
+            : hasPinConfigured === false
+              ? "No manager PIN is configured for this workspace. You can exit to your workspace anytime."
+              : "Enter the manager PIN to return to your workspace."}
         </p>
-        {!bypassMode ? (
-          <p className="mt-1 text-xs text-white/60">
-            PIN is managed in Settings {"->"} POS Controls.
-          </p>
-        ) : null}
 
         {bypassMode ? (
           <div className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
             Local bypass mode: exit verification is disabled.
           </div>
-        ) : null}
+        ) : hasPinConfigured === false ? (
+          <div className="mt-3 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
+            No PIN required. Exit enabled. You can set up a Manager PIN later in Settings → POS Controls.
+          </div>
+        ) : (
+          <p className="mt-1 text-xs text-white/60">
+            PIN is managed in Settings → POS Controls.
+          </p>
+        )}
 
-        {bypassMode ? null : (
+        {requiresPin ? (
           <input
             type="password"
             inputMode="numeric"
@@ -74,7 +108,7 @@ export function ExitPosDialog({
             onChange={(e) => setPin(e.target.value)}
             autoFocus
           />
-        )}
+        ) : null}
 
         {error ? <p className="mt-2 text-sm font-semibold text-red-400">{error}</p> : null}
 
@@ -90,10 +124,10 @@ export function ExitPosDialog({
           <button
             type="button"
             className="h-12 rounded-md bg-accent text-black font-semibold disabled:opacity-60"
-            onClick={bypassMode ? onSuccess : verify}
-            disabled={processing || (!bypassMode && pin.length === 0)}
+            onClick={verify}
+            disabled={processing}
           >
-            {processing ? "Checking..." : bypassMode ? "Exit Now" : "Confirm Exit"}
+            {processing ? "Checking..." : requiresPin ? "Confirm Exit" : "Exit to Workspace"}
           </button>
         </div>
       </div>

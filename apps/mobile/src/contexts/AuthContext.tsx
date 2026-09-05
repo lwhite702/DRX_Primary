@@ -1,25 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
+import { api } from "@drx-convex/_generated/api";
 import {
   ClerkProvider,
-  toWorkflowSession,
   useClerkAuth,
   useSignIn,
   useUser,
 } from "../adapters/auth/client";
+import { getLegacyMobileSession } from "../services/apiClient";
+import { unregisterPushBeforeSignOut } from "../lib/pushNotifications";
+
+const OPERATOR_SESSION_KEY_PREFIX = "drx.operator-session.v1";
 
 const tokenCache = {
   async getToken(key: string) {
     try {
       const item = await SecureStore.getItemAsync(key);
-      if (item) {
-        console.log(`${key} was used 🔐 \n`);
-      } else {
-        console.log("No values stored under key: " + key);
-      }
       return item;
-    } catch (error) {
-      console.error("SecureStore get item error: ", error);
+    } catch {
       await SecureStore.deleteItemAsync(key);
       return null;
     }
@@ -27,13 +27,28 @@ const tokenCache = {
   async saveToken(key: string, value: string) {
     try {
       return SecureStore.setItemAsync(key, value);
-    } catch (err) {
+    } catch {
       return;
     }
   },
 };
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+const CONVEX_URL = process.env.EXPO_PUBLIC_CONVEX_URL!;
+const convex = CONVEX_URL
+  ? new ConvexReactClient(CONVEX_URL, { unsavedChangesWarning: false })
+  : null;
+
+type OperatorSession = {
+  operatorId: string;
+  displayName: string;
+  businessId: string;
+  businessName: string;
+  roles: string[];
+  permissions: string[];
+  email: string | null;
+  legacyBusinessId?: string;
+};
 
 interface AuthContextType {
   isSignedIn: boolean;
@@ -41,54 +56,114 @@ interface AuthContextType {
   getToken: () => Promise<string | null>;
   signOut: () => Promise<void>;
   businessId: string | null;
-  // Exposed from Clerk for compatibility
-  user: any; // Type 'UserResource' from Clerk but 'any' avoids importing complex types for now if fine.
-  // Actually let's use 'any' or just leave it generic. The error said 'Property user does not exist'.
-  // Ideally, import { UserResource } from "@clerk/types";
+  legacyBusinessId: string | null;
+  session: OperatorSession | null;
+  onboardingStatus: "NEEDS_BUSINESS_ONBOARDING" | "READY" | "INACTIVE" | "BUSINESS_MISSING" | null;
+  user: any;
   loading: boolean;
-  signIn: any; // SignInResource
+  signIn: (email?: string, password?: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function AuthProviderInner({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, userId, signOut, getToken, isLoaded } = useClerkAuth();
+  const { isSignedIn, userId, signOut: clerkSignOut, getToken, isLoaded } = useClerkAuth();
+  const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
   const { user } = useUser();
-  const { signIn } = useSignIn();
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  const { signIn: clerkSignIn, setActive, isLoaded: isSignInLoaded } = useSignIn();
+  const [cachedSession, setCachedSession] = useState<OperatorSession | null>(null);
+  const [cacheUserId, setCacheUserId] = useState<string | null>(null);
+  const signOut = async () => {
+    await unregisterPushBeforeSignOut();
+    await clerkSignOut();
+  };
+  const onboarding = useQuery(
+    api.onboarding.getCurrentOnboardingStatus,
+    isAuthenticated ? {} : "skip",
+  );
 
-  // Fetch business ID from backend when user loads
-  useEffect(() => {
-    if (isSignedIn && userId) {
-      // In a real implementation, you might fetch this from your API
-      // or derive it from the user's public metadata if you sync it there.
-      // For now, let's try to fetch it from the API or user metadata.
-      const fetchBusiness = async () => {
-        try {
-          const token = await getToken();
-          const workflowSession = toWorkflowSession({
-            userId,
-            orgId: null,
-            session: { user: user ? { publicMetadata: user.publicMetadata } : undefined },
-          });
-          // We can't call the API yet because we haven't refactored the API client.
-          // But we can check user public metadata if available.
-          const metadata = user?.publicMetadata as any;
-          if (metadata?.businessId) {
-            setBusinessId(metadata.businessId);
-          } else if (workflowSession.tenantId) {
-            setBusinessId(workflowSession.tenantId);
-          }
-        } catch (e) {
-          console.error("Failed to fetch business ID", e);
-        }
-      };
-
-      fetchBusiness();
-    } else {
-      setBusinessId(null);
+  const signIn = async (email?: string, password?: string) => {
+    if (!isSignInLoaded || !clerkSignIn) {
+      return { error: new Error("Auth is still loading") };
     }
-  }, [isSignedIn, userId, user]);
+    try {
+      const result = await clerkSignIn.create({
+        identifier: email || "",
+        password,
+      });
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        return { error: null };
+      } else {
+        return { error: new Error("Sign in requires further verification") };
+      }
+    } catch (err: any) {
+      const msg = err.errors?.[0]?.message || err.message || "Failed to sign in";
+      return { error: new Error(msg) };
+    }
+  };
+  const liveSession = onboarding?.status === "READY" ? (onboarding.session as OperatorSession) : null;
+
+  useEffect(() => {
+    let active = true;
+    if (!isLoaded) return () => { active = false; };
+    if (!isSignedIn || !userId) {
+      setCachedSession(null);
+      setCacheUserId(null);
+      return () => { active = false; };
+    }
+    const key = `${OPERATOR_SESSION_KEY_PREFIX}.${userId}`;
+    void SecureStore.getItemAsync(key).then((value) => {
+      if (!active) return;
+      try {
+        const parsed = value ? (JSON.parse(value) as OperatorSession) : null;
+        setCachedSession(parsed?.operatorId === userId ? parsed : null);
+      } catch {
+        setCachedSession(null);
+        void SecureStore.deleteItemAsync(key);
+      } finally {
+        setCacheUserId(userId);
+      }
+    });
+    return () => { active = false; };
+  }, [isLoaded, isSignedIn, userId]);
+
+  useEffect(() => {
+    if (!liveSession || !userId) return;
+    let active = true;
+    const persist = async () => {
+      let legacyBusinessId =
+        cachedSession?.operatorId === userId ? cachedSession.legacyBusinessId : undefined;
+      try {
+        const token = await getToken();
+        const legacy = await getLegacyMobileSession(token);
+        if (legacy.operatorId === userId) legacyBusinessId = legacy.businessId;
+      } catch {
+        // Convex remains authoritative; retain the last tenant-scoped legacy ID for REST-only screens.
+      }
+      const next: OperatorSession = { ...liveSession, legacyBusinessId };
+      if (!active) return;
+      setCachedSession(next);
+      setCacheUserId(userId);
+      await SecureStore.setItemAsync(
+        `${OPERATOR_SESSION_KEY_PREFIX}.${userId}`,
+        JSON.stringify(next),
+        { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY },
+      );
+    };
+    void persist();
+    return () => { active = false; };
+  }, [cachedSession?.legacyBusinessId, cachedSession?.operatorId, getToken, liveSession, userId]);
+
+  const session = liveSession
+    ? { ...liveSession, legacyBusinessId: cachedSession?.legacyBusinessId }
+    : cachedSession;
+  const onboardingStatus = onboarding?.status ?? (session ? "READY" : null);
+  const cacheHydrated = !isSignedIn || (!!userId && cacheUserId === userId);
+  const loading =
+    !isLoaded ||
+    !cacheHydrated ||
+    ((isConvexLoading || (!!isSignedIn && isAuthenticated && onboarding === undefined)) && !session);
 
   return (
     <AuthContext.Provider
@@ -97,9 +172,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         userId: userId || null,
         getToken,
         signOut,
-        businessId,
+        businessId: session?.businessId ?? null,
+        legacyBusinessId: session?.legacyBusinessId ?? null,
+        session,
+        onboardingStatus,
         user,
-        loading: !isLoaded,
+        loading,
         signIn,
       }}
     >
@@ -109,9 +187,8 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  if (!CLERK_PUBLISHABLE_KEY) {
-    console.error("Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY");
-    return null;
+  if (!CLERK_PUBLISHABLE_KEY || !convex) {
+    throw new Error("Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY or EXPO_PUBLIC_CONVEX_URL");
   }
 
   return (
@@ -119,7 +196,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       publishableKey={CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
     >
-      <AuthProviderInner>{children}</AuthProviderInner>
+      <ConvexProviderWithClerk client={convex} useAuth={useClerkAuth}>
+        <AuthProviderInner>{children}</AuthProviderInner>
+      </ConvexProviderWithClerk>
     </ClerkProvider>
   );
 }

@@ -19,6 +19,11 @@ import {
   buildCheckoutFailure,
   buildCheckoutSuccess,
 } from "@/lib/pos/response";
+import {
+  checkoutCanonicalCommerce,
+  shouldUseCanonicalCommerce,
+} from "@/app/api/pos/_lib/convex-commerce";
+import { hasConfiguredCanonicalCommerce } from "@/app/api/pos/_lib/commerce-routing";
 
 type PosCheckoutResponse = {
   success: boolean;
@@ -61,6 +66,49 @@ export async function POST(request: NextRequest) {
   }
 
   const payload = parsed.data;
+  const requiresCanonicalCommerce =
+    payload.mode === "quick" &&
+    (shouldUseCanonicalCommerce(payload) ||
+      (await hasConfiguredCanonicalCommerce(businessId, payload.items)));
+  if (payload.mode === "quick" && requiresCanonicalCommerce) {
+    try {
+      const result = await checkoutCanonicalCommerce({
+        businessId,
+        customerId: payload.customerId,
+        items: payload.items,
+        delivery: payload.delivery,
+        idempotencyKey: payload.idempotencyKey,
+        paymentMethod: payload.payment.method,
+      });
+      const receipt: ReceiptOutput = {
+        saleId: result.saleId,
+        total: result.total,
+        receipt: payload.payment.receipt,
+        channels:
+          payload.payment.receipt === "none"
+            ? []
+            : [{ type: "receipt", value: payload.payment.receipt }],
+      };
+      return NextResponse.json(
+        {
+          success: true,
+          saleId: result.saleId,
+          orderNumber: result.orderNumber,
+          total: result.total,
+          changeAmount: result.changeAmount,
+          receipt,
+        } satisfies PosCheckoutResponse,
+        { status: 201 },
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Delivery checkout failed";
+      return NextResponse.json(
+        { success: false, error: message } satisfies PosCheckoutResponse,
+        { status: 400 },
+      );
+    }
+  }
   const cart = createCart({
     businessId,
     userId,

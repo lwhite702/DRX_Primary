@@ -1,37 +1,31 @@
-# Changelog
+---
+title: "Documentation Changelog"
+description: "History of updates to DRX customer-facing documentation, runbooks, and guides."
+icon: "clock-rotate-left"
+---
 
-This changelog tracks customer-facing Deelrx CRM documentation updates and ties each update to a product release.
+This changelog tracks updates to DRX store documentation and guides.
 
-## How to use this file
+## Current release notes
 
-For every docs update, log:
-
-- Date
-- Product version
-- Pages affected
-- Summary of changes
-
-Do not ship silent documentation updates.
-
-## Template
-
-## [Product Version X.Y.Z] - YYYY-MM-DD
+## [Product Version 0.6.9] - 2026-08-25
 
 ### Pages affected
 
-- /getting-started
-- /how-sales-work
+- /index
+- /native-mobile-apps
+- /delivery-fulfillment
+- /fractional-and-bulk-pricing
+- /legal-disclaimer
+- /CHANGELOG
 
 ### Summary
 
-- Updated setup flow to match current onboarding labels.
-- Corrected payment method list in sales workflow.
-
-### Notes
-
-- Source of truth reviewed: live app UI labels and current production workflows.
-
-## Current release notes
+- Added native mobile applications guide for iPhone, iPad, and Android handheld POS devices with offline selling and driver arrival alerts.
+- Added delivery fulfillment guide covering order packaging, courier dispatch (Uber Direct / in-house), and tracking.
+- Added fractional selling and bulk pricing guide covering scale weight entry, dollar presets (\$10, \$20, \$35, \$50), bulk volume tiers, and loyalty redemption.
+- Complete overhaul of all documentation pages to ensure 100% operator-focused, plain-English guidance.
+- Updated brand identity, logo assets, and theme styling.
 
 ## [Product Version 0.5.3] - 2026-03-04
 
@@ -59,21 +53,11 @@ Do not ship silent documentation updates.
 
 ### Summary
 
-- Completed parity rewrite of Mintlify docs against current app routes and labels.
-- Corrected customer requirements to match live alias-first behavior.
-- Added dedicated Quick Sale runbook for `/pos/sale` -> `/pos/payment` -> `/pos/complete`.
-- Replaced outdated Event Desk naming with Operations Insights.
-- Reworked audit-ready wording while preserving `/staying-compliant` slug for link stability.
-- Expanded operator runbooks with prerequisites, fast paths, blocked-path handling, explicit beta notes, and route-accurate references.
-- Updated navigation to include quick-sale-runbook in Daily Operations.
-- Added governance artifacts:
-  - `docs/audits/mintlify-parity-audit-2026-03-04.md`
-  - `docs/audits/mintlify-parity-matrix.json`
-
-### Notes
-
-- Claim policy used for this rewrite: strict live-only claims by default; beta surfaces explicitly labeled.
-- Source of truth reviewed: app routes in `apps/app/app`, feature claim matrix, and brand voice guide.
+- Rewrote documentation to match live app screens and navigation items.
+- Documented alias-first customer profiles and privacy controls.
+- Added dedicated Quick Sale runbook for fast counter lanes.
+- Updated terminology to match Operations Insights and store settings.
+- Added shift opening/closing checklists and troubleshooting steps for store teams.
 
 ## [Product Version 0.4.12] - 2026-02-13
 
@@ -97,12 +81,6 @@ Do not ship silent documentation updates.
 
 ### Summary
 
-- Established external customer-facing Mintlify structure with required operator-friendly sections.
-- Aligned wording to then-current app labels including Sales, Inventory, Customers, Credit, metrics, Settings, and Help.
-- Documented reports limitation: page present with "No reports yet".
-- Added policy/reference pages for beta access, legal use boundaries, and glossary terms.
-- Added dedicated failsafe/self-destruct page to distinguish live safeguards from non-existent one-click destruction features.
-
-### Notes
-
-- Baseline validation was performed against live route implementations under `apps/app/app/(app)`.
+- Established initial customer-facing documentation structure with operator runbooks.
+- Documented core checkout, inventory receiving, customer profiles, and store credit tracking.
+- Added store safety, privacy, and legal disclaimer pages.

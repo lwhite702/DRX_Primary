@@ -1,68 +1,66 @@
-# Payments and plans
+---
+title: "Payments and Customer Credit"
+description: "Accepting cash, cards, electronic transfers, split tenders, and managing store credit balances."
+icon: "credit-card"
+---
 
-This page explains how tender methods and customer credit behavior work in live DRX routes.
+This guide explains how to accept different payment methods at checkout, handle electronic transfers, and manage customer store credit accounts.
 
 ## What this page is for
 
-Use this guide when your team needs clear payment handling across normal checkout and credit follow-up work.
-
-This page focuses on **tender correctness**, **credit safety**, and **what to do when a payment path is blocked**.
+Use this guide to ensure payment accuracy, prevent double-charges at checkout, manage customer credit balances, and close out shift cash drawers.
 
 ## Before you start
 
 - **Recommended role**:
-  - Cashier: normal tender handling
-  - Supervisor/manager: exception handling and credit follow-up
-- **Routes used**:
-  - `/sales`
-  - `/pos/payment`
-  - `/credit`
-  - `/sales/[id]`
-- **Live tender options**:
-  - cash
-  - card
-  - credit
-  - zelle
-  - mixed
-- **Credit rule**:
-  - Credit tender is tied to customer context and store rules.
+  - Cashier: Ring up sales, calculate cash change, and accept card/transfer payments.
+  - Supervisor or Manager: Extend credit limits, receive credit balance payments, and void transactions.
+- **Key screens**:
+  - **Payment Screen** (`/pos/payment`): Select customer tender during checkout.
+  - **Credit Center** (`/credit`): View customer balances, credit limits, and payment logs.
+  - **Sales History** (`/sales`): Review past receipts and payment breakdowns.
+- **Supported payment methods**:
+  - **Cash**: Instant change calculation with \$10, \$20, \$50, \$100 quick buttons.
+  - **Card**: Credit or debit terminal processing.
+  - **Store Credit**: Deducts directly from an attached customer's approved credit line.
+  - **Zelle / Bank Transfer**: Digital payments requiring a confirmation reference note.
+  - **Split Tender**: Combine cash and card (or credit) on a single purchase.
 
 ## Fast path
 
-1. **Select payment method** during checkout.
-2. **Enter required references** for methods that need it.
-   - Example: zelle confirmation text.
-3. **Confirm totals before submit**.
-   - Verify subtotal, tax, fees, and final amount.
-4. **Submit once and verify result**.
-   - Confirm sale success state and sale ID.
-5. **For credit activity**, open `/credit`.
-   - Record extension or payment with customer selected.
-   - Confirm updated balance and recent activity entries.
-6. **After shift close**, spot-check payment history in sale detail routes.
+1. **Select payment method at checkout**:
+   - Tap **Pay** on the register cart.
+   - Choose the payment method the customer wants to use.
+2. **Enter transfer reference for Zelle**:
+   - When accepting Zelle or digital transfers, enter the transaction ID or sender name for evening reconciliation.
+3. **Verify totals before tapping Complete**:
+   - Confirm subtotal, tax, delivery fee, and change due.
+4. **Complete the sale**:
+   - Tap **Complete Order** once. Hand the customer their receipt and change.
+5. **Managing store credit in the Credit Center** (`/credit`):
+   - **Extend Credit**: Select a customer to grant or increase their credit limit.
+   - **Log Credit Payment**: When a customer comes in to pay down their tab, select their profile, enter the cash/card amount, and tap **Record Payment**.
+   - The customer's balance updates instantly.
+6. **Shift closeout spot-check**:
+   - Compare your end-of-shift drawer cash against the cash total reported in **Operations Insights**.
 
 ## If blocked
 
-- **No payment method selected error**:
-  - Select tender first, then submit.
-- **Credit unavailable**:
-  - Attach customer.
-  - Confirm credit eligibility and role scope.
-- **Zelle submit fails**:
-  - Enter required reference note.
-  - Retry after validating connection and payload.
-- **Mixed tender confusion in lane**:
-  - Confirm operator process and amount split policy before submit.
-- **Possible duplicate payment risk after timeout**:
-  - Check if a sale ID was already created.
-  - Do not post a second transaction until status is confirmed.
-- **Credit balance looks wrong**:
-  - Verify recent extension/payment actions in `/credit` and corresponding sale record.
+- **"Select a Payment Method" prompt appears**:
+  - Tap a tender button (Cash, Card, Credit, etc.) before tapping Complete Order.
+- **Store Credit option is disabled**:
+  - Attach a customer profile to the cart and verify that they have an active credit line with available balance.
+- **Zelle transfer will not submit**:
+  - Type the customer's transfer confirmation note into the reference field.
+- **Screen froze while processing card payment**:
+  - Do not immediately swipe the card again. Check the **Sales** list to see if the receipt was generated to avoid double-charging the customer.
+- **Customer's credit balance looks incorrect**:
+  - Open the **Credit Center** (`/credit`) and review the customer's payment history and recent credit transactions.
 
 ## What is beta here
 
-- Deeper export/report layers around payment analysis are beta-limited.
-- Core tender selection and credit activity routes are live.
+- Integrated gift card barcode redemption and automated recurring billing schedules are in preview testing.
+- Cash, card, Zelle, split tender, and customer store credit tracking are fully live.
 
 ## Related docs
 
@@ -72,31 +70,9 @@ This page focuses on **tender correctness**, **credit safety**, and **what to do
 - [Numbers that matter](/numbers-that-matter)
 - [Fixing issues](/fixing-issues)
 
-## Tender-specific tips
+## Best practices for cashiers
 
-- **Cash**: confirm amount handling and change process by shift policy.
-- **Card**: confirm card path completed before moving to next customer.
-- **Credit**: confirm customer and eligibility before submit.
-- **Zelle**: always record reference value for follow-up.
-- **Mixed**: confirm split math before final submit.
-
-## Closeout checks
-
-- Spot-check at least three transactions by tender type.
-- Confirm credit activity from shift is visible in `/credit`.
-- Flag any unclear tender notes before shift handoff.
-
-## Manager handoff checklist
-
-At handoff, manager confirms:
-
-- No unresolved duplicate-payment questions remain.
-- Credit entries from shift have matching context notes.
-- Zelle references are present where used.
-- Tender exceptions were reviewed and accepted.
-
-## Training notes for new cashiers
-
-- Learn one primary tender path first.
-- Practice credit path only after customer attach behavior is clear.
-- Ask for supervisor help before forcing a workaround in live lane.
+- **Cash**: Always count change out to the customer or use the quick cash calculator.
+- **Cards**: Wait for the reader's confirmation sound before handing the customer their items.
+- **Transfers (Zelle)**: Check your store's banking app to verify funds have arrived before completing the order.
+- **Store Credit**: Make sure the person standing at the counter matches the authorized customer on file.

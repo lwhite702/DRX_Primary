@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const CHUNK_RECOVERY_FLAG = "__drx_chunk_recovery_attempted";
 
@@ -10,7 +12,11 @@ function isChunkLoadFailure(reason: unknown): boolean {
   }
 
   if (reason instanceof Event && reason.type === "error") {
-    return true;
+    const target = reason.target;
+    return (
+      target instanceof HTMLScriptElement &&
+      target.src.includes("/_next/static/chunks/")
+    );
   }
 
   const message =
@@ -25,7 +31,6 @@ function isChunkLoadFailure(reason: unknown): boolean {
   return (
     normalized.includes("chunkloaderror") ||
     normalized.includes("loading chunk") ||
-    normalized.includes("load failed") ||
     normalized.includes("failed to fetch dynamically imported module") ||
     normalized.includes("importing a module script failed")
   );
@@ -75,18 +80,11 @@ async function unregisterLegacyServiceWorkers(): Promise<void> {
 }
 
 export function ChunkRecoveryProvider() {
+  const [chunkFailure, setChunkFailure] = useState(false);
+
   useEffect(() => {
-    unregisterLegacyServiceWorkers().catch(() => {
-      // Keep startup resilient even if browser blocks SW/cache access.
-    });
-
     const handleChunkFailure = (reason: unknown) => {
-      if (!isChunkLoadFailure(reason) || hasAlreadyRetried()) {
-        return;
-      }
-
-      markRetried();
-      reloadWithCacheBust();
+      if (isChunkLoadFailure(reason)) setChunkFailure(true);
     };
 
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -106,5 +104,42 @@ export function ChunkRecoveryProvider() {
     };
   }, []);
 
-  return null;
+  if (!chunkFailure) return null;
+
+  const retry = async () => {
+    if (hasAlreadyRetried()) {
+      sessionStorage.removeItem(CHUNK_RECOVERY_FLAG);
+    }
+    markRetried();
+    await unregisterLegacyServiceWorkers();
+    reloadWithCacheBust();
+  };
+
+  return (
+    <div
+      role="alert"
+      className="fixed inset-x-4 top-4 z-[100] mx-auto flex max-w-2xl flex-wrap items-center gap-3 rounded-xl border border-warning/30 bg-background p-4 shadow-2xl"
+    >
+      <AlertTriangle className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold">This screen could not finish loading</p>
+        <p className="text-sm text-muted-foreground">
+          Your saved data is unchanged. Reload DRX to download the latest screen files.
+        </p>
+      </div>
+      <Button type="button" size="sm" onClick={() => void retry()}>
+        <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+        Reload DRX
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        aria-label="Dismiss loading error"
+        onClick={() => setChunkFailure(false)}
+      >
+        <X className="h-4 w-4" aria-hidden="true" />
+      </Button>
+    </div>
+  );
 }

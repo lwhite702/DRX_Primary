@@ -12,7 +12,7 @@ const runtimeRoots = [
 ];
 
 const runtimeFiles = [
-  "apps/app/middleware.ts",
+  "apps/app/proxy.ts",
   "apps/app/instrumentation.ts",
   "apps/app/instrumentation-client.ts",
   "apps/app/sentry.client.config.ts",
@@ -25,6 +25,7 @@ const runtimeFiles = [
 const codeExts = new Set([".ts", ".tsx", ".js", ".mjs"]);
 const ignoredRuntimeKeys = new Set([
   "CI",
+  "NEXT_PHASE",
   "NEXT_RUNTIME",
   "NODE_ENV",
   "PLAYWRIGHT_APP_PORT",
@@ -32,6 +33,7 @@ const ignoredRuntimeKeys = new Set([
   "PW_REUSE_EXISTING_SERVER",
   "PW_SKIP_GLOBAL_SETUP",
   "VITEST",
+  "VITEST_INCLUDE_INTEGRATION",
 ]);
 
 function fail(message: string): never {
@@ -161,4 +163,3 @@ if (
 console.log(
   `Env example contract check passed. Runtime keys verified: ${runtimeEnvKeys.size}`,
 );
-

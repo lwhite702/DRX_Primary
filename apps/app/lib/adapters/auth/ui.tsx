@@ -38,19 +38,20 @@ const LazyUserButton = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.UserButton),
   { ssr: false }
 );
-import { isAuthBypassEnabledClient } from "@/lib/auth/bypass";
+import { createContext, useContext } from "react";
 
-const authBypassEnabled = isAuthBypassEnabledClient();
+export const BypassContext = createContext<{
+  isBypassActive: boolean;
+  bypassUserId?: string;
+  bypassOrgId?: string;
+}>({ isBypassActive: false });
+
+export function useIsBypassActive() {
+  return useContext(BypassContext).isBypassActive;
+}
+
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-const shouldStubClerk = authBypassEnabled || !clerkConfigured;
-
-const bypassUser = {
-  id: "11111111-1111-4111-8111-111111111111",
-  firstName: "Local",
-  lastName: "Tester",
-  fullName: "Local Tester",
-  primaryEmailAddress: { emailAddress: "local@drx.test" },
-};
+const shouldStubClerkGlobal = !clerkConfigured;
 
 const unauthenticatedState = {
   isLoaded: true,
@@ -64,18 +65,18 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
     mode === "waitlist" ? "Auth Bypass Enabled" :
     "Auth Bypass Enabled (Sign In Disabled)";
 
-  return (
-    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+	    return (
+	    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-amber-50/90">
         Local testing bypass is enabled. Clerk auth UI is skipped so you can test app flows.
       </p>
       <div className="mt-4 flex gap-2">
         <a
-          href="/dashboard"
+          href="/pos/sale"
           className="inline-flex items-center rounded-md bg-amber-300 px-3 py-2 text-xs font-bold text-black"
         >
-          Continue to Dashboard
+          Continue to workspace
         </a>
         <a
           href="/pos/sale"
@@ -88,32 +89,58 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
   );
 }
 
-export function ClerkProvider(props: any) {
-  if (shouldStubClerk) return <>{props.children}</>;
-  return <LazyClerkProvider {...props} />;
+export function ClerkProvider({ isBypassActive = false, bypassUserId, bypassOrgId, children, ...props }: any) {
+  const active = isBypassActive || (typeof window !== "undefined" && (window as any).__BYPASS_ACTIVE__);
+
+  if (typeof window !== "undefined" && isBypassActive) {
+    (window as any).__BYPASS_ACTIVE__ = true;
+    (window as any).__BYPASS_USER_ID__ = bypassUserId;
+    (window as any).__BYPASS_ORG_ID__ = bypassOrgId;
+  }
+
+  const userId = bypassUserId || (typeof window !== "undefined" ? (window as any).__BYPASS_USER_ID__ : undefined);
+  const orgId = bypassOrgId || (typeof window !== "undefined" ? (window as any).__BYPASS_ORG_ID__ : undefined);
+
+  const shouldStub = active || shouldStubClerkGlobal;
+
+  return (
+    <BypassContext.Provider value={{ isBypassActive: active, bypassUserId: userId, bypassOrgId: orgId }}>
+      {shouldStub ? <>{children}</> : <LazyClerkProvider {...props}>{children}</LazyClerkProvider>}
+    </BypassContext.Provider>
+  );
 }
 
 export function SignIn(props: any) {
-  if (shouldStubClerk) return <BypassAuthCard mode="sign-in" />;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="sign-in" />;
   return <LazySignIn {...props} />;
 }
 
 export function SignUp(props: any) {
-  if (shouldStubClerk) return <BypassAuthCard mode="sign-up" />;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="sign-up" />;
   return <LazySignUp {...props} />;
 }
 
 export function Waitlist(props: any) {
-  if (shouldStubClerk) return <BypassAuthCard mode="waitlist" />;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="waitlist" />;
   return <LazyWaitlist {...props} />;
 }
 
 export function useUser() {
-  if (authBypassEnabled) {
+  const { isBypassActive, bypassUserId } = useContext(BypassContext);
+  if (isBypassActive) {
     return {
       isLoaded: true,
       isSignedIn: true,
-      user: bypassUser,
+      user: {
+        id: bypassUserId || "default-bypass-id",
+        firstName: "Local",
+        lastName: "Tester",
+        fullName: "Local Tester",
+        primaryEmailAddress: { emailAddress: "local@drx.test" },
+      },
     } as any;
   }
   if (!clerkConfigured) {
@@ -123,12 +150,13 @@ export function useUser() {
 }
 
 export function useAuth() {
-  if (authBypassEnabled) {
+  const { isBypassActive, bypassUserId, bypassOrgId } = useContext(BypassContext);
+  if (isBypassActive) {
     return {
       isLoaded: true,
       isSignedIn: true,
-      userId: bypassUser.id,
-      orgId: "org_local_bypass",
+      userId: bypassUserId || "default-bypass-id",
+      orgId: bypassOrgId || "org_local_bypass",
       sessionId: "bypass-session",
       getToken: async () => "bypass-token",
     } as any;
@@ -147,7 +175,8 @@ export function useAuth() {
 }
 
 export function useSignIn() {
-  if (authBypassEnabled) {
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive) {
     return {
       isLoaded: true,
       signIn: {
@@ -170,7 +199,8 @@ export function useSignIn() {
 }
 
 export function useOrganization() {
-  if (authBypassEnabled) {
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive) {
     return {
       isLoaded: true,
       organization: null,
@@ -186,7 +216,8 @@ export function useOrganization() {
 }
 
 export function useOrganizationList(...args: any[]) {
-  if (shouldStubClerk) {
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) {
     void args;
     return {
       isLoaded: true,
@@ -198,7 +229,8 @@ export function useOrganizationList(...args: any[]) {
 }
 
 export const OrganizationSwitcher = ((props: any) => {
-  if (shouldStubClerk) {
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) {
     return (
       <button
         type="button"
@@ -239,12 +271,14 @@ function BypassSignOutButton({ children, redirectUrl, afterSignOutUrl }: any) {
 }
 
 export const SignOutButton = ((props: any) => {
-  if (shouldStubClerk) return <BypassSignOutButton {...props} />;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return <BypassSignOutButton {...props} />;
   return <LazySignOutButton {...props} />;
 }) as any;
 
 const UserButtonImpl: any = (props: any) => {
-  if (shouldStubClerk) {
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) {
     return (
       <button
         type="button"
@@ -260,12 +294,14 @@ const UserButtonImpl: any = (props: any) => {
 };
 
 UserButtonImpl.MenuItems = (props: any) => {
-  if (shouldStubClerk) return null;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return null;
   return <Clerk.UserButton.MenuItems {...props} />;
 };
 
 UserButtonImpl.Action = (props: any) => {
-  if (shouldStubClerk) return null;
+  const isBypassActive = useIsBypassActive();
+  if (isBypassActive || shouldStubClerkGlobal) return null;
   return <Clerk.UserButton.Action {...props} />;
 };
 

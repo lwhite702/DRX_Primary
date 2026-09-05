@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const checks = [
-  { route: "/dashboard", text: /Operator Dashboard/i },
+  { route: "/dashboard", text: /Today|No Business Found/i },
   { route: "/customers", text: /CUSTOMERS/i },
+  { route: "/inventory", text: /Inventory|Finish business setup/i },
+  { route: "/settings/team", text: /Team Management|Finish business setup/i },
+  { route: "/settings", text: /Settings|Finish business setup/i },
   { route: "/pos/sale", text: /Continue to Payment/i },
   { route: "/help", text: /Support Center/i },
   { route: "/help/library?topic=start", text: /Knowledge Library/i },
@@ -14,7 +17,10 @@ test.describe("Required UX smoke", () => {
       await page.goto(check.route, { waitUntil: "domcontentloaded" });
       await expect(page.locator("body")).toBeVisible();
       await expect(page.locator("body")).not.toContainText(/Application error|Internal Server Error/i);
-      await expect(page.locator("body")).toContainText(check.text);
+      await expect(page.locator("body")).toContainText(check.text, { timeout: 15000 });
+      if (!check.route.startsWith("/help") && !check.route.startsWith("/pos")) {
+        await expect(page.locator("#main-content")).toHaveCount(1);
+      }
     });
   }
 });

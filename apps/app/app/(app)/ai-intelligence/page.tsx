@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -18,34 +17,54 @@ import { PricingRecommendationCard } from "@/components/ai/pricing-recommendatio
 import { InventoryForecastCard } from "@/components/ai/inventory-forecast-card";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
-import { createAppClient } from "@/lib/data/client/supabase-client";
-import { RefreshCw, AlertTriangle, TrendingUp } from "lucide-react";
+import { RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import type { AIPricingRecommendation, InventoryForecast } from "@/lib/validations/schemas";
+import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
+import {
+  inventoryNumber,
+  inventoryText,
+  processedCount,
+  unwrapApiData,
+} from "@/lib/ai/intelligence-normalizers";
 
 interface AIRecommendations {
   pricing: AIPricingRecommendation | null;
   forecast: InventoryForecast | null;
 }
 
+type AIInventoryItem = Record<string, unknown> & {
+  id: string;
+  sku?: string | null;
+  product_name?: string | null;
+  productName?: string | null;
+};
+
 export default function AIIntelligencePage() {
   const { business, loading: businessLoading } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
-  const [selectedSku, setSelectedSku] = useState<string>("");
+  const {
+    inventory,
+    loading: inventoryLoading,
+    syncStatus,
+    refresh: refreshInventory,
+  } = useRealtimeInventory(business?.id || null);
   const [recommendations, setRecommendations] = useState<Map<string, AIRecommendations>>(
     new Map()
   );
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const supabase = createAppClient();
-
-  const filteredInventory = inventory.filter(
+  const normalizedSearch = searchTerm.toLowerCase();
+  const safeInventory = Array.isArray(inventory) ? inventory : [];
+  const filteredInventory = safeInventory.filter(
     (item) =>
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      inventoryText(item?.sku).toLowerCase().includes(normalizedSearch) ||
+      inventoryText(item?.product_name ?? item?.productName)
+        .toLowerCase()
+        .includes(normalizedSearch)
   );
 
-  const handleAnalyzeProduct = async (inventoryItem: any) => {
+  const handleAnalyzeProduct = async (inventoryItem: AIInventoryItem) => {
     if (!business?.id) {
       toast.error("Business not found");
       return;
@@ -59,12 +78,12 @@ export default function AIIntelligencePage() {
         body: JSON.stringify({
           business_id: business.id,
           inventory_id: inventoryItem.id,
-          product_name: inventoryItem.product_name,
-          sku: inventoryItem.sku,
-          cost: Number(inventoryItem.unit_cost || 0),
-          current_price: Number(inventoryItem.selling_price || 0),
-          current_stock: inventoryItem.quantity_on_hand,
-          reorder_level: inventoryItem.reorder_level,
+          product_name: inventoryText(inventoryItem.product_name ?? inventoryItem.productName),
+          sku: inventoryText(inventoryItem.sku),
+          cost: inventoryNumber(inventoryItem, "unit_cost", "unitCost"),
+          current_price: inventoryNumber(inventoryItem, "selling_price", "sellingPrice"),
+          current_stock: inventoryNumber(inventoryItem, "quantity_on_hand", "quantityOnHand"),
+          reorder_level: inventoryNumber(inventoryItem, "reorder_level", "reorderLevel"),
           margin_requirement: 0.3,
           supplier_lead_time_days: 7,
         }),
@@ -75,14 +94,16 @@ export default function AIIntelligencePage() {
       }
 
       const result = await response.json();
-      toast.success(`Analysis complete for ${inventoryItem.product_name}`);
-      setSelectedSku(inventoryItem.sku);
+      const data = unwrapApiData<AIRecommendations>(result);
+      if (!data) throw new Error("Analysis returned an invalid response");
+      const productName = inventoryText(inventoryItem.product_name ?? inventoryItem.productName);
+      toast.success(`Analysis complete for ${productName || "product"}`);
 
       // Store recommendations
       const newRecs = new Map(recommendations);
       newRecs.set(inventoryItem.id, {
-        pricing: result.data.pricing,
-        forecast: result.data.forecast,
+        pricing: data.pricing ?? null,
+        forecast: data.forecast ?? null,
       });
       setRecommendations(newRecs);
     } catch (error) {
@@ -115,7 +136,7 @@ export default function AIIntelligencePage() {
 
       const result = await response.json();
       toast.success(
-        `Batch analysis complete: ${result.summary.processed_count} items processed`
+        `Batch analysis complete: ${processedCount(result)} items processed`
       );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Batch analysis failed");
@@ -124,8 +145,8 @@ export default function AIIntelligencePage() {
     }
   };
 
-  if (businessLoading) {
-    return <div className="p-4 md:p-8">Loading...</div>;
+  if (businessLoading || inventoryLoading) {
+    return <AppPageSkeleton rows={5} />;
   }
 
   if (!business) {
@@ -148,15 +169,21 @@ export default function AIIntelligencePage() {
             Pricing recommendations, inventory forecasting, and demand analytics
           </p>
         </div>
-        <Button
-          onClick={handleAnalyzeAll}
-          disabled={loading}
-          size="lg"
-          className="w-full md:w-auto"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {loading ? "Analyzing..." : "Analyze All Products"}
-        </Button>
+        <div className="flex flex-col items-stretch gap-2 md:items-end">
+          <DataSyncStatus
+            status={syncStatus}
+            onRefresh={() => void refreshInventory()}
+          />
+          <Button
+            onClick={handleAnalyzeAll}
+            disabled={loading}
+            size="lg"
+            className="w-full md:w-auto"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {loading ? "Analyzing..." : "Analyze All Products"}
+          </Button>
+        </div>
       </div>
 
       {/* Dashboard */}
@@ -187,8 +214,8 @@ export default function AIIntelligencePage() {
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
                 {filteredInventory.map((item) => {
-                  const cost = Number(item.unit_cost || 0);
-                  const price = Number(item.selling_price || 0);
+                  const cost = inventoryNumber(item, "unit_cost", "unitCost");
+                  const price = inventoryNumber(item, "selling_price", "sellingPrice");
                   const margin = cost > 0 ? (((price - cost) / cost) * 100).toFixed(0) : "0";
                   const lowStock = item.quantity_on_hand <= item.reorder_level;
 
@@ -254,8 +281,8 @@ export default function AIIntelligencePage() {
                   </TableHeader>
                   <TableBody>
                     {filteredInventory.map((item) => {
-                      const cost = Number(item.unit_cost || 0);
-                      const price = Number(item.selling_price || 0);
+                      const cost = inventoryNumber(item, "unit_cost", "unitCost");
+                      const price = inventoryNumber(item, "selling_price", "sellingPrice");
                       const margin = cost > 0 ? ((price - cost) / cost * 100).toFixed(0) : "0";
 
                       return (
@@ -304,7 +331,7 @@ export default function AIIntelligencePage() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold">AI Recommendations</h2>
           {Array.from(recommendations.entries()).map(([inventoryId, recs]) => {
-            const item = inventory.find((i) => i.id === inventoryId);
+            const item = safeInventory.find((i) => i.id === inventoryId);
             if (!item) return null;
 
             return (
@@ -319,7 +346,7 @@ export default function AIIntelligencePage() {
                       reasoning: recs.pricing.reasoning,
                       factors: recs.pricing.factors || {},
                     }}
-                    currentPrice={Number(item.selling_price || 0)}
+                    currentPrice={inventoryNumber(item, "selling_price", "sellingPrice")}
                     productName={item.product_name}
                     sku={item.sku}
                     inventoryId={item.id}

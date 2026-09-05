@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isAuthBypassEnabledClient } from "@/lib/auth/bypass";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 import {
   DASHBOARD_PREFS_LOCAL_STORAGE_KEY,
   extractDashboardPreferencesFromMetadata,
@@ -9,7 +9,6 @@ import {
   mergeDashboardPreferences,
   type DashboardPreferences,
   type DashboardViewPreset,
-  type PinnedPanelItemId,
 } from "@/lib/auth/dashboard-preferences";
 import {
   getDashboardPreferencesAction,
@@ -18,9 +17,7 @@ import {
 
 const DASHBOARD_PREFS_EVENT = "drx:dashboard-preferences-updated";
 
-type DashboardPreferencesPatch = Partial<
-  Pick<DashboardPreferences, "preset" | "pinnedItemIds">
->;
+type DashboardPreferencesPatch = Partial<Pick<DashboardPreferences, "preset">>;
 
 function readPrefsFromLocalStorage(): DashboardPreferences | null {
   if (typeof window === "undefined") return null;
@@ -43,22 +40,29 @@ function writePrefsToLocalStorage(preferences: DashboardPreferences) {
 }
 
 export function useDashboardPreferences() {
-  const authBypassEnabled = isAuthBypassEnabledClient();
+  const authBypassEnabled = useIsBypassActive();
 
   const [preferences, setPreferences] = useState<DashboardPreferences>(() =>
     getDefaultDashboardPreferences(),
   );
   const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    authBypassEnabled ? "success" : "loading",
+  );
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const localPrefs = readPrefsFromLocalStorage();
     setPreferences(localPrefs ?? getDefaultDashboardPreferences());
+    setError(null);
 
     if (authBypassEnabled) {
+      setStatus("success");
       return;
     }
 
     let cancelled = false;
+    setStatus("loading");
 
     void (async () => {
       try {
@@ -66,9 +70,17 @@ export function useDashboardPreferences() {
         if (!cancelled && result.success) {
           setPreferences(result.preferences);
           writePrefsToLocalStorage(result.preferences);
+          setStatus("success");
+        } else if (!cancelled) {
+          setStatus("error");
+          setError("Dashboard view could not sync.");
         }
-      } catch (error) {
-        console.warn("Failed to load server dashboard preferences:", error);
+      } catch (caught) {
+        console.warn("Failed to load server dashboard preferences:", caught);
+        if (!cancelled) {
+          setStatus("error");
+          setError("Dashboard view could not sync.");
+        }
       }
     })();
 
@@ -106,6 +118,7 @@ export function useDashboardPreferences() {
       }
 
       setSaving(true);
+      setError(null);
       try {
         const result = await updateDashboardPreferencesAction(patch);
         if (!result.success) {
@@ -113,9 +126,12 @@ export function useDashboardPreferences() {
         }
         setPreferences(result.preferences);
         writePrefsToLocalStorage(result.preferences);
+        setStatus("success");
         return result.preferences;
-      } catch (error) {
-        console.error("Failed to persist dashboard preferences:", error);
+      } catch (caught) {
+        console.error("Failed to persist dashboard preferences:", caught);
+        setStatus("error");
+        setError("Dashboard view could not sync. Your local choice is still active.");
         // Keep optimistic local state so the UI remains usable even if persistence fails.
         return optimistic;
       } finally {
@@ -130,15 +146,11 @@ export function useDashboardPreferences() {
     [patchPreferences],
   );
 
-  const setPinnedItemIds = useCallback(
-    (pinnedItemIds: PinnedPanelItemId[]) => patchPreferences({ pinnedItemIds }),
-    [patchPreferences],
-  );
-
   return {
     preferences,
+    status,
+    error,
     saving,
     setPreset,
-    setPinnedItemIds,
   };
 }

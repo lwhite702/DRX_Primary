@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
   CardContent,
   CardFooter,
   CardHeader,
@@ -11,13 +10,12 @@ import {
 } from "@/components/ui/card";
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
-  PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 interface TourStep {
-  targetId: string; // ID of the element to attach to
+  targetId: string;
   title: string;
   description: string;
   position?: "top" | "bottom" | "left" | "right";
@@ -26,148 +24,200 @@ interface TourStep {
 interface TourProps {
   steps: TourStep[];
   onComplete: () => void;
-  tourId: string; // Unique ID for local storage persistence
+  tourId: string;
+}
+
+const TOUR_RELEASED_EVENT = "drx:tour-released";
+let activeTourId: string | null = null;
+
+function removeHighlight(element: HTMLElement | null) {
+  element?.classList.remove("tour-target-highlight");
+  element?.removeAttribute("data-drx-tour-active");
 }
 
 export function Tour({ steps, onComplete, tourId }: TourProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+  const targetElementRef = useRef<HTMLElement | null>(null);
+  const nextButtonRef = useRef<HTMLButtonElement | null>(null);
+  const storageKey = `drx_tour_${tourId}`;
 
-  // Check if tour already completed
-  useEffect(() => {
-    const completed = localStorage.getItem(`drx_tour_${tourId}`);
-    if (completed) return;
-
-    // Start tour
-    setIsOpen(true);
+  const releaseTour = useCallback(() => {
+    if (activeTourId === tourId) {
+      activeTourId = null;
+      window.dispatchEvent(new CustomEvent(TOUR_RELEASED_EVENT));
+    }
   }, [tourId]);
 
-  // Find target element
+  const finishTour = useCallback(() => {
+    removeHighlight(targetElementRef.current);
+    targetElementRef.current = null;
+    setTargetElement(null);
+    setIsActive(false);
+    window.localStorage.setItem(storageKey, "true");
+    releaseTour();
+    onComplete();
+  }, [onComplete, releaseTour, storageKey]);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!steps.length || window.localStorage.getItem(storageKey)) return;
 
-    // Small delay to ensure render
-    const timer = setTimeout(() => {
-      const step = steps[currentStepIndex];
-      const el = document.getElementById(step.targetId);
-      if (el) {
-        setTargetElement(el);
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Highlight effect could go here (e.g. outline)
-        el.classList.add("ring-4", "ring-primary/50", "transition-all");
-      } else {
-        console.warn(`Tour target ${step.targetId} not found`);
-      }
-    }, 500);
+    const tryToStart = () => {
+      if (window.localStorage.getItem(storageKey)) return;
+      if (activeTourId && activeTourId !== tourId) return;
+      activeTourId = tourId;
+      setCurrentStepIndex(0);
+      setIsActive(true);
+    };
 
-    return () => clearTimeout(timer);
-  }, [currentStepIndex, isOpen, steps]);
+    tryToStart();
+    window.addEventListener(TOUR_RELEASED_EVENT, tryToStart);
 
-  // Cleanup highlight on step change
-  useEffect(() => {
     return () => {
-      if (targetElement) {
-        targetElement.classList.remove(
-          "ring-4",
-          "ring-primary/50",
-          "transition-all",
-        );
+      window.removeEventListener(TOUR_RELEASED_EVENT, tryToStart);
+      removeHighlight(targetElementRef.current);
+      if (activeTourId === tourId) {
+        releaseTour();
       }
     };
-  }, [targetElement]);
+  }, [releaseTour, steps.length, storageKey, tourId]);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const step = steps[currentStepIndex];
+    if (!step) {
+      finishTour();
+      return;
+    }
+
+    removeHighlight(targetElementRef.current);
+    targetElementRef.current = null;
+    setTargetElement(null);
+
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const locateTarget = () => {
+      const element = document.getElementById(step.targetId);
+      if (element) {
+        targetElementRef.current = element;
+        setTargetElement(element);
+        element.classList.add("tour-target-highlight");
+        element.setAttribute("data-drx-tour-active", "true");
+        const reduceMotion = window.matchMedia?.(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        element.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "center",
+        });
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < 4) {
+        timer = setTimeout(locateTarget, 150);
+        return;
+      }
+
+      if (currentStepIndex < steps.length - 1) {
+        setCurrentStepIndex((index) => index + 1);
+      } else {
+        finishTour();
+      }
+    };
+
+    timer = setTimeout(locateTarget, 0);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      removeHighlight(targetElementRef.current);
+    };
+  }, [currentStepIndex, finishTour, isActive, steps]);
+
+  const virtualAnchorRef = useMemo(
+    () => ({ current: targetElement as HTMLElement }),
+    [targetElement],
+  );
 
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
-      setCurrentStepIndex((prev) => prev + 1);
-    } else {
-      finishTour();
+      setCurrentStepIndex((index) => index + 1);
+      return;
     }
-  };
-
-  const finishTour = () => {
-    setIsOpen(false);
-    localStorage.setItem(`drx_tour_${tourId}`, "true");
-    if (targetElement) {
-      targetElement.classList.remove(
-        "ring-4",
-        "ring-primary/50",
-        "transition-all",
-      );
-    }
-    onComplete();
-  };
-
-  const handleSkip = () => {
     finishTour();
   };
 
-  if (!isOpen || !steps[currentStepIndex]) return null;
-
-  const step = steps[currentStepIndex];
-
-  // We are "hacking" the Popover by attaching it to the target element if possible.
-  // Actually, Shadcn Popover requires a Trigger as a child.
-  // Since we can't easily wrap the existing UI elements without intrusive changes,
-  // a "Portal" or "Overlay" approach is better for a Tour.
-  // However, for simplicity and speed, let's use a fixed position card relative to viewport or
-  // just a floating card if we can't do complex positioning easily.
-
-  // Revised approach: Floating fixed card at bottom/center or near element if we calculate pos.
-  // Better yet: Just a fixed overlay card is easiest for "MVP" tour.
-  // BUT user asked for "Tour".
-
-  // Let's try to find rect and position absolute.
-  const rect = targetElement?.getBoundingClientRect();
-
-  const style: React.CSSProperties = {
-    position: "fixed",
-    zIndex: 50,
-    maxWidth: 300,
+  const handleBack = () => {
+    setCurrentStepIndex((index) => Math.max(0, index - 1));
   };
 
-  // Simple positioning logic
-  if (rect) {
-    // Default bottom
-    style.top = rect.bottom + 10;
-    style.left = rect.left;
+  const step = steps[currentStepIndex];
+  if (!isActive || !step || !targetElement) return null;
 
-    // Adjust if off screen
-    if (style.left + 300 > window.innerWidth) {
-      style.left = window.innerWidth - 320;
-    }
-  } else {
-    // Center if no target found (fallback)
-    style.top = "50%";
-    style.left = "50%";
-    style.transform = "translate(-50%, -50%)";
-  }
+  const titleId = `drx-tour-${tourId}-title`;
+  const descriptionId = `drx-tour-${tourId}-description`;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      {/* Box shadow overlay or darkening? optional */}
-      <Card
-        className="pointer-events-auto shadow-2xl border-primary"
-        style={style}
+    <>
+      <div className="pointer-events-none fixed inset-0 z-40 bg-black/55" aria-hidden="true" />
+      <Popover
+        open
+        modal
+        onOpenChange={(open) => {
+          if (!open) finishTour();
+        }}
       >
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex justify-between items-center">
-            {step.title}
-            <span className="text-xs text-muted-foreground font-normal">
-              {currentStepIndex + 1} / {steps.length}
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">{step.description}</CardContent>
-        <CardFooter className="flex justify-between pt-0">
-          <Button variant="ghost" size="sm" onClick={handleSkip}>
-            Skip
-          </Button>
-          <Button size="sm" onClick={handleNext}>
-            {currentStepIndex === steps.length - 1 ? "Finish" : "Next"}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+        <PopoverAnchor virtualRef={virtualAnchorRef} />
+        <PopoverContent
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          side={step.position ?? "bottom"}
+          sideOffset={14}
+          collisionPadding={16}
+          avoidCollisions
+          sticky="always"
+          hideWhenDetached
+          updatePositionStrategy="always"
+          className="z-50 w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-primary/50 bg-[#121212] p-1 text-foreground shadow-2xl"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            nextButtonRef.current?.focus();
+          }}
+          onCloseAutoFocus={(event) => event.preventDefault()}
+        >
+          <CardHeader className="p-4 pb-2">
+            <CardTitle id={titleId} className="flex items-center justify-between gap-4 text-base font-bold text-white">
+              <span>{step.title}</span>
+              <span className="shrink-0 text-xs font-mono text-primary font-semibold">
+                {currentStepIndex + 1} / {steps.length}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent id={descriptionId} className="p-4 pt-1 pb-3 text-sm leading-relaxed text-[#C7C7C7]">
+            {step.description}
+          </CardContent>
+          <CardFooter className="flex items-center justify-between gap-2 p-4 pt-1">
+            <Button variant="ghost" size="sm" onClick={finishTour} className="text-xs text-muted-foreground hover:text-white">
+              Skip tour
+            </Button>
+            <div className="flex items-center gap-2">
+              {currentStepIndex > 0 ? (
+                <Button variant="outline" size="sm" onClick={handleBack} className="text-xs">
+                  Back
+                </Button>
+              ) : null}
+              <Button ref={nextButtonRef} size="sm" onClick={handleNext} className="bg-primary font-bold text-black hover:bg-primary/90 text-xs">
+                {currentStepIndex === steps.length - 1 ? "Finish" : "Next"}
+              </Button>
+            </div>
+          </CardFooter>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

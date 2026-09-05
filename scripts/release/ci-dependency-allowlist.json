@@ -1,0 +1,5 @@
+{
+  "authority": "local-repository",
+  "rule": "Release and version CI may use an MCP only through a reviewed, pinned, repository-local implementation. HAPI and other registries are advisory discovery sources, never CI authorities.",
+  "allowedLocalMcpDependencies": []
+}

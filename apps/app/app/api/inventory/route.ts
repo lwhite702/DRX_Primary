@@ -1,42 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { newProductCommerceSchema } from "@/lib/commerce/product-creation";
+import {
+  commerceSettingsSchema,
+  readCommerceSettings,
+} from "@/lib/commerce/config";
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
       return NextResponse.json(
         { error: "Endpoint GET Unauthorized" },
         { status: 401 },
       );
     }
-
-    // Determine business_id
-    // 1. Check if user is an owner
-    const ownedBusiness = await db.businessProfile.findFirst({
-      where: { ownerId: userId },
-      select: { id: true },
-    });
-
-    let businessId = ownedBusiness?.id;
-
-    // 2. If not owner, check roles
-    if (!businessId) {
-      const userRole = await db.userRole.findFirst({
-        where: { userId: userId },
-        select: { businessId: true },
-      });
-      businessId = userRole?.businessId;
-    }
-
-    if (!businessId) {
-      return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
-      );
+    if (!(await hasBusinessPermission(userId, businessId, "catalog.view"))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -74,41 +57,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
+    const body = await request.json();
+    const { userId, businessId } = await resolveAuthContext(
+      typeof body.business_id === "string" ? body.business_id : request,
+    );
+    if (!userId || !businessId) {
       return NextResponse.json(
         { error: "Endpoint POST Unauthorized" },
         { status: 401 },
       );
     }
-
-    // Determine business_id
-    // 1. Check if user is an owner
-    const ownedBusiness = await db.businessProfile.findFirst({
-      where: { ownerId: userId },
-      select: { id: true },
-    });
-
-    let businessId = ownedBusiness?.id;
-
-    // 2. If not owner, check roles
-    if (!businessId) {
-      const userRole = await db.userRole.findFirst({
-        where: { userId: userId },
-        select: { businessId: true },
-      });
-      businessId = userRole?.businessId;
+    if (
+      !(await hasBusinessPermission(userId, businessId, "inventory.manage"))
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
-    if (!businessId) {
-      return NextResponse.json(
-        { error: "Business not found for user" },
-        { status: 404 },
-      );
-    }
-
-    const body = await request.json();
     const {
       sku,
       product_name,
@@ -119,6 +82,7 @@ export async function POST(request: NextRequest) {
       unit_cost,
       selling_price,
       supplier_id,
+      unit_of_measure,
     } = body;
 
     // Validation
@@ -129,25 +93,140 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      const newItem = await db.inventory.create({
-        data: {
-          businessId,
-          sku,
-          productName: product_name,
-          description,
-          category,
-          quantityOnHand: quantity_on_hand || 0,
-          reorderLevel: reorder_level || 10,
-          unitCost: unit_cost,
-          sellingPrice: selling_price,
-          supplierId: supplier_id,
+    const commerce =
+      body.commerce_config === undefined
+        ? undefined
+        : newProductCommerceSchema.safeParse(body.commerce_config);
+    if (commerce && !commerce.success) {
+      return NextResponse.json(
+        { error: commerce.error.issues[0]?.message || "Invalid selling rules" },
+        { status: 400 },
+      );
+    }
+    const config = commerce?.success ? commerce.data : undefined;
+    if (
+      config &&
+      (!Number.isFinite(selling_price) ||
+        selling_price <= 0 ||
+        !Number.isSafeInteger(Math.round(selling_price * 100)) ||
+        Math.abs(selling_price * 100 - Math.round(selling_price * 100)) >
+          1e-6 ||
+        !Number.isSafeInteger(quantity_on_hand ?? 0) ||
+        (quantity_on_hand ?? 0) < 0 ||
+        !Number.isSafeInteger(reorder_level ?? 10) ||
+        (reorder_level ?? 10) < 0 ||
+        (unit_cost !== undefined &&
+          (!Number.isFinite(unit_cost) || unit_cost < 0)))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Enter a positive price with at most two decimal places and nonnegative whole-number starting stock and reorder level. Receive fractional stock through inventory intake.",
         },
-      });
+        { status: 400 },
+      );
+    }
+
+    try {
+      const createItem = (tx: Pick<Prisma.TransactionClient, "inventory">) =>
+        tx.inventory.create({
+          data: {
+            businessId,
+            sku,
+            productName: product_name,
+            description,
+            category,
+            quantityOnHand: quantity_on_hand || 0,
+            reorderLevel: reorder_level ?? 10,
+            unitCost: unit_cost,
+            sellingPrice: selling_price,
+            supplierId: supplier_id,
+            baseUnit: config?.sellingUnit || unit_of_measure || "g",
+            ...(config
+              ? {
+                  allowFractionalWeight: config.fractionalEnabled,
+                  pricePerGram: config.fractionalEnabled ? selling_price : null,
+                  inventoryInGrams: config.fractionalEnabled
+                    ? (quantity_on_hand ?? 0)
+                    : 0,
+                }
+              : {}),
+          },
+        });
+
+      // No success response can escape with a product but missing selling rules.
+      // Serializable isolation also prevents concurrent creates from replacing
+      // each other's entries in the transitional settings JSON.
+      const newItem = config
+        ? await db.$transaction(
+            async (tx: Prisma.TransactionClient) => {
+              const item = await createItem(tx);
+              const current = await tx.businessSettings.findUnique({
+                where: { businessId },
+                select: { settingsData: true },
+              });
+              const settingsData =
+                current?.settingsData &&
+                typeof current.settingsData === "object" &&
+                !Array.isArray(current.settingsData)
+                  ? { ...current.settingsData }
+                  : {};
+              if (
+                settingsData.commerce !== undefined &&
+                !commerceSettingsSchema.safeParse(settingsData.commerce).success
+              ) {
+                throw new Error(
+                  "Existing commerce settings need repair before adding selling rules",
+                );
+              }
+              const settings = readCommerceSettings(settingsData);
+              settings.productConfigs[item.id] = config;
+              const data = {
+                ...settingsData,
+                commerce: settings,
+              } as Prisma.InputJsonValue;
+              await tx.businessSettings.upsert({
+                where: { businessId },
+                create: { businessId, settingsData: data },
+                update: { settingsData: data },
+              });
+              await tx.inventoryLog.create({
+                data: {
+                  inventoryId: item.id,
+                  transactionType: "creation",
+                  quantityChange: quantity_on_hand ?? 0,
+                  reason: "Product created with selling rules",
+                  createdBy: userId,
+                },
+              });
+              return item;
+            },
+            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+          )
+        : await createItem(db);
 
       return NextResponse.json(newItem, { status: 201 });
-    } catch (error: any) {
-      if (error.code === "P2002") {
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "P2034"
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Another product changed during saving. Nothing was created; please try again.",
+          },
+          { status: 409 },
+        );
+      }
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "P2002"
+      ) {
         // Unique constraint violation (likely SKU)
         return NextResponse.json(
           { error: "SKU already exists for this business" },

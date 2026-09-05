@@ -92,11 +92,11 @@ export function OperatorSnapshot({
   }, [stats.cashCollected, stats.salesToday]);
 
   return (
-    <section className="rounded-2xl border border-[#4ADE80]/15 bg-[#4ADE80]/[0.03] p-4 shadow-[0_10px_30px_rgba(74,222,128,0.04)] md:p-5">
+    <section className="rounded-xl border border-accent/15 bg-accent/[0.03] p-4 md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-            SECTION A: OPERATOR SNAPSHOT
+            At a glance
           </div>
           <p className="mt-1 text-xs text-white/70">
             Daily totals, credit exposure, and stock pressure at a glance.
@@ -162,14 +162,14 @@ export function OperatorSnapshot({
             }
             sublabel={
               <span className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1 font-semibold text-[#4ADE80]">
+                <span className="inline-flex items-center gap-1 font-semibold text-success">
                   +{stats.salesGrowth}% <ArrowUpRight className="h-3 w-3" />
                 </span>
                 <span className="text-white/65">{stats.transactionsCount} transactions</span>
               </span>
             }
             icon={<TrendingUp className="h-4 w-4" />}
-            iconClassName="bg-[#4ADE80]/10 text-[#4ADE80]"
+            iconClassName="bg-accent/10 text-accent"
             className="lg:col-span-2"
           />
 
@@ -186,7 +186,7 @@ export function OperatorSnapshot({
               </span>
             }
             icon={<DollarSign className="h-4 w-4" />}
-            iconClassName="bg-[#4ADE80]/10 text-[#4ADE80]"
+            iconClassName="bg-success/10 text-success"
             className={compact ? "lg:col-span-1" : undefined}
           />
 
@@ -195,8 +195,8 @@ export function OperatorSnapshot({
             value={stats.lowStockCount}
             sublabel={<span>Products below threshold</span>}
             icon={<Package className="h-4 w-4" />}
-            iconClassName="bg-orange-500/10 text-orange-400"
-            className={emphasizeInventory ? "border-orange-500/20 bg-orange-500/[0.04]" : undefined}
+            iconClassName="bg-warning/10 text-warning"
+            className={emphasizeInventory ? "border-warning/20 bg-warning/[0.04]" : undefined}
           />
 
           <SnapshotCard
@@ -219,4 +219,3 @@ export function OperatorSnapshot({
     </section>
   );
 }
-

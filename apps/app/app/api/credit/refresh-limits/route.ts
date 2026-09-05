@@ -3,7 +3,7 @@ import { auth } from "@/lib/adapters/auth/server";
 import { hasPermission } from "@/lib/auth/server-guards";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 // This endpoint is called by a cron job to refresh AI credit limits
 // Protected by environment variable auth (configure CRON_SECRET in your environment)
@@ -25,11 +25,11 @@ export async function POST(request: Request) {
     return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
   }
 
-  const killSwitchEnabled = await ensureServerFlag(
-    OPS_KILL_SWITCH_FLAGS.creditRefreshLimitsCron,
+  const availabilityEnabled = await ensureServerFlag(
+    OPS_AVAILABILITY_FLAGS.creditRefreshLimitsCron,
     { distinctId: "cron-refresh-limits", defaultValue: true },
   );
-  if (!killSwitchEnabled) {
+  if (!availabilityEnabled) {
     return errorResponse(
       "FEATURE_DISABLED",
       "Credit limit refresh is temporarily disabled",

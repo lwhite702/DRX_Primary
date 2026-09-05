@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { act, render } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { act, render, waitFor } from "@testing-library/react";
 import { QuickPosProvider, useQuickPosStore } from "@/lib/quick-pos/store";
+import { QUICK_POS_STORAGE_KEY } from "@/lib/quick-pos/constants";
 
 let storeRef: ReturnType<typeof useQuickPosStore> | null = null;
 
@@ -10,6 +11,10 @@ function Harness() {
 }
 
 describe("quick pos store", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   it("adds, increments, and removes items", () => {
     render(
       <QuickPosProvider>
@@ -60,6 +65,51 @@ describe("quick pos store", () => {
     expect(storeRef!.state.creditPolicyEnabled).toBe(true);
   });
 
+  it("updates a whole-unit line and its displayed tier when incrementing across a bulk threshold", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.addItem({
+        id: "inv:bulk",
+        inventoryId: "22222222-2222-4222-8222-222222222222",
+        name: "Whole case",
+        unitPrice: 10,
+        qty: 5,
+        source: "inventory",
+        commerceConfig: {
+          fractionalEnabled: false,
+          sellingUnit: "case",
+          decimalPrecision: 0,
+          minimumSaleQuantity: 1,
+          quantityIncrement: 2,
+          baseUnitPrice: 10,
+          suggestedDollarAmounts: [50],
+          suggestedQuantities: [1, 3],
+          bulkPriceTiers: [
+            {
+              id: "six-cases",
+              label: "7+ cases",
+              minimumQuantity: 7,
+              unitPrice: 8,
+            },
+          ],
+        },
+      });
+      storeRef!.incrementItem("inv:bulk");
+    });
+
+    expect(storeRef!.state.cartItems[0]).toMatchObject({
+      qty: 7,
+      unitPrice: 8,
+      bulkTierApplied: "7+ cases",
+    });
+    expect(storeRef!.subtotal).toBe(56);
+  });
+
   it("persists and clears pending idempotency key correctly", () => {
     render(
       <QuickPosProvider>
@@ -87,5 +137,62 @@ describe("quick pos store", () => {
     });
 
     expect(storeRef!.state.session.pendingIdempotencyKey).toBeNull();
+  });
+
+  it("tracks delivery checkout details without mixing them into the sale total locally", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.setDelivery({
+        enabled: true,
+        address: "100 Example Ave",
+        vendorFeeCents: 1250,
+        feeAllocation: "charge_customer",
+        feeTaxable: true,
+      });
+    });
+
+    expect(storeRef!.state.delivery).toEqual({
+      enabled: true,
+      address: "100 Example Ave",
+      vendorFeeCents: 1250,
+      feeAllocation: "charge_customer",
+      feeTaxable: true,
+    });
+    expect(storeRef!.total).toBe(0);
+  });
+
+  it("does not hydrate carts stored with the obsolete Convex ID version", async () => {
+    window.sessionStorage.setItem(
+      "quick_pos_state_v1",
+      JSON.stringify({
+        cartItems: [
+          {
+            id: "inv:legacy",
+            inventoryId: "jh7legacyconvexid",
+            name: "Legacy Item",
+            unitPrice: 10,
+            qty: 1,
+            source: "inventory",
+          },
+        ],
+      }),
+    );
+
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    await waitFor(() => {
+      expect(storeRef!.state.cartItems).toHaveLength(0);
+    });
+    expect(QUICK_POS_STORAGE_KEY).toBe("quick_pos_state_v2");
+    expect(window.sessionStorage.getItem("quick_pos_state_v1")).not.toBeNull();
   });
 });

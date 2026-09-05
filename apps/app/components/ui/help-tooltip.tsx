@@ -25,11 +25,17 @@ export function HelpTooltip({
       <Tooltip>
         <TooltipTrigger asChild>
           {children || (
-            <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help inline-block ml-1" />
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-1.5 -m-1.5 rounded-full text-muted-foreground hover:text-foreground focus:text-foreground focus:outline-none min-h-[36px] min-w-[36px] cursor-help"
+              aria-label="Help information"
+            >
+              <HelpCircle className="h-5 w-5 md:h-4 md:w-4" />
+            </button>
           )}
         </TooltipTrigger>
-        <TooltipContent side={side} className="max-w-xs">
-          <p className="text-sm">{content}</p>
+        <TooltipContent side={side} className="max-w-xs p-3 bg-[#1e1e1e] border-white/10 text-foreground shadow-xl rounded-lg">
+          <p className="text-xs md:text-sm leading-relaxed">{content}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

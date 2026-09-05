@@ -7,8 +7,12 @@ test.describe("Testsprite POS Local", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          favorites: [{ id: "p-1", name: "Cola", price: 5 }],
-          recentlySold: [{ id: "p-2", name: "Juice", price: 6 }],
+          favorites: [
+            { id: "p-1", name: "Cola", price: 5, quantity_on_hand: 20 },
+          ],
+          recentlySold: [
+            { id: "p-2", name: "Juice", price: 6, quantity_on_hand: 20 },
+          ],
           creditPolicy: { enabled: true },
         }),
       });
@@ -72,7 +76,26 @@ test.describe("Testsprite POS Local", () => {
       await route.fulfill({
         status: 201,
         contentType: "application/json",
-        body: JSON.stringify({ success: true, saleId: "sale-1" }),
+        body: JSON.stringify({ success: true, saleId: "sale-1", total: 5 }),
+      });
+    });
+
+    await page.route("**/api/pos/quote", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          quote: {
+            subtotal: 5,
+            subtotalAfterDiscount: 5,
+            loyaltyDiscountAmount: 0,
+            loyaltyDiscountRate: 0,
+            taxAmount: 0,
+            feesTotal: 0,
+            total: 5,
+          },
+        }),
       });
     });
   });
@@ -82,13 +105,19 @@ test.describe("Testsprite POS Local", () => {
   }) => {
     await page.goto("/pos/sale");
 
-    await expect(page.getByRole("heading", { name: "Quick Sale" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Quick Sale" }),
+    ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Cart" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Take Payment" })).toBeDisabled();
+    await expect(
+      page.getByRole("button", { name: "Take Payment" }),
+    ).toBeDisabled();
     await expect(page.getByText("No items")).toBeVisible();
   });
 
-  test("TC009 (adapted): empty cart cannot proceed to payment", async ({ page }) => {
+  test("TC009 (adapted): empty cart cannot proceed to payment", async ({
+    page,
+  }) => {
     await page.goto("/pos/sale");
 
     const takePayment = page.getByRole("button", { name: "Take Payment" });
@@ -102,7 +131,9 @@ test.describe("Testsprite POS Local", () => {
   }) => {
     await page.goto("/pos/sale");
 
-    await page.getByPlaceholder("Search products").fill("zzzz-nonexistent-item-12345");
+    await page
+      .getByPlaceholder("Search products")
+      .fill("zzzz-nonexistent-item-12345");
     await page.waitForTimeout(250);
 
     await expect(page.getByRole("heading", { name: "Cart" })).toBeVisible();
@@ -116,6 +147,8 @@ test.describe("Testsprite POS Local", () => {
     await page.goto("/pos/payment");
     await expect(page).toHaveURL(/\/pos\/payment/);
     await expect(page.getByText("Payment Method")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Complete Sale" })).toBeDisabled();
+    await expect(
+      page.getByRole("button", { name: "Complete Sale" }),
+    ).toBeDisabled();
   });
 });

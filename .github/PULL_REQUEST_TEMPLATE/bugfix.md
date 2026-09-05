@@ -1,0 +1,17 @@
+## What was broken *
+_Describe the user-visible symptom and when it started._
+
+## Root cause *
+_What was actually wrong in the code?_
+
+Release impact: patch
+Roadmap impact: none
+
+## How to verify the fix
+_Steps a reviewer can run to confirm the fix._
+
+## Regression check
+- [ ] Added a test
+- [ ] Tested affected flows manually
+
+<sub>* Required sections — keep them in the pull request description.</sub>

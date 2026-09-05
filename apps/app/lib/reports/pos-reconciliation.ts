@@ -58,6 +58,7 @@ export async function getPosReconciliationReport(
     },
     select: {
       id: true,
+      subtotal: true,
       totalAmount: true,
       createdAt: true,
       items: {
@@ -85,14 +86,14 @@ export async function getPosReconciliationReport(
       (sum: number, item: any) => sum + toNumber(item.lineTotal),
       0,
     );
-    const saleTotal = toNumber(sale.totalAmount);
-    if (Math.abs(lineTotalSum - saleTotal) > 0.01) {
+    const merchandiseSubtotal = toNumber(sale.subtotal);
+    if (Math.abs(lineTotalSum - merchandiseSubtotal) > 0.01) {
       discrepancies.push({
         code: "SALE_TOTAL_MISMATCH",
         saleId: sale.id,
-        expected: Number(saleTotal.toFixed(2)),
+        expected: Number(merchandiseSubtotal.toFixed(2)),
         actual: Number(lineTotalSum.toFixed(2)),
-        message: "Sale total does not match sum of line totals.",
+        message: "Merchandise subtotal does not match sum of line totals.",
       });
     }
 

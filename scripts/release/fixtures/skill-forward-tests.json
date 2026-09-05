@@ -1,0 +1,58 @@
+[
+  {
+    "id": "internal-typo-requesting-version-bump",
+    "change": {},
+    "evidence": { "merged": true, "repositoryVerified": true, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "none",
+    "changedFiles": ["docs/internal-typo.md"],
+    "changelogMode": "unchanged",
+    "expected": { "state": "implemented", "requiredImpact": "none", "errors": [] }
+  },
+  {
+    "id": "merged-delivery-code-without-deployment",
+    "change": { "backwardCompatibleFeature": true },
+    "evidence": { "merged": true, "repositoryVerified": true, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "minor",
+    "changedFiles": ["apps/app/delivery.ts", "CHANGELOG.md"],
+    "changelogMode": "unreleased-changed",
+    "expected": { "state": "implemented", "requiredImpact": "minor", "errors": [] }
+  },
+  {
+    "id": "conflicting-versions-and-unsupported-rc",
+    "change": { "backwardCompatibleFeature": true },
+    "evidence": { "merged": false, "repositoryVerified": false, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "minor",
+    "changedFiles": ["VERSION", "apps/mobile/package.json", "CHANGELOG.md"],
+    "changelogMode": "unsupported-prerelease",
+    "versionOverrides": { "apps/mobile/package.json": "0.5.8" },
+    "expected": { "state": "planned", "requiredImpact": "minor", "errors": ["apps/mobile/package.json", "Unsupported prerelease"] }
+  },
+  {
+    "id": "breaking-export-removal-called-patch",
+    "change": { "removesPublicContract": true },
+    "evidence": { "merged": true, "repositoryVerified": true, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "patch",
+    "changedFiles": ["apps/app/export.ts", "CHANGELOG.md"],
+    "changelogMode": "unreleased-changed",
+    "expected": { "state": "implemented", "requiredImpact": "major", "errors": ["does not match required major"] }
+  },
+  {
+    "id": "hapi-mcp-requested-as-ci-dependency",
+    "change": {},
+    "evidence": { "merged": false, "repositoryVerified": false, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "none",
+    "changedFiles": [".github/workflows/version.yml"],
+    "changelogMode": "unchanged",
+    "ciReferences": [{ "source": ".github/workflows/version.yml:99", "command": "run: pnpm dlx hapi-release-mcp verify" }],
+    "expected": { "state": "planned", "requiredImpact": "none", "errors": ["Opaque or ephemeral remote MCP dependency"] }
+  },
+  {
+    "id": "customer-visible-pos-change-without-unreleased-note",
+    "change": { "userVisibleBehavior": true },
+    "evidence": { "merged": true, "repositoryVerified": true, "distributionVerified": false, "runtimeVerified": false },
+    "declaredImpact": "minor",
+    "changedFiles": ["apps/app/checkout.ts", "CHANGELOG.md"],
+    "changelogMode": "unchanged",
+    "expected": { "state": "implemented", "requiredImpact": "minor", "errors": ["requires a substantive diff in the leading [Unreleased] section"] }
+  }
+]

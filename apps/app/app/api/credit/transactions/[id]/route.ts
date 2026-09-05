@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 export async function PUT(
   request: NextRequest,
@@ -14,15 +15,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const { userId } = await resolveAuthContext(request);
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const supabase = await createServerDbClient();
 
     const { error } = await supabase
       .from("credit_transactions")

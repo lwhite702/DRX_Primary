@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/table";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
-import { Plus, Edit, Search, UserX } from "lucide-react";
+import { usePermission } from "@/lib/hooks/use-permission";
+import { Archive, Plus, Edit, RotateCcw, Search, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
@@ -40,6 +41,7 @@ import {
   maskPII,
   PrivacyPreset,
 } from "@/lib/utils/privacy";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 type CustomerRecord = Customer & {
   id: string;
@@ -53,15 +55,59 @@ type CustomerRecord = Customer & {
   state?: string | null;
   total_purchases?: number;
   total_credit_used?: number;
+  is_active?: boolean;
 };
 
 export default function CustomersPage() {
   const router = useRouter();
   const { business, settings, loading: businessLoading } = useBusiness();
-  const { customers } = useCustomerContext();
+  const {
+    customers,
+    loading: customersLoading,
+    syncStatus,
+    refresh,
+  } = useCustomerContext();
+  const { hasPermission, loading: permissionLoading } = usePermission(
+    business?.id,
+  );
   const [showDialog, setShowDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewStatus, setViewStatus] = useState<"active" | "archived">("active");
+  const [archivedCustomers, setArchivedCustomers] = useState<CustomerRecord[]>(
+    [],
+  );
+  const [archivedLoading, setArchivedLoading] = useState(false);
+  const [lifecycleCustomerId, setLifecycleCustomerId] = useState<string | null>(
+    null,
+  );
+
+  const canManageCustomers =
+    !permissionLoading && hasPermission("customers.manage");
+
+  const loadArchived = useCallback(async () => {
+    if (!business?.id || !canManageCustomers) return;
+
+    setArchivedLoading(true);
+    try {
+      const response = await fetch("/api/customers?status=archived");
+      if (!response.ok) {
+        throw new Error("Failed to load archived customers");
+      }
+      const payload = await response.json();
+      setArchivedCustomers(Array.isArray(payload.data) ? payload.data : []);
+    } catch {
+      toast.error("Failed to load archived customers");
+    } finally {
+      setArchivedLoading(false);
+    }
+  }, [business?.id, canManageCustomers]);
+
+  useEffect(() => {
+    if (viewStatus === "archived") {
+      void loadArchived();
+    }
+  }, [loadArchived, viewStatus]);
 
   const {
     register,
@@ -102,12 +148,18 @@ export default function CustomersPage() {
         throw new Error(errorData.error || "Failed to save customer");
       }
 
+      await refresh();
+      if (viewStatus === "archived") {
+        await loadArchived();
+      }
+
       return editingCustomer?.id
         ? "Customer updated successfully"
         : "Customer added successfully";
     };
 
-    toast.promise(promise(), {
+    const savePromise = promise();
+    toast.promise(savePromise, {
       loading: editingCustomer ? "Updating customer..." : "Adding customer...",
       success: (message) => {
         setShowDialog(false);
@@ -121,6 +173,13 @@ export default function CustomersPage() {
           : "Failed to save customer";
       },
     });
+
+    try {
+      await savePromise;
+    } catch {
+      // The toast presents the API error while the submit control remains
+      // disabled until the request settles.
+    }
   };
 
   const handleEdit = (customer: CustomerRecord) => {
@@ -138,15 +197,62 @@ export default function CustomersPage() {
     setShowDialog(true);
   };
 
-  const filteredCustomers = (customers as CustomerRecord[]).filter(
+  const handleLifecycleChange = async (
+    customer: CustomerRecord,
+    isActive: boolean,
+  ) => {
+    if (lifecycleCustomerId) return;
+    setLifecycleCustomerId(customer.id);
+    const action = isActive ? "reactivate" : "archive";
+    const promise = async () => {
+      const response = await fetch(`/api/customers/${customer.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: isActive }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `Failed to ${action} customer`);
+      }
+
+      await Promise.all([refresh(), loadArchived()]);
+      return `Customer ${isActive ? "reactivated" : "archived"}`;
+    };
+
+    const lifecyclePromise = promise();
+    toast.promise(lifecyclePromise, {
+      loading: `${isActive ? "Reactivating" : "Archiving"} customer...`,
+      success: (message) => message,
+      error: (error) =>
+        error instanceof Error ? error.message : `Failed to ${action} customer`,
+    });
+
+    try {
+      await lifecyclePromise;
+    } catch {
+      // The toast presents the error without exposing profile data.
+    } finally {
+      setLifecycleCustomerId(null);
+    }
+  };
+
+  const displayedCustomers =
+    viewStatus === "active"
+      ? (Array.isArray(customers) ? customers : []) as CustomerRecord[]
+      : archivedCustomers;
+  const normalizedSearch = searchTerm.toLowerCase();
+  const filteredCustomers = displayedCustomers.filter(
     (customer) =>
-      customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()),
+      [
+        customer?.first_name,
+        customer?.last_name,
+        customer?.alias,
+        customer?.phone_number,
+        customer?.email,
+      ].some((value) => String(value ?? "").toLowerCase().includes(normalizedSearch)),
   );
 
-  if (businessLoading) {
+  if (businessLoading || customersLoading) {
     return (
       <div className="p-4 md:p-8 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -181,24 +287,27 @@ export default function CustomersPage() {
       <div className="noise-overlay" />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            CUSTOMERS
+          <h1 className="text-3xl font-bold">
+            Customers
           </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            MANAGEMENT CONSOLE • {filteredCustomers.length} PROFILES
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filteredCustomers.length} customer {filteredCustomers.length === 1 ? "profile" : "profiles"}
           </p>
         </div>
+        <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={handleNew}
-              id="tour-customer-add-btn"
-              className="laser-button bg-[#FFD700] text-black hover:bg-[#FFD700]/90 shadow-[0_0_15px_rgba(255,215,0,0.4)] border-none font-bold tracking-wider"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              ADD CUSTOMER
-            </Button>
-          </DialogTrigger>
+          {canManageCustomers ? (
+            <DialogTrigger asChild>
+              <Button
+                onClick={handleNew}
+                id="tour-customer-add-btn"
+                className="laser-button bg-accent text-black hover:bg-accent/90 shadow-[0_0_15px_rgba(204,255,0,0.3)] border-none font-bold tracking-wider h-11 px-4"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add customer
+              </Button>
+            </DialogTrigger>
+          ) : null}
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -213,7 +322,7 @@ export default function CustomersPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
+                  <Label htmlFor="first_name">First Name (Optional)</Label>
                   <Input id="first_name" {...register("first_name")} />
                   {errors.first_name && (
                     <p className="text-sm text-destructive">
@@ -278,7 +387,8 @@ export default function CustomersPage() {
               </div>
 
               <p className="text-sm text-muted-foreground">
-                * Either phone number or email is required
+                Use an alias, name, phone, or email. Collect only what the
+                business needs.
               </p>
 
               <div className="space-y-2">
@@ -348,15 +458,32 @@ export default function CustomersPage() {
         </Dialog>
       </div>
 
+      {canManageCustomers ? (
+        <div className="relative z-10 flex gap-2" aria-label="Customer status">
+          <Button
+            variant={viewStatus === "active" ? "default" : "outline"}
+            onClick={() => setViewStatus("active")}
+          >
+            Active
+          </Button>
+          <Button
+            variant={viewStatus === "archived" ? "default" : "outline"}
+            onClick={() => setViewStatus("archived")}
+          >
+            Archived
+          </Button>
+        </div>
+      ) : null}
+
       {/* Search */}
       <div className="relative z-10">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#FFD700] h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="SEARCH CUSTOMERS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-[#FFD700]/50 text-foreground rounded-lg tracking-wider"
+            className="pl-10 h-12 bg-secondary/30 border-white/10 focus:border-accent text-foreground rounded-lg tracking-wider"
             aria-label="Search customers"
           />
         </div>
@@ -365,23 +492,39 @@ export default function CustomersPage() {
       {/* Customers Table */}
       <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border relative z-10">
         <div className="p-6 border-b border-white/5 flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-[#FFD700] shadow-[0_0_10px_#FFD700]" />
-          <h2 className="headline-text text-lg tracking-wider text-[#FFD700]">
+          <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgba(204,255,0,0.4)]" />
+          <h2 className="headline-text text-lg tracking-wider text-accent">
             CUSTOMER LIST
           </h2>
         </div>
         <CardContent className="p-0">
-          {filteredCustomers.length === 0 ? (
+          {archivedLoading && viewStatus === "archived" ? (
+            <TableSkeleton />
+          ) : filteredCustomers.length === 0 ? (
             <EmptyState
               icon={UserX}
-              title="No customers found"
+              title={
+                viewStatus === "archived"
+                  ? "No archived customers"
+                  : "No customers found"
+              }
               description={
                 searchTerm
                   ? "Try adjusting your search terms."
-                  : "Add your first customer to get started."
+                  : viewStatus === "archived"
+                    ? "Archived profiles remain available here for authorized operators."
+                    : "Add your first customer to get started."
               }
-              actionLabel={!searchTerm ? "Add Customer" : undefined}
-              onAction={!searchTerm ? handleNew : undefined}
+              actionLabel={
+                !searchTerm && viewStatus === "active" && canManageCustomers
+                  ? "Add Customer"
+                  : undefined
+              }
+              onAction={
+                !searchTerm && viewStatus === "active" && canManageCustomers
+                  ? handleNew
+                  : undefined
+              }
             />
           ) : (
             <>
@@ -390,7 +533,7 @@ export default function CustomersPage() {
                 {filteredCustomers.map((customer) => (
                   <div
                     key={customer.id}
-                    className="p-4 border-b border-white/5 last:border-0 hover:bg-[#FFD700]/5 transition-colors"
+                    className="p-4 border-b border-white/5 last:border-0 hover:bg-accent/5 transition-colors"
                   >
                     <CardContent className="p-0">
                       <div className="flex items-start justify-between gap-3">
@@ -424,14 +567,42 @@ export default function CustomersPage() {
                             </p>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(customer)}
-                          aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        {canManageCustomers ? (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={() => handleEdit(customer)}
+                              aria-label="Edit customer"
+                              className="h-11 w-11"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              disabled={lifecycleCustomerId === customer.id}
+                              onClick={() =>
+                                void handleLifecycleChange(
+                                  customer,
+                                  viewStatus === "archived",
+                                )
+                              }
+                              aria-label={
+                                viewStatus === "archived"
+                                  ? "Reactivate customer"
+                                  : "Archive customer"
+                              }
+                              className="h-11 w-11"
+                            >
+                              {viewStatus === "archived" ? (
+                                <RotateCcw className="h-4 w-4" />
+                              ) : (
+                                <Archive className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -502,13 +673,13 @@ export default function CustomersPage() {
                     {filteredCustomers.map((customer) => (
                       <TableRow
                         key={customer.id}
-                        className="border-white/5 hover:bg-[#FFD700]/5 transition-colors group"
+                        className="border-white/5 hover:bg-accent/5 transition-colors group"
                       >
                         <TableCell className="font-medium">
                           <div>
                             <Link
                               href={`/customers/${customer.id}`}
-                              className="text-blue-600 hover:underline"
+                              className="text-foreground hover:text-accent hover:underline"
                             >
                               {getCustomerDisplayName(
                                 customer,
@@ -552,15 +723,41 @@ export default function CustomersPage() {
                         <TableCell>
                           ${Number(customer.total_credit_used || 0).toFixed(2)}
                         </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(customer)}
-                            aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                        <TableCell className="text-right">
+                          {canManageCustomers ? (
+                            <div className="flex justify-end">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(customer)}
+                                aria-label="Edit customer"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={lifecycleCustomerId === customer.id}
+                                onClick={() =>
+                                  void handleLifecycleChange(
+                                    customer,
+                                    viewStatus === "archived",
+                                  )
+                                }
+                                aria-label={
+                                  viewStatus === "archived"
+                                    ? "Reactivate customer"
+                                    : "Archive customer"
+                                }
+                              >
+                                {viewStatus === "archived" ? (
+                                  <RotateCcw className="h-4 w-4" />
+                                ) : (
+                                  <Archive className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          ) : null}
                         </TableCell>
                       </TableRow>
                     ))}

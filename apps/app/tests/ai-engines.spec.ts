@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+// @target:apps/app/app/api/ai/product-intelligence/route.ts
+
 test.describe("AI Features E2E", () => {
   test("AI Intelligence Page redirects to login", async ({ page }) => {
     // Navigate to the AI Intelligence dashboard

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +23,13 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { createAppClient } from "@/lib/data/client/supabase-client";
 import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { getUnitLabel, type UnitOfMeasure } from "@/lib/utils/units";
+import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 interface IntakeFormData {
   inventory_id: string;
@@ -43,10 +43,15 @@ interface IntakeFormData {
 
 export default function InventoryIntakePage() {
   const { business, loading: businessLoading } = useBusiness();
-  const inventory = useRealtimeInventory(business?.id || null);
-  const inventoryItems = Array.isArray(inventory) ? inventory : [];
+  const {
+    inventory: inventoryItems,
+    loading: inventoryLoading,
+    syncStatus,
+    refresh: refreshInventory,
+  } = useRealtimeInventory(business?.id || null);
   const [processing, setProcessing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const idempotencyKey = useRef(crypto.randomUUID());
   const [formData, setFormData] = useState<IntakeFormData>({
     inventory_id: "",
     product_name: "",
@@ -56,8 +61,6 @@ export default function InventoryIntakePage() {
     delivery_cost: "0",
     supplier: "",
   });
-
-  const supabase = createAppClient();
 
   // Calculate cost per gram
   const costPerUnit =
@@ -109,7 +112,7 @@ export default function InventoryIntakePage() {
   };
 
   const handleProcessIntake = async () => {
-    if (!business?.id || !supabase) {
+    if (!business?.id) {
       toast.error("Business not found");
       return;
     }
@@ -127,6 +130,7 @@ export default function InventoryIntakePage() {
           total_weight_grams: parseFloat(formData.total_weight_grams),
           delivery_cost: parseFloat(formData.delivery_cost || "0"),
           supplier: formData.supplier || undefined,
+          idempotency_key: idempotencyKey.current,
         }),
       });
 
@@ -155,6 +159,7 @@ export default function InventoryIntakePage() {
         delivery_cost: "0",
         supplier: "",
       });
+      idempotencyKey.current = crypto.randomUUID();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to process intake",
@@ -164,7 +169,7 @@ export default function InventoryIntakePage() {
     }
   };
 
-  if (businessLoading) {
+  if (businessLoading || inventoryLoading) {
     return <SalesSkeleton />;
   }
 
@@ -193,22 +198,25 @@ export default function InventoryIntakePage() {
     >
       <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6 page-transition">
         <div className="noise-overlay" />
-        <div className="relative z-10">
-          <h1 className="headline-text text-3xl tracking-widest text-muted-foreground">
-            INVENTORY INTAKE
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
+          <div>
+          <h1 className="text-3xl font-bold">
+            Receive inventory
           </h1>
-          <p className="technical-label text-xs text-muted-foreground/60 mt-1">
-            COST TRACKING & STOCK ENTRY
+          <p className="mt-1 text-sm text-muted-foreground">
+            Add stock and capture its cost
           </p>
+          </div>
+          <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
           {/* Intake Form */}
           <div className="lg:col-span-2 luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
             <div className="p-6 border-b border-white/5 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#FF0099] shadow-[0_0_10px_#FF0099]" />
-              <h2 className="headline-text text-lg tracking-wider text-[#FF0099]">
-                INTAKE DETAILS
+              <div className="h-2 w-2 rounded-full bg-accent" />
+              <h2 className="headline-text text-lg tracking-wider text-accent">
+                Intake details
               </h2>
             </div>
             <CardContent className="space-y-4 p-6">
@@ -351,7 +359,7 @@ export default function InventoryIntakePage() {
 
               <Button
                 onClick={handleOpenConfirmModal}
-                className="w-full h-12 text-lg laser-button bg-[#FF0099] text-white hover:bg-[#FF0099]/90 shadow-[0_0_20px_rgba(255,0,153,0.3)] border-none font-bold tracking-wider uppercase"
+                className="laser-button h-12 w-full border-none bg-accent text-lg font-bold uppercase tracking-wider text-black hover:bg-accent-light"
                 disabled={processing}
                 size="lg"
               >
@@ -364,8 +372,8 @@ export default function InventoryIntakePage() {
           {/* Intake Summary */}
           <div className="luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border h-fit">
             <div className="p-6 border-b border-white/5 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
-              <h2 className="headline-text text-lg tracking-wider text-[#00F0FF]">
+              <div className="h-2 w-2 rounded-full bg-info" />
+              <h2 className="headline-text text-lg tracking-wider text-info">
                 SUMMARY
               </h2>
             </div>

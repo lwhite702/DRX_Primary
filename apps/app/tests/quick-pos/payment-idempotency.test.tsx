@@ -38,6 +38,13 @@ function seedState(overrides?: Partial<QuickPosState>) {
       receipt: "none",
       creditConfirmed: false,
     },
+    delivery: {
+      enabled: false,
+      address: "",
+      vendorFeeCents: 0,
+      feeAllocation: "charge_customer",
+      feeTaxable: false,
+    },
     ui: {
       search: "",
       exitDialogOpen: false,
@@ -79,6 +86,25 @@ describe("quick pos payment idempotency", () => {
 
     fetchMock
       .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          quote: {
+            subtotal: 10,
+            subtotalAfterDiscount: 9,
+            loyaltyDiscountAmount: 1,
+            loyaltyDiscountRate: 0.1,
+            taxAmount: 0.72,
+            merchandiseTaxAmount: 0.72,
+            deliveryRevenue: 0,
+            vendorDeliveryExpense: 0,
+            deliveryTaxAmount: 0,
+            feesTotal: 0,
+            total: 9.72,
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
         ok: false,
         json: async () => ({ success: false, error: "Payment failed" }),
       })
@@ -87,10 +113,10 @@ describe("quick pos payment idempotency", () => {
         json: async () => ({
           success: true,
           saleId: "sale_123",
-          total: 10,
+          total: 9.72,
           receipt: {
             saleId: "sale_123",
-            total: 10,
+            total: 9.72,
             receipt: "none",
             channels: [],
           },
@@ -112,24 +138,94 @@ describe("quick pos payment idempotency", () => {
       </QuickPosProvider>,
     );
 
-    const completeButton = await screen.findByRole("button", { name: "Complete Sale" });
-    fireEvent.click(completeButton);
+    await screen.findByText("Discounts");
+    expect(screen.getByText("-$1.00")).toBeInTheDocument();
+    expect(screen.getByText("$0.72")).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+    const completeButton = await screen.findByRole("button", {
+      name: "Complete Sale",
     });
-
     fireEvent.click(completeButton);
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
-    const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body as string);
-    const secondBody = JSON.parse(fetchMock.mock.calls[1][1].body as string);
+    await screen.findByText("Payment failed");
+    const retryButton = await screen.findByRole("button", {
+      name: "Complete Sale",
+    });
+    expect(retryButton).not.toBeDisabled();
 
-    expect(firstBody.idempotencyKey).toBe("77777777-7777-4777-8777-777777777777");
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    const checkoutCalls = fetchMock.mock.calls.filter(
+      ([url]) => url === "/api/pos/checkout",
+    );
+    const firstBody = JSON.parse(checkoutCalls[0][1].body as string);
+    const secondBody = JSON.parse(checkoutCalls[1][1].body as string);
+
+    expect(firstBody.idempotencyKey).toBe(
+      "77777777-7777-4777-8777-777777777777",
+    );
     expect(secondBody.idempotencyKey).toBe(firstBody.idempotencyKey);
     expect(replace).toHaveBeenCalledWith("/pos/complete");
+  });
+
+  it("submits inventory and manual items together in one canonical request", async () => {
+    seedState({
+      cartItems: [
+        {
+          id: "inv:1",
+          inventoryId: "11111111-1111-4111-8111-111111111111",
+          name: "Catalog Item",
+          unitPrice: 5,
+          qty: 2,
+          source: "inventory",
+        },
+        {
+          id: "manual:1",
+          inventoryId: null,
+          name: "Manual Item",
+          unitPrice: 3,
+          qty: 1,
+          source: "manual",
+        },
+      ],
+    });
+
+    render(
+      <QuickPosProvider>
+        <PaymentPage />
+      </QuickPosProvider>,
+    );
+
+    const completeButton = await screen.findByRole("button", {
+      name: "Complete Sale",
+    });
+    await waitFor(() => expect(completeButton).not.toBeDisabled());
+    fireEvent.click(completeButton);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/pos/checkout",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const checkoutCall = fetchMock.mock.calls.find(
+      ([url]) => url === "/api/pos/checkout",
+    );
+    expect(checkoutCall).toBeDefined();
+    const body = JSON.parse(checkoutCall![1].body as string);
+    expect(body.items).toEqual([
+      expect.objectContaining({ name: "Catalog Item", source: "inventory" }),
+      expect.objectContaining({ name: "Manual Item", source: "manual" }),
+    ]);
   });
 });

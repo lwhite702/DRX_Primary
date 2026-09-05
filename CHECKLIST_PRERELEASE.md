@@ -21,9 +21,10 @@ Use this checklist before promoting `staging` to `main`.
 
 ## Checklist
 
-- [ ] Version artifacts are complete (`CHANGELOG.md`, `VERSION`, root/app version consistency).
-- [ ] `pnpm release:preflight` passes on Node `20.18.0`.
-- [ ] `pnpm version:check` passes.
+- [ ] Version artifacts are complete across root, web, mobile, Expo, and iOS marketing versions.
+- [ ] `pnpm release:preflight` passes on Node `22.23.1`.
+- [ ] `pnpm release:integrity` passes.
+- [ ] Native build identifiers were resolved from current App Store Connect/TestFlight and EAS/Play evidence.
 - [ ] Release notes reflect shipped behavior.
 - [ ] Environment matrix documentation matches deployed config/secrets.
 - [ ] Database migrations were tested in staging (if applicable).
@@ -35,6 +36,7 @@ Use this checklist before promoting `staging` to `main`.
 - [ ] Advisory gate artifacts are attached (integration/full-e2e/security/perf/coverage).
 - [ ] Compliance and policy checks passed.
 - [ ] No policy exceptions remain undocumented.
+- [ ] Required-check branch protection is enabled and verified, or the release remains explicitly blocked on the current GitHub plan limitation.
 
 ## Exceptions
 

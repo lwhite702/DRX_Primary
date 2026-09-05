@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
-import { OPS_KILL_SWITCH_FLAGS } from "@/lib/posthog/flags-manifest";
+import { OPS_AVAILABILITY_FLAGS } from "@/lib/posthog/flags-manifest";
 
 const AlertPayloadSchema = z.object({
   userId: z.string().min(1).optional(),
@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
       return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
     }
 
-    const killSwitchEnabled = await ensureServerFlag(
-      OPS_KILL_SWITCH_FLAGS.notificationsAlertsWrite,
+    const availabilityEnabled = await ensureServerFlag(
+      OPS_AVAILABILITY_FLAGS.notificationsAlertsWrite,
       { distinctId: actorId, defaultValue: true },
     );
 
-    if (!killSwitchEnabled) {
+    if (!availabilityEnabled) {
       return errorResponse(
         "FEATURE_DISABLED",
         "Notification alerts writes are temporarily disabled",
@@ -57,12 +57,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const canManageUsers =
-      (await hasPermission("users.manage_all")) ||
-      (await hasPermission("staff.manage"));
-    const targetUserId = canManageUsers
-      ? payload.data.userId ?? actorId
-      : actorId;
+    const targetUserId = payload.data.userId ?? actorId;
+    if (!(await canManageNotificationRecipient(request, actorId, targetUserId))) {
+      return errorResponse("FORBIDDEN", "Recipient access denied", 403);
+    }
 
     const notification = await db.notification.create({
       data: {

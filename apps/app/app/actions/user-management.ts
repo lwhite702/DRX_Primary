@@ -1,79 +1,29 @@
 "use server";
+import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
+import { normalizeTeamRole } from "@/lib/team/roles";
+import type { Role } from "@/lib/auth/permissions";
+import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
-import { createClient } from "@/lib/supabase/server";
-import { Role } from "@/lib/auth/permissions";
-import { revalidatePath } from "next/cache";
-
-/**
- * Updates a user's role.
- * Requires the current user to be 'manager' or 'super_admin'.
- * Managers cannot assign 'super_admin'.
- */
-export async function updateUserRole(targetUserId: string, newRole: Role) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Not authenticated" };
-  }
-
-  // 1. Verify current user's role
-  const { data: currentUserRoleData } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .single();
-
-  const currentUserRole = currentUserRoleData?.role as Role;
-
-  // Check valid admin
-  if (currentUserRole !== "manager" && currentUserRole !== "super_admin") {
-    // Allow if they are in admin_users table as super_admin (legacy/override)
-    const { data: adminUser } = await supabase
-      .from("admin_users")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-    if (adminUser?.role !== "super_admin") {
-      return { error: "Unauthorized: Insufficient privileges" };
-    }
-  }
-
-  // 2. Policy Checks
-  // Manager cannot assign Super Admin
-  if (currentUserRole === "manager" && newRole === "super_admin") {
-    return { error: "Unauthorized: Managers cannot assign Super Admin role" };
-  }
-
-  // 3. Update the role
-  const { error } = await supabase
-    .from("user_roles")
-    .update({ role: newRole })
-    .eq("user_id", targetUserId);
-
-  if (error) {
-    console.error("Error updating role:", error);
-    return { error: "Failed to update role" };
-  }
-
-  // 4. Audit Log (Updated with business_id)
-  const { data: roleData } = await supabase
-    .from("user_roles")
-    .select("business_id")
-    .eq("user_id", user.id)
-    .single();
-
-  await supabase.from("system_audit_log").insert({
-    action: "update_user_role",
-    entity_type: "user",
-    entity_id: targetUserId,
-    user_id: user.id,
-    new_values: { role: newRole },
-    business_id: roleData?.business_id,
-  });
-
-  revalidatePath("/admin/users");
-  return { success: true };
+/** Platform operation on one business membership; never grants platform access. */
+export async function updateUserRole(targetUserId: string, newRole: Role, businessId?: string) {
+  try {
+    const { userId } = await requirePlatformAdmin();
+    const role = normalizeTeamRole(newRole);
+    if (!role || !businessId) return { error: "A business and a supported business role are required" };
+    const business = await db.businessProfile.findUnique({ where: { id: businessId }, select: { ownerId: true } });
+    if (!business || business.ownerId === targetUserId) return { error: "Business ownership cannot be changed here" };
+    await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      const result = await tx.userRole.updateMany({
+        where: { userId: targetUserId, businessId, role: { notIn: ["owner", "super_admin"] } },
+        data: { role, permissions: {} },
+      });
+      if (!result.count) throw new Error("Membership unavailable");
+      await tx.systemAuditLog.create({ data: {
+        action: "platform_update_business_role", userId, businessId,
+        entityType: "user_role", entityId: targetUserId, newValues: { role },
+      } });
+    });
+    return { success: true };
+  } catch { return { error: "Role update failed or platform access denied" }; }
 }

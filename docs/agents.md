@@ -7,6 +7,7 @@ This file is supplemental guidance only.
 All governance, branching, release, and versioning policy is defined in root canonical files:
 
 - `../WRELIK_AGENTS.md`
+- `../AGENTS.md`
 - `../DEVELOPMENT_PROCESS.md`
 - `../RELEASE_POLICY.md`
 - `../VERSIONING_POLICY.md`
@@ -19,6 +20,7 @@ If this file conflicts with any root policy file, the root policy file wins.
 
 ## Repository-Specific Notes
 
+- Start every repository change from a Linear issue in the Wrelik team's **Deelrx CRM** project. Follow `../AGENTS.md` and `../WRELIK_AGENTS.md` for required fields and status transitions.
 - Prefer established OSS solutions over custom implementations for non-differentiating capabilities.
 - Reuse existing patterns and utilities before creating new abstractions.
 - Keep domain logic in stable, testable modules.

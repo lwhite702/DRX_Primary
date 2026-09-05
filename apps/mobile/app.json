@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "Deelrx CRM",
     "owner": "wrelik",
     "slug": "deelrx-crm",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "drx",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lwhite702.frontend",
+      "bundleIdentifier": "com.wrelik.drx",
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -21,8 +21,15 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.lwhite702.frontend",
-      "edgeToEdgeEnabled": true
+      "package": "com.wrelik.drx",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": true,
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -31,13 +38,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "@sentry/react-native/expo",
-        {
-          "organization": "wrelik",
-          "project": "deelrx-mobile"
-        }
-      ],
       [
         "expo-splash-screen",
         {
@@ -49,7 +49,26 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-notifications",
+      "expo-secure-store",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 31,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "usesCleartextTraffic": false
+          }
+        }
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

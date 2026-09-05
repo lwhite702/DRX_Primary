@@ -1,62 +1,53 @@
-# Keeping your data safe
+---
+title: "Keeping Your Store and Customer Data Safe"
+description: "Practical store security runbook for managing logins, signing out old devices, and protecting customer privacy."
+icon: "shield-halved"
+---
 
-This page is the operator security runbook for account access and customer data handling.
+This guide is your store's security runbook for keeping employee accounts secure, revoking old devices, and preventing customer data leaks at the sales counter.
 
 ## What this page is for
 
-Use this guide to keep account access tight, reduce avoidable data exposure, and respond quickly when a session or login pattern looks wrong.
-
-This guide is written for day-to-day operators and managers, not only technical admins.
+Use this guide to review active devices signed into your store, remove logins from employees who no longer work there, and ensure customer privacy settings are active during busy store hours.
 
 ## Before you start
 
-- **Recommended role**:
-  - Manager for routine checks
-  - Owner/super admin for high-impact actions
-- **Routes and controls used**:
-  - `/settings`
-  - `/settings/team`
-  - Session routes under security APIs
-  - Privacy controls in settings
-- **Core rule**:
-  - Shared accounts create hidden risk. Use named accounts and role limits.
+- **Recommended role**: Store Manager or Store Owner.
+- **Key screens**:
+  - **General Settings** (`/settings`): Privacy profiles, screen masking, and temporary customer retention.
+  - **Manage Team** (`/settings/team`): Active staff accounts and role assignments.
+  - **Active Devices**: Review currently active mobile and browser sessions.
+- **Core security rule**:
+  - Never share a single master manager password among employees. Give each cashier their own named login.
 
 ## Fast path
 
-1. **Review role assignments** in `/settings/team`.
-   - Remove extra access first.
-2. **Review privacy controls** in `/settings`.
-   - Confirm field visibility and masking mode match your store policy.
-   - Confirm retention behavior for temporary profiles.
-3. **Check vault status in settings**.
-   - Confirm key state indicators are healthy.
-4. **Review active sessions**.
-   - Identify unknown device/session entries.
-   - Revoke sessions that do not match known operator use.
-5. **Handle failed login patterns**.
-   - Watch lockout events and reset workflow for affected user.
-6. **Set weekly review habit**.
-   - Roles, sessions, and data-footprint checks should be part of manager routine.
+1. **Review team permissions monthly** (`/settings/team`):
+   - Remove elevated supervisor or manager permissions from staff who no longer need them.
+2. **Review customer privacy settings** (`/settings`):
+   - Ensure counter screen masking is turned on so nearby shoppers cannot read customer phone numbers off the register screen.
+   - Confirm temporary walk-in profiles are scheduled to expire after 1, 7, or 30 days.
+3. **Inspect active logged-in devices**:
+   - Check the list of active browsers and mobile devices.
+   - If an unfamiliar tablet or phone appears, or a device was lost, tap **Sign Out Device** immediately.
+4. **Respond to failed login alerts**:
+   - If an employee account triggers multiple failed login attempts, assist them with a secure password reset and verify their identity.
+5. **Establish a weekly manager security routine**:
+   - Spend 5 minutes every Monday reviewing active staff members, signed-in devices, and privacy settings.
 
 ## If blocked
 
-- **Cannot revoke session**:
-  - Current role likely lacks required scope.
-  - Escalate to owner/super admin.
-- **Vault status shows missing key state**:
-  - Do not ignore this.
-  - Pause sensitive customer edits and escalate immediately.
-- **Repeated lockout events for one account**:
-  - Treat as possible credential issue.
-  - Rotate password, revoke sessions, and re-check role rights.
-- **Masked fields confuse cashier flow**:
-  - Verify screen mode setting and manual mask preference.
-  - Do not disable masking globally without manager review.
+- **Cannot sign out an active device**:
+  - Ensure you are signed in with a Manager or Owner account with administrative privileges.
+- **Counter screen masking makes it difficult for cashiers to verify phone numbers**:
+  - Train cashiers to ask the customer to read the last 4 digits of their phone number instead of turning off screen masking storewide.
+- **Employee forgot their passcode or PIN**:
+  - A manager can open the employee's profile in **Manage Team** and tap **Reset PIN**.
 
 ## What is beta here
 
-- Core role, session, lockout, and privacy controls are live.
-- Some expanded security analytics views are beta-limited and should not replace manual weekly checks.
+- Automated IP-range store geolocation geofencing is in preview testing.
+- Named staff logins, device sign-out controls, screen masking, and temporary customer expiration are fully live.
 
 ## Related docs
 
@@ -65,24 +56,9 @@ This guide is written for day-to-day operators and managers, not only technical 
 - [Your customers](/your-customers)
 - [Fixing issues](/fixing-issues)
 
-## Weekly safety routine
+## Weekly security checklist for store managers
 
-1. Review active sessions and revoke unknown devices.
-2. Review role changes and remove stale elevated access.
-3. Check privacy profile and masking settings still match store policy.
-4. Confirm temporary profile retention is still set to intended window.
-
-## Incident response quick card
-
-- If account risk is suspected: revoke sessions, rotate credentials, and review logs.
-- If vault/key state looks wrong: pause sensitive edits and escalate.
-- If lockout repeats: treat as high-priority account event and document actions.
-
-## Manager review questions
-
-Ask these each week:
-
-- Which accounts had elevated access this week and why?
-- Were unknown sessions revoked the same day they were found?
-- Did masking settings stay in the intended mode during staffed hours?
-- Were there lockout events that suggest shared credentials or weak handoff habits?
+1. **Check active devices**: Sign out any old tablets, personal phones, or unused browsers.
+2. **Audit staff list**: Deactivate any seasonal staff or former employees.
+3. **Verify screen masking**: Ensure customer names and phone numbers are protected from counter onlookers.
+4. **Check temporary profile retention**: Confirm walk-in customer records clean up as intended.

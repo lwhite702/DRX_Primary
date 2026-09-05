@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as Application from "expo-application";
 import { useAuth } from "../../src/contexts/AuthContext";
 import {
   COLORS,
@@ -17,11 +18,12 @@ import {
   FONT_SIZES,
   BORDER_RADIUS,
 } from "../../src/constants/theme";
+import { OfflineControlCard } from "../../src/components/OfflineControlCard";
 
 export default function More() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, signOut, businessId } = useAuth();
+  const { session, signOut, businessId } = useAuth();
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -41,39 +43,42 @@ export default function More() {
     {
       title: "POS Actions",
       items: [
-        { icon: "receipt-outline", label: "Sales History", disabled: true },
+        { icon: "car-outline", label: "Deliveries", route: "/deliveries", disabled: false },
+        { icon: "receipt-outline", label: "Sales History", route: "/sales-history", disabled: false },
         {
           icon: "cash-outline",
           label: "No Sale / Open Drawer",
-          disabled: true,
+          route: "/no-sale",
+          disabled: false,
         },
         {
           icon: "leaf-outline",
           label: "Personal Use / Shrinkage",
-          disabled: true,
+          route: "/shrinkage",
+          disabled: false,
         },
-        { icon: "clipboard-outline", label: "Inventory Check", disabled: true },
+        { icon: "clipboard-outline", label: "Inventory Check", route: "/inventory-check", disabled: false },
       ],
     },
     {
       title: "Reports",
       items: [
-        { icon: "stats-chart-outline", label: "Daily Summary", disabled: true },
-        { icon: "calendar-outline", label: "End of Shift", disabled: true },
+        { icon: "stats-chart-outline", label: "Daily Summary", route: "/daily-summary", disabled: false },
+        { icon: "calendar-outline", label: "End of Shift", route: "/end-of-shift", disabled: false },
       ],
     },
     {
       title: "Account",
       items: [
-        { icon: "person-outline", label: "Profile", disabled: true },
-        { icon: "settings-outline", label: "Settings", disabled: true },
+        { icon: "person-outline", label: "Profile", route: "/settings", disabled: false },
+        { icon: "settings-outline", label: "Settings", route: "/settings", disabled: false },
         {
           icon: "chatbubbles-outline",
           label: "Feedback & Roadmap",
           route: "/feedback",
           disabled: false,
         },
-        { icon: "help-circle-outline", label: "Help", disabled: true },
+        { icon: "help-circle-outline", label: "Help", route: "/help", disabled: false },
       ],
     },
   ];
@@ -92,8 +97,8 @@ export default function More() {
             <Ionicons name="person" size={32} color={COLORS.accent} />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userEmail}>{user?.email || "User"}</Text>
-            <Text style={styles.userRole}>Staff</Text>
+            <Text style={styles.userEmail}>{session?.email || session?.displayName || "Operator"}</Text>
+            <Text style={styles.userRole}>{session?.roles.join(", ") || "operator"}</Text>
           </View>
           <View style={styles.statusBadge}>
             <View style={styles.statusDot} />
@@ -105,9 +110,11 @@ export default function More() {
         {businessId && (
           <View style={styles.businessCard}>
             <Ionicons name="storefront" size={20} color={COLORS.accent} />
-            <Text style={styles.businessLabel}>Connected to business</Text>
+            <Text style={styles.businessLabel}>{session?.businessName || "Connected to business"}</Text>
           </View>
         )}
+
+        <OfflineControlCard />
 
         {/* Menu Sections */}
         {menuItems.map((section, sectionIndex) => (
@@ -168,8 +175,10 @@ export default function More() {
 
         {/* Version */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>DRX Mobile POS v1.0.0</Text>
-          <Text style={styles.versionSubtext}>Synced with Supabase</Text>
+          <Text style={styles.versionText}>
+            DRX {Application.applicationName ?? "Mobile"} v{Application.nativeApplicationVersion ?? "unknown"} ({Application.nativeBuildVersion ?? "unknown build"})
+          </Text>
+          <Text style={styles.versionSubtext}>Secured and synchronized by Convex</Text>
         </View>
       </ScrollView>
     </View>

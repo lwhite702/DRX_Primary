@@ -1,15 +1,30 @@
 import withPWAInit from "@ducanh2912/next-pwa";
 import path from "path";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: true, // Temporarily disabled for debugging 404
-  register: false,
-  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: false,
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [{
+      urlPattern: ({ url }) => /^\/(control|admin)(\/|$)/.test(url.pathname) || url.pathname.startsWith("/api/admin/"),
+      handler: "NetworkOnly",
+    }],
+  },
 });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [{ source: "/control/:path*", headers: [
+      { key: "Cache-Control", value: "private, no-store" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Referrer-Policy", value: "no-referrer" },
+    ] }];
+  },
   output: "standalone",
   transpilePackages: [
     "@wrelik/auth",
@@ -95,5 +110,14 @@ const nextConfig = {
   // turbopack: {},
 };
 
-export default withPWA(nextConfig);
+export default withSentryConfig(withPWA(nextConfig), {
+  org: process.env.SENTRY_ORG || "wrelik-0y",
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+});
 // export default nextConfig;

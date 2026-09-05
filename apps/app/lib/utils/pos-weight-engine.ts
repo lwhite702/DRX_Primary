@@ -25,7 +25,9 @@ export interface LoyaltyInfo {
 }
 
 export class POSWeightEngine {
-  private supabase = createAppClient();
+  private get supabase() {
+    return createAppClient();
+  }
 
   /**
    * Get bulk pricing for a specific weight

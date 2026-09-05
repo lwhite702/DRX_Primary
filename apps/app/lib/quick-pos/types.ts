@@ -5,6 +5,7 @@ import type {
   QuickPosBootstrapResponseContract,
   ReceiptOutput,
 } from "@/lib/pos/contract";
+import type { PosAuthoritativeQuote } from "@/lib/pos/types";
 
 export type QuickPosPaymentMethod = PosQuickPaymentMethod;
 export type QuickPosReceiptOption = PosReceiptOption;
@@ -22,6 +23,16 @@ export interface QuickPosPaymentState {
   method: QuickPosPaymentMethod | null;
   receipt: QuickPosReceiptOption;
   creditConfirmed: boolean;
+}
+
+export type DeliveryFeeAllocation = "charge_customer" | "absorb";
+
+export interface QuickPosDeliveryState {
+  enabled: boolean;
+  address: string;
+  vendorFeeCents: number;
+  feeAllocation: DeliveryFeeAllocation;
+  feeTaxable: boolean;
 }
 
 export interface QuickPosUiState {
@@ -44,12 +55,14 @@ export interface QuickPosState {
   cartItems: QuickPosCartItem[];
   customer: QuickPosCustomer;
   payment: QuickPosPaymentState;
+  delivery: QuickPosDeliveryState;
   ui: QuickPosUiState;
   session: QuickPosSessionState;
   creditPolicyEnabled: boolean;
 }
 
-export type QuickPosBootstrapItem = QuickPosBootstrapResponseContract["favorites"][number];
+export type QuickPosBootstrapItem =
+  QuickPosBootstrapResponseContract["favorites"][number];
 export type QuickPosBootstrapResponse = QuickPosBootstrapResponseContract;
 
 export interface QuickPosCheckoutRequest {
@@ -61,6 +74,7 @@ export interface QuickPosCheckoutRequest {
     receipt: QuickPosReceiptOption;
     creditConfirmed: boolean;
   };
+  delivery?: QuickPosDeliveryState;
   items: QuickPosCartItem[];
 }
 
@@ -72,10 +86,17 @@ export interface QuickPosCheckoutResponse {
   error?: string;
 }
 
+export interface QuickPosQuoteResponse {
+  success: boolean;
+  quote?: PosAuthoritativeQuote;
+  error?: string;
+}
+
 export interface QuickPosExitVerifyRequest {
   pin: string;
 }
 
 export interface QuickPosExitVerifyResponse {
   allowed: boolean;
+  hasPinConfigured?: boolean;
 }

@@ -297,5 +297,47 @@
     ],
     "severity": "P1",
     "required_action": "Add new structured changelog entry with pages affected and claim policy notes"
+  },
+  {
+    "page": "/native-mobile-apps",
+    "claim": "DRX provides native iOS and Android apps with biometric security, offline sync, and delivery reminders",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Volumes/Projects/Projects/DRX_Primary/apps/ios/DRXApp/Features/Dashboard/DashboardView.swift",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/mobile/app/(tabs)/index.tsx",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/mobile/app/deliveries.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [],
+    "severity": "P1",
+    "required_action": "Add native mobile app guide covering offline sync and biometric quick lock"
+  },
+  {
+    "page": "/fractional-and-bulk-pricing",
+    "claim": "POS supports fractional quantities, reciprocal dollar entry presets, bulk tier breaks, and loyalty rewards",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Volumes/Projects/Projects/DRX_Primary/apps/ios/DRXApp/Features/POS/POSView.swift",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/mobile/src/lib/checkoutMath.ts",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [],
+    "severity": "P1",
+    "required_action": "Add fractional weight and bulk tier pricing runbook"
+  },
+  {
+    "page": "/delivery-fulfillment",
+    "claim": "Delivery workflow manages courier quotes, customer vs merchant fee allocation, and lifecycle tracking",
+    "claim_status": "live",
+    "evidence_paths": [
+      "/Volumes/Projects/Projects/DRX_Primary/apps/app/app/(app)/deliveries/page.tsx",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/mobile/app/deliveries.tsx",
+      "/Volumes/Projects/Projects/DRX_Primary/apps/ios/DRXApp/App/AppRootView.swift"
+    ],
+    "voice_violations": [],
+    "usability_gaps": [],
+    "severity": "P1",
+    "required_action": "Add delivery queue and dispatch runbook"
   }
 ]

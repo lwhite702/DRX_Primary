@@ -1,6 +1,7 @@
 import React from "react";
 import { type ActivityItem } from "../_hooks/useDashboardData";
 import { DollarSign, Package, CreditCard, User } from "lucide-react";
+import Link from "next/link";
 
 interface ActivityTimelineProps {
   activities: ActivityItem[];
@@ -25,13 +26,13 @@ const getIcon = (type: ActivityItem["type"]) => {
 const getColor = (type: ActivityItem["type"]) => {
   switch (type) {
     case "sale":
-      return "bg-[#4ADE80]/10 text-[#4ADE80]";
+      return "bg-success/10 text-success";
     case "intake":
       return "bg-blue-500/10 text-blue-500";
     case "credit":
-      return "bg-orange-500/10 text-orange-500";
+      return "bg-warning/10 text-warning";
     case "customer":
-      return "bg-purple-500/10 text-purple-500";
+      return "bg-info/10 text-info";
     default:
       return "bg-white/10 text-white";
   }
@@ -44,7 +45,7 @@ export function ActivityTimeline({ activities, compact = false }: ActivityTimeli
   return (
     <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)] md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-        SECTION D: RECENT ACTIVITY TIMELINE
+        Recent activity
       </div>
 
       <div className="space-y-1">
@@ -72,9 +73,12 @@ export function ActivityTimeline({ activities, compact = false }: ActivityTimeli
         ))}
       </div>
 
-      <button className="w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white">
-        View Full Activity Log →
-      </button>
+      <Link
+        href="/reports"
+        className="block w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white"
+      >
+        View reports →
+      </Link>
     </section>
   );
 }

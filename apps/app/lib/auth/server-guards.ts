@@ -1,7 +1,8 @@
 import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
-import { Permission, Role } from "./permissions";
+import { Permission, Role, ROLE_PERMISSIONS } from "./permissions";
 import { redirect } from "next/navigation";
+import { getPlatformAdmin } from "./platform-admin";
 
 export async function getCurrentUserRole(
   businessId?: string,
@@ -24,13 +25,32 @@ export async function getCurrentUserRole(
     select: { role: true },
   });
 
-  return (userRole?.role as Role) || null;
+  if (userRole?.role) {
+    return userRole.role as Role;
+  }
+
+  // Fallback: Check if user is owner of an active business
+  const ownedBusiness = await db.businessProfile.findFirst({
+    where: {
+      ownerId: userId,
+      ...(businessId ? { id: businessId } : {}),
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (ownedBusiness) {
+    return "owner";
+  }
+
+  return null;
 }
 
 export async function hasPermission(
   permission: Permission,
   businessId?: string,
 ): Promise<boolean> {
+  if (permission === "users.manage_all") return Boolean(await getPlatformAdmin());
   if (isAuthBypassEnabled()) {
     return true;
   }
@@ -57,6 +77,34 @@ export async function hasPermission(
   const perms = userRole.permissions as Record<string, boolean>;
 
   return !!perms?.[permission];
+}
+
+export async function hasBusinessPermission(
+  userId: string,
+  businessId: string,
+  permission: Permission,
+): Promise<boolean> {
+  // No tenant assignment or explicit permission JSON can confer platform scope.
+  if (permission === "users.manage_all") return false;
+  if (isAuthBypassEnabled()) return true;
+
+  const ownedBusiness = await db.businessProfile.findFirst({
+    where: { id: businessId, ownerId: userId },
+    select: { id: true },
+  });
+  if (ownedBusiness) return true;
+
+  const userRole = await db.userRole.findFirst({
+    where: { userId, businessId },
+    select: { permissions: true, role: true },
+  });
+  if (!userRole) return false;
+
+  const explicitPermissions = userRole.permissions as Record<string, boolean> | null;
+  if (explicitPermissions?.[permission]) return true;
+
+  const role = userRole.role as Role | null;
+  return role ? (ROLE_PERMISSIONS[role] ?? []).includes(permission) : false;
 }
 
 // These guard helpers are kept as route-level building blocks even when

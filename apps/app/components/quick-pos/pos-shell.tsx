@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { ExitPosDialog } from "@/components/quick-pos/exit-pos-dialog";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 export function PosShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { state, setExitOpen } = useQuickPosStore();
-  const bypassMode = process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+  const bypassMode = useIsBypassActive();
 
   return (
     <div className="min-h-screen bg-[#070809] text-white">
@@ -29,7 +30,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-white/60 md:text-sm">
                 {bypassMode
                   ? "Bypass mode active: no PIN required to exit Quick Sale."
-                  : "Exit requires the manager PIN from Settings > POS Controls."}
+                  : "Use the manager PIN when one is configured in Settings > POS Controls."}
               </p>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { toNumberSafe } from "@/lib/customers/core/customer-normalizer";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
   try {
     const { businessId } = await resolveAuthContext();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = params.id;
+    const { id } = await Promise.resolve(params);
 
     const credit = await db.creditLimit.findFirst({
       where: {

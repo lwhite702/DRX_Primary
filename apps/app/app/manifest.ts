@@ -4,11 +4,16 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Deelrx CRM",
     short_name: "DRX",
-    description: "Privacy-first POS & CRM for small businesses",
-    start_url: "/",
+    description: "Operator-first POS, inventory, CRM, and reporting",
+    id: "/",
+    start_url: "/dashboard",
+    scope: "/",
     display: "standalone",
-    background_color: "#0B0B0C",
-    theme_color: "#0B0B0C",
+    display_override: ["standalone", "minimal-ui"],
+    orientation: "portrait",
+    background_color: "#0A0A0A",
+    theme_color: "#0A0A0A",
+    categories: ["business", "finance", "productivity"],
     icons: [
       {
         src: "/brand/favicon-32.png",
@@ -26,7 +31,13 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
       {
-        src: "/brand/drx-mark-primary.png",
+        src: "/brand/pwa-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/brand/pwa-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

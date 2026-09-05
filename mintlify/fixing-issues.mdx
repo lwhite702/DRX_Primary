@@ -1,94 +1,65 @@
-# Fixing issues
+---
+title: "Fixing Issues and Troubleshooting"
+description: "Step-by-step troubleshooting playbook for store cashiers, floor staff, and managers."
+icon: "wrench"
+---
 
-This page is the incident playbook for frontline operators.
+This guide is the troubleshooting playbook for store staff when encountering register issues, card reader delays, or inventory discrepancies during active store hours.
 
 ## What this page is for
 
-Use this guide when a live flow breaks and you need fast, repeatable steps to recover without creating extra data problems.
-
-The goal is simple: restore flow, keep records clean, and escalate with useful details.
+Use this guide when something isn't working as expected to quickly recover without double-charging customers or making messy data mistakes.
 
 ## Before you start
 
-- **Recommended role**: Any operator can run first checks; manager handles deeper escalations.
-- **Routes often involved**:
-  - `/pos/sale`
-  - `/sales`
-  - `/inventory`
-  - `/customers`
-  - `/insights`
-  - `/help`
-- **Escalation channel**:
-  - Use in-app issue reporting and include route + exact action + exact error text.
+- **Recommended role**: Any staff member can run initial checks; supervisors or managers handle deeper account escalations.
+- **Key screens**:
+  - **Quick Sale** (`/pos/sale`) and **Sales** (`/sales`)
+  - **Inventory** (`/inventory`)
+  - **Customers** (`/customers`)
+  - **Operations Insights** (`/insights`)
+  - **Help Center** (`/help`): Submit a support request directly to our team.
 
 ## Fast path
 
-1. **Stop and identify route**.
-   - Name exact route and last click.
-2. **Retry once only**.
-   - Do not spam submit actions.
-3. **Confirm whether action already completed**.
-   - For checkout issues, check sale ID and history first.
-4. **Apply route-specific checks** (below).
-5. **Escalate with full context** if unresolved.
+1. **Pause and look at the screen**:
+   - Note the exact screen name and what button was pressed.
+2. **Tap once and wait**:
+   - Avoid tapping submit buttons repeatedly if the screen takes a moment to respond.
+3. **Check if the action already completed**:
+   - If a payment screen lagged, check **Sales** to see if the receipt was generated before asking the customer to swipe again.
+4. **Follow the common issue checks below**.
+5. **Contact Support if unresolved**:
+   - Email `support@deelrxcrm.com` or tap **Help** in the menu.
 
 ## If blocked
 
-### POS / Quick Sale issues
+### 1. Checkout will not complete
+- **Check**: Is the shopping cart empty? Was a payment method selected?
+- **Store Credit**: If paying with store credit, is an active customer profile attached?
+- **Out of stock**: Are any items in the cart showing 0 available stock?
+- **Fix**: Select a payment method, attach customer if using credit, tap **Complete Order** once.
 
-- **Symptom**: Cannot complete sale
-- **Checks**:
-  - Cart has items
-  - Payment method selected
-  - Credit has attached customer and eligibility
-  - Stock not zero
-- **Recovery**:
-  - Retry once.
-  - Verify no sale ID was already created before re-submitting.
+### 2. Barcode scanner does not find an item
+- **Check**: Is the barcode smudged or poorly lit?
+- **Fix**: Type the product name or SKU into search. Check in **Inventory** that the SKU is assigned to the product.
 
-### Inventory issues
+### 3. Customer profile will not save
+- **Check**: Are there formatting errors in the optional phone number or email?
+- **Fix**: Clear out the optional fields and save with just their first name or alias first, then add contact details later.
 
-- **Symptom**: Stock mismatch or intake failure
-- **Checks**:
-  - Correct product selected
-  - Intake values valid
-  - Approval-required path acknowledged
-- **Recovery**:
-  - Avoid duplicate intake submissions.
-  - Use adjustment with clear reason after recount.
+### 4. Daily sales numbers look lower than expected
+- **Check**: Did you select the correct date filter? Are you in the right store workspace?
+- **Fix**: Open **Operations Insights** (`/insights`) and ensure you are viewing today's date for your current store location.
 
-### Customer issues
-
-- **Symptom**: Customer save/attach fails
-- **Checks**:
-  - Alias-only payload works as fallback
-  - No malformed fields
-  - Correct business context
-- **Recovery**:
-  - Save minimal profile first, then enrich fields.
-
-### Metrics/report issues
-
-- **Symptom**: Totals look wrong
-- **Checks**:
-  - Date scope and business context
-  - Transaction completion status
-- **Recovery**:
-  - Cross-check with sale records before reporting as system bug.
-
-### Access issues
-
-- **Symptom**: Page visible but action denied
-- **Checks**:
-  - Role permissions for action
-  - Team role assignment current
-- **Recovery**:
-  - Escalate to manager/owner for role correction.
+### 5. "Permission Denied" message appears
+- **Check**: Does the action require a Supervisor or Manager PIN (e.g., voiding an item or editing a tax rate)?
+- **Fix**: Ask a shift supervisor or manager to enter their PIN or perform the action from their account.
 
 ## What is beta here
 
-- Some report/export surfaces remain beta-limited and can appear minimal.
-- Core escalation flows and route-level operator recovery checks are live.
+- Automated live remote diagnostics screen sharing is in preview testing.
+- Built-in error alerts, safe transaction retry logic, and support ticket submissions are fully live.
 
 ## Related docs
 
@@ -98,19 +69,12 @@ The goal is simple: restore flow, keep records clean, and escalate with useful d
 - [Your customers](/your-customers)
 - [Keeping your data safe](/keeping-your-data-safe)
 
-## Escalation payload template
+## What to include when contacting support
 
-When opening an issue, include:
+When submitting a help ticket to `support@deelrxcrm.com`:
 
-- Route path
-- Last click/action
-- Exact error text
-- Whether sale ID appeared
-- Whether retry changed behavior
-- Staff role used during issue
-
-## Do-not-do list during incidents
-
-- Do not retry checkout repeatedly without status check.
-- Do not run manual stock edits to hide unresolved intake issues.
-- Do not change team roles during lane pressure unless it is required for recovery.
+1. Which screen you were using (e.g. Quick Sale, Receive Stock).
+2. What you were trying to do.
+3. The exact message shown on the screen.
+4. Whether the receipt or sale ID was created.
+5. What device you were using (e.g., iPad Safari, iPhone, Android terminal, Desktop Chrome).

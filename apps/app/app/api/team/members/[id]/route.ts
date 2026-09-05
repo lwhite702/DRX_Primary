@@ -1,54 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
+import {
+  findTeamMembership,
+  isPrivilegedTeamRole,
+  resolveTeamManagementContext,
+} from "../../_lib/server";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+type RouteContext = { params: Promise<{ id: string }> };
+
+export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
+    const context = await resolveTeamManagementContext(request);
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
+    }
+
     const { id } = await params;
-    // Verify auth? Assuming GET requires auth, though the original code didn't strictly check for the caller, just fetched.
-    // Ideally we should check if caller belongs to same business.
-    // For now, let's keep it simple and just verify generic auth.
-    const { userId: actorId } = await auth();
-    if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const membership = await findTeamMembership(context.businessId, id);
+    if (!membership) {
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
 
-    const client = await clerkClient();
-    let user;
-    try {
-      user = await client.users.getUser(id);
-    } catch (e) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Fetch role
-    // Ideally we need business context.
-    // If we don't have businessId, we might get any role or first role.
-    // In team context, we usually know the business.
-    // Let's try to get business from actor.
-    const actorRole = await db.userRole.findFirst({
-      where: { userId: actorId },
-      select: { businessId: true },
-    });
-
-    const roleData = await db.userRole.findFirst({
+    const localUser = await db.user.findFirst({
       where: {
-        userId: id,
-        ...(actorRole?.businessId ? { businessId: actorRole.businessId } : {}),
+        OR: [{ clerkUserId: membership.userId }, { id: membership.userId }],
       },
-      select: { role: true },
+      select: { email: true, name: true },
     });
+
+    let email = localUser?.email ?? "Unknown";
+    let name = localUser?.name ?? null;
+    if (!localUser) {
+      try {
+        const client = await clerkClient();
+        const clerkUser = await client.users.getUser(membership.userId);
+        email = clerkUser.primaryEmailAddress?.emailAddress ?? "Unknown";
+        name =
+          [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
+          null;
+      } catch {
+        // A missing identity should not expose data outside the scoped membership.
+      }
+    }
 
     return NextResponse.json({
-      id: user.id,
-      email: user.emailAddresses[0]?.emailAddress,
-      role: roleData?.role,
+      id: membership.id,
+      user_id: membership.userId,
+      business_id: context.businessId,
+      email,
+      name,
+      role: membership.role,
+      permissions: membership.permissions,
+      created_at: membership.createdAt,
+      updated_at: membership.updatedAt,
     });
   } catch (error) {
-    console.error("Get member error:", error);
+    console.error("Get team member failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -56,39 +69,65 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
-    const { id: targetUserId } = await params;
-    const { userId: actorId } = await auth();
-
-    if (!actorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const context = await resolveTeamManagementContext(request);
+    if (!context.ok) {
+      return NextResponse.json(
+        { error: context.error },
+        { status: context.status },
+      );
     }
 
-    // Audit Log
-    await db.systemAuditLog.create({
-      data: {
-        action: "delete_member",
-        entityId: targetUserId,
-        userId: actorId,
-        entityType: "team_member",
-        // resource_id: id, // entityId covers it
-      },
+    const { id } = await params;
+    const membership = await findTeamMembership(context.businessId, id);
+    if (!membership) {
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    }
+    if (membership.userId === context.userId) {
+      return NextResponse.json(
+        { error: "You cannot remove your own membership" },
+        { status: 409 },
+      );
+    }
+    if (membership.userId === context.ownerId || membership.role === "owner") {
+      return NextResponse.json(
+        { error: "The business owner cannot be removed" },
+        { status: 409 },
+      );
+    }
+    if (
+      isPrivilegedTeamRole(membership.role) &&
+      !context.canManagePrivilegedRoles
+    ) {
+      return NextResponse.json(
+        { error: "Only an owner or administrator can remove that role" },
+        { status: 403 },
+      );
+    }
+
+    await db.$transaction([
+      db.systemAuditLog.create({
+        data: {
+          action: "remove_member",
+          entityId: membership.userId,
+          userId: context.userId,
+          businessId: context.businessId,
+          entityType: "team_member",
+          oldValues: { role: membership.role },
+        },
+      }),
+      db.userRole.delete({ where: { id: membership.id } }),
+    ]);
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("Remove team member failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
     });
-
-    // Delete User (Cascade usually deletes roles, but verify)
-    const client = await clerkClient();
-    await client.users.deleteUser(targetUserId);
-
-    // Cleanup DB references
-    await db.userRole.deleteMany({ where: { userId: targetUserId } });
-
-    return NextResponse.json({}, { status: 204 });
-  } catch (error: any) {
-    console.error("Delete member error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

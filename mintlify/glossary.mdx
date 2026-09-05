@@ -1,47 +1,51 @@
-# Glossary
+---
+title: "Glossary"
+description: "Key retail terminology, screen names, and definitions used across DRX."
+icon: "book"
+---
 
-Key terms used in live DRX routes.
+A reference guide to common terms and concepts used across DRX screens and documentation.
 
-## Core navigation terms
+## Navigation and screen terms
 
-- **Dashboard**: Main operational snapshot route.
-- **Quick Sale**: Fast register flow for lane speed (`/pos/sale`).
-- **Sales**: Full checkout workflow with broader cart controls.
-- **Inventory**: Product and stock management routes.
-- **Customers**: Profile and customer history routes.
-- **Credit**: Credit balance and transaction management.
-- **Operations Insights**: Live metrics route for sales, stock alerts, and intake status.
-- **Reports**: Reporting route with currently limited output.
-- **Settings**: Business, team, privacy, and control settings.
-- **Help Center**: External support knowledge base link.
+- **Dashboard**: Real-time snapshot of today's store revenue, transactions, and alert summaries.
+- **Quick Sale**: High-speed counter register designed for fast barcode scanning, cash calculation, and rapid checkout.
+- **Sales & Orders**: Full-service order management screen for complex carts, customer notes, delivery details, and split tenders.
+- **Deliveries**: Courier fulfillment screen for packing orders, dispatching drivers (like Uber Direct), and tracking drop-offs.
+- **Inventory**: Your store's product catalog, pricing, reorder thresholds, and stock counts.
+- **Customers**: Customer profile directory supporting alias nicknames, order history, and loyalty points.
+- **Credit Center**: Management screen for tracking customer store credit limits, outstanding balances, and credit payments.
+- **Operations Insights**: Live performance metrics tracking gross sales, transaction counts, average order values, and inventory intake status.
+- **Settings**: Store profile configuration, tax rates, staff role permissions, and privacy profiles.
+- **Help Center**: Official documentation hub and direct customer support portal.
 
 ## Inventory terms
 
-- **Inventory intake**: Record incoming stock, cost, and weight.
-- **Inventory adjustment**: Manual count correction with reason.
-- **Inventory audit**: History of stock movement actions.
-- **Reorder level**: Threshold used to flag low stock risk.
+- **Receive Stock (Intake)**: Logging incoming supplier shipments, invoice costs, and received weights or quantities.
+- **Adjust Stock**: Updating a physical shelf count up or down with a clear explanation note (e.g. recount or breakage).
+- **Stock Audit Trail**: The permanent timestamped history showing every stock change, previous count, new count, and staff member responsible.
+- **Reorder Level**: The minimum threshold that triggers a low-stock alert on your dashboard so you can reorder before running out.
 
 ## Sales and payment terms
 
-- **Tender method**: How a transaction is paid (cash, card, credit, zelle, mixed).
-- **Sale details**: Route showing a single completed sale.
-- **Price override**: Controlled manual price change during checkout.
+- **Payment Tender**: The payment method used by a customer (Cash, Card, Store Credit, Zelle, or Split Tender).
+- **Fractional Checkout**: Weight-based precision selling for goods sold by grams, ounces, or pounds.
+- **Dollar Presets**: Quick \$10, \$20, \$35, \$50 buttons that automatically calculate the exact weight of product to weigh on the scale.
+- **Bulk Price Tier**: Automatic volume price breaks applied at quantity thresholds (such as an eighth, quarter, half ounce, or full ounce).
+- **Manager Override / PIN**: Security requirement where a supervisor enters their PIN to approve a discount, void, or manual price change.
 
 ## Customer and credit terms
 
-- **Alias-first profile**: Customer profile using alias without requiring full identity fields.
-- **Credit extension**: Increase in allowed credit exposure.
-- **Credit payment**: Payment that reduces outstanding credit balance.
-- **Outstanding balance**: Current unpaid amount.
+- **Alias-First Profile**: A customer profile saved with a nickname or first name, without forcing cash walk-ins to provide phone numbers or addresses.
+- **Loyalty Rewards**: Store discount points earned on previous purchases that can be redeemed at checkout.
+- **Credit Limit**: The maximum allowable store credit balance a trusted customer can charge to their account.
+- **Outstanding Balance**: The current unpaid balance a customer owes on their store credit account.
 
-## Privacy and safety terms
+## Privacy and security terms
 
-- **Privacy profile**: Field visibility and recommendation mode.
-- **Mask mode**: On-screen hiding behavior for sensitive customer data.
-- **Temporary profile**: Customer profile set to expire by retention policy.
-- **Vault mode**: Key ownership pattern where keys are not stored in database tables.
-- **Session revoke**: Manual termination of active account session.
+- **Counter Screen Masking**: Partially hiding phone numbers and customer details on counter registers with asterisks to protect privacy from onlookers.
+- **Temporary Customer Profile**: A walk-in profile configured to automatically expire after 1, 7, or 30 days of inactivity.
+- **Remote Device Sign-Out**: Instantly locking and signing out a lost phone, tablet, or former employee's browser.
 
 ## Related docs
 
