@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Checkout retries (WRE-83):** Restore the completed web-sale lookup before canonical checkout so configuration changes cannot replay an already completed web sale into the canonical ledger.
 - **Checkout error privacy (WRE-83):** Return a fixed retry-verification error without exposing database/provider details when the completed-sale lookup fails.
 - **Inventory test gate (WRE-80):** Initialize inventory route fixtures inside the hoisted mock factory so the regression suite can execute.
+- **Convex onboarding completion and field contrast (WRE-113):** Both web onboarding entry points now provision the operator, business, settings, and audit record through the authenticated Convex data plane instead of the stale Prisma setup action. Onboarding fields use stronger borders and surface separation, and dropdown choices remain readable at rest and while highlighted.
 
 - **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
 

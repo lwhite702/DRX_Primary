@@ -13,23 +13,7 @@ const mocks = vi.hoisted(() => {
     updateUserMock: vi.fn(),
     cookieSetMock: vi.fn(),
     redirectMock,
-    dbMock: {
-      businessProfile: {
-        findFirst: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-      },
-      businessSettings: {
-        findUnique: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-      },
-      userRole: {
-        findFirst: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-      },
-    },
+    provisionBusinessInConvex: vi.fn(),
   };
 });
 
@@ -43,8 +27,8 @@ vi.mock("@/lib/adapters/auth/server", () => ({
   isAuthBypassEnabled: vi.fn(() => false),
 }));
 
-vi.mock("@/lib/db", () => ({
-  db: mocks.dbMock,
+vi.mock("@/lib/convex/onboarding-server", () => ({
+  provisionBusinessInConvex: mocks.provisionBusinessInConvex,
 }));
 
 vi.mock("next/headers", () => ({
@@ -100,15 +84,10 @@ describe("completeOnboarding", () => {
       },
     });
 
-    mocks.dbMock.businessProfile.findFirst.mockResolvedValue(null);
-    mocks.dbMock.businessProfile.create.mockResolvedValue({
-      id: "business_123",
+    mocks.provisionBusinessInConvex.mockResolvedValue({
+      businessId: "business_123",
+      status: "ONBOARDING_SUCCESS",
     });
-    mocks.dbMock.businessProfile.update.mockResolvedValue({
-      id: "business_existing",
-    });
-    mocks.dbMock.businessSettings.findUnique.mockResolvedValue(null);
-    mocks.dbMock.userRole.findFirst.mockResolvedValue(null);
   });
 
   it("creates durable business setup before returning navigation success", async () => {
@@ -125,36 +104,22 @@ describe("completeOnboarding", () => {
       },
     });
 
-    expect(mocks.dbMock.businessProfile.create).toHaveBeenCalledWith({
-      data: {
-        businessName: "Beta Market",
-        ownerId: "user_123",
-        isActive: true,
-      },
-      select: { id: true },
-    });
-    expect(mocks.dbMock.businessSettings.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        businessId: "business_123",
-        currency: "USD",
-        timezone: "America/New_York",
-        collectTax: false,
-        defaultTaxRate: 0,
-        settingsData: expect.objectContaining({
-          onboarding_completed: true,
-          dashboard_preset: "checkout",
-          role: "owner",
-          team_size: "1",
-          tooling: "web",
-        }),
-      }),
-    });
-    expect(mocks.dbMock.userRole.create).toHaveBeenCalledWith({
-      data: {
-        businessId: "business_123",
-        userId: "user_123",
-        role: "owner",
-        permissions: { all: true },
+    expect(mocks.provisionBusinessInConvex).toHaveBeenCalledWith({
+      name: "Lee Operator",
+      businessName: "Beta Market",
+      businessType: "retail",
+      clerkOrgId: undefined,
+      currency: "USD",
+      timezone: "America/New_York",
+      collectTax: false,
+      taxRateBps: 0,
+      setup: {
+        locationName: "Main Store",
+        city: "Albany",
+        region: "NY",
+        country: "US",
+        tracksInventory: true,
+        dashboardPreset: "checkout",
       },
     });
     expect(mocks.updateUserMock).toHaveBeenCalledWith(
@@ -178,18 +143,11 @@ describe("completeOnboarding", () => {
     expect(mocks.redirectMock).not.toHaveBeenCalled();
   });
 
-  it("reuses an existing active owner business and updates setup state", async () => {
-    mocks.dbMock.businessProfile.findFirst.mockResolvedValue({
-      id: "business_existing",
+  it("treats an idempotent Convex retry as successful", async () => {
+    mocks.provisionBusinessInConvex.mockResolvedValue({
+      businessId: "business_existing",
+      status: "ALREADY_ONBOARDED",
     });
-    mocks.dbMock.businessSettings.findUnique.mockResolvedValue({
-      id: "settings_existing",
-      settingsData: {
-        default_unit: "g",
-      },
-    });
-    mocks.dbMock.userRole.findFirst.mockResolvedValue({ id: "role_existing" });
-
     await expect(
       completeOnboarding(
         initialOnboardingActionState,
@@ -197,36 +155,7 @@ describe("completeOnboarding", () => {
       ),
     ).resolves.toMatchObject({ status: "success", error: null });
 
-    expect(mocks.dbMock.businessProfile.create).not.toHaveBeenCalled();
-    expect(mocks.dbMock.businessProfile.update).toHaveBeenCalledWith({
-      where: { id: "business_existing" },
-      data: {
-        businessName: "Updated Market",
-        isActive: true,
-      },
-      select: { id: true },
-    });
-    expect(mocks.dbMock.businessSettings.update).toHaveBeenCalledWith({
-      where: { id: "settings_existing" },
-      data: {
-        currency: "USD",
-        timezone: "America/New_York",
-        collectTax: false,
-        defaultTaxRate: 0,
-        settingsData: expect.objectContaining({
-          default_unit: "g",
-          onboarding_completed: true,
-        }),
-      },
-    });
-    expect(mocks.dbMock.userRole.create).not.toHaveBeenCalled();
-    expect(mocks.dbMock.userRole.update).toHaveBeenCalledWith({
-      where: { id: "role_existing" },
-      data: {
-        role: "owner",
-        permissions: { all: true },
-      },
-    });
+    expect(mocks.provisionBusinessInConvex).toHaveBeenCalledOnce();
   });
 
   it("persists the configured tax decision and rate", async () => {
@@ -235,11 +164,26 @@ describe("completeOnboarding", () => {
       form({ taxChoice: "yes", taxRate: "8.25" }),
     );
 
-    expect(mocks.dbMock.businessSettings.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(mocks.provisionBusinessInConvex).toHaveBeenCalledWith(
+      expect.objectContaining({
         collectTax: true,
-        defaultTaxRate: 0.0825,
+        taxRateBps: 825,
       }),
+    );
+  });
+
+  it("returns a friendly retry state when Convex provisioning is unavailable", async () => {
+    mocks.provisionBusinessInConvex.mockRejectedValue(
+      new Error("temporary outage"),
+    );
+
+    await expect(
+      completeOnboarding(initialOnboardingActionState, form()),
+    ).resolves.toEqual({
+      status: "error",
+      error: "We couldn’t create your workspace just yet. Please try again.",
     });
+
+    expect(mocks.updateUserMock).not.toHaveBeenCalled();
   });
 });

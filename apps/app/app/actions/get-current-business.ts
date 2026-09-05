@@ -1,100 +1,32 @@
 "use server";
 
-import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-
-function isMissingColumnError(error: unknown) {
-  return Boolean(
-    error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error as { code?: string }).code === "P2022",
-  );
-}
-
-const businessProfileSelect = {
-  id: true,
-  businessName: true,
-  businessType: true,
-  address: true,
-  city: true,
-  state: true,
-  zipCode: true,
-  phoneNumber: true,
-  email: true,
-  ownerId: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+import { getBusinessProfileFromConvex } from "@/lib/convex/onboarding-server";
 
 export async function getCurrentBusinessProfile() {
   try {
-    const { orgId, userId } = await auth();
-    const bypass = isAuthBypassEnabled();
-
-    if (orgId && !bypass) {
+    const profile = await getBusinessProfileFromConvex();
+    if (!profile) return null;
+    let settingsData: Record<string, unknown> = {};
+    if (profile.settingsData) {
       try {
-        const byOrg = await db.businessProfile.findUnique({
-          where: { clerkOrgId: orgId },
-          select: businessProfileSelect,
-        });
-        if (byOrg) return { ...byOrg, clerkOrgId: orgId };
-      } catch (error: any) {
-        // Some local databases are missing the newer clerk_org_id column.
-        // Fall back to ownerId lookup instead of hard-failing local testing.
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
+        settingsData = JSON.parse(profile.settingsData) as Record<string, unknown>;
+      } catch {
+        // A malformed optional settings payload must not hide a valid workspace.
       }
     }
-
-    if (userId) {
-      try {
-        const byOwner = await db.businessProfile.findFirst({
-          where: { ownerId: userId },
-          orderBy: { createdAt: "desc" },
-          select: businessProfileSelect,
-        });
-        if (byOwner) return { ...byOwner, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-
-      try {
-        const role = await db.userRole.findFirst({
-          where: { userId },
-          select: {
-            business: {
-              select: businessProfileSelect,
-            },
-          },
-        });
-        if (role?.business) return { ...role.business, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    if (bypass && userId) {
-      try {
-        const firstProfile = await db.businessProfile.findFirst({
-          orderBy: { createdAt: "desc" },
-          select: businessProfileSelect,
-        });
-        if (firstProfile) return { ...firstProfile, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    return null;
+    return {
+      ...profile,
+      isActive: true,
+      is_active: true,
+      address: String(settingsData.address ?? ""),
+      city: String(settingsData.city ?? ""),
+      state: String(settingsData.region ?? ""),
+      zipCode: String(settingsData.postal_code ?? ""),
+      zip_code: String(settingsData.postal_code ?? ""),
+      phoneNumber: String(settingsData.owner_phone ?? ""),
+      phone_number: String(settingsData.owner_phone ?? ""),
+      settingsData,
+    };
   } catch (error) {
     console.error("Error fetching current business profile:", error);
     return null;

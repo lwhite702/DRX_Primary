@@ -13,7 +13,7 @@ import {
   getDefaultPinnedItemsForPreset,
   type DashboardViewPreset,
 } from "@/lib/auth/dashboard-preferences";
-import { db } from "@/lib/db";
+import { provisionBusinessInConvex } from "@/lib/convex/onboarding-server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -38,7 +38,7 @@ export async function completeOnboarding(
   _previousState: OnboardingActionState,
   formData: FormData,
 ): Promise<OnboardingActionState> {
-  const { userId, sessionClaims } = await auth();
+  const { userId, orgId, sessionClaims } = await auth();
 
   if (!userId) {
     redirect("/login");
@@ -91,143 +91,30 @@ export async function completeOnboarding(
     updatedAt: new Date().toISOString(),
   };
 
-  const existingBusiness = await db.businessProfile.findFirst({
-    where: {
-      ownerId: userId,
-      isActive: true,
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true },
-  });
-
-  const business = existingBusiness
-    ? await db.businessProfile.update({
-        where: { id: existingBusiness.id },
-        data: {
-          businessName,
-          isActive: true,
-        },
-        select: { id: true },
-      })
-    : await db.businessProfile.create({
-        data: {
-          businessName,
-          ownerId: userId,
-          isActive: true,
-        },
-        select: { id: true },
-      });
-
-  const existingSettings = await db.businessSettings.findUnique({
-    where: { businessId: business.id },
-    select: {
-      id: true,
-      settingsData: true,
-    },
-  });
-  const existingSettingsData =
-    existingSettings?.settingsData &&
-    typeof existingSettings.settingsData === "object" &&
-    !Array.isArray(existingSettings.settingsData)
-      ? existingSettings.settingsData
-      : {};
-  const settingsData = {
-    ...existingSettingsData,
-    onboarding_completed: true,
-    dashboard_preset: dashboardPreset,
-    dashboard_preferences: dashboardPreferences,
-    role: "owner",
-    team_size: "1",
-    tooling: "web",
-    collect_tax: taxEnabled,
-    default_tax_rate: taxRateBps / 10_000,
-    operator_profile: {
-      businessName,
-      role: "owner",
-      teamSize: "1",
-      tooling: "web",
-      ownerName,
-    },
-  };
-
   try {
-    if (existingSettings) {
-      await db.businessSettings.update({
-        where: { id: existingSettings.id },
-        data: {
-          currency: "USD",
-          timezone: "America/New_York",
-          collectTax: taxEnabled,
-          defaultTaxRate: taxRateBps / 10_000,
-          settingsData,
-        },
-      });
-    } else {
-      await db.businessSettings.create({
-        data: {
-          businessId: business.id,
-          currency: "USD",
-          timezone: "America/New_York",
-          collectTax: taxEnabled,
-          defaultTaxRate: taxRateBps / 10_000,
-          settingsData,
-        },
-      });
-    }
-  } catch (dbError) {
-    console.warn(
-      "[onboarding] businessSettings update with full schema failed, falling back to core settingsData:",
-      dbError,
-    );
-    try {
-      if (existingSettings) {
-        await db.businessSettings.update({
-          where: { id: existingSettings.id },
-          data: {
-            settingsData,
-          },
-        });
-      } else {
-        await db.businessSettings.create({
-          data: {
-            businessId: business.id,
-            settingsData,
-          },
-        });
-      }
-    } catch (fallbackError) {
-      console.error(
-        "[onboarding] businessSettings fallback creation/update failed:",
-        fallbackError,
-      );
-    }
-  }
-
-  const existingRole = await db.userRole.findFirst({
-    where: {
-      businessId: business.id,
-      userId,
-    },
-    select: { id: true },
-  });
-
-  if (existingRole) {
-    await db.userRole.update({
-      where: { id: existingRole.id },
-      data: {
-        role: "owner",
-        permissions: { all: true },
+    await provisionBusinessInConvex({
+      name: ownerName,
+      businessName,
+      businessType,
+      clerkOrgId: orgId ?? undefined,
+      currency,
+      timezone,
+      collectTax: taxEnabled,
+      taxRateBps,
+      setup: {
+        locationName,
+        city,
+        region,
+        country,
+        tracksInventory,
+        dashboardPreset,
       },
     });
-  } else {
-    await db.userRole.create({
-      data: {
-        businessId: business.id,
-        userId,
-        role: "owner",
-        permissions: { all: true },
-      },
-    });
+  } catch {
+    return {
+      status: "error",
+      error: "We couldn’t create your workspace just yet. Please try again.",
+    };
   }
 
   if (!isAuthBypassEnabled()) {

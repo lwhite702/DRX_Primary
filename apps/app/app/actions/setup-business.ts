@@ -1,11 +1,14 @@
 "use server";
 
 import { auth } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
 import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
 import type { PrivacyProfile } from "@/lib/privacy/types";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { provisionBusinessInConvex } from "@/lib/convex/onboarding-server";
+
+type QuickQuantityInput = { label: string; value: number; unit: string };
+type InventoryReasonInput = { label: string; type: string };
+type NicknameInput = { slang: string; quantity: number; unit: string };
 
 export type SetupBusinessData = {
   businessName: string;
@@ -16,79 +19,58 @@ export type SetupBusinessData = {
   zipCode: string;
   ownerPhone: string;
   defaultUnit: string;
-  quickQuantities: any[];
+  quickQuantities: QuickQuantityInput[];
   privacyPreset: PrivacyProfile;
-  inventoryReasons: any[];
-  nicknames: any[];
+  inventoryReasons: InventoryReasonInput[];
+  nicknames: NicknameInput[];
   ownerName: string;
 };
 
 export async function setupBusinessAction(data: SetupBusinessData) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return { error: "Unauthorized" };
-    }
-
-    // 1. Create Business Profile
-    const business = await db.businessProfile.create({
-      data: {
-        businessName: data.businessName,
-        businessType: data.businessType,
+    const { orgId } = await auth();
+    const privacyProtocol = getDefaultPrivacyProtocol(data.privacyPreset);
+    const result = await provisionBusinessInConvex({
+      name: data.ownerName,
+      businessName: data.businessName,
+      businessType: data.businessType,
+      clerkOrgId: orgId ?? undefined,
+      currency: "USD",
+      timezone: "America/New_York",
+      collectTax: false,
+      taxRateBps: 0,
+      setup: {
         address: data.address,
         city: data.city,
-        state: data.state,
-        zipCode: data.zipCode,
-        phoneNumber: data.ownerPhone,
-        ownerId: userId,
-        isActive: true,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!business) {
-      return { error: "Failed to create business profile" };
-    }
-
-    // 2. Create Business Settings
-    const privacyProtocol = getDefaultPrivacyProtocol(data.privacyPreset);
-
-    await db.businessSettings.create({
-      data: {
-        businessId: business.id,
-        currency: "USD",
-        timezone: "America/New_York", // Default
-        settingsData: {
-          onboarding_completed: true,
-          default_unit: data.defaultUnit,
-          quick_quantities: data.quickQuantities,
-          privacy_preset: data.privacyPreset,
-          privacy_protocol: privacyProtocol,
-          inventory_reasons: data.inventoryReasons,
-          nicknames: data.nicknames,
-          owner_name: data.ownerName,
-          default_tax_rate: 0.0,
-        } as unknown as Prisma.InputJsonValue,
-      },
-      // Note: mapping to Prisma model might differ if settingsData is Json
-    });
-
-    // 3. Assign Owner Role
-    await db.userRole.create({
-      data: {
-        businessId: business.id,
-        userId: userId,
-        role: "owner",
-        permissions: { all: true }, // Json
+        region: data.state,
+        postalCode: data.zipCode,
+        ownerPhone: data.ownerPhone,
+        defaultUnit: data.defaultUnit,
+        privacyPreset: data.privacyPreset,
+        privacyProtocolJson: JSON.stringify(privacyProtocol),
+        quickQuantities: data.quickQuantities.map(({ label, value, unit }) => ({
+          label,
+          value,
+          unit,
+        })),
+        inventoryReasons: data.inventoryReasons.map(({ label, type }) => ({
+          label,
+          type,
+        })),
+        nicknames: data.nicknames.map(({ slang, quantity, unit }) => ({
+          slang,
+          quantity,
+          unit,
+        })),
       },
     });
 
     revalidatePath("/");
-    return { success: true, businessId: business.id };
-  } catch (error: any) {
+    return { success: true, businessId: String(result.businessId) };
+  } catch (error: unknown) {
     console.error("Setup business error:", error);
-    return { error: error.message || "Failed to setup business" };
+    return {
+      error: "We couldn’t finish setup. Your answers are saved, so please try again.",
+    };
   }
 }

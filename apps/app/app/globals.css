@@ -105,6 +105,36 @@
   }
 }
 
+@layer components {
+  .input {
+    width: 100%;
+    min-height: 2.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0.5rem;
+    background: #262626;
+    color: #ffffff;
+    padding: 0.625rem 0.875rem;
+    font-size: 1rem;
+    outline: none;
+    color-scheme: dark;
+  }
+
+  .input:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .input:focus-visible {
+    border-color: #ccff00;
+    background: #2b2b2b;
+    box-shadow: 0 0 0 2px #ccff00, 0 0 0 4px #121212;
+  }
+
+  .input option {
+    background: #181818;
+    color: #ffffff;
+  }
+}
+
 /* Safe area utilities for PWA */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom {
