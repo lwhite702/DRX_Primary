@@ -10,7 +10,7 @@
     "build": "next build --webpack",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests for marketing app\""
+    "test": "pnpm --dir ../.. exec vitest run apps/marketing/lib/android-testing.test.ts"
   },
   "dependencies": {
     "@deelrx/brand": "link:../../packages/brand",

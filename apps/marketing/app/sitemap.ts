@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/product/operations-visibility",
     "/product/team-access-security",
     "/resources",
+    "/resources/mobile-testing",
     "/resources/changelog",
     "/resources/guides",
     "/resources/guides/credit-and-payments",

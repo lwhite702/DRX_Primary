@@ -154,7 +154,9 @@ export default function More() {
         {businessId && (
           <View style={styles.businessCard}>
             <Ionicons name="storefront" size={20} color={COLORS.accent} />
-            <Text style={styles.businessLabel}>Connected to business</Text>
+            <Text style={styles.businessLabel}>
+              {session?.businessName || "Connected to business"}
+            </Text>
           </View>
         )}
 
@@ -220,8 +222,9 @@ export default function More() {
         {/* Version */}
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>
-            DRX {Application.applicationName ?? "Mobile"} v
-            {Application.nativeApplicationVersion ?? "unknown"}
+            {`DRX ${Application.applicationName ?? "Mobile"} v${
+              Application.nativeApplicationVersion ?? "unknown"
+            } (${Application.nativeBuildVersion ?? "unknown build"})`}
           </Text>
           <Text style={styles.versionSubtext}>
             Secured and synchronized by Convex

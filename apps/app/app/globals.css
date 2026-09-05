@@ -381,3 +381,22 @@ select,
   color: #b3b3b3 !important;
   opacity: 1 !important;
 }
+
+.cl-formButtonPrimary,
+.cl-formButtonPrimary:hover,
+.cl-formButtonPrimary:focus,
+.cl-formButtonPrimary:active {
+  min-height: 3rem !important;
+  background-color: #ccff00 !important;
+  color: #0a0a0a !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+}
+
+.cl-formFieldLabel,
+.cl-footerAction,
+.cl-footerActionLink,
+.cl-socialButtonsBlockButtonText {
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+}
