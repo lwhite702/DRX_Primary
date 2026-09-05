@@ -6,9 +6,7 @@ import { AgingData } from "../_components/CreditAgingTable";
 import { CreditTransaction as LocalCreditTransaction } from "../_components/CreditTransactionsList";
 import { Customer, CreditLimit } from "@/lib/validations/schemas";
 
-type CreditLoadStatus =
-  "loading" | "refreshing" | "success" | "empty" | "error";
-const EMPTY_CREDIT_LIMITS = new Map<string, CreditLimit>();
+type CreditLoadStatus = "loading" | "refreshing" | "success" | "empty" | "error";
 
 export function useCreditManager(businessId: string | undefined) {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -16,9 +14,7 @@ export function useCreditManager(businessId: string | undefined) {
     new Map(),
   );
   const [agingData, setAgingData] = useState<AgingData[]>([]);
-  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>(
-    [],
-  );
+  const [transactions, setTransactions] = useState<LocalCreditTransaction[]>([]);
   const [status, setStatus] = useState<CreditLoadStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [mutating, setMutating] = useState(false);
@@ -29,13 +25,10 @@ export function useCreditManager(businessId: string | undefined) {
   const supabase = useMemo(() => createAppClient(), []);
   const requestVersion = useRef(0);
   const loadedBusinessId = useRef<string | undefined>(undefined);
-  const activeBusinessId = useRef(businessId);
-  activeBusinessId.current = businessId;
 
   const refreshData = useCallback(async () => {
-    const requestedBusinessId = businessId;
     const version = ++requestVersion.current;
-    if (!requestedBusinessId || !supabase) {
+    if (!businessId || !supabase) {
       setCustomers([]);
       setCreditLimits(new Map());
       setAgingData([]);
@@ -46,7 +39,7 @@ export function useCreditManager(businessId: string | undefined) {
       return;
     }
 
-    const refreshInPlace = loadedBusinessId.current === requestedBusinessId;
+    const refreshInPlace = loadedBusinessId.current === businessId;
     setStatus(refreshInPlace ? "refreshing" : "loading");
     setError(null);
     if (!refreshInPlace) {
@@ -62,29 +55,24 @@ export function useCreditManager(businessId: string | undefined) {
           supabase
             .from("customers")
             .select("id, first_name, last_name")
-            .eq("business_id", requestedBusinessId)
+            .eq("business_id", businessId)
             .eq("is_active", true)
             .eq("ephemeral", false)
             .order("first_name"),
           supabase
             .from("credit_limits")
             .select("customer_id, max_credit_limit, current_balance")
-            .eq("business_id", requestedBusinessId),
-          creditSystem.getCreditAging(requestedBusinessId),
+            .eq("business_id", businessId),
+          creditSystem.getCreditAging(businessId),
           supabase
             .from("credit_transactions")
             .select("*, customers(first_name, last_name)")
-            .eq("business_id", requestedBusinessId)
+            .eq("business_id", businessId)
             .order("created_at", { ascending: false })
             .limit(50),
         ]);
 
-      if (
-        version !== requestVersion.current ||
-        activeBusinessId.current !== requestedBusinessId
-      ) {
-        return;
-      }
+      if (version !== requestVersion.current) return;
       if (customerResult.error) throw customerResult.error;
       if (limitResult.error) throw limitResult.error;
       if (transactionResult.error) throw transactionResult.error;
@@ -96,7 +84,7 @@ export function useCreditManager(businessId: string | undefined) {
       for (const limit of limitResult.data ?? []) {
         nextLimits.set(limit.customer_id, {
           ...limit,
-          business_id: requestedBusinessId,
+          business_id: businessId,
         });
       }
 
@@ -106,21 +94,16 @@ export function useCreditManager(businessId: string | undefined) {
       setTransactions(
         (transactionResult.data ?? []) as unknown as LocalCreditTransaction[],
       );
-      loadedBusinessId.current = requestedBusinessId;
+      loadedBusinessId.current = businessId;
       const hasData = Boolean(
         customerResult.data?.length ||
-        limitResult.data?.length ||
-        agingResult.data?.length ||
-        transactionResult.data?.length,
+          limitResult.data?.length ||
+          agingResult.data?.length ||
+          transactionResult.data?.length,
       );
       setStatus(hasData ? "success" : "empty");
     } catch (caught) {
-      if (
-        version !== requestVersion.current ||
-        activeBusinessId.current !== requestedBusinessId
-      ) {
-        return;
-      }
+      if (version !== requestVersion.current) return;
       console.error("Failed to load credit data", {
         errorType: caught instanceof Error ? caught.name : "UnknownError",
       });
@@ -130,15 +113,6 @@ export function useCreditManager(businessId: string | undefined) {
   }, [businessId, supabase]);
 
   useEffect(() => {
-    requestVersion.current += 1;
-    loadedBusinessId.current = undefined;
-    setCustomers([]);
-    setCreditLimits(new Map());
-    setAgingData([]);
-    setTransactions([]);
-    setMutating(false);
-    setShowExtensionDialog(false);
-    setShowPaymentDialog(false);
     void refreshData();
     return () => {
       requestVersion.current += 1;
@@ -152,11 +126,10 @@ export function useCreditManager(businessId: string | undefined) {
     due_date?: string;
   }) => {
     if (!businessId) return;
-    const mutationBusinessId = businessId;
     setMutating(true);
     try {
       const result = await creditSystem.extendCredit(
-        mutationBusinessId,
+        businessId,
         data.customer_id,
         data.amount,
         data.notes || "",
@@ -166,20 +139,13 @@ export function useCreditManager(businessId: string | undefined) {
       if (!result.success) {
         throw new Error(result.error || "Failed to extend credit");
       }
-      if (activeBusinessId.current !== mutationBusinessId) return;
       toast.success("Credit extended successfully");
       setShowExtensionDialog(false);
       await refreshData();
     } catch (caught) {
-      if (activeBusinessId.current === mutationBusinessId) {
-        toast.error(
-          caught instanceof Error ? caught.message : "Failed to extend credit",
-        );
-      }
+      toast.error(caught instanceof Error ? caught.message : "Failed to extend credit");
     } finally {
-      if (activeBusinessId.current === mutationBusinessId) {
-        setMutating(false);
-      }
+      setMutating(false);
     }
   };
 
@@ -189,11 +155,10 @@ export function useCreditManager(businessId: string | undefined) {
     notes?: string;
   }) => {
     if (!businessId) return;
-    const mutationBusinessId = businessId;
     setMutating(true);
     try {
       const result = await creditSystem.processPayment(
-        mutationBusinessId,
+        businessId,
         data.customer_id,
         data.amount,
         data.notes || "",
@@ -202,36 +167,26 @@ export function useCreditManager(businessId: string | undefined) {
       if (!result.success) {
         throw new Error(result.error || "Failed to record payment");
       }
-      if (activeBusinessId.current !== mutationBusinessId) return;
       toast.success("Payment recorded successfully");
       setShowPaymentDialog(false);
       await refreshData();
     } catch (caught) {
-      if (activeBusinessId.current === mutationBusinessId) {
-        toast.error(
-          caught instanceof Error ? caught.message : "Failed to record payment",
-        );
-      }
+      toast.error(caught instanceof Error ? caught.message : "Failed to record payment");
     } finally {
-      if (activeBusinessId.current === mutationBusinessId) {
-        setMutating(false);
-      }
+      setMutating(false);
     }
   };
 
-  const stateMatchesBusiness = loadedBusinessId.current === businessId;
-
   return {
-    status: stateMatchesBusiness ? status : businessId ? "loading" : "empty",
-    loading:
-      status === "loading" || (Boolean(businessId) && !stateMatchesBusiness),
+    status,
+    loading: status === "loading",
     refreshing: status === "refreshing",
     mutating,
     error,
-    customers: stateMatchesBusiness ? customers : [],
-    creditLimits: stateMatchesBusiness ? creditLimits : EMPTY_CREDIT_LIMITS,
-    agingData: stateMatchesBusiness ? agingData : [],
-    transactions: stateMatchesBusiness ? transactions : [],
+    customers,
+    creditLimits,
+    agingData,
+    transactions,
     showExtensionDialog,
     setShowExtensionDialog,
     showPaymentDialog,

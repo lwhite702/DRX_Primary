@@ -1,26 +1,32 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/contexts/AuthContext';
 import { COLORS } from '../src/constants/theme';
 
 export default function Index() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { isSignedIn, loading, onboardingStatus } = useAuth();
 
   useEffect(() => {
     if (!loading) {
-      if (user) {
-        router.replace('/(tabs)');
-      } else {
+      if (!isSignedIn) {
         router.replace('/login');
+      } else if (onboardingStatus === 'NEEDS_BUSINESS_ONBOARDING') {
+        router.replace('/onboarding');
+      } else if (onboardingStatus === 'READY') {
+        router.replace('/(tabs)');
       }
     }
-  }, [user, loading]);
+  }, [isSignedIn, loading, onboardingStatus, router]);
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={COLORS.accent} />
+      {onboardingStatus === 'INACTIVE' || onboardingStatus === 'BUSINESS_MISSING' ? (
+        <Text style={styles.error}>This operator account needs administrator support.</Text>
+      ) : (
+        <ActivityIndicator size="large" color={COLORS.accent} />
+      )}
     </View>
   );
 }
@@ -31,5 +37,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  error: {
+    color: COLORS.text,
+    paddingHorizontal: 32,
+    textAlign: 'center',
   },
 });

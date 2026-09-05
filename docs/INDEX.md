@@ -8,6 +8,13 @@
 - [API OVERVIEW](API_OVERVIEW.md) - API Documentation
 - [HELP CENTER MAP](HELP_CENTER_MAP.md) - Help Resources
 
+## Operational Manuals
+
+- [DRX User Manual](manuals/drx-user-manual.md) - Shared guide for teams
+- [DRX Admin Manual](manuals/drx-admin-manual.md) - Workspace, roles, approvals, and policy actions
+- [DRX Staff Manual](manuals/drx-staff-manual.md) - Checkout, inventory, and reconciliation day-to-day workflows
+- [Customer Service Playbook](manuals/customer-service-playbook.md) - Support triage and handoff scripts
+
 ## Complete Documentation
 
 - [Page snapshot](25b0c0377c9344a124ef1d2c77e24b62fb2f4048.md)

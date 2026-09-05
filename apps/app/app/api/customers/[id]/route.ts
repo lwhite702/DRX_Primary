@@ -86,7 +86,7 @@ function blockedByPrivacy(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
   try {
     const context = await resolveCustomerAccess(request, "customers.view");
@@ -98,7 +98,7 @@ export async function GET(
     }
     const { businessId } = context;
 
-    const customerId = params.id;
+    const { id: customerId } = await Promise.resolve(params);
 
     const customer = await db.customers.findFirst({
       where: { id: customerId, businessId },
@@ -200,16 +200,18 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
-  return handleUpdate(request, params.id);
+  const { id } = await Promise.resolve(params);
+  return handleUpdate(request, id);
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
-  return handleUpdate(request, params.id);
+  const { id } = await Promise.resolve(params);
+  return handleUpdate(request, id);
 }
 
 async function handleUpdate(request: NextRequest, customerId: string) {

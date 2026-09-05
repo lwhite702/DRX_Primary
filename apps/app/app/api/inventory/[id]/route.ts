@@ -6,7 +6,7 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { errorResponse } from "@/lib/api/response";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
-const RouteParamsSchema = z.object({ id: z.string().uuid() });
+const RouteParamsSchema = z.object({ id: z.string().min(1) });
 const InventoryUpdateSchema = z
   .object({
     product_name: z.string().min(1).optional(),
@@ -24,14 +24,15 @@ const InventoryUpdateSchema = z
   })
   .strict();
 
-type RouteContext = { params: { id: string } };
+type RouteContext = { params: Promise<{ id: string }> | { id: string } };
 
 async function resolveInventory(
   request: NextRequest,
   context: RouteContext,
   permission: "catalog.view" | "inventory.manage",
 ) {
-  const parsedParams = RouteParamsSchema.safeParse(context.params);
+  const rawParams = await Promise.resolve(context.params);
+  const parsedParams = RouteParamsSchema.safeParse(rawParams);
   if (!parsedParams.success) return { error: "invalid" as const };
 
   const { userId, businessId } = await resolveAuthContext(request);

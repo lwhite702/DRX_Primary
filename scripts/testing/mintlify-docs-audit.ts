@@ -21,10 +21,17 @@ type Finding = {
 };
 
 type DocsConfig = {
-  navigation: Array<{
-    group: string;
-    pages: string[];
-  }>;
+  navigation:
+    | Array<{
+        group: string;
+        pages: string[];
+      }>
+    | {
+        groups?: Array<{
+          group: string;
+          pages: string[];
+        }>;
+      };
 };
 
 const root = process.cwd();
@@ -53,6 +60,9 @@ const operationalPages = new Set([
   "your-products",
   "your-customers",
   "payments-and-plans",
+  "fractional-and-bulk-pricing",
+  "delivery-fulfillment",
+  "native-mobile-apps",
   "numbers-that-matter",
   "staying-compliant",
   "team-access",
@@ -144,7 +154,9 @@ function main() {
   const docsConfig = readJson<DocsConfig>(docsConfigPath);
   const matrix = readJson<MatrixRow[]>(matrixPath);
 
-  const slugs = docsConfig.navigation.flatMap((group) => group.pages);
+  const rawNav = docsConfig.navigation;
+  const groups = Array.isArray(rawNav) ? rawNav : (rawNav?.groups ?? []);
+  const slugs = groups.flatMap((group) => group.pages);
   const slugSet = new Set(slugs);
 
   for (const slug of slugs) {

@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-enum RootApplicationState: Equatable {
+enum RootApplicationState: Hashable {
     case initializing
     case signedOut
     case checkingProvisioning
@@ -33,15 +33,39 @@ struct BusinessOnboardingInput: Encodable, Sendable {
     let timezone: String
     let collectTax: Bool
     let taxRateBps: Int
+    let locationName: String
+    let city: String?
+    let region: String?
+    let country: String
+    let tracksInventory: Bool
+    let invitedUserEmail: String?
+    let invitedUserRole: String?
+    let invitationToken: String?
 }
 
 struct BusinessOnboardingResponse: Decodable, Sendable {
     let status: String
+    let session: OperatorSession?
+
+    init(status: String, session: OperatorSession? = nil) {
+        self.status = status
+        self.session = session
+    }
 }
 
 protocol ProvisioningClient: Sendable {
     func status() async throws -> ProvisioningStatusResponse
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse
+}
+
+private struct ConvexBusinessOnboardingPayload: Encodable, Sendable {
+    let name: String?
+    let businessName: String
+    let businessType: String?
+    let currency: String?
+    let timezone: String?
+    let collectTax: Bool?
+    let taxRateBps: Int?
 }
 
 struct LiveProvisioningClient: ProvisioningClient {
@@ -56,17 +80,54 @@ struct LiveProvisioningClient: ProvisioningClient {
     }
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        try await client.mutation("onboarding:createBusinessOnboarding", args: input)
+        let sanitizedInput = ConvexBusinessOnboardingPayload(
+            name: input.name,
+            businessName: input.businessName,
+            businessType: input.businessType,
+            currency: input.currency,
+            timezone: input.timezone,
+            collectTax: input.collectTax,
+            taxRateBps: input.taxRateBps,
+        )
+        return try await client.mutation("onboarding:createBusinessOnboarding", args: sanitizedInput)
     }
 }
 
-struct PreviewProvisioningClient: ProvisioningClient {
+actor PreviewProvisioningClient: ProvisioningClient {
+    private var isBoarded = false
+
     func status() async throws -> ProvisioningStatusResponse {
-        ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil)
+        if isBoarded {
+            return ProvisioningStatusResponse(
+                status: .ready,
+                session: OperatorSession(
+                    operatorID: "preview_operator",
+                    displayName: "Preview Operator",
+                    businessID: "preview_business",
+                    businessName: "Preview Store",
+                    roles: ["owner"],
+                    permissions: ["*"],
+                    email: "operator@example.test"
+                )
+            )
+        }
+        return ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil)
     }
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
+        isBoarded = true
+        return BusinessOnboardingResponse(
+            status: "ONBOARDING_SUCCESS",
+            session: OperatorSession(
+                operatorID: "preview_operator",
+                displayName: input.name,
+                businessID: "preview_business",
+                businessName: input.businessName,
+                roles: ["owner"],
+                permissions: ["*"],
+                email: "operator@example.test"
+            )
+        )
     }
 }
 
@@ -104,6 +165,7 @@ final class AppEnvironment {
     private(set) var supportRequestID: String?
     private(set) var isSubmittingOnboarding = false
     private(set) var nextWorkspaceTab: WorkspaceTab = .dashboard
+    private(set) var deliveryRouteRequestID = 0
     private var provisioningGeneration = 0
 
     init(
@@ -214,6 +276,15 @@ final class AppEnvironment {
                 )
                 return false
             }
+            if let operatorSession = response.session {
+                session.restore(operatorSession)
+                telemetry.identify(operatorSession)
+                rootState = .needsOnboarding
+                return true
+            }
+
+            // Compatibility fallback for a production deployment that has not
+            // yet adopted the session-bearing onboarding response.
             session.reset()
             await checkProvisioning()
             return rootState == .ready
@@ -233,6 +304,10 @@ final class AppEnvironment {
 
     func openWorkspace(at tab: WorkspaceTab) async {
         nextWorkspaceTab = tab
+        if session.isAuthenticated {
+            rootState = .ready
+            return
+        }
         await checkProvisioning()
     }
 
@@ -313,5 +388,10 @@ final class AppEnvironment {
         provisioningMessage = nil
         supportRequestID = nil
         rootState = .signedOut
+    }
+
+    func requestDeliveryQueue() {
+        nextWorkspaceTab = .more
+        deliveryRouteRequestID += 1
     }
 }

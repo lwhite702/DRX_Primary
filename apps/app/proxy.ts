@@ -9,6 +9,7 @@ import {
   isClerkUiPath,
   isOnboardingPath,
   isPublicAppPath,
+  isStaticAssetPath,
   shouldRedirectMarketingToApp,
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
@@ -20,16 +21,6 @@ import {
   type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
 import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
-
-const PUBLIC_APP_REDIRECTS: Readonly<Record<string, string>> = {
-  "/privacy": "https://www.deelrxcrm.com/legal/privacy",
-  "/privacy-policy": "https://www.deelrxcrm.com/legal/privacy",
-  "/legal/privacy": "https://www.deelrxcrm.com/legal/privacy",
-  "/terms": "https://www.deelrxcrm.com/legal/terms",
-  "/legal/terms": "https://www.deelrxcrm.com/legal/terms",
-  "/support": "https://www.deelrxcrm.com/support",
-};
-
 // In preview/staging environments we occasionally deploy without Clerk secrets.
 // Bypass Clerk middleware entirely in that case so Edge middleware doesn't crash.
 const hasClerkMiddlewareEnv =
@@ -42,12 +33,12 @@ function getCurrentOrigin(req: Request) {
   const protocol =
     forwardedProto ||
     (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-  return `${protocol}://${host || "www.deelrxcrm.app"}`;
+  return `${protocol}://${host || "deelrxcrm.app"}`;
 }
 
 function getConfiguredAppOrigin() {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
-  return configured ? configured.replace(/\/$/, "") : "https://www.deelrxcrm.app";
+  return configured ? configured.replace(/\/$/, "") : "https://deelrxcrm.app";
 }
 
 function getAppOrigin(req: Request, preserveCurrentHost = false) {
@@ -62,16 +53,15 @@ function redirectToApp(req: Request, pathname: string, preserveCurrentHost = fal
   return NextResponse.redirect(new URL(pathname, getAppOrigin(req, preserveCurrentHost)));
 }
 
-function redirectPublicAppPath(pathname: string) {
-  const target = PUBLIC_APP_REDIRECTS[pathname];
-  return target ? NextResponse.redirect(target, 308) : null;
-}
-
 function shouldServeVisualFixture(pathname: string) {
   return (
     isAuthVisualFixtureEnabled() &&
     (isClerkUiPath(pathname) || pathname.startsWith("/visual-fixtures/"))
   );
+}
+
+function isNestedAuthAssetPath(pathname: string) {
+  return isAuthEntryPath(pathname) && isStaticAssetPath(pathname);
 }
 
 function hasOnboardingCompletionCookie(
@@ -106,8 +96,14 @@ function middlewareWithoutClerk(
     return NextResponse.next();
   }
   const pathname = nextUrlLike.pathname;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return new NextResponse(null, { status: 404 });
+  if (pathname === "/control" || pathname.startsWith("/control/")) return new NextResponse(null, { status: 404 });
   const hostname = req.headers.get("host") || "";
   const hostKind = classifyDrxHost(hostname);
+
+  if (isNestedAuthAssetPath(pathname)) {
+    return new NextResponse(null, { status: 404 });
+  }
 
   if (hostKind === "marketing") {
     if (shouldRedirectMarketingToApp(pathname)) {
@@ -127,9 +123,6 @@ function middlewareWithoutClerk(
     return NextResponse.next();
   }
 
-  const publicRedirect = redirectPublicAppPath(pathname);
-  if (publicRedirect) return publicRedirect;
-
   if (shouldServeVisualFixture(pathname)) {
     return NextResponse.next();
   }
@@ -142,20 +135,11 @@ function middlewareWithoutClerk(
   }
 
   if (pathname === "/" || isClerkUiPath(pathname)) {
-    if (isClerkUiPath(pathname)) {
-      return NextResponse.next();
-    }
-    return redirectToApp(req, "/login", true);
+    return redirectToApp(req, "/waitlist", true);
   }
 
-  if (!isPublicAppPath(pathname) && pathname.startsWith("/api")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (!isPublicAppPath(pathname)) {
-    const loginUrl = new URL("/login", getAppOrigin(req, true));
-    loginUrl.searchParams.set("redirect_url", `${pathname}${nextUrlLike.search}`);
-    return NextResponse.redirect(loginUrl);
+  if (!isPublicAppPath(pathname) && !pathname.startsWith("/api")) {
+    return redirectToApp(req, "/waitlist", true);
   }
 
   return NextResponse.next();
@@ -165,8 +149,13 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
   ? clerkMiddleware(async (auth, req) => {
       const url = req.nextUrl;
       const pathname = url.pathname;
+      if (pathname === "/admin" || pathname.startsWith("/admin/")) return new NextResponse(null, { status: 404 });
       const hostname = req.headers.get("host") || "";
       const hostKind = classifyDrxHost(hostname);
+
+      if (isNestedAuthAssetPath(pathname)) {
+        return new NextResponse(null, { status: 404 });
+      }
 
       // Always allow webhook ingestion without redirect logic.
       if (pathname.startsWith("/api/webhooks")) {
@@ -200,14 +189,28 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         return NextResponse.next();
       }
 
-      const publicRedirect = redirectPublicAppPath(pathname);
-      if (publicRedirect) return publicRedirect;
-
       if (shouldServeVisualFixture(pathname)) {
         return NextResponse.next();
       }
 
       const { userId, sessionClaims } = await auth();
+      // Platform staff need no merchant onboarding. The page and every data
+      // operation independently require an explicit platform grant.
+      if (pathname === "/control" || pathname.startsWith("/control/")) {
+        const key = process.env.PLATFORM_CONSOLE_SLUG;
+        if (!key || !/^[a-f0-9]{32,64}$/.test(key) || pathname.split("/")[2] !== key) {
+          return new NextResponse(null, { status: 404 });
+        }
+        const signInPath = `/control/${key}/sign-in`;
+        const isPlatformSignIn = pathname === signInPath || pathname.startsWith(`${signInPath}/`);
+        const response = !userId && !isPlatformSignIn
+          ? NextResponse.redirect(new URL(signInPath, getAppOrigin(req, true)))
+          : NextResponse.next();
+        response.headers.set("Cache-Control", "private, no-store");
+        response.headers.set("X-Robots-Tag", "noindex, nofollow");
+        response.headers.set("Referrer-Policy", "no-referrer");
+        return response;
+      }
       const claims = sessionClaims as OnboardingClaims;
       const onboardingComplete =
         hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
@@ -248,12 +251,11 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
     })
   : null;
 
-export const proxy = (
-  hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk
-)!;
+export const proxy = (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
 
 export const config = {
   matcher: [
+    "/(login|register|sign-in|sign-up|sso-callback)(.*)",
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],

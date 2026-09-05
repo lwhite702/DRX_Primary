@@ -13,18 +13,20 @@ import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
+import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
 
 const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     from?: string;
     to?: string;
-  };
+  }>;
 }) {
   const { businessId } = await resolveAuthContext();
+  const resolvedSearchParams = await searchParams;
 
   if (!businessId) {
     return (
@@ -37,8 +39,12 @@ export default async function ReportsPage({
     );
   }
 
-  const from = searchParams?.from ? new Date(searchParams.from) : undefined;
-  const to = searchParams?.to ? new Date(searchParams.to) : undefined;
+  const from = resolvedSearchParams?.from
+    ? new Date(resolvedSearchParams.from)
+    : undefined;
+  const to = resolvedSearchParams?.to
+    ? new Date(resolvedSearchParams.to)
+    : undefined;
   const range = {
     from: from && !Number.isNaN(from.getTime()) ? from : undefined,
     to: to && !Number.isNaN(to.getTime()) ? to : undefined,
@@ -66,6 +72,13 @@ export default async function ReportsPage({
           Export reconciliation CSV
         </Link>
       </div>
+
+      <CommerceDeliverySummary
+        from={report.period.from}
+        toExclusive={new Date(
+          new Date(report.period.to).getTime() + 1,
+        ).toISOString()}
+      />
 
       <div id="tour-reports-stats" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>

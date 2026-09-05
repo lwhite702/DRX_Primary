@@ -9,6 +9,13 @@ const baseState: QuickPosState = {
   ],
   customer: { id: null, phone: "", alias: null, remainingCredit: 0 },
   payment: { method: null, receipt: "none", creditConfirmed: false },
+  delivery: {
+    enabled: false,
+    address: "",
+    vendorFeeCents: 0,
+    feeAllocation: "charge_customer",
+    feeTaxable: false,
+  },
   ui: { search: "", exitDialogOpen: false, processing: false, hardError: null, successMessage: null },
   session: {
     lastSaleId: null,

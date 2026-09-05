@@ -68,8 +68,7 @@ struct CustomerDetailView: View {
                                 .font(.caption.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(DRXPalette.accent)
+                        .buttonStyle(.drxPrimaryFullWidth)
 
                         Button {
                             showRecordPayment = true

@@ -31,11 +31,13 @@ const onboardingMutationResultValidator = v.union(
     businessId: v.id("businesses"),
     userId: v.id("users"),
     status: v.literal("ALREADY_ONBOARDED"),
+    session: operatorSessionValidator,
   }),
   v.object({
     businessId: v.id("businesses"),
     userId: v.id("users"),
     status: v.literal("ONBOARDING_SUCCESS"),
+    session: operatorSessionValidator,
   }),
 );
 
@@ -114,6 +116,15 @@ export const createBusinessOnboarding = mutation({
         businessId: existingUser.businessId,
         userId: existingUser._id,
         status: "ALREADY_ONBOARDED" as const,
+        session: {
+          operatorId: clerkUserId,
+          displayName: existingUser.name || existingUser.email || "DRX Operator",
+          businessId: existingBusiness._id,
+          businessName: existingBusiness.name,
+          roles: [existingUser.role.toLowerCase()],
+          permissions: existingUser.role === "OWNER" ? ["*"] : [],
+          email: existingUser.email || null,
+        },
       };
     }
 
@@ -161,6 +172,15 @@ export const createBusinessOnboarding = mutation({
       businessId,
       userId,
       status: "ONBOARDING_SUCCESS" as const,
+      session: {
+        operatorId: clerkUserId,
+        displayName: args.name || email || "DRX Operator",
+        businessId,
+        businessName: args.businessName,
+        roles: ["owner"],
+        permissions: ["*"],
+        email: email || null,
+      },
     };
   },
 });

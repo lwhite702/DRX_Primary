@@ -7,16 +7,9 @@ import { BusinessProvider } from "@/lib/hooks/use-business";
 import { CustomerProvider } from "@/components/providers/customer-provider";
 import { OfflineProvider } from "@/components/providers/offline-provider";
 import { OnboardingContext } from "./onboarding-context";
+import { OnboardingProvider } from "./onboarding-provider";
 
-// Dynamic import of heavy onboarding components
-const LazyOnboardingProvider = dynamic(
-  () =>
-    import("@/components/providers/onboarding-provider").then(
-      (module) => module.OnboardingProvider,
-    ),
-  { ssr: false },
-);
-
+// Only the optional flow is lazy: delaying the provider blanks its child routes.
 const LazyOnboardingFlow = dynamic(
   () =>
     import("@/components/onboarding/onboarding-flow").then(
@@ -68,17 +61,17 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If onboarding is incomplete, wrap in the dynamic onboarding provider and flow
+  // Keep route content available while the optional onboarding flow loads.
   return (
     <BusinessProvider>
       <BusinessSetupProvider>
         <OfflineProvider>
-          <LazyOnboardingProvider>
+          <OnboardingProvider>
             <CustomerProvider>
               {children}
               <LazyOnboardingFlow />
             </CustomerProvider>
-          </LazyOnboardingProvider>
+          </OnboardingProvider>
         </OfflineProvider>
       </BusinessSetupProvider>
     </BusinessProvider>

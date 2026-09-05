@@ -1,5 +1,5 @@
 const appBaseUrl =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.deelrxcrm.app";
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app";
 
 export { appBaseUrl };
 export const appLoginUrl = `${appBaseUrl}/login`;

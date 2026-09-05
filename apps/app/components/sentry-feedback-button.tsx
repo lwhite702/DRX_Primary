@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { toast } from "sonner";
+import { openFeedbackWithFallback } from "@/lib/feedback";
 
 interface FeedbackButtonProps {
   children: React.ReactNode;
@@ -46,33 +46,19 @@ export function SentryFeedbackButton({
   }, []);
 
   const handleClick = async () => {
-    try {
-      if (!feedback) {
-        console.warn("Feedback integration not found");
-        const fb = getSentryFeedback();
-        if (fb) {
-          const form = await fb.createForm({
+    const currentFeedback = feedback ?? getSentryFeedback();
+    await openFeedbackWithFallback(
+      currentFeedback
+        ? async () => {
+          const form = await currentFeedback.createForm({
             messagePlaceholder: placeholder,
             tags: { "feedback.source": source },
           });
           form.appendToDom();
           form.open();
-          return;
         }
-        toast.error("Feedback system unavailable");
-        return;
-      }
-
-      const form = await feedback.createForm({
-        messagePlaceholder: placeholder,
-        tags: { "feedback.source": source },
-      });
-      form.appendToDom();
-      form.open();
-    } catch (error) {
-      console.error("Error opening feedback form:", error);
-      toast.error("Failed to open feedback form");
-    }
+        : null,
+    );
   };
 
   const Comp = asChild ? Slot : "button";

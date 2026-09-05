@@ -17,7 +17,11 @@ export default function Help() {
   const router = useRouter();
 
   const handleEmailSupport = () => {
-    Linking.openURL("mailto:support@drx-pos.com?subject=Mobile App Support Request");
+    Linking.openURL("mailto:support@deelrxcrm.com?subject=Mobile App Support Request");
+  };
+
+  const handleOpenDocs = () => {
+    Linking.openURL("https://docs.deelrxcrm.com");
   };
 
   return (
@@ -32,14 +36,21 @@ export default function Help() {
 
       <ScrollView style={styles.content}>
         <View style={styles.card}>
-          <Ionicons name="headset-outline" size={48} color={COLORS.accent} style={{ marginBottom: SPACING.md }} />
-          <Text style={styles.cardTitle}>Need Assistance?</Text>
+          <Ionicons name="book-outline" size={48} color={COLORS.accent} style={{ marginBottom: SPACING.md }} />
+          <Text style={styles.cardTitle}>Documentation & Support</Text>
           <Text style={styles.cardText}>
-            Our support team is available 24/7 to help you with any issues you may encounter while using the mobile POS.
+            Access operator runbooks, setup guides, and troubleshooting in the DRX documentation hub.
           </Text>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleEmailSupport}>
-            <Ionicons name="mail" size={20} color={COLORS.background} />
-            <Text style={styles.actionBtnText}>Email Support</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleOpenDocs}>
+            <Ionicons name="open-outline" size={20} color={COLORS.background} />
+            <Text style={styles.actionBtnText}>Open Documentation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm }]}
+            onPress={handleEmailSupport}
+          >
+            <Ionicons name="mail-outline" size={20} color={COLORS.text} />
+            <Text style={[styles.actionBtnText, { color: COLORS.text }]}>Email Help Scout</Text>
           </TouchableOpacity>
         </View>
 

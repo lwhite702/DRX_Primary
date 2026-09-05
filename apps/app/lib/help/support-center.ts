@@ -167,12 +167,12 @@ export const HELP_TROUBLESHOOT_ISSUES: HelpIssue[] = [
     title: "Customer create/update fails",
     severity: "Data entry",
     checks: [
-      "Ensure first name is present.",
-      "Provide phone OR email (at least one required).",
-      "Normalize phone formatting to avoid false duplicates.",
+      "Ensure alias or name is present.",
+      "Check that contact fields are valid if provided.",
+      "Confirm current business workspace context.",
     ],
     recovery:
-      "Retry with minimum required fields, then enrich profile details after record creation.",
+      "Retry with alias-only profile first, then enrich profile details after record creation.",
   },
   {
     title: "Dashboard or report totals look wrong",

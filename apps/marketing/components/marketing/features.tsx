@@ -33,7 +33,7 @@ export function Features() {
       <div className="mb-8">
         <h2 className="headline-text text-3xl text-white md:text-4xl">What DRX Does</h2>
         <p className="body-copy mt-3 max-w-3xl text-text-secondary">
-          No bloated menus. No complicated setup. No enterprise energy.
+          Sales, stock, customers, balances, and reports. The stuff you actually need.
         </p>
       </div>
 

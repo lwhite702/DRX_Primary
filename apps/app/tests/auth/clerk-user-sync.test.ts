@@ -5,7 +5,6 @@ const mocks = vi.hoisted(() => ({
     $transaction: vi.fn(),
     businessProfile: {
       findUnique: vi.fn(),
-      findFirst: vi.fn(),
       create: vi.fn(),
     },
     invite: {
@@ -29,11 +28,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
-import {
-  syncAcceptedClerkOrganizationInvitation,
-  syncCreatedClerkOrganizationMembership,
-  syncCreatedClerkUser,
-} from "@/lib/auth/clerk-user-sync";
+import { syncCreatedClerkUser } from "@/lib/auth/clerk-user-sync";
 
 function createdUser(
   metadata: Record<string, unknown> | null = {
@@ -68,7 +63,6 @@ describe("Clerk user synchronization", () => {
       id: "business-1",
       isActive: true,
     });
-    mocks.db.businessProfile.findFirst.mockResolvedValue({ id: "business-1" });
     mocks.db.user.findUnique.mockResolvedValue(null);
     mocks.db.user.create.mockResolvedValue({ id: "user-row-1" });
     mocks.db.user.update.mockResolvedValue({});
@@ -202,91 +196,12 @@ describe("Clerk user synchronization", () => {
 
   it("rejects incomplete invitation metadata instead of granting a personal workspace", async () => {
     await expect(
-      syncCreatedClerkUser(createdUser({ drxBusinessId: "business-1" })),
+      syncCreatedClerkUser(
+        createdUser({ drxBusinessId: "business-1" }),
+      ),
     ).rejects.toThrow("metadata is incomplete");
 
     expect(mocks.db.$transaction).not.toHaveBeenCalled();
     expect(mocks.db.businessProfile.create).not.toHaveBeenCalled();
-  });
-
-  it("accepts an organization invitation into the matching DRX business", async () => {
-    const result = await syncAcceptedClerkOrganizationInvitation({
-      email_address: "staff@example.com",
-      organization_id: "org_business_1",
-      user_id: "clerk-user-1",
-      public_metadata: {
-        drxBusinessId: "business-1",
-        drxInviteToken: "token-1",
-      },
-    });
-
-    expect(result).toBe("invitation_accepted");
-    expect(mocks.db.businessProfile.findFirst).toHaveBeenCalledWith({
-      where: { id: "business-1", clerkOrgId: "org_business_1" },
-      select: { id: true },
-    });
-    expect(mocks.db.userRole.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        businessId: "business-1",
-        userId: "clerk-user-1",
-        role: "cashier",
-      }),
-    });
-  });
-
-  it("preserves an existing display name when an organization invitation has no name", async () => {
-    mocks.db.user.findUnique.mockResolvedValue({
-      id: "user-row-1",
-      clerkUserId: null,
-      name: "Existing Display Name",
-    });
-
-    const result = await syncAcceptedClerkOrganizationInvitation({
-      email_address: "staff@example.com",
-      organization_id: "org_business_1",
-      user_id: "clerk-user-1",
-      public_metadata: {
-        drxBusinessId: "business-1",
-        drxInviteToken: "token-1",
-      },
-    });
-
-    expect(result).toBe("invitation_accepted");
-    expect(mocks.db.user.update).toHaveBeenCalledWith({
-      where: { id: "user-row-1" },
-      data: {
-        clerkUserId: "clerk-user-1",
-        name: "Existing Display Name",
-        status: "ACTIVE",
-      },
-    });
-  });
-
-  it("uses organization membership events as an idempotent invite fallback", async () => {
-    mocks.db.businessProfile.findUnique
-      .mockReset()
-      .mockResolvedValueOnce({ id: "business-1" })
-      .mockResolvedValueOnce({ id: "business-1", isActive: true });
-
-    const result = await syncCreatedClerkOrganizationMembership({
-      organization: { id: "org_business_1" },
-      public_user_data: {
-        user_id: "clerk-user-1",
-        identifier: "staff@example.com",
-        first_name: "Store",
-        last_name: "Operator",
-      },
-    });
-
-    expect(result).toBe("invitation_accepted");
-    expect(mocks.db.invite.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          tenantId: "business-1",
-          email: "staff@example.com",
-        },
-        orderBy: { createdAt: "desc" },
-      }),
-    );
   });
 });

@@ -13,7 +13,7 @@ function toNumber(value: unknown): number {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
   try {
     const { businessId } = await resolveAuthContext();
@@ -21,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const saleId = params.id;
+    const { id: saleId } = await Promise.resolve(params);
 
     const sale = await db.sales.findFirst({
       where: { id: saleId, businessId },
@@ -79,7 +79,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> | { id: string } },
 ) {
   try {
     const { businessId } = await resolveAuthContext();
@@ -87,7 +87,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const saleId = params.id;
+    const { id: saleId } = await Promise.resolve(params);
     const body = await request.json();
 
     const sale = await db.sales.findFirst({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentProps } from "react";
+import { useEffect, useState } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +17,7 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
   const appId = process.env.NEXT_PUBLIC_FEATUREBASE_APP_ID;
   const pathname = usePathname();
   const isAuthSurface =
+    pathname?.startsWith("/control") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/sign-in") ||
@@ -63,36 +64,35 @@ export function FeaturebaseProvider({ user }: FeaturebaseProviderProps) {
 
   if (!appId || isAuthSurface) return null;
 
-  const featurebaseScriptProps = {
-    id: "featurebase-sdk",
-    strategy: "afterInteractive" as const,
-    src: "https://do.featurebase.app/js/sdk.js",
-    onLoad: () => {
-      if (window.Featurebase) {
-        window.Featurebase("boot", {
-          appId: appId,
-          theme: "dark",
-          email: sanitizedEmail,
-          userId: sanitizedUserId,
-          jwt: token,
-          featurebaseJwt: token,
-        });
-
-        window.Featurebase("initialize_feedback_widget", {
-          organization: process.env.NEXT_PUBLIC_FEATUREBASE_ORG || "deelrxcrm",
-          theme: "dark",
-          placement: "right",
-          email: sanitizedEmail,
-          featurebaseJwt: token,
-          metadata: null,
-        });
-      }
-    },
-  } as ComponentProps<typeof Script>;
-
   return (
     <>
-      <Script {...featurebaseScriptProps} />
+      <Script
+        id="featurebase-sdk"
+        strategy="afterInteractive"
+        src="https://do.featurebase.app/js/sdk.js"
+        onLoad={() => {
+          if (window.Featurebase) {
+            window.Featurebase("boot", {
+              appId: appId,
+              theme: "dark",
+              email: sanitizedEmail,
+              userId: sanitizedUserId,
+              jwt: token,
+              featurebaseJwt: token,
+            });
+
+            window.Featurebase("initialize_feedback_widget", {
+              organization:
+                process.env.NEXT_PUBLIC_FEATUREBASE_ORG || "deelrxcrm",
+              theme: "dark",
+              placement: "right",
+              email: sanitizedEmail,
+              featurebaseJwt: token,
+              metadata: null,
+            });
+          }
+        }}
+      />
     </>
   );
 }

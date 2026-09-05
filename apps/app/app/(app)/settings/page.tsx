@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, PackageOpen, Shield, Smartphone, Users } from "lucide-react";
+import { Loader2, PackageOpen, Shield, SlidersHorizontal, Smartphone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
   type PrivacyProtocolSettings,
   type ScreenPrivacyMode,
 } from "@/lib/privacy/types";
+import appPackage from "../../../package.json";
 
 interface DeviceSession {
   id: string;
@@ -410,8 +411,16 @@ export default function SettingsPage() {
           <p className="text-muted-foreground mt-2">Configure your business settings</p>
         </div>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-          <p className="text-xs text-muted-foreground">v0.4.0</p>
+          <p className="text-xs text-muted-foreground">v{appPackage.version}</p>
           <div className="flex gap-2">
+            {hasPermission("settings.configure_pos") && (
+              <Link href="/settings/commerce">
+                <Button variant="outline" className="gap-2">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Commerce & Delivery
+                </Button>
+              </Link>
+            )}
             {hasPermission("inventory.manage") && (
               <Link href="/settings/inventory/aliases">
                 <Button variant="outline" className="gap-2">

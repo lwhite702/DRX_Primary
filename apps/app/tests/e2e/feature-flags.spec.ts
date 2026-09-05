@@ -1,22 +1,14 @@
 import { test, expect } from "@playwright/test";
-import { setupClerkTestingToken } from "@clerk/testing/playwright";
-
-// @target:apps/app/app/(app)/admin/features/page.tsx
+// @target:apps/app/app/(retired)/admin/[[...path]]/page.tsx
 
 test.describe("Feature flags access @smoke", () => {
-  test.beforeEach(async ({ page }) => {
-    if (process.env.CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) {
-      await setupClerkTestingToken({ page });
-    }
-  });
-
-  test("admin feature route is guarded and non-blank @smoke", async ({ page }) => {
-    if (test.info().project.name.includes("mobile")) return;
-    await page.goto("/admin/features");
-    await expect(page.locator("body")).toBeVisible();
-
-    const url = page.url();
-    const guarded = /\/admin\/features|\/dashboard|\/login|\/onboarding/.test(url);
-    expect(guarded).toBe(true);
+  test("retired admin feature route returns 404 without disclosing a replacement @smoke", async ({ page }) => {
+    const response = await page.goto("/admin/features");
+    expect(response?.status()).toBe(404);
+    expect(response?.headers().location).toBeUndefined();
+    await expect(page).toHaveURL(/\/admin\/features$/);
+    // Retired entries deliberately have no app shell or replacement discovery.
+    expect(await response?.text()).toBe("");
+    await expect(page.getByRole("heading", { name: "PostHog rollout flags" })).toHaveCount(0);
   });
 });

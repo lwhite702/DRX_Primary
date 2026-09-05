@@ -8,7 +8,7 @@ type Check = { file: string; tokens: string[] };
 const checks: Check[] = [
   {
     file: "apps/app/app/login/[[...rest]]/page.tsx",
-    tokens: ["Sign In", "SignIn", "export const metadata"],
+    tokens: ["Sign in", "SignIn", "export const metadata"],
   },
   {
     file: "apps/app/app/register/[[...rest]]/page.tsx",
@@ -20,7 +20,7 @@ const checks: Check[] = [
   },
   {
     file: "apps/mobile/app/login.tsx",
-    tokens: ["accessibilityRole=\"button\"", "accessibilityLabel=\"Authenticate\"", "testID=\"login-button\""],
+    tokens: ["accessibilityRole=\"button\"", "accessibilityLabel=\"Sign In\"", "testID=\"login-button\""],
   },
   {
     file: "apps/app/lib/auth/route-classification.ts",

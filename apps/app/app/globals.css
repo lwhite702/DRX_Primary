@@ -160,34 +160,42 @@
   }
 }
 
-/* Motion vocabulary: route content fades/translates, sheets slide, dialogs scale/fade. */
+:root {
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Motion vocabulary: Apple-style fluid SF Pro transitions. */
 .page-transition {
   min-width: 0;
 }
 
 .route-content-transition {
-  animation: routeContentIn 180ms var(--ease-out) both;
+  animation: routeContentIn 220ms var(--ease-apple) both;
+  will-change: opacity, transform;
 }
 
 @keyframes routeContentIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px) scale(0.998);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .tour-target-highlight {
   position: relative;
   z-index: 45;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  outline: 3px solid var(--color-primary, #ccff00);
+  outline-offset: 6px;
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--color-primary) 75%, transparent),
-    0 0 0 8px color-mix(in srgb, var(--color-background) 70%, transparent);
-  transition: box-shadow 160ms var(--ease-out);
+    0 0 0 10px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(204, 255, 0, 0.25);
+  transition: outline-offset 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
 /* Reduced Motion */
@@ -324,4 +332,71 @@
   border: 1px solid var(--color-accent);
   padding: 2rem;
   display: inline-block;
+}
+
+/* ==========================================================================
+   Clerk & Auth Form Input Contrast, Background & Caret Legibility
+   ========================================================================== */
+
+input,
+textarea,
+select,
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  caret-color: #ccff00 !important;
+}
+
+.cl-formFieldInput,
+.cl-input,
+.cl-otpCodeFieldInput {
+  background-color: #262626 !important;
+  color: #ffffff !important;
+  border: 1px solid #737373 !important;
+  border-radius: 0.5rem !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cl-formFieldInput:hover,
+.cl-input:hover {
+  border-color: #8a8a8a !important;
+}
+
+.cl-formFieldInput:focus,
+.cl-input:focus,
+.cl-otpCodeFieldInput:focus {
+  background-color: #2c2c2c !important;
+  border-color: #ccff00 !important;
+  box-shadow: 0 0 0 2px #ccff00 !important;
+  outline: none !important;
+}
+
+.cl-formFieldLabel {
+  color: #e7e7e7 !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldInput::placeholder,
+.cl-input::placeholder {
+  color: #b3b3b3 !important;
+  opacity: 1 !important;
+}
+
+.cl-formButtonPrimary,
+.cl-formButtonPrimary:hover,
+.cl-formButtonPrimary:focus,
+.cl-formButtonPrimary:active {
+  min-height: 3rem !important;
+  background-color: #ccff00 !important;
+  color: #0a0a0a !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+}
+
+.cl-formFieldLabel,
+.cl-footerAction,
+.cl-footerActionLink,
+.cl-socialButtonsBlockButtonText {
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
 }

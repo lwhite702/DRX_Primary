@@ -50,9 +50,7 @@ struct ConvexClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        guard let token = try await Clerk.shared.auth.getToken(.init(template: "convex")) else {
-            throw ConvexError.missingAuthenticationToken
-        }
+        let token = try await convexAuthenticationToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = ConvexRequestBody(path: path, args: args, format: "json")
@@ -75,6 +73,45 @@ struct ConvexClient: Sendable {
         case .error(let message):
             throw ConvexError.convexError(message: message)
         }
+    }
+
+    private func convexAuthenticationToken() async throws -> String {
+        // Clerk's current Convex integration puts the required `convex` audience on
+        // the normal session token. Older Clerk instances can still use a custom JWT
+        // template with the same name, so keep that as a compatibility fallback.
+        if let sessionToken = try await Clerk.shared.auth.getToken(),
+           Self.tokenAudiences(sessionToken).contains("convex") {
+            return sessionToken
+        }
+
+        guard let templateToken = try await Clerk.shared.auth.getToken(.init(template: "convex")) else {
+            throw ConvexError.missingAuthenticationToken
+        }
+        return templateToken
+    }
+
+    nonisolated static func tokenAudiences(_ token: String) -> Set<String> {
+        let segments = token.split(separator: ".", omittingEmptySubsequences: false)
+        guard segments.count >= 2 else { return [] }
+
+        var payload = String(segments[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let padding = (4 - payload.count % 4) % 4
+        payload.append(String(repeating: "=", count: padding))
+
+        guard let data = Data(base64Encoded: payload),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return []
+        }
+
+        if let audience = object["aud"] as? String {
+            return [audience]
+        }
+        if let audiences = object["aud"] as? [String] {
+            return Set(audiences)
+        }
+        return []
     }
 }
 

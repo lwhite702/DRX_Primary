@@ -6,10 +6,12 @@ import ClerkKit
 
 struct DashboardView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var recentSales: [DRXSale] = []
     @State private var isLoading = true
     @State private var error: String?
+    @State private var showIdentitySheet = false
 
     var body: some View {
         ScrollView {
@@ -25,6 +27,21 @@ struct DashboardView: View {
         .background(DRXPalette.canvas)
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showIdentitySheet = true
+                } label: {
+                    Image(systemName: "person.crop.circle")
+                        .font(.system(size: 20))
+                        .foregroundStyle(DRXPalette.ink)
+                }
+                .accessibilityIdentifier("dashboardIdentityButton")
+            }
+        }
+        .sheet(isPresented: $showIdentitySheet) {
+            UserIdentitySheet()
+        }
         .task { await load() }
         .onAppear { environment.telemetry.screen("Dashboard") }
     }
@@ -33,6 +50,12 @@ struct DashboardView: View {
 
     private var content: some View {
         LazyVStack(spacing: 0, pinnedViews: []) {
+            IdentityHeaderCard {
+                showIdentitySheet = true
+            }
+            .padding(.horizontal, DRXSpacing.lg)
+            .padding(.top, DRXSpacing.md)
+
             if let agg = aggregate {
                 RevenueHero(value: agg.totalRevenueFormatted, orderCount: agg.orderCount)
                     .padding(.horizontal, DRXSpacing.lg)
@@ -93,7 +116,7 @@ struct DashboardView: View {
             Text(message).foregroundStyle(DRXPalette.muted)
         } actions: {
             Button("Retry") { Task { await load() } }
-                .buttonStyle(.borderedProminent).tint(DRXPalette.accent)
+                .buttonStyle(.drxPrimary)
         }
         .padding(.top, 60)
     }
@@ -272,3 +295,183 @@ struct EmptyStateCard: View {
         .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
     }
 }
+
+private extension User {
+    var formattedFullName: String? {
+        let parts = [firstName, lastName].compactMap { $0 }.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+}
+
+// MARK: - Identity Components (WRE-36)
+
+private struct IdentityHeaderCard: View {
+    @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
+    let onTap: () -> Void
+
+    private var operatorName: String {
+        environment.session.operatorSession?.displayName ?? clerk.user?.formattedFullName ?? "Operator"
+    }
+
+    private var roleName: String {
+        environment.session.operatorSession?.roles.first?.uppercased() ?? "OPERATOR"
+    }
+
+    private var businessName: String {
+        environment.session.operatorSession?.businessName ?? "Business Workspace"
+    }
+
+    private var initials: String {
+        let parts = operatorName.split(separator: " ")
+        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
+            return "\(first)\(second)".uppercased()
+        } else if let first = operatorName.first {
+            return String(first).uppercased()
+        }
+        return "OP"
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                // Avatar circle with initials
+                ZStack {
+                    Circle()
+                        .fill(DRXPalette.accent)
+                        .frame(width: 42, height: 42)
+                    Text(initials)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.black)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(operatorName)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(DRXPalette.ink)
+                            .lineLimit(1)
+
+                        Text(roleName)
+                            .font(.system(size: 10, weight: .heavy))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(DRXPalette.surface, in: Capsule())
+                            .overlay(Capsule().stroke(DRXPalette.border, lineWidth: 1))
+                            .foregroundStyle(DRXPalette.accent)
+                    }
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "building.2")
+                            .font(.caption2)
+                            .foregroundStyle(DRXPalette.muted)
+                        Text(businessName)
+                            .font(.caption)
+                            .foregroundStyle(DRXPalette.muted)
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundStyle(DRXPalette.muted)
+            }
+            .padding(12)
+            .background(DRXPalette.card)
+            .clipShape(RoundedRectangle(cornerRadius: DRXRadius.card))
+            .overlay {
+                RoundedRectangle(cornerRadius: DRXRadius.card)
+                    .stroke(DRXPalette.border, lineWidth: 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("identityHeaderCard")
+    }
+}
+
+private struct UserIdentitySheet: View {
+    @Environment(AppEnvironment.self) private var environment
+    @Environment(Clerk.self) private var clerk
+    @Environment(\.dismiss) private var dismiss
+    @State private var isSigningOut = false
+    @State private var signOutError: String?
+
+    private var session: OperatorSession? {
+        environment.session.operatorSession
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Signed In Operator") {
+                    LabeledContent("Name", value: session?.displayName ?? clerk.user?.formattedFullName ?? "Operator")
+                    if let email = session?.email ?? clerk.user?.primaryEmailAddress?.emailAddress {
+                        LabeledContent("Email", value: email)
+                    }
+                    LabeledContent("Role", value: session?.roles.joined(separator: ", ").capitalized ?? "Operator")
+                    LabeledContent("Operator ID", value: session?.operatorID ?? "—")
+                }
+
+                Section("Active Business Workspace") {
+                    LabeledContent("Business", value: session?.businessName ?? "—")
+                    LabeledContent("Workspace ID", value: session?.businessID ?? "—")
+                }
+
+                Section {
+                    Button(role: .destructive) {
+                        Task { await signOut() }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isSigningOut {
+                                ProgressView()
+                            } else {
+                                Label("Sign Out & Switch Operator", systemImage: "rectangle.portrait.and.arrow.right")
+                                    .fontWeight(.semibold)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .disabled(isSigningOut)
+                    .accessibilityIdentifier("identitySheetSignOutButton")
+                } footer: {
+                    Text("Signing out clears device session tokens, in-memory caches, and push notification registrations.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Operator Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .alert("Sign Out Failed", isPresented: .init(
+                get: { signOutError != nil },
+                set: { if !$0 { signOutError = nil } }
+            )) {
+                Button("OK", role: .cancel) { signOutError = nil }
+            } message: {
+                Text(signOutError ?? "")
+            }
+        }
+    }
+
+    @MainActor
+    private func signOut() async {
+        isSigningOut = true
+        defer { isSigningOut = false }
+        do {
+            await PushNotificationCoordinator.shared.unregister()
+            try await clerk.auth.signOut()
+            await environment.signOut()
+            dismiss()
+        } catch {
+            signOutError = "We couldn't complete the sign out. Check your network and try again."
+        }
+    }
+}
+

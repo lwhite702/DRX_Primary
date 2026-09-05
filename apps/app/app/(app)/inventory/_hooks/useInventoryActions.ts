@@ -25,9 +25,7 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
     description:
       typeof item.description === "string" ? item.description : undefined,
     category: typeof item.category === "string" ? item.category : undefined,
-    unit_of_measure: (item.unit_of_measure ??
-      item.baseUnit ??
-      "g") as Inventory["unit_of_measure"],
+    unit_of_measure: (item.unit_of_measure ?? item.baseUnit ?? "g") as Inventory["unit_of_measure"],
     quantity_on_hand: Number(item.quantity_on_hand ?? item.quantityOnHand ?? 0),
     reorder_level: Number(item.reorder_level ?? item.reorderLevel ?? 10),
     unit_cost: unitCost != null ? Number(unitCost) : undefined,
@@ -65,8 +63,6 @@ export function useInventoryActions(businessId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const loadedBusinessId = useRef<string | undefined>(undefined);
   const requestController = useRef<AbortController | null>(null);
-  const currentBusinessId = useRef(businessId);
-  currentBusinessId.current = businessId;
 
   const refreshInventory = useCallback(async () => {
     requestController.current?.abort();
@@ -96,12 +92,7 @@ export function useInventoryActions(businessId: string | undefined) {
         },
       );
       const body = await readApiResponse(response);
-      if (
-        controller.signal.aborted ||
-        currentBusinessId.current !== businessId
-      ) {
-        return;
-      }
+      if (controller.signal.aborted) return;
       const rows = Array.isArray(body.data) ? body.data : [];
       loadedBusinessId.current = businessId;
       setInventory(rows.map(normalizeInventoryItem));
@@ -127,12 +118,6 @@ export function useInventoryActions(businessId: string | undefined) {
     return () => requestController.current?.abort();
   }, [refreshInventory]);
 
-  React.useEffect(() => {
-    setMutating(false);
-    setShowDialog(false);
-    setEditingItem(null);
-  }, [businessId]);
-
   const handleAdd = () => {
     setEditingItem(null);
     const randomSku = `PROD-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -156,25 +141,24 @@ export function useInventoryActions(businessId: string | undefined) {
       toast.error("Business not found");
       return;
     }
-    const mutationBusinessId = businessId;
-    const editingItemId = editingItem?.id;
 
     const promise = async () => {
-      if (editingItemId) {
+      if (editingItem && "id" in editingItem && editingItem.id) {
         const response = await fetch(
-          `/api/inventory/${editingItemId}?business_id=${encodeURIComponent(mutationBusinessId)}`,
+          `/api/inventory/${editingItem.id}?business_id=${encodeURIComponent(businessId)}`,
           {
-            method: "PUT",
-            credentials: "same-origin",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+          method: "PUT",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
           },
         );
         const body = await readApiResponse(response);
-        if (currentBusinessId.current !== mutationBusinessId) return null;
         const updatedItem = normalizeInventoryItem(body.data ?? data);
         setInventory((prev) =>
-          prev.map((item) => (item.id === editingItemId ? updatedItem : item)),
+          prev.map((item) =>
+            item.id === editingItem.id ? updatedItem : item,
+          ),
         );
         return "Item updated successfully";
       } else {
@@ -182,10 +166,9 @@ export function useInventoryActions(businessId: string | undefined) {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...data, business_id: mutationBusinessId }),
+          body: JSON.stringify({ ...data, business_id: businessId }),
         });
         const newItem = normalizeInventoryItem(await readApiResponse(response));
-        if (currentBusinessId.current !== mutationBusinessId) return null;
         setInventory((prev) => [...prev, newItem]);
         return "Item added successfully";
       }
@@ -194,29 +177,20 @@ export function useInventoryActions(businessId: string | undefined) {
     setMutating(true);
     try {
       const message = await promise();
-      if (message && currentBusinessId.current === mutationBusinessId) {
-        toast.success(message);
-        setShowDialog(false);
-        setEditingItem(null);
-      }
+      toast.success(message);
+      setShowDialog(false);
+      setEditingItem(null);
     } catch (error) {
-      if (currentBusinessId.current === mutationBusinessId) {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to save item",
-        );
-      }
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save item",
+      );
     } finally {
-      if (currentBusinessId.current === mutationBusinessId) {
-        setMutating(false);
-      }
+      setMutating(false);
     }
   };
 
-  const visibleInventory =
-    loadedBusinessId.current === businessId ? inventory : [];
-
   return {
-    inventory: visibleInventory,
+    inventory,
     loading,
     refreshing,
     mutating,
@@ -225,7 +199,7 @@ export function useInventoryActions(businessId: string | undefined) {
       ? "loading"
       : error
         ? "error"
-        : visibleInventory.length
+        : inventory.length
           ? "success"
           : "empty",
     refreshInventory,

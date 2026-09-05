@@ -40,8 +40,8 @@ export function SetupGuide() {
     {
       key: "product",
       label: "Add your first product",
-      description: "Create inventory to sell",
-      href: "/inventory",
+      description: "Choose whole or fractional sales, units, and suggested amounts",
+      href: "/inventory?create=1",
       icon: ShoppingBag,
       isDone: steps.product,
     },

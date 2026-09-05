@@ -1,4 +1,4 @@
-import { serve } from "inngest/next";
+import { serve } from "@/lib/adapters/jobs";
 import { inngest } from "@/lib/queue";
 import { aiPricingInventoryFunction } from "@/jobs/ai-pricing-inventory";
 

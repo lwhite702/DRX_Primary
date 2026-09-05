@@ -9,14 +9,21 @@
 - Release configuration: `Release`
 - Minimum iOS version: iOS 17
 - Signing: Automatic, Apple team `L8R42BJ54K`
-- Version: `0.1.0`
-- Build number: Xcode Cloud `CI_BUILD_NUMBER`
+- Planned source version: `0.6.0` (unreleased)
+- Source build number: `31`
+- Upload build number: resolve `max(App Store Connect/TestFlight, 31) + 1` immediately before the approved archive; do not infer it from SemVer.
 
 Xcode Cloud runs the scripts in `apps/ios/ci_scripts`. The post-clone script
 installs XcodeGen when needed, writes an ignored
 `Telemetry.generated.xcconfig` from the build environment, regenerates the
 project, and resolves Swift packages. The pre-build script validates telemetry
 and symbol-upload configuration.
+
+Release and archive preparation validates Sentry and PostHog again immediately
+before Xcode builds. Missing or malformed telemetry fails the build before an
+archive can be distributed. Local Debug generation may use disabled telemetry
+stubs so an observability configuration problem never becomes an operator
+lockout in an installed app.
 
 ## One-time App Store Connect setup
 

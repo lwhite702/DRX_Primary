@@ -8,6 +8,7 @@ import {
   type ScreenPrivacyMode,
   type PrivacyRetentionSettings,
 } from "@/lib/privacy/types";
+import { drxCopy } from "@/lib/copy/drx";
 
 const DEFAULT_RETENTION: Omit<PrivacyRetentionSettings, "days"> = {
   enabled: true,
@@ -90,6 +91,8 @@ const PROFILE_DEFAULTS: Record<PrivacyProfile, PrivacyProtocolSettings> = {
   },
 };
 
+const privacyPresetCopy = drxCopy.onboarding.privacy.presets;
+
 export const PRIVACY_PROFILE_OPTIONS: Array<{
   id: PrivacyProfile;
   label: string;
@@ -97,18 +100,18 @@ export const PRIVACY_PROFILE_OPTIONS: Array<{
 }> = [
   {
     id: "alias_mode",
-    label: "Alias Mode",
-    description: "Capture alias only for fastest, lowest-data operations.",
+    label: privacyPresetCopy.aliasMode.label,
+    description: privacyPresetCopy.aliasMode.desc,
   },
   {
     id: "standard_mode",
-    label: "Standard Mode",
-    description: "Balanced profile for day-to-day CRM and checkout workflows.",
+    label: privacyPresetCopy.standardMode.label,
+    description: privacyPresetCopy.standardMode.desc,
   },
   {
     id: "business_crm_mode",
-    label: "Business CRM Mode",
-    description: "Full CRM profile with expanded data visibility controls.",
+    label: privacyPresetCopy.businessCrmMode.label,
+    description: privacyPresetCopy.businessCrmMode.desc,
   },
 ];
 

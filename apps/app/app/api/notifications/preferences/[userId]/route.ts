@@ -1,25 +1,20 @@
 import { type NextRequest } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
+import { getCurrentUser } from "@/lib/adapters/auth";
+import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { errorResponse, successResponse } from "@/lib/api/response";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> | { userId: string } },
 ) {
-  const { userId } = params;
-  const supabase = await createServerClient();
+  const { userId } = await Promise.resolve(params);
+  const supabase = await createServerDbClient();
   // Auth check
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (!user || authError) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  const user = await getCurrentUser();
+  if (!user) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
 
-  const canManageUsers =
-    (await hasPermission("users.manage_all")) ||
-    (await hasPermission("staff.manage"));
-  if (!canManageUsers && user.id !== userId) {
+  if (!(await canManageNotificationRecipient(_request, user.id, userId))) {
     return errorResponse("FORBIDDEN", "Forbidden", 403);
   }
 

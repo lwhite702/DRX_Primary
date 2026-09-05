@@ -11,16 +11,10 @@ import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FractionalEntryDialog } from "@/components/quick-pos/fractional-entry-dialog";
+import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
 
-interface ProductResult {
-  id: string;
-  name: string;
-  price: number;
-  quantity_on_hand: number;
-  sku?: string | null;
-  barcode?: string | null;
-  low_stock_threshold?: number;
-}
+type ProductResult = QuickPosBootstrapItem & { low_stock_threshold?: number };
 
 export default function QuickPosSalePage() {
   const router = useRouter();
@@ -32,6 +26,7 @@ export default function QuickPosSalePage() {
     setCustomer,
     setSearch,
     setCreditPolicy,
+    setDeliveryFeeTaxable,
     setError,
     total,
   } = useQuickPosStore();
@@ -42,6 +37,8 @@ export default function QuickPosSalePage() {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [manualPrice, setManualPrice] = useState("");
+  const [fractionalProduct, setFractionalProduct] =
+    useState<QuickPosBootstrapItem | null>(null);
   const searchSequence = useRef(0);
   const activeSearchController = useRef<AbortController | null>(null);
 
@@ -56,7 +53,8 @@ export default function QuickPosSalePage() {
 
         const data = (await res.json()) as QuickPosBootstrapResponse;
         setBootstrap(data);
-        setCreditPolicy(data.creditPolicy.enabled);
+        setCreditPolicy(Boolean(data.creditPolicy?.enabled));
+        setDeliveryFeeTaxable(Boolean(data.deliveryPolicy?.feeTaxable));
       } catch {
         setError("Unable to load POS");
       } finally {
@@ -65,7 +63,7 @@ export default function QuickPosSalePage() {
     };
 
     load();
-  }, [setCreditPolicy, setError]);
+  }, [setCreditPolicy, setDeliveryFeeTaxable, setError]);
 
   useEffect(() => {
     const search = state.ui.search.trim().toLowerCase();
@@ -137,7 +135,7 @@ export default function QuickPosSalePage() {
         return;
       }
 
-      addInventoryItem(exactItem);
+      selectInventoryItem(exactItem);
       setSearch("");
       setResults([]);
     } catch (error: unknown) {
@@ -171,6 +169,17 @@ export default function QuickPosSalePage() {
       source: "inventory",
     });
     setError(null);
+  };
+
+  const selectInventoryItem = (item: QuickPosBootstrapItem) => {
+    if (
+      item.commerce_config?.fractionalEnabled ||
+      (item.commerce_config?.bulkPriceTiers.length ?? 0) > 0
+    ) {
+      setFractionalProduct(item);
+      return;
+    }
+    addInventoryItem(item);
   };
 
   const addManualItem = () => {
@@ -223,20 +232,20 @@ export default function QuickPosSalePage() {
           value={state.ui.search}
           onChange={setSearch}
           items={results}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
           onSubmitSearch={submitSearch}
         />
 
         <QuickGrid
           title="Favorite Items"
           items={bootstrap?.favorites || []}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
         />
 
         <QuickGrid
           title="Recently Sold"
           items={bootstrap?.recentlySold || []}
-          onAdd={addInventoryItem}
+          onAdd={selectInventoryItem}
         />
 
         <PosKeypad
@@ -273,7 +282,7 @@ export default function QuickPosSalePage() {
             onClick={() => router.push("/pos/payment")}
             disabled={state.cartItems.length === 0 || isBootstrapping}
             className="h-16 w-full rounded-lg bg-accent text-2xl font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Continue to payment"
+            aria-label="Continue to Payment"
           >
             Continue to Payment
           </button>
@@ -283,6 +292,39 @@ export default function QuickPosSalePage() {
           </p>
         </div>
       </div>
+      <FractionalEntryDialog
+        product={fractionalProduct}
+        onClose={() => setFractionalProduct(null)}
+        onAdd={(item) => {
+          addItem(item);
+          setError(null);
+        }}
+      />
+
+      {/* Sticky Mobile Cart Bar */}
+      {state.cartItems.length > 0 && (
+        <div className="md:hidden fixed bottom-16 inset-x-0 z-40 border-t border-border/80 bg-background/95 backdrop-blur-xl p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-2 duration-200">
+          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">
+                {state.cartItems.reduce((sum, item) => sum + item.qty, 0)} items in cart
+              </p>
+              <p className="text-lg font-bold font-mono text-accent">
+                ${total.toFixed(2)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/pos/payment")}
+              className="h-12 px-6 rounded-xl bg-accent text-black text-sm font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 active:scale-95 transition-all flex items-center gap-2"
+              aria-label={`Checkout with total ${total.toFixed(2)}`}
+            >
+              <span>Pay ${total.toFixed(2)}</span>
+              <span className="text-base font-bold">→</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

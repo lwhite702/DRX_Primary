@@ -19,6 +19,14 @@ type ActionResult =
   | { success: true; preferences: DashboardPreferences }
   | { success: false; error: string };
 
+function getPublicMetadata(sessionClaims: unknown) {
+  return sessionClaims &&
+    typeof sessionClaims === "object" &&
+    !Array.isArray(sessionClaims)
+    ? (sessionClaims as { publicMetadata?: unknown }).publicMetadata
+    : {};
+}
+
 export async function updateDashboardPreferencesAction(
   input: UpdateDashboardPreferencesInput,
 ): Promise<ActionResult> {
@@ -39,9 +47,11 @@ export async function updateDashboardPreferencesAction(
     }
 
     const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-
-    const publicMetadata = (user.publicMetadata ?? {}) as Record<string, unknown>;
+    const rawPublicMetadata = getPublicMetadata(sessionClaims);
+    const publicMetadata =
+      rawPublicMetadata && typeof rawPublicMetadata === "object" && !Array.isArray(rawPublicMetadata)
+        ? (rawPublicMetadata as Record<string, unknown>)
+        : {};
     const operatorProfile =
       (publicMetadata.operatorProfile as Record<string, unknown> | undefined) ?? {};
 
@@ -92,4 +102,3 @@ export async function getDashboardPreferencesAction(): Promise<ActionResult> {
     return { success: false, error: "Failed to load dashboard preferences" };
   }
 }
-

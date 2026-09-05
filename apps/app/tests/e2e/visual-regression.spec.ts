@@ -23,9 +23,9 @@ test.describe("Visual regression", () => {
   });
 
   const visualTarget = process.env.VISUAL_TARGET ?? "all";
-  const pages =
-    visualTarget === "public"
-      ? [
+    const pages =
+      visualTarget === "public"
+        ? [
           { name: "login", url: "/login", heading: "Sign in" },
           { name: "register", url: "/register", heading: "Create account" },
           { name: "waitlist", url: "/waitlist", heading: "Join the beta" },

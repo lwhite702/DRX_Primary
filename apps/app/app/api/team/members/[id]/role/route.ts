@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
-import {
-  isRealClerkOrganizationId,
-  toClerkOrganizationRole,
-} from "@/lib/team/clerk-organization";
 import {
   findTeamMembership,
   isPrivilegedTeamRole,
@@ -29,13 +24,6 @@ export async function PUT(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
-    }
-
-    if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 },
@@ -83,77 +71,23 @@ export async function PUT(
       );
     }
 
-    let clerkRoleUpdated = false;
-    let clerkMembershipCreated = false;
-    if (isRealClerkOrganizationId(context.clerkOrgId)) {
-      const client = await clerkClient();
-      try {
-        await client.organizations.updateOrganizationMembership({
-          organizationId: context.clerkOrgId!,
-          userId: membership.userId,
-          role: toClerkOrganizationRole(role),
-        });
-        clerkRoleUpdated = true;
-      } catch (error) {
-        const status =
-          error && typeof error === "object" && "status" in error
-            ? (error as { status?: number }).status
-            : undefined;
-        if (status !== 404) throw error;
-        await client.organizations.createOrganizationMembership({
-          organizationId: context.clerkOrgId!,
-          userId: membership.userId,
-          role: toClerkOrganizationRole(role),
-        });
-        clerkMembershipCreated = true;
-      }
-    }
-
-    try {
-      await db.$transaction([
-        db.userRole.update({
-          where: { id: membership.id },
-          data: { role },
-        }),
-        db.systemAuditLog.create({
-          data: {
-            action: "role_update",
-            entityId: membership.userId,
-            userId: context.userId,
-            businessId: context.businessId,
-            entityType: "team_member",
-            oldValues: { role: membership.role },
-            newValues: { role },
-          },
-        }),
-      ]);
-    } catch (error) {
-      if (context.clerkOrgId && (clerkRoleUpdated || clerkMembershipCreated)) {
-        try {
-          const client = await clerkClient();
-          if (clerkMembershipCreated) {
-            await client.organizations.deleteOrganizationMembership({
-              organizationId: context.clerkOrgId,
-              userId: membership.userId,
-            });
-          } else {
-            await client.organizations.updateOrganizationMembership({
-              organizationId: context.clerkOrgId,
-              userId: membership.userId,
-              role: toClerkOrganizationRole(membership.role ?? "staff"),
-            });
-          }
-        } catch (compensationError) {
-          console.error("Restore Clerk organization role failed", {
-            errorType:
-              compensationError instanceof Error
-                ? compensationError.name
-                : "UnknownError",
-          });
-        }
-      }
-      throw error;
-    }
+    await db.$transaction([
+      db.userRole.update({
+        where: { id: membership.id },
+        data: { role },
+      }),
+      db.systemAuditLog.create({
+        data: {
+          action: "role_update",
+          entityId: membership.userId,
+          userId: context.userId,
+          businessId: context.businessId,
+          entityType: "team_member",
+          oldValues: { role: membership.role },
+          newValues: { role },
+        },
+      }),
+    ]);
 
     return NextResponse.json({ id: membership.userId, role }, { status: 200 });
   } catch (error) {

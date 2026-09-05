@@ -4,13 +4,27 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: true, // Temporarily disabled for debugging 404
-  register: false,
-  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: false,
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [{
+      urlPattern: ({ url }) => /^\/(control|admin)(\/|$)/.test(url.pathname) || url.pathname.startsWith("/api/admin/"),
+      handler: "NetworkOnly",
+    }],
+  },
 });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [{ source: "/control/:path*", headers: [
+      { key: "Cache-Control", value: "private, no-store" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Referrer-Policy", value: "no-referrer" },
+    ] }];
+  },
   output: "standalone",
   transpilePackages: [
     "@wrelik/auth",

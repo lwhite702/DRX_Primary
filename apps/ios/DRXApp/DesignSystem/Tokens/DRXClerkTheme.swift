@@ -7,7 +7,7 @@ extension ClerkTheme {
         colors: .init(
             primary: DRXPalette.accent,
             background: DRXPalette.canvas,
-            input: DRXPalette.card,
+            input: Color(red: 30 / 255, green: 30 / 255, blue: 30 / 255),
             danger: DRXPalette.danger,
             success: DRXPalette.success,
             warning: DRXPalette.warning,
@@ -21,7 +21,7 @@ extension ClerkTheme {
             secondaryButtonBackground: DRXPalette.card,
             secondaryButtonForeground: DRXPalette.ink,
             shadow: DRXPalette.ink,
-            border: DRXPalette.muted
+            border: Color.white.opacity(0.22)
         ),
         design: .init(borderRadius: DRXRadius.card)
     )

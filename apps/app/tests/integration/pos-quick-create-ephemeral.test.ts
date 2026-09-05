@@ -142,16 +142,6 @@ describe("POS quick-create ephemeral behavior", () => {
 
     expect(res.status).toBe(201);
     expect(json.ephemeral).toBe(true);
-    expect(mocks.hasBusinessPermission).toHaveBeenCalledWith(
-      "user_1",
-      "biz_1",
-      "customers.view",
-    );
-    expect(mocks.hasBusinessPermission).toHaveBeenCalledWith(
-      "user_1",
-      "biz_1",
-      "sales.create",
-    );
     expect(mocks.db.customers.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

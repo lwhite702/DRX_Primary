@@ -1,0 +1,18 @@
+## Source changes reviewed *
+_Which PRs or commits prompted this update?_
+
+## Docs updated *
+_What changed and where it lives now._
+
+Release impact: none
+Roadmap impact: none
+
+## Source PR or commit
+**Link:** _<add here>_ _(Optional - paste the PR or commit URL.)_
+
+## Reviewer checklist
+- [ ] Links resolve
+- [ ] No stale screenshots
+- [ ] Examples still run
+
+<sub>* Required sections — keep them in the pull request description.</sub>

@@ -2,12 +2,8 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@/lib/adapters/auth/server";
 import {
-  syncAcceptedClerkOrganizationInvitation,
   syncCreatedClerkUser,
-  syncCreatedClerkOrganizationMembership,
-  type ClerkAcceptedOrganizationInvitationPayload,
   type ClerkCreatedUserPayload,
-  type ClerkOrganizationMembershipPayload,
 } from "@/lib/auth/clerk-user-sync";
 import { prisma } from "@/lib/db";
 
@@ -71,49 +67,22 @@ export async function POST(req: Request) {
       const { id, name, created_by } = evt.data;
 
       // When a user creates a real Org in Clerk, we create/sync a BusinessProfile
+      // Ensure created_by is a string (it should be for user-created orgs)
       if (created_by) {
-        const existingOrganization = await prisma.businessProfile.findUnique({
-          where: { clerkOrgId: id },
-          select: { id: true },
+        await prisma.businessProfile.create({
+          data: {
+            clerkOrgId: id,
+            businessName: name,
+            ownerId: created_by, // Clerk User ID
+          },
         });
-        if (!existingOrganization) {
-          const ownerWorkspace = await prisma.businessProfile.findFirst({
-            where: { ownerId: created_by, isActive: true },
-            orderBy: { createdAt: "desc" },
-            select: { id: true, clerkOrgId: true },
-          });
-          if (
-            ownerWorkspace &&
-            (!ownerWorkspace.clerkOrgId ||
-              ownerWorkspace.clerkOrgId.startsWith("personal_"))
-          ) {
-            await prisma.businessProfile.update({
-              where: { id: ownerWorkspace.id },
-              data: { clerkOrgId: id },
-            });
-          } else {
-            await prisma.businessProfile.create({
-              data: {
-                clerkOrgId: id,
-                businessName: name,
-                ownerId: created_by,
-              },
-            });
-          }
-        }
       }
-    }
 
-    if (eventType === "organizationInvitation.accepted") {
-      await syncAcceptedClerkOrganizationInvitation(
-        evt.data as unknown as ClerkAcceptedOrganizationInvitationPayload,
-      );
-    }
-
-    if (eventType === "organizationMembership.created") {
-      await syncCreatedClerkOrganizationMembership(
-        evt.data as unknown as ClerkOrganizationMembershipPayload,
-      );
+      // Note: We might need to move the User to this new Tenant or allow multiple tenants (via mapping table).
+      // Since our Schema strictly links User -> Tenant (1:1), this implies "One User per Tenant".
+      // If Clerk allows multiple Orgs, our strict 1:1 schema might be too limiting.
+      // User requested "Multi-Tenant", often implies Users can be in multiple tenants.
+      // But for now, we follow the schema: User belongs to Tenant.
     }
 
     if (
@@ -137,12 +106,15 @@ export async function POST(req: Request) {
             userId,
             sessionId,
             eventType,
-            ipAddress:
-              latestActivity.ip_address || sessionData.ip_address || null,
+            ipAddress: latestActivity.ip_address || sessionData.ip_address || null,
             userAgent:
-              latestActivity.user_agent || sessionData.user_agent || null,
+              latestActivity.user_agent ||
+              sessionData.user_agent ||
+              null,
             deviceType:
-              latestActivity.device_type || sessionData.device_type || null,
+              latestActivity.device_type ||
+              sessionData.device_type ||
+              null,
             city: latestActivity.city || sessionData.city || null,
             country: latestActivity.country || sessionData.country || null,
             metadata: sessionData,
@@ -150,6 +122,8 @@ export async function POST(req: Request) {
         });
       }
     }
+
+    // Additional events: organizationMembership.created to sync roles/invites.
   } catch (error) {
     console.error("Clerk webhook handler failed", {
       eventType,

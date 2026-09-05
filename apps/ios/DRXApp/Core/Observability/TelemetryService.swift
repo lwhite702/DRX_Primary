@@ -4,6 +4,10 @@ import Sentry
 
 @MainActor
 final class TelemetryService {
+    nonisolated static let sessionReplayEnabled = false
+    nonisolated static let sentryReplaySampleRate: Float = 0
+    nonisolated static let sentryReplayOnErrorSampleRate: Float = 0
+
     private(set) var configured = false
     private(set) var sentryConfigured = false
     private(set) var postHogConfigured = false
@@ -23,30 +27,16 @@ final class TelemetryService {
                 options.dist = self.configuration.buildNumber
                 options.sendDefaultPii = false
                 options.tracesSampleRate = self.configuration.environment == .production ? 0.10 : 1.0
-                options.sessionReplay.sessionSampleRate = self.configuration.environment == .production ? 0.05 : 0.10
-                options.sessionReplay.onErrorSampleRate = 1.0
+                // Session replay is intentionally disabled. Aside from collecting more UI state
+                // than DRX needs, Sentry Cocoa 9.21.0 can trip a Swift executor precondition on
+                // iOS 27 while processing replay frames and leave the beta in a launch crash loop.
+                options.sessionReplay.sessionSampleRate = Self.sentryReplaySampleRate
+                options.sessionReplay.onErrorSampleRate = Self.sentryReplayOnErrorSampleRate
                 options.sessionReplay.maskAllText = true
                 options.sessionReplay.maskAllImages = true
                 options.enableNetworkBreadcrumbs = true
                 options.enableAutoPerformanceTracing = true
-                options.beforeSend = { event in
-                    event.request?.cookies = nil
-                    event.request?.queryString = nil
-                    event.request?.fragment = nil
-                    if let headers = event.request?.headers {
-                        event.request?.headers = headers.filter { key, _ in
-                            !["authorization", "cookie", "set-cookie", "x-api-key"].contains(key.lowercased())
-                        }
-                    }
-                    event.extra = Self.scrub(event.extra)
-                    event.context = event.context?.reduce(into: [:]) { result, entry in
-                        result[entry.key] = Self.scrub(entry.value) ?? [:]
-                    }
-                    event.breadcrumbs?.forEach { breadcrumb in
-                        breadcrumb.data = Self.scrub(breadcrumb.data)
-                    }
-                    return event
-                }
+                options.beforeSend = Self.scrubSentryEvent
             }
             sentryConfigured = true
         }
@@ -61,19 +51,16 @@ final class TelemetryService {
             config.sendFeatureFlagEvent = false
             config.personProfiles = .identifiedOnly
             config.reuseAnonymousId = false
-            config.sessionReplay = true
+            config.sessionReplay = Self.sessionReplayEnabled
             config.sessionReplayConfig.maskAllTextInputs = true
             config.sessionReplayConfig.maskAllImages = true
             config.sessionReplayConfig.maskAllSandboxedViews = true
             config.sessionReplayConfig.captureNetworkTelemetry = false
             config.sessionReplayConfig.captureLogs = false
             config.sessionReplayConfig.screenshotMode = false
-            config.sessionReplayConfig.sampleRate = configuration.environment == .production ? 0.05 : 0.10
+            config.sessionReplayConfig.sampleRate = 0
             config.tracingHeaders = [configuration.apiBaseURL.host].compactMap { $0 }
-            config.setBeforeSend { event in
-                event.properties = Self.scrub(event.properties) ?? [:]
-                return event
-            }
+            config.setBeforeSend(Self.scrubPostHogEvent)
             PostHogSDK.shared.setup(config)
             postHogConfigured = true
         }
@@ -170,6 +157,33 @@ final class TelemetryService {
                 result[key] = scrubValue(value)
             }
         }
+    }
+
+    // SDK before-send callbacks run on background queues. Keeping these functions
+    // explicitly nonisolated prevents Swift 6 from attaching the service's MainActor
+    // executor to escaping closures invoked by Sentry or PostHog.
+    private nonisolated static func scrubSentryEvent(_ event: Event) -> Event? {
+        event.request?.cookies = nil
+        event.request?.queryString = nil
+        event.request?.fragment = nil
+        if let headers = event.request?.headers {
+            event.request?.headers = headers.filter { key, _ in
+                !["authorization", "cookie", "set-cookie", "x-api-key"].contains(key.lowercased())
+            }
+        }
+        event.extra = scrub(event.extra)
+        event.context = event.context?.reduce(into: [:]) { result, entry in
+            result[entry.key] = scrub(entry.value) ?? [:]
+        }
+        event.breadcrumbs?.forEach { breadcrumb in
+            breadcrumb.data = scrub(breadcrumb.data)
+        }
+        return event
+    }
+
+    private nonisolated static func scrubPostHogEvent(_ event: PostHogEvent) -> PostHogEvent? {
+        event.properties = scrub(event.properties) ?? [:]
+        return event
     }
 
     private nonisolated static func scrubValue(_ value: Any) -> Any {

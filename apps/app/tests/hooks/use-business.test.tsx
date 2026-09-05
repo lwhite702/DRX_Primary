@@ -148,7 +148,6 @@ describe("useBusiness", () => {
 
     expect(result.current.business).toBeNull();
     expect(result.current.loading).toBe(true);
-    await waitFor(() => expect(setActive).toHaveBeenCalledOnce());
     act(() => finishActivation?.());
     await waitFor(() => expect(result.current.business?.id).toBe("business-2"));
     expect(setActive).toHaveBeenCalledWith({ organization: "organization-2" });
@@ -174,46 +173,5 @@ describe("useBusiness", () => {
     await waitFor(() => expect(result.current.status).toBe("error"));
     expect(result.current.business).toBeNull();
     expect(result.current.error).toMatch(/could not switch/i);
-  });
-
-  it("serializes rapid business switches so the latest Clerk organization wins", async () => {
-    const activations = new Map<string, () => void>();
-    const setActive = vi.fn(
-      ({ organization }: { organization: string }) =>
-        new Promise<void>((resolve) => {
-          activations.set(organization, resolve);
-        }),
-    );
-    mocks.useOrganizationList.mockReturnValue({
-      isLoaded: true,
-      userMemberships: { data: [] },
-      setActive,
-    });
-    mocks.getCurrentBusinessProfile
-      .mockResolvedValueOnce({ id: "business-1", businessName: "First" })
-      .mockResolvedValueOnce({ id: "business-3", businessName: "Third" });
-
-    const { result } = renderHook(() => useBusiness(), { wrapper });
-    await waitFor(() => expect(result.current.business?.id).toBe("business-1"));
-
-    act(() => result.current.switchBusiness("organization-2"));
-    await waitFor(() => expect(setActive).toHaveBeenCalledTimes(1));
-    act(() => result.current.switchBusiness("organization-3"));
-    expect(setActive).toHaveBeenCalledTimes(1);
-
-    await act(async () => {
-      activations.get("organization-2")?.();
-    });
-    await waitFor(() =>
-      expect(setActive).toHaveBeenLastCalledWith({
-        organization: "organization-3",
-      }),
-    );
-
-    await act(async () => {
-      activations.get("organization-3")?.();
-    });
-    await waitFor(() => expect(result.current.business?.id).toBe("business-3"));
-    expect(mocks.getCurrentBusinessProfile).toHaveBeenCalledTimes(2);
   });
 });

@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { openFeedbackWithFallback } from "@/lib/feedback";
 
 interface Props {
   children: React.ReactNode;
@@ -62,9 +63,9 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
 
   handleReportBug = () => {
     const feedback = getSentryClient()?.getFeedback?.();
-    if (feedback) {
-      feedback.createWidget();
-    }
+    void openFeedbackWithFallback(
+      feedback ? () => feedback.createWidget() : null,
+    );
   };
 
   handleReset = () => {

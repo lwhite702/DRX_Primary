@@ -7,6 +7,7 @@ import { AlertTriangle, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createAppClient } from "@/lib/data/client/supabase-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { processedCount } from "@/lib/ai/intelligence-normalizers";
 
 interface AIIntelligenceDashboardProps {
   businessId: string;
@@ -39,7 +40,7 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
     setLoading(true);
     setError(null);
     try {
-      const [pricingRes, alertsRes, forecastsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         supabase
           .from("ai_pricing_recommendations")
           .select("count", { count: "exact" })
@@ -58,12 +59,21 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
           .in("restock_urgency", ["high", "critical"]),
       ]);
 
-      setData({
-        pricingRecommendations: pricingRes.count || 0,
-        criticalAlerts: alertsRes.count || 0,
-        urgentRestocks: forecastsRes.count || 0,
-        opportunitiesCount: (pricingRes.count || 0) + (forecastsRes.count || 0),
+      const counts = results.map((result) => {
+        if (result.status === "rejected") return 0;
+        const value = Number(result.value?.count ?? 0);
+        return Number.isFinite(value) ? value : 0;
       });
+      const [pricingRecommendations, criticalAlerts, urgentRestocks] = counts;
+      setData({
+        pricingRecommendations,
+        criticalAlerts,
+        urgentRestocks,
+        opportunitiesCount: pricingRecommendations + urgentRestocks,
+      });
+      if (results.some((result) => result.status === "rejected")) {
+        setError("Some intelligence totals could not be loaded. Try again to refresh them.");
+      }
     } catch (caught) {
       console.error("Error fetching dashboard data:", caught);
       toast.error("Failed to load AI intelligence data");
@@ -88,7 +98,7 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
       if (!response.ok) throw new Error("Analysis failed");
 
       const result = await response.json();
-      toast.success(`Analysis complete: ${result.processed_count} items analyzed`);
+      toast.success(`Analysis complete: ${processedCount(result)} items analyzed`);
       await fetchDashboardData();
     } catch {
       toast.error("Failed to run analysis");

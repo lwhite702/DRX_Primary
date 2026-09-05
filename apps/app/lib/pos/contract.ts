@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 export const posModeSchema = z.enum(["quick", "full"]);
-export const posPaymentMethodSchema = z.enum(["cash", "card", "credit", "mixed", "zelle"]);
+export const posPaymentMethodSchema = z.enum([
+  "cash",
+  "card",
+  "credit",
+  "mixed",
+  "zelle",
+]);
 export const posQuickPaymentMethodSchema = z.enum(["cash", "card", "credit"]);
 export const posReceiptOptionSchema = z.enum(["print", "sms", "none"]);
 export const posCartItemSourceSchema = z.enum(["inventory", "manual"]);
@@ -11,6 +17,25 @@ export const posCheckoutSourceSchema = z.enum([
   "checkout-enhanced",
   "sales-api",
 ]);
+
+const quickPosCommerceConfigSchema = z.object({
+  fractionalEnabled: z.boolean(),
+  sellingUnit: z.string().min(1),
+  decimalPrecision: z.number().int().min(0).max(6),
+  minimumSaleQuantity: z.number().positive(),
+  quantityIncrement: z.number().positive(),
+  baseUnitPrice: z.number().positive(),
+  suggestedDollarAmounts: z.array(z.number().positive()),
+  suggestedQuantities: z.array(z.number().positive()),
+  bulkPriceTiers: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      minimumQuantity: z.number().positive(),
+      unitPrice: z.number().positive(),
+    }),
+  ),
+});
 
 export const posScopeSchema = z.object({
   tenantId: z.string().uuid().nullable().optional(),
@@ -50,6 +75,7 @@ export const cartLineItemSchema = z.object({
   loyaltyDiscountApplied: z.number().nonnegative().optional(),
   originalPrice: z.number().nonnegative().optional(),
   overrideReason: z.string().min(1).optional(),
+  commerceConfig: quickPosCommerceConfigSchema.optional(),
 });
 
 export const posFeeSchema = z.object({
@@ -64,6 +90,14 @@ export const quickPosPaymentSchema = z.object({
   creditConfirmed: z.boolean().default(false),
 });
 
+export const quickPosDeliverySchema = z.object({
+  enabled: z.boolean(),
+  address: z.string().trim().min(1).max(500),
+  vendorFeeCents: z.number().int().nonnegative(),
+  feeAllocation: z.enum(["charge_customer", "absorb"]),
+  feeTaxable: z.boolean(),
+});
+
 export const fullPosPaymentSchema = z.object({
   method: posPaymentMethodSchema,
   receipt: posReceiptOptionSchema.default("none"),
@@ -76,7 +110,15 @@ export const quickCheckoutPayloadSchema = z.object({
   customerId: z.string().uuid().nullable().optional(),
   source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
+  delivery: quickPosDeliverySchema.optional(),
   items: z.array(cartLineItemSchema).min(1),
+});
+
+export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
+  mode: true,
+  customerId: true,
+  delivery: true,
+  items: true,
 });
 
 export const fullCheckoutPayloadSchema = z.object({
@@ -111,7 +153,9 @@ export const receiptOutputSchema = z.object({
   saleId: z.string().uuid().or(z.string().min(1)),
   total: z.number().nonnegative(),
   receipt: posReceiptOptionSchema,
-  channels: z.array(z.object({ type: z.string().min(1), value: z.string().min(1) })).default([]),
+  channels: z
+    .array(z.object({ type: z.string().min(1), value: z.string().min(1) }))
+    .default([]),
 });
 
 export const quickPosBootstrapItemSchema = z.object({
@@ -120,6 +164,9 @@ export const quickPosBootstrapItemSchema = z.object({
   price: z.number().nonnegative(),
   sku: z.string().optional().nullable(),
   barcode: z.string().optional().nullable(),
+  quantity_on_hand: z.number().nonnegative(),
+  commerce_config: quickPosCommerceConfigSchema.optional(),
+  fractional_config: quickPosCommerceConfigSchema.optional(),
 });
 
 export const quickPosBootstrapResponseSchema = z.object({
@@ -127,6 +174,10 @@ export const quickPosBootstrapResponseSchema = z.object({
   recentlySold: z.array(quickPosBootstrapItemSchema),
   creditPolicy: z.object({
     enabled: z.boolean(),
+  }),
+  deliveryPolicy: z.object({
+    feeTaxable: z.boolean(),
+    dispatchSlaMinutes: z.number().int().positive(),
   }),
 });
 
@@ -142,11 +193,14 @@ export type StockAdjustment = z.infer<typeof stockAdjustmentSchema>;
 export type CartLineItem = z.infer<typeof cartLineItemSchema>;
 export type PosFee = z.infer<typeof posFeeSchema>;
 export type QuickCheckoutPayload = z.infer<typeof quickCheckoutPayloadSchema>;
+export type QuickPosQuotePayload = z.infer<typeof quickPosQuotePayloadSchema>;
 export type FullCheckoutPayload = z.infer<typeof fullCheckoutPayloadSchema>;
 export type CheckoutPayload = z.infer<typeof checkoutPayloadSchema>;
 export type ReceiptOutput = z.infer<typeof receiptOutputSchema>;
 export type QuickPosBootstrapItem = z.infer<typeof quickPosBootstrapItemSchema>;
-export type QuickPosBootstrapResponseContract = z.infer<typeof quickPosBootstrapResponseSchema>;
+export type QuickPosBootstrapResponseContract = z.infer<
+  typeof quickPosBootstrapResponseSchema
+>;
 
 // Backward-compatible aliases for existing imports during the transition.
 export const posCheckoutSchema = checkoutPayloadSchema;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,6 @@ export default function CustomerDetailPage() {
     business?.id,
   );
   const [customer, setCustomer] = useState<any>(null);
-  const [loadedBusinessId, setLoadedBusinessId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [privacyProtocol, setPrivacyProtocol] =
@@ -98,35 +97,18 @@ export default function CustomerDetailPage() {
   const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
     useState(false);
   const [lifecyclePending, setLifecyclePending] = useState(false);
-  const currentBusinessIdRef = useRef(business?.id);
-  currentBusinessIdRef.current = business?.id;
 
   useEffect(() => {
-    const businessId = business?.id;
-    setCustomer(null);
-    setLoadedBusinessId(null);
-    setMetrics(null);
-    setPrivacyProtocol(getDefaultPrivacyProtocol());
-    setManualScreenPrivacyEnabled(false);
-    setLifecyclePending(false);
-    setLoading(Boolean(businessId));
-    if (!businessId) return;
-
-    const controller = new AbortController();
-    let active = true;
+    if (!business?.id) return;
 
     const fetchData = async () => {
       try {
-        const query = new URLSearchParams({ business_id: businessId });
-        const res = await fetch(`/api/customers/${customerId}?${query}`, {
-          signal: controller.signal,
-        });
+        // Fetch customer details via API
+        const res = await fetch(`/api/customers/${customerId}`);
         if (!res.ok) throw new Error("Failed to load customer");
         const data = await res.json();
-        if (!active) return;
 
         setCustomer(data);
-        setLoadedBusinessId(businessId);
 
         if (data.metrics) {
           setMetrics({
@@ -146,14 +128,9 @@ export default function CustomerDetailPage() {
         }
 
         const [settingsRes, preferenceRes] = await Promise.all([
-          fetch(`/api/business/settings?${query}`, {
-            signal: controller.signal,
-          }),
-          fetch(`/api/privacy/protexion/preferences?${query}`, {
-            signal: controller.signal,
-          }),
+          fetch("/api/business/settings"),
+          fetch("/api/privacy/protexion/preferences"),
         ]);
-        if (!active) return;
         if (settingsRes.ok) {
           const settingsData = await settingsRes.json();
           setPrivacyProtocol(
@@ -167,37 +144,25 @@ export default function CustomerDetailPage() {
           setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
         }
       } catch (error) {
-        if (
-          !active ||
-          (error instanceof Error && error.name === "AbortError")
-        ) {
-          return;
-        }
         toast.error("Failed to load customer details");
         console.error(error);
       } finally {
-        if (active) setLoading(false);
+        setLoading(false);
       }
     };
 
-    void fetchData();
-    return () => {
-      active = false;
-      controller.abort();
-    };
+    fetchData();
   }, [business?.id, customerId]);
 
   const can_apply_changes =
     !permissionLoading && hasPermission("customers.manage");
 
   const handleLifecycleChange = async (isActive: boolean) => {
-    const mutationBusinessId = business?.id;
-    if (lifecyclePending || !mutationBusinessId) return;
+    if (lifecyclePending) return;
     setLifecyclePending(true);
     const action = isActive ? "reactivate" : "archive";
     const promise = async () => {
-      const query = new URLSearchParams({ business_id: mutationBusinessId });
-      const response = await fetch(`/api/customers/${customerId}?${query}`, {
+      const response = await fetch(`/api/customers/${customerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: isActive }),
@@ -208,9 +173,7 @@ export default function CustomerDetailPage() {
       }
 
       const updated = await response.json();
-      if (currentBusinessIdRef.current === mutationBusinessId) {
-        setCustomer((current: any) => ({ ...current, ...updated }));
-      }
+      setCustomer((current: any) => ({ ...current, ...updated }));
       return `Customer ${isActive ? "reactivated" : "archived"}`;
     };
 
@@ -227,9 +190,7 @@ export default function CustomerDetailPage() {
     } catch {
       // The toast presents the API error without exposing profile data.
     } finally {
-      if (currentBusinessIdRef.current === mutationBusinessId) {
-        setLifecyclePending(false);
-      }
+      setLifecyclePending(false);
     }
   };
 
@@ -237,7 +198,7 @@ export default function CustomerDetailPage() {
     return <CustomerDetailSkeleton />;
   }
 
-  if (!business || loadedBusinessId !== business.id || !customer) {
+  if (!business || !customer) {
     return <div className="p-4 md:p-8">Customer not found</div>;
   }
 
@@ -413,25 +374,25 @@ export default function CustomerDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Sales (30 Days)
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.sales_30d || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Sales (90 Days)
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.sales_90d || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">Total Sales</p>
-                  <p className="text-xl font-bold">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Sales</p>
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
                       customer.totalPurchases ||
@@ -440,11 +401,11 @@ export default function CustomerDetailPage() {
                     ).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Total Credit Used
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
                       customer.totalCreditUsed ||
@@ -453,17 +414,17 @@ export default function CustomerDetailPage() {
                     ).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Current Balance
                   </p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold font-mono text-white mt-1">
                     ${(metrics?.current_credit_balance || 0).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-4 rounded">
-                  <p className="text-xs text-muted-foreground">On-Time Ratio</p>
-                  <p className="text-xl font-bold">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On-Time Ratio</p>
+                  <p className="text-xl font-bold font-mono text-[#4ADE80] mt-1">
                     {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
                     %
                   </p>

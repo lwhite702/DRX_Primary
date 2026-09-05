@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
     const report = await getCreditExposureReport(businessId);
 
-    return successResponse({ data: report }, 200);
+    return successResponse(report, 200);
   } catch (error) {
     console.error("Error fetching exposure report:", error);
 

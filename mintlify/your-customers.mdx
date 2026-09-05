@@ -1,66 +1,65 @@
-# Your customers
+---
+title: "Your Customers"
+description: "Creating customer profiles, alias-first walk-ins, optional contact details, and store credit limits."
+icon: "users"
+---
 
-This page covers customer records, lookup patterns, and safe credit-related customer handling.
+This guide explains how to manage customer records, look up shoppers at checkout, and protect customer privacy during everyday counter transactions.
 
 ## What this page is for
 
-Use this guide when creating or updating customer profiles in `/customers`, attaching customers to sales, and keeping customer data minimal.
+Use this guide to create and update customer profiles in **Customers** (`/customers`), attach returning shoppers to orders, and keep customer records clean without collecting unnecessary personal data.
 
-This page reflects live behavior: DRX supports alias-first profiles and optional contact fields.
+DRX supports an **alias-first design**, meaning you can create functional profiles using just a nickname or first name without demanding sensitive private information.
 
 ## Before you start
 
 - **Recommended role**:
-  - Cashier: customer lookup and attach
-  - Supervisor/manager: customer edits and credit workflow support
-- **Routes used**:
-  - `/customers`
-  - `/customers/[id]`
-  - `/sales` and `/pos/sale` for attach behavior
-  - `/credit` for balance context
-- **Key data rule**:
-  - You can create a valid profile with alias-only data.
-  - Phone, email, first name, and last name are optional unless your own store policy says otherwise.
-- **Privacy rule**:
-  - Collect only what your team needs to run the sale and follow up on balances.
+  - Cashier: Search for existing customers and attach them to sales.
+  - Supervisor or Manager: Edit profiles, extend credit limits, and review purchase history.
+- **Key screens**:
+  - **Customers** (`/customers`): Search and view all customer profiles.
+  - **Customer Details** (`/customers/[id]`): View order history, loyalty points, and credit balance.
+  - **Quick Sale** (`/pos/sale`): Attach a customer directly to an active counter order.
+  - **Credit** (`/credit`): Manage outstanding balances and customer credit extensions.
+- **Customer privacy policy**:
+  - You can create a complete customer profile with an alias alone. Phone numbers, email addresses, and home addresses are entirely optional.
 
 ## Fast path
 
-1. **Create profile** in `/customers`.
-   - Enter alias if that is enough for your workflow.
-   - Add contact details only when needed for follow-up.
-2. **Save and verify**.
-   - Confirm the profile appears in customer list.
-   - Confirm you can open detail route.
-3. **Attach in sales flow**.
-   - Standard flow: attach from `/sales`.
-   - Quick flow: attach from `/pos/sale` customer panel.
-4. **Use detail page for context** (`/customers/[id]`).
-   - Review history and credit context before extensions.
-5. **Handle temporary customer records**.
-   - If your privacy profile enables ephemeral records, confirm retention behavior in settings.
-   - Use temporary records for fast walk-in operations where long-term identity is not needed.
+1. **Create a customer profile** (`/customers`):
+   - Tap **Add Customer**.
+   - Enter an alias or nickname (e.g. "Alex T.").
+   - Add phone number or email only if the customer wants digital receipts or delivery updates.
+2. **Attach customer at checkout**:
+   - In **Quick Sale** or **Sales**, tap **Add Customer**.
+   - Type their name, phone number, or alias in search.
+   - Tap their name to attach them to the current cart.
+3. **View customer details & purchase history**:
+   - Open a customer profile to view previous receipts, favorite items, loyalty point balance, and payment history.
+4. **Grant or manage store credit**:
+   - If a trusted regular customer uses store credit, open the **Credit** tab on their profile to set an approved credit limit.
+5. **Handle temporary walk-in profiles**:
+   - If your store enabled temporary profiles in Privacy Settings, walk-in records automatically clean up after 1, 7, or 30 days of inactivity, keeping your database fast and clutter-free.
 
 ## If blocked
 
-- **Save fails on customer create**:
-  - Check payload formatting.
-  - Remove empty noise fields and retry with alias-only first.
-- **Duplicate-like records appear**:
-  - Standardize alias format for shift teams.
-  - Add internal note convention for store-level disambiguation.
-- **Cannot attach customer in lane**:
-  - Confirm current business context.
-  - Confirm customer is active and visible in lookup results.
-- **Credit flow blocked after attach**:
-  - Attach alone is not enough; credit eligibility must pass route checks.
-- **Field visibility seems inconsistent**:
-  - Privacy settings can hide fields by profile and mask mode.
+- **Cannot save a new customer profile**:
+  - Check the fields you entered and ensure there are no formatting errors in optional phone or email fields. You can save with just a name or alias.
+- **Multiple profiles appear for the same customer**:
+  - Open the duplicate profile and merge or archive the inactive record to keep customer balances accurate.
+- **Customer cannot be found in search**:
+  - Search by phone number or alternative nickname.
+  - Check that you are in the correct store workspace.
+- **Store Credit payment is blocked after attaching customer**:
+  - Check their profile in **Credit** (`/credit`) to confirm they have an approved credit limit and no overdue payment locks.
+- **Phone numbers appear as `(***) ***-1234` on screen**:
+  - Screen masking mode is turned on in Store Settings to protect customer privacy from shoppers standing at the counter.
 
 ## What is beta here
 
-- Notes/tags and deeper loyalty-style tooling are beta-limited in current product surfaces.
-- Core customer create, edit, attach, and credit-context routes are live.
+- Custom customer segmentation tags and targeted SMS campaigns are in preview testing.
+- Profile creation, alias lookups, order history, loyalty point redemption, and store credit tracking are fully live.
 
 ## Related docs
 
@@ -70,15 +69,8 @@ This page reflects live behavior: DRX supports alias-first profiles and optional
 - [Keeping your data safe](/keeping-your-data-safe)
 - [DRX Privacy ProteXion Protocol](/drx-privacy-protexion-protocol)
 
-## Shift checklist
+## Store privacy principles
 
-- Confirm customer lookup works for at least one known profile.
-- Confirm alias-only create still works for walk-in flow.
-- Confirm credit attach flow can find active customer records.
-- Confirm detail route opens without missing-field errors.
-
-## Team policy notes
-
-- Decide when alias-only is enough and when contact fields are required.
-- Keep one naming pattern for aliases to reduce duplicates.
-- Do not collect extra data by habit. Collect only what supports actual store work.
+- Collect only the contact information your store actually needs to fulfill orders or provide receipts.
+- Let walk-in cash shoppers remain anonymous or use a simple first name.
+- Respect customer privacy by keeping screen masking active on counter registers.

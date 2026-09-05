@@ -13,7 +13,10 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../../../src/contexts/AuthContext";
+import { useMutation } from "convex/react";
+import { api } from "@drx-convex/_generated/api";
+import { FractionalProductFields } from "../../../src/components/fractional-product-fields";
+import { creationCommerceDefaults, newProductCommerceSchema } from "../../../../app/lib/commerce/product-creation";
 import {
   COLORS,
   SPACING,
@@ -21,13 +24,13 @@ import {
   BORDER_RADIUS,
   WEIGHT_TIERS,
 } from "../../../src/constants/theme";
-import { createProduct } from "../../../src/services/apiClient";
 import { BulkPricingTier } from "../../../src/lib/types";
 
 export default function AddProductScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { businessId, getToken } = useAuth();
+  const createProduct = useMutation(api.products.createProduct);
+  const [commerce, setCommerce] = useState(() => creationCommerceDefaults("g"));
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -123,56 +126,28 @@ export default function AddProductScreen() {
   };
 
   const handleSave = async () => {
-    if (!productName || !sellingPrice || !costPrice) {
+    if (!productName.trim() || !sku.trim() || !sellingPrice || !costPrice) {
       Alert.alert(
         "Error",
-        "Please fill in all required fields (Name, Cost, Price)",
+        "Please fill in all required fields (Name, SKU, Cost, Price)",
       );
-      return;
-    }
-
-    if (!businessId) {
-      Alert.alert("Error", "Business ID not found");
       return;
     }
 
     setSaving(true);
     try {
-      const token = await getToken();
-
-      const payload = {
-        business_id: businessId,
-        product_name: productName,
-        sku: sku || null,
-        category: category,
-        description: description || null,
-        base_unit: unitOfMeasure,
-        unit_of_measure: unitOfMeasure,
-        quantity_unit: unitOfMeasure === "g" ? "grams" : "units",
-        quantity_on_hand:
-          unitOfMeasure === "unit" ? parseFloat(stockQuantity || "0") : 0,
-        inventory_in_grams:
-          unitOfMeasure === "g" ? parseFloat(stockQuantity || "0") : 0,
-        cost_price: parseFloat(costPrice),
-        selling_price: parseFloat(sellingPrice),
-        items_per_unit: 1,
-        reorder_level: parseFloat(minStock),
-        low_stock_threshold: parseFloat(minStock),
-        ai_pricing_enabled: false,
-        // Include tiers if you want the backend to handle them, otherwise we might need a separate API call
-        // bulk_pricing_rules: unitOfMeasure === "g" ? tiers : [],
-      };
-
-      await createProduct(payload, token);
-
-      // Note: Tiers insertion logic is currently disabled as we migrated to single API call.
-      // If backend supports tiers in the same payload, uncomment above.
+      const parsed = newProductCommerceSchema.safeParse({ ...commerce, sellingUnit: unitOfMeasure });
+      if (!parsed.success) throw new Error(parsed.error.issues[0]?.message || "Check the selling rules");
+      const price = Number(sellingPrice), cost = Number(costPrice);
+      if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(cost) || cost < 0 || [price, cost].some((amount) => Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-6)) throw new Error("Enter valid prices with at most two decimal places");
+      const { fractionalEnabled, sellingUnit, decimalPrecision, minimumSaleQuantity, quantityIncrement, suggestedDollarAmounts, suggestedQuantities } = parsed.data;
+      const commerceConfig = { sellingUnit, decimalPrecision, minimumSaleQuantity, quantityIncrement, suggestedDollarAmounts, suggestedQuantities };
+      await createProduct({ sku: sku.trim(), productName: productName.trim(), category, description: description || undefined, sellingPriceCents: Math.round(price * 100), unitCostCents: Math.round(cost * 100), reorderLevelGrams: Number(minStock), allowFractionalWeight: fractionalEnabled, commerceConfig, initialQuantity: Number(stockQuantity || "0") });
 
       Alert.alert("Success", "Product added successfully", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      console.error(error);
       Alert.alert("Error", error.message || "Failed to add product");
     } finally {
       setSaving(false);
@@ -257,7 +232,7 @@ export default function AddProductScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
           {/* Web Onboarding Recommendation Tip */}
           <View
             accessible={true}
@@ -333,8 +308,8 @@ export default function AddProductScreen() {
             </View>
 
             {renderLabel(
-              "SKU (Optional)",
-              false,
+              "SKU",
+              true,
               "SKU",
               "Stock Keeping Unit - a unique barcode or code ID. Tap to type or scan a barcode to assign."
             )}
@@ -402,24 +377,14 @@ export default function AddProductScreen() {
               </View>
 
               <View style={{ flex: 1 }}>
-                {renderLabel(
-                  `Initial Stock (${unitOfMeasure})`,
-                  false,
-                  "Initial Stock",
-                  "The initial quantity currently available in physical inventory to start selling."
-                )}
-                <TextInput
-                  style={styles.input}
-                  placeholder="0.00"
-                  keyboardType="decimal-pad"
-                  value={stockQuantity}
-                  onChangeText={setStockQuantity}
-                  placeholderTextColor={COLORS.textMuted}
-                />
+                {renderLabel(`Initial Stock (${unitOfMeasure})`)}
+                <TextInput accessibilityLabel="Initial stock" style={styles.input} keyboardType="decimal-pad" placeholder="0" placeholderTextColor={COLORS.textMuted} value={stockQuantity} onChangeText={setStockQuantity} />
+                <Text style={{ color: COLORS.textSecondary }}>Starting stock is recorded with the unit cost above. Receive later stock through inventory intake.</Text>
               </View>
             </View>
           </View>
 
+          <FractionalProductFields value={{ ...commerce, sellingUnit: unitOfMeasure }} onChange={setCommerce} />
           {/* Pricing */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
@@ -576,7 +541,7 @@ export default function AddProductScreen() {
               <View style={{ marginTop: SPACING.md }}>
                 <View style={[styles.tierHeader, { marginBottom: 8 }]}>
                   {renderLabel(
-                    "Tiered Pricing (Bulk)",
+                    "Bulk pricing preview — not saved here",
                     false,
                     "Tiered Pricing",
                     "Add discount tiers for larger weight purchases. E.g., setting 3.5g at a lower $/g rate encourages customers to buy more."

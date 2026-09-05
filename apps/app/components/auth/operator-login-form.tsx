@@ -98,7 +98,7 @@ export function OperatorLoginForm() {
       if (result.status === "complete" && result.createdSessionId) {
         await recordSuccess();
         await setActive?.({ session: result.createdSessionId });
-        router.replace("/dashboard");
+        router.replace("/pos/sale");
         router.refresh();
         return;
       }

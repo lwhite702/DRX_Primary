@@ -42,8 +42,8 @@ describe("critical cross-surface route contracts", () => {
   it("keeps the mobile POS entry point connected to inventory and checkout", () => {
     const page = source("apps/mobile/app/(tabs)/index.tsx");
 
-    expect(page).toContain("getProducts");
-    expect(page).toContain("createSale");
-    expect(page).toContain("useCartStore");
+    expect(page).toContain("api.products.listProducts");
+    expect(page).toContain("api.checkout.processCheckout");
+    expect(page).toContain("queueSale");
   });
 });

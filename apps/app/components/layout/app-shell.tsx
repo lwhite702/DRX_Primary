@@ -7,6 +7,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { Footer } from "@/components/layout/footer";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { NativeAppBanner } from "@/components/layout/native-app-banner";
+import { PWAUpdatePrompt } from "@/components/pwa/pwa-update-prompt";
 import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 const publicRoutes = ["/login", "/privacy", "/terms", "/accessibility"];
@@ -21,11 +23,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-dvh flex-col bg-background">
       <div className="flex flex-1 min-w-0 md:p-4">
         <div className="flex min-w-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-border md:bg-muted">
           <div className="hidden self-stretch md:block">
-          <Sidebar />
+            <Sidebar />
           </div>
 
           <main className="flex min-w-0 flex-1 flex-col bg-background md:bg-background/80">
@@ -35,9 +37,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             ) : null}
             <TopNav />
+            <NativeAppBanner />
             <div
               id="main-content"
-              className="min-w-0 flex-1 overflow-auto pb-20 md:pb-0 safe-bottom"
+              className="min-w-0 flex-1 overflow-auto pb-24 md:pb-0 safe-bottom route-content-transition"
             >
               {children}
             </div>
@@ -52,6 +55,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="md:hidden">
         <BottomNav />
       </div>
+
+      <PWAUpdatePrompt />
     </div>
   );
 }

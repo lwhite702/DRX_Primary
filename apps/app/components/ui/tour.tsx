@@ -177,41 +177,41 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
           aria-labelledby={titleId}
           aria-describedby={descriptionId}
           side={step.position ?? "bottom"}
-          sideOffset={12}
+          sideOffset={14}
           collisionPadding={16}
           avoidCollisions
           sticky="always"
           hideWhenDetached
           updatePositionStrategy="always"
-          className="z-50 w-[min(22rem,calc(100vw-2rem))] border-primary p-0 shadow-2xl"
+          className="z-50 w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-primary/50 bg-[#121212] p-1 text-foreground shadow-2xl"
           onOpenAutoFocus={(event) => {
             event.preventDefault();
             nextButtonRef.current?.focus();
           }}
           onCloseAutoFocus={(event) => event.preventDefault()}
         >
-          <CardHeader className="pb-2">
-            <CardTitle id={titleId} className="flex items-center justify-between gap-4 text-base">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle id={titleId} className="flex items-center justify-between gap-4 text-base font-bold text-white">
               <span>{step.title}</span>
-              <span className="shrink-0 text-xs font-normal text-muted-foreground">
+              <span className="shrink-0 text-xs font-mono text-primary font-semibold">
                 {currentStepIndex + 1} / {steps.length}
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent id={descriptionId} className="text-sm text-muted-foreground">
+          <CardContent id={descriptionId} className="p-4 pt-1 pb-3 text-sm leading-relaxed text-[#C7C7C7]">
             {step.description}
           </CardContent>
-          <CardFooter className="flex items-center justify-between gap-2 pt-0">
-            <Button variant="ghost" size="sm" onClick={finishTour}>
+          <CardFooter className="flex items-center justify-between gap-2 p-4 pt-1">
+            <Button variant="ghost" size="sm" onClick={finishTour} className="text-xs text-muted-foreground hover:text-white">
               Skip tour
             </Button>
             <div className="flex items-center gap-2">
               {currentStepIndex > 0 ? (
-                <Button variant="outline" size="sm" onClick={handleBack}>
+                <Button variant="outline" size="sm" onClick={handleBack} className="text-xs">
                   Back
                 </Button>
               ) : null}
-              <Button ref={nextButtonRef} size="sm" onClick={handleNext}>
+              <Button ref={nextButtonRef} size="sm" onClick={handleNext} className="bg-primary font-bold text-black hover:bg-primary/90 text-xs">
                 {currentStepIndex === steps.length - 1 ? "Finish" : "Next"}
               </Button>
             </div>

@@ -76,15 +76,35 @@ struct AppConfigurationTests {
     }
 
     @Test
-    func requiresTelemetryForProduction() {
-        #expect(throws: ConfigurationError.missingOrInvalid("SENTRY_DSN")) {
-            try AppConfiguration(info: [
-                "DRX_APP_ENVIRONMENT": "production",
-                "CLERK_PUBLISHABLE_KEY": "pk_live_example",
-                "DRX_API_BASE_URL": "https://www.deelrxcrm.app",
-                "DRX_CONVEX_URL": "https://brainy-mouse-884.convex.cloud"
-            ])
-        }
+    func allowsProductionLaunchWithTelemetryMissing() throws {
+        let configuration = try AppConfiguration(info: [
+            "DRX_APP_ENVIRONMENT": "production",
+            "CLERK_PUBLISHABLE_KEY": "pk_live_example",
+            "DRX_API_BASE_URL": "https://www.deelrxcrm.app",
+            "DRX_CONVEX_URL": "https://brainy-mouse-884.convex.cloud"
+        ])
+
+        #expect(configuration.sentryDSN == nil)
+        #expect(configuration.postHogAPIKey == nil)
+        #expect(configuration.postHogHost == nil)
+    }
+
+    @Test
+    func disablesMalformedOrPlaceholderTelemetry() throws {
+        let configuration = try AppConfiguration(info: [
+            "DRX_APP_ENVIRONMENT": "production",
+            "CLERK_PUBLISHABLE_KEY": "pk_live_example",
+            "DRX_API_BASE_URL": "https://www.deelrxcrm.app",
+            "DRX_CONVEX_URL": "https://brainy-mouse-884.convex.cloud",
+            "SENTRY_DSN": "$(SENTRY_DSN)",
+            "POSTHOG_API_KEY": "DISABLED",
+            "POSTHOG_HOST": "not-a-valid-url"
+        ])
+
+        #expect(configuration.sentryDSN == nil)
+        #expect(configuration.postHogAPIKey == nil)
+        #expect(configuration.postHogHost == nil)
+        #expect(configuration.distributionChannel == "testflight")
     }
 
     @Test

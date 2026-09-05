@@ -5,6 +5,7 @@ export default defineSchema({
   // Businesses / Tenants
   businesses: defineTable({
     clerkOrgId: v.optional(v.string()),
+    legacyPrismaBusinessId: v.optional(v.string()),
     name: v.string(),
     businessType: v.optional(v.string()),
     ownerId: v.string(), // clerkUserId or user id
@@ -16,6 +17,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_clerkOrgId", ["clerkOrgId"])
+    .index("by_legacyPrismaBusinessId", ["legacyPrismaBusinessId"])
     .index("by_ownerId", ["ownerId"]),
 
   // Business Settings
@@ -24,6 +26,22 @@ export default defineSchema({
     posManagerPin: v.optional(v.string()),
     themePreference: v.optional(v.string()),
     settingsData: v.optional(v.string()), // JSON configuration
+    loyaltyCombinationPolicy: v.optional(
+      v.union(v.literal("stack"), v.literal("best_only")),
+    ),
+    loyaltyTiers: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          minimumSpendCents: v.number(),
+          discountRateBps: v.number(),
+        }),
+      ),
+    ),
+    deliveryFeeTaxable: v.optional(v.boolean()),
+    deliveryDispatchSlaMinutes: v.optional(v.number()),
+    deliveryManagerEscalationMinutes: v.optional(v.number()),
+    deliveryManagerNotificationUserIds: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_businessId", ["businessId"]),
@@ -72,21 +90,54 @@ export default defineSchema({
   // Products Catalog
   products: defineTable({
     businessId: v.id("businesses"),
+    legacyPrismaId: v.optional(v.string()),
     sku: v.string(),
     productName: v.string(),
     description: v.optional(v.string()),
     category: v.optional(v.string()),
     sellingPriceCents: v.number(), // Integer cents
     unitCostCents: v.number(), // Integer cents
+    isTaxable: v.optional(v.boolean()),
     quantityOnHandGrams: v.number(), // Weight in grams or unit count
     reorderLevelGrams: v.number(),
     allowFractionalWeight: v.boolean(),
+    sellingUnit: v.optional(v.string()),
+    quantityPrecision: v.optional(v.number()),
+    minimumSaleQuantity: v.optional(v.number()),
+    quantityIncrement: v.optional(v.number()),
+    suggestedQuantityPresets: v.optional(v.array(v.number())),
+    suggestedDollarPresetsCents: v.optional(v.array(v.number())),
+    bulkPriceTiers: v.optional(
+      v.array(
+        v.object({
+          minimumQuantity: v.number(),
+          unitPriceCents: v.number(),
+        }),
+      ),
+    ),
     isActive: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_legacyPrismaId", [
+      "businessId",
+      "legacyPrismaId",
+    ])
     .index("by_businessId_and_sku", ["businessId", "sku"]),
+
+  manualLinePolicies: defineTable({
+    businessId: v.id("businesses"),
+    nameKey: v.string(),
+    name: v.string(),
+    isTaxable: v.boolean(),
+    unitCostCents: v.optional(v.number()),
+    isActive: v.boolean(),
+    updatedBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_businessId_and_nameKey", ["businessId", "nameKey"]),
 
   // Inventory Intakes
   inventoryIntakes: defineTable({
@@ -125,11 +176,13 @@ export default defineSchema({
   // Customers
   customers: defineTable({
     businessId: v.id("businesses"),
+    legacyPrismaId: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
     email: v.optional(v.string()),
     totalPurchasesCents: v.number(),
+    loyaltyEligibleSpendCents: v.optional(v.number()),
     totalCreditUsedCents: v.number(),
     creditLimitCents: v.number(),
     purchaseCount: v.number(),
@@ -140,6 +193,10 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_legacyPrismaId", [
+      "businessId",
+      "legacyPrismaId",
+    ])
     .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
 
   // Sales Orders (Financial Ledger)
@@ -149,26 +206,57 @@ export default defineSchema({
     orderNumber: v.string(),
     orderStatus: v.string(), // "completed" | "pending" | "cancelled" | "refunded"
     subtotalCents: v.number(),
+    merchandiseSubtotalCents: v.optional(v.number()),
+    discountCents: v.optional(v.number()),
+    merchandiseRevenueCents: v.optional(v.number()),
+    deliveryRevenueCents: v.optional(v.number()),
+    vendorDeliveryExpenseCents: v.optional(v.number()),
+    deliveryTaxCents: v.optional(v.number()),
+    merchandiseTaxCents: v.optional(v.number()),
+    loyaltyEligibleSpendCents: v.optional(v.number()),
+    cogsCents: v.optional(v.number()),
+    taxableSubtotalCents: v.optional(v.number()),
     taxAmountCents: v.number(),
     totalAmountCents: v.number(),
     amountPaidCents: v.number(),
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
+    checkoutFingerprint: v.optional(v.string()),
     createdBy: v.string(),
+    offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
+    offlineDeviceId: v.optional(v.string()),
+    occurredAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_orderStatus_and_createdAt", [
+      "businessId",
+      "orderStatus",
+      "createdAt",
+    ])
     .index("by_businessId_and_orderNumber", ["businessId", "orderNumber"])
     .index("by_customerId", ["customerId"]),
 
   // Sales Line Items
   salesLineItems: defineTable({
     saleId: v.id("sales"),
-    productId: v.id("products"),
+    productId: v.optional(v.id("products")),
+    source: v.optional(
+      v.union(v.literal("inventory"), v.literal("manual")),
+    ),
+    manualLineId: v.optional(v.string()),
+    manualName: v.optional(v.string()),
+    isTaxable: v.optional(v.boolean()),
+    manualPolicyId: v.optional(v.id("manualLinePolicies")),
+    manualCostKnown: v.optional(v.boolean()),
     quantityGrams: v.number(),
     unitPriceCents: v.number(),
     lineTotalCents: v.number(),
+    baseUnitPriceCents: v.optional(v.number()),
+    baseLineTotalCents: v.optional(v.number()),
+    bulkDiscountCents: v.optional(v.number()),
+    loyaltyDiscountCents: v.optional(v.number()),
     unitCostCents: v.number(),
     createdAt: v.number(),
   }).index("by_saleId", ["saleId"]),
@@ -187,6 +275,188 @@ export default defineSchema({
     .index("by_saleId", ["saleId"])
     .index("by_lineItemId", ["lineItemId"])
     .index("by_batchId", ["batchId"]),
+
+  // Delivery fulfillment is linked to an immutable completed sale. Customer
+  // addresses are always encrypted before this record is persisted.
+  deliveries: defineTable({
+    businessId: v.id("businesses"),
+    saleId: v.id("sales"),
+    customerId: v.optional(v.id("customers")),
+    assignedToUserId: v.optional(v.string()),
+    addressEncrypted: v.string(),
+    addressEncryptionVersion: v.number(),
+    vendorFeeCents: v.number(),
+    customerFeeCents: v.number(),
+    deliveryTaxCents: v.number(),
+    chargeCustomer: v.boolean(),
+    status: v.union(
+      v.literal("ready_for_dispatch"),
+      v.literal("uber_ordered"),
+      v.literal("handed_off"),
+      v.literal("delivered"),
+      v.literal("canceled"),
+    ),
+    dispatchDueAt: v.number(),
+    estimatedArrivalAt: v.optional(v.number()),
+    handedOffAt: v.optional(v.number()),
+    deliveredAt: v.optional(v.number()),
+    canceledAt: v.optional(v.number()),
+    cancellationReason: v.optional(v.string()),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_saleId", ["saleId"])
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_status", ["businessId", "status"]),
+
+  deliveryEvents: defineTable({
+    businessId: v.id("businesses"),
+    deliveryId: v.id("deliveries"),
+    actorUserId: v.string(),
+    type: v.union(
+      v.literal("created"),
+      v.literal("assigned"),
+      v.literal("status_changed"),
+      v.literal("reminder_emitted"),
+      v.literal("financial_adjustment_recorded"),
+      v.literal("address_accessed"),
+    ),
+    fromStatus: v.optional(v.string()),
+    toStatus: v.optional(v.string()),
+    metadata: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_deliveryId", ["deliveryId"])
+    .index("by_businessId", ["businessId"]),
+
+  deliveryFinancialAdjustments: defineTable({
+    businessId: v.id("businesses"),
+    deliveryId: v.id("deliveries"),
+    saleId: v.id("sales"),
+    kind: v.union(
+      v.literal("customer_fee_refund"),
+      v.literal("vendor_credit"),
+      v.literal("delivery_tax_refund"),
+    ),
+    idempotencyKey: v.string(),
+    amountCents: v.number(),
+    reason: v.string(),
+    createdBy: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_deliveryId", ["deliveryId"])
+    .index("by_deliveryId_and_idempotencyKey", [
+      "deliveryId",
+      "idempotencyKey",
+    ])
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_createdAt", ["businessId", "createdAt"]),
+
+  deliveryNotifications: defineTable({
+    businessId: v.id("businesses"),
+    deliveryId: v.id("deliveries"),
+    targetUserId: v.optional(v.string()),
+    targetRole: v.optional(v.literal("manager")),
+    kind: v.union(
+      v.literal("dispatch_overdue"),
+      v.literal("eta_warning"),
+      v.literal("eta_due"),
+      v.literal("overdue"),
+      v.literal("manager_escalation"),
+      v.literal("assignment_handoff"),
+    ),
+    message: v.string(),
+    scheduledFor: v.number(),
+    createdAt: v.number(),
+    acknowledgedAt: v.optional(v.number()),
+  })
+    .index("by_deliveryId", ["deliveryId"])
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_targetUserId_and_acknowledgedAt", [
+      "businessId",
+      "targetUserId",
+      "acknowledgedAt",
+    ])
+    .index("by_businessId_and_targetRole_and_acknowledgedAt", [
+      "businessId",
+      "targetRole",
+      "acknowledgedAt",
+    ])
+    .index("by_deliveryId_and_targetUserId_and_acknowledgedAt", [
+      "deliveryId",
+      "targetUserId",
+      "acknowledgedAt",
+    ]),
+
+  devicePushTokens: defineTable({
+    businessId: v.id("businesses"),
+    userId: v.string(),
+    deviceId: v.string(),
+    platform: v.union(v.literal("ios"), v.literal("android")),
+    provider: v.union(
+      v.literal("apns"),
+      v.literal("expo"),
+      v.literal("fcm"),
+    ),
+    tokenEncrypted: v.string(),
+    tokenEncryptionVersion: v.number(),
+    tokenHash: v.string(),
+    status: v.union(v.literal("active"), v.literal("revoked")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_businessId_and_userId_and_deviceId_and_provider", [
+      "businessId",
+      "userId",
+      "deviceId",
+      "provider",
+    ])
+    .index("by_businessId_and_userId_and_status", [
+      "businessId",
+      "userId",
+      "status",
+    ])
+    .index("by_provider_and_tokenHash", ["provider", "tokenHash"]),
+
+  deliveryPushOutbox: defineTable({
+    businessId: v.id("businesses"),
+    notificationId: v.id("deliveryNotifications"),
+    deliveryId: v.id("deliveries"),
+    deviceTokenId: v.id("devicePushTokens"),
+    targetUserId: v.string(),
+    provider: v.union(
+      v.literal("apns"),
+      v.literal("expo"),
+      v.literal("fcm"),
+    ),
+    payloadJson: v.string(),
+    status: v.union(
+      v.literal("queued"),
+      v.literal("dispatching"),
+      v.literal("sent"),
+      v.literal("retry_scheduled"),
+      v.literal("dead_letter"),
+      v.literal("canceled"),
+    ),
+    attempts: v.number(),
+    nextAttemptAt: v.number(),
+    lastErrorCode: v.optional(v.string()),
+    providerMessageId: v.optional(v.string()),
+    acknowledgedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    sentAt: v.optional(v.number()),
+    leaseExpiresAt: v.optional(v.number()),
+  })
+    .index("by_businessId_and_targetUserId", [
+      "businessId",
+      "targetUserId",
+    ])
+    .index("by_status_and_nextAttemptAt", ["status", "nextAttemptAt"])
+    .index("by_notificationId", ["notificationId"])
+    .index("by_deviceTokenId", ["deviceTokenId"]),
 
   // Immutable Audit Events
   auditEvents: defineTable({
@@ -209,4 +479,104 @@ export default defineSchema({
     resultJson: v.string(),
     createdAt: v.number(),
   }).index("by_businessId_and_key", ["businessId", "key"]),
+
+  // Owner-controlled offline checkout policy. There is deliberately no
+  // application fallback: offline checkout stays disabled until an owner
+  // configures every risk limit.
+  offlinePolicies: defineTable({
+    businessId: v.id("businesses"),
+    enabled: v.boolean(),
+    authorizationWindowMinutes: v.number(),
+    perSaleLimitCents: v.number(),
+    perDeviceSessionLimitCents: v.number(),
+    offlineCreditLimitCents: v.number(),
+    maxQueuedSales: v.number(),
+    version: v.number(),
+    updatedBy: v.string(),
+    updatedAt: v.number(),
+  }).index("by_businessId", ["businessId"]),
+
+  registeredDevices: defineTable({
+    businessId: v.id("businesses"),
+    deviceId: v.string(),
+    displayName: v.optional(v.string()),
+    platform: v.literal("android"),
+    appVersion: v.string(),
+    status: v.union(v.literal("active"), v.literal("revoked")),
+    registeredBy: v.string(),
+    createdAt: v.number(),
+    lastSeenAt: v.number(),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_deviceId", ["businessId", "deviceId"]),
+
+  offlineAuthorizations: defineTable({
+    businessId: v.id("businesses"),
+    deviceRecordId: v.id("registeredDevices"),
+    deviceId: v.string(),
+    userId: v.string(),
+    policyId: v.id("offlinePolicies"),
+    policyVersion: v.number(),
+    issuedAt: v.number(),
+    expiresAt: v.number(),
+    perSaleLimitCents: v.number(),
+    sessionLimitCents: v.number(),
+    offlineCreditLimitCents: v.number(),
+    maxQueuedSales: v.number(),
+    usedCents: v.number(),
+    usedSales: v.number(),
+    collectTax: v.boolean(),
+    taxRateBps: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("revoked"),
+      v.literal("expired"),
+    ),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_businessId_and_deviceId", ["businessId", "deviceId"])
+    .index("by_businessId_and_userId", ["businessId", "userId"]),
+
+  offlineSaleSubmissions: defineTable({
+    businessId: v.id("businesses"),
+    authorizationId: v.optional(v.id("offlineAuthorizations")),
+    deviceId: v.string(),
+    userId: v.string(),
+    idempotencyKey: v.string(),
+    sequence: v.number(),
+    occurredAt: v.number(),
+    paymentMethod: v.union(v.literal("cash"), v.literal("credit")),
+    totalAmountCents: v.number(),
+    itemCount: v.number(),
+    status: v.union(v.literal("committed"), v.literal("quarantined")),
+    saleId: v.optional(v.id("sales")),
+    quarantineReason: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_businessId_and_idempotencyKey", ["businessId", "idempotencyKey"])
+    .index("by_businessId_and_status", ["businessId", "status"]),
+
+  reconciliationCases: defineTable({
+    businessId: v.id("businesses"),
+    saleId: v.id("sales"),
+    kind: v.union(
+      v.literal("inventory_shortfall"),
+      v.literal("credit_limit_exceeded"),
+      v.literal("stale_price"),
+      v.literal("clock_skew"),
+    ),
+    status: v.union(v.literal("open"), v.literal("resolved")),
+    productId: v.optional(v.id("products")),
+    customerId: v.optional(v.id("customers")),
+    expectedValue: v.optional(v.number()),
+    actualValue: v.optional(v.number()),
+    summary: v.string(),
+    createdBy: v.string(),
+    resolvedBy: v.optional(v.string()),
+    resolutionReason: v.optional(v.string()),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_businessId_and_status", ["businessId", "status"])
+    .index("by_saleId", ["saleId"]),
 });

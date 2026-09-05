@@ -22,11 +22,12 @@ struct SessionStoreTests {
 
     private struct StubProvisioningClient: ProvisioningClient {
         let response: ProvisioningStatusResponse
+        var onboardingResponse = BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
 
         func status() async throws -> ProvisioningStatusResponse { response }
 
         func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-            BusinessOnboardingResponse(status: "ONBOARDING_SUCCESS")
+            onboardingResponse
         }
     }
 
@@ -76,6 +77,54 @@ struct SessionStoreTests {
 
         #expect(environment.rootState == .ready)
         #expect(environment.session.operatorSession == readySession)
+    }
+
+    @Test
+    func onboardingRestoresMutationSessionBeforeOpeningWorkspace() async {
+        let configuration = try! AppConfiguration(info: [
+            "DRX_APP_ENVIRONMENT": "development",
+            "CLERK_PUBLISHABLE_KEY": "pk_test_unit",
+            "DRX_API_BASE_URL": "https://example.test",
+            "DRX_CONVEX_URL": "https://example.convex.cloud",
+        ])
+        let environment = AppEnvironment(
+            session: SessionStore(),
+            telemetry: TelemetryService(configuration: configuration),
+            configuration: configuration,
+            provisioningClient: StubProvisioningClient(
+                response: ProvisioningStatusResponse(status: .needsBusinessOnboarding, session: nil),
+                onboardingResponse: BusinessOnboardingResponse(
+                    status: "ONBOARDING_SUCCESS",
+                    session: readySession
+                )
+            )
+        )
+
+        let completed = await environment.completeOnboarding(.init(
+            name: "Test Operator",
+            businessName: "Deelrx Store",
+            businessType: "retail",
+            currency: "USD",
+            timezone: "America/New_York",
+            collectTax: true,
+            taxRateBps: 825,
+            locationName: "Main Location",
+            city: nil,
+            region: nil,
+            country: "US",
+            tracksInventory: true,
+            invitedUserEmail: nil,
+            invitedUserRole: nil,
+            invitationToken: nil
+        ))
+
+        #expect(completed)
+        #expect(environment.rootState == .needsOnboarding)
+        #expect(environment.session.operatorSession == readySession)
+
+        await environment.openWorkspace(at: .inventory)
+        #expect(environment.rootState == .ready)
+        #expect(environment.nextWorkspaceTab == .inventory)
     }
 
     @Test

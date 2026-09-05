@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,12 +30,6 @@ const fallbackLinks: Record<FeaturebaseView, string> = {
   changelog: featurebaseChangelogUrl,
   roadmap: featurebaseRoadmapUrl,
 };
-
-const featurebaseScriptProps = {
-  src: "https://do.featurebase.app/js/sdk.js",
-  id: "featurebase-sdk",
-  strategy: "afterInteractive" as const,
-} as ComponentProps<typeof Script>;
 
 function viewFromPathname(pathname: string): FeaturebaseView {
   if (pathname.includes("/roadmap")) return "roadmap";
@@ -89,7 +83,7 @@ export function FeaturebaseHub() {
 
   return (
     <section id="updates" className="mx-auto w-full max-w-6xl px-6 pb-20">
-      <Script {...featurebaseScriptProps} />
+      <Script src="https://do.featurebase.app/js/sdk.js" id="featurebase-sdk" strategy="afterInteractive" />
 
       <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-[16px] md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">

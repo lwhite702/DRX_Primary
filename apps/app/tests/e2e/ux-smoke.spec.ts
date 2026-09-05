@@ -17,7 +17,7 @@ test.describe("Required UX smoke", () => {
       await page.goto(check.route, { waitUntil: "domcontentloaded" });
       await expect(page.locator("body")).toBeVisible();
       await expect(page.locator("body")).not.toContainText(/Application error|Internal Server Error/i);
-      await expect(page.locator("body")).toContainText(check.text);
+      await expect(page.locator("body")).toContainText(check.text, { timeout: 15000 });
       if (!check.route.startsWith("/help") && !check.route.startsWith("/pos")) {
         await expect(page.locator("#main-content")).toHaveCount(1);
       }

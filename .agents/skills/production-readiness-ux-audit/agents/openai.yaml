@@ -1,0 +1,4 @@
+interface:
+  display_name: "Production readiness UX audit"
+  short_description: "Audit release-candidate UX readiness"
+  default_prompt: "Use $production-readiness-ux-audit to audit this release candidate and produce a prioritized UX readiness backlog."

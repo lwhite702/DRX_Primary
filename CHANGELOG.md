@@ -7,30 +7,156 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Mobile internal testing companion**: Added a private-index guided web checklist for authorized iOS and Android testers with made-up-data safeguards, a broad phone and tablet picker, a dedicated first-time onboarding test, step-by-step transaction help, responsive progress controls, automatic local save-and-return, and local-only copy/download reporting. Every tester is also guided through a required phone-browser parity pass on the same device. Refreshed the public Resources page around current app, testing, help, privacy, and terms destinations (WRE-49).
+
+- **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Web/backend deployed on 2026-08-31; authenticated cross-client/device verification and native distribution remain pending.
+
 ### Changed
 
+- **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.
+
+- WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
+- WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.
+- WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. The production candidate remains subject to exact-SHA deployment and credentialed role-boundary verification.
+
+- **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
+
+- **Patch release preparation**: Synchronized product metadata to 0.7.1 for the approved WRE-89 product-dialog deployment. Native build identifiers are unchanged; store distribution and full cross-platform acceptance are not implied.
+
+- **Release preparation**: Synchronized product metadata to 0.7.0 for the approved WRE-89 web/backend deployment. Native build identifiers are unchanged; store distribution and cross-platform acceptance are not implied.
+
+- **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
+
+### Fixed
+
+- **Business approvals (WRE-87):** Keep all pending inventory approvals visible independently of the recent completed-history limit, with both reads scoped to the authorized business.
+- **Business page loading (WRE-87):** Remove nested brand links that caused hydration errors and keep route content available while the optional onboarding interface loads.
+- **Admin access (WRE-83):** Replaced the nonexistent business-role model lookup with the supported role store and avoided unnecessary business lookups for existing platform administrators.
+- **Reporting correctness (WRE-83):** Include active transitional web sales alongside canonical commerce, preserve source identity and mirrored-order deduplication, and label partial reports and exports when a ledger cannot be read. Report availability does not imply complete accounting coverage.
+- **Checkout retries (WRE-83):** Restore the completed web-sale lookup before canonical checkout so configuration changes cannot replay an already completed web sale into the canonical ledger.
+- **Checkout error privacy (WRE-83):** Return a fixed retry-verification error without exposing database/provider details when the completed-sale lookup fails.
+- **Inventory test gate (WRE-80):** Initialize inventory route fixtures inside the hoisted mock factory so the regression suite can execute.
+
+- **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
+
+- **Login field visibility**: Raised the unfocused Clerk login-field boundary contrast above 3:1 and aligned the higher-priority global Clerk overrides with the shared auth theme, strengthening field and placeholder separation from the surrounding dark panel so email and password boxes remain visible across display conditions (WRE-98).
+
+- **Product dialog usability**: New products with a generated SKU use Add product copy instead of Edit product. The expanded fractional-selling form scrolls within the viewport while its header and Close control remain visible; Cancel, Close, and Escape dismiss without reopening from the onboarding link (WRE-89).
+
+- **Commerce authentication compatibility**: Web commerce settings, fractional checkout, and canonical reporting use the current Clerk/Convex session-token integration while retaining support for legacy JWT templates. Token-provider failures fail closed without logging provider details (WRE-84).
+- **Commerce settings access and recovery**: Fractional-selling, bulk-pricing, loyalty, and delivery configuration now use the selected business’s existing owner and role permissions. Failed settings loads show an actionable error and a read-only retry instead of an endless loading message (WRE-84).
+- **Commerce tenant safety**: Disabled businesses and mismatched web/mobile business contexts are denied before settings reads or writes; saves revalidate business access before changing canonical settings (WRE-84).
+
+## [0.6.12] - 2026-08-30
+
+### Fixed
+
+- **Single Ledger Commerce & Reporting Architecture**: Transitioned `/api/reports/commerce-delivery` to single authoritative ledger execution with direct local store fallback, removing the legacy dual-read requirement and eliminating the 503 "Combined reporting is unavailable until both canonical and legacy ledgers can be read" failure mode.
+- **Unified POS Checkout Pipeline**: Removed dual-ledger cross-checking in `checkoutCanonicalCommerce` to establish single-ledger transactions across all checkout modes.
+
+
+### Fixed
+
+- **Brand Discipline & Contact Alignment**: Replaced forbidden `DRX CRM` brand reference with `Deelrx CRM` on public contact page and codified strict naming rules across brand governance.
+- **Brand Voice & Pre-Release Posture**: Updated canonical brand strategy to codify `Deelrx CRM` / `DRX` split, pre-release beta status, and bounded marketing copy rules.
+
+
+### Fixed
+
+- **Native iOS Release Compilation**: Resolved `fullName` internal accessibility error in `DashboardView.swift` by implementing a public `formattedFullName` extension over `firstName` and `lastName` on ClerkKit `User`.
+
+
+### Added
+
+- **Mintlify Documentation Hub**: Established canonical documentation hub at `https://docs.deelrxcrm.com` covering delivery fulfillment, fractional/bulk pricing, native mobile apps, and operator runbooks. Added `pnpm test:docs:mintlify` verifying 22 documentation pages (WRE-59).
+- **Native iOS Dashboard Identity & Switching**: Added `IdentityHeaderCard` displaying operator name, primary role badge, and active business name, with `UserIdentitySheet` for secure operator sign out and cache flushing (WRE-36).
+- **Support & Communication Alignment**: Preserved Help Scout (`support@deelrxcrm.com` / inbox 372443) for email/contact support across web, mobile, and iOS, with Loops dedicated strictly to marketing communications.
+- **Mobile Touch & PWA Resilience**: Hardened 44x44px touch targets, sticky mobile POS cart bar, and clean PWA service worker lifecycle updates (WRE-77).
+
+## [0.6.8] - 2026-08-24
+
+### Fixed
+
+- **Quick POS Navigation & Store State**: Converted `PosLayoutShell` to direct static import and removed destructive sub-tree remounting in `AppShell` to preserve in-memory cart and register state during `/pos/sale` $\leftrightarrow$ `/pos/payment` route transitions.
+- **Quote Breakdown Resilience**: Added safe fallback parsing for `merchandiseTaxAmount`, `taxAmount`, `deliveryRevenue`, `deliveryTaxAmount`, and `vendorDeliveryExpense` in `QuickPosPaymentPage` to prevent render errors when optional quote fields are omitted.
+- **Monorepo Build and E2E Test Suite**: Configured Tailwind oxide and LightningCSS native bindings for isolated pnpm workspaces, defaulted Playwright web server to Webpack for deterministic compilation, and added marketing unit test configuration to exclude Playwright specs from Vitest runs.
+
+
+### Fixed
+
+- **Administration Access**: Updated Admin layout authorization to recognize business owners, administrators, and local bypass sessions with an explicit access-denied fallback rather than looping back to `/dashboard`.
+- **Tour Highlight & Popover Buffer**: Added outline offset buffer (`outline-offset: 6px`) to `.tour-target-highlight` to prevent clipping target text and enlarged Tour popover internal padding and typography.
+- **Credit Tab & Contrast**: Replaced un-themed light `bg-slate-50` containers and `bg-white` cards in `CreditExposureDashboard`, `AICreditPanel`, and Customer Detail Credit tab with high-contrast `#161616` dark theme cards and badges, eliminating white-on-white text.
+- **Navigation & Loading State Transitions**: Prevented Quick Sale and navigation item pop-in during async permission loading, and added fluid Apple-style route content transitions keyed to `pathname`.
+
+## [0.6.6] - 2026-08-23
+
+### Fixed
+
+- **Authentication & Clerk Input Legibility**: Enhanced input background contrast (`#1E1E1E`/`#242424`), distinct border styling, and high-visibility neon lime caret (`caret-color: #CCFF00`, `cursorColor`) across Web Clerk themes, global form inputs, auth visual fixtures, React Native mobile login/signup, and native SwiftUI theme tokens.
+
+## [0.6.5] - 2026-08-23
+
+### Fixed
+
+- **Expo SDK 54 & Metro Configuration**: Aligned `expo`, `expo-constants`, `expo-file-system`, `@types/react`, and `@sentry/react-native` versions across monorepo dependencies and pnpm overrides, deduplicated native modules, and preserved Expo default `watchFolders` in `metro.config.js`.
+
+## [0.6.4] - 2026-08-23
+
+### Fixed
+
+- **iOS TestFlight and Xcode Cloud Automation**: Hardened `ci_post_clone.sh`, `ci_pre_xcodebuild.sh`, and `ci_post_xcodebuild.sh` with root wrapper scripts, graceful Sentry token handling, fast Homebrew installs, and aligned Expo iOS bundle identifier `com.wrelik.drx` with EAS build profiles.
+
+## [0.6.3] - 2026-08-23
+
+### Fixed
+
+- **Quick POS Bootstrap Resilience**: Guarded `deliveryPolicy` and `creditPolicy` with optional chaining in `/pos/sale` page loader to prevent unhandled TypeError from aborting favorites rendering when policy payload fields are omitted.
+- **E2E Test Stability**: Added `test.setTimeout(60000)` and complete bootstrap mock schemas in `quick-pos-required.spec.ts` and `help-center-smoke.spec.ts` to accommodate cold server compilation on CI runners.
+
+## [0.6.2] - 2026-08-23
+
+### Fixed
+
+- **Build Tooling and Test Runner**: Aligned esbuild and platform binary dependencies for seamless Vitest unit test suite execution across macOS ARM64 environments.
+
+## [0.6.1] - 2026-08-23
+
+### Changed
+
+- **Release and Deployment Policy**: Established automated continuous deployment from `main` with unique versioning and monotonic build numbers on every push.
+
+### Fixed
+
+- **Web Offline Sync (WRE-74)**: Hardened `OfflineSyncManager` against IndexedDB connection lifecycle events (`onversionchange`, `onclose`, `InvalidStateError`) with automatic reconnection and retry.
+- **Root Layout Analytics (WRE-75)**: Removed unconfigured third-party Vexo analytics script from `RootLayout` resolving 400 Bad Network Call errors across web and iOS WKWebView.
+- **Sentry Client Extension Noise Filtering (WRE-76)**: Filtered browser extension `runtime.sendMessage()` disconnect and port closure rejections in Sentry client.
+- **iOS TestFlight Build Isolation**: Fixed Swift 6 actor isolation conformance on `DRXNotificationDelegate` and test bundle Foundation imports.
+
+## [0.6.0] - 2026-08-23
+
+### Added
+
+- **Release integrity (WRE-68)**: Added a model-invoked release-governance skill, six executable behavioral fixtures, exact SemVer and leading-`[Unreleased]` PR gates, repository-local CI dependency enforcement, safe release preparation and verification commands, and dry-run-first Featurebase projections.
+- **Fractional and value-based checkout (WRE-69, WRE-71, WRE-72, WRE-73)**: Added server-authoritative fractional quantities, reciprocal dollar/quantity entry, suggested presets, ordered bulk-price tiers, and spend-based loyalty with merchant-selected stack or best-benefit behavior across web, iOS, and Android.
+- **Delivery fulfillment (WRE-70, WRE-71, WRE-72, WRE-73)**: Added encrypted-address delivery checkout, atomic sale linkage, vendor-fee allocation and tax treatment, tenant-scoped operator queues, assignment and shift handoff, audited status events and address access, required Uber wait time, server-owned reminders and manager escalation, and durable Android reminder recovery.
+- **Delivery accounting and reporting (WRE-70, WRE-71)**: Added separate merchandise and delivery revenue, vendor delivery expense, delivery tax, discounts, COGS, capped customer-fee and delivery-tax refunds, vendor credits, and gross-profit reconciliation with a sanitized aggregate CSV export.
+
+### Changed
+
+- **Cross-client runtime hardening (WRE-65)**: Added the iOS launch/auth routing experience and accessible lime primary-button style, synchronized programmatic tab changes, removed duplicate web identity controls, and hardened credit, customer, inventory, report, realtime, feedback, and AI response handling.
 - **Pre-RC operator UX**: Simplified dashboard density, preserved the application shell during route changes, added domain-specific skeletons and non-blocking refresh status, and replaced automatic chunk reloads with an explicit recovery action.
 - **Runtime and observability**: Standardized local, CI, container, web, marketing, and mobile tooling on Node `22.23.1`; moved Sentry client setup to `instrumentation-client.ts` and disabled default PII and replay capture.
-- **Release Metadata**: Updated iOS marketing/build metadata to `MARKETING_VERSION=0.6.0-rc.1` and `CURRENT_PROJECT_VERSION=20` for TestFlight parity, and aligned release documentation references for the current release candidate.
+- **Release metadata**: Synchronized product-version surfaces to planned version `0.6.0` while preserving iOS build `31` as an independent source build number.
+- **Release-record correction**: Removed the unsupported `0.6.0-rc.1` release section and stale build-20 customer claims. Repository and provider evidence did not establish that candidate as a tagged or distributed release.
 - **TestFlight Pipeline Note**: Local archive export remains blocked on environments without loaded Apple account and distribution signing material; full TestFlight upload requires a logged-in Xcode account and valid team `L8R42BJ54K` signing assets.
 
 ### Fixed
 
+- **Feedback fallback**: All in-app bug-report entry points now open the Featurebase Help Center when the Sentry feedback widget is unavailable or fails to initialize.
 - **Quick POS Recovery**: Route complete sales through the canonical checkout API with idempotent retries and allow authenticated operators to exit when no manager PIN is configured.
-
-## [0.6.0-rc.1] - 2026-08-13
-
-### Added
-
-- **Convex POS Schema Extensions**: Added `pinCode` to `users` table, `deliveryFeeCents`, `discountAmountCents`, `isComp`, `voidReason`, and `refundReason` to `sales` table, and added `stockAdjustments` table for tracking inventory adjustments and shrink losses.
-- **POS Order Voids & Refunds Engine**: Created `apps/app/convex/refunds.ts` with `voidOrder` and `refundOrder` mutations, featuring transactional inventory stock restoration (product quantity and FIFO batch remaining quantity), customer credit/purchase totals rollback, and immutable audit logging.
-- **Stock Adjustments & Shrink Tracking**: Created `apps/app/convex/inventoryAdjustments.ts` with `createStockAdjustment` and `listStockAdjustments` for tracking inventory loss, damage, and recount adjustments.
-- **Checkout Support for Delivery & Comps**: Extended `apps/app/convex/checkout.ts` to support `deliveryFeeCents` and `isComp` flags.
-- **Financial Reporting Metrics**: Extended `apps/app/convex/reporting.ts` to compute Net Revenue, Cost of Goods Sold (COGS from `salesAllocations`), Gross Profit ($), Gross Margin (%), total delivery fees, and total shrink loss.
-
-### Fixed
-
-- **Native Workspace Provisioning**: Route Release builds to the production Convex deployment, restore the authenticated operator session from one authoritative workspace response, and surface privacy-safe recovery diagnostics instead of a generic workspace-not-found failure.
 
 ## [0.5.7] - 2026-07-22
 

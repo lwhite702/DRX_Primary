@@ -32,3 +32,34 @@ enum DRXRadius {
     static let card: CGFloat = 10
     static let panel: CGFloat = 14
 }
+
+struct DRXPrimaryButtonStyle: ButtonStyle {
+    let expandsToFillWidth: Bool
+
+    init(expandsToFillWidth: Bool = false) {
+        self.expandsToFillWidth = expandsToFillWidth
+    }
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(DRXPalette.onAccent)
+            .frame(maxWidth: expandsToFillWidth ? .infinity : nil)
+            .padding(.horizontal, DRXSpacing.lg)
+            .padding(.vertical, DRXSpacing.md)
+            .background(
+                DRXPalette.accent.opacity(configuration.isPressed ? 0.82 : 1),
+                in: RoundedRectangle(cornerRadius: DRXRadius.control)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: DRXRadius.control))
+    }
+}
+
+extension ButtonStyle where Self == DRXPrimaryButtonStyle {
+    static var drxPrimary: DRXPrimaryButtonStyle {
+        DRXPrimaryButtonStyle()
+    }
+
+    static var drxPrimaryFullWidth: DRXPrimaryButtonStyle {
+        DRXPrimaryButtonStyle(expandsToFillWidth: true)
+    }
+}

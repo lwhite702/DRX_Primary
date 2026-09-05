@@ -1,58 +1,58 @@
-# Numbers that matter
+---
+title: "Numbers That Matter"
+description: "Understanding your live daily sales totals, transaction counts, inventory alerts, and shift metrics."
+icon: "chart-line"
+---
 
-This page explains how to read the live metrics in **Dashboard** and **Operations Insights**.
+This guide explains how to read the live numbers on your **Dashboard** and **Operations Insights** screens to make smart decisions during your store shift.
 
 ## What this page is for
 
-Use this guide at shift start, mid-shift, and close to make quick decisions from current numbers instead of guesswork.
-
-This page is focused on route-accurate operator reading, not deep analyst reporting.
+Use this guide at the beginning, middle, and end of your shift to monitor sales volume, keep an eye on low-stock items, track pending supplier intakes, and manage store credit exposure.
 
 ## Before you start
 
-- **Recommended role**: Cashier, supervisor, manager, or owner based on route access.
-- **Routes used**:
-  - `/dashboard`
-  - `/insights` (Operations Insights)
-  - `/inventory`
-  - `/credit`
-- **Important check**:
-  - Make sure you are in the right business/workspace before trusting totals.
+- **Recommended role**: Cashier, Supervisor, Manager, or Store Owner.
+- **Key screens**:
+  - **Dashboard** (`/dashboard`): Real-time daily overview.
+  - **Operations Insights** (`/insights`): Detailed sales metrics, alert counts, and recent intake logs.
+  - **Inventory** (`/inventory`): Drill into specific low-stock products.
+  - **Credit** (`/credit`): Review store credit exposure.
+- **Workspace check**: Confirm your active store location name at the top of the screen to ensure metrics reflect the current physical store.
 
 ## Fast path
 
-1. **Start in Dashboard** (`/dashboard`).
-   - Confirm day trend is not flat due to wrong context.
-2. **Open Operations Insights** (`/insights`).
-   - Review today sales total and transaction count.
-   - Review average sale value.
-   - Review inventory alerts and pending intake count.
-3. **Check activity tiles**.
-   - Recent intakes
-   - Low-stock items
-4. **Cross-check when needed**.
-   - If alerts spike, open `/inventory` and `/inventory/intake`.
-   - If credit exposure looks high, open `/credit`.
-5. **Use reports route carefully**.
-   - `/reports` exists, but output remains minimal in current build.
+1. **Check the Dashboard at shift opening** (`/dashboard`):
+   - Review yesterday's closing totals and ensure today's counters start fresh.
+2. **Review live sales in Operations Insights** (`/insights`):
+   - **Today's Gross Sales**: Total dollar revenue collected today across all registers.
+   - **Transaction Count**: Total number of completed customer purchases today.
+   - **Average Sale Value (Basket Size)**: Average spend per customer order.
+3. **Monitor inventory alert cards**:
+   - **Low-Stock Alerts**: Count of items currently at or below their reorder point. Tap to view items that need shelf restocking.
+   - **Pending Intakes**: Supplier shipments received but not yet approved or added to active floor stock.
+4. **Mid-shift volume check**:
+   - If average sale value drops sharply or transactions slow down, check your product stock levels to ensure top sellers haven't run out.
+5. **Shift closing review**:
+   - Compare your end-of-day cash and card drawer receipts against the **Gross Sales** and **Tender Breakdown** numbers in Operations Insights.
 
 ## If blocked
 
-- **All zeros but store has activity**:
-  - Confirm correct date and business context.
-  - Confirm transactions actually completed.
-- **Low-stock count seems wrong**:
-  - Recheck reorder threshold on flagged products.
-  - Confirm recent intakes posted or approved.
-- **Pending intakes never drop**:
-  - Intake may require approval; confirm queue path and status handling.
-- **Credit risk seems high without clear cause**:
-  - Check recent extensions and payments in `/credit` before escalating.
+- **All metrics show $0 despite customer traffic**:
+  - Check that completed sales were properly closed out and not left open in draft carts.
+  - Confirm you are viewing the current store location.
+- **Low-stock alert count seems higher than actual shelves**:
+  - Open **Inventory** to check if reorder thresholds on certain items were set higher than necessary.
+  - Check if recent supplier deliveries are still waiting in the pending approval queue.
+- **Pending intake shipments never clear**:
+  - A manager needs to open **Receive Stock** (`/inventory/intake`) and tap **Approve Intake**.
+- **Credit exposure metric is unusually high**:
+  - Open **Credit** (`/credit`) to identify customers with overdue tabs or high outstanding balances.
 
 ## What is beta here
 
-- Reports depth and export-heavy reporting remain beta-limited.
-- Core dashboard and Operations Insights metrics are live.
+- Custom PDF export generation and multi-year forecasting charts are in preview testing.
+- Live gross revenue, transaction counts, average order values, low-stock alerts, and pending intake trackers are fully live.
 
 ## Related docs
 
@@ -61,32 +61,8 @@ This page is focused on route-accurate operator reading, not deep analyst report
 - [Your customers](/your-customers)
 - [Fixing issues](/fixing-issues)
 
-## Metric reading guardrails
+## How different roles read shift numbers
 
-- Treat sharp metric swings as a signal to validate route context first.
-- Use inventory alerts as action triggers, not passive warnings.
-- Use pending intake counts to avoid selling stock that is not yet posted.
-
-## Shift-close review
-
-- Confirm day sales count is plausible for lane traffic.
-- Confirm no high-priority stock alert was ignored.
-- Confirm credit exposure changes have owner/manager visibility.
-
-## Role-based read order
-
-- **Cashier**: transaction count, low-stock alerts that block lane flow.
-- **Supervisor**: pending intakes and alert trend for current shift.
-- **Manager/owner**: day sales, average sale drift, credit exposure movement.
-
-## Escalation thresholds
-
-Escalate same shift when:
-
-- Inventory alerts jump sharply with no intake context.
-- Average sale drops hard versus normal pattern and route checks look clean.
-- Pending intake queue blocks expected stock for top sellers.
-
-## Daily close note
-
-Capture one short note each close with the top driver behind day totals. Over a week, these notes make trend review faster and reduce guesswork.
+- **Cashiers**: Keep an eye on the transaction counter and notify supervisors if a low-stock alert appears on a fast-selling item.
+- **Supervisors**: Monitor pending intake shipments so incoming stock gets moved to shelves before peak hours.
+- **Managers & Owners**: Track daily revenue targets, average ticket size, and outstanding credit exposure across shifts.

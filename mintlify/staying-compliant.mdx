@@ -1,55 +1,59 @@
-# Stay audit-ready
+---
+title: "Stay Audit-Ready"
+description: "Operating playbook for traceable inventory records, adjustment reason quality, and shrinkage tracking."
+icon: "clipboard-check"
+---
 
-This page is the operating playbook for clean stock records and clear adjustment history.
+This guide is your store's daily operating playbook for keeping physical stock counts and digital records in sync.
 
 ## What this page is for
 
-Use this guide to keep inventory movement traceable, reduce variance surprises, and keep your team ready for internal or external record review.
+Use this guide to keep all product movements fully traceable, avoid unexpected count discrepancies, and ensure your store records are always ready for internal or external review.
 
-The focus is practical: intake, adjustment, reason quality, and repeat-variance response.
+It covers best practices for receiving stock shipments, logging damaged goods, and writing clear adjustment notes.
 
 ## Before you start
 
 - **Recommended role**:
-  - Cashier: view and report issues
-  - Supervisor/manager: adjustments and shrinkage handling
-- **Routes used**:
-  - `/inventory/intake`
-  - `/inventory/adjust`
-  - `/inventory/audit`
-- **Team rule**:
-  - Every stock correction needs a clear reason that another person can understand without extra context.
+  - Cashier: Check shelf counts and report count discrepancies.
+  - Supervisor or Manager: Log stock adjustments, review damaged goods, and inspect audit logs.
+- **Key screens**:
+  - **Receive Stock** (`/inventory/intake`): Record supplier shipments and invoices.
+  - **Adjust Stock** (`/inventory/adjust`): Log recount corrections and shrinkage.
+  - **Stock Audit Trail** (`/inventory/audit`): View the timestamped history of every count change.
+- **Store rule**:
+  - Every manual stock correction must include a clear explanation that any other team member can easily understand.
 
 ## Fast path
 
-1. **Use intake for received stock** (`/inventory/intake`).
-2. **Use adjust for corrections** (`/inventory/adjust`).
-   - Increase, decrease, or set-to with reason.
-3. **Record shrinkage in the right flow**.
-   - Do not hide shrinkage in vague notes.
-4. **Review audit trail daily** (`/inventory/audit`).
-   - Confirm who changed what and why.
-5. **Check repeat variance patterns**.
-   - If the same SKU shows recurring mismatch, escalate to manager review.
+1. **Log all incoming inventory immediately** (`/inventory/intake`):
+   - Never place items directly on sales shelves without logging an intake shipment first.
+2. **Submit count adjustments when variances are found** (`/inventory/adjust`):
+   - Select the product, choose **Increase**, **Decrease**, or **Set Count to**, and enter the new physical count.
+3. **Log damaged or lost items under shrinkage**:
+   - Never hide lost, broken, or expired products inside vague notes. Log them explicitly with clear details.
+4. **Inspect your audit trail daily** (`/inventory/audit`):
+   - Review recent adjustments to see who made changes and ensure reason notes are descriptive.
+5. **Investigate recurring discrepancies**:
+   - If a specific item requires repeat adjustments across multiple shifts, notify store management to investigate shelf handling or packaging practices.
 
 ## If blocked
 
-- **Adjustment rejected**:
-  - Confirm role has inventory-manage scope.
-  - Confirm payload values are valid.
-- **Reason text is too vague**:
-  - Replace generic text with root cause style: what changed, why it changed, who confirmed.
-- **Random check finds mismatch**:
-  - Pause further stock edits on that item.
-  - Recount, correct, and document before normal selling resumes.
-- **Audit trail missing expected entry**:
-  - Recheck business context.
-  - Confirm action completed, not aborted.
+- **Cannot submit a stock adjustment**:
+  - Check that you selected a valid adjustment type and entered an updated quantity.
+  - Verify that your account has supervisor or manager permissions to adjust stock.
+- **Adjustment reason note is too short**:
+  - Write a helpful note explaining what happened, why the count changed, and who verified it.
+- **Spot-check reveals a shelf count mismatch**:
+  - Pause sales on that specific shelf section.
+  - Do a complete physical recount, submit a single clear adjustment note, and resume selling.
+- **Audit trail does not show a recent change**:
+  - Check that the adjustment was saved and verify that you are viewing the correct store location.
 
 ## What is beta here
 
-- Expanded export/report packaging around audit history is beta-limited.
-- Intake, adjustment, shrinkage capture, and audit trail routes are live.
+- Automated multi-location audit export bundles are in preview testing.
+- Live shipment intake, manual stock adjustments, shrinkage tracking, and detailed audit histories are fully live.
 
 ## Related docs
 
@@ -58,40 +62,22 @@ The focus is practical: intake, adjustment, reason quality, and repeat-variance 
 - [Team access](/team-access)
 - [Fixing issues](/fixing-issues)
 
-## Shift-close audit habit
+## Good examples for adjustment notes
 
-- Review five recent audit entries for clarity.
-- Confirm each manual correction has a real cause in reason text.
-- Confirm shrinkage entries were not delayed to end of week.
+Write specific, informative reasons:
 
-## Escalation trigger
+- ✅ *"Recount of shelf 4 after morning restocking (+5 units, verified by Maria)"*
+- ✅ *"Dropped bottle during unboxing (-1 unit, discarded)"*
+- ✅ *"Corrected vendor intake entry to match posted supplier invoice"*
 
-Escalate to manager review when any one of these repeats across shifts:
+Avoid vague, unhelpful notes:
 
-- Same SKU has recurring variance.
-- Same operator submits vague correction reasons.
-- Intake and actual shelf counts keep diverging.
+- ❌ *"fix"*
+- ❌ *"update"*
+- ❌ *"count changed"*
 
-## Reason text examples
+## New staff training habits
 
-Use these patterns:
-
-- "Count correction after shelf recount, +12g, verified by shift lead"
-- "Breakage during packaging, -3 units, logged same shift"
-- "Intake entry typo corrected to posted invoice value"
-
-Avoid patterns like:
-
-- "fix"
-- "update"
-- "changed"
-
-## New-staff coaching
-
-- Teach adjustment reasons on day one.
-- Teach where to review audit history before making second corrections.
-- Teach when to stop and escalate instead of repeating manual stock edits.
-
-## Daily close note
-
-Write one short line at close describing the largest stock correction driver. This helps managers spot repeat causes across shifts.
+- Teach new cashiers how to report count discrepancies on day one.
+- Show supervisors how to review previous adjustments before correcting a count a second time.
+- Emphasize that finding and documenting a discrepancy right away protects the entire store team.

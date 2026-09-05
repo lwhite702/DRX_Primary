@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { getCurrentUser } from "@/lib/adapters/auth";
+import { clerkClient } from "@/lib/adapters/auth/server";
 
 const FEATUREBASE_JWT_SECRET = process.env.FEATUREBASE_JWT_SECRET;
 
@@ -13,14 +15,38 @@ export async function GET(request: Request) {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let userProfile = await db.user.findFirst({
+    where: { clerkUserId: user.id },
+    select: { email: true, name: true },
+  });
+
+  if (!userProfile?.email) {
+    const client = await clerkClient();
+    const clerkUser = await client.users.getUser(user.id);
+    const fallbackEmail = clerkUser.primaryEmailAddress?.emailAddress;
+
+    if (!fallbackEmail) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const fallbackName =
+      clerkUser.firstName && clerkUser.lastName
+        ? `${clerkUser.firstName} ${clerkUser.lastName}`
+        : clerkUser.firstName ??
+          clerkUser.lastName ??
+          clerkUser.username ??
+          fallbackEmail.split("@")[0] ??
+          "User";
+
+    userProfile = {
+      email: fallbackEmail,
+      name: fallbackName,
+    };
   }
 
   try {
@@ -36,8 +62,8 @@ export async function GET(request: Request) {
     const token = jwt.sign(
       {
         userId: user.id,
-        email: user.email,
-        name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+        email: userProfile.email,
+        name: userProfile.name || userProfile.email.split("@")[0] || "User",
       },
       FEATUREBASE_JWT_SECRET,
       { expiresIn: "1h", algorithm: "HS256" },

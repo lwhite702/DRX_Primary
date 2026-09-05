@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
   Alert,
   Image,
@@ -27,35 +26,28 @@ export default function Login() {
   const router = useRouter();
   const { signIn } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please enter email and password");
+    if (!identifier.trim() || !password.trim()) {
+      Alert.alert("Missing info", "Enter your username or email and password.");
       return;
     }
 
     setLoading(true);
-    console.log("Attempting login with:", email.trim());
     try {
-      const { error } = await signIn(email.trim(), password);
-      console.log("Login result, error:", error);
+      const { error } = await signIn(identifier.trim(), password);
       if (error) {
-        console.error("Login error:", error.message);
-        Alert.alert("Login Failed", error.message);
+        Alert.alert("Couldn't sign in", error.message);
       } else {
-        console.log("Login successful, navigating to tabs");
-        // Small delay to allow auth state to update
-        setTimeout(() => {
-          router.replace("/(tabs)");
-        }, 500);
+        router.replace("/");
       }
     } catch (error: any) {
       console.error("Login exception:", error);
-      Alert.alert("Error", error.message || "Failed to sign in");
+      Alert.alert("Couldn't sign in", error.message || "Check your info and try again.");
     } finally {
       setLoading(false);
     }
@@ -64,10 +56,9 @@ export default function Login() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={process.env.EXPO_OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.content}>
-        {/* Logo/Brand */}
         <View style={styles.brandContainer}>
           <View style={styles.logoContainer}>
             <Image
@@ -78,13 +69,12 @@ export default function Login() {
               accessibilityLabel="DRX logo"
             />
           </View>
-          <Text style={styles.tagline}>Your front. Your numbers. Locked.</Text>
+          <Text style={styles.tagline}>Keep the count right.</Text>
         </View>
 
-        {/* Login Form */}
         <View style={styles.formContainer}>
-          <Text style={styles.title}>System Entry</Text>
-          <Text style={styles.subtitle}>Secure Terminal Access</Text>
+          <Text style={styles.title}>Sign in</Text>
+          <Text style={styles.subtitle}>Pick up where you left off.</Text>
 
           <View style={styles.inputContainer}>
             <Ionicons
@@ -95,13 +85,14 @@ export default function Login() {
             />
             <TextInput
               style={styles.input}
-              placeholder="Operator ID / Email"
+              placeholder="Username or email"
               placeholderTextColor={COLORS.textMuted}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              value={identifier}
+              onChangeText={setIdentifier}
               autoCapitalize="none"
               autoCorrect={false}
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
           </View>
 
@@ -114,16 +105,20 @@ export default function Login() {
             />
             <TextInput
               style={styles.input}
-              placeholder="Passkey"
+              placeholder="Password"
               placeholderTextColor={COLORS.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
+              cursorColor={COLORS.accent}
+              selectionColor={COLORS.accent}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeIcon}
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
             >
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
@@ -147,19 +142,24 @@ export default function Login() {
               <>
                 <Text style={styles.loginButtonText}>SIGN IN</Text>
                 <Ionicons
-                  name="finger-print-outline"
+                  name="arrow-forward-outline"
                   size={20}
                   color={COLORS.background}
                 />
               </>
             )}
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.signupLink}
+            onPress={() => router.push("/signup")}
+            accessibilityRole="link"
+          >
+            <Text style={styles.signupText}>Create an owner account</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Mobile POS Terminal</Text>
-          <Text style={styles.versionText}>v1.0.0</Text>
+          <Text style={styles.footerText}>DRX</Text>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -194,8 +194,7 @@ const styles = StyleSheet.create({
   tagline: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.sm,
-    letterSpacing: 2,
-    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   formContainer: {
     backgroundColor: COLORS.surface,
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   inputIcon: {
     paddingLeft: SPACING.md,
@@ -253,6 +252,15 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.lg,
     fontWeight: "700",
   },
+  signupLink: {
+    alignItems: "center",
+    paddingTop: SPACING.lg,
+  },
+  signupText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.sm,
+    fontWeight: "600",
+  },
   footer: {
     alignItems: "center",
     marginTop: SPACING.xxl,
@@ -260,10 +268,5 @@ const styles = StyleSheet.create({
   footerText: {
     color: COLORS.textMuted,
     fontSize: FONT_SIZES.sm,
-  },
-  versionText: {
-    color: COLORS.textMuted,
-    fontSize: FONT_SIZES.xs,
-    marginTop: SPACING.xs,
   },
 });

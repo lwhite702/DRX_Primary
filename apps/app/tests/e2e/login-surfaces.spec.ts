@@ -17,6 +17,11 @@ async function expectConfiguredFallback(page: Page) {
 }
 
 test.describe("Login and register surfaces", () => {
+  test("nested favicon requests do not enter the login server component", async ({ request }) => {
+    const response = await request.get("/login/favicon.ico", { maxRedirects: 0 });
+    expect(response.status()).toBe(404);
+  });
+
   test("/login is accessible", async ({ page }) => {
     await page.goto("/login");
     await expect(page).toHaveURL(/\/(login|dashboard|waitlist)(?:\?|$)/);
@@ -25,9 +30,7 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(
-      page.getByRole("heading", { name: /sign in/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
   });
 
   test("/register is accessible", async ({ page }) => {

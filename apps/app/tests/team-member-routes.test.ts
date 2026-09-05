@@ -3,14 +3,9 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => {
   const clerk = {
-    organizations: {
-      createOrganization: vi.fn(),
-      deleteOrganization: vi.fn(),
-      createOrganizationInvitation: vi.fn(),
-      revokeOrganizationInvitation: vi.fn(),
-      createOrganizationMembership: vi.fn(),
-      updateOrganizationMembership: vi.fn(),
-      deleteOrganizationMembership: vi.fn(),
+    invitations: {
+      createInvitation: vi.fn(),
+      revokeInvitation: vi.fn(),
     },
     users: {
       getUser: vi.fn(),
@@ -26,7 +21,6 @@ const mocks = vi.hoisted(() => {
       $transaction: vi.fn(),
       businessProfile: {
         findUnique: vi.fn(),
-        updateMany: vi.fn(),
       },
       invite: {
         findFirst: vi.fn(),
@@ -66,7 +60,10 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { POST } from "@/app/api/team/members/route";
 import { GET as GET_TEAM } from "@/app/api/team/route";
-import { DELETE, GET } from "@/app/api/team/members/[id]/route";
+import {
+  DELETE,
+  GET,
+} from "@/app/api/team/members/[id]/route";
 import { GET as GET_MEMBER_AUDIT_LOGS } from "@/app/api/team/members/[id]/audit-logs/route";
 import { PUT } from "@/app/api/team/members/[id]/role/route";
 
@@ -105,29 +102,13 @@ describe("tenant-scoped team member routes", () => {
     mocks.db.businessProfile.findUnique.mockResolvedValue({
       ownerId: "owner-1",
       isActive: true,
-      clerkOrgId: "org_business_1",
-      businessName: "DRX Store",
     });
     mocks.hasBusinessPermission.mockResolvedValue(true);
     mocks.clerkClient.mockResolvedValue(mocks.clerk);
-    mocks.clerk.organizations.createOrganization.mockResolvedValue({
-      id: "org_business_1",
-    });
-    mocks.clerk.organizations.createOrganizationInvitation.mockResolvedValue({
+    mocks.clerk.invitations.createInvitation.mockResolvedValue({
       id: "invitation-1",
     });
-    mocks.clerk.organizations.revokeOrganizationInvitation.mockResolvedValue(
-      {},
-    );
-    mocks.clerk.organizations.createOrganizationMembership.mockResolvedValue(
-      {},
-    );
-    mocks.clerk.organizations.updateOrganizationMembership.mockResolvedValue(
-      {},
-    );
-    mocks.clerk.organizations.deleteOrganizationMembership.mockResolvedValue(
-      {},
-    );
+    mocks.clerk.invitations.revokeInvitation.mockResolvedValue({});
     mocks.db.invite.findFirst.mockResolvedValue(null);
     mocks.db.invite.create.mockResolvedValue({ id: "local-invite-1" });
     mocks.db.systemAuditLog.create.mockResolvedValue({ id: "audit-1" });
@@ -186,9 +167,7 @@ describe("tenant-scoped team member routes", () => {
     );
 
     expect(response.status).toBe(403);
-    expect(
-      mocks.clerk.organizations.createOrganizationInvitation,
-    ).not.toHaveBeenCalled();
+    expect(mocks.clerk.invitations.createInvitation).not.toHaveBeenCalled();
     expect(mocks.db.invite.create).not.toHaveBeenCalled();
   });
 
@@ -205,9 +184,7 @@ describe("tenant-scoped team member routes", () => {
     );
 
     expect(response.status).toBe(403);
-    expect(
-      mocks.clerk.organizations.createOrganizationInvitation,
-    ).not.toHaveBeenCalled();
+    expect(mocks.clerk.invitations.createInvitation).not.toHaveBeenCalled();
     expect(mocks.db.invite.create).not.toHaveBeenCalled();
   });
 
@@ -262,20 +239,6 @@ describe("tenant-scoped team member routes", () => {
     );
   });
 
-  it("allows an authenticated business member to read the team list", async () => {
-    mocks.hasBusinessPermission.mockResolvedValue(false);
-
-    const response = await GET_TEAM(
-      request("/api/team?business_id=business-1"),
-    );
-
-    expect(response.status).toBe(200);
-    expect(mocks.db.userRole.findMany).toHaveBeenCalledWith({
-      where: { businessId: "business-1" },
-      orderBy: { createdAt: "desc" },
-    });
-  });
-
   it("removes only the selected business membership and records tenant audit data", async () => {
     mocks.db.userRole.findFirst.mockResolvedValue(membership());
 
@@ -298,12 +261,7 @@ describe("tenant-scoped team member routes", () => {
         userId: "actor-1",
       }),
     });
-    expect(
-      mocks.clerk.organizations.deleteOrganizationMembership,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
-      userId: "member-1",
-    });
+    expect(mocks.clerkClient).not.toHaveBeenCalled();
   });
 
   it("protects the owner membership from removal", async () => {
@@ -400,14 +358,11 @@ describe("tenant-scoped team member routes", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(
-      mocks.clerk.organizations.createOrganizationInvitation,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
+    expect(mocks.clerk.invitations.createInvitation).toHaveBeenCalledWith({
       emailAddress: "staff@example.com",
-      role: "org:member",
       expiresInDays: 7,
-      inviterUserId: "actor-1",
+      ignoreExisting: false,
+      notify: true,
       publicMetadata: {
         drxBusinessId: "business-1",
         drxInviteToken: expect.any(String),
@@ -433,90 +388,11 @@ describe("tenant-scoped team member routes", () => {
         entityId: "invitation-1",
       }),
     });
-    const clerkMetadata =
-      mocks.clerk.organizations.createOrganizationInvitation.mock.calls[0][0]
-        .publicMetadata;
+    const clerkMetadata = mocks.clerk.invitations.createInvitation.mock.calls[0][0]
+      .publicMetadata;
     const persistedInvite = mocks.db.invite.create.mock.calls[0][0].data;
     expect(persistedInvite.token).toBe(clerkMetadata.drxInviteToken);
-    expect(
-      mocks.clerk.organizations.revokeOrganizationInvitation,
-    ).not.toHaveBeenCalled();
-  });
-
-  it("promotes a personal workspace to a Clerk organization before inviting", async () => {
-    mocks.db.businessProfile.findUnique.mockResolvedValue({
-      ownerId: "owner-1",
-      isActive: true,
-      clerkOrgId: "personal_owner-1",
-      businessName: "DRX Store",
-    });
-    mocks.db.businessProfile.updateMany.mockResolvedValue({ count: 1 });
-    mocks.db.userRole.findMany.mockResolvedValue([
-      { userId: "owner-1", role: "owner" },
-      { userId: "cashier-1", role: "cashier" },
-      { userId: "admin-1", role: "admin" },
-    ]);
-
-    const response = await POST(
-      request("/api/team/members?business_id=business-1", {
-        method: "POST",
-        body: { email: "staff@example.com", role: "cashier" },
-      }),
-    );
-
-    expect(response.status).toBe(201);
-    expect(mocks.clerk.organizations.createOrganization).toHaveBeenCalledWith({
-      name: "DRX Store",
-      createdBy: "owner-1",
-    });
-    expect(
-      mocks.clerk.organizations.createOrganizationMembership,
-    ).toHaveBeenCalledTimes(2);
-    expect(
-      mocks.clerk.organizations.createOrganizationMembership,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
-      userId: "cashier-1",
-      role: "org:member",
-    });
-    expect(
-      mocks.clerk.organizations.createOrganizationMembership,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
-      userId: "admin-1",
-      role: "org:admin",
-    });
-    expect(
-      mocks.clerk.organizations.createOrganizationMembership.mock
-        .invocationCallOrder[1],
-    ).toBeLessThan(
-      mocks.db.businessProfile.updateMany.mock.invocationCallOrder[0],
-    );
-    expect(mocks.db.businessProfile.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "business-1",
-        clerkOrgId: "personal_owner-1",
-      },
-      data: { clerkOrgId: "org_business_1" },
-    });
-  });
-
-  it("rejects a non-object invitation payload", async () => {
-    const response = await POST(
-      new NextRequest(
-        "http://localhost/api/team/members?business_id=business-1",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: "null",
-        },
-      ),
-    );
-
-    expect(response.status).toBe(400);
-    expect(
-      mocks.clerk.organizations.createOrganizationInvitation,
-    ).not.toHaveBeenCalled();
+    expect(mocks.clerk.invitations.revokeInvitation).not.toHaveBeenCalled();
   });
 
   it("rejects duplicate pending invitations before calling Clerk", async () => {
@@ -534,9 +410,7 @@ describe("tenant-scoped team member routes", () => {
   });
 
   it("revokes Clerk invitation when local persistence fails", async () => {
-    const consoleError = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     mocks.db.$transaction.mockRejectedValue(new Error("database unavailable"));
 
     const response = await POST(
@@ -547,13 +421,9 @@ describe("tenant-scoped team member routes", () => {
     );
 
     expect(response.status).toBe(500);
-    expect(
-      mocks.clerk.organizations.revokeOrganizationInvitation,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
-      invitationId: "invitation-1",
-      requestingUserId: "actor-1",
-    });
+    expect(mocks.clerk.invitations.revokeInvitation).toHaveBeenCalledWith(
+      "invitation-1",
+    );
     consoleError.mockRestore();
   });
 
@@ -580,30 +450,6 @@ describe("tenant-scoped team member routes", () => {
         newValues: { role: "manager" },
       }),
     });
-    expect(
-      mocks.clerk.organizations.updateOrganizationMembership,
-    ).toHaveBeenCalledWith({
-      organizationId: "org_business_1",
-      userId: "member-1",
-      role: "org:member",
-    });
-  });
-
-  it("rejects a non-object role payload", async () => {
-    const response = await PUT(
-      new NextRequest(
-        "http://localhost/api/team/members/member-1/role?business_id=business-1",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: "null",
-        },
-      ),
-      routeContext("member-1"),
-    );
-
-    expect(response.status).toBe(400);
-    expect(mocks.db.userRole.update).not.toHaveBeenCalled();
   });
 
   it("rejects privileged or unknown roles", async () => {

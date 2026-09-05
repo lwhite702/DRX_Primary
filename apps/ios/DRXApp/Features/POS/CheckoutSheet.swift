@@ -14,6 +14,13 @@ struct CheckoutSheet: View {
     @State private var completedSale: CheckoutResponse?
     @State private var showCustomerPicker = false
     @State private var orderNumber = "ORD-\(UUID().uuidString.uppercased())"
+    @State private var deliveryEnabled = false
+    @State private var deliveryAddress = ""
+    @State private var vendorFeeString = ""
+    @State private var chargeDeliveryToCustomer = true
+    @State private var quote: CheckoutQuoteResponse?
+    @State private var isQuoting = false
+    @State private var quoteError: String?
 
     enum PaymentMethod: String, CaseIterable {
         case cash, card, credit
@@ -28,20 +35,60 @@ struct CheckoutSheet: View {
     }
 
     var amountTenderedCents: Int { CurrencyInput.cents(from: amountTenderedString) ?? 0 }
+    var vendorFeeCents: Int { CurrencyInput.cents(from: vendorFeeString) ?? 0 }
+    var deliveryRevenueCents: Int { deliveryEnabled && chargeDeliveryToCustomer ? vendorFeeCents : 0 }
+    var deliveryTaxCents: Int {
+        guard deliveryRevenueCents > 0,
+              let business = store.business,
+              store.commerceSettings?.deliveryFeeTaxable == true else { return 0 }
+        return CheckoutMath.taxCents(
+            subtotalCents: deliveryRevenueCents,
+            collectTax: business.collectTax,
+            taxRateBps: business.taxRateBps
+        )
+    }
+    var localPreviewTotalCents: Int { store.cartTotalCents + deliveryRevenueCents + deliveryTaxCents }
+    var displayedTotalCents: Int { quote?.totalAmountCents ?? localPreviewTotalCents }
+    var deliveryIsValid: Bool {
+        !deliveryEnabled || (
+            !deliveryAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            vendorFeeCents > 0
+        )
+    }
+
+    var quoteArgs: CheckoutQuoteArgs {
+        CheckoutQuoteArgs(
+            customerId: store.selectedCustomer?.id,
+            items: store.cartItems.map { CheckoutItem(productId: $0.product.id, quantityGrams: $0.quantityGrams) },
+            delivery: deliveryEnabled ? CheckoutQuoteDelivery(
+                vendorFeeCents: vendorFeeCents,
+                chargeCustomer: chargeDeliveryToCustomer
+            ) : nil
+        )
+    }
+    var quoteInputKey: String {
+        let itemKey = store.cartItems.map { "\($0.product.id):\($0.quantityGrams)" }.joined(separator: "|")
+        return [
+            store.selectedCustomer?.id ?? "guest",
+            itemKey,
+            deliveryEnabled ? "delivery:\(vendorFeeCents):\(chargeDeliveryToCustomer)" : "pickup",
+            deliveryIsValid.description,
+        ].joined(separator: "#")
+    }
 
     var changeCents: Int {
-        max(0, amountTenderedCents - store.cartTotalCents)
+        max(0, amountTenderedCents - displayedTotalCents)
     }
 
     var canConfirm: Bool {
         switch paymentMethod {
         case .cash:
-            return amountTenderedCents >= store.cartTotalCents
+            return quote != nil && !isQuoting && amountTenderedCents >= displayedTotalCents && deliveryIsValid
         case .card:
-            return true
+            return quote != nil && !isQuoting && deliveryIsValid
         case .credit:
             guard let customer = store.selectedCustomer else { return false }
-            return customer.canChargeStoreAccount(store.cartTotalCents)
+            return quote != nil && !isQuoting && deliveryIsValid && customer.canChargeStoreAccount(displayedTotalCents)
         }
     }
 
@@ -66,6 +113,8 @@ struct CheckoutSheet: View {
 
                 // Customer
                 customerSection
+
+                deliverySection
 
                 // Payment method
                 paymentMethodSection
@@ -97,14 +146,13 @@ struct CheckoutSheet: View {
                         if isProcessing {
                             ProgressView().tint(.white)
                         } else {
-                            Text("Confirm \(formatCents(store.cartTotalCents))")
+                            Text("Confirm \(formatCents(displayedTotalCents))")
                                 .font(.headline)
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 50)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(DRXPalette.accent)
+                .buttonStyle(.drxPrimaryFullWidth)
                 .disabled(!canConfirm || isProcessing)
                 .padding(.horizontal)
             }
@@ -121,20 +169,22 @@ struct CheckoutSheet: View {
         .sheet(isPresented: $showCustomerPicker) {
             CustomerPickerSheet(customers: store.customers, selected: $store.selectedCustomer)
         }
+        .task(id: quoteInputKey) { await refreshQuote() }
     }
 
     private var orderSummarySection: some View {
         VStack(spacing: 0) {
             ForEach(store.cartItems) { item in
+                let quotedLine = quote?.lines.first { $0.productId == item.product.id }
                 HStack {
                     Text(item.product.productName)
                         .font(.subheadline)
                         .foregroundStyle(DRXPalette.ink)
                     Spacer()
-                    Text("\(formatGrams(item.quantityGrams)) × \(formatCents(item.product.sellingPriceCents))")
+                    Text("\(formatGrams(item.quantityGrams)) × \(formatCents(quotedLine?.appliedUnitPriceCents ?? item.effectiveUnitPriceCents))")
                         .font(.caption)
                         .foregroundStyle(DRXPalette.muted)
-                    Text(formatCents(item.lineTotal))
+                    Text(formatCents(quotedLine?.lineSubtotalCents ?? store.pricedLineTotal(item)))
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(DRXPalette.ink)
                         .frame(width: 70, alignment: .trailing)
@@ -146,23 +196,64 @@ struct CheckoutSheet: View {
 
             VStack(spacing: 8) {
                 HStack {
-                    Text("Subtotal")
+                    Text(quote == nil ? "Subtotal preview" : "Merchandise")
                     Spacer()
-                    Text(formatCents(store.cartSubtotalCents))
+                    Text(formatCents(quote?.merchandiseSubtotalCents ?? store.cartSubtotalCents))
                 }
-                if store.cartTaxCents > 0 {
+                if let quote, quote.discountCents > 0 {
+                    HStack {
+                        Text("Discounts")
+                        Spacer()
+                        Text("−\(formatCents(quote.discountCents))")
+                            .foregroundStyle(.green)
+                    }
+                }
+                let merchandiseTax = quote?.merchandiseTaxCents ?? store.cartTaxCents
+                if merchandiseTax > 0 {
                     HStack {
                         Text("Tax")
                         Spacer()
-                        Text(formatCents(store.cartTaxCents))
+                        Text(formatCents(merchandiseTax))
+                    }
+                }
+                let quotedDeliveryRevenue = quote?.deliveryRevenueCents ?? deliveryRevenueCents
+                if quotedDeliveryRevenue > 0 {
+                    HStack {
+                        Text("Delivery")
+                        Spacer()
+                        Text(formatCents(quotedDeliveryRevenue))
+                    }
+                }
+                let quotedDeliveryTax = quote?.deliveryTaxCents ?? deliveryTaxCents
+                if quotedDeliveryTax > 0 {
+                    HStack {
+                        Text("Delivery tax")
+                        Spacer()
+                        Text(formatCents(quotedDeliveryTax))
                     }
                 }
                 HStack {
-                    Text("Total").font(.headline)
+                    Text(quote == nil ? "Preview total" : "Total").font(.headline)
                     Spacer()
-                    Text(formatCents(store.cartTotalCents))
+                    Text(formatCents(displayedTotalCents))
                         .font(.title3.bold())
                         .foregroundStyle(DRXPalette.accent)
+                }
+                if isQuoting {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                        Text("Calculating server total…")
+                    }
+                    .font(.footnote)
+                    .foregroundStyle(DRXPalette.muted)
+                } else if let quoteError {
+                    Label(quoteError, systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote)
+                        .foregroundStyle(DRXPalette.danger)
+                } else if quote != nil {
+                    Label("Verified by server", systemImage: "checkmark.shield.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.green)
                 }
             }
             .foregroundStyle(DRXPalette.ink)
@@ -195,6 +286,9 @@ struct CheckoutSheet: View {
                                     .font(.caption)
                                     .foregroundStyle(DRXPalette.muted)
                             }
+                            Text("\((store.loyaltyTierName ?? customer.loyaltyTier).capitalized) loyalty\(store.loyaltyRateBps > 0 ? " · \(String(format: "%.2f", Double(store.loyaltyRateBps) / 100))% \(store.loyaltyPolicy == "stack" ? "stacks after" : "compared with") bulk pricing" : "")")
+                                .font(.caption2)
+                                .foregroundStyle(DRXPalette.accent)
                         }
                     } else {
                         Text("No customer selected")
@@ -250,6 +344,56 @@ struct CheckoutSheet: View {
         }
     }
 
+    private var deliverySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Toggle(isOn: $deliveryEnabled) {
+                Label("Include delivery", systemImage: "car.side.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DRXPalette.ink)
+            }
+            .padding(14)
+            .background(DRXPalette.card)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+
+            if deliveryEnabled {
+                TextField("Delivery address", text: $deliveryAddress, axis: .vertical)
+                    .textContentType(.fullStreetAddress)
+                    .lineLimit(2...4)
+                    .padding(12)
+                    .background(DRXPalette.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+
+                TextField("Uber/vendor quote", text: $vendorFeeString)
+                    .keyboardType(.decimalPad)
+                    .padding(12)
+                    .background(DRXPalette.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+
+                Picker("Fee allocation", selection: $chargeDeliveryToCustomer) {
+                    Text("Charge customer").tag(true)
+                    Text("Merchant absorbs").tag(false)
+                }
+                .pickerStyle(.segmented)
+
+                Text(chargeDeliveryToCustomer
+                     ? "The delivery fee is added to the customer total."
+                     : "The merchant absorbs this vendor expense; merchandise revenue is unchanged.")
+                    .font(.footnote)
+                    .foregroundStyle(DRXPalette.muted)
+
+                if !deliveryIsValid {
+                    Text("Enter an address and a valid vendor quote before checkout.")
+                        .font(.footnote)
+                        .foregroundStyle(DRXPalette.danger)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
     private var amountTenderedSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Amount Tendered", systemImage: "banknote")
@@ -268,7 +412,7 @@ struct CheckoutSheet: View {
                     .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
                     .padding(.horizontal)
 
-                if amountTenderedCents >= store.cartTotalCents && !amountTenderedString.isEmpty {
+                if amountTenderedCents >= displayedTotalCents && !amountTenderedString.isEmpty {
                     HStack {
                         Text("Change Due")
                             .font(.subheadline)
@@ -312,7 +456,7 @@ struct CheckoutSheet: View {
                             .foregroundStyle(DRXPalette.muted)
                         Text(customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditAvailableFormatted)
                             .font(.headline)
-                            .foregroundStyle(customer.canChargeStoreAccount(store.cartTotalCents) ? .green : DRXPalette.danger)
+                            .foregroundStyle(customer.canChargeStoreAccount(displayedTotalCents) ? .green : DRXPalette.danger)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
@@ -369,6 +513,13 @@ struct CheckoutSheet: View {
                         Text(formatCents(changeCents)).bold().foregroundStyle(.green)
                     }
                 }
+                if sale.deliveryId != nil {
+                    HStack {
+                        Text("Delivery")
+                        Spacer()
+                        Text("Ready for dispatch").bold().foregroundStyle(DRXPalette.accent)
+                    }
+                }
             }
             .font(.subheadline)
             .foregroundStyle(DRXPalette.ink)
@@ -388,8 +539,7 @@ struct CheckoutSheet: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 50)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(DRXPalette.accent)
+            .buttonStyle(.drxPrimaryFullWidth)
             .padding(.horizontal)
             .padding(.bottom)
         }
@@ -400,35 +550,105 @@ struct CheckoutSheet: View {
 
     // MARK: - Process Checkout
 
+    @MainActor
+    private func refreshQuote() async {
+        quote = nil
+        quoteError = nil
+        guard !store.cartItems.isEmpty, deliveryIsValid else {
+            isQuoting = false
+            return
+        }
+
+        let requestedKey = quoteInputKey
+        isQuoting = true
+        do {
+            try await Task.sleep(for: .milliseconds(150))
+            try Task.checkCancellation()
+            let response: CheckoutQuoteResponse = try await ConvexClient.shared.query(
+                "checkout:quoteCheckout",
+                args: quoteArgs
+            )
+            try Task.checkCancellation()
+            guard requestedKey == quoteInputKey else { return }
+            quote = response
+            isQuoting = false
+        } catch is CancellationError {
+            // A new cart/customer/delivery value started a replacement quote task.
+        } catch {
+            guard requestedKey == quoteInputKey else { return }
+            quoteError = error.localizedDescription
+            isQuoting = false
+        }
+    }
+
+    @MainActor
     private func processCheckout() async {
         isProcessing = true
         checkoutError = nil
+        let requestedPaymentMethod = paymentMethod
+        let requestedCashTenderCents = amountTenderedCents
+        let customerId = store.selectedCustomer?.id
         let items = store.cartItems.map { item in
             CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams)
         }
-        let tendered: Int
-        switch paymentMethod {
-        case .cash:
-            tendered = amountTenderedCents
-        case .card:
-            tendered = store.cartTotalCents
-        case .credit:
-            tendered = 0
-        }
-        let args = CheckoutArgs(
-            customerId: store.selectedCustomer?.id,
-            orderNumber: orderNumber,
+        let quotedDelivery = deliveryEnabled ? CheckoutQuoteDelivery(
+            vendorFeeCents: vendorFeeCents,
+            chargeCustomer: chargeDeliveryToCustomer
+        ) : nil
+        let requestedQuote = CheckoutQuoteArgs(
+            customerId: customerId,
             items: items,
-            paymentMethod: paymentMethod.rawValue,
-            amountPaidCents: tendered
+            delivery: quotedDelivery
         )
+        let submittedDelivery = deliveryEnabled ? CheckoutDelivery(
+            address: deliveryAddress.trimmingCharacters(in: .whitespacesAndNewlines),
+            vendorFeeCents: vendorFeeCents,
+            chargeCustomer: chargeDeliveryToCustomer
+        ) : nil
         do {
+            let freshQuote: CheckoutQuoteResponse = try await ConvexClient.shared.query(
+                "checkout:quoteCheckout",
+                args: requestedQuote
+            )
+            quote = freshQuote
+
+            let tendered: Int
+            switch requestedPaymentMethod {
+            case .cash:
+                guard requestedCashTenderCents >= freshQuote.totalAmountCents else {
+                    throw CheckoutSubmissionError.cashBelowServerTotal
+                }
+                tendered = requestedCashTenderCents
+            case .card:
+                tendered = freshQuote.totalAmountCents
+            case .credit:
+                tendered = 0
+            }
+            let args = CheckoutArgs(
+                customerId: customerId,
+                orderNumber: orderNumber,
+                items: items,
+                paymentMethod: requestedPaymentMethod.rawValue,
+                amountPaidCents: tendered,
+                delivery: submittedDelivery
+            )
             let response: CheckoutResponse = try await ConvexClient.shared.mutation("checkout:processCheckout", args: args)
             completedSale = response
         } catch {
             checkoutError = error.localizedDescription
         }
         isProcessing = false
+    }
+}
+
+private enum CheckoutSubmissionError: LocalizedError {
+    case cashBelowServerTotal
+
+    var errorDescription: String? {
+        switch self {
+        case .cashBelowServerTotal:
+            "Cash received must cover the current server total."
+        }
     }
 }
 

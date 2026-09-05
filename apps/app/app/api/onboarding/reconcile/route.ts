@@ -8,7 +8,7 @@ import { getCompletedOnboardingBusinessId } from "@/lib/auth/onboarding-state";
 const COMPLETION_COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 
 export async function GET(request: Request) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   const requestURL = new URL(request.url);
 
   if (!userId) {
@@ -22,11 +22,15 @@ export async function GET(request: Request) {
 
   if (!isAuthBypassEnabled()) {
     try {
+      const claimsMetadata =
+        typeof (sessionClaims as Record<string, unknown> | null)?.publicMetadata === "object" &&
+        (sessionClaims as Record<string, unknown> | null)?.publicMetadata !== null
+          ? ((sessionClaims as Record<string, unknown>).publicMetadata as Record<string, unknown>)
+          : {};
       const client = await clerkClient();
-      const user = await client.users.getUser(userId);
       await client.users.updateUser(userId, {
         publicMetadata: {
-          ...user.publicMetadata,
+          ...claimsMetadata,
           onboardingComplete: true,
           businessId,
         },

@@ -5,17 +5,15 @@ const BUILD_LAST_MODIFIED = new Date(
 );
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.deelrxcrm.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app";
 
   const routes = [
     "/",
     "/waitlist",
+    "/pricing",
+    "/contact",
     "/privacy",
-    "/privacy-policy",
     "/terms",
-    "/legal/privacy",
-    "/legal/terms",
-    "/support",
   ];
 
   return routes.map((route) => ({

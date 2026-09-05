@@ -3,39 +3,23 @@ import { sanitizePiiInput } from "@/lib/privacy/crypto";
 import { resolveBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
 import { createOrAttachQuickCustomer } from "@/lib/customers/core/customer-identity";
 import { resolveCustomerAccess } from "@/app/api/customers/_lib/server";
-import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
 function cleanPhone(value: string) {
   return value.replace(/[^0-9]/g, "");
 }
 
 export async function POST(request: NextRequest) {
-  const context = await resolveCustomerAccess(request, "customers.view");
+  const context = await resolveCustomerAccess(request, "customers.manage");
   if (!context.ok) {
     return NextResponse.json(
       { error: context.error },
       { status: context.status },
     );
   }
-  const { businessId, userId } = context;
-  if (!(await hasBusinessPermission(userId, businessId, "sales.create"))) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+  const { businessId } = context;
 
-  let body: Record<string, unknown>;
-  try {
-    const parsed = await request.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("invalid body");
-    }
-    body = parsed as Record<string, unknown>;
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 },
-    );
-  }
-  const phone = cleanPhone(typeof body.phone === "string" ? body.phone : "");
+  const body = (await request.json()) as { phone?: string; alias?: string };
+  const phone = cleanPhone(body.phone || "");
   const alias = sanitizePiiInput(body.alias);
 
   if (!phone) {

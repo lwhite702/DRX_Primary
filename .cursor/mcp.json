@@ -5,6 +5,9 @@
     },
     "posthog": {
       "url": "https://mcp.posthog.com/mcp"
+    },
+    "moxie-docs": {
+      "url": "https://moxiedocs.com/api/mcp"
     }
   }
 }

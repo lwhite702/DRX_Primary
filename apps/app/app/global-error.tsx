@@ -1,5 +1,6 @@
 "use client";
 
+import NextError from "next/error";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -14,14 +15,11 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body>
-        <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-          <div className="max-w-lg text-center">
-            <h1 className="text-3xl font-semibold">Something went wrong</h1>
-            <p className="mt-3 text-muted-foreground">
-              Refresh the page to try again. If the issue continues, contact DRX support.
-            </p>
-          </div>
-        </main>
+        {/* `NextError` is the default Next.js error page component. Its type
+        definition requires a `statusCode` prop. However, since the App Router
+        does not expose status codes for errors, we simply pass 0 to render a
+        generic error message. */}
+        <NextError statusCode={0} />
       </body>
     </html>
   );

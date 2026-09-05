@@ -1,24 +1,22 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { errorResponse, successResponse } from "@/lib/api/response";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 
 export async function GET(request: NextRequest) {
   try {
+    const { userId } = await resolveAuthContext(request);
+    if (!userId) {
+      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const customerCreditId = searchParams.get("customerCreditId");
     if (!customerCreditId) {
       return errorResponse("BAD_REQUEST", "customerCreditId is required", 400);
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
+    const supabase = await createServerDbClient();
 
     // We fetch logs for the credit limit (entity_id = customerCreditId)
     // AND apparently for transactions related to it.

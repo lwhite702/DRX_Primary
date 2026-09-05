@@ -17,7 +17,7 @@ export function usePermission(businessId: string | undefined) {
       authBypassEnabled
         ? ["*"]
         : roleMatchesBusiness && role
-          ? ROLE_PERMISSIONS[role]
+          ? ((ROLE_PERMISSIONS[role] as string[]) ?? [])
           : [],
     [authBypassEnabled, role, roleMatchesBusiness],
   );
@@ -25,6 +25,7 @@ export function usePermission(businessId: string | undefined) {
   const hasPermission = useCallback(
     (requiredPermission: string) => {
       if (authBypassEnabled) return true;
+      if (permissions.includes("*")) return true;
       return permissions.includes(requiredPermission);
     },
     [authBypassEnabled, permissions],

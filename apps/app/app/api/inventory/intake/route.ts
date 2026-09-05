@@ -1,260 +1,103 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { ensureInventoryBatchForIntake } from "@/lib/inventory/ensure-batch";
-import { applyIntakeMutationViaRpc } from "@/lib/inventory/mutations/apply-intake";
+import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { hasBusinessPermission } from "@/lib/auth/server-guards";
+import { db } from "@/lib/db";
+import type { PrismaClient } from "@prisma/client";
+import {
+  createInventoryIntake,
+  InventoryIntakeError,
+} from "@/lib/inventory/intake-service";
 
-interface IntakeRequest {
-  inventory_id: string;
-  total_cost: number;
-  total_weight_grams: number;
-  delivery_cost?: number;
-  supplier?: string;
+export async function GET(request: NextRequest) {
+  try {
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(await hasBusinessPermission(userId, businessId, "inventory.manage"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Outstanding work must never be displaced by newer completed history.
+    const [pending, history] = await Promise.all([
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: "pending" },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      (db as PrismaClient).inventoryIntake.findMany({
+        where: { businessId, status: { not: "pending" } },
+        include: { inventory: { select: { productName: true, sku: true } } },
+        orderBy: { createdAt: "desc" }, take: 100,
+      }),
+    ]);
+    const rows = [...pending, ...history];
+    const items = rows.map(row => ({
+      id: row.id, inventory_id: row.inventoryId, product_name: row.inventory.productName,
+      sku: row.inventory.sku, unit_of_measure: "g",
+      total_cost: Number(row.totalCost), total_weight_grams: Number(row.totalWeightGrams),
+      calculated_cost_per_gram: Number(row.calculatedCostPerGram), delivery_cost: Number(row.deliveryCost ?? 0),
+      supplier: row.supplier, created_at: row.createdAt.toISOString(), status: row.status,
+      created_by_email: "Business staff", // Do not expose staff email in the approval queue.
+    }));
+    return NextResponse.json({ items }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch { return NextResponse.json({ error: "Approval queue unavailable" }, { status: 503 }); }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body: IntakeRequest = await request.json();
-    const {
-      inventory_id,
-      total_cost,
-      total_weight_grams,
-      delivery_cost = 0,
-      supplier,
-    } = body;
-
-    // Validation
-    if (!inventory_id) {
-      return NextResponse.json(
-        { error: "inventory_id is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!total_cost || total_cost <= 0) {
-      return NextResponse.json(
-        { error: "total_cost must be greater than 0" },
-        { status: 400 }
-      );
-    }
-
-    if (!total_weight_grams || total_weight_grams < 0.01) {
-      return NextResponse.json(
-        { error: "total_weight_grams must be at least 0.01" },
-        { status: 400 }
-      );
-    }
-
-    if (delivery_cost < 0) {
-      return NextResponse.json(
-        { error: "delivery_cost cannot be negative" },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await createClient();
-
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const body = await request.json();
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Get inventory item to verify access and get business_id
-    const { data: inventoryItem, error: inventoryError } = await supabase
-      .from("inventory")
-      .select("id, business_id, product_name, unit_cost")
-      .eq("id", inventory_id)
-      .single();
-
-    if (inventoryError || !inventoryItem) {
-      return NextResponse.json(
-        { error: "Inventory item not found" },
-        { status: 404 }
-      );
+    if (!(await hasBusinessPermission(userId, businessId, "inventory.manage"))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const business_id = inventoryItem.business_id;
-
-    // Calculate cost per gram
-    const calculated_cost_per_gram = total_cost / total_weight_grams;
-
-    // Get historical average cost to check for unusual values
-    let avg_cost = 0;
-    try {
-      const { data: avgCostData, error: rpcError } = await supabase.rpc(
-        "get_avg_cost_per_gram",
-        {
-          p_inventory_id: inventory_id,
-          p_days: 90,
-        }
-      );
-
-      if (!rpcError && avgCostData !== null) {
-        avg_cost = Number(avgCostData);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch historical cost:", err);
+    const inventoryId = typeof body.inventory_id === "string" ? body.inventory_id : "";
+    const totalCost = Number(body.total_cost);
+    const totalWeightGrams = Number(body.total_weight_grams);
+    const deliveryCost = Number(body.delivery_cost ?? 0);
+    if (!inventoryId) {
+      return NextResponse.json({ error: "inventory_id is required" }, { status: 400 });
+    }
+    if (!Number.isFinite(totalCost) || totalCost <= 0) {
+      return NextResponse.json({ error: "total_cost must be greater than 0" }, { status: 400 });
+    }
+    if (!Number.isFinite(totalWeightGrams) || totalWeightGrams < 0.01) {
+      return NextResponse.json({ error: "total_weight_grams must be at least 0.01" }, { status: 400 });
+    }
+    if (!Number.isFinite(deliveryCost) || deliveryCost < 0) {
+      return NextResponse.json({ error: "delivery_cost cannot be negative" }, { status: 400 });
     }
 
-    let requires_approval = false; // Default to auto-approve
-    let status = "pending";
-
-    // Check if cost deviates more than 50% from historical average
-    // Only check if we have history (avg_cost > 0)
-    if (avg_cost > 0) {
-      const deviation = Math.abs(
-        (calculated_cost_per_gram - avg_cost) / avg_cost
-      );
-
-      // If deviation is > 50%, require approval
-      if (deviation > 0.5) {
-        requires_approval = true;
-        status = "pending";
-      }
-    }
-
-    const { data: intake, error: intakeError } = await supabase
-      .from("inventory_intakes")
-      .insert({
-        business_id,
-        inventory_id,
-        total_cost,
-        total_weight_grams,
-        calculated_cost_per_gram,
-        delivery_cost,
-        supplier,
-        requires_approval,
-        status,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (intakeError) {
-      console.error(
-        "Failed to create intake - Details:",
-        JSON.stringify(intakeError, null, 2)
-      );
-      return NextResponse.json(
-        { error: "Failed to create intake record" },
-        { status: 500 }
-      );
-    }
-
-    // If auto-approved, process immediately then mark approved.
-    if (!requires_approval) {
-      await processIntake(supabase, intake.id, inventory_id, business_id, {
-        total_cost,
-        total_weight_grams,
-        calculated_cost_per_gram,
-        delivery_cost,
-        supplier,
-        user_id: user.id,
-      });
-
-      const { error: approveError } = await supabase
-        .from("inventory_intakes")
-        .update({
-          status: "approved",
-          approved_by: user.id,
-          approved_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", intake.id);
-
-      if (approveError) {
-        return NextResponse.json(
-          { error: "Failed to finalize intake approval" },
-          { status: 500 },
-        );
-      }
-    }
+    const result = await createInventoryIntake({
+      businessId,
+      inventoryId,
+      actorUserId: userId,
+      idempotencyKey:
+        typeof body.idempotency_key === "string" && body.idempotency_key.length > 0
+          ? body.idempotency_key
+          : request.headers.get("idempotency-key") || randomUUID(),
+      values: {
+        totalCost,
+        totalWeightGrams,
+        deliveryCost,
+        supplier: typeof body.supplier === "string" ? body.supplier.trim() || undefined : undefined,
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      intake,
-      requires_approval,
-      message: requires_approval
+      intake: result.intake,
+      requires_approval: result.requiresApproval,
+      replayed: result.replayed,
+      message: result.requiresApproval
         ? "Intake submitted for manager approval due to unusual cost"
         : "Inventory successfully updated and approved",
     });
   } catch (error) {
     console.error("Intake API Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// Helper function to process intake
-async function processIntake(
-  supabase: any,
-  intake_id: string,
-  inventory_id: string,
-  business_id: string,
-  data: {
-    total_cost: number;
-    total_weight_grams: number;
-    calculated_cost_per_gram: number;
-    delivery_cost: number;
-    supplier?: string;
-    user_id: string;
-  }
-) {
-  const {
-    total_cost,
-    total_weight_grams,
-    calculated_cost_per_gram,
-    delivery_cost,
-    supplier,
-    user_id,
-  } = data;
-
-  const nowIso = new Date().toISOString();
-
-  const { batchId: ensuredBatchId, createdNow } = await ensureInventoryBatchForIntake({
-    supabase,
-    businessId: business_id,
-    inventoryId: inventory_id,
-    intakeId: intake_id,
-    quantityGrams: total_weight_grams,
-    unitCostPerGram: calculated_cost_per_gram,
-    supplier,
-    createdBy: user_id,
-    receivedAtIso: nowIso,
-  });
-
-  try {
-    await applyIntakeMutationViaRpc({
-      supabase,
-      businessId: business_id,
-      inventoryId: inventory_id,
-      intakeId: intake_id,
-      totalCost: total_cost,
-      totalWeightGrams: total_weight_grams,
-      calculatedCostPerGram: calculated_cost_per_gram,
-      deliveryCost: delivery_cost,
-      supplier,
-      userId: user_id,
-      reasonSuffix: "",
-    });
-  } catch (error) {
-    // Best-effort compensation only for batches created in this request.
-    if (createdNow) {
-      await supabase
-        .from("inventory_batches")
-        .delete()
-        .eq("id", ensuredBatchId)
-        .eq("intake_id", intake_id);
+    if (error instanceof InventoryIntakeError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    throw error;
+    return NextResponse.json({ error: "Failed to process inventory intake" }, { status: 500 });
   }
 }

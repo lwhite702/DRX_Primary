@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
-import { resolveTeamReadContext } from "./_lib/server";
+import { resolveTeamManagementContext } from "./_lib/server";
 import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
-    const context = await resolveTeamReadContext(request);
+    const context = await resolveTeamManagementContext(request);
     if (!context.ok) {
       return NextResponse.json(
         { error: context.error },

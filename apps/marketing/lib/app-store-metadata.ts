@@ -83,9 +83,9 @@ Run a tighter shift with operational dashboards, customer records, role-based ac
 Deelrx CRM is a merchant operations tool for physical-goods sales. It is not a consumer marketplace, delivery service, payment network, lender, debt collector, or legal, tax, financial, or compliance advisor.`,
   screenshotCaptions: appStoreScreenshotPlan.map((screenshot) => screenshot.caption),
   screenshotPlan: appStoreScreenshotPlan,
-  marketingUrl: "https://www.deelrxcrm.com",
-  supportUrl: "https://www.deelrxcrm.com/support",
-  privacyPolicyUrl: "https://www.deelrxcrm.com/legal/privacy",
+  marketingUrl: "https://deelrxcrm.com",
+  supportUrl: "https://deelrxcrm.com/resources",
+  privacyPolicyUrl: "https://deelrxcrm.com/legal/privacy",
   reviewNotes: `Deelrx CRM is a merchant-facing operations tool for physical-goods sales at a merchant's own location. It is not a consumer marketplace and does not provide consumer product discovery or delivery ordering.
 
 The app supports unit-based and weight-based inventory. Optional customer store-account features record merchant-managed purchases, payments, and balances. Reviewer credentials must be supplied in the secure App Store Connect review fields and the review environment must remain available for the full review window.
