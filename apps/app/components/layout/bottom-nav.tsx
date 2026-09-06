@@ -50,9 +50,7 @@ export function BottomNav() {
   const isPosActive = pathname === "/pos" || pathname.startsWith("/pos/");
   const isSalesActive = pathname === "/sales" || pathname.startsWith("/sales/");
 
-  const showAdmin =
-    hasPermission("system.manage") || hasPermission("users.manage_all");
-  const canManageTeam = hasPermission("users.manage");
+  const canManageTeam = hasPermission("staff.manage");
   const canManageInventory = hasPermission("inventory.manage");
   const canConfigurePos = hasPermission("settings.configure_pos");
 
@@ -62,8 +60,7 @@ export function BottomNav() {
     pathname.startsWith("/deliveries") ||
     pathname.startsWith("/insights") ||
     pathname.startsWith("/reports") ||
-    pathname.startsWith("/settings") ||
-    pathname.startsWith("/admin");
+    pathname.startsWith("/settings");
 
   return (
     <nav
@@ -367,20 +364,22 @@ export function BottomNav() {
                     </Link>
                   )}
 
-                  {showAdmin && (
+                  {hasPermission("audit.view") && <Link href="/settings/audit" onClick={() => setMoreMenuOpen(false)} className="block min-h-11 rounded-xl px-3.5 py-2.5 text-sm hover:bg-muted">Business audit</Link>}
+
+                  {canManageInventory && (
                     <Link
-                      href="/admin"
+                      href="/inventory/approvals"
                       onClick={() => setMoreMenuOpen(false)}
                       className={cn(
                         "flex items-center justify-between px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-colors",
-                        pathname.startsWith("/admin")
+                        pathname.startsWith("/inventory/approvals")
                           ? "bg-accent/15 text-accent font-semibold"
                           : "text-foreground hover:bg-muted active:bg-muted/80",
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <Shield className="h-4 w-4" />
-                        <span>Administration Console</span>
+                        <span>Inventory approvals</span>
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                     </Link>

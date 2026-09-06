@@ -128,7 +128,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "reports.view_all",
     "staff.manage",
     "system.manage",
-    "users.manage_all",
     "audit.view",
   ],
   owner: [
@@ -147,7 +146,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "reports.view_all",
     "staff.manage",
     "system.manage",
-    "users.manage_all",
     "audit.view",
   ],
   admin: [
@@ -166,7 +164,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "reports.view_all",
     "staff.manage",
     "system.manage",
-    "users.manage_all",
     "audit.view",
   ],
   staff: [

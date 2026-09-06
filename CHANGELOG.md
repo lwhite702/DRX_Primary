@@ -15,7 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Minor release preparation**: Synchronized product metadata to 1.1.0 for the approved plain-language DRX content system. Native build identifiers are unchanged; production deployment, native store distribution, and provider-controlled copy publication remain separately verified outcomes (WRE-107).
+
 - **Plain-language product vocabulary**: Replaced complex public privacy labels with `Privacy`, `Hide details`, `Protect details`, `What's saved`, and `Delete old records`; aligned navigation, sales, stock, payment, onboarding, help, marketing, Expo, and native iOS copy through a shared DRX content catalog. Provider-controlled copy remains draft-only pending publication approval (WRE-107).
+
+- **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.
+
+- WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
+- WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.
+- WRE-87: Reject tenant roles and permission overrides on global user, business, identity-deletion and notification operations. Platform role changes require a selected business and cannot grant platform access; business team management remains tenant-scoped. The production candidate remains subject to exact-SHA deployment and credentialed role-boundary verification.
 
 - **Patch release preparation**: Synchronized product metadata to 0.7.2 for the WRE-97 native launch repair. Native build identifiers remain unchanged; TestFlight distribution and physical-device verification are still pending approval.
 
@@ -26,6 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
+
+- **Business approvals (WRE-87):** Keep all pending inventory approvals visible independently of the recent completed-history limit, with both reads scoped to the authorized business.
+- **Business page loading (WRE-87):** Remove nested brand links that caused hydration errors and keep route content available while the optional onboarding interface loads.
+- **Admin access (WRE-83):** Replaced the nonexistent business-role model lookup with the supported role store and avoided unnecessary business lookups for existing platform administrators.
+- **Reporting correctness (WRE-83):** Include active transitional web sales alongside canonical commerce, preserve source identity and mirrored-order deduplication, and label partial reports and exports when a ledger cannot be read. Report availability does not imply complete accounting coverage.
+- **Checkout retries (WRE-83):** Restore the completed web-sale lookup before canonical checkout so configuration changes cannot replay an already completed web sale into the canonical ledger.
+- **Checkout error privacy (WRE-83):** Return a fixed retry-verification error without exposing database/provider details when the completed-sale lookup fails.
+- **Inventory test gate (WRE-80):** Initialize inventory route fixtures inside the hoisted mock factory so the regression suite can execute.
 
 - **Native iOS launch configuration**: Missing or malformed optional Sentry/PostHog settings no longer block an installed production app from opening. Release/archive preparation now rejects missing or invalid telemetry before distribution, while local development uses disabled telemetry stubs (WRE-97).
 

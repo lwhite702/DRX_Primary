@@ -3,7 +3,7 @@ import {
   emit,
   createFunction,
   inngest,
-} from "@wrelik/jobs";
+} from "@/lib/adapters/jobs";
 
 // Initialize wrelik jobs client with the app ID
 initJobs({ appId: "deelrx" });

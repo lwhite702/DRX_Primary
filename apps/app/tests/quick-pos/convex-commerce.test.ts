@@ -91,16 +91,11 @@ describe("canonical web commerce bridge", () => {
 
     expect(quote.total).toBe(12.15);
     expect(mocks.getToken).toHaveBeenCalledWith({ template: "convex" });
-    expect(mocks.query).toHaveBeenLastCalledWith(
-      expect.anything(),
-      {
-        customerId: "canonical_customer_id",
-        items: [
-          { productId: "canonical_product_id", quantityGrams: 1.25 },
-        ],
-        delivery: undefined,
-      },
-    );
+    expect(mocks.query).toHaveBeenLastCalledWith(expect.anything(), {
+      customerId: "canonical_customer_id",
+      items: [{ productId: "canonical_product_id", quantityGrams: 1.25 }],
+      delivery: undefined,
+    });
   });
 
   it("uses integrated Clerk authentication for the reporting bridge", async () => {
@@ -154,7 +149,53 @@ describe("canonical web commerce bridge", () => {
     ).toBe(false);
   });
 
-  it("processes canonical checkout directly on single ledger", async () => {
+  it("returns an existing web sale when retry routing changes to canonical", async () => {
+    mocks.findLegacySale.mockResolvedValue({
+      id: "original-sale",
+      orderNumber: "POS-stable-key",
+      totalAmount: 18.5,
+      changeAmount: 1.5,
+    });
+    const result = await checkoutCanonicalCommerce({
+      ...input,
+      idempotencyKey: "stable-key",
+      paymentMethod: "cash",
+    });
+    expect(result).toEqual({
+      saleId: "original-sale",
+      orderNumber: "POS-stable-key",
+      total: 18.5,
+      changeAmount: 1.5,
+    });
+    expect(mocks.findLegacySale).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          businessId: input.businessId,
+          orderNumber: "POS-stable-key",
+          orderStatus: "completed",
+        },
+      }),
+    );
+    expect(mocks.query).not.toHaveBeenCalled();
+    expect(mocks.mutation).not.toHaveBeenCalled();
+  });
+
+  it("cannot create a second sale when the prior-sale check is unavailable", async () => {
+    mocks.findLegacySale.mockRejectedValue(
+      new Error("Synthetic provider detail that must remain private"),
+    );
+    await expect(
+      checkoutCanonicalCommerce({
+        ...input,
+        idempotencyKey: "stable-key",
+        paymentMethod: "cash",
+      }),
+    ).rejects.toThrow("Checkout retry verification is temporarily unavailable. Please retry.");
+    expect(mocks.mutation).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith("Checkout retry verification failed");
+  });
+
+  it("processes a new canonical checkout after checking for a prior web sale", async () => {
     mocks.query
       .mockResolvedValueOnce({
         business: { legacyPrismaBusinessId: input.businessId },
@@ -260,9 +301,7 @@ describe("canonical web commerce bridge", () => {
 
     expect(mocks.query).toHaveBeenLastCalledWith(expect.anything(), {
       customerId: undefined,
-      items: [
-        { productId: "canonical_product_id", quantityGrams: 1.25 },
-      ],
+      items: [{ productId: "canonical_product_id", quantityGrams: 1.25 }],
       manualItems: [
         {
           lineId: "manual:synthetic",

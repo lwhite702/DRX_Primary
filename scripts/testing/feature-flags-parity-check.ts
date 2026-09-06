@@ -19,7 +19,7 @@ const root = process.cwd();
 const registryPath = path.join(root, "scripts/testing/feature-flags.registry.json");
 const featuresPagePath = path.join(
   root,
-  "apps/app/app/(app)/admin/features/page.tsx",
+  "apps/app/app/(platform)/control/[consoleKey]/(console)/features/page.tsx",
 );
 
 function fail(message: string): never {

@@ -119,7 +119,9 @@ export function CommerceDeliverySummary({
               <TableHead>Metric</TableHead>
               <TableHead className="text-right">Canonical</TableHead>
               <TableHead className="text-right">Legacy web</TableHead>
-              <TableHead className="text-right">Combined</TableHead>
+              <TableHead className="text-right">
+                {summary.canonical.available === false || summary.legacyWeb.available === false ? "Partial total" : "Combined"}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,12 +133,12 @@ export function CommerceDeliverySummary({
                     : label}
                 </TableCell>
                 <TableCell className="text-right">
-                  {unit === "money"
+                  {summary.canonical.available === false ? "Unavailable" : unit === "money"
                     ? money(summary.canonical.totals[field])
                     : summary.canonical.totals[field]}
                 </TableCell>
                 <TableCell className="text-right">
-                  {unit === "money"
+                  {summary.legacyWeb.available === false ? "Unavailable" : unit === "money"
                     ? money(summary.legacyWeb.totals[field])
                     : summary.legacyWeb.totals[field]}
                 </TableCell>

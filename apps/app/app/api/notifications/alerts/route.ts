@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/adapters/auth/server";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
@@ -57,12 +57,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const canManageUsers =
-      (await hasPermission("users.manage_all")) ||
-      (await hasPermission("staff.manage"));
-    const targetUserId = canManageUsers
-      ? payload.data.userId ?? actorId
-      : actorId;
+    const targetUserId = payload.data.userId ?? actorId;
+    if (!(await canManageNotificationRecipient(request, actorId, targetUserId))) {
+      return errorResponse("FORBIDDEN", "Recipient access denied", 403);
+    }
 
     const notification = await db.notification.create({
       data: {

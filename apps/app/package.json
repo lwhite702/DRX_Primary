@@ -1,6 +1,6 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.7.3",
+  "version": "1.1.0",
   "private": true,
   "engines": {
     "node": "22.x"
@@ -20,7 +20,7 @@
     "lint:readiness": "eslint app/api/pos/checkout/route.ts 'app/(operator)/pos' lib/pos lib/quick-pos tests/pos tests/quick-pos tests/middleware.test.ts tests/auth",
     "typecheck": "tsc --noEmit",
     "typecheck:readiness": "prisma generate && tsc --noEmit -p tsconfig.readiness.json",
-    "lint:compliance": "eslint app components lib middleware.ts instrumentation-client.ts --quiet || (echo '❌ Compliance violations detected' && exit 1)",
+    "lint:compliance": "eslint app components lib proxy.ts instrumentation-client.ts --quiet || (echo '❌ Compliance violations detected' && exit 1)",
     "compliance:scan": "./scripts/scan-compliance.sh",
     "compliance:static": "pnpm compliance:scan && pnpm lint --quiet",
     "compliance:secrets": "git ls-files | grep -E '^\\.env\\.' | grep -v '^\\.env\\.example' && echo '❌ Environment files found in git - secrets may be exposed' && exit 1 || echo '✅ No environment files tracked in git'",

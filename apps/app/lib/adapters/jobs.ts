@@ -7,7 +7,12 @@
 import {
   emit,
   createFunction as createJobFunction,
+  initJobs,
+  inngest,
 } from "@wrelik/jobs/server";
+import { serve } from "inngest/next";
+
+export { createJobFunction as createFunction, emit, initJobs, inngest, serve };
 
 export const jobs = {
   emit,

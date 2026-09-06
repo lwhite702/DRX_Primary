@@ -60,7 +60,9 @@ export class OfflineSyncManager {
           db.onversionchange = () => {
             try {
               db.close();
-            } catch {}
+            } catch {
+              // The connection may already be closed during a version change.
+            }
             this.db = null;
           };
 
@@ -131,7 +133,9 @@ export class OfflineSyncManager {
         if (retry && isClosingOrClosed) {
           try {
             db.close();
-          } catch {}
+          } catch {
+            // Recovery is already clearing the cached connection below.
+          }
           this.db = null;
           this.initPromise = null;
           return execute(false);
