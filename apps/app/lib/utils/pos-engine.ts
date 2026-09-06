@@ -61,6 +61,9 @@ export interface CartState {
 
 export class POSEngine {
   private cart: CartState;
+  private checkoutInFlight = false;
+  private pendingCheckout?: { signature: string; body: string };
+  private reviewedQuote?: { terms: string; total: number };
 
   constructor() {
     this.cart = {
@@ -172,7 +175,7 @@ export class POSEngine {
   // Set amount paid
   setAmountPaid(amount: number) {
     this.cart.amount_paid = amount;
-    this.recalculate();
+    this.cart.change_amount = Math.max(0, amount - this.cart.total);
     return this.cart;
   }
 
@@ -350,34 +353,19 @@ export class POSEngine {
     changeAmount?: number;
     error?: string;
   }> {
-    // Validate stock
-    const stockValidation = await this.validateStock(business_id);
-    if (!stockValidation.valid) {
-      return {
-        success: false,
-        error: stockValidation.errors.map((e) => e.message).join(", "),
-      };
-    }
-
-    // Validate credit limit
-    const creditValidation = await this.validateCreditLimit(business_id);
-    if (!creditValidation.valid) {
-      return {
-        success: false,
-        error: creditValidation.warning || "Credit limit exceeded",
-      };
-    }
-
+    if (this.checkoutInFlight) return { success: false, error: "Checkout is already being processed" };
+    this.checkoutInFlight = true;
     try {
       const checkoutData = {
         mode: "full",
         source: "legacy-sales",
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: "",
+        expectedTotal: 0,
         customerId: this.cart.customer_id,
         payment: {
           method: this.cart.payment_method,
           receipt: "none",
-          creditConfirmed: this.cart.payment_method === "credit",
+          creditConfirmed: this.cart.payment_method === "credit" || (this.cart.payment_method === "mixed" && Boolean(this.cart.customer_id)),
         },
         items: this.cart.items.map((i) => ({
           id: i.inventory_id,
@@ -403,15 +391,42 @@ export class POSEngine {
         amountPaid: this.cart.amount_paid,
       };
 
+      const { taxAmount, expectedTotal, idempotencyKey, ...requestTerms } = checkoutData;
+      const signature = JSON.stringify({ business_id, ...requestTerms });
+      if (this.pendingCheckout && this.pendingCheckout.signature !== signature) return { success: false, error: "A previous checkout has not been confirmed. Restore that cart and retry it before starting another sale." };
+      if (!this.pendingCheckout) {
+        const { payment, amountPaid, paymentRef, ...priceTerms } = requestTerms;
+        const terms = JSON.stringify({ business_id, ...priceTerms });
+        const response = await fetch("/api/pos/quote", { method: "POST", headers: { "Content-Type": "application/json", "x-business-id": business_id }, body: JSON.stringify(checkoutData) });
+        const quoted = await response.json();
+        if (!response.ok || !quoted.success || !Number.isFinite(quoted.quote?.total)) return { success: false, error: quoted.error || "Unable to quote this sale" };
+        const total = quoted.quote.total;
+        const displayedTotal = this.reviewedQuote?.terms === terms ? this.reviewedQuote.total : Math.round((this.cart.total + calculateFees(fees)) * 100) / 100;
+        this.cart.tax_amount = quoted.quote.taxAmount;
+        this.cart.subtotal = quoted.quote.subtotalAfterDiscount;
+        // The existing totals component adds miscellaneous fees separately.
+        this.cart.total = total - calculateFees(fees);
+        this.reviewedQuote = { terms, total };
+        if (Math.round(displayedTotal * 100) !== Math.round(total * 100)) return { success: false, error: "Prices changed. Review the updated total, then submit checkout again." };
+        checkoutData.expectedTotal = total;
+        checkoutData.taxAmount = quoted.quote.taxAmount;
+        checkoutData.idempotencyKey = crypto.randomUUID();
+        this.pendingCheckout = { signature, body: JSON.stringify(checkoutData) };
+      }
       const res = await fetch("/api/pos/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(checkoutData),
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
+        body: this.pendingCheckout.body,
       });
 
       const result = await res.json();
-      if (result.success) {
+      if (res.ok && result.success) {
+        this.pendingCheckout = undefined;
+        this.reviewedQuote = undefined;
         this.clearCart();
+      } else if (res.status >= 400 && res.status < 500) {
+        this.pendingCheckout = undefined;
+        this.reviewedQuote = undefined;
       }
       return {
         success: result.success,
@@ -423,8 +438,10 @@ export class POSEngine {
           result.error ??
           (Array.isArray(result.errors) ? result.errors.join(", ") : undefined),
       };
-    } catch (e: any) {
-      return { success: false, error: e.message };
+    } catch {
+      return { success: false, error: "Checkout was not confirmed. Retry the same cart." };
+    } finally {
+      this.checkoutInFlight = false;
     }
   }
 

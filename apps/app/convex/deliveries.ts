@@ -48,6 +48,8 @@ const queueRecord = v.object({
   status: deliveryStatus,
   addressLabel: v.string(),
   assignedToUserId: v.optional(v.string()),
+  profileId: v.optional(v.id("deliveryProfiles")),
+  vendorExpenseKnown: v.optional(v.boolean()),
   vendorFeeCents: v.number(),
   customerFeeCents: v.number(),
   deliveryTaxCents: v.number(),

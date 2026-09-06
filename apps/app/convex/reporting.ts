@@ -30,6 +30,7 @@ const aggregateRecord = v.object({
   feeRevenueCents: v.optional(v.number()),
   deliveryRevenueCents: v.number(),
   vendorDeliveryExpenseCents: v.number(),
+  unknownVendorExpenseOrderCount: v.optional(v.number()),
   deliveryTaxCents: v.number(),
   deliveryTaxRefundCents: v.number(),
   discountCents: v.number(),
@@ -212,7 +213,7 @@ async function aggregatePeriod(
         );
   const manualCostComplete = unknownCostLineCount === 0;
   const grossProfitComplete =
-    coverageBps === 10_000 && manualCostComplete;
+    coverageBps === 10_000 && manualCostComplete && sales.every(sale => sale.vendorDeliveryExpenseKnown !== false);
 
   let customerFeeRefundCents = 0;
   let vendorCreditsCents = 0;
@@ -262,6 +263,7 @@ async function aggregatePeriod(
     ...(feeRevenueCents ? { feeRevenueCents } : {}),
     deliveryRevenueCents,
     vendorDeliveryExpenseCents,
+    ...(sales.some(sale => sale.vendorDeliveryExpenseKnown === false) ? { unknownVendorExpenseOrderCount: sales.filter(sale => sale.vendorDeliveryExpenseKnown === false).length } : {}),
     deliveryTaxCents: saleDeliveryTaxCents - deliveryTaxRefundCents,
     deliveryTaxRefundCents,
     discountCents,

@@ -138,6 +138,7 @@ export function useSalesCart(businessId?: string) {
       }
 
       const result = await posEngine.checkout(businessId, fees);
+      refreshCart();
 
       if (result.success) {
         clearCart();

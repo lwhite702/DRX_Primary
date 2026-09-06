@@ -25,6 +25,8 @@ import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 
 import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calculateSettlement, type CheckoutFee, type CheckoutPaymentMethod } from "./helpers/checkoutSettlement";
 
+import { priceOverride, normalizeOverrides, deliveryTerms, validateDeliveryTerms, type PriceOverride, type DeliveryTerms } from "./helpers/checkoutTerms";
+
 const paymentMethod = v.union(
   v.literal("cash"),
   v.literal("card"),
@@ -35,8 +37,7 @@ const paymentMethod = v.union(
 
 const deliveryInput = v.object({
   address: v.string(),
-  vendorFeeCents: v.number(),
-  chargeCustomer: v.boolean(),
+  ...deliveryTerms,
 });
 
 const manualItemInput = v.object({
@@ -138,6 +139,7 @@ const saleRecord = v.object({
   fees: v.optional(v.array(checkoutFee)),
   feeRevenueCents: v.optional(v.number()),
   creditAmountCents: v.optional(v.number()),
+  vendorDeliveryExpenseKnown: v.optional(v.boolean()),
   checkoutFingerprint: v.optional(v.string()),
   createdBy: v.string(),
   offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
@@ -280,13 +282,10 @@ async function createCheckoutFingerprint(input: {
   manualItems: ManualItem[];
   paymentMethod: CheckoutPaymentMethod;
   fees?: CheckoutFee[];
+  priceOverrides?: PriceOverride[];
   paymentReference?: string;
   amountPaidCents: number;
-  delivery?: {
-    address: string;
-    vendorFeeCents: number;
-    chargeCustomer: boolean;
-  };
+  delivery?: DeliveryTerms & { address: string };
 }): Promise<string> {
   return JSON.stringify({
     customerId: input.customerId ? String(input.customerId) : null,
@@ -301,6 +300,7 @@ async function createCheckoutFingerprint(input: {
       unitPriceCents: item.unitPriceCents,
     })),
     ...(input.fees?.length ? { fees: input.fees } : {}),
+    ...(input.priceOverrides?.length ? { priceOverrides: input.priceOverrides } : {}),
     ...(input.paymentReference ? { paymentReference: input.paymentReference } : {}),
     paymentMethod: input.paymentMethod,
     amountPaidCents: input.amountPaidCents,
@@ -309,6 +309,9 @@ async function createCheckoutFingerprint(input: {
           addressHash: await hashDeliveryAddress(input.delivery.address),
           vendorFeeCents: input.delivery.vendorFeeCents,
           chargeCustomer: input.delivery.chargeCustomer,
+          ...(input.delivery.customerFeeCents === undefined ? {} : { customerFeeCents: input.delivery.customerFeeCents }),
+          ...(input.delivery.profileId ? { profileId: input.delivery.profileId } : {}),
+          ...(input.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: input.delivery.vendorExpenseKnown }),
         }
       : null,
   });
@@ -325,11 +328,9 @@ export const quoteCheckout = query({
     ),
     manualItems: v.optional(v.array(manualItemInput)),
     fees: v.optional(v.array(checkoutFee)),
+    priceOverrides: v.optional(v.array(priceOverride)),
     delivery: v.optional(
-      v.object({
-        vendorFeeCents: v.number(),
-        chargeCustomer: v.boolean(),
-      }),
+      v.object(deliveryTerms),
     ),
   },
   returns: quoteResult,
@@ -338,6 +339,7 @@ export const quoteCheckout = query({
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     const feeRevenueCents = totalFees(normalizeFees(args.fees));
     const items = normalizeItems(args.items);
+    const overrides = normalizeOverrides(auth.userRecord, items, args.priceOverrides);
     const normalizedManualItems = normalizeManualItems(args.manualItems);
     requireNonemptyCart(items.length, normalizedManualItems.length);
     const manualItems = await resolveManualItems(
@@ -345,15 +347,7 @@ export const quoteCheckout = query({
       auth.businessId,
       normalizedManualItems,
     );
-    if (args.delivery) {
-      requireNonnegativeSafeInteger(
-        args.delivery.vendorFeeCents,
-        "delivery.vendorFeeCents",
-      );
-      if (args.delivery.vendorFeeCents === 0) {
-        throw new Error("INVALID_ARGUMENT: Delivery vendor fee must be positive");
-      }
-    }
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     let customer: Doc<"customers"> | null = null;
     if (args.customerId) {
       customer = await ctx.db.get(args.customerId);
@@ -402,13 +396,13 @@ export const quoteCheckout = query({
           product: {
           productId: String(product._id),
           productName: product.productName,
-          baseUnitPriceCents: product.sellingPriceCents,
+          baseUnitPriceCents: overrides.find(override => override.productId === product._id)?.unitPriceCents ?? product.sellingPriceCents,
           taxable: product.isTaxable !== false,
           allowFractional: product.allowFractionalWeight,
             quantityPrecision: commerceConfig.quantityPrecision,
             minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
             quantityIncrement: commerceConfig.quantityIncrement,
-            bulkPriceTiers: commerceConfig.bulkPriceTiers,
+            bulkPriceTiers: overrides.some(override => override.productId === product._id) ? [] : commerceConfig.bulkPriceTiers,
           },
         };
       }),
@@ -471,9 +465,7 @@ export const quoteCheckout = query({
       taxableMerchandiseCents,
       taxRateBps,
     );
-    const deliveryRevenueCents = args.delivery?.chargeCustomer
-      ? args.delivery.vendorFeeCents
-      : 0;
+    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
     const deliveryTaxCents =
       args.delivery?.chargeCustomer && settings?.deliveryFeeTaxable
         ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
@@ -514,8 +506,10 @@ export const processCheckout = mutation({
     ),
     manualItems: v.optional(v.array(manualItemInput)),
     fees: v.optional(v.array(checkoutFee)),
+    priceOverrides: v.optional(v.array(priceOverride)),
     paymentMethod,
     paymentReference: v.optional(v.string()),
+    expectedTotalCents: v.optional(v.number()),
     amountPaidCents: v.number(),
     delivery: v.optional(deliveryInput),
   },
@@ -537,6 +531,7 @@ export const processCheckout = mutation({
     }
 
     const normalizedItems = normalizeItems(args.items);
+    const overrides = normalizeOverrides(auth.userRecord, normalizedItems, args.priceOverrides);
     const normalizedManualItems = normalizeManualItems(args.manualItems);
     requireNonemptyCart(normalizedItems.length, normalizedManualItems.length);
     const resolvedManualItems = await resolveManualItems(
@@ -544,21 +539,14 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
-    if (args.delivery) {
-      requireNonnegativeSafeInteger(
-        args.delivery.vendorFeeCents,
-        "delivery.vendorFeeCents",
-      );
-      if (args.delivery.vendorFeeCents === 0) {
-        throw new Error("INVALID_ARGUMENT: Delivery vendor fee must be positive");
-      }
-    }
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
       manualItems: normalizedManualItems,
       paymentMethod: args.paymentMethod,
       fees,
+      priceOverrides: overrides,
       paymentReference,
       amountPaidCents: args.amountPaidCents,
       delivery: args.delivery,
@@ -714,13 +702,13 @@ export const processCheckout = mutation({
           product: {
             productId: String(product._id),
             productName: product.productName,
-            baseUnitPriceCents: product.sellingPriceCents,
+            baseUnitPriceCents: overrides.find(override => override.productId === product._id)?.unitPriceCents ?? product.sellingPriceCents,
             taxable: product.isTaxable !== false,
             allowFractional: product.allowFractionalWeight,
             quantityPrecision: commerceConfig.quantityPrecision,
             minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
             quantityIncrement: commerceConfig.quantityIncrement,
-            bulkPriceTiers: commerceConfig.bulkPriceTiers,
+            bulkPriceTiers: overrides.some(override => override.productId === product._id) ? [] : commerceConfig.bulkPriceTiers,
           },
         };
       }),
@@ -788,9 +776,7 @@ export const processCheckout = mutation({
     const discountCents = pricing.discountCents + manualDiscountCents;
     const subtotalCents =
       pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
-    const deliveryRevenueCents = args.delivery?.chargeCustomer
-      ? args.delivery.vendorFeeCents
-      : 0;
+    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
     const vendorDeliveryExpenseCents = args.delivery?.vendorFeeCents ?? 0;
 
     const taxRateBps = auth.businessRecord.collectTax
@@ -823,6 +809,7 @@ export const processCheckout = mutation({
       );
     }
 
+    if (args.expectedTotalCents !== undefined && args.expectedTotalCents !== totalAmountCents) throw new Error("QUOTE_CHANGED: Refresh and review the checkout total");
     const { creditAmountCents, changeAmountCents } = calculateSettlement(args.paymentMethod, totalAmountCents, args.amountPaidCents);
 
     if (creditAmountCents > 0 && !customer) throw new Error("INVALID_ARGUMENT: Unpaid mixed sales require a customer");
@@ -854,6 +841,7 @@ export const processCheckout = mutation({
       merchandiseRevenueCents: subtotalCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents,
+      ...(args.delivery?.vendorExpenseKnown === undefined ? {} : { vendorDeliveryExpenseKnown: args.delivery.vendorExpenseKnown }),
       deliveryTaxCents,
       merchandiseTaxCents,
       loyaltyEligibleSpendCents: subtotalCents,
@@ -881,6 +869,8 @@ export const processCheckout = mutation({
         businessId: auth.businessId,
         saleId,
         customerId: args.customerId,
+        ...(args.delivery.profileId ? { profileId: args.delivery.profileId } : {}),
+        ...(args.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: args.delivery.vendorExpenseKnown }),
         addressEncrypted: "pending",
         addressEncryptionVersion: 0,
         vendorFeeCents: vendorDeliveryExpenseCents,
@@ -932,6 +922,7 @@ export const processCheckout = mutation({
         unitPriceCents: lineItem.unitPriceCents,
         lineTotalCents: lineItem.lineTotalCents,
         baseUnitPriceCents: lineItem.product.sellingPriceCents,
+        ...(overrides.find(override => override.productId === lineItem.product._id) ? { priceOverrideReason: overrides.find(override => override.productId === lineItem.product._id)!.reason, catalogUnitPriceCents: lineItem.product.sellingPriceCents } : {}),
         baseLineTotalCents: lineItem.baseLineTotalCents,
         bulkDiscountCents: lineItem.bulkDiscountCents,
         loyaltyDiscountCents: lineItem.loyaltyDiscountCents,

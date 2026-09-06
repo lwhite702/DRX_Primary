@@ -64,6 +64,7 @@ export interface CombinedCommerceDeliverySummary {
 }
 
 export interface CanonicalCommerceAggregate {
+  unknownVendorExpenseOrderCount?: number;
   orderNumbers: string[];
   orderCount: number;
   totalRevenueCents: number;
@@ -156,7 +157,7 @@ export function canonicalSourceSummaryFromAggregate(
     },
     orderNumbers: aggregate.orderNumbers,
     unallocatedCogsOrderCount: 0,
-    untrackedVendorExpenseOrderCount: 0,
+    untrackedVendorExpenseOrderCount: aggregate.unknownVendorExpenseOrderCount ?? 0,
     cogsAllocationCoverage: aggregate.cogsAllocationCoverage,
     manualCostCoverage: aggregate.manualCostCoverage,
     grossProfitComplete: aggregate.grossProfitComplete,
@@ -184,6 +185,7 @@ export function combineCommerceDeliverySummaries(input: {
 }) {
   const duplicateOrdersExcluded = input.duplicateOrdersExcluded ?? 0;
   const warnings: string[] = [];
+  if (input.canonical.untrackedVendorExpenseOrderCount > 0) warnings.push(`${input.canonical.untrackedVendorExpenseOrderCount} canonical order(s) have unknown vendor delivery costs; known gross profit excludes those costs.`);
   if (input.canonical.available === false) {
     warnings.push("Canonical ledger is unavailable. These are partial totals from legacy web sales only; canonical sales and costs are not included.");
   }

@@ -1,92 +1,14 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import {
-  PosCheckoutError,
-  addItem,
-  checkout,
-  createCart,
-  setAmountPaid,
-  setDelivery,
-  setFees,
-  setPayment,
-  setPaymentRef,
-  setTaxAmount,
-} from "@/lib/pos/core";
-import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
-import { buildCheckoutFailure, buildCheckoutSuccess } from "@/lib/pos/response";
-
+import { fullCheckoutPayloadSchema } from "@/lib/pos/contract";
+import { buildCheckoutSuccess } from "@/lib/pos/response";
+import { performFullCheckout, checkoutFailure } from "@/app/api/pos/_lib/full-checkout";
 export async function POST(request: NextRequest) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!userId || !businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const { userId, businessId } = await resolveAuthContext(request);
+    if (!userId || !businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const body = await request.json();
-    let cart = createCart({
-      businessId,
-      userId,
-      mode: "full",
-      source: "checkout-enhanced",
-      customerId: body.customerId || null,
-    });
-
-    const items = Array.isArray(body.lineItems) ? body.lineItems : [];
-    for (const item of items) {
-      const cartItem: PosCartItem = {
-        id: item.id || item.inventory_id,
-        inventoryId: item.inventory_id,
-        name: item.product_name || item.name || "Inventory Item",
-        unitPrice: Number(item.overridden_price ?? item.unit_price ?? 0),
-        qty: Number(item.quantity ?? 1),
-        source: "inventory",
-        sku: item.sku ?? null,
-        barcode: item.barcode ?? null,
-        weightGrams:
-          item.weight_grams !== undefined ? Number(item.weight_grams) : undefined,
-        pricePerGram:
-          item.price_per_gram !== undefined ? Number(item.price_per_gram) : undefined,
-        bulkTierApplied: item.bulk_tier_applied,
-        loyaltyDiscountApplied:
-          item.loyalty_discount_applied !== undefined
-            ? Number(item.loyalty_discount_applied)
-            : undefined,
-        originalPrice:
-          item.original_price !== undefined ? Number(item.original_price) : undefined,
-        overrideReason: item.override_reason,
-      };
-      cart = addItem(cart, cartItem);
-    }
-
-    const payment: PosPayment = {
-      method: body.paymentMethod || "cash",
-      receipt: "none",
-      creditConfirmed: body.paymentMethod === "credit",
-    };
-
-    cart = setPayment(cart, payment);
-    cart = setTaxAmount(cart, Number(body.taxAmount || 0));
-    cart = setFees(cart, (body.fees || []) as PosFee[]);
-    cart = setPaymentRef(cart, body.paymentRef || null);
-    cart = setAmountPaid(
-      cart,
-      body.amountPaid !== undefined ? Number(body.amountPaid) : null,
-    );
-    cart = setDelivery(cart, {
-      deliveryManagementId: body.deliveryManagementId || null,
-      deliveryAddress: body.deliveryAddress || null,
-      deliveryPrice:
-        body.deliveryPrice !== undefined ? Number(body.deliveryPrice) : 0,
-    });
-
-    const result = await checkout(cart, body.idempotencyKey || randomUUID());
-
-    return NextResponse.json(buildCheckoutSuccess(result));
-  } catch (error) {
-    const status = error instanceof PosCheckoutError ? error.status : 400;
-    return NextResponse.json(buildCheckoutFailure(error instanceof Error ? error.message : "Checkout failed"), {
-      status,
-    });
-  }
+    const payload = fullCheckoutPayloadSchema.parse({ ...body, mode: "full", source: "checkout-enhanced", payment: { method: body.paymentMethod ?? "cash", receipt: "none", creditConfirmed: body.paymentMethod === "credit" }, items: Array.isArray(body.lineItems) ? body.lineItems.map((item: Record<string, unknown>) => ({ id: item.id ?? item.inventory_id, inventoryId: item.inventory_id, source: "inventory", name: item.product_name ?? item.name ?? "Inventory item", qty: Number(item.quantity ?? 1), unitPrice: Number(item.overridden_price ?? item.unit_price ?? 0), weightGrams: item.weight_grams === undefined ? undefined : Number(item.weight_grams), originalPrice: item.original_price === undefined ? undefined : Number(item.original_price), overrideReason: item.override_reason })) : [] });
+    return NextResponse.json(buildCheckoutSuccess(await performFullCheckout(payload, businessId)));
+  } catch (error) { return checkoutFailure(error); }
 }

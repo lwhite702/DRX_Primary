@@ -26,7 +26,7 @@ export function PaymentSection({
     <div className="space-y-2">
       <Label>
         Payment Method
-        <HelpTooltip content="Choose how the customer is paying. 'Credit' will add to their account balance for later payment." />
+        <HelpTooltip content="Choose how the customer is paying. 'Credit' adds the sale to the customer's account. For 'Mixed', any unpaid amount is added to that customer's credit balance." />
       </Label>
       <Select value={paymentMethod} onValueChange={onMethodChange}>
         <SelectTrigger>

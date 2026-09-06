@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Full web checkout on Convex (WRE-115, unreleased)**: Full checkout and checkout-enhanced use canonical pricing, inventory, settlement and delivery profiles. Pricing overrides require permission and a reason. The client reviews changed totals and reuses an uncertain submission; checkout-enhanced requires a stable request key. Unknown delivery vendor costs remain explicit in profit reports. Sales API/history, data migration and remaining domains are still in progress.
+
 - **Convex full-checkout foundation (WRE-115, unreleased)**: Canonical settlement now records miscellaneous fees, payment references, Zelle and mixed tender, with atomic credit remainder and retry checks. Sales emit stock audit events and reports show fee revenue. Full web checkout routing, delivery-profile and price-override parity remain in progress.
 
 - **Convex checkout validation (WRE-115, unreleased)**: Stock, credit and preflight checks read the canonical records. Stock checks combine duplicate cart lines and enforce selling rules; unavailable credit checks fail closed. Full checkout and historical credit-policy reconciliation remain pending.

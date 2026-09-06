@@ -236,6 +236,7 @@ export default defineSchema({
     fees: v.optional(v.array(v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) }))),
     feeRevenueCents: v.optional(v.number()),
     creditAmountCents: v.optional(v.number()),
+    vendorDeliveryExpenseKnown: v.optional(v.boolean()),
     checkoutFingerprint: v.optional(v.string()),
     createdBy: v.string(),
     offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
@@ -268,6 +269,8 @@ export default defineSchema({
     quantityGrams: v.number(),
     unitPriceCents: v.number(),
     lineTotalCents: v.number(),
+    priceOverrideReason: v.optional(v.string()),
+    catalogUnitPriceCents: v.optional(v.number()),
     baseUnitPriceCents: v.optional(v.number()),
     baseLineTotalCents: v.optional(v.number()),
     bulkDiscountCents: v.optional(v.number()),
@@ -291,12 +294,22 @@ export default defineSchema({
     .index("by_lineItemId", ["lineItemId"])
     .index("by_batchId", ["batchId"]),
 
+  deliveryProfiles: defineTable({
+    businessId: v.id("businesses"), legacyPrismaId: v.optional(v.string()),
+    name: v.string(), provider: v.optional(v.string()), basePriceCents: v.number(),
+    vendorFeeCents: v.optional(v.number()), allowPriceOverride: v.boolean(), isActive: v.boolean(),
+    createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_legacyPrismaId", ["businessId", "legacyPrismaId"]),
+
   // Delivery fulfillment is linked to an immutable completed sale. Customer
   // addresses are always encrypted before this record is persisted.
   deliveries: defineTable({
     businessId: v.id("businesses"),
     saleId: v.id("sales"),
     customerId: v.optional(v.id("customers")),
+    profileId: v.optional(v.id("deliveryProfiles")),
+    vendorExpenseKnown: v.optional(v.boolean()),
     assignedToUserId: v.optional(v.string()),
     addressEncrypted: v.string(),
     addressEncryptionVersion: v.number(),

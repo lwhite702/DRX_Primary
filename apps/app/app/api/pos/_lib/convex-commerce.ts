@@ -16,6 +16,8 @@ type CanonicalCartItem = {
   qty: number;
   weightGrams?: number;
   bulkTierApplied?: string;
+  overrideReason?: string;
+  originalPrice?: number;
 };
 
 type CanonicalInput = {
@@ -23,6 +25,9 @@ type CanonicalInput = {
   customerId?: string | null;
   items: CanonicalCartItem[];
   delivery?: QuickPosDeliveryState;
+  fullDelivery?: { profileId?: string; address: string; customerFeeCents: number };
+  fees?: Array<{ type: string; amount?: number; value?: string }>;
+  usePriceOverrides?: boolean;
 };
 
 export function shouldUseCanonicalCommerce(input: Pick<CanonicalInput, "customerId" | "items" | "delivery">) {
@@ -97,20 +102,30 @@ async function resolveCanonicalInput(input: CanonicalInput) {
   }
 
   const customerId = identities.customerId;
+  const priceOverrides = input.usePriceOverrides ? inventoryItems.flatMap((item, index) => {
+    if (item.originalPrice !== undefined && !item.overrideReason) throw new Error("INVALID_ARGUMENT: A price override requires a reason");
+    return item.overrideReason ? [{ productId: identities.productIds[index], unitPriceCents: checkedCents(item.unitPrice), reason: item.overrideReason }] : [];
+  }) : [];
+  const fullDelivery = input.fullDelivery ? {
+    ...(await client.query(api.deliveryProfiles.resolve, { businessId: input.businessId, profileId: input.fullDelivery.profileId, customerFeeCents: input.fullDelivery.customerFeeCents })),
+    address: input.fullDelivery.address,
+  } : undefined;
 
   return {
     client,
     items,
     manualItems,
     customerId,
-    delivery: input.delivery?.enabled
+    priceOverrides,
+    fees: input.fees?.map(fee => ({ type: fee.type, amountCents: checkedCents(fee.amount ?? 0), ...(fee.value === undefined ? {} : { value: fee.value }) })),
+    delivery: fullDelivery ?? (input.delivery?.enabled
       ? {
           address: input.delivery.address,
           vendorFeeCents: input.delivery.vendorFeeCents,
           chargeCustomer:
             input.delivery.feeAllocation === "charge_customer",
         }
-      : undefined,
+      : undefined),
   };
 }
 
@@ -123,6 +138,7 @@ function toWebQuote(quote: {
   vendorDeliveryExpenseCents: number;
   deliveryTaxCents: number;
   totalAmountCents: number;
+  feeRevenueCents?: number;
 }) {
   return {
     subtotal: quote.merchandiseSubtotalCents / 100,
@@ -135,7 +151,7 @@ function toWebQuote(quote: {
     deliveryTaxAmount: quote.deliveryTaxCents / 100,
     deliveryRevenue: quote.deliveryRevenueCents / 100,
     vendorDeliveryExpense: quote.vendorDeliveryExpenseCents / 100,
-    feesTotal: quote.deliveryRevenueCents / 100,
+    feesTotal: (quote.feeRevenueCents ?? 0) / 100,
     total: quote.totalAmountCents / 100,
   };
 }
@@ -145,6 +161,8 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,
     items: canonical.items,
+    ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
+    ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
       ? { manualItems: canonical.manualItems }
       : {}),
@@ -152,6 +170,7 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
       ? {
           vendorFeeCents: canonical.delivery.vendorFeeCents,
           chargeCustomer: canonical.delivery.chargeCustomer,
+          ...("customerFeeCents" in canonical.delivery ? { customerFeeCents: canonical.delivery.customerFeeCents, profileId: canonical.delivery.profileId, vendorExpenseKnown: canonical.delivery.vendorExpenseKnown } : {}),
         }
       : undefined,
   });
@@ -169,15 +188,19 @@ export async function checkoutCanonicalCommerce(
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,
     items: canonical.items,
+    ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
+    ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
       ? { manualItems: canonical.manualItems }
       : {}),
-    delivery: canonical.delivery,
+    delivery: canonical.delivery ? (({ address, ...terms }) => terms)(canonical.delivery) : undefined,
   });
   const result = await canonical.client.mutation(api.checkout.processCheckout, {
     customerId: canonical.customerId,
     orderNumber: `WEB-${input.idempotencyKey}`,
     items: canonical.items,
+    ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
+    ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
       ? { manualItems: canonical.manualItems }
       : {}),
@@ -197,4 +220,21 @@ function checkedCents(value: number) {
   const cents = Math.round(value * 100);
   if (!Number.isFinite(value) || value < 0 || !Number.isSafeInteger(cents) || Math.abs(cents - value * 100) > 1e-6) throw new Error("INVALID_ARGUMENT: Money must use up to two decimal places");
   return cents;
+}
+
+export async function checkoutFullCanonicalCommerce(input: CanonicalInput & {
+  idempotencyKey: string; paymentMethod: "cash" | "card" | "credit" | "mixed" | "zelle";
+  amountPaid?: number; paymentRef?: string; expectedTotal: number;
+}) {
+  const canonical = await resolveCanonicalInput(input);
+  const expectedTotalCents = checkedCents(input.expectedTotal);
+  const result = await canonical.client.mutation(api.checkout.processCheckout, {
+    customerId: canonical.customerId, orderNumber: `WEB-${input.idempotencyKey}`,
+    items: canonical.items, priceOverrides: canonical.priceOverrides, fees: canonical.fees,
+    paymentMethod: input.paymentMethod, paymentReference: input.paymentRef,
+    expectedTotalCents,
+    amountPaidCents: input.amountPaid === undefined ? (input.paymentMethod === "credit" ? 0 : expectedTotalCents) : checkedCents(input.amountPaid),
+    delivery: canonical.delivery,
+  });
+  return { saleId: String(result.saleId), orderNumber: result.orderNumber, total: result.totalAmountCents / 100, changeAmount: result.changeAmountCents / 100 };
 }

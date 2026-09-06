@@ -132,14 +132,16 @@ export const fullCheckoutPayloadSchema = z.object({
       cartLineItemSchema.extend({
         inventoryId: z.string().min(1).max(128),
         source: z.literal("inventory"),
+        qty: z.number().positive(),
       }),
     )
     .min(1),
+  expectedTotal: z.number().nonnegative().optional(),
   taxAmount: z.number().nonnegative().default(0),
   fees: z.array(posFeeSchema).optional().default([]),
   paymentRef: z.string().min(1).optional(),
   amountPaid: z.number().nonnegative().optional(),
-  deliveryManagementId: z.string().uuid().nullable().optional(),
+  deliveryManagementId: z.string().min(1).max(128).nullable().optional(),
   deliveryAddress: z.string().optional(),
   deliveryPrice: z.number().nonnegative().optional().default(0),
 });
