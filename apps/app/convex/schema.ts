@@ -149,11 +149,20 @@ export default defineSchema({
     deliveryCostCents: v.number(),
     supplier: v.optional(v.string()),
     status: v.string(), // "approved" | "pending" | "rejected"
+    requiresApproval: v.optional(v.boolean()),
+    approvedBy: v.optional(v.string()),
+    approvedAt: v.optional(v.number()),
+    rejectionReason: v.optional(v.string()),
+    batchId: v.optional(v.id("inventoryBatches")),
     createdBy: v.string(),
     createdAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
-    .index("by_productId", ["productId"]),
+    .index("by_productId", ["productId"])
+    .index("by_businessId_and_status", ["businessId", "status"])
+    .index("by_businessId_and_productId_and_status_and_createdAt", [
+      "businessId", "productId", "status", "createdAt",
+    ]),
 
   // Inventory Batches (FIFO tracking)
   inventoryBatches: defineTable({
@@ -469,7 +478,8 @@ export default defineSchema({
     timestamp: v.number(),
   })
     .index("by_businessId", ["businessId"])
-    .index("by_businessId_and_timestamp", ["businessId", "timestamp"]),
+    .index("by_businessId_and_timestamp", ["businessId", "timestamp"])
+    .index("by_businessId_and_entityType_and_timestamp", ["businessId", "entityType", "timestamp"]),
 
   // Idempotency Registry
   idempotencyKeys: defineTable({

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Convex conversion in progress (WRE-115)**: Web catalog, product edits, stock adjustments, intake approvals and inventory history now target Convex in the working branch. Adjustments use atomic FIFO/stock/audit changes and retry keys. Remaining domains, historical-data reconciliation, full client parity and production verification are still pending.
+
 - **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.
 
 - WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
@@ -30,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
+
+- WRE-115: Move web stock intake, product selection, and approval decisions to Convex with tenant checks, integer-cent validation, retry protection, atomic FIFO stock updates, and audit history. Production cutover remains pending legacy stock/history reconciliation and release approval.
 
 - **Business approvals (WRE-87):** Keep all pending inventory approvals visible independently of the recent completed-history limit, with both reads scoped to the authorized business.
 - **Business page loading (WRE-87):** Remove nested brand links that caused hydration errors and keep route content available while the optional onboarding interface loads.

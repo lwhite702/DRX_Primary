@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
@@ -374,6 +375,7 @@ export const suggestQuantityForDollarAmount = query({
 
 export const createProduct = mutation({
   args: {
+    selectedBusinessId: v.optional(v.string()),
     sku: v.string(),
     productName: v.string(),
     description: v.optional(v.string()),
@@ -396,6 +398,10 @@ export const createProduct = mutation({
   returns: v.id("products"),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
+    if (args.selectedBusinessId && args.selectedBusinessId !== auth.businessId &&
+        args.selectedBusinessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
     requirePermission(auth.userRecord, "MANAGE_INVENTORY");
     const now = Date.now();
 
@@ -420,7 +426,7 @@ export const createProduct = mutation({
       fractionalEnabled: allowFractionalWeight,
       bulkPriceTiers: [],
     }) : undefined;
-    if (creationCommerce && (
+    if ((
       !Number.isSafeInteger(args.sellingPriceCents) || args.sellingPriceCents <= 0 ||
       !Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0 ||
       !Number.isFinite(args.reorderLevelGrams ?? 10) || (args.reorderLevelGrams ?? 10) < 0
@@ -473,7 +479,7 @@ export const createProduct = mutation({
       action: "PRODUCT_CREATED",
       entityType: "product",
       entityId: productId,
-      metadata: JSON.stringify({ sku: args.sku, name: args.productName }),
+      metadata: JSON.stringify({ sku: args.sku, name: args.productName, delta: initialQuantity, reason: "Product created" }),
       timestamp: now,
     });
 
@@ -564,5 +570,40 @@ export const upsertManualLinePolicy = mutation({
       timestamp: now,
     });
     return { policyId };
+  },
+});
+
+// Selected legacy business identifiers are accepted only through an explicit
+// tenant mapping. Product identities and stock always come from Convex.
+export const listCatalogPage = query({
+  args: { businessId: v.string(), paginationOpts: paginationOptsValidator },
+  returns: v.object({ page: v.array(productRecord), isDone: v.boolean(), continueCursor: v.string() }),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    if (args.businessId !== auth.businessId && args.businessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
+    if (!Number.isInteger(args.paginationOpts.numItems) || args.paginationOpts.numItems < 1 || args.paginationOpts.numItems > 200) {
+      throw new Error("INVALID_ARGUMENT: Page size must be between 1 and 200");
+    }
+    const result = await ctx.db.query("products")
+      .withIndex("by_businessId_and_isActive", q => q.eq("businessId", auth.businessId).eq("isActive", true))
+      .order("desc").paginate(args.paginationOpts);
+    return { page: result.page.map(product => ({ ...product, ...normalizeProductCommerceConfig(product) })),
+      isDone: result.isDone, continueCursor: result.continueCursor };
+  },
+});
+
+export const getCatalogProduct = query({
+  args: { businessId: v.string(), productId: v.id("products") },
+  returns: productRecord,
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    if (args.businessId !== auth.businessId && args.businessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId || !product.isActive) throw new Error("NOT_FOUND: Product unavailable");
+    return { ...product, ...normalizeProductCommerceConfig(product) };
   },
 });

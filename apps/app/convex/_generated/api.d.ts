@@ -27,6 +27,7 @@ import type * as helpers_productCommerce from "../helpers/productCommerce.js";
 import type * as helpers_pushCrypto from "../helpers/pushCrypto.js";
 import type * as helpers_pushOutbox from "../helpers/pushOutbox.js";
 import type * as intake from "../intake.js";
+import type * as inventory from "../inventory.js";
 import type * as members from "../members.js";
 import type * as offline from "../offline.js";
 import type * as onboarding from "../onboarding.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/pushCrypto": typeof helpers_pushCrypto;
   "helpers/pushOutbox": typeof helpers_pushOutbox;
   intake: typeof intake;
+  inventory: typeof inventory;
   members: typeof members;
   offline: typeof offline;
   onboarding: typeof onboarding;

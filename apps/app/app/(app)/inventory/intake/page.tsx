@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
+import { useIntakeProducts } from "@/lib/hooks/use-intake-products";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
@@ -47,8 +47,9 @@ export default function InventoryIntakePage() {
     inventory: inventoryItems,
     loading: inventoryLoading,
     syncStatus,
+    error: inventoryError,
     refresh: refreshInventory,
-  } = useRealtimeInventory(business?.id || null);
+  } = useIntakeProducts(business?.id || null);
   const [processing, setProcessing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const idempotencyKey = useRef(crypto.randomUUID());
@@ -61,6 +62,15 @@ export default function InventoryIntakePage() {
     delivery_cost: "0",
     supplier: "",
   });
+
+  const inFlight = useRef(false);
+  const activeBusiness = useRef(business?.id);
+  activeBusiness.current = business?.id;
+  useEffect(() => {
+    idempotencyKey.current = crypto.randomUUID();
+    setShowConfirmModal(false);
+    setFormData(current => ({ ...current, inventory_id: "", product_name: "" }));
+  }, [business?.id]);
 
   // Calculate cost per gram
   const costPerUnit =
@@ -117,13 +127,16 @@ export default function InventoryIntakePage() {
       return;
     }
 
+    if (inFlight.current) return;
+    inFlight.current = true;
+    const submittedBusiness = business.id;
     setProcessing(true);
     setShowConfirmModal(false);
 
     try {
       const response = await fetch("/api/inventory/intake", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": submittedBusiness },
         body: JSON.stringify({
           inventory_id: formData.inventory_id,
           total_cost: parseFloat(formData.total_cost),
@@ -135,6 +148,7 @@ export default function InventoryIntakePage() {
       });
 
       const result = await response.json();
+      if (activeBusiness.current !== submittedBusiness) return;
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to process intake");
@@ -160,11 +174,14 @@ export default function InventoryIntakePage() {
         supplier: "",
       });
       idempotencyKey.current = crypto.randomUUID();
+      void refreshInventory();
     } catch (error) {
+      if (activeBusiness.current !== submittedBusiness) return;
       toast.error(
         error instanceof Error ? error.message : "Failed to process intake",
       );
     } finally {
+      inFlight.current = false;
       setProcessing(false);
     }
   };
@@ -210,6 +227,8 @@ export default function InventoryIntakePage() {
           <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
         </div>
 
+        {inventoryError && <Alert variant="destructive"><AlertTitle>Products unavailable</AlertTitle><AlertDescription>{inventoryError}</AlertDescription></Alert>}
+        {!inventoryError && inventoryItems.length === 0 && <Alert><AlertTitle>No products available</AlertTitle><AlertDescription>Your stock catalog needs to be set up before receiving inventory.</AlertDescription></Alert>}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
           {/* Intake Form */}
           <div className="lg:col-span-2 luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
