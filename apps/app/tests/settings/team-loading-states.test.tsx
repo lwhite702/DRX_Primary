@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import TeamClient from "@/app/(app)/settings/team/_components/TeamClient";
@@ -17,6 +17,7 @@ vi.mock("sonner", () => ({
 
 describe("TeamClient terminal loading states", () => {
   const fetchMock = vi.fn();
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
   beforeEach(() => {
     fetchMock.mockReset();

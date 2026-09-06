@@ -71,3 +71,27 @@ describe("native provisioning contract", () => {
     expect(businesses).toHaveLength(0);
   });
 });
+
+it("atomically provisions wizard settings and privacy without duplicating them on retry", async () => {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "wizard-owner", email: "synthetic@example.invalid" });
+  const setup = { businessName: "Wizard store", businessType: "retail", address: "Synthetic address", city: "", state: "", zipCode: "", ownerPhone: "", ownerName: "Synthetic owner", defaultUnit: "g", privacyPreset: "alias_mode", quickQuantities: [{ label: "Half", value: 0.5, unit: "g", enabled: true }], inventoryReasons: [], nicknames: [] };
+  const args = { businessName: setup.businessName, businessType: setup.businessType, setupJson: JSON.stringify(setup), collectTax: false, taxRateBps: 0 };
+  const first = await actor.mutation(api.onboarding.createBusinessOnboarding, args);
+  expect((await actor.mutation(api.onboarding.createBusinessOnboarding, args)).businessId).toBe(first.businessId);
+  const rows = await t.run(async ctx => ({ businesses: await ctx.db.query("businesses").collect(), settings: await ctx.db.query("businessSettings").collect(), policies: await ctx.db.query("businessPrivacyPolicies").collect(), users: await ctx.db.query("users").collect(), audits: await ctx.db.query("auditEvents").collect() }));
+  for (const records of Object.values(rows)) expect(records).toHaveLength(1);
+  expect(rows.businesses[0]).toMatchObject({ address: setup.address, taxRateBps: 0 });
+  expect(JSON.parse(rows.settings[0].settingsData!)).toMatchObject({ onboarding_completed: true, quick_quantities: setup.quickQuantities });
+  expect(rows.policies[0].protocol).toMatchObject({ profile: "alias_mode", alias_only_mode: true });
+  expect(rows.users[0]).toMatchObject({ name: setup.ownerName, role: "OWNER" });
+  expect(rows.audits[0].metadata).not.toContain("synthetic@example.invalid");
+});
+
+it("leaves no partial records when the wizard payload is malformed", async () => {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "invalid-wizard-owner" });
+  await expect(actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Invalid setup", setupJson: JSON.stringify({ privacyPreset: "unknown" }) })).rejects.toThrow(/INVALID_ARGUMENT/);
+  expect(await t.run(ctx => ctx.db.query("businesses").collect())).toEqual([]);
+  expect(await t.run(ctx => ctx.db.query("users").collect())).toEqual([]);
+});

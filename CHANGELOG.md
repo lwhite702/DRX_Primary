@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Settings and setup on Convex (WRE-115, unreleased)**: Business tax, manager PIN and privacy settings use authenticated Convex records. PINs are preserved on ordinary saves and never returned as secrets. Customer views wait for verified privacy settings. The business setup wizard atomically creates contact details, presets, privacy policy and owner membership; completion checks verify the current Convex tenant. Historical settings import and the separate onboarding form remain in progress.
+
 - **Business profiles on Convex (WRE-115, unreleased)**: Web profile loading and profile API edits now use the authenticated Convex business and preserve contact fields. Profile edits require settings permission and record changed field names in the audit trail. Organization selection resolves tenant-specific membership roles; inactive, foreign and ambiguous memberships fail explicitly. Service failures no longer appear as accounts needing setup. Historical organization/default-membership mapping and remaining identity/team workflows are still being migrated.
 
 - **Credit transaction API on Convex (WRE-115, unreleased)**: Credit transaction creation and history use the canonical ledger with tenant checks, explicit legacy customer-ID mapping, safe cents and request-key replay. Existing array/dollar response contracts remain; cursor headers support paged history. Web/native credit screens, transaction amendments and historical balances are still being migrated.

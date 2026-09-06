@@ -2,6 +2,8 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
+import { loadPrivacyPolicy } from "./helpers/businessPreferences";
+import { canWritePrivacyField } from "../lib/privacy/profiles";
 
 export const createCustomer = mutation({
   args: {
@@ -17,6 +19,10 @@ export const createCustomer = mutation({
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_CUSTOMERS");
     if (args.creditLimitCents !== undefined && (!Number.isSafeInteger(args.creditLimitCents) || args.creditLimitCents < 0)) throw new Error("INVALID_ARGUMENT: Credit limit must be nonnegative integer cents");
+    const { protocol } = await loadPrivacyPolicy(ctx, auth.businessId);
+    for (const [input, field] of [[args.firstName, "first_name"], [args.lastName, "first_name"], [args.phoneNumber, "phone"], [args.email, "email"]] as const) {
+      if (input?.trim() && !canWritePrivacyField(protocol, field)) throw new Error("FORBIDDEN: Customer field is disabled by the business privacy policy");
+    }
     const now = Date.now();
 
     const customerId = await ctx.db.insert("customers", {
@@ -45,8 +51,7 @@ export const createCustomer = mutation({
       entityType: "customer",
       entityId: customerId,
       metadata: JSON.stringify({
-        name: `${args.firstName || ""} ${args.lastName || ""}`.trim(),
-        phone: args.phoneNumber,
+        fieldsProvided: ["firstName", "lastName", "phoneNumber", "email"].filter(field => Boolean(args[field as "firstName" | "lastName" | "phoneNumber" | "email"]?.trim())),
       }),
       timestamp: now,
     });

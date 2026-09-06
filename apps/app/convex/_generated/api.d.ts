@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as businessPreferences from "../businessPreferences.js";
 import type * as businessProfiles from "../businessProfiles.js";
 import type * as categories from "../categories.js";
 import type * as checkout from "../checkout.js";
@@ -21,6 +22,7 @@ import type * as deliveries from "../deliveries.js";
 import type * as deliveryProfiles from "../deliveryProfiles.js";
 import type * as helpers_audit from "../helpers/audit.js";
 import type * as helpers_auth from "../helpers/auth.js";
+import type * as helpers_businessPreferences from "../helpers/businessPreferences.js";
 import type * as helpers_checkoutSettlement from "../helpers/checkoutSettlement.js";
 import type * as helpers_checkoutTerms from "../helpers/checkoutTerms.js";
 import type * as helpers_creditLedger from "../helpers/creditLedger.js";
@@ -46,6 +48,7 @@ import type * as push from "../push.js";
 import type * as reporting from "../reporting.js";
 import type * as session from "../session.js";
 import type * as settings from "../settings.js";
+import type * as validators_privacy from "../validators/privacy.js";
 
 import type {
   ApiFromModules,
@@ -54,6 +57,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  businessPreferences: typeof businessPreferences;
   businessProfiles: typeof businessProfiles;
   categories: typeof categories;
   checkout: typeof checkout;
@@ -67,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   deliveryProfiles: typeof deliveryProfiles;
   "helpers/audit": typeof helpers_audit;
   "helpers/auth": typeof helpers_auth;
+  "helpers/businessPreferences": typeof helpers_businessPreferences;
   "helpers/checkoutSettlement": typeof helpers_checkoutSettlement;
   "helpers/checkoutTerms": typeof helpers_checkoutTerms;
   "helpers/creditLedger": typeof helpers_creditLedger;
@@ -92,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   reporting: typeof reporting;
   session: typeof session;
   settings: typeof settings;
+  "validators/privacy": typeof validators_privacy;
 }>;
 
 /**

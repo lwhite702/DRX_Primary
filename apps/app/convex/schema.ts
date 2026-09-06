@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { privacyProtocolValidator } from "./validators/privacy";
 
 export default defineSchema({
   // Businesses / Tenants
@@ -52,6 +53,16 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_businessId", ["businessId"]),
+
+  // Explicit policies prevent unknown historical state from becoming a permissive default.
+  businessPrivacyPolicies: defineTable({
+    businessId: v.id("businesses"), protocol: privacyProtocolValidator,
+    revision: v.number(), createdAt: v.number(), updatedAt: v.number(), updatedBy: v.string(),
+  }).index("by_businessId", ["businessId"]),
+  operatorPrivacyPreferences: defineTable({
+    businessId: v.id("businesses"), clerkUserId: v.string(), manualScreenPrivacyEnabled: v.boolean(),
+    createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_businessId_and_clerkUserId", ["businessId", "clerkUserId"]),
 
   // Users & Memberships
   users: defineTable({

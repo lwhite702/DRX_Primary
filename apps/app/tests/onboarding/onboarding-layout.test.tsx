@@ -51,4 +51,20 @@ describe("OnboardingLayout", () => {
       OnboardingLayout({ children: <div>Onboarding form</div> }),
     ).rejects.toThrow("NEXT_REDIRECT:/dashboard");
   });
+  it("does not let another business's completion cookie skip current tenant setup", async () => {
+    mocks.headers.mockResolvedValue(new Headers());
+    mocks.getCompletedBusinessId.mockResolvedValue(null);
+    const child = <div>Onboarding form</div>;
+    await expect(OnboardingLayout({ children: child })).resolves.toBe(child);
+    expect(mocks.getCompletedBusinessId).toHaveBeenCalledWith("user_123");
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("does not treat a Convex outage as permission to skip setup", async () => {
+    mocks.headers.mockResolvedValue(new Headers());
+    mocks.getCompletedBusinessId.mockRejectedValue(new Error("Onboarding status is temporarily unavailable"));
+    await expect(OnboardingLayout({ children: <div /> })).rejects.toThrow(/temporarily unavailable/);
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
 });

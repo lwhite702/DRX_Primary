@@ -30,18 +30,10 @@ export default async function OnboardingLayout({
       cookieStore.get(ONBOARDING_COMPLETION_COOKIE)?.value,
     );
 
-  // A Server Action re-renders this layout before its returned state commits.
-  // Let that response reach the client so it can perform the intentional hard
-  // navigation with the freshly persisted cookie and Clerk metadata.
-  if (onboardingComplete && !isServerActionRequest) {
-    redirect("/dashboard");
-  }
-
-  // Existing operators may have completed setup before the Clerk metadata gate
-  // was introduced. Reconcile their durable database state instead of trapping
-  // them in onboarding with a stale session claim.
+  // Let a Server Action return its state before navigation. On ordinary visits,
+  // global cookies/claims are only routing hints after the current tenant is verified.
   if (!isServerActionRequest && (await getCompletedOnboardingBusinessId(userId))) {
-    redirect("/api/onboarding/reconcile");
+    redirect(onboardingComplete ? "/dashboard" : "/api/onboarding/reconcile");
   }
 
   return children;

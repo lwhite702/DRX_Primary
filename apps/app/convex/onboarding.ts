@@ -1,5 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { setupBusinessSchema } from "../lib/onboarding/setup-schema";
+import { getDefaultPrivacyProtocol } from "../lib/privacy/profiles";
 import { activeOrganization, findCurrentMembership } from "./helpers/auth";
 
 const operatorSessionValidator = v.object({
@@ -79,6 +81,7 @@ export const createBusinessOnboarding = mutation({
   args: {
     name: v.optional(v.string()),
     businessName: v.string(),
+    setupJson: v.optional(v.string()),
     businessType: v.optional(v.string()),
     clerkOrgId: v.optional(v.string()),
     currency: v.optional(v.string()),
@@ -91,6 +94,13 @@ export const createBusinessOnboarding = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("UNAUTHENTICATED: Authentication required to onboard business");
+    }
+    let setup;
+    if (args.setupJson !== undefined) {
+      if (args.setupJson.length > 64000) throw new Error("INVALID_ARGUMENT: Setup payload too large");
+      try { setup = setupBusinessSchema.parse(JSON.parse(args.setupJson)); }
+      catch { throw new Error("INVALID_ARGUMENT: Invalid business setup"); }
+      if (setup.businessName !== args.businessName.trim()) throw new Error("INVALID_ARGUMENT: Conflicting business name");
     }
     const clerkUserId = identity.subject;
     const email = identity.email || "";
@@ -144,10 +154,15 @@ export const createBusinessOnboarding = mutation({
       await ctx.db.patch(previousMemberships[0]._id, { isDefaultMembership: true });
     }
 
+    if (!args.businessName.trim() || args.businessName.trim().length > 255 ||
+        (args.taxRateBps !== undefined && (!Number.isSafeInteger(args.taxRateBps) || args.taxRateBps < 0 || args.taxRateBps > 10000))) {
+      throw new Error("INVALID_ARGUMENT: Invalid business name or tax rate");
+    }
     // 1. Create Business
     const businessId = await ctx.db.insert("businesses", {
       clerkOrgId: organizationId,
-      name: args.businessName,
+      name: args.businessName.trim(),
+      ...(setup ? { address: setup.address, city: setup.city, state: setup.state, zipCode: setup.zipCode, phoneNumber: setup.ownerPhone } : {}),
       businessType: args.businessType || "Retail POS",
       ownerId: clerkUserId,
       currency: args.currency || "USD",
@@ -158,12 +173,28 @@ export const createBusinessOnboarding = mutation({
       updatedAt: now,
     });
 
+    await ctx.db.insert("businessPrivacyPolicies", {
+      businessId, protocol: getDefaultPrivacyProtocol(setup?.privacyPreset), revision: 0,
+      createdAt: now, updatedAt: now, updatedBy: clerkUserId,
+    });
+
+    if (setup) {
+      await ctx.db.insert("businessSettings", {
+        businessId, createdAt: now, updatedAt: now,
+        settingsData: JSON.stringify({
+          onboarding_completed: true, default_unit: setup.defaultUnit,
+          quick_quantities: setup.quickQuantities, inventory_reasons: setup.inventoryReasons,
+          nicknames: setup.nicknames, owner_name: setup.ownerName,
+        }),
+      });
+    }
+
     // 2. Create User as OWNER
     const userId = await ctx.db.insert("users", {
       clerkUserId,
       isDefaultMembership: previousMemberships.length === 0,
       email,
-      name: args.name,
+      name: setup?.ownerName ?? args.name,
       role: "OWNER",
       businessId,
       status: "ACTIVE",
@@ -178,10 +209,7 @@ export const createBusinessOnboarding = mutation({
       action: "BUSINESS_ONBOARDED",
       entityType: "business",
       entityId: businessId,
-      metadata: JSON.stringify({
-        businessName: args.businessName,
-        ownerEmail: email,
-      }),
+      metadata: JSON.stringify({ setupConfigured: Boolean(setup) }),
       timestamp: now,
     });
 
@@ -191,7 +219,7 @@ export const createBusinessOnboarding = mutation({
       status: "ONBOARDING_SUCCESS" as const,
       session: {
         operatorId: clerkUserId,
-        displayName: args.name || email || "DRX Operator",
+        displayName: setup?.ownerName || args.name || email || "DRX Operator",
         businessId,
         businessName: args.businessName,
         roles: ["owner"],

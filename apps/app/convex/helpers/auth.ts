@@ -65,3 +65,13 @@ export async function requireUserAndBusiness(
     businessId: user.businessId,
   };
 }
+
+
+export async function requireSelectedBusiness(ctx: QueryCtx | MutationCtx, businessId: string, expectedUserId?: string) {
+  const auth = await requireUserAndBusiness(ctx);
+  if ((businessId !== auth.businessId && businessId !== auth.businessRecord.legacyPrismaBusinessId) ||
+      (expectedUserId !== undefined && expectedUserId !== auth.userId)) {
+    throw new Error("FORBIDDEN: Business or operator context changed");
+  }
+  return auth;
+}
