@@ -232,6 +232,10 @@ export default defineSchema({
     amountPaidCents: v.number(),
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
+    paymentReference: v.optional(v.string()),
+    fees: v.optional(v.array(v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) }))),
+    feeRevenueCents: v.optional(v.number()),
+    creditAmountCents: v.optional(v.number()),
     checkoutFingerprint: v.optional(v.string()),
     createdBy: v.string(),
     offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),

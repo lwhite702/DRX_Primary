@@ -27,6 +27,7 @@ const aggregateRecord = v.object({
   totalSubtotalCents: v.number(),
   averageOrderValueCents: v.number(),
   merchandiseRevenueCents: v.number(),
+  feeRevenueCents: v.optional(v.number()),
   deliveryRevenueCents: v.number(),
   vendorDeliveryExpenseCents: v.number(),
   deliveryTaxCents: v.number(),
@@ -100,6 +101,7 @@ async function aggregatePeriod(
   let saleTaxCents = 0;
   let totalSubtotalCents = 0;
   let merchandiseRevenueCents = 0;
+  let feeRevenueCents = 0;
   let deliveryRevenueCents = 0;
   let vendorDeliveryExpenseCents = 0;
   let saleDeliveryTaxCents = 0;
@@ -142,6 +144,7 @@ async function aggregatePeriod(
     grossCollectedCents += sale.totalAmountCents;
     saleTaxCents += sale.taxAmountCents;
     totalSubtotalCents += sale.subtotalCents;
+    feeRevenueCents += sale.feeRevenueCents ?? 0;
     merchandiseRevenueCents +=
       sale.merchandiseRevenueCents ?? sale.subtotalCents;
     deliveryRevenueCents += sale.deliveryRevenueCents ?? 0;
@@ -227,7 +230,7 @@ async function aggregatePeriod(
   const netCashActivityCents =
     grossCollectedCents - customerFeeRefundCents - deliveryTaxRefundCents;
   const netRevenueCents =
-    merchandiseRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
+    merchandiseRevenueCents + feeRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
   const grossProfitCents =
     netRevenueCents -
     cogsCents -
@@ -256,6 +259,7 @@ async function aggregatePeriod(
     averageOrderValueCents:
       orderCount > 0 ? Math.round(grossCollectedCents / orderCount) : 0,
     merchandiseRevenueCents,
+    ...(feeRevenueCents ? { feeRevenueCents } : {}),
     deliveryRevenueCents,
     vendorDeliveryExpenseCents,
     deliveryTaxCents: saleDeliveryTaxCents - deliveryTaxRefundCents,

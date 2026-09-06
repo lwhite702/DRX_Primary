@@ -7,6 +7,7 @@ export interface CommerceDeliveryTotals {
   grossCollectedCents: number;
   netCashActivityCents: number;
   merchandiseRevenueCents: number;
+  feeRevenueCents?: number;
   deliveryRevenueCents: number;
   vendorDeliveryExpenseCents: number;
   deliveryTaxCents: number;
@@ -71,6 +72,7 @@ export interface CanonicalCommerceAggregate {
   netRevenueCents: number;
   totalTaxCents: number;
   merchandiseRevenueCents: number;
+  feeRevenueCents?: number;
   deliveryRevenueCents: number;
   vendorDeliveryExpenseCents: number;
   deliveryTaxCents: number;
@@ -90,6 +92,7 @@ export const emptyCommerceDeliveryTotals = (): CommerceDeliveryTotals => ({
   grossCollectedCents: 0,
   netCashActivityCents: 0,
   merchandiseRevenueCents: 0,
+  feeRevenueCents: 0,
   deliveryRevenueCents: 0,
   vendorDeliveryExpenseCents: 0,
   deliveryTaxCents: 0,
@@ -135,6 +138,7 @@ export function canonicalSourceSummaryFromAggregate(
       grossCollectedCents: aggregate.grossCollectedCents,
       netCashActivityCents: aggregate.netCashActivityCents,
       merchandiseRevenueCents: aggregate.merchandiseRevenueCents,
+      feeRevenueCents: aggregate.feeRevenueCents ?? 0,
       deliveryRevenueCents: aggregate.deliveryRevenueCents,
       vendorDeliveryExpenseCents: aggregate.vendorDeliveryExpenseCents,
       deliveryTaxCents: aggregate.deliveryTaxCents,
@@ -164,10 +168,10 @@ function addTotals(
   right: CommerceDeliveryTotals,
 ): CommerceDeliveryTotals {
   return Object.fromEntries(
-    Object.keys(left).map((key) => [
+    Array.from(new Set([...Object.keys(left), ...Object.keys(right)])).map((key) => [
       key,
-      left[key as keyof CommerceDeliveryTotals] +
-        right[key as keyof CommerceDeliveryTotals],
+      (left[key as keyof CommerceDeliveryTotals] ?? 0) +
+        (right[key as keyof CommerceDeliveryTotals] ?? 0),
     ]),
   ) as unknown as CommerceDeliveryTotals;
 }
@@ -335,9 +339,10 @@ export async function getLegacyWebCommerceSummary(
     totals.unclassifiedTaxCents += taxCents;
     totals.discountCents += discountCents;
     totals.cogsCents += cogsCents;
-    totals.netRevenueCents += merchandiseRevenueCents + deliveryRevenueCents;
+    totals.feeRevenueCents = (totals.feeRevenueCents ?? 0) + miscFeeCents;
+    totals.netRevenueCents += merchandiseRevenueCents + miscFeeCents + deliveryRevenueCents;
     totals.grossProfitCents +=
-      merchandiseRevenueCents + deliveryRevenueCents - cogsCents;
+      merchandiseRevenueCents + miscFeeCents + deliveryRevenueCents - cogsCents;
     const hasLegacyDeliveryMarker = Boolean(
       deliveryRevenueCents > 0 ||
         sale.deliveryManagementId ||

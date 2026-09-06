@@ -17,6 +17,7 @@ import type * as customers from "../customers.js";
 import type * as deliveries from "../deliveries.js";
 import type * as helpers_audit from "../helpers/audit.js";
 import type * as helpers_auth from "../helpers/auth.js";
+import type * as helpers_checkoutSettlement from "../helpers/checkoutSettlement.js";
 import type * as helpers_deliveryCrypto from "../helpers/deliveryCrypto.js";
 import type * as helpers_errors from "../helpers/errors.js";
 import type * as helpers_fifo from "../helpers/fifo.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   deliveries: typeof deliveries;
   "helpers/audit": typeof helpers_audit;
   "helpers/auth": typeof helpers_auth;
+  "helpers/checkoutSettlement": typeof helpers_checkoutSettlement;
   "helpers/deliveryCrypto": typeof helpers_deliveryCrypto;
   "helpers/errors": typeof helpers_errors;
   "helpers/fifo": typeof helpers_fifo;

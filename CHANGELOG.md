@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Convex full-checkout foundation (WRE-115, unreleased)**: Canonical settlement now records miscellaneous fees, payment references, Zelle and mixed tender, with atomic credit remainder and retry checks. Sales emit stock audit events and reports show fee revenue. Full web checkout routing, delivery-profile and price-override parity remain in progress.
+
 - **Convex checkout validation (WRE-115, unreleased)**: Stock, credit and preflight checks read the canonical records. Stock checks combine duplicate cart lines and enforce selling rules; unavailable credit checks fail closed. Full checkout and historical credit-policy reconciliation remain pending.
 
 - **Convex commerce settings (WRE-115, unreleased)**: Merchant policy and product-rule saves use one audited Convex transaction. The settings page uses the same catalog and removes manual cross-database linking. Tenant permission checks use Convex; platform administration and remaining operational domains are still being converted.
