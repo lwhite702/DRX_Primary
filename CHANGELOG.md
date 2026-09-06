@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Onboarding and dashboard preferences on Convex (WRE-115, unreleased)**: The separate onboarding form now saves its business, tax, location and dashboard choices atomically. Updates require the current owner and preserve unrelated settings. Dashboard preferences belong to each operator's business membership; the shared browser cache and Clerk metadata writes are removed. Onboarding checks verify the session's expected organization, and reconciliation no longer trusts global completion claims. Historical membership/preference import and deployed verification remain pending.
+
 - **Settings and setup on Convex (WRE-115, unreleased)**: Business tax, manager PIN and privacy settings use authenticated Convex records. PINs are preserved on ordinary saves and never returned as secrets. Customer views wait for verified privacy settings. The business setup wizard atomically creates contact details, presets, privacy policy and owner membership; completion checks verify the current Convex tenant. Historical settings import and the separate onboarding form remain in progress.
 
 - **Business profiles on Convex (WRE-115, unreleased)**: Web profile loading and profile API edits now use the authenticated Convex business and preserve contact fields. Profile edits require settings permission and record changed field names in the audit trail. Organization selection resolves tenant-specific membership roles; inactive, foreign and ambiguous memberships fail explicitly. Service failures no longer appear as accounts needing setup. Historical organization/default-membership mapping and remaining identity/team workflows are still being migrated.

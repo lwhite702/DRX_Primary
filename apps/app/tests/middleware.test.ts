@@ -116,13 +116,13 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
-  it("redirects signed in users away from login to the dashboard when onboarding is complete", async () => {
+  it("routes signed-in users with only legacy claims through canonical onboarding verification", async () => {
     const req = makeRequest("/login", "deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
   it("redirects signed in users to onboarding for protected routes until onboarding is complete", async () => {
@@ -148,13 +148,13 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it("redirects signed in users from onboarding to the dashboard when onboarding is complete", async () => {
+  it("lets onboarding verify the current Convex tenant even with legacy completion claims", async () => {
     const req = makeRequest("/onboarding", "deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
   it("redirects signed out users to login with redirect_url for non-api routes", async () => {

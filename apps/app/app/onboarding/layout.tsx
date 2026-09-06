@@ -1,9 +1,7 @@
 import { auth } from "@/lib/adapters/auth/server";
 import {
-  hasCompletedOnboardingClaims,
   isOnboardingCompletionCookieValue,
   ONBOARDING_COMPLETION_COOKIE,
-  type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
 import { getCompletedOnboardingBusinessId } from "@/lib/auth/onboarding-state";
 import { cookies, headers } from "next/headers";
@@ -14,18 +12,16 @@ export default async function OnboardingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/login");
   }
 
-  const claims = sessionClaims as OnboardingClaims;
   const cookieStore = await cookies();
   const requestHeaders = await headers();
   const isServerActionRequest = requestHeaders.has("next-action");
   const onboardingComplete =
-    hasCompletedOnboardingClaims(claims) ||
     isOnboardingCompletionCookieValue(
       cookieStore.get(ONBOARDING_COMPLETION_COOKIE)?.value,
     );

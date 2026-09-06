@@ -48,6 +48,7 @@ import type * as push from "../push.js";
 import type * as reporting from "../reporting.js";
 import type * as session from "../session.js";
 import type * as settings from "../settings.js";
+import type * as validators_dashboard from "../validators/dashboard.js";
 import type * as validators_privacy from "../validators/privacy.js";
 
 import type {
@@ -97,6 +98,7 @@ declare const fullApi: ApiFromModules<{
   reporting: typeof reporting;
   session: typeof session;
   settings: typeof settings;
+  "validators/dashboard": typeof validators_dashboard;
   "validators/privacy": typeof validators_privacy;
 }>;
 

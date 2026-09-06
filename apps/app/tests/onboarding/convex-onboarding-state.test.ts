@@ -1,14 +1,16 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ token: vi.fn(), query: vi.fn(), setAuth: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), token: vi.fn(), query: vi.fn(), setAuth: vi.fn() }));
+vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/db", () => { throw new Error("Onboarding state must not load Prisma"); });
 vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
 vi.mock("convex/browser", () => ({ ConvexHttpClient: class { query = mocks.query; setAuth = mocks.setAuth; } }));
 import { getCompletedOnboardingBusinessId } from "@/lib/auth/onboarding-state";
-beforeEach(() => { vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.token.mockResolvedValue("synthetic-token"); });
+beforeEach(() => { vi.resetAllMocks(); mocks.auth.mockResolvedValue({ userId: "operator-a", orgId: "org-a" }); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.token.mockResolvedValue("synthetic-token"); });
 it("uses the signed current membership and verifies the expected operator", async () => {
   mocks.query.mockResolvedValue({ status: "READY", session: { operatorId: "operator-a", businessId: "business-a" } });
   expect(await getCompletedOnboardingBusinessId("operator-a")).toBe("business-a");
   expect(mocks.setAuth).toHaveBeenCalledWith("synthetic-token");
+  expect(mocks.query).toHaveBeenCalledWith(expect.anything(), { expectedUserId: "operator-a", expectedOrganizationId: "org-a" });
   await expect(getCompletedOnboardingBusinessId("operator-b")).rejects.toThrow(/unavailable/);
 });
 it("only treats an explicitly unprovisioned account as needing setup", async () => {

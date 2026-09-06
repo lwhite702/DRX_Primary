@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { dashboardPreferences } from "./validators/dashboard";
 import { privacyProtocolValidator } from "./validators/privacy";
 
 export default defineSchema({
@@ -72,6 +73,7 @@ export default defineSchema({
     name: v.optional(v.string()),
     role: v.string(), // Native roles or migrated tenant role names
     permissions: v.optional(v.record(v.string(), v.boolean())),
+    dashboardPreferences: v.optional(dashboardPreferences),
     businessId: v.id("businesses"),
     status: v.string(), // "ACTIVE" | "INVITED" | "SUSPENDED"
     createdAt: v.number(),

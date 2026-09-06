@@ -67,4 +67,10 @@ describe("OnboardingLayout", () => {
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
 
+  it("repairs the routing cookie through reconciliation even when legacy claims say complete", async () => {
+    mocks.headers.mockResolvedValue(new Headers());
+    mocks.cookies.mockResolvedValue({ get: vi.fn(() => undefined) });
+    await expect(OnboardingLayout({ children: <div /> })).rejects.toThrow("NEXT_REDIRECT:/api/onboarding/reconcile");
+  });
+
 });

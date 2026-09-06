@@ -24,6 +24,12 @@ export function activeOrganization(identity: UserIdentity): string | undefined {
   return (current ?? legacy) as string | undefined;
 }
 
+/** Optional for installed native clients; web sends null for an explicitly personal session. */
+export function requireExpectedIdentity(identity: UserIdentity, expected: { expectedUserId?: string; expectedOrganizationId?: string | null }) {
+  if (expected.expectedUserId !== undefined && identity.subject !== expected.expectedUserId) throw new Error("FORBIDDEN: Unexpected operator");
+  if (expected.expectedOrganizationId !== undefined && (activeOrganization(identity) ?? null) !== expected.expectedOrganizationId) throw new Error("FORBIDDEN: Organization context changed");
+}
+
 /** Users are tenant memberships; role and grants must come from the selected row. */
 export async function findCurrentMembership(ctx: QueryCtx | MutationCtx, identity: UserIdentity) {
   const organizationId = activeOrganization(identity);

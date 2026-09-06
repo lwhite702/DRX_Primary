@@ -1,3 +1,5 @@
+import { dashboardPreferences, dashboardPreset } from "./validators/dashboard";
+import { ALL_PINNED_ITEM_IDS, getDefaultPinnedItemsForPreset } from "../lib/auth/dashboard-preferences";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireSelectedBusiness } from "./helpers/auth";
@@ -54,5 +56,28 @@ export const verifyExitPin = query({
     const settings = await ctx.db.query("businessSettings").withIndex("by_businessId", q => q.eq("businessId", auth.businessId)).unique();
     const pin = configuredPin(settings);
     return { allowed: !pin || args.pin?.trim() === pin, hasPinConfigured: Boolean(pin) };
+  },
+});
+
+export const getDashboardPreferences = query({
+  args: context, returns: dashboardPreferences,
+  handler: async (ctx, args) => {
+    const auth = await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
+    return auth.userRecord.dashboardPreferences ?? { preset: "operations" as const, pinnedItemIds: getDefaultPinnedItemsForPreset("operations"), version: 1 as const };
+  },
+});
+export const updateDashboardPreferences = mutation({
+  args: { ...context, preset: v.optional(dashboardPreset), pinnedItemIds: v.optional(v.array(v.string())) },
+  returns: dashboardPreferences,
+  handler: async (ctx, args) => {
+    const auth = await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
+    if (args.pinnedItemIds && (args.pinnedItemIds.length > ALL_PINNED_ITEM_IDS.length || args.pinnedItemIds.some(id => !(ALL_PINNED_ITEM_IDS as string[]).includes(id)) || new Set(args.pinnedItemIds).size !== args.pinnedItemIds.length)) throw new Error("INVALID_ARGUMENT: Invalid dashboard panels");
+    const current = auth.userRecord.dashboardPreferences;
+    const preset = args.preset ?? current?.preset ?? "operations";
+    const pinnedItemIds = args.pinnedItemIds ?? current?.pinnedItemIds ?? getDefaultPinnedItemsForPreset(preset);
+    if (current && current.preset === preset && JSON.stringify(current.pinnedItemIds) === JSON.stringify(pinnedItemIds)) return current;
+    const next = { preset, pinnedItemIds, version: 1 as const, updatedAt: new Date().toISOString() };
+    await ctx.db.patch(auth.userRecord._id, { dashboardPreferences: next, updatedAt: Date.now() });
+    return next;
   },
 });

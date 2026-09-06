@@ -95,3 +95,29 @@ it("leaves no partial records when the wizard payload is malformed", async () =>
   expect(await t.run(ctx => ctx.db.query("businesses").collect())).toEqual([]);
   expect(await t.run(ctx => ctx.db.query("users").collect())).toEqual([]);
 });
+
+it("rejects stale or missing organization claims before provisioning or resolving a business", async () => {
+  const t = convexTest(schema, modules);
+  const personal = t.withIdentity({ subject: "scoped-owner" });
+  const organization = t.withIdentity({ subject: "scoped-owner", org_id: "org-a", org_role: "org:admin" });
+  for (const [actor, expectedOrganizationId] of [[personal, "org-a"], [organization, null], [organization, "org-b"]] as const) {
+    await expect(actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic", expectedUserId: "scoped-owner", expectedOrganizationId })).rejects.toThrow(/Organization context changed/);
+    await expect(actor.query(api.onboarding.getCurrentOnboardingStatus, { expectedUserId: "scoped-owner", expectedOrganizationId })).rejects.toThrow(/Organization context changed/);
+    await expect(actor.mutation(api.onboarding.completeBusinessOnboarding, { payload: "{}", expectedUserId: "scoped-owner", expectedOrganizationId })).rejects.toThrow(/Organization context changed/);
+  }
+  expect(await t.run(ctx => ctx.db.query("businesses").collect())).toEqual([]);
+  const created = await organization.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic", expectedUserId: "scoped-owner", expectedOrganizationId: "org-a" });
+  expect((await organization.query(api.onboarding.getCurrentOnboardingStatus, { expectedUserId: "scoped-owner", expectedOrganizationId: "org-a" })).status).toBe("READY");
+  expect((await t.run(ctx => ctx.db.get(created.businessId)))?.clerkOrgId).toBe("org-a");
+  await expect(organization.query(api.onboarding.getCurrentOnboardingStatus, { expectedUserId: "other-owner", expectedOrganizationId: "org-a" })).rejects.toThrow(/Unexpected operator/);
+});
+
+it("supports explicit personal sessions and verified v2 organization claims", async () => {
+  const t = convexTest(schema, modules);
+  const personal = t.withIdentity({ subject: "personal-owner" });
+  await personal.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Personal", expectedOrganizationId: null });
+  const organization = t.withIdentity({ subject: "organization-owner", o: { id: "org-b", rol: "admin" } });
+  await organization.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Organization", expectedOrganizationId: "org-b" });
+  expect((await personal.query(api.onboarding.getCurrentOnboardingStatus, { expectedOrganizationId: null })).status).toBe("READY");
+  expect((await organization.query(api.onboarding.getCurrentOnboardingStatus, { expectedOrganizationId: "org-b" })).status).toBe("READY");
+});
