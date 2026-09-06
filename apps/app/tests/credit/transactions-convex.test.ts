@@ -75,3 +75,32 @@ it("fails closed for unauthenticated and provider failures", async () => {
   const response = await GET(new NextRequest("http://localhost/api/credit/transactions"));
   expect(response.status).toBe(503); expect(JSON.stringify(await response.json())).not.toContain("private payload");
 });
+
+it("preserves calendar due dates through storage, history and exact-key recovery", async () => {
+  const payload = { customer_id: customerId, amount: 12, transaction_type: "extension", requestKey: "dated-credit-001", due_date: "2028-02-29" };
+  const first = await post(payload);
+  expect(first.status).toBe(201);
+  const entry = await first.json();
+  expect(entry.dueDate).toBe("2028-02-29T00:00:00.000Z");
+  expect((await (await post({ ...payload, due_date: "2028-02-29T13:30:00.000Z" })).json()).id).toBe(entry.id);
+  expect((await post({ ...payload, due_date: "2028-03-01" })).status).toBe(409);
+  const stored = await t.run(ctx => ctx.db.get(entry.id));
+  expect(stored).toMatchObject({ dueAt: Date.parse("2028-02-29T00:00:00.000Z"), deltaCents: 1200 });
+  const history = await GET(new NextRequest(`http://localhost/api/credit/transactions?customerId=${customerId}`));
+  expect((await history.json())[0].dueDate).toBe(entry.dueDate);
+});
+
+it("rejects invalid calendar terms, conflicting aliases and payment due dates atomically", async () => {
+  const payload = { customer_id: customerId, amount: 1, transaction_type: "extension" };
+  for (const due_date of ["2027-02-29", "2028-02-30", "0000-01-01", "2028-13-01", "2028-01-01T99:00:00Z", 1234, true, "tomorrow"]) {
+    expect((await post({ ...payload, due_date })).status).toBe(400);
+  }
+  expect((await post({ ...payload, due_date: "2028-01-01", dueDate: "2028-01-02" })).status).toBe(400);
+  expect((await post({ ...payload, transaction_type: "payment", due_date: "2028-01-01" })).status).toBe(400);
+  const owner = t.withIdentity({ subject: "credit-api-owner" });
+  for (const dueAt of [1, 253402300800000, -62135683200000]) {
+    await expect(owner.mutation(api.creditTransactions.create, { businessId, customerId, kind: "issue", amountCents: 100, requestKey: "invalid-date-001", dueAt })).rejects.toThrow("INVALID_ARGUMENT");
+  }
+  expect(await t.run(ctx => ctx.db.query("creditEntries").collect())).toEqual([]);
+  expect((await t.run(ctx => ctx.db.get(customerId)))?.totalCreditUsedCents).toBe(0);
+});

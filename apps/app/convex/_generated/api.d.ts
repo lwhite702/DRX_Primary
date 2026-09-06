@@ -13,6 +13,7 @@ import type * as checkout from "../checkout.js";
 import type * as commerceIdentity from "../commerceIdentity.js";
 import type * as commerceSettings from "../commerceSettings.js";
 import type * as credit from "../credit.js";
+import type * as creditAllocation from "../creditAllocation.js";
 import type * as creditTransactions from "../creditTransactions.js";
 import type * as customers from "../customers.js";
 import type * as deliveries from "../deliveries.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   commerceIdentity: typeof commerceIdentity;
   commerceSettings: typeof commerceSettings;
   credit: typeof credit;
+  creditAllocation: typeof creditAllocation;
   creditTransactions: typeof creditTransactions;
   customers: typeof customers;
   deliveries: typeof deliveries;

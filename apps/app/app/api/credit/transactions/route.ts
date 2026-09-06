@@ -21,6 +21,15 @@ function failure(error: unknown) {
   const match = known.find(([code]) => text.includes(code));
   return NextResponse.json({ error: match?.[2] ?? "Credit service is temporarily unavailable" }, { status: match?.[1] ?? 503 });
 }
+function parseDueDate(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)?$/.test(value)) throw new Error("INVALID_ARGUMENT:");
+  if (value.length > 10 && Number(value.slice(11, 13)) > 23) throw new Error("INVALID_ARGUMENT:");
+  const date = value.slice(0, 10);
+  const dueAt = Date.parse(date + "T00:00:00.000Z");
+  if (!Number.isFinite(dueAt) || date.startsWith("0000-") || new Date(dueAt).toISOString().slice(0, 10) !== date || !Number.isFinite(Date.parse(value))) throw new Error("INVALID_ARGUMENT:");
+  return dueAt;
+}
 export async function POST(request: NextRequest) {
   try {
     const { client, businessId } = await connection(request);
@@ -33,7 +42,9 @@ export async function POST(request: NextRequest) {
     if (!kind || !Number.isSafeInteger(amountCents) || amountCents <= 0 || Math.abs(amount * 100 - amountCents) > 1e-6 || (body.description !== undefined && typeof body.description !== "string") || (body.business_id !== undefined && typeof body.business_id !== "string")) throw new Error("INVALID_ARGUMENT:");
     const requestKey = request.headers.get("idempotency-key") ?? body.requestKey ?? body.idempotencyKey ?? randomUUID();
     if (typeof requestKey !== "string") throw new Error("INVALID_ARGUMENT:");
-    const transaction = await client.mutation(api.creditTransactions.create, { businessId: body.business_id ?? businessId, customerId: body.customer_id, kind, amountCents, requestKey, description: body.description });
+    const dueAt = parseDueDate(body.due_date ?? body.dueDate);
+    if (body.due_date !== undefined && body.dueDate !== undefined && parseDueDate(body.due_date) !== parseDueDate(body.dueDate)) throw new Error("INVALID_ARGUMENT:");
+    const transaction = await client.mutation(api.creditTransactions.create, { businessId: body.business_id ?? businessId, customerId: body.customer_id, kind, amountCents, requestKey, description: body.description, dueAt });
     return NextResponse.json(transaction, { status: 201, headers: { "Cache-Control": "private, no-store", "Idempotency-Key": requestKey } });
   } catch (error) { return failure(error); }
 }

@@ -228,13 +228,35 @@ export default defineSchema({
     kind: v.union(v.literal("opening"), v.literal("issue"), v.literal("payment"), v.literal("sale")),
     deltaCents: v.number(), balanceAfterCents: v.number(),
     saleId: v.optional(v.id("sales")), requestKey: v.optional(v.string()),
-    description: v.optional(v.string()),
+    description: v.optional(v.string()), dueAt: v.optional(v.number()),
     openingSource: v.optional(v.literal("existing_customer_balance_unreconciled")),
     createdBy: v.string(), createdAt: v.number(),
   }).index("by_businessId_and_requestKey", ["businessId", "requestKey"])
     .index("by_businessId", ["businessId"])
     .index("by_customerId", ["customerId"])
     .index("by_saleId", ["saleId"]),
+
+  // Rebuildable credit projections; immutable creditEntries remain authoritative.
+  creditAllocationState: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    cursor: v.union(v.string(), v.null()), status: v.union(v.literal("pending"), v.literal("ready")),
+    outstandingCents: v.number(), pendingPaymentId: v.optional(v.id("creditEntries")),
+    pendingPaymentCents: v.optional(v.number()), lastEntryId: v.optional(v.id("creditEntries")),
+    lastPaymentAt: v.optional(v.number()), updatedAt: v.number(),
+  }).index("by_customerId", ["customerId"]),
+  creditDebts: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"), entryId: v.id("creditEntries"),
+    principalCents: v.number(), remainingCents: v.number(), dueAt: v.optional(v.number()),
+    unreconciled: v.boolean(), status: v.union(v.literal("open"), v.literal("paid")),
+    createdAt: v.number(),
+  }).index("by_customerId_and_status", ["customerId", "status"])
+    .index("by_entryId", ["entryId"]),
+  creditPaymentAllocations: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    paymentEntryId: v.id("creditEntries"), debtEntryId: v.id("creditEntries"),
+    amountCents: v.number(), policy: v.literal("fifo_creation_v1"), createdAt: v.number(),
+  }).index("by_paymentEntryId", ["paymentEntryId"])
+    .index("by_debtEntryId", ["debtEntryId"]),
 
   // Sales Orders (Financial Ledger)
   sales: defineTable({
