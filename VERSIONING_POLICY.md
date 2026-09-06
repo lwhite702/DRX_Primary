@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: DRX Engineering Team  
-Last Updated: 2026-08-21
+Last Updated: 2026-09-05
 Applies To: Deelrx CRM
 
 ## Purpose
@@ -21,8 +21,8 @@ Applies to version numbers, changelog entries, and release communication artifac
 - Native iOS build numbers and EAS/Play Android version codes MUST remain independent monotonic platform counters.
 - Runtime version labels MUST read package or native metadata rather than embed a SemVer literal.
 - Version bumps MUST match impact:
-- `MAJOR`: any backward-incompatible removal or change to a public API, export, persisted data, operator workflow, or supported integration, including before `1.0.0`.
-- `MINOR`: backward-compatible features.
+- `MAJOR`: any backward-incompatible removal or change to a public API, export, persisted data, operator workflow, or supported integration after the first stable `1.0.0` release.
+- `MINOR`: backward-compatible features, plus explicitly product-owner-approved pre-`1.0.0` changes when the compatibility impact is reviewed and recorded.
 - `PATCH`: backward-compatible fixes.
 - `NONE`: documentation, tests, or internal-only work with no runtime behavior or version-surface change; this is a PR classification, not a SemVer bump.
 - The highest applicable impact wins. Version-surface edits cannot declare `NONE`.
