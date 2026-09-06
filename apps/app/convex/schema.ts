@@ -208,6 +208,7 @@ export default defineSchema({
       "businessId",
       "legacyPrismaId",
     ])
+    .index("by_businessId_and_isActive", ["businessId", "isActive"])
     .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
 
   // Sales Orders (Financial Ledger)

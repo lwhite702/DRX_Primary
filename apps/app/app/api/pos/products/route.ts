@@ -4,6 +4,7 @@ import type { FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
+import { posCatalogItem } from "@/lib/pos/catalog-item";
 import { successResponse } from "@/lib/api/response";
 export async function GET(request: NextRequest) {
   try {
@@ -25,16 +26,7 @@ export async function GET(request: NextRequest) {
       if (result.continueCursor === cursor) throw new Error("Catalog pagination did not advance");
       cursor = result.continueCursor;
     } while (cursor);
-    const items = products.sort((a, b) => a.productName.localeCompare(b.productName)).slice(0, exact ? 5 : 30).map(product => {
-      const config = { fractionalEnabled: product.allowFractionalWeight, sellingUnit: product.sellingUnit,
-        decimalPrecision: product.quantityPrecision, minimumSaleQuantity: product.minimumSaleQuantity,
-        quantityIncrement: product.quantityIncrement, baseUnitPrice: product.sellingPriceCents / 100,
-        suggestedDollarAmounts: product.suggestedDollarPresetsCents.map(cents => cents / 100), suggestedQuantities: product.suggestedQuantityPresets,
-        bulkPriceTiers: product.bulkPriceTiers.map((tier, index) => ({ id: `${product._id}-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.unitPriceCents / 100 })) };
-      return { id: product._id, name: product.productName, sku: product.sku, barcode: null, price: product.sellingPriceCents / 100,
-        quantity_on_hand: product.quantityOnHandGrams, low_stock_threshold: product.reorderLevelGrams,
-        commerce_config: config, fractional_config: product.allowFractionalWeight ? config : undefined };
-    });
+    const items = products.sort((a, b) => a.productName.localeCompare(b.productName)).slice(0, exact ? 5 : 30).map(posCatalogItem);
     return successResponse({ items, data: items, count: items.length });
   } catch { return NextResponse.json({ error: "Products are temporarily unavailable" }, { status: 503 }); }
 }

@@ -36,6 +36,7 @@ import type * as inventory from "../inventory.js";
 import type * as members from "../members.js";
 import type * as offline from "../offline.js";
 import type * as onboarding from "../onboarding.js";
+import type * as posBootstrap from "../posBootstrap.js";
 import type * as products from "../products.js";
 import type * as push from "../push.js";
 import type * as reporting from "../reporting.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   members: typeof members;
   offline: typeof offline;
   onboarding: typeof onboarding;
+  posBootstrap: typeof posBootstrap;
   products: typeof products;
   push: typeof push;
   reporting: typeof reporting;

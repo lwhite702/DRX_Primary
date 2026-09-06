@@ -14,7 +14,7 @@ import {
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
 
-const productRecord = v.object({
+export const productRecord = v.object({
   _id: v.id("products"),
   _creationTime: v.number(),
   businessId: v.id("businesses"),
