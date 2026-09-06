@@ -199,7 +199,7 @@ export const updateCommerceSettings = mutation({
     for (const userId of managerIds) {
       const user = await ctx.db
         .query("users")
-        .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", userId))
+        .withIndex("by_clerkUserId_and_businessId", (q) => q.eq("clerkUserId", userId).eq("businessId", auth.businessId))
         .unique();
       if (
         !user ||

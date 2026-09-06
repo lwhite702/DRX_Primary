@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { activeOrganization, findCurrentMembership } from "./helpers/auth";
 
 const operatorSessionValidator = v.object({
   operatorId: v.string(),
@@ -50,16 +51,14 @@ export const getCurrentOnboardingStatus = query({
       throw new Error("UNAUTHENTICATED");
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", identity.subject))
-      .unique();
+    const user = await findCurrentMembership(ctx, identity);
 
     if (!user) return { status: "NEEDS_BUSINESS_ONBOARDING" as const };
     if (user.status !== "ACTIVE") return { status: "INACTIVE" as const };
 
     const business = await ctx.db.get(user.businessId);
     if (!business) return { status: "BUSINESS_MISSING" as const };
+    if (business.isActive === false) return { status: "INACTIVE" as const };
 
     return {
       status: "READY" as const,
@@ -97,13 +96,14 @@ export const createBusinessOnboarding = mutation({
     const email = identity.email || "";
     const now = Date.now();
 
-    // Check if user already exists
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
-      .unique();
+    const organizationId = activeOrganization(identity);
+    if (args.clerkOrgId && args.clerkOrgId !== organizationId) {
+      throw new Error("FORBIDDEN: Organization must match the authenticated session");
+    }
+    const existingUser = await findCurrentMembership(ctx, identity);
 
     if (existingUser) {
+      if (existingUser.status !== "ACTIVE") throw new Error("FORBIDDEN: Membership is inactive");
       const existingBusiness = await ctx.db.get(existingUser.businessId);
       if (!existingBusiness) {
         return {
@@ -112,6 +112,7 @@ export const createBusinessOnboarding = mutation({
           status: "BUSINESS_MISSING" as const,
         };
       }
+      if (existingBusiness.isActive === false) throw new Error("FORBIDDEN: Business is inactive");
       return {
         businessId: existingUser.businessId,
         userId: existingUser._id,
@@ -128,9 +129,24 @@ export const createBusinessOnboarding = mutation({
       };
     }
 
+    if (organizationId) {
+      const organization = identity.o;
+      const role = organization && typeof organization === "object" && !Array.isArray(organization)
+        ? (organization as Record<string, unknown>).rol : identity.org_role;
+      if (role !== "admin" && role !== "org:admin") {
+        throw new Error("FORBIDDEN: Organization administrator required to create a business");
+      }
+    }
+    const previousMemberships = await ctx.db.query("users")
+      .withIndex("by_clerkUserId", q => q.eq("clerkUserId", clerkUserId)).take(2);
+    // Preserve the original native/default tenant when adding an organization.
+    if (previousMemberships.length === 1 && previousMemberships[0].isDefaultMembership === undefined) {
+      await ctx.db.patch(previousMemberships[0]._id, { isDefaultMembership: true });
+    }
+
     // 1. Create Business
     const businessId = await ctx.db.insert("businesses", {
-      clerkOrgId: args.clerkOrgId,
+      clerkOrgId: organizationId,
       name: args.businessName,
       businessType: args.businessType || "Retail POS",
       ownerId: clerkUserId,
@@ -145,6 +161,7 @@ export const createBusinessOnboarding = mutation({
     // 2. Create User as OWNER
     const userId = await ctx.db.insert("users", {
       clerkUserId,
+      isDefaultMembership: previousMemberships.length === 0,
       email,
       name: args.name,
       role: "OWNER",

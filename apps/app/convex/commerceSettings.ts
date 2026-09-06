@@ -58,8 +58,8 @@ export const saveSettings = mutation({
       const merchant = input.merchant;
       const managerIds = [];
       for (const target of merchant.managerNotificationTargets) {
-        const byId = await ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", target)).unique();
-        const user = byId ?? await ctx.db.query("users").withIndex("by_email", q => q.eq("email", target)).unique();
+        const byId = await ctx.db.query("users").withIndex("by_clerkUserId_and_businessId", q => q.eq("clerkUserId", target).eq("businessId", auth.businessId)).unique();
+        const user = byId ?? await ctx.db.query("users").withIndex("by_email_and_businessId", q => q.eq("email", target).eq("businessId", auth.businessId)).unique();
         if (!user || user.businessId !== auth.businessId || user.status !== "ACTIVE" || !hasPermission(user, "MANAGE_COMMERCE_SETTINGS")) throw new Error("INVALID_ARGUMENT: Notification recipient must be a manager in this business");
         managerIds.push(user.clerkUserId);
       }

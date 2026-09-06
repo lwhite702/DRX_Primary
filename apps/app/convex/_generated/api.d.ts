@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as businessProfiles from "../businessProfiles.js";
 import type * as categories from "../categories.js";
 import type * as checkout from "../checkout.js";
 import type * as commerceIdentity from "../commerceIdentity.js";
@@ -53,6 +54,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  businessProfiles: typeof businessProfiles;
   categories: typeof categories;
   checkout: typeof checkout;
   commerceIdentity: typeof commerceIdentity;

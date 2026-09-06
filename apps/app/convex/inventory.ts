@@ -130,7 +130,7 @@ export const recentAudit = query({
       const productId = typeof rawId === "string" ? ctx.db.normalizeId("products", rawId) : null;
       const product = productId ? await ctx.db.get(productId) : null;
       const ownedProduct = product?.businessId === auth.businessId ? product : null;
-      const actor = await ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", event.userId)).unique();
+      const actor = await ctx.db.query("users").withIndex("by_clerkUserId_and_businessId", q => q.eq("clerkUserId", event.userId).eq("businessId", auth.businessId)).unique();
       const actorLabel = actor?.businessId === auth.businessId ? (actor.name || actor.email) : event.userId;
       const change = event.action === "INVENTORY_INTAKE_RECORDED" ? metadata?.weightGrams : metadata?.delta;
       return { id: event._id, created_at: new Date(event.timestamp).toISOString(), transaction_type: event.action,

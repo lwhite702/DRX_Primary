@@ -289,8 +289,8 @@ export const claimOutbox = internalMutation({
         ) {
           const manager = await ctx.db
             .query("users")
-            .withIndex("by_clerkUserId", (q) =>
-              q.eq("clerkUserId", outbox.targetUserId),
+            .withIndex("by_clerkUserId_and_businessId", (q) =>
+              q.eq("clerkUserId", outbox.targetUserId).eq("businessId", outbox.businessId),
             )
             .unique();
           targetIsCurrent = Boolean(

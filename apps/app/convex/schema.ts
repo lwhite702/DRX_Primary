@@ -9,6 +9,12 @@ export default defineSchema({
     legacyPrismaBusinessId: v.optional(v.string()),
     name: v.string(),
     businessType: v.optional(v.string()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    email: v.optional(v.string()),
     ownerId: v.string(), // clerkUserId or user id
     currency: v.string(), // e.g. "USD"
     timezone: v.string(),
@@ -50,6 +56,7 @@ export default defineSchema({
   // Users & Memberships
   users: defineTable({
     clerkUserId: v.string(),
+    isDefaultMembership: v.optional(v.boolean()),
     email: v.string(),
     name: v.optional(v.string()),
     role: v.string(), // Native roles or migrated tenant role names
@@ -60,6 +67,9 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_clerkUserId", ["clerkUserId"])
+    .index("by_clerkUserId_and_businessId", ["clerkUserId", "businessId"])
+    .index("by_clerkUserId_and_isDefaultMembership", ["clerkUserId", "isDefaultMembership"])
+    .index("by_email_and_businessId", ["email", "businessId"])
     .index("by_businessId", ["businessId"])
     .index("by_email", ["email"]),
 

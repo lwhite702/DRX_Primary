@@ -198,7 +198,7 @@ export default function SettingsPage() {
     try {
       const profileRes = await fetch("/api/business/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Business-Id": String(business.id) },
         body: JSON.stringify({
           businessName,
           businessType,

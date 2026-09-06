@@ -349,7 +349,7 @@ export const assignDelivery = mutation({
     }
     const assignee = await ctx.db
       .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", assigneeUserId))
+      .withIndex("by_clerkUserId_and_businessId", (q) => q.eq("clerkUserId", assigneeUserId).eq("businessId", auth.businessId))
       .unique();
     if (
       !assignee ||
