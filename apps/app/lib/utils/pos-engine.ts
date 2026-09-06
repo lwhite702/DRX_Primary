@@ -222,7 +222,7 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
         body: JSON.stringify({
           businessId: business_id,
           items: this.cart.items.map((i) => ({
@@ -233,6 +233,7 @@ export class POSEngine {
           })),
         }),
       });
+      if (!res.ok) throw new Error("Checkout validation is unavailable");
       const payload = await res.json();
       return {
         valid: Boolean(payload?.stock?.valid ?? payload?.valid),
@@ -268,26 +269,32 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
         body: JSON.stringify({
           businessId: business_id,
           customerId: this.cart.customer_id,
-          amount: this.cart.total,
+          amount: Math.round(this.cart.total * 100) / 100,
           items: this.cart.items.map((i) => ({
             inventory_id: i.inventory_id,
             quantity: i.quantity,
             unit_price: i.unit_price,
+            weight_grams: i.weight_grams,
           })),
         }),
       });
+      if (!res.ok) throw new Error("Checkout validation is unavailable");
       const payload = await res.json();
       if (payload?.credit) {
-        return payload.credit;
+        return {
+          valid: payload.credit.valid === true,
+          credit_limit: payload.credit.maxLimit,
+          current_balance: payload.credit.currentBalance,
+          warning: payload.credit.warning,
+        };
       }
-      return { valid: true };
+      return { valid: false, warning: "Credit validation unavailable" };
     } catch (e: any) {
-      console.error("Credit validation error:", e);
-      return { valid: true, warning: "Credit validation unavailable" };
+      return { valid: false, warning: "Credit validation unavailable" };
     }
   }
 

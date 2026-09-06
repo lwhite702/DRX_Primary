@@ -15,9 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Convex checkout validation (WRE-115, unreleased)**: Stock, credit and preflight checks read the canonical records. Stock checks combine duplicate cart lines and enforce selling rules; unavailable credit checks fail closed. Full checkout and historical credit-policy reconciliation remain pending.
+
 - **Convex commerce settings (WRE-115, unreleased)**: Merchant policy and product-rule saves use one audited Convex transaction. The settings page uses the same catalog and removes manual cross-database linking. Tenant permission checks use Convex; platform administration and remaining operational domains are still being converted.
 
-- **Convex checkout conversion in progress (WRE-115)**: Ordinary Quick POS checkout, quotes, product search and selected-business resolution now use Convex. Full checkout, settings and data reconciliation remain in progress; this branch is not released.
+- **Convex checkout conversion in progress (WRE-115)**: Ordinary Quick POS checkout, quotes, product search and selected-business resolution now use Convex. Full checkout and data reconciliation remain in progress; this branch is not released.
 
 - **Convex conversion in progress (WRE-115)**: Web catalog, product edits, stock adjustments, intake approvals and inventory history now target Convex in the working branch. Adjustments use atomic FIFO/stock/audit changes and retry keys. Remaining domains, historical-data reconciliation, full client parity and production verification are still pending.
 
