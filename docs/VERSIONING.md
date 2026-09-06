@@ -4,8 +4,8 @@ This project follows [Semantic Versioning 2.0.0](https://semver.org/).
 
 ## Version Format: MAJOR.MINOR.PATCH
 
-- **MAJOR**: Incompatible API changes, breaking changes to key workflows, or removal of features.
-- **MINOR**: Add functionality in a backward compatible manner, wiring up live data, or significant behavior changes that are not breaking.
+- **MAJOR**: After the first stable `1.0.0` release, incompatible API changes, breaking changes to key workflows, or removal of features.
+- **MINOR**: Add functionality in a backward compatible manner, wire up live data, or make an explicitly reviewed and product-owner-approved pre-`1.0.0` change.
 - **PATCH**: Backward compatible bug fixes, internal refactors, or non-user-visible changes.
 
 ## Single Source of Truth

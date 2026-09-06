@@ -15,11 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Minor release preparation**: Synchronized product metadata to 1.1.0 for the approved plain-language DRX content system. Native build identifiers are unchanged; production deployment, native store distribution, and provider-controlled copy publication remain separately verified outcomes (WRE-107).
+- **Minor release preparation**: Synchronized product metadata to 0.9.0 for the approved plain-language DRX content system, following the corrected WRE-87 0.8.0 baseline. Native build identifiers are unchanged; production deployment, native store distribution, and provider-controlled copy publication remain separately verified outcomes (WRE-107).
 
 - **Plain-language product vocabulary**: Replaced complex public privacy labels with `Privacy`, `Hide details`, `Protect details`, `What's saved`, and `Delete old records`; aligned navigation, sales, stock, payment, onboarding, help, marketing, Expo, and native iOS copy through a shared DRX content catalog. Provider-controlled copy remains draft-only pending publication approval (WRE-107).
 
-- **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.
+- **Minor release correction**: Corrected the WRE-87 platform-administration release classification and product metadata from the incorrectly declared 1.0.0 major release to the approved 0.8.0 minor release. Native build identifiers are unchanged; production redeployment and native store distribution remain separately verified outcomes.
 
 - WRE-87: Add a private platform sign-in screen behind the configured entry value. Signed-out platform bookmarks lead through authentication back to the separately authorized console; ordinary business login is unchanged.
 - WRE-87: Separate platform administration from business ownership with explicit server-side platform grants, dedicated navigation, operational registry metrics, and a persistent red platform banner. Retire `/admin` without redirecting; the replacement entry requires server-only `PLATFORM_CONSOLE_SLUG` configuration. Business approvals and audits move to `/inventory/approvals` and `/settings/audit`.

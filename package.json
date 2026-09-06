@@ -1,6 +1,6 @@
 {
   "name": "deelrx-crm",
-  "version": "1.1.0",
+  "version": "0.9.0",
   "private": true,
   "packageManager": "pnpm@10.17.1",
   "engines": {
