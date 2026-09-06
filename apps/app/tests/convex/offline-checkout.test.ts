@@ -577,6 +577,9 @@ describe("Android offline checkout", () => {
       ctx.db.get(unlimitedCustomerId),
     );
     expect(unlimitedCustomer?.totalCreditUsedCents).toBe(1100);
+    const creditEntries = await t.run(ctx => ctx.db.query("creditEntries").withIndex("by_customerId", q => q.eq("customerId", unlimitedCustomerId)).collect());
+    expect(creditEntries.map(entry => entry.deltaCents)).toEqual([0, 1100]);
+    expect(creditEntries[1].saleId).toBe(unlimitedCredit.saleId);
   });
 
   it("quarantines tampered fractional envelopes, normalizes legacy defaults, and continues", async () => {

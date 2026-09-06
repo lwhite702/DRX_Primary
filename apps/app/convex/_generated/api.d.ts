@@ -20,6 +20,7 @@ import type * as helpers_audit from "../helpers/audit.js";
 import type * as helpers_auth from "../helpers/auth.js";
 import type * as helpers_checkoutSettlement from "../helpers/checkoutSettlement.js";
 import type * as helpers_checkoutTerms from "../helpers/checkoutTerms.js";
+import type * as helpers_creditLedger from "../helpers/creditLedger.js";
 import type * as helpers_deliveryCrypto from "../helpers/deliveryCrypto.js";
 import type * as helpers_errors from "../helpers/errors.js";
 import type * as helpers_fifo from "../helpers/fifo.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/auth": typeof helpers_auth;
   "helpers/checkoutSettlement": typeof helpers_checkoutSettlement;
   "helpers/checkoutTerms": typeof helpers_checkoutTerms;
+  "helpers/creditLedger": typeof helpers_creditLedger;
   "helpers/deliveryCrypto": typeof helpers_deliveryCrypto;
   "helpers/errors": typeof helpers_errors;
   "helpers/fifo": typeof helpers_fifo;

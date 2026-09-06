@@ -211,6 +211,24 @@ export default defineSchema({
     .index("by_businessId_and_isActive", ["businessId", "isActive"])
     .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
 
+  // Append-only balance changes. Opening entries preserve the pre-ledger
+  // aggregate explicitly; historical source reconciliation remains a migration gate.
+  creditAccounts: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    balanceCents: v.number(), createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_customerId", ["customerId"]),
+  creditEntries: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    kind: v.union(v.literal("opening"), v.literal("issue"), v.literal("payment"), v.literal("sale")),
+    deltaCents: v.number(), balanceAfterCents: v.number(),
+    saleId: v.optional(v.id("sales")), requestKey: v.optional(v.string()),
+    description: v.optional(v.string()),
+    openingSource: v.optional(v.literal("existing_customer_balance_unreconciled")),
+    createdBy: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_requestKey", ["businessId", "requestKey"])
+    .index("by_customerId", ["customerId"])
+    .index("by_saleId", ["saleId"]),
+
   // Sales Orders (Financial Ledger)
   sales: defineTable({
     businessId: v.id("businesses"),

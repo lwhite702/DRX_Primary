@@ -1,84 +1,31 @@
-import { mutation, query } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
+import { appendCreditEntry, positiveCreditCents } from "./helpers/creditLedger";
 
 export const issueCustomerCredit = mutation({
-  args: {
-    customerId: v.id("customers"),
-    amountCents: v.number(),
-    description: v.optional(v.string()),
-  },
+  args: { customerId: v.id("customers"), amountCents: v.number(), description: v.optional(v.string()), requestKey: v.optional(v.string()) },
+  returns: v.object({ customerId: v.id("customers"), newCreditUsedCents: v.number() }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
-
     const customer = await ctx.db.get(args.customerId);
-    if (!customer || customer.businessId !== auth.businessId) {
-      throw new Error("NOT_FOUND: Customer record not found");
-    }
-
-    if (args.amountCents <= 0) {
-      throw new Error("INVALID_ARGUMENT: Credit amount must be positive");
-    }
-
-    const newCreditUsed = customer.totalCreditUsedCents + args.amountCents;
-    if (customer.creditLimitCents > 0 && newCreditUsed > customer.creditLimitCents) {
-      throw new Error(
-        `CREDIT_LIMIT_EXCEEDED: Credit requested (${newCreditUsed}¢) exceeds limit (${customer.creditLimitCents}¢)`
-      );
-    }
-
-    await ctx.db.patch(args.customerId, {
-      totalCreditUsedCents: newCreditUsed,
-      updatedAt: Date.now(),
-    });
-
-    await ctx.db.insert("auditEvents", {
-      businessId: auth.businessId,
-      userId: auth.userId,
-      action: "CUSTOMER_CREDIT_ISSUED",
-      entityType: "customer",
-      entityId: args.customerId,
-      metadata: JSON.stringify({ amountCents: args.amountCents, description: args.description }),
-      timestamp: Date.now(),
-    });
-
-    return { customerId: args.customerId, newCreditUsedCents: newCreditUsed };
+    if (!customer || customer.businessId !== auth.businessId || !customer.isActive) throw new Error("NOT_FOUND: Customer record not found");
+    const balance = await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "issue", deltaCents: positiveCreditCents(args.amountCents), requestKey: args.requestKey, description: args.description });
+    return { customerId: args.customerId, newCreditUsedCents: balance };
   },
 });
 
 export const recordCreditPayment = mutation({
-  args: {
-    customerId: v.id("customers"),
-    paymentAmountCents: v.number(),
-  },
+  args: { customerId: v.id("customers"), paymentAmountCents: v.number(), requestKey: v.optional(v.string()) },
+  returns: v.object({ customerId: v.id("customers"), remainingCreditUsedCents: v.number() }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
-
     const customer = await ctx.db.get(args.customerId);
-    if (!customer || customer.businessId !== auth.businessId) {
-      throw new Error("NOT_FOUND: Customer record not found");
-    }
-
-    const newCreditUsed = Math.max(0, customer.totalCreditUsedCents - args.paymentAmountCents);
-
-    await ctx.db.patch(args.customerId, {
-      totalCreditUsedCents: newCreditUsed,
-      updatedAt: Date.now(),
-    });
-
-    await ctx.db.insert("auditEvents", {
-      businessId: auth.businessId,
-      userId: auth.userId,
-      action: "CUSTOMER_CREDIT_PAYMENT",
-      entityType: "customer",
-      entityId: args.customerId,
-      metadata: JSON.stringify({ paymentAmountCents: args.paymentAmountCents }),
-      timestamp: Date.now(),
-    });
-
-    return { customerId: args.customerId, remainingCreditUsedCents: newCreditUsed };
+    if (!customer || customer.businessId !== auth.businessId || !customer.isActive) throw new Error("NOT_FOUND: Customer record not found");
+    const balance = await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "payment", deltaCents: -positiveCreditCents(args.paymentAmountCents), requestKey: args.requestKey });
+    return { customerId: args.customerId, remainingCreditUsedCents: balance };
   },
 });

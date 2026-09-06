@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { appendCreditEntry } from "./helpers/creditLedger";
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { requireUserAndBusiness } from "./helpers/auth";
@@ -777,16 +778,15 @@ export const syncSale = mutation({
     }
 
     if (customer) {
+      // Authorized offline sales retain their existing commit-and-reconcile
+      // policy; credit-limit conflicts are recorded by this mutation above.
+      if (args.paymentMethod === "credit" && totalAmountCents > 0) await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "sale", deltaCents: totalAmountCents, saleId, offlineConflictRecorded: true });
       await ctx.db.patch(customer._id, {
         totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
         loyaltyEligibleSpendCents:
           (customer.loyaltyEligibleSpendCents ??
             customer.totalPurchasesCents ??
             0) + subtotalCents,
-        totalCreditUsedCents:
-          args.paymentMethod === "credit"
-            ? customer.totalCreditUsedCents + totalAmountCents
-            : customer.totalCreditUsedCents,
         purchaseCount: customer.purchaseCount + 1,
         updatedAt: now,
       });

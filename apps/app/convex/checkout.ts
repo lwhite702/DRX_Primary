@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { appendCreditEntry } from "./helpers/creditLedger";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
   mutation,
@@ -992,15 +993,13 @@ export const processCheckout = mutation({
     await ctx.db.patch(saleId, { cogsCents, updatedAt: now });
 
     if (customer && args.customerId) {
+      if (creditAmountCents > 0) await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "sale", deltaCents: creditAmountCents, saleId });
       await ctx.db.patch(args.customerId, {
         totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
         loyaltyEligibleSpendCents:
           (customer.loyaltyEligibleSpendCents ??
             customer.totalPurchasesCents ??
             0) + subtotalCents,
-        totalCreditUsedCents:
-          customer.totalCreditUsedCents +
-          creditAmountCents,
         purchaseCount: customer.purchaseCount + 1,
         updatedAt: now,
       });

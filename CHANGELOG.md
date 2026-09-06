@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Convex credit history foundation (WRE-115, unreleased)**: Credit issuance, repayments and online/offline credit sales append atomic balance entries. Supplied request keys prevent duplicate credit/payment writes; invalid cents and overpayments are rejected. Existing balances are explicitly marked as unreconciled opening entries. Payment allocation, legacy-client retry keys and historical reconciliation remain in progress.
+
 - **Quick POS favorites on Convex (WRE-115, unreleased)**: Register favorites and recent products now read canonical completed sales and current catalog stock, including sold-out products and fractional selling rules. Credit and delivery policy reads use Convex. Historical-data migration and production-volume verification remain pending.
 
 - **Full web checkout on Convex (WRE-115, unreleased)**: Full checkout and checkout-enhanced use canonical pricing, inventory, settlement and delivery profiles. Pricing overrides require permission and a reason. The client reviews changed totals and reuses an uncertain submission; checkout-enhanced requires a stable request key. Unknown delivery vendor costs remain explicit in profit reports. Sales API/history, data migration and remaining domains are still in progress.
