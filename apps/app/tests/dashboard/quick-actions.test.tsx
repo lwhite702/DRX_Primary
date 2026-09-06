@@ -4,9 +4,9 @@ import { QuickActions } from "@/app/(app)/dashboard/_components/QuickActions";
 
 describe("dashboard quick actions", () => {
   it.each([
-    ["operations", ["Start Sale", "Receive Stock", "Add Customer", "Manage Credit"]],
-    ["checkout", ["Start Sale", "Add Customer", "Record Payment", "Sales Reports"]],
-    ["inventory", ["Receive Stock", "Adjust Stock", "Inventory Audit", "Find Product"]],
+    ["operations", ["New sale", "Add stock", "Add customer", "Payments"]],
+    ["checkout", ["New sale", "Add customer", "Record payment", "Reports"]],
+    ["inventory", ["Add stock", "Fix count", "Check stock", "Find product"]],
   ] as const)("shows four relevant %s actions", (preset, labels) => {
     render(<QuickActions preset={preset} />);
 
@@ -20,7 +20,7 @@ describe("dashboard quick actions", () => {
   it("links the primary sale action directly to the register", () => {
     render(<QuickActions preset="operations" />);
 
-    expect(screen.getByRole("link", { name: /start sale/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /new sale/i })).toHaveAttribute(
       "href",
       "/pos/sale",
     );

@@ -43,11 +43,12 @@ export function BottomNav() {
   const { business, availableBusinesses, switchBusiness } = useBusiness();
   const { hasPermission } = usePermission(business?.id);
 
-  const isDashboardActive = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
-  const isInventoryActive = pathname === "/inventory" || pathname.startsWith("/inventory/");
+  const isDashboardActive =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isInventoryActive =
+    pathname === "/inventory" || pathname.startsWith("/inventory/");
   const isPosActive = pathname === "/pos" || pathname.startsWith("/pos/");
   const isSalesActive = pathname === "/sales" || pathname.startsWith("/sales/");
-
 
   const canManageTeam = hasPermission("staff.manage");
   const canManageInventory = hasPermission("inventory.manage");
@@ -75,13 +76,15 @@ export function BottomNav() {
           href="/dashboard"
           className={cn(
             "flex-1 min-w-[56px] min-h-[44px] flex flex-col items-center justify-center gap-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg active:scale-95",
-            isDashboardActive ? "text-accent" : "text-muted-foreground hover:text-foreground",
+            isDashboardActive
+              ? "text-accent"
+              : "text-muted-foreground hover:text-foreground",
           )}
           aria-current={isDashboardActive ? "page" : undefined}
-          aria-label="Dashboard"
+          aria-label="Home"
         >
           <LayoutDashboard className="h-5 w-5" />
-          <span className="text-[11px] font-medium tracking-tight">Dashboard</span>
+          <span className="text-[11px] font-medium tracking-tight">Home</span>
         </Link>
 
         {/* 2. Inventory */}
@@ -89,13 +92,17 @@ export function BottomNav() {
           href="/inventory"
           className={cn(
             "flex-1 min-w-[56px] min-h-[44px] flex flex-col items-center justify-center gap-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg active:scale-95",
-            isInventoryActive ? "text-accent" : "text-muted-foreground hover:text-foreground",
+            isInventoryActive
+              ? "text-accent"
+              : "text-muted-foreground hover:text-foreground",
           )}
           aria-current={isInventoryActive ? "page" : undefined}
-          aria-label="Inventory"
+          aria-label="Products"
         >
           <Package className="h-5 w-5" />
-          <span className="text-[11px] font-medium tracking-tight">Inventory</span>
+          <span className="text-[11px] font-medium tracking-tight">
+            Products
+          </span>
         </Link>
 
         {/* 3. Center POS Hero (Raised Action Button) */}
@@ -107,12 +114,14 @@ export function BottomNav() {
               "active:scale-95 transition-transform duration-150",
             )}
             aria-current={isPosActive ? "page" : undefined}
-            aria-label="Point of Sale Quick Register"
+            aria-label="New sale"
           >
             <div
               className={cn(
                 "h-14 w-14 rounded-full bg-accent text-black flex items-center justify-center shadow-lg shadow-accent/25 border-4 border-background transition-all duration-200",
-                isPosActive ? "scale-105 ring-2 ring-accent" : "group-hover:scale-105",
+                isPosActive
+                  ? "scale-105 ring-2 ring-accent"
+                  : "group-hover:scale-105",
               )}
             >
               <ScanLine className="h-6 w-6 stroke-[2.5]" />
@@ -133,7 +142,9 @@ export function BottomNav() {
           href="/sales"
           className={cn(
             "flex-1 min-w-[56px] min-h-[44px] flex flex-col items-center justify-center gap-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg active:scale-95",
-            isSalesActive ? "text-accent" : "text-muted-foreground hover:text-foreground",
+            isSalesActive
+              ? "text-accent"
+              : "text-muted-foreground hover:text-foreground",
           )}
           aria-current={isSalesActive ? "page" : undefined}
           aria-label="Orders and Receipts"
@@ -149,12 +160,16 @@ export function BottomNav() {
               type="button"
               className={cn(
                 "flex-1 min-w-[56px] min-h-[44px] flex flex-col items-center justify-center gap-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg active:scale-95",
-                moreActive || moreMenuOpen ? "text-accent" : "text-muted-foreground hover:text-foreground",
+                moreActive || moreMenuOpen
+                  ? "text-accent"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               aria-label="More navigation options"
             >
               <MoreHorizontal className="h-5 w-5" />
-              <span className="text-[11px] font-medium tracking-tight">More</span>
+              <span className="text-[11px] font-medium tracking-tight">
+                More
+              </span>
             </button>
           </SheetTrigger>
           <SheetContent
@@ -163,7 +178,9 @@ export function BottomNav() {
           >
             <SheetHeader className="px-5 py-4 border-b border-border/60 flex flex-row items-center justify-between">
               <div>
-                <SheetTitle className="text-base font-semibold">Workspace & Navigation</SheetTitle>
+                <SheetTitle className="text-base font-semibold">
+                  Workspace & Navigation
+                </SheetTitle>
                 {business && (
                   <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-accent" />
@@ -209,7 +226,7 @@ export function BottomNav() {
                   >
                     <div className="flex items-center gap-3">
                       <Wallet className="h-4 w-4" />
-                      <span>Store Credit</span>
+                      <span>Payments</span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                   </Link>
@@ -429,7 +446,8 @@ export function BottomNav() {
                   </p>
                   <div className="grid grid-cols-1 gap-1">
                     {availableBusinesses.map((b: any) => {
-                      const isCurrent = business?.clerkOrgId === b.id || business?.id === b.id;
+                      const isCurrent =
+                        business?.clerkOrgId === b.id || business?.id === b.id;
                       return (
                         <button
                           key={b.id}
@@ -450,7 +468,9 @@ export function BottomNav() {
                             <span className="truncate">{b.business_name}</span>
                           </div>
                           {isCurrent && (
-                            <span className="text-xs font-semibold text-accent uppercase">Active</span>
+                            <span className="text-xs font-semibold text-accent uppercase">
+                              Active
+                            </span>
                           )}
                         </button>
                       );

@@ -13,42 +13,45 @@ const root = process.cwd();
 const canonicalDocPath = "docs/MARKETING_TRUE_FEATURE_LIST.md";
 const claimMatrixPath = "docs/MARKETING_FEATURE_CLAIM_MATRIX.md";
 const canonModulePath = "apps/marketing/lib/feature-canon.ts";
-const privacyComponentPath = "apps/marketing/components/marketing/privacy-protexion.tsx";
-const operatorsShowcaseComponentPath = "apps/marketing/components/marketing/landing/operators-showcase.tsx";
-const landingSectionsPath = "apps/marketing/components/marketing/landing/sections.tsx";
+const privacyComponentPath =
+  "apps/marketing/components/marketing/privacy-protexion.tsx";
+const operatorsShowcaseComponentPath =
+  "apps/marketing/components/marketing/landing/operators-showcase.tsx";
+const landingSectionsPath =
+  "apps/marketing/components/marketing/landing/sections.tsx";
 const appStoreMetadataPath = "apps/marketing/lib/app-store-metadata.ts";
 const contentMapPath = "apps/marketing/marketing.content-map.json";
 
 const requiredCanonicalHeadings = [
-  "Fast Point of Sale",
-  "Quick POS Mode",
-  "Inventory That Actually Makes Sense",
-  "Customer Tracking That Works",
-  "Real Business Reports",
-  "Team Control & Accountability",
-  "Multi-Location Ready",
-  "Works on Desktop and Mobile",
+  "New sale",
+  "New sale basics",
+  "Products and stock",
+  "Customers",
+  "Reports",
+  "Team access",
+  "Locations",
+  "Supported devices",
 ];
 
 const requiredPrivacyBlockHeadings = [
-  "Alias-First Customer Tracking",
-  "Privacy Profiles",
-  "Strong Encryption",
-  "DRX Vault Mode™",
-  "Minimal Data Engine",
-  "ProteXion Mode",
-  "Ephemeral Customer Profiles",
-  "Data Retention Controls",
+  "Save less customer information",
+  "Choose what’s saved",
+  "Protect details",
+  "Protect stored details",
+  "What’s saved",
+  "Hide details",
+  "Delete temporary records",
+  "Delete old records",
 ];
 
 const requiredPrivacyMatrixRows = [
   "Alias-first tracking + optional fields + no-profile checkout",
-  "Privacy Profiles (Alias/Standard/Business CRM)",
+  "Privacy settings (Hide/Protect/Keep details)",
   "Encrypted sensitive fields",
-  "DRX Vault Mode keys not stored in DB",
-  "Minimal Data Engine inventory counts",
-  "ProteXion masking behavior",
-  "Ephemeral profile windows (24h/7d/30d)",
+  "Protection keys not stored in DB",
+  "Saved-details counts",
+  "Hide-details behavior",
+  "Temporary record windows (24h/7d/30d)",
   "Data retention cleanup controls",
 ];
 
@@ -61,13 +64,13 @@ const bannedPrivacyPhrases = [
 ];
 
 const requiredOperatorShowcaseCardTitles = [
-  "Point of Sale",
-  "Inventory",
+  "New sale",
+  "Products",
   "Customer Store Accounts",
   "Customers",
   "Pricing",
-  "Anywhere Access",
-  "Activity & Control",
+  "Use DRX where it’s supported",
+  "Change history",
 ];
 
 const bannedPublicPhrases = [
@@ -95,7 +98,7 @@ const requiredAudiencePhrases = [
   "Independent retailers",
   "Owner-operated shops",
   "Pop-up retailers",
-  "Inventory-carrying service businesses",
+  "Service businesses that sell products",
 ];
 
 const requiredScreenshotCaptions = [
@@ -103,7 +106,7 @@ const requiredScreenshotCaptions = [
   "Know what's in stock",
   "See today's numbers",
   "Control team access",
-  "Review activity history",
+  "See who changed what",
 ];
 
 const requiredImports: Array<{ file: string; contains: string[] }> = [
@@ -117,11 +120,15 @@ const requiredImports: Array<{ file: string; contains: string[] }> = [
   },
   {
     file: privacyComponentPath,
-    contains: ['from "@/lib/feature-canon"', "drxPrivacyProtexion", "showLive"],
+    contains: ['from "@/lib/feature-canon"', "drxPrivacy", "showLive"],
   },
   {
     file: landingSectionsPath,
-    contains: ['from "@/lib/marketing-content"', "marketingContent", "Join the Beta"],
+    contains: [
+      'from "@/lib/marketing-content"',
+      "marketingContent",
+      "Join the Beta",
+    ],
   },
   {
     file: "apps/marketing/lib/marketing-content.ts",
@@ -133,23 +140,38 @@ const requiredImports: Array<{ file: string; contains: string[] }> = [
   },
   {
     file: "apps/marketing/app/product/sales-checkout/page.tsx",
-    contains: ['from "@/lib/feature-canon"', 'productDetailCanon["sales-checkout"]'],
+    contains: [
+      'from "@/lib/feature-canon"',
+      'productDetailCanon["sales-checkout"]',
+    ],
   },
   {
     file: "apps/marketing/app/product/inventory-control/page.tsx",
-    contains: ['from "@/lib/feature-canon"', 'productDetailCanon["inventory-control"]'],
+    contains: [
+      'from "@/lib/feature-canon"',
+      'productDetailCanon["inventory-control"]',
+    ],
   },
   {
     file: "apps/marketing/app/product/customers-credit/page.tsx",
-    contains: ['from "@/lib/feature-canon"', 'productDetailCanon["customers-credit"]'],
+    contains: [
+      'from "@/lib/feature-canon"',
+      'productDetailCanon["customers-credit"]',
+    ],
   },
   {
     file: "apps/marketing/app/product/operations-visibility/page.tsx",
-    contains: ['from "@/lib/feature-canon"', 'productDetailCanon["operations-visibility"]'],
+    contains: [
+      'from "@/lib/feature-canon"',
+      'productDetailCanon["operations-visibility"]',
+    ],
   },
   {
     file: "apps/marketing/app/product/team-access-security/page.tsx",
-    contains: ['from "@/lib/feature-canon"', 'productDetailCanon["team-access-security"]'],
+    contains: [
+      'from "@/lib/feature-canon"',
+      'productDetailCanon["team-access-security"]',
+    ],
   },
 ];
 
@@ -174,7 +196,11 @@ function requireFile(relPath: string, failures: Failure[]) {
   }
 }
 
-function checkCanonicalHeadings(docText: string, moduleText: string, failures: Failure[]) {
+function checkCanonicalHeadings(
+  docText: string,
+  moduleText: string,
+  failures: Failure[],
+) {
   for (const heading of requiredCanonicalHeadings) {
     if (!docText.includes(`### ${heading}`)) {
       failures.push({
@@ -198,10 +224,10 @@ function checkPrivacySectionCoverage(
   canonicalModule: string,
   failures: Failure[],
 ) {
-  if (!canonicalDoc.includes("## DRX Privacy ProteXion™")) {
+  if (!canonicalDoc.includes("## Privacy")) {
     failures.push({
       file: canonicalDocPath,
-      message: "Missing canonical section heading: DRX Privacy ProteXion™",
+      message: "Missing canonical section heading: Privacy",
     });
   }
 
@@ -214,10 +240,10 @@ function checkPrivacySectionCoverage(
     }
   }
 
-  if (!canonicalModule.includes("export const drxPrivacyProtexion")) {
+  if (!canonicalModule.includes("export const drxPrivacy")) {
     failures.push({
       file: canonModulePath,
-      message: "Missing drxPrivacyProtexion canonical module export",
+      message: "Missing drxPrivacy canonical module export",
     });
     return;
   }
@@ -242,14 +268,16 @@ function checkPrivacySectionCoverage(
 }
 
 function checkBannedPrivacyLanguage(moduleText: string, failures: Failure[]) {
-  const start = moduleText.indexOf("export const drxPrivacyProtexion");
+  const start = moduleText.indexOf("export const drxPrivacy");
   if (start === -1) {
     return;
   }
 
   const sectionTail = moduleText.slice(start);
   const end = sectionTail.indexOf("\n\nexport const productDetailCanon");
-  const privacySection = (end === -1 ? sectionTail : sectionTail.slice(0, end)).toLowerCase();
+  const privacySection = (
+    end === -1 ? sectionTail : sectionTail.slice(0, end)
+  ).toLowerCase();
 
   for (const phrase of bannedPrivacyPhrases) {
     if (privacySection.includes(phrase.toLowerCase())) {
@@ -261,7 +289,10 @@ function checkBannedPrivacyLanguage(moduleText: string, failures: Failure[]) {
   }
 }
 
-function checkOperatorShowcaseCoverage(moduleText: string, failures: Failure[]) {
+function checkOperatorShowcaseCoverage(
+  moduleText: string,
+  failures: Failure[],
+) {
   if (!moduleText.includes("export const operatorShowcaseCanon")) {
     failures.push({
       file: canonModulePath,
@@ -299,7 +330,10 @@ function walkPublicCopyFiles(dir: string): string[] {
   });
 }
 
-function checkAudienceAndPublicLanguage(moduleText: string, failures: Failure[]) {
+function checkAudienceAndPublicLanguage(
+  moduleText: string,
+  failures: Failure[],
+) {
   for (const phrase of requiredAudiencePhrases) {
     if (!moduleText.includes(phrase)) {
       failures.push({
@@ -331,27 +365,45 @@ function checkAudienceAndPublicLanguage(moduleText: string, failures: Failure[])
 
 function checkAppStoreCopyContract(failures: Failure[]) {
   if (appStoreCopy.schemaVersion !== 1) {
-    failures.push({ file: appStoreMetadataPath, message: "Unsupported App Store copy schema" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "Unsupported App Store copy schema",
+    });
   }
 
   if (appStoreCopy.name.length > 30) {
-    failures.push({ file: appStoreMetadataPath, message: "App Store name exceeds 30 characters" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store name exceeds 30 characters",
+    });
   }
 
   if (appStoreCopy.subtitle.length > 30) {
-    failures.push({ file: appStoreMetadataPath, message: "App Store subtitle exceeds 30 characters" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store subtitle exceeds 30 characters",
+    });
   }
 
   if (appStoreCopy.keywords.length > 100) {
-    failures.push({ file: appStoreMetadataPath, message: "App Store keywords exceed 100 characters" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store keywords exceed 100 characters",
+    });
   }
 
   if (appStoreCopy.promotionalText.length > 170) {
-    failures.push({ file: appStoreMetadataPath, message: "App Store promotional text exceeds 170 characters" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store promotional text exceeds 170 characters",
+    });
   }
 
   if (appStoreCopy.description.length > 4_000) {
-    failures.push({ file: appStoreMetadataPath, message: "App Store description exceeds 4000 characters" });
+    failures.push({
+      file: appStoreMetadataPath,
+      message: "App Store description exceeds 4000 characters",
+    });
   }
 
   for (const [label, url] of [
@@ -365,7 +417,10 @@ function checkAppStoreCopyContract(failures: Failure[]) {
         throw new Error("URL must use HTTPS");
       }
     } catch {
-      failures.push({ file: appStoreMetadataPath, message: `Invalid ${label} URL: ${url}` });
+      failures.push({
+        file: appStoreMetadataPath,
+        message: `Invalid ${label} URL: ${url}`,
+      });
     }
   }
 
@@ -378,13 +433,17 @@ function checkAppStoreCopyContract(failures: Failure[]) {
   if (/\bbeta\b/i.test(publicReleaseCopy)) {
     failures.push({
       file: appStoreMetadataPath,
-      message: "Public App Store copy must not describe the submitted app as a beta",
+      message:
+        "Public App Store copy must not describe the submitted app as a beta",
     });
   }
 
   for (const caption of requiredScreenshotCaptions) {
     if (!appStoreCopy.screenshotCaptions.includes(caption)) {
-      failures.push({ file: appStoreMetadataPath, message: `Missing screenshot caption: ${caption}` });
+      failures.push({
+        file: appStoreMetadataPath,
+        message: `Missing screenshot caption: ${caption}`,
+      });
     }
   }
 
@@ -401,7 +460,8 @@ function checkAppStoreCopyContract(failures: Failure[]) {
   appStoreCopy.screenshotPlan.forEach((screenshot, index) => {
     if (
       screenshot.caption !== requiredScreenshotCaptions[index] ||
-      appStoreCopy.screenshotCaptions[index] !== requiredScreenshotCaptions[index]
+      appStoreCopy.screenshotCaptions[index] !==
+        requiredScreenshotCaptions[index]
     ) {
       failures.push({
         file: appStoreMetadataPath,
@@ -443,7 +503,8 @@ function checkAppStoreCopyContract(failures: Failure[]) {
   ) {
     failures.push({
       file: appStoreMetadataPath,
-      message: "App Store copy cannot be public-release ready while submission blockers remain",
+      message:
+        "App Store copy cannot be public-release ready while submission blockers remain",
     });
   }
 }
@@ -459,19 +520,33 @@ function checkStructuredPositioning(failures: Failure[]) {
   };
 
   if (contentMap.positioning?.audience !== "independent_retail") {
-    failures.push({ file: contentMapPath, message: "Structured audience must be independent_retail" });
+    failures.push({
+      file: contentMapPath,
+      message: "Structured audience must be independent_retail",
+    });
   }
 
-  if (!contentMap.positioning?.audienceLabel?.includes("Independent retailers")) {
-    failures.push({ file: contentMapPath, message: "Structured audience label is missing" });
+  if (
+    !contentMap.positioning?.audienceLabel?.includes("Independent retailers")
+  ) {
+    failures.push({
+      file: contentMapPath,
+      message: "Structured audience label is missing",
+    });
   }
 
   if (contentMap.positioning?.voice !== "operator_direct") {
-    failures.push({ file: contentMapPath, message: "Structured voice must remain operator_direct" });
+    failures.push({
+      file: contentMapPath,
+      message: "Structured voice must remain operator_direct",
+    });
   }
 
   if (contentMap.positioning?.betaChannel !== "TestFlight") {
-    failures.push({ file: contentMapPath, message: "Structured beta channel must be TestFlight" });
+    failures.push({
+      file: contentMapPath,
+      message: "Structured beta channel must be TestFlight",
+    });
   }
 }
 
@@ -503,7 +578,10 @@ function checkCanonicalConsumption(failures: Failure[]) {
   for (const check of requiredImports) {
     const filePath = abs(check.file);
     if (!fs.existsSync(filePath)) {
-      failures.push({ file: check.file, message: "Expected page/component file is missing" });
+      failures.push({
+        file: check.file,
+        message: "Expected page/component file is missing",
+      });
       continue;
     }
 
@@ -543,7 +621,12 @@ function main() {
   const canonicalModule = readFile(canonModulePath);
 
   checkCanonicalHeadings(canonicalDoc, canonicalModule, failures);
-  checkPrivacySectionCoverage(canonicalDoc, claimMatrix, canonicalModule, failures);
+  checkPrivacySectionCoverage(
+    canonicalDoc,
+    claimMatrix,
+    canonicalModule,
+    failures,
+  );
   checkBannedPrivacyLanguage(canonicalModule, failures);
   checkOperatorShowcaseCoverage(canonicalModule, failures);
   checkAudienceAndPublicLanguage(canonicalModule, failures);
@@ -560,7 +643,9 @@ function main() {
     process.exit(1);
   }
 
-  console.log("Marketing claims check passed. Canonical source and marketing surfaces are aligned.");
+  console.log(
+    "Marketing claims check passed. Canonical source and marketing surfaces are aligned.",
+  );
 }
 
 main();

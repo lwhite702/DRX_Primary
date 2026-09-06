@@ -34,16 +34,16 @@ describe("InventoryPage Neon Velocity", () => {
   it("renders with Neon Velocity header styling", () => {
     render(<InventoryPage />);
 
-    // Check for "INVENTORY" menu item which uses neon styling
-    expect(screen.getByText("INVENTORY")).toBeInTheDocument();
+    // Check for the plain-language Products menu item which uses neon styling
+    expect(screen.getByText("PRODUCTS")).toBeInTheDocument();
 
-    // Check for Intake button text
-    expect(screen.getByText("INTAKE")).toBeInTheDocument();
+    // Check for Add stock button text
+    expect(screen.getByText("ADD STOCK")).toBeInTheDocument();
 
-    // Check for POS menu item
-    expect(screen.getByText("POS")).toBeInTheDocument();
+    // Check for New sale menu item
+    expect(screen.getByText("NEW SALE")).toBeInTheDocument();
 
-    // Check for Credit menu item
-    expect(screen.getByText("CREDIT")).toBeInTheDocument();
+    // Check for Payments menu item
+    expect(screen.getByText("PAYMENTS")).toBeInTheDocument();
   });
 });

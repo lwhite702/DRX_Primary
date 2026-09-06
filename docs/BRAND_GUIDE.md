@@ -92,10 +92,12 @@ Numbers must be legible at a glance.
 
 ## 9. Brand Guardrails
 
-Do not:
+The visual system should support the voice in `BRAND_VOICE.md`.
 
-- Anthropomorphize the system
-- Add playful animations to critical flows
-- Use marketing language inside operational screens
+- Keep critical flows direct and calm.
+- Use light personality in marketing, tours, and low-risk empty states.
+- Do not use jokes for money, access, privacy, security, deletion, or data loss.
+- Keep product instructions useful. Do not paste marketing slogans into a task.
+- Prefer familiar labels over technical or coined feature names.
 
-This is a working tool. It should feel dependable.
+This is a working tool. It should feel dependable and human.

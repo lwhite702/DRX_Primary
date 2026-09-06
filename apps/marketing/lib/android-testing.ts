@@ -168,7 +168,7 @@ export const mobileWebTestChecks: readonly MobileTestCheck[] = [
     title: "Make a sale in the browser",
     prompt: "Make a made-up cash sale in the browser. Check the total, stock, and sales list.",
     steps: [
-      "Open Quick Sale and add your made-up product.",
+      "Open New sale and add your made-up product.",
       "Continue to payment, choose Cash, enter enough cash, and finish the sale.",
       "Open Sales and make sure the sale appears once.",
       "Refresh Sales and make sure the sale still appears only once.",

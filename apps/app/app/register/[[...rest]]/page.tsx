@@ -10,7 +10,7 @@ import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 
 export const metadata: Metadata = {
   title: "Create an account | Deelrx CRM",
-  description: "Create your Deelrx CRM retail operations workspace.",
+  description: "Create your Deelrx CRM business.",
 };
 
 export default async function RegisterPage() {
@@ -21,12 +21,15 @@ export default async function RegisterPage() {
 
   return (
     <AuthShell
-      eyebrow="Create your workspace"
+      eyebrow="Create your business"
       description="Set up your operator account, then add your business details."
       footer={
         <p className="text-center text-sm leading-6 text-[#B8B8B8]">
           Already have an account?{" "}
-          <Link className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" href="/login">
+          <Link
+            className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            href="/login"
+          >
             Sign in
           </Link>
         </p>

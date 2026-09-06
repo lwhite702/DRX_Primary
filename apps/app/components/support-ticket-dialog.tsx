@@ -49,7 +49,7 @@ export function SupportTicketDialog({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Ticket submitted successfully");
+      toast.success("Support request sent.");
       setOpen(false);
     }
   };

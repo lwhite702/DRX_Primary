@@ -1,5 +1,5 @@
 // IssueCreditSheet.swift
-// Issue store credit to a customer account.
+// Add an amount to a customer balance.
 
 import SwiftUI
 

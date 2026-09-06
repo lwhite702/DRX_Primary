@@ -12,8 +12,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
-import { getRandomCheckProduct, recordInventoryCheck } from "../src/services/apiClient";
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from "../src/constants/theme";
+import {
+  getRandomCheckProduct,
+  recordInventoryCheck,
+} from "../src/services/apiClient";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZES,
+  BORDER_RADIUS,
+} from "../src/constants/theme";
 
 export default function InventoryCheck() {
   const insets = useSafeAreaInsets();
@@ -33,9 +41,11 @@ export default function InventoryCheck() {
       setProduct(data);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Failed to load product for check.", [
-        { text: "Go Back", onPress: () => router.back() }
-      ]);
+      Alert.alert(
+        "Couldn’t load a product",
+        "Check your connection and try again.",
+        [{ text: "Go back", onPress: () => router.back() }],
+      );
     } finally {
       setLoading(false);
     }
@@ -47,25 +57,32 @@ export default function InventoryCheck() {
 
   const handleSubmit = async () => {
     if (!product?.inventory_id || !measuredWeight) {
-      Alert.alert("Error", "Please enter the measured weight.");
+      Alert.alert("Add the weight", "Enter the weight shown on the scale.");
       return;
     }
 
     try {
       setSubmitting(true);
       const token = await getToken();
-      const res = await recordInventoryCheck(token, product.inventory_id, Number(measuredWeight));
+      const res = await recordInventoryCheck(
+        token,
+        product.inventory_id,
+        Number(measuredWeight),
+      );
 
       const discrepancyMsg = res.discrepancy_flagged
-        ? `Discrepancy flagged! Difference: ${res.delta_grams}g (${res.delta_percentage}%)`
-        : `Check successful! Inventory matches expected weight.`;
+        ? `The count is off by ${res.delta_grams}g (${res.delta_percentage}%). Check it before changing stock.`
+        : "The stock count matches.";
 
-      Alert.alert("Inventory Check Logged", discrepancyMsg, [
-        { text: "Done", onPress: () => router.back() }
+      Alert.alert("Stock check saved", discrepancyMsg, [
+        { text: "Done", onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Failed to record inventory check.");
+      Alert.alert(
+        "That check didn’t save",
+        "Your weight is still here. Try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -77,7 +94,7 @@ export default function InventoryCheck() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.title}>Inventory Check</Text>
+        <Text style={styles.title}>Check stock</Text>
         <TouchableOpacity style={styles.backBtn} onPress={loadRandomProduct}>
           <Ionicons name="refresh" size={20} color={COLORS.accent} />
         </TouchableOpacity>
@@ -86,25 +103,30 @@ export default function InventoryCheck() {
       <View style={styles.content}>
         {loading ? (
           <View style={styles.center}>
-             <ActivityIndicator size="large" color={COLORS.accent} />
-             <Text style={styles.loadingText}>Selecting a random product...</Text>
+            <ActivityIndicator size="large" color={COLORS.accent} />
+            <Text style={styles.loadingText}>Choosing a product…</Text>
           </View>
         ) : product ? (
           <View>
             <View style={styles.card}>
               <View style={styles.iconContainer}>
-                <Ionicons name="scale-outline" size={48} color={COLORS.accent} />
+                <Ionicons
+                  name="scale-outline"
+                  size={48}
+                  color={COLORS.accent}
+                />
               </View>
               <Text style={styles.productName}>{product.product_name}</Text>
               <Text style={styles.instruction}>
-                Please place all available {product.product_name} on the scale and enter the total measured weight below.
+                Put all available {product.product_name} on the scale. Enter the
+                total weight below.
               </Text>
               <Text style={styles.expectedText}>
                 Expected: {product.expected_weight_grams?.toFixed(2)}g
               </Text>
             </View>
 
-            <Text style={styles.label}>Measured Weight (Grams)</Text>
+            <Text style={styles.label}>Weight in grams</Text>
             <TextInput
               style={styles.input}
               keyboardType="decimal-pad"
@@ -123,7 +145,7 @@ export default function InventoryCheck() {
               {submitting ? (
                 <ActivityIndicator color={COLORS.background} />
               ) : (
-                <Text style={styles.actionBtnText}>Submit Check</Text>
+                <Text style={styles.actionBtnText}>Save check</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -144,7 +166,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "700" },
   content: { flex: 1, padding: SPACING.xl },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -162,7 +189,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.accent + '15',
+    backgroundColor: COLORS.accent + "15",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: SPACING.lg,
@@ -185,7 +212,11 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONT_SIZES.sm,
   },
-  label: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: SPACING.xs },
+  label: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.sm,
+    marginBottom: SPACING.xs,
+  },
   input: {
     backgroundColor: COLORS.surface,
     color: COLORS.text,
@@ -204,5 +235,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
     alignItems: "center",
   },
-  actionBtnText: { color: COLORS.background, fontSize: FONT_SIZES.md, fontWeight: "700" }
+  actionBtnText: {
+    color: COLORS.background,
+    fontSize: FONT_SIZES.md,
+    fontWeight: "700",
+  },
 });

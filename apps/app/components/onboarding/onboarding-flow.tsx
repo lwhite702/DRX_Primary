@@ -38,57 +38,57 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     title: "Welcome to DRX",
-    description: "Your privacy-first POS, CRM, and inventory management system",
+    description: "Keep customers, stock, sales, and money straight.",
     icon: <Sparkles className="h-12 w-12 text-accent" />,
     features: [
-      "Complete point-of-sale system",
-      "Customer relationship management",
-      "Real-time inventory tracking",
-      "Credit and payment management",
+      "Add sales",
+      "Keep customer details together",
+      "Check stock counts",
+      "Record payments and balances due",
     ],
   },
   {
-    title: "Dashboard",
-    description: "Monitor your business at a glance",
+    title: "Home",
+    description: "Check today’s numbers at a glance.",
     icon: <BarChart3 className="h-12 w-12 text-accent" />,
     features: [
-      "Real-time sales metrics",
-      "Inventory alerts",
-      "Customer insights",
-      "Revenue tracking",
+      "Sales totals",
+      "Low-stock alerts",
+      "Customer balances",
+      "What you made",
     ],
   },
   {
-    title: "Point of Sale",
-    description: "Fast, reliable checkout experience",
+    title: "New sale",
+    description: "Find it, add it, take payment, done.",
     icon: <ShoppingCart className="h-12 w-12 text-accent" />,
     features: [
-      "Quick product search",
-      "Multiple payment methods",
-      "Automatic inventory updates",
-      "Customer credit tracking",
+      "Find or scan products",
+      "Choose a payment type",
+      "Update stock after a sale",
+      "Add a balance due",
     ],
   },
   {
-    title: "Inventory Management",
-    description: "Keep track of your stock effortlessly",
+    title: "Products",
+    description: "Know what you have and what is running low.",
     icon: <Package className="h-12 w-12 text-accent" />,
     features: [
-      "Intake tracking with cost history",
-      "Low stock alerts",
-      "SKU generation",
-      "Fractional quantities",
+      "Add stock with cost history",
+      "Low-stock alerts",
+      "Product codes",
+      "Whole or partial units",
     ],
   },
   {
-    title: "Customer Management",
-    description: "Build lasting relationships",
+    title: "Customers",
+    description: "Keep each person’s details and history together.",
     icon: <Users className="h-12 w-12 text-accent" />,
     features: [
       "Customer profiles",
       "Purchase history",
-      "Credit limits",
-      "Payment tracking",
+      "Balance limits",
+      "Payment history",
     ],
   },
 ];
@@ -101,7 +101,7 @@ export function OnboardingFlow() {
   useEffect(() => {
     // Check if user has completed onboarding
     const hasCompletedOnboarding = localStorage.getItem(
-      "drx_onboarding_complete"
+      "drx_onboarding_complete",
     );
     if (!hasCompletedOnboarding) {
       // Small delay to let the app render first
@@ -152,8 +152,8 @@ export function OnboardingFlow() {
                   index === currentStep
                     ? "w-8 bg-accent"
                     : index < currentStep
-                    ? "w-2 bg-accent/50"
-                    : "w-2 bg-muted"
+                      ? "w-2 bg-accent/50"
+                      : "w-2 bg-muted"
                 }`}
               />
             ))}
@@ -176,7 +176,7 @@ export function OnboardingFlow() {
         {/* Navigation */}
         <div className="flex items-center justify-between pt-4 border-t">
           <Button variant="ghost" onClick={handleSkip}>
-            Skip Tour
+            Not now
           </Button>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -187,10 +187,10 @@ export function OnboardingFlow() {
               className="bg-accent hover:bg-accent-dark text-black"
             >
               {currentStep === ONBOARDING_STEPS.length - 1 ? (
-                "Get Started"
+                "Open DRX"
               ) : (
                 <>
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
+                  See next <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}
             </Button>

@@ -16,31 +16,32 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") || "https://deelrxcrm.com",
+    process.env.NEXT_PUBLIC_MARKETING_URL?.replace(/\/$/, "") ||
+      "https://deelrxcrm.com",
   ),
   alternates: {
     canonical: "/",
   },
-  title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
+  title: "Deelrx CRM (DRX) - Sales, Stock, and Customers",
   description:
-    "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
+    "Keep customers, products, stock, sales, payments, and balances due straight.",
   icons: {
     icon: "/brand/favicon-32.png",
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
+    title: "Deelrx CRM (DRX) - Sales, Stock, and Customers",
     description:
-      "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
+      "Keep customers, products, stock, sales, payments, and balances due straight.",
     type: "website",
     locale: "en_US",
     images: ["/brand/opengraph-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx CRM (DRX) - POS and inventory for independent retail",
+    title: "Deelrx CRM (DRX) - Sales, Stock, and Customers",
     description:
-      "Operator-first POS, inventory, customer records, and reporting built for independent retailers.",
+      "Keep customers, products, stock, sales, payments, and balances due straight.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {

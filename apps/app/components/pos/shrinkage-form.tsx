@@ -62,7 +62,7 @@ export function ShrinkageForm({
 
       if (error) {
         console.error("Error loading inventory:", error);
-        toast.error("Failed to load inventory");
+        toast.error("Couldn’t load products. Try again.");
       } else {
         setInventory(data || []);
       }
@@ -130,7 +130,7 @@ export function ShrinkageForm({
       );
 
       if (result.success) {
-        toast.success("Shrinkage recorded successfully");
+        toast.success("Loss recorded.");
         setSelectedInventory("");
         setQuantityGrams("");
         setShrinkageType("personal_use");

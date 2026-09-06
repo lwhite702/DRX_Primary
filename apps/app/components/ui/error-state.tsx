@@ -10,8 +10,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Something went wrong",
-  message = "An error occurred while loading this content.",
+  title = "That didn’t load",
+  message = "Check your connection and try again.",
   onRetry,
   className,
 }: ErrorStateProps) {

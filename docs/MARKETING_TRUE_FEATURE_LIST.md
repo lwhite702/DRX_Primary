@@ -26,7 +26,7 @@ Just tools that help operators sell, track, and grow.
 
 ## What DRX Does
 
-### Fast Point of Sale
+### New sale
 
 Status: `Live` (refund tracking phrasing: `Beta`)
 
@@ -40,13 +40,14 @@ Status: `Live` (refund tracking phrasing: `Beta`)
 - Transaction history.
 
 Evidence pointers:
+
 - `apps/app/app/(operator)/pos/sale/page.tsx`
 - `apps/app/app/(operator)/pos/payment/page.tsx`
 - `apps/app/components/quick-pos/product-search.tsx`
 - `apps/app/tests/e2e/quick-pos-flow.spec.ts`
 - `apps/app/app/(app)/sales/[id]/page.tsx`
 
-### Quick POS Mode
+### New sale basics
 
 Status: `Live`
 
@@ -57,12 +58,13 @@ Status: `Live`
 - Done.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/complete/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/tests/quick-pos/payment-idempotency.test.tsx`
 
-### Inventory That Actually Makes Sense
+### Products and stock
 
 Status: `Live` (purchase-order tracking wording: `Beta`)
 
@@ -76,13 +78,14 @@ Status: `Live` (purchase-order tracking wording: `Beta`)
 - Clear logs when inventory is adjusted.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/intake/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/inventory/audit/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/insights/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/utils/inventory-engine.ts`
 
-### Customer Tracking That Works
+### Customers
 
 Status: `Live` (notes/tags + loyalty support wording: `Beta`)
 
@@ -93,12 +96,13 @@ Status: `Live` (notes/tags + loyalty support wording: `Beta`)
 - Basic customer insights.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/customers/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/customers/[id]/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/credit/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/utils/pos-weight-engine.ts`
 
-### Real Business Reports
+### Reports
 
 Status: `Live` (downloadable/deep report slices wording: `Beta`)
 
@@ -110,12 +114,13 @@ Status: `Live` (downloadable/deep report slices wording: `Beta`)
 - Simple dashboard overview.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/dashboard/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/insights/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/reports/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/dashboard/operator/page.tsx`
 
-### Team Control & Accountability
+### Team access
 
 Status: `Live`
 
@@ -127,12 +132,13 @@ Status: `Live`
 - Activity logs by user.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/team/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/auth/permissions.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/middleware.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/audit-logs/route.ts`
 
-### Multi-Location Ready
+### Locations
 
 Status: `Beta`
 
@@ -142,11 +148,12 @@ Status: `Beta`
 - Clean separation between storefronts.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/workspaces/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/admin/businesses/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/admin/businesses/route.ts`
 
-### Works on Desktop and Mobile
+### Supported devices
 
 Status: `Live`
 
@@ -156,22 +163,25 @@ Status: `Live`
 - Log in from anywhere.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/dashboard/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/sale/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(operator)/pos/payment/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/mobile`
 
-## DRX Privacy ProteXion™
+## Privacy
 
-Powered by DRX Intelligence™  
-Protected by DRX Privacy ProteXion™
+See what’s saved.
 
-Most POS and CRM tools collect too much and keep it forever.  
-DRX does the opposite.
+Choose who can see it.
+
+Many sales tools ask for more customer details than you need.
+
+DRX lets you keep less.
 
 Core principle: `collect less data and protect the rest.`
 
-### Alias-First Customer Tracking
+### Save less customer information
 
 Status: `Live`
 
@@ -183,25 +193,27 @@ Status: `Live`
 - Goal: collect only what you actually need.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/quick-create/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/[id]/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/components/quick-pos/customer-inline.tsx`
 
-### Privacy Profiles
+### Choose what’s saved
 
 Status: `Live`
 
 - Operators choose privacy mode during onboarding and can change it anytime.
-- Alias Mode (Maximum Privacy): nickname-only tracking, no personal info required.
-- Standard Mode: light customer tracking with optional contact details.
-- Business CRM Mode: full CRM behavior for teams that choose to collect more.
+- Hide details: save an alias only.
+- Protect details: save contact details when needed.
+- Keep details: save a full customer record.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/components/onboarding/steps/PrivacyStep.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
 
-### Strong Encryption
+### Protect details
 
 Status: `Live`
 
@@ -210,11 +222,12 @@ Status: `Live`
 - Encrypted fields include phone numbers, emails, addresses, and notes.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/crypto.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/customers/[id]/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/pos/customers/quick-create/route.ts`
 
-### DRX Vault Mode™
+### Protect stored details
 
 Status: `Live`
 
@@ -223,11 +236,12 @@ Status: `Live`
 - This adds another protection layer around sensitive customer records.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/crypto.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/vault-status/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 
-### Minimal Data Engine
+### What’s saved
 
 Status: `Live`
 
@@ -235,41 +249,44 @@ Status: `Live`
 - Built-in counts include aliases, phone numbers, emails, addresses, and notes.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/inventory.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/inventory/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/inventory/refresh/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 
-### ProteXion Mode
+### Hide details
 
 Status: `Live`
 
 - DRX can hide customer details on screen when privacy matters.
 - Example:
-- Normal View: `Alias: Big Mike`, `Phone: 404-555-9811`
-- ProteXion Mode: `Alias: B*** M***`, `Phone: Hidden`
+- Details shown: `Alias: Big Mike`, `Phone: 404-555-9811`
+- Details hidden: `Alias: B*** M***`, `Phone: Hidden`
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/masking.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/api/privacy/protexion/preferences/route.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/tests/privacy/masking.unit.test.ts`
 
-### Ephemeral Customer Profiles
+### Delete temporary records
 
 Status: `Live`
 
 - DRX supports temporary customer records with auto-delete windows.
 - Supported windows include 24 hours, 7 days, and 30 days.
-- Fits one-time customers and quick POS scenarios.
+- Fits one-time customers and fast sales.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/customers-ephemeral.test.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/pos-quick-create-ephemeral.test.ts`
 
-### Data Retention Controls
+### Delete old records
 
 Status: `Live`
 
@@ -278,6 +295,7 @@ Status: `Live`
 - No unnecessary data sitting around forever.
 
 Evidence pointers:
+
 - `/Users/lee/Projects/DRX_Primary/apps/app/lib/privacy/profiles.ts`
 - `/Users/lee/Projects/DRX_Primary/apps/app/app/(app)/settings/page.tsx`
 - `/Users/lee/Projects/DRX_Primary/apps/app/tests/integration/privacy-cleanup-ephemeral.test.ts`
@@ -288,7 +306,7 @@ Most systems collect everything and keep it forever.
 DRX collects less, protects what exists, and lets you stay in control.
 
 Powered by DRX Intelligence™  
-Protected by DRX Privacy ProteXion™
+Built with privacy controls
 
 ## Why DRX Exists
 

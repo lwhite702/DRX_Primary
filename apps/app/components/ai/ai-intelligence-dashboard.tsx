@@ -13,7 +13,9 @@ interface AIIntelligenceDashboardProps {
   businessId: string;
 }
 
-export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardProps) {
+export function AIIntelligenceDashboard({
+  businessId,
+}: AIIntelligenceDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +74,13 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
         opportunitiesCount: pricingRecommendations + urgentRestocks,
       });
       if (results.some((result) => result.status === "rejected")) {
-        setError("Some intelligence totals could not be loaded. Try again to refresh them.");
+        setError(
+          "Some intelligence totals could not be loaded. Try again to refresh them.",
+        );
       }
     } catch (caught) {
       console.error("Error fetching dashboard data:", caught);
-      toast.error("Failed to load AI intelligence data");
+      toast.error("Couldn’t load Trends. Try again.");
       setError("Intelligence data could not be loaded.");
     } finally {
       setLoading(false);
@@ -98,7 +102,9 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
       if (!response.ok) throw new Error("Analysis failed");
 
       const result = await response.json();
-      toast.success(`Analysis complete: ${processedCount(result)} items analyzed`);
+      toast.success(
+        `Analysis complete: ${processedCount(result)} items analyzed`,
+      );
       await fetchDashboardData();
     } catch {
       toast.error("Failed to run analysis");
@@ -148,7 +154,11 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="grid grid-cols-2 gap-4 py-2 md:grid-cols-4" aria-label="Loading intelligence summary" aria-busy="true">
+            <div
+              className="grid grid-cols-2 gap-4 py-2 md:grid-cols-4"
+              aria-label="Loading intelligence summary"
+              aria-busy="true"
+            >
               {[0, 1, 2, 3].map((item) => (
                 <Skeleton key={item} className="h-24 w-full" />
               ))}
@@ -156,7 +166,12 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
           ) : error ? (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/25 bg-warning/5 p-4 text-sm">
               <span>{error}</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void fetchDashboardData()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void fetchDashboardData()}
+              >
                 Try again
               </Button>
             </div>
@@ -202,8 +217,11 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
                 <span>
-                  <strong>{data.pricingRecommendations} pricing recommendation(s)</strong> waiting
-                  for review. Apply to optimize margins and competitiveness.
+                  <strong>
+                    {data.pricingRecommendations} pricing recommendation(s)
+                  </strong>{" "}
+                  waiting for review. Apply to optimize margins and
+                  competitiveness.
                 </span>
               </li>
             )}
@@ -211,8 +229,8 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
               <li className="flex items-start gap-2">
                 <span className="text-red-500 mt-1">•</span>
                 <span>
-                  <strong>{data.criticalAlerts} critical alert(s)</strong> require immediate
-                  attention to prevent stockouts or losses.
+                  <strong>{data.criticalAlerts} critical alert(s)</strong>{" "}
+                  require immediate attention to prevent stockouts or losses.
                 </span>
               </li>
             )}
@@ -220,14 +238,15 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-1">•</span>
                 <span>
-                  <strong>{data.urgentRestocks} item(s)</strong> need urgent restock to avoid
-                  lost sales.
+                  <strong>{data.urgentRestocks} item(s)</strong> need urgent
+                  restock to avoid lost sales.
                 </span>
               </li>
             )}
             {data.opportunitiesCount === 0 && (
               <li className="text-muted-foreground">
-                No immediate AI recommendations. Inventory and pricing are optimized.
+                No immediate AI recommendations. Inventory and pricing are
+                optimized.
               </li>
             )}
           </ul>

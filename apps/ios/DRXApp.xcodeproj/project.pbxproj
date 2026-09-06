@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		019A65EB92DC7C848E6191A0 /* POSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC80B197BB4EAC341A692EC /* POSView.swift */; };
 		0AADB5DAFC4BBA0084676A56 /* IntakeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F3936411D169627BF4D449 /* IntakeSheet.swift */; };
+		12321DCF2798CB387C927D47 /* DRXContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584608B7ED8EAC3655ED67C7 /* DRXContent.swift */; };
 		20AE6B5AF941620E240797AA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 56661858B6226FF335EECA30 /* PostHog */; };
 		215E2D1AC86C7087AAC7EA7E /* ConvexMobile in Frameworks */ = {isa = PBXBuildFile; productRef = 171E00CF6A8B5CF2B3E8FDD3 /* ConvexMobile */; };
 		24918C4BF72B02AF27FD1CA3 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E94AECC61D710F6F5E1610D /* ReportsView.swift */; };
@@ -90,6 +91,7 @@
 		483B2AFD834F1E38EF79CF3F /* Deelrx CRM.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Deelrx CRM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A28F1469E38004C2F1D98A9 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		4C65689C1FAC4B6122D8B2DA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		584608B7ED8EAC3655ED67C7 /* DRXContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXContent.swift; sourceTree = "<group>"; };
 		5C60D25C929D2A85D324E5FA /* DRXClerkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXClerkTheme.swift; sourceTree = "<group>"; };
 		61818E2AD230910FEF9C4BEB /* DRXConvexBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXConvexBridge.swift; sourceTree = "<group>"; };
 		63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -307,11 +309,20 @@
 				A6359117F941BC2135C420A7 /* Info.plist */,
 				CB8951AEBE6F21E84CE23D66 /* PrivacyInfo.xcprivacy */,
 				5FE39C6DD701561FBF8AD202 /* App */,
+				7AAED691FAEEF113A7E70FBB /* Content */,
 				2A89611843A477A9A09A0091 /* Core */,
 				93F22C73381EC1FEB39FDBFA /* DesignSystem */,
 				AC426B10ED1E7011721CC58D /* Features */,
 			);
 			path = DRXApp;
+			sourceTree = "<group>";
+		};
+		7AAED691FAEEF113A7E70FBB /* Content */ = {
+			isa = PBXGroup;
+			children = (
+				584608B7ED8EAC3655ED67C7 /* DRXContent.swift */,
+			);
+			path = Content;
 			sourceTree = "<group>";
 		};
 		8A6785A1E03B8E63FD0FF1AA /* Customers */ = {
@@ -532,6 +543,7 @@
 				6DEFF0D49FE138BAB7ACCA9B /* CustomersView.swift in Sources */,
 				331D49EE044CDA5852F8C88E /* DRXApp.swift in Sources */,
 				F99E61FB4773D34C0106CA31 /* DRXClerkTheme.swift in Sources */,
+				12321DCF2798CB387C927D47 /* DRXContent.swift in Sources */,
 				A5227AA8785CA7CBF27E8CDB /* DRXConvexBridge.swift in Sources */,
 				630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */,
 				D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */,
@@ -692,7 +704,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.8.0;
+				MARKETING_VERSION = 0.9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -811,7 +823,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.8.0;
+				MARKETING_VERSION = 0.9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

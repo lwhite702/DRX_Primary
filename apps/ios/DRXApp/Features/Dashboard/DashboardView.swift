@@ -25,7 +25,7 @@ struct DashboardView: View {
         }
         .refreshable { await load() }
         .background(DRXPalette.canvas)
-        .navigationTitle("Dashboard")
+        .navigationTitle(DRXContent.Navigation.home)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -62,10 +62,10 @@ struct DashboardView: View {
                     .padding(.top, DRXSpacing.lg)
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DRXSpacing.md) {
-                    KPICard(title: "Orders", value: "\(agg.orderCount)", symbol: "cart.fill", color: DRXPalette.info)
-                    KPICard(title: "Avg Order", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
+                    KPICard(title: DRXContent.Navigation.sales, value: "\(agg.orderCount)", symbol: "cart.fill", color: DRXPalette.info)
+                    KPICard(title: "Average sale", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
                     KPICard(title: "Tax", value: agg.totalTaxFormatted, symbol: "percent", color: DRXPalette.warning)
-                    KPICard(title: "Register", value: "Ready", symbol: "checkmark.shield.fill", color: DRXPalette.accent)
+                    KPICard(title: DRXContent.Navigation.newSale, value: "Ready", symbol: "checkmark.shield.fill", color: DRXPalette.accent)
                 }
                 .padding(.horizontal, DRXSpacing.lg)
                 .padding(.top, DRXSpacing.md)
@@ -75,7 +75,7 @@ struct DashboardView: View {
             sectionHeader("Recent Sales")
 
             if recentSales.isEmpty {
-                EmptyStateCard(symbol: "cart.badge.questionmark", message: "No sales recorded yet.\nMake your first sale in POS.")
+                EmptyStateCard(symbol: "cart.badge.questionmark", message: "No sales yet.\nStart your first sale.")
                     .padding(.horizontal, 16)
             } else {
                 LazyVStack(spacing: 0) {
@@ -101,7 +101,7 @@ struct DashboardView: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView().tint(DRXPalette.accent)
-            Text("Loading dashboard…")
+            Text("Loading today’s numbers…")
                 .font(.subheadline)
                 .foregroundStyle(DRXPalette.muted)
         }
@@ -110,12 +110,12 @@ struct DashboardView: View {
 
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
-            Label("Couldn't Load Dashboard", systemImage: "exclamationmark.triangle.fill")
+            Label("Couldn’t load Home", systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(DRXPalette.danger)
         } description: {
             Text(message).foregroundStyle(DRXPalette.muted)
         } actions: {
-            Button("Retry") { Task { await load() } }
+            Button(DRXContent.Actions.tryAgain) { Task { await load() } }
                 .buttonStyle(.drxPrimary)
         }
         .padding(.top, 60)
@@ -319,7 +319,7 @@ private struct IdentityHeaderCard: View {
     }
 
     private var businessName: String {
-        environment.session.operatorSession?.businessName ?? "Business Workspace"
+        environment.session.operatorSession?.businessName ?? DRXContent.Terms.business
     }
 
     private var initials: String {
@@ -414,9 +414,9 @@ private struct UserIdentitySheet: View {
                     LabeledContent("Operator ID", value: session?.operatorID ?? "—")
                 }
 
-                Section("Active Business Workspace") {
+                Section("Current business") {
                     LabeledContent("Business", value: session?.businessName ?? "—")
-                    LabeledContent("Workspace ID", value: session?.businessID ?? "—")
+                    LabeledContent("Business ID", value: session?.businessID ?? "—")
                 }
 
                 Section {
@@ -474,4 +474,3 @@ private struct UserIdentitySheet: View {
         }
     }
 }
-

@@ -204,21 +204,27 @@ Privacy presets must state their retention window and clearly say when inactive 
 
 Use the same public names across every surface:
 
-- Home
-- Customers
-- Products
-- Inventory
-- Orders
-- Sales
-- Payments
-- Balances
+- Home: the main daily summary
+- Customers: customer records and notes
+- Products: the product list
+- Stock: the quantity of a product
+- New sale: the checkout action
+- Sales: completed sales and receipts
+- Payments: customer payments, limits, and balances due
 - Deliveries
 - Loyalty
 - Referrals
+- Trends: patterns and suggestions that need review
 - Reports
 - Team
+- Business: the account boundary
+- Location: a physical store or selling place
 - Settings
 - Help
+
+Use **Privacy**, **Hide details**, **Protect details**, **What’s saved**, and
+**Delete old records** for privacy features. Older coined privacy names may
+remain as internal identifiers, but never as customer-facing labels.
 
 Internal engineering names may differ, but they must not leak into customer-facing copy.
 

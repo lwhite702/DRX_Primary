@@ -188,21 +188,21 @@ private struct SignedOutWelcomeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 190, height: 100)
-                    .accessibilityLabel("Deelrx CRM")
+                    .accessibilityLabel(DRXContent.Brand.formalName)
                 VStack(spacing: DRXSpacing.sm) {
-                    Text("Your workspace starts here")
+                    Text("Keep the business straight")
                         .font(.largeTitle.bold())
                         .foregroundStyle(DRXPalette.ink)
                         .multilineTextAlignment(.center)
-                    Text("Create an operator account or sign in to continue to your private business workspace.")
+                    Text("Create an account or sign in to track customers, stock, sales, and money.")
                         .foregroundStyle(DRXPalette.muted)
                         .multilineTextAlignment(.center)
                 }
                 VStack(spacing: DRXSpacing.md) {
-                    Button("Create Account", action: onCreateAccount)
+                    Button("Create account", action: onCreateAccount)
                         .buttonStyle(.drxPrimaryFullWidth)
                         .accessibilityIdentifier("createAccountButton")
-                    Button("Sign In", action: onSignIn)
+                    Button("Sign in", action: onSignIn)
                         .buttonStyle(.bordered)
                         .tint(DRXPalette.ink)
                         .accessibilityIdentifier("signInButton")
@@ -228,19 +228,19 @@ private struct SessionBootstrapView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 184, height: 96)
-                    .accessibilityLabel("Deelrx CRM")
+                    .accessibilityLabel(DRXContent.Brand.formalName)
 
                 VStack(spacing: 8) {
-                    Text("Opening Deelrx CRM")
+                    Text("Opening \(DRXContent.Brand.formalName)")
                         .font(.title2.bold())
                         .foregroundStyle(DRXPalette.ink)
 
-                    Text("Confirming your operator access")
+                    Text("Checking your account")
                         .font(.subheadline)
                         .foregroundStyle(DRXPalette.muted)
                 }
 
-                ProgressView("Loading your workspace…")
+                ProgressView("Loading your business…")
                         .tint(DRXPalette.accent)
                         .foregroundStyle(DRXPalette.muted)
                         .accessibilityIdentifier("sessionLoadingIndicator")
@@ -267,11 +267,11 @@ private struct ProvisioningRecoveryView: View {
     var body: some View {
         VStack(spacing: 18) {
             Image(systemName: "exclamationmark.triangle.fill").font(.largeTitle).foregroundStyle(DRXPalette.danger)
-            Text("Workspace Unavailable").font(.title2.bold())
-            Text(environment.provisioningMessage ?? "We couldn't open your workspace.")
+            Text("Business unavailable").font(.title2.bold())
+            Text(environment.provisioningMessage ?? "We couldn’t open your business.")
                 .multilineTextAlignment(.center).foregroundStyle(DRXPalette.muted)
                 .accessibilityIdentifier("provisioningErrorMessage")
-            Button("Retry") { Task { await environment.checkProvisioning() } }
+            Button(DRXContent.Actions.tryAgain) { Task { await environment.checkProvisioning() } }
                 .buttonStyle(.drxPrimary).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
                 Task {
@@ -314,25 +314,25 @@ private struct OperatorTabView: View {
             NavigationStack {
                 DashboardView()
             }
-                .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
+                .tabItem { Label(DRXContent.Navigation.home, systemImage: "gauge.with.dots.needle.67percent") }
                 .tag(WorkspaceTab.dashboard)
 
             NavigationStack {
                 POSView()
             }
-                .tabItem { Label("POS", systemImage: "cart.fill") }
+                .tabItem { Label(DRXContent.Navigation.newSale, systemImage: "cart.fill") }
                 .tag(WorkspaceTab.pos)
 
             NavigationStack {
                 InventoryView()
             }
-                .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+                .tabItem { Label(DRXContent.Navigation.products, systemImage: "shippingbox.fill") }
                 .tag(WorkspaceTab.inventory)
 
             NavigationStack {
                 CustomersView()
             }
-                .tabItem { Label("Customers", systemImage: "person.2.fill") }
+                .tabItem { Label(DRXContent.Navigation.customers, systemImage: "person.2.fill") }
                 .tag(WorkspaceTab.customers)
 
             NavigationStack {
@@ -341,43 +341,43 @@ private struct OperatorTabView: View {
                         NavigationLink {
                             CreditView()
                         } label: {
-                            Label("Credit", systemImage: "creditcard.fill")
+                            Label(DRXContent.Navigation.payments, systemImage: "creditcard.fill")
                         }
                         .accessibilityIdentifier("module_credit")
 
                         NavigationLink {
                             DeliveryQueueView()
                         } label: {
-                            Label("Deliveries", systemImage: "car.side.fill")
+                            Label(DRXContent.Navigation.deliveries, systemImage: "car.side.fill")
                         }
                         .accessibilityIdentifier("module_deliveries")
 
                         NavigationLink {
                             ReportsView()
                         } label: {
-                            Label("Reports", systemImage: "chart.bar.doc.horizontal.fill")
+                            Label(DRXContent.Navigation.reports, systemImage: "chart.bar.doc.horizontal.fill")
                         }
                         .accessibilityIdentifier("module_reports")
 
                         NavigationLink {
                             WorkspacesView()
                         } label: {
-                            Label("Workspaces", systemImage: "building.2.fill")
+                            Label(DRXContent.Terms.business, systemImage: "building.2.fill")
                         }
                         .accessibilityIdentifier("module_workspaces")
 
                         NavigationLink {
                             AIIntelligenceView()
                         } label: {
-                            Label("AI Intelligence", systemImage: "sparkles")
+                            Label(DRXContent.Navigation.trends, systemImage: "sparkles")
                         }
                         .accessibilityIdentifier("module_ai_intelligence")
                     }
 
                     Section("Session") {
                         if let session = environment.session.operatorSession {
-                            LabeledContent("Operator", value: session.displayName)
-                            LabeledContent("Business", value: session.businessName)
+                            LabeledContent(DRXContent.Terms.teamMember, value: session.displayName)
+                            LabeledContent(DRXContent.Terms.business, value: session.businessName)
                         }
 
                         Button("Sign Out", role: .destructive) {

@@ -40,8 +40,8 @@ export function CreditCustomerList({
     return (
       <EmptyState
         icon={Users}
-        title="No Credit Accounts"
-        description="Customers with outstanding balances will appear here."
+        title="Nothing due"
+        description="Everybody is paid up. Nice."
         className="border-dashed border-white/10 bg-transparent"
       />
     );

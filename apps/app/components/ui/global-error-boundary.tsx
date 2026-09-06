@@ -19,7 +19,10 @@ type SentryFeedback = {
 };
 
 type SentryBrowserClient = {
-  captureException?: (error: unknown, context?: Record<string, unknown>) => void;
+  captureException?: (
+    error: unknown,
+    context?: Record<string, unknown>,
+  ) => void;
   getFeedback?: () => SentryFeedback | null;
 };
 
@@ -85,7 +88,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">Something went wrong</h1>
+              <h1 className="text-2xl font-bold">That didn’t load</h1>
               <p className="text-muted-foreground">
                 We encountered an unexpected error. Your progress has been
                 preserved where possible.

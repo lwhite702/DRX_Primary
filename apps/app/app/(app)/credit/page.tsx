@@ -56,7 +56,7 @@ export default function CreditPage() {
       <EmptyState
         icon={FileText}
         title="Finish business setup"
-        description="Complete onboarding before managing customer credit."
+        description="Complete onboarding before managing balances due."
         className="m-4 md:m-8"
       />
     );
@@ -65,7 +65,9 @@ export default function CreditPage() {
   // Filter Data
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredAgingData = safeAgingData.filter((a) =>
-    String(a?.customer_name ?? "").toLowerCase().includes(normalizedSearch),
+    String(a?.customer_name ?? "")
+      .toLowerCase()
+      .includes(normalizedSearch),
   );
 
   // Calculate Stats
@@ -94,8 +96,8 @@ export default function CreditPage() {
   return (
     <div className="p-4 md:p-8 space-y-6 page-transition">
       <PageHeader
-        title="Credit Management"
-        description="Track credit transactions and fronts."
+        title="Balances due"
+        description="See what customers owe and record payments."
       >
         <div id="tour-credit-extension">
           <CreditHeader
@@ -108,11 +110,15 @@ export default function CreditPage() {
       </PageHeader>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+        <p
+          className="text-sm text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
           {refreshing
-            ? "Refreshing credit balances without clearing the page."
+            ? "Refreshing balances without clearing the page."
             : error
-              ? "Credit data could not refresh. Showing the last loaded values."
+              ? "Balances could not refresh. Showing the last loaded values."
               : "Balances are current as of the latest refresh."}
         </p>
         <Button
@@ -144,7 +150,7 @@ export default function CreditPage() {
 
       <div id="tour-credit-list" className="space-y-4">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
-          Accounts Overview
+          Customer balances
         </h2>
         <CreditCustomerList
           data={filteredAgingData}
@@ -171,7 +177,9 @@ export default function CreditPage() {
             // Figma shows "View History". Likely a filter on the transactions list or a new page.
             // For now, I'll log or scroll to transactions.
             console.log("View history", id);
-            setSearchTerm(safeCustomers.find((c) => c.id === id)?.first_name || "");
+            setSearchTerm(
+              safeCustomers.find((c) => c.id === id)?.first_name || "",
+            );
           }}
         />
       </div>
@@ -188,8 +196,8 @@ export default function CreditPage() {
           <CardContent className="pt-6">
             <EmptyState
               icon={FileText}
-              title="No transactions yet"
-              description="Extension and payment history will appear here."
+              title="No balance activity yet"
+              description="New balances and payments will appear here."
               className="border-none bg-transparent"
             />
           </CardContent>
@@ -217,18 +225,20 @@ export default function CreditPage() {
         steps={[
           {
             targetId: "tour-credit-stats",
-            title: "What’s owed.",
-            description: "See total outstanding balance and how much is overdue. Keeps your front tight.",
+            title: "What’s owed",
+            description: "See the total balance due and how much is overdue.",
           },
           {
             targetId: "tour-credit-list",
-            title: "Account view.",
-            description: "Every customer with an open tab is listed here. Check aging and balances at a glance.",
+            title: "Customer balances",
+            description:
+              "See every customer with an open balance and how long it has been due.",
           },
           {
             targetId: "tour-credit-extension",
-            title: "Extend or collect.",
-            description: "Front new credit or log a payment. Every action gets recorded.",
+            title: "Add or collect",
+            description:
+              "Add to a balance or record a payment. Each action is saved.",
           },
         ]}
       />

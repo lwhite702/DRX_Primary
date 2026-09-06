@@ -145,7 +145,7 @@ export default function AliasesSettingsPage() {
         ),
       );
       setNewAlias({ alias_name: "", standard_unit: "g", quantity: "" });
-      toast.success("Alias added successfully");
+      toast.success("Alias added.");
     } catch (error: any) {
       console.error("Error adding alias:", error);
       toast.error(

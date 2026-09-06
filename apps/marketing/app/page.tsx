@@ -7,7 +7,7 @@ import { PageViewTracker } from "@/components/marketing/site/page-view-tracker";
 export const metadata: Metadata = {
   title: "Deelrx CRM | Built for the ones who run it",
   description:
-    "Fast checkout, tighter inventory, clear sales records, and role-based control for independent retailers.",
+    "Keep customers, products, stock, sales, payments, and balances due straight.",
 };
 
 export default function LandingPage() {

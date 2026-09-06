@@ -18,10 +18,10 @@ struct AIIntelligenceView: View {
                         .background(DRXPalette.accent.opacity(0.12), in: Circle())
 
                     VStack(spacing: 6) {
-                        Text("AI Intelligence Engine")
+                        Text("Trends")
                             .font(.title2.bold())
                             .foregroundStyle(DRXPalette.ink)
-                        Text("Autonomous inventory forecasting, customer risk analytics, and smart POS recommendations.")
+                        Text("See what’s selling, what’s running low, and what needs a closer look.")
                             .font(.subheadline)
                             .multilineTextAlignment(.center)
                             .foregroundStyle(DRXPalette.muted)
@@ -34,17 +34,17 @@ struct AIIntelligenceView: View {
                 .overlay { RoundedRectangle(cornerRadius: 18).stroke(DRXPalette.border, lineWidth: 1) }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Label("Catalog intelligence is available", systemImage: "checkmark.shield.fill")
+                    Label("Product trends are ready", systemImage: "checkmark.shield.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(DRXPalette.success)
-                    Text("Analysis runs through your authenticated business workspace so tenant authorization and audit controls remain enforced.")
+                    Text("Suggestions use your business records. Check the numbers before you act.")
                         .font(.caption)
                         .foregroundStyle(DRXPalette.muted)
 
                     NavigationLink {
-                        AuthenticatedWebView(path: "ai-intelligence", title: "AI Intelligence")
+                        AuthenticatedWebView(path: "ai-intelligence", title: "Trends")
                     } label: {
-                        Label("Run AI Analysis", systemImage: "sparkles")
+                        Label("Check trends", systemImage: "sparkles")
                             .font(.headline)
                     }
                     .buttonStyle(.drxPrimaryFullWidth)
@@ -58,29 +58,29 @@ struct AIIntelligenceView: View {
 
                 // Insight Cards
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Automated Insights")
+                    Text("What needs attention")
                         .font(.headline)
                         .foregroundStyle(DRXPalette.ink)
 
                     AIInsightTile(
                         symbol: "chart.line.uptrend.xyaxis.circle.fill",
                         color: .green,
-                        title: "Reorder Forecasting",
-                        description: "Smart predictions for stock replenishment based on recent FIFO consumption rates."
+                        title: "What may run low",
+                        description: "Suggested stock needs based on recent sales."
                     )
 
                     AIInsightTile(
                         symbol: "exclamationmark.shield.fill",
                         color: .orange,
-                        title: "Credit Risk Scoring",
-                        description: "Real-time evaluation of customer credit limits against transaction velocity."
+                        title: "Balances to check",
+                        description: "Customers whose balance or payment pace may need a closer look."
                     )
 
                     AIInsightTile(
                         symbol: "tag.fill",
                         color: .purple,
-                        title: "Dynamic Margin Optimization",
-                        description: "Automated cost per gram breakdown to preserve target gross margins across batches."
+                        title: "Prices to check",
+                        description: "Cost and price changes that may affect what you make."
                     )
                 }
 
@@ -89,7 +89,7 @@ struct AIIntelligenceView: View {
             .padding(16)
         }
         .background(DRXPalette.canvas)
-        .navigationTitle("AI Intelligence")
+        .navigationTitle("Trends")
         .navigationBarTitleDisplayMode(.large)
         .onAppear { environment.telemetry.screen("AI Intelligence") }
     }

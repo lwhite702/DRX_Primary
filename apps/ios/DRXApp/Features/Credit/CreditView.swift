@@ -32,15 +32,15 @@ struct CreditView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading credit accounts…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView("Loading payments…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error {
-                ContentUnavailableView("Failed to load", systemImage: "exclamationmark.triangle.fill", description: Text(error))
+                ContentUnavailableView("Couldn’t load payments", systemImage: "exclamationmark.triangle.fill", description: Text(error))
             } else {
                 content
             }
         }
         .background(DRXPalette.canvas)
-        .navigationTitle("Credit Accounts")
+        .navigationTitle(DRXContent.Navigation.payments)
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await load() }
         .task { await load() }
@@ -57,10 +57,10 @@ struct CreditView: View {
     private var content: some View {
         List {
             // Credit Portfolio Summary
-            Section("Credit Portfolio") {
+            Section("Balances") {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Outstanding Credit")
+                        Text(DRXContent.Terms.balanceDue)
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
                         Text(formatCents(totalCreditIssuedCents))
@@ -81,9 +81,9 @@ struct CreditView: View {
             }
 
             // Customer Accounts
-            Section("Customer Accounts (\(creditCustomers.count))") {
+            Section("Customers with balances (\(creditCustomers.count))") {
                 if creditCustomers.isEmpty {
-                    Text("No customer credit accounts. Set credit limits in Customer Details.")
+                    Text("Nothing due. Everybody is paid up.")
                         .font(.subheadline)
                         .foregroundStyle(DRXPalette.muted)
                         .padding(.vertical, 8)

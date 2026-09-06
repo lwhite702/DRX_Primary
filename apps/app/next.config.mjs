@@ -27,6 +27,7 @@ const nextConfig = {
   },
   output: "standalone",
   transpilePackages: [
+    "@deelrx/content",
     "@wrelik/auth",
     "@wrelik/db",
     "@wrelik/storage",

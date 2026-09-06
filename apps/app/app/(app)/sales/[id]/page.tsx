@@ -146,7 +146,7 @@ export default function SaleDetailPage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Customer assigned successfully!");
+        toast.success("Customer added to the sale.");
 
         // Reload details
         const reloadRes = await fetch(`/api/sales/${saleId}`);
@@ -318,7 +318,10 @@ export default function SaleDetailPage() {
                     <div className="flex justify-between text-sm pt-2 border-t">
                       <span>COGS:</span>
                       <span>
-                        ${Number(sale.costSummary.costOfGoodsSold || 0).toFixed(2)}
+                        $
+                        {Number(sale.costSummary.costOfGoodsSold || 0).toFixed(
+                          2,
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -330,7 +333,10 @@ export default function SaleDetailPage() {
                     <div className="flex justify-between text-sm">
                       <span>Gross Margin:</span>
                       <span>
-                        {Number(sale.costSummary.grossMarginPercent || 0).toFixed(2)}%
+                        {Number(
+                          sale.costSummary.grossMarginPercent || 0,
+                        ).toFixed(2)}
+                        %
                       </span>
                     </div>
                   </>

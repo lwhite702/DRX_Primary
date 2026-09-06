@@ -143,12 +143,17 @@ export default function Credits() {
 
     try {
       const token = await getToken();
-      await recordCreditPayment(legacyBusinessId, selectedCustomer.id, amount, token);
+      await recordCreditPayment(
+        legacyBusinessId,
+        selectedCustomer.id,
+        amount,
+        token,
+      );
       setPaymentModalVisible(false);
       setSelectedCustomer(null);
       setPaymentAmount("");
       fetchData();
-      Alert.alert("Success", "Payment recorded successfully");
+      Alert.alert("Payment added", "The balance is up to date.");
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to record payment");
     }
@@ -187,9 +192,9 @@ export default function Credits() {
           .split("T")[0],
       );
       fetchData();
-      Alert.alert("Success", "Credit extended successfully");
+      Alert.alert("Balance limit updated", "The new limit is ready.");
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to extend credit");
+      Alert.alert("Error", error.message || "Failed to update the balance");
     }
   };
 
@@ -208,9 +213,15 @@ export default function Credits() {
             <Text style={styles.avatarText}>{avatarInitial}</Text>
           </View>
           <View style={styles.customerInfo}>
-            <Text style={styles.customerName} numberOfLines={1} ellipsizeMode="tail">{customerName}</Text>
+            <Text
+              style={styles.customerName}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {customerName}
+            </Text>
             <Text style={styles.creditLimit}>
-              Limit: {formatCurrency(item.credit_limit)}
+              Balance limit: {formatCurrency(item.credit_limit)}
             </Text>
           </View>
           <View style={styles.balanceContainer}>
@@ -286,9 +297,9 @@ export default function Credits() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Store Credit</Text>
+        <Text style={styles.title}>Payments</Text>
         <View style={styles.totalBadge}>
-          <Text style={styles.totalLabel}>Outstanding</Text>
+          <Text style={styles.totalLabel}>Balance due</Text>
           <Text style={styles.totalValue}>
             {formatCurrency(totalOutstanding)}
           </Text>
@@ -301,10 +312,10 @@ export default function Credits() {
         </TouchableOpacity>
       </View>
 
-      {/* Outstanding Credits */}
+      {/* Balances due */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          Outstanding Balances ({customersWithCredit.length})
+          Balances due ({customersWithCredit.length})
         </Text>
         {customersWithCredit.length > 0 ? (
           <FlatList
@@ -320,14 +331,14 @@ export default function Credits() {
               size={32}
               color={COLORS.success}
             />
-            <Text style={styles.emptySectionText}>No outstanding credits</Text>
+            <Text style={styles.emptySectionText}>No balances due</Text>
           </View>
         )}
       </View>
 
-      {/* Recent Transactions */}
+      {/* Recent activity */}
       <View style={[styles.section, { flex: 1 }]}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <Text style={styles.sectionTitle}>Recent activity</Text>
         <FlatList
           data={transactions.slice(0, 20)}
           keyExtractor={(item) => item.id}
@@ -347,7 +358,7 @@ export default function Credits() {
                 size={32}
                 color={COLORS.textMuted}
               />
-              <Text style={styles.emptySectionText}>No transactions yet</Text>
+              <Text style={styles.emptySectionText}>No activity yet</Text>
             </View>
           }
         />
@@ -430,7 +441,7 @@ export default function Credits() {
         </View>
       </Modal>
 
-      {/* Extension Modal */}
+      {/* Add-to-balance modal */}
       <Modal visible={extensionModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View
@@ -440,7 +451,7 @@ export default function Credits() {
             ]}
           >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Extend Credit</Text>
+              <Text style={styles.modalTitle}>Add to balance</Text>
               <TouchableOpacity onPress={() => setExtensionModalVisible(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>
@@ -471,7 +482,7 @@ export default function Credits() {
               </TouchableOpacity>
 
               {/* Amount */}
-              <Text style={styles.inputLabel}>Amount to Extend</Text>
+              <Text style={styles.inputLabel}>Amount to add</Text>
               <TextInput
                 style={styles.paymentInput}
                 value={extensionAmount}
@@ -487,7 +498,7 @@ export default function Credits() {
                 style={styles.inputField}
                 value={extensionDescription}
                 onChangeText={setExtensionDescription}
-                placeholder="Reason for credit"
+                placeholder="Reason for the balance"
                 placeholderTextColor={COLORS.textMuted}
               />
 
@@ -513,7 +524,7 @@ export default function Credits() {
                 style={styles.confirmBtn}
                 onPress={handleExtendCredit}
               >
-                <Text style={styles.confirmBtnText}>Extend Credit</Text>
+                <Text style={styles.confirmBtnText}>Add to balance</Text>
               </TouchableOpacity>
             </View>
           </View>

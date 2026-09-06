@@ -115,7 +115,7 @@ final class OnboardingModel {
         case .businessType where draft.businessType == nil: validationMessage = "Choose the option that fits best for now."
         case .taxDecision where draft.taxChoice == nil: validationMessage = "Choose an option to continue."
         case .taxDetails where Double(draft.taxRate).map({ !(0...100).contains($0) }) ?? true: validationMessage = "Enter a tax rate from 0% to 100%."
-        case .inventoryDecision where draft.tracksInventory == nil: validationMessage = "Choose whether to track inventory."
+        case .inventoryDecision where draft.tracksInventory == nil: validationMessage = "Choose whether to track stock."
         case .teamDecision where draft.inviteTeam == nil: validationMessage = "Choose whether to invite someone now."
         case .teamInvitation where !draft.invitedUserEmail.contains("@"): validationMessage = "Enter a valid email address."
         default: return true
