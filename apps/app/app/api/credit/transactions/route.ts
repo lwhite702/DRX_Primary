@@ -38,13 +38,18 @@ export async function POST(request: NextRequest) {
     const rawType = typeof body.transaction_type === "string" ? body.transaction_type.toLowerCase() : "";
     const kind = ["purchase", "credit", "extension"].includes(rawType) ? "issue" : rawType === "payment" ? "payment" : null;
     const amount = typeof body.amount === "number" || (typeof body.amount === "string" && body.amount.trim()) ? Number(body.amount) : NaN;
-    const amountCents = Math.round(amount * 100);
-    if (!kind || !Number.isSafeInteger(amountCents) || amountCents <= 0 || Math.abs(amount * 100 - amountCents) > 1e-6 || (body.description !== undefined && typeof body.description !== "string") || (body.business_id !== undefined && typeof body.business_id !== "string")) throw new Error("INVALID_ARGUMENT:");
+    if (body.amountCents !== undefined && !Number.isSafeInteger(body.amountCents)) throw new Error("INVALID_ARGUMENT:");
+    const dollarCents = Math.round(amount * 100);
+    const amountCents = body.amountCents ?? dollarCents;
+    if (body.amount !== undefined && (!Number.isSafeInteger(dollarCents) || Math.abs(amount * 100 - dollarCents) > 1e-6 || dollarCents !== amountCents)) throw new Error("INVALID_ARGUMENT:");
+    if (!kind || !Number.isSafeInteger(amountCents) || amountCents <= 0 || (body.description !== undefined && typeof body.description !== "string") || (body.business_id !== undefined && typeof body.business_id !== "string")) throw new Error("INVALID_ARGUMENT:");
     const requestKey = request.headers.get("idempotency-key") ?? body.requestKey ?? body.idempotencyKey ?? randomUUID();
     if (typeof requestKey !== "string") throw new Error("INVALID_ARGUMENT:");
     const dueAt = parseDueDate(body.due_date ?? body.dueDate);
     if (body.due_date !== undefined && body.dueDate !== undefined && parseDueDate(body.due_date) !== parseDueDate(body.dueDate)) throw new Error("INVALID_ARGUMENT:");
-    const transaction = await client.mutation(api.creditTransactions.create, { businessId: body.business_id ?? businessId, customerId: body.customer_id, kind, amountCents, requestKey, description: body.description, dueAt });
+    const paymentMethod = body.payment_method ?? body.paymentMethod;
+    if ((paymentMethod !== undefined && typeof paymentMethod !== "string") || (body.expectedUserId !== undefined && typeof body.expectedUserId !== "string") || (body.payment_method !== undefined && body.paymentMethod !== undefined && body.payment_method !== body.paymentMethod)) throw new Error("INVALID_ARGUMENT:");
+    const transaction = await client.mutation(api.creditTransactions.create, { businessId: body.business_id ?? businessId, customerId: body.customer_id, kind, amountCents, requestKey, description: body.description, dueAt, paymentMethod, expectedUserId: body.expectedUserId });
     return NextResponse.json(transaction, { status: 201, headers: { "Cache-Control": "private, no-store", "Idempotency-Key": requestKey } });
   } catch (error) { return failure(error); }
 }

@@ -64,14 +64,14 @@ export const issueCustomerCredit = mutation({
 });
 
 export const recordCreditPayment = mutation({
-  args: { customerId: v.id("customers"), paymentAmountCents: v.number(), requestKey: v.optional(v.string()) },
+  args: { customerId: v.id("customers"), paymentAmountCents: v.number(), description: v.optional(v.string()), paymentMethod: v.optional(v.string()), requestKey: v.optional(v.string()) },
   returns: v.object({ customerId: v.id("customers"), remainingCreditUsedCents: v.number() }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     const customer = await ctx.db.get(args.customerId);
     if (!customer || customer.businessId !== auth.businessId || !customer.isActive) throw new Error("NOT_FOUND: Customer record not found");
-    const balance = await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "payment", deltaCents: -positiveCreditCents(args.paymentAmountCents), requestKey: args.requestKey });
+    const balance = await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "payment", deltaCents: -positiveCreditCents(args.paymentAmountCents), description: args.description, paymentMethod: args.paymentMethod, requestKey: args.requestKey });
     return { customerId: args.customerId, remainingCreditUsedCents: balance };
   },
 });

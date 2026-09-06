@@ -104,3 +104,32 @@ it("rejects invalid calendar terms, conflicting aliases and payment due dates at
   expect(await t.run(ctx => ctx.db.query("creditEntries").collect())).toEqual([]);
   expect((await t.run(ctx => ctx.db.get(customerId)))?.totalCreditUsedCents).toBe(0);
 });
+
+it("preserves repayment method and notes and rejects changed-method retries", async () => {
+  await post({ customer_id: customerId, amount: 10, transaction_type: "extension" });
+  const payload = { customer_id: customerId, amount: 2, transaction_type: "payment", payment_method: "transfer", description: "Synthetic payment", requestKey: "method-payment-1", expectedUserId: "credit-api-owner" };
+  const first = await post(payload);
+  expect(first.status).toBe(201);
+  const entry = await first.json();
+  expect(entry).toMatchObject({ paymentMethod: "transfer", description: "Synthetic payment", balanceAfter: 8 });
+  expect((await (await post(payload)).json()).id).toBe(entry.id);
+  expect((await post({ ...payload, payment_method: "cash" })).status).toBe(409);
+  expect((await post({ ...payload, payment_method: "invalid" })).status).toBe(400);
+  expect((await post({ ...payload, paymentMethod: "cash" })).status).toBe(400);
+  expect((await post({ ...payload, transaction_type: "extension" })).status).toBe(400);
+});
+
+it("rejects queued credit submitted under another operator without changing balances", async () => {
+  const response = await post({ customer_id: customerId, amount: 1, transaction_type: "extension", expectedUserId: "another-operator", requestKey: "owned-queue-001" });
+  expect(response.status).toBe(403);
+  expect(await t.run(ctx => ctx.db.query("creditEntries").collect())).toEqual([]);
+});
+
+it("accepts exact integer cents for queued requests and rejects contradictory amount fields", async () => {
+  await t.run(ctx => ctx.db.patch(customerId, { creditLimitCents: 0 }));
+  const response = await post({ customer_id: customerId, amountCents: Number.MAX_SAFE_INTEGER, transaction_type: "extension", requestKey: "exact-cents-001" });
+  expect(response.status).toBe(201);
+  expect(await response.json()).toMatchObject({ amountCents: Number.MAX_SAFE_INTEGER, balanceAfterCents: Number.MAX_SAFE_INTEGER });
+  expect((await post({ customer_id: customerId, amount: 1, amountCents: 101, transaction_type: "payment" })).status).toBe(400);
+  expect((await post({ customer_id: customerId, amount: 0.001, amountCents: 1, transaction_type: "payment" })).status).toBe(400);
+});

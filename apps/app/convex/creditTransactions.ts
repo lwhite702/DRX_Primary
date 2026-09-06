@@ -6,9 +6,9 @@ import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 import { appendCreditEntry, positiveCreditCents } from "./helpers/creditLedger";
 
-const transaction = v.object({ id: v.string(), businessId: v.string(), customerId: v.string(), amount: v.number(), transactionType: v.string(), description: v.optional(v.string()), status: v.string(), createdBy: v.string(), createdAt: v.string(), balanceAfter: v.number(), dueDate: v.optional(v.string()) });
+const transaction = v.object({ id: v.string(), businessId: v.string(), customerId: v.string(), amount: v.number(), amountCents: v.number(), balanceAfterCents: v.number(), transactionType: v.string(), description: v.optional(v.string()), status: v.string(), createdBy: v.string(), createdAt: v.string(), balanceAfter: v.number(), dueDate: v.optional(v.string()), paymentMethod: v.optional(v.string()) });
 function project(entry: Doc<"creditEntries">) {
-  return { id: entry._id, businessId: entry.businessId, customerId: entry.customerId, amount: Math.abs(entry.deltaCents) / 100, transactionType: entry.kind === "issue" ? "extension" : entry.kind === "sale" ? "purchase" : entry.kind, description: entry.description, status: entry.kind === "opening" ? "unreconciled" : "completed", createdBy: entry.createdBy, createdAt: new Date(entry.createdAt).toISOString(), balanceAfter: entry.balanceAfterCents / 100, dueDate: entry.dueAt === undefined ? undefined : new Date(entry.dueAt).toISOString() };
+  return { id: entry._id, businessId: entry.businessId, customerId: entry.customerId, amount: Math.abs(entry.deltaCents) / 100, amountCents: Math.abs(entry.deltaCents), balanceAfterCents: entry.balanceAfterCents, transactionType: entry.kind === "issue" ? "extension" : entry.kind === "sale" ? "purchase" : entry.kind, description: entry.description, status: entry.kind === "opening" ? "unreconciled" : "completed", createdBy: entry.createdBy, createdAt: new Date(entry.createdAt).toISOString(), balanceAfter: entry.balanceAfterCents / 100, paymentMethod: entry.paymentMethod, dueDate: entry.dueAt === undefined ? undefined : new Date(entry.dueAt).toISOString() };
 }
 async function access(ctx: QueryCtx, businessId: string, writing: boolean) {
   const auth = await requireUserAndBusiness(ctx);
@@ -23,14 +23,15 @@ async function customerFor(ctx: QueryCtx, auth: Awaited<ReturnType<typeof access
   return customer;
 }
 export const create = mutation({
-  args: { businessId: v.string(), customerId: v.string(), kind: v.union(v.literal("issue"), v.literal("payment")), amountCents: v.number(), requestKey: v.string(), dueAt: v.optional(v.number()), description: v.optional(v.string()) },
+  args: { businessId: v.string(), customerId: v.string(), kind: v.union(v.literal("issue"), v.literal("payment")), amountCents: v.number(), requestKey: v.string(), expectedUserId: v.optional(v.string()), paymentMethod: v.optional(v.string()), dueAt: v.optional(v.number()), description: v.optional(v.string()) },
   returns: transaction,
   handler: async (ctx, args) => {
     const auth = await access(ctx, args.businessId, true);
+    if (args.expectedUserId !== undefined && args.expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Credit request belongs to another operator");
     const customer = await customerFor(ctx, auth, args.customerId);
     if (!customer.isActive) throw new Error("NOT_FOUND: Customer is unavailable");
     const amount = positiveCreditCents(args.amountCents);
-    await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: args.kind, deltaCents: args.kind === "payment" ? -amount : amount, requestKey: args.requestKey, description: args.description, dueAt: args.dueAt });
+    await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: args.kind, deltaCents: args.kind === "payment" ? -amount : amount, requestKey: args.requestKey, description: args.description, dueAt: args.dueAt, paymentMethod: args.paymentMethod });
     const entry = await ctx.db.query("creditEntries").withIndex("by_businessId_and_requestKey", q => q.eq("businessId", auth.businessId).eq("requestKey", args.requestKey)).unique();
     if (!entry) throw new Error("INVALID_STATE: Transaction was not recorded");
     return project(entry);

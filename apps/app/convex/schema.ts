@@ -229,6 +229,7 @@ export default defineSchema({
     deltaCents: v.number(), balanceAfterCents: v.number(),
     saleId: v.optional(v.id("sales")), requestKey: v.optional(v.string()),
     description: v.optional(v.string()), dueAt: v.optional(v.number()),
+    paymentMethod: v.optional(v.union(v.literal("cash"), v.literal("check"), v.literal("transfer"), v.literal("other"))),
     openingSource: v.optional(v.literal("existing_customer_balance_unreconciled")),
     createdBy: v.string(), createdAt: v.number(),
   }).index("by_businessId_and_requestKey", ["businessId", "requestKey"])

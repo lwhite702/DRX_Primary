@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { makeFunctionReference } from "convex/server";
+import { makeFunctionReference, type FunctionReturnType } from "convex/server";
 import schema from "../../convex/schema";
 import { api } from "../../convex/_generated/api";
 import * as generated from "../../convex/_generated/api";
@@ -103,7 +103,7 @@ it("places due dates on exact aging boundaries and pages a consistent revision",
   let revision: string | undefined;
   const buckets: string[] = [];
   do {
-    const page = await owner.query(aging, { customerId, asOfDate, paginationOpts: { cursor, numItems: 2 } });
+    const page: FunctionReturnType<typeof aging> = await owner.query(aging, { customerId, asOfDate, paginationOpts: { cursor, numItems: 2 } });
     expect(page.status).toBe("ready");
     expect(page.balanceCents).toBe(900);
     if (revision) expect(page.revision).toBe(revision);
