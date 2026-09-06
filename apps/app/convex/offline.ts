@@ -668,7 +668,7 @@ export const syncSale = mutation({
         );
       }
       const currentAvailable =
-        customer.creditLimitCents === 0
+        customer.creditEnabled === false ? 0 : customer.creditLimitCents === 0
           ? null
           : Math.max(
               0,

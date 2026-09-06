@@ -8,7 +8,9 @@ import * as onboarding from "../../convex/onboarding";
 import * as generated from "../../convex/_generated/api";
 import * as checkout from "../../convex/checkout";
 import * as products from "../../convex/products";
-const modules = { "checkout.ts": async () => checkout, "products.ts": async () => products, "credit.ts": async () => credit, "customers.ts": async () => customers, "onboarding.ts": async () => onboarding, "_generated/api.js": async () => generated };
+import * as commerceIdentity from "../../convex/commerceIdentity";
+import * as posBootstrap from "../../convex/posBootstrap";
+const modules = { "commerceIdentity.ts": async () => commerceIdentity, "posBootstrap.ts": async () => posBootstrap, "checkout.ts": async () => checkout, "products.ts": async () => products, "credit.ts": async () => credit, "customers.ts": async () => customers, "onboarding.ts": async () => onboarding, "_generated/api.js": async () => generated };
 async function fixture() {
   const t = convexTest(schema, modules);
   const owner = t.withIdentity({ subject: "ledger-owner" });
@@ -17,6 +19,53 @@ async function fixture() {
   return { t, owner, customerId };
 }
 describe("durable credit ledger", () => {
+  it("keeps frozen zero-limit credit disabled while allowing repayment and explicit reactivation", async () => {
+    const { t, owner, customerId } = await fixture();
+    await owner.mutation(api.credit.issueCustomerCredit, { customerId, amountCents: 500 });
+    await owner.mutation(api.credit.configureCustomerCredit, { customerId, creditEnabled: false, creditLimitCents: 0 });
+    await expect(owner.mutation(api.credit.issueCustomerCredit, { customerId, amountCents: 1 })).rejects.toThrow(/Credit is disabled/);
+    await owner.mutation(api.credit.recordCreditPayment, { customerId, paymentAmountCents: 100 });
+    const customer = (await t.run(ctx => ctx.db.get(customerId)))!;
+    expect(customer.totalCreditUsedCents).toBe(400);
+    const check = await owner.query(api.commerceIdentity.checkCart, { businessId: customer.businessId, customerId, items: [], amountCents: 1 });
+    expect(check.credit).toMatchObject({ valid: false, unlimited: false, remaining: 0 });
+    expect((await owner.query(api.posBootstrap.policies, { businessId: customer.businessId })).creditPolicy.enabled).toBe(false);
+    await owner.mutation(api.credit.configureCustomerCredit, { customerId, creditEnabled: true, creditLimitCents: 0 });
+    await owner.mutation(api.credit.issueCustomerCredit, { customerId, amountCents: 10001 });
+    expect((await owner.query(api.posBootstrap.policies, { businessId: customer.businessId })).creditPolicy.enabled).toBe(true);
+  });
+  it("rolls back checkout inventory and sales if customer credit is disabled", async () => {
+    const { t, owner, customerId } = await fixture();
+    const productId = await owner.mutation(api.products.createProduct, { productName: "Synthetic frozen credit", sku: "FROZEN", sellingPriceCents: 100, unitCostCents: 50, initialQuantity: 2 });
+    await owner.mutation(api.credit.configureCustomerCredit, { customerId, creditEnabled: false, creditLimitCents: 0 });
+    await expect(owner.mutation(api.checkout.processCheckout, { orderNumber: "frozen-credit", customerId, items: [{ productId, quantityGrams: 1 }], paymentMethod: "credit", amountPaidCents: 0 })).rejects.toThrow(/Credit is disabled/);
+    expect((await t.run(ctx => ctx.db.get(productId)))?.quantityOnHandGrams).toBe(2);
+    expect(await t.run(ctx => ctx.db.query("sales").collect())).toEqual([]);
+    await owner.mutation(api.checkout.processCheckout, { orderNumber: "frozen-cash", customerId, items: [{ productId, quantityGrams: 1 }], paymentMethod: "cash", amountPaidCents: 1000 });
+    expect((await t.run(ctx => ctx.db.get(productId)))?.quantityOnHandGrams).toBe(1);
+    expect((await t.run(ctx => ctx.db.get(customerId)))?.totalCreditUsedCents).toBe(0);
+    await expect(owner.mutation(api.credit.configureCustomerCredit, { customerId, creditEnabled: true, creditLimitCents: -1 })).rejects.toThrow(/INVALID_ARGUMENT/);
+  });
+  it("cancels an uncertain request atomically and rejects late arrival or retry", async () => {
+    const { t, owner, customerId } = await fixture();
+    const requestKey = "cancel-request-1";
+    expect(await owner.mutation(api.credit.resolvePendingRequest, { customerId, requestKey })).toEqual({ status: "cancelled" });
+    await expect(owner.mutation(api.credit.issueCustomerCredit, { customerId, requestKey, amountCents: 100 })).rejects.toThrow(/REQUEST_CANCELLED/);
+    await owner.mutation(api.credit.resolvePendingRequest, { customerId, requestKey });
+    expect(await t.run(ctx => ctx.db.query("creditEntries").collect())).toEqual([]);
+    expect(await t.run(ctx => ctx.db.query("creditRequestCancellations").collect())).toHaveLength(1);
+  });
+  it("recovers a committed request on an inactive customer without reversing it", async () => {
+    const { t, owner, customerId } = await fixture();
+    const requestKey = "recorded-request-1";
+    await owner.mutation(api.credit.issueCustomerCredit, { customerId, requestKey, amountCents: 100 });
+    await t.run(ctx => ctx.db.patch(customerId, { isActive: false }));
+    expect(await owner.mutation(api.credit.resolvePendingRequest, { customerId, requestKey })).toEqual({ status: "recorded", balanceAfterCents: 100 });
+    expect(await t.run(ctx => ctx.db.query("creditRequestCancellations").collect())).toEqual([]);
+    const other = t.withIdentity({ subject: "cancel-other" });
+    await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
+    await expect(other.mutation(api.credit.resolvePendingRequest, { customerId, requestKey })).rejects.toThrow(/NOT_FOUND/);
+  });
   it("records a checkout debt once and preserves it after payment and checkout replay", async () => {
     const { t, owner, customerId } = await fixture();
     const productId = await owner.mutation(api.products.createProduct, { productName: "Synthetic stock", sku: "LEDGER", sellingPriceCents: 1000, unitCostCents: 500, initialQuantity: 5 });
@@ -65,6 +114,7 @@ describe("durable credit ledger", () => {
     const other = t.withIdentity({ subject: "ledger-other" });
     await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
     await expect(other.mutation(api.credit.issueCustomerCredit, { customerId, amountCents: 100 })).rejects.toThrow(/NOT_FOUND/);
+    await expect(other.mutation(api.credit.configureCustomerCredit, { customerId, creditEnabled: true, creditLimitCents: 0 })).rejects.toThrow(/NOT_FOUND/);
     await owner.mutation(api.credit.issueCustomerCredit, { customerId, amountCents: 100 });
     await t.run(ctx => ctx.db.patch(customerId, { totalCreditUsedCents: 90 }));
     await expect(owner.mutation(api.credit.recordCreditPayment, { customerId, paymentAmountCents: 10 })).rejects.toThrow(/reconciliation/);

@@ -30,11 +30,14 @@ export async function appendCreditEntry(ctx: MutationCtx, input: {
       if (prior.customerId !== customer._id || prior.kind !== input.kind || prior.deltaCents !== deltaCents || prior.description !== input.description || prior.saleId !== input.saleId) throw new Error("IDEMPOTENCY_CONFLICT: Credit request key already used");
       return prior.balanceAfterCents;
     }
+    const cancelled = await ctx.db.query("creditRequestCancellations").withIndex("by_businessId_and_requestKey", q => q.eq("businessId", customer.businessId).eq("requestKey", requestKey)).unique();
+    if (cancelled) throw new Error("REQUEST_CANCELLED: Credit request has been cancelled");
   }
   const current = customer.totalCreditUsedCents;
   const balance = current + deltaCents;
   if (!Number.isSafeInteger(current) || current < 0 || !Number.isSafeInteger(balance)) throw new Error("INVALID_STATE: Invalid credit balance");
   if (balance < 0) throw new Error("PAYMENT_ERROR: Payment exceeds outstanding credit");
+  if (!input.offlineConflictRecorded && deltaCents > 0 && customer.creditEnabled === false) throw new Error("CREDIT_LIMIT_EXCEEDED: Credit is disabled for this customer");
   if (!input.offlineConflictRecorded && deltaCents > 0 && customer.creditLimitCents > 0 && balance > customer.creditLimitCents) throw new Error("CREDIT_LIMIT_EXCEEDED: Requested credit exceeds limit");
   const now = Date.now();
   let account = await ctx.db.query("creditAccounts").withIndex("by_customerId", q => q.eq("customerId", customer._id)).unique();

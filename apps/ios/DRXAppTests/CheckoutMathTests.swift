@@ -90,6 +90,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: nil,
             totalCreditUsedCents: Int.max,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,
@@ -100,6 +101,15 @@ struct CheckoutMathTests {
 
         #expect(customer.hasUnlimitedStoreAccount)
         #expect(customer.canChargeStoreAccount(CurrencyInput.maximumTransactionCents))
+    }
+
+    @Test
+    func disabledCreditNeverBecomesUnlimitedAtZeroLimit() {
+        let customer = DRXCustomer(id: "disabled", firstName: nil, lastName: nil, phoneNumber: nil, email: nil, totalPurchasesCents: 0, loyaltyEligibleSpendCents: nil, totalCreditUsedCents: 100, creditLimitCents: 0, creditEnabled: false, purchaseCount: 0, loyaltyTier: "standard", discountRateBps: 0, isActive: true, createdAt: 0, updatedAt: 0)
+        #expect(!customer.hasUnlimitedStoreAccount)
+        #expect(customer.creditAvailableCents == 0)
+        #expect(!customer.canChargeStoreAccount(1))
+        #expect(customer.totalCreditUsedCents == 100)
     }
 
     @Test
@@ -114,6 +124,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: nil,
             totalCreditUsedCents: 0,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,
@@ -131,6 +142,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: 10_000,
             totalCreditUsedCents: 0,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,

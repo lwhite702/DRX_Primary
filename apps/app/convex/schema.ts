@@ -196,6 +196,7 @@ export default defineSchema({
     loyaltyEligibleSpendCents: v.optional(v.number()),
     totalCreditUsedCents: v.number(),
     creditLimitCents: v.number(),
+    creditEnabled: v.optional(v.boolean()),
     purchaseCount: v.number(),
     loyaltyTier: v.string(),
     discountRateBps: v.number(),
@@ -209,6 +210,7 @@ export default defineSchema({
       "legacyPrismaId",
     ])
     .index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_isActive_and_creditEnabled", ["businessId", "isActive", "creditEnabled"])
     .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
 
   // Append-only balance changes. Opening entries preserve the pre-ledger
@@ -217,6 +219,10 @@ export default defineSchema({
     businessId: v.id("businesses"), customerId: v.id("customers"),
     balanceCents: v.number(), createdAt: v.number(), updatedAt: v.number(),
   }).index("by_customerId", ["customerId"]),
+  creditRequestCancellations: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    requestKey: v.string(), createdBy: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_requestKey", ["businessId", "requestKey"]),
   creditEntries: defineTable({
     businessId: v.id("businesses"), customerId: v.id("customers"),
     kind: v.union(v.literal("opening"), v.literal("issue"), v.literal("payment"), v.literal("sale")),
@@ -226,6 +232,7 @@ export default defineSchema({
     openingSource: v.optional(v.literal("existing_customer_balance_unreconciled")),
     createdBy: v.string(), createdAt: v.number(),
   }).index("by_businessId_and_requestKey", ["businessId", "requestKey"])
+    .index("by_businessId", ["businessId"])
     .index("by_customerId", ["customerId"])
     .index("by_saleId", ["saleId"]),
 

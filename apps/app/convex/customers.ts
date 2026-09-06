@@ -10,11 +10,13 @@ export const createCustomer = mutation({
     phoneNumber: v.optional(v.string()),
     email: v.optional(v.string()),
     creditLimitCents: v.optional(v.number()),
+    creditEnabled: v.optional(v.boolean()),
   },
   returns: v.id("customers"),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_CUSTOMERS");
+    if (args.creditLimitCents !== undefined && (!Number.isSafeInteger(args.creditLimitCents) || args.creditLimitCents < 0)) throw new Error("INVALID_ARGUMENT: Credit limit must be nonnegative integer cents");
     const now = Date.now();
 
     const customerId = await ctx.db.insert("customers", {
@@ -27,6 +29,7 @@ export const createCustomer = mutation({
       loyaltyEligibleSpendCents: 0,
       totalCreditUsedCents: 0,
       creditLimitCents: args.creditLimitCents || 0,
+      creditEnabled: args.creditEnabled,
       purchaseCount: 0,
       loyaltyTier: "standard",
       discountRateBps: 0,

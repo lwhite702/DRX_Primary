@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Credit transaction API on Convex (WRE-115, unreleased)**: Credit transaction creation and history use the canonical ledger with tenant checks, explicit legacy customer-ID mapping, safe cents and request-key replay. Existing array/dollar response contracts remain; cursor headers support paged history. Web/native credit screens, transaction amendments and historical balances are still being migrated.
+
 - **Convex credit history foundation (WRE-115, unreleased)**: Credit issuance, repayments and online/offline credit sales append atomic balance entries. Supplied request keys prevent duplicate credit/payment writes; invalid cents and overpayments are rejected. Existing balances are explicitly marked as unreconciled opening entries. Payment allocation, legacy-client retry keys and historical reconciliation remain in progress.
 
 - **Quick POS favorites on Convex (WRE-115, unreleased)**: Register favorites and recent products now read canonical completed sales and current catalog stock, including sold-out products and fractional selling rules. Credit and delivery policy reads use Convex. Historical-data migration and production-volume verification remain pending.

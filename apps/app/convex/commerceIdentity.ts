@@ -50,9 +50,10 @@ export const checkCart = query({
       const customer = id ? await ctx.db.get(id) : await ctx.db.query("customers").withIndex("by_businessId_and_legacyPrismaId", q => q.eq("businessId", auth.businessId).eq("legacyPrismaId", args.customerId!)).unique();
       if (!customer || customer.businessId !== auth.businessId || !customer.isActive) throw new Error("NOT_FOUND: Customer is unavailable");
       if (!Number.isSafeInteger(customer.creditLimitCents) || customer.creditLimitCents < 0 || !Number.isSafeInteger(customer.totalCreditUsedCents) || customer.totalCreditUsedCents < 0) throw new Error("INVALID_STATE: Credit requires reconciliation");
-      const unlimited = customer.creditLimitCents === 0;
-      const valid = unlimited || customer.totalCreditUsedCents + args.amountCents <= customer.creditLimitCents;
-      credit = { valid, currentBalance: customer.totalCreditUsedCents / 100, maxLimit: customer.creditLimitCents / 100, remaining: unlimited ? null : (customer.creditLimitCents - customer.totalCreditUsedCents) / 100, unlimited, ...(valid ? {} : { warning: "Credit limit exceeded" }) };
+      const enabled = customer.creditEnabled !== false;
+      const unlimited = enabled && customer.creditLimitCents === 0;
+      const valid = args.amountCents === 0 || (enabled && Number.isSafeInteger(customer.totalCreditUsedCents + args.amountCents) && (unlimited || customer.totalCreditUsedCents + args.amountCents <= customer.creditLimitCents));
+      credit = { valid, currentBalance: customer.totalCreditUsedCents / 100, maxLimit: customer.creditLimitCents / 100, remaining: !enabled ? 0 : unlimited ? null : (customer.creditLimitCents - customer.totalCreditUsedCents) / 100, unlimited, ...(valid ? {} : { warning: "Credit limit exceeded" }) };
     }
     return { stock: { valid: errors.length === 0, errors }, credit };
   },

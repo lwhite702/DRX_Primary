@@ -57,13 +57,14 @@ export const policies = query({
   returns: v.object({ creditPolicy: v.object({ enabled: v.boolean() }), deliveryPolicy: v.object({ feeTaxable: v.boolean(), dispatchSlaMinutes: v.number() }) }),
   handler: async (ctx, args) => {
     const auth = await access(ctx, args.businessId);
-    const [settings, customer] = await Promise.all([
+    const [settings, enabledCustomer, legacyCustomer] = await Promise.all([
       ctx.db.query("businessSettings").withIndex("by_businessId", q => q.eq("businessId", auth.businessId)).unique(),
-      ctx.db.query("customers").withIndex("by_businessId_and_isActive", q => q.eq("businessId", auth.businessId).eq("isActive", true)).first(),
+      ctx.db.query("customers").withIndex("by_businessId_and_isActive_and_creditEnabled", q => q.eq("businessId", auth.businessId).eq("isActive", true).eq("creditEnabled", true)).first(),
+      ctx.db.query("customers").withIndex("by_businessId_and_isActive_and_creditEnabled", q => q.eq("businessId", auth.businessId).eq("isActive", true).eq("creditEnabled", undefined)).first(),
     ]);
-    // Canonical zero limits currently mean unlimited, so any active customer
-    // enables the option. Checkout still validates the selected customer's limit.
-    return { creditPolicy: { enabled: Boolean(customer) }, deliveryPolicy: { feeTaxable: settings?.deliveryFeeTaxable ?? false, dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? 5 } };
+    // Missing flags preserve existing canonical behavior. Disabled credit must
+    // never become unlimited merely because its monetary limit is zero.
+    return { creditPolicy: { enabled: Boolean(enabledCustomer || legacyCustomer) }, deliveryPolicy: { feeTaxable: settings?.deliveryFeeTaxable ?? false, dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? 5 } };
   },
 });
 
