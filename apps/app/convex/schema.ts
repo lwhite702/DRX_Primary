@@ -4,6 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
   // Businesses / Tenants
   businesses: defineTable({
+    isActive: v.optional(v.boolean()),
     clerkOrgId: v.optional(v.string()),
     legacyPrismaBusinessId: v.optional(v.string()),
     name: v.string(),
@@ -51,7 +52,8 @@ export default defineSchema({
     clerkUserId: v.string(),
     email: v.string(),
     name: v.optional(v.string()),
-    role: v.string(), // "OWNER" | "ADMIN" | "MEMBER"
+    role: v.string(), // Native roles or migrated tenant role names
+    permissions: v.optional(v.record(v.string(), v.boolean())),
     businessId: v.id("businesses"),
     status: v.string(), // "ACTIVE" | "INVITED" | "SUSPENDED"
     createdAt: v.number(),

@@ -42,3 +42,24 @@ Production source inspected at 076b801c12b57e02182a1530b4b36df6b383a972. Static 
 - Existing native recordIntake still autoapproves. Reconcile native approval and idempotency behavior while preserving installed-client response contracts.
 - Legacy API tests outside the converted suites require replacement with equivalent Convex behavioral coverage, not deletion to obtain green checks.
 - Current code remains unreleased; complete migration verification is outstanding.
+
+## Checkout and session checkpoint
+
+- Quick checkout and quote now always use Convex, including ordinary no-customer carts. The canonical adapter no longer imports Prisma or checks the old sales table. Migration must import completed legacy checkout request identities before cutover to prevent historical retry duplication.
+- Shared `resolveAuthContext` now derives the selected business from an authenticated Convex membership query. Canonical IDs and explicit legacy business mappings are accepted. Existing single-business Convex user records still require a complete multi-business membership migration before release.
+- Product/customer cart identity resolution uses bounded indexed lookups and rejects foreign/inactive records. POS product search returns canonical prices and stock. Checkout validators now accept canonical record IDs.
+- Added optional business activity and migrated tenant permission fields. Inactive businesses are denied centrally; existing native role defaults and migrated web role matrices are retained.
+- Focused checkout/session/identity suites: 22 tests passed. Full suite snapshot before the final role fixture: 782 passed, 20 failed across 2 files (platform-boundary approval mocks and commerce-settings access). These failures remain open and must be resolved by preserving authorization behavior through conversion.
+- Full checkout, checkout-enhanced and sales API still use legacy writers. Their fee, payment reference, mixed/Zelle payment and delivery contracts must be represented in Convex before removal. Checkout bootstrap, preflight and stock/credit validation remain to convert.
+- Commerce settings still reads/writes Prisma and its permission tests expose the mixed backend path. Convert merchant/product settings and server guards next, preserving owner/admin/manager defaults, explicit tenant grants, inactive-business denial and platform separation.
+
+## Commerce settings and tenant-authorization checkpoint
+
+- Commerce settings GET/PATCH now operate entirely in Convex. Merchant and product changes validate and commit atomically with an audit event; invalid product references roll back merchant changes. Notification recipients must be active tenant managers and rates must fit basis-point precision.
+- Removed the settings page's duplicate direct mutation plus web PATCH flow and the manual web/mobile customer/product linking controls. Loads and saves verify the current Convex business. Failed/obsolete loads cannot replace newer state.
+- Tenant server guards now query Convex permissions. Platform-admin lookup remains separate and still needs conversion. A tenant grant for users.manage_all is always denied.
+- Backend commerce settings tests: 12 passed. Real route/Convex authorization integration tests: 12 passed. UI loading/recovery tests: 9 passed. Platform-boundary tests passed in the subsequent full-suite run; the full-run results and subsequent targeted verification are recorded below.
+- Added scripts/migration/check-convex-runtime.mjs. It parses actual TypeScript imports, separates type-only imports, includes dynamic imports and reports remaining legacy dependencies. Initial report: 119 runtime imports in 104 files, plus 6 type-only imports. It exits nonzero by default while runtime dependencies remain; --report is an audit mode, not a passing gate. This structural check does not prove data migration or runtime behavior.
+- Prior 20-failure snapshot is superseded by the targeted fixes above; the new full-suite result must be recorded before claiming all tests pass.
+
+Latest full-suite snapshot after settings conversion: 808 passed and 2 failed (119 files). Both failures were the old Prisma-backed server-business-permissions fixture. Replaced it with a real Convex permission integration covering owner, manager, cashier, foreign actor/tenant, platform-scope denial and provider failure. All 40 targeted authorization/settings/UI tests passed. Do not report this snapshot as a complete green suite. A test-fixture generic type error was corrected; the fresh app typecheck passed.

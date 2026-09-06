@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Convex commerce settings (WRE-115, unreleased)**: Merchant policy and product-rule saves use one audited Convex transaction. The settings page uses the same catalog and removes manual cross-database linking. Tenant permission checks use Convex; platform administration and remaining operational domains are still being converted.
+
+- **Convex checkout conversion in progress (WRE-115)**: Ordinary Quick POS checkout, quotes, product search and selected-business resolution now use Convex. Full checkout, settings and data reconciliation remain in progress; this branch is not released.
+
 - **Convex conversion in progress (WRE-115)**: Web catalog, product edits, stock adjustments, intake approvals and inventory history now target Convex in the working branch. Adjustments use atomic FIFO/stock/audit changes and retry keys. Remaining domains, historical-data reconciliation, full client parity and production verification are still pending.
 
 - **Major release preparation**: Synchronized product metadata to 1.0.0 for the approved platform-administration boundary. Native build identifiers are unchanged; production deployment and native store distribution remain separately verified outcomes.

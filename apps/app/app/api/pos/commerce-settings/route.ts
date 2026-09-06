@@ -1,300 +1,57 @@
-import { NextRequest } from "next/server";
-import { Prisma } from "@prisma/client";
-import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
+import type { FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
-import { db } from "@/lib/db";
-import { hasBusinessPermission } from "@/lib/auth/server-guards";
-import { errorResponse, successResponse } from "@/lib/api/response";
-import { resolveAuthContext, toNumber } from "@/app/api/pos/_lib/server";
-import {
-  getDefaultProductCommerceConfig,
-  merchantCommerceSettingsSchema,
-  productCommerceConfigSchema,
-  readCommerceSettings,
-} from "@/lib/commerce/config";
-
-const commercePatchSchema = z
-  .object({
-    merchant: merchantCommerceSettingsSchema.optional(),
-    product: z
-      .object({
-        inventoryId: z.string().uuid(),
-        baseUnitPrice: z.number().positive(),
-        config: productCommerceConfigSchema,
-      })
-      .optional(),
-  })
-  .refine((value) => value.merchant || value.product, {
-    message: "Merchant or product configuration is required",
-  });
-
-function asObject(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? { ...(value as Record<string, unknown>) }
-    : {};
+async function clientFor(request?: NextRequest) {
+  const token = await getConvexAuthToken();
+  if (!token) throw new Error("UNAUTHENTICATED:");
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!url) throw new Error("UNAVAILABLE:");
+  const client = new ConvexHttpClient(url); client.setAuth(token);
+  const businessId = request?.headers.get("x-business-id") || request?.nextUrl.searchParams.get("business_id") || undefined;
+  return { client, businessId };
 }
-
-type CommerceInventoryRow = {
-  id: string;
-  productName: string;
-  sku: string;
-  baseUnit: string | null;
-  sellingPrice: Prisma.Decimal | null;
-  pricePerGram: Prisma.Decimal | null;
-  allowFractionalWeight: boolean | null;
-  inventoryInGrams: Prisma.Decimal | null;
-  quantityOnHand: number;
-};
-
-async function resolveCommerceAccess() {
-  const { userId, businessId } = await resolveAuthContext();
-  if (!userId || !businessId) {
-    return { response: errorResponse("UNAUTHORIZED", "Unauthorized", 401) };
-  }
-  const business = await db.businessProfile.findUnique({
-    where: { id: businessId },
-    select: { isActive: true },
-  });
-  if (!business?.isActive) {
-    return {
-      response: errorResponse("FORBIDDEN", "Business is unavailable", 403),
-    };
-  }
-  if (
-    !(await hasBusinessPermission(userId, businessId, "settings.configure_pos"))
-  ) {
-    return { response: errorResponse("FORBIDDEN", "Forbidden", 403) };
-  }
-
-  // The browser's canonical queries use a separate tenant context. Never mix
-  // its settings with a different session-selected transitional business.
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
-  if (!url) {
-    return {
-      response: errorResponse(
-        "INTERNAL_ERROR",
-        "Commerce settings are unavailable",
-        503,
-      ),
-    };
-  }
+function failure(error: unknown) {
+  const raw = error instanceof Error ? error.message : "";
+  const status = raw.includes("UNAUTHENTICATED:") ? 401 : /FORBIDDEN:|UNAUTHORIZED:/.test(raw) ? 403 : raw.includes("NOT_FOUND:") ? 404 : raw.includes("INVALID_ARGUMENT:") ? 400 : raw.includes("CONFLICT:") ? 409 : 503;
+  return NextResponse.json({ error: status === 403 ? "You cannot configure commerce for this business" : status === 400 ? "Check the commerce settings" : "Commerce settings are unavailable; refresh and retry" }, { status });
+}
+export async function GET(request?: NextRequest) {
   try {
-    const token = await getConvexAuthToken();
-    if (!token) {
-      return {
-        response: errorResponse(
-          "UNAUTHORIZED",
-          "Commerce authentication is unavailable",
-          401,
-        ),
-      };
-    }
-    const client = new ConvexHttpClient(url);
-    client.setAuth(token);
-    const canonical = await client.query(api.settings.getBusinessSettings, {});
-    if (canonical.business.legacyPrismaBusinessId !== businessId) {
-      return {
-        response: errorResponse(
-          "FORBIDDEN",
-          "The selected business does not match the linked mobile business. Select the matching business before configuring commerce.",
-          403,
-        ),
-      };
-    }
-  } catch {
-    return {
-      response: errorResponse(
-        "INTERNAL_ERROR",
-        "Unable to verify the commerce business. Please try again.",
-        503,
-      ),
-    };
-  }
-  return { businessId };
+    const { client, businessId } = await clientFor(request);
+    const settings = await client.query(api.commerceSettings.getSettings, { businessId });
+    const products = [];
+    let cursor: string | null = null;
+    do {
+      const result: FunctionReturnType<typeof api.products.listCatalogPage> = await client.query(api.products.listCatalogPage, { businessId: settings.businessId, paginationOpts: { numItems: 200, cursor } });
+      products.push(...result.page.map(product => ({ id: product._id, name: product.productName, sku: product.sku,
+        baseUnitPrice: product.sellingPriceCents / 100, availableQuantity: product.quantityOnHandGrams,
+        config: { fractionalEnabled: product.allowFractionalWeight, sellingUnit: product.sellingUnit, decimalPrecision: product.quantityPrecision,
+          minimumSaleQuantity: product.minimumSaleQuantity, quantityIncrement: product.quantityIncrement,
+          suggestedDollarAmounts: product.suggestedDollarPresetsCents.map(cents => cents / 100), suggestedQuantities: product.suggestedQuantityPresets,
+          bulkPriceTiers: product.bulkPriceTiers.map((tier, index) => ({ id: `tier-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.unitPriceCents / 100 })) } })));
+      if (result.isDone) break;
+      if (result.continueCursor === cursor) throw new Error("UNAVAILABLE:");
+      cursor = result.continueCursor;
+    } while (cursor);
+    const customers = [];
+    cursor = null;
+    do {
+      const result: FunctionReturnType<typeof api.commerceSettings.customerOptions> = await client.query(api.commerceSettings.customerOptions, { businessId: settings.businessId, paginationOpts: { numItems: 200, cursor } });
+      customers.push(...result.page);
+      if (result.isDone) break;
+      if (result.continueCursor === cursor) throw new Error("UNAVAILABLE:");
+      cursor = result.continueCursor;
+    } while (cursor);
+    return NextResponse.json({ businessId: settings.businessId, merchant: JSON.parse(settings.merchantJson), products, customers }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return failure(error); }
 }
-
-export async function GET() {
-  try {
-    const access = await resolveCommerceAccess();
-    if (access.response) return access.response;
-    const businessId = access.businessId;
-
-    const [settings, inventory, customers] = await Promise.all([
-      db.businessSettings.findUnique({
-        where: { businessId },
-        select: { settingsData: true },
-      }),
-      db.inventory.findMany({
-        where: { businessId },
-        orderBy: { productName: "asc" },
-        select: {
-          id: true,
-          productName: true,
-          sku: true,
-          baseUnit: true,
-          sellingPrice: true,
-          pricePerGram: true,
-          allowFractionalWeight: true,
-          inventoryInGrams: true,
-          quantityOnHand: true,
-        },
-      }),
-      db.customers.findMany({
-        where: { businessId, isActive: true },
-        orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-        take: 500,
-        select: {
-          id: true,
-          alias: true,
-          firstName: true,
-          lastName: true,
-        },
-      }),
-    ]);
-
-    const commerce = readCommerceSettings(settings?.settingsData);
-    const products = inventory.map((item: CommerceInventoryRow) => {
-      const stored = commerce.productConfigs[item.id];
-      const fallback = getDefaultProductCommerceConfig();
-      const config = stored ?? {
-        ...fallback,
-        fractionalEnabled:
-          item.allowFractionalWeight === true &&
-          toNumber(item.pricePerGram) > 0,
-        sellingUnit: item.baseUnit || fallback.sellingUnit,
-        decimalPrecision: item.allowFractionalWeight === true ? 2 : 0,
-        minimumSaleQuantity: item.allowFractionalWeight === true ? 0.01 : 1,
-        quantityIncrement: item.allowFractionalWeight === true ? 0.01 : 1,
-      };
-
-      return {
-        id: item.id,
-        name: item.productName,
-        sku: item.sku,
-        baseUnitPrice:
-          toNumber(item.pricePerGram) || toNumber(item.sellingPrice),
-        availableQuantity: config.fractionalEnabled
-          ? toNumber(item.inventoryInGrams)
-          : item.quantityOnHand,
-        config,
-      };
-    });
-
-    return successResponse({
-      businessId,
-      merchant: commerce.merchant,
-      products,
-      customers: customers.map(
-        (customer: {
-          id: string;
-          alias: string | null;
-          firstName: string | null;
-          lastName: string | null;
-        }) => ({
-          id: customer.id,
-          label:
-            customer.alias ||
-            [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
-            `Customer ${customer.id.slice(0, 8)}`,
-        }),
-      ),
-    });
-  } catch (error) {
-    console.error("GET commerce settings error", error);
-    return errorResponse(
-      "INTERNAL_ERROR",
-      "Unable to load commerce settings",
-      500,
-    );
-  }
-}
-
 export async function PATCH(request: NextRequest) {
   try {
-    const access = await resolveCommerceAccess();
-    if (access.response) return access.response;
-    const businessId = access.businessId;
-
-    const parsed = commercePatchSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid commerce settings",
-        400,
-        parsed.error.flatten(),
-      );
-    }
-
-    const saved = await db.$transaction(
-      async (tx: Prisma.TransactionClient) => {
-        const current = await tx.businessSettings.findUnique({
-          where: { businessId },
-          select: { settingsData: true },
-        });
-        const settingsData = asObject(current?.settingsData);
-        const commerce = readCommerceSettings(settingsData);
-
-        if (parsed.data.merchant) {
-          commerce.merchant = parsed.data.merchant;
-        }
-
-        if (parsed.data.product) {
-          const inventory = await tx.inventory.findFirst({
-            where: {
-              id: parsed.data.product.inventoryId,
-              businessId,
-            },
-            select: { id: true },
-          });
-          if (!inventory) {
-            throw new Error("PRODUCT_NOT_FOUND");
-          }
-
-          commerce.productConfigs[parsed.data.product.inventoryId] =
-            parsed.data.product.config;
-          await tx.inventory.update({
-            where: { id: parsed.data.product.inventoryId },
-            data: {
-              allowFractionalWeight:
-                parsed.data.product.config.fractionalEnabled,
-              baseUnit: parsed.data.product.config.sellingUnit,
-              pricePerGram: parsed.data.product.config.fractionalEnabled
-                ? new Prisma.Decimal(
-                    parsed.data.product.baseUnitPrice.toFixed(4),
-                  )
-                : undefined,
-            },
-          });
-        }
-
-        settingsData.commerce = commerce;
-        await tx.businessSettings.upsert({
-          where: { businessId },
-          update: {
-            settingsData: settingsData as Prisma.InputJsonValue,
-          },
-          create: {
-            businessId,
-            settingsData: settingsData as Prisma.InputJsonValue,
-          },
-        });
-
-        return commerce;
-      },
-    );
-
-    return successResponse(saved);
-  } catch (error) {
-    if (error instanceof Error && error.message === "PRODUCT_NOT_FOUND") {
-      return errorResponse("NOT_FOUND", "Product not found", 404);
-    }
-    console.error("PATCH commerce settings error", error);
-    return errorResponse(
-      "INTERNAL_ERROR",
-      "Unable to save commerce settings",
-      500,
-    );
-  }
+    const { client, businessId } = await clientFor(request);
+    const body = await request.json();
+    await client.mutation(api.commerceSettings.saveSettings, { businessId, patchJson: JSON.stringify(body) });
+    return NextResponse.json({ success: true });
+  } catch (error) { return failure(error); }
 }

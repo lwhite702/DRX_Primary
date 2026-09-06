@@ -38,6 +38,8 @@ export async function requireUserAndBusiness(
     throw new Error("NOT_FOUND: Associated business profile not found");
   }
 
+  if (business.isActive === false) throw new Error("FORBIDDEN: Business is inactive");
+
   return {
     userId: clerkUserId!,
     email: user.email,

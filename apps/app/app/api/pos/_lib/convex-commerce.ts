@@ -1,9 +1,9 @@
 import { ConvexHttpClient } from "convex/browser";
 
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
-import { db } from "@/lib/db";
+
 import type { QuickPosDeliveryState, QuickPosPaymentMethod } from "@/lib/quick-pos/types";
 
 type CanonicalCartItem = {
@@ -54,7 +54,7 @@ async function assertCanonicalTenant(
   businessId: string,
 ) {
   const businessContext = await client.query(api.settings.getBusinessSettings, {});
-  if (businessContext.business.legacyPrismaBusinessId !== businessId) {
+  if (businessContext.business._id !== businessId && businessContext.business.legacyPrismaBusinessId !== businessId) {
     throw new Error(
       "The authenticated canonical tenant is not linked to this web business",
     );
@@ -77,61 +77,26 @@ export async function getCanonicalCommerceSummary(input: {
 
 async function resolveCanonicalInput(input: CanonicalInput) {
   const client = await authenticatedClient();
-  const [businessContext, products, customers] = await Promise.all([
-    client.query(api.settings.getBusinessSettings, {}),
-    client.query(api.products.listProducts, {}),
-    input.customerId ? client.query(api.customers.listCustomers, {}) : [],
-  ]);
-  if (businessContext.business.legacyPrismaBusinessId !== input.businessId) {
-    throw new Error(
-      "The authenticated canonical tenant is not linked to this web business",
-    );
-  }
-  const productsByLegacyId = new Map(
-    products
-      .filter((product) => product.legacyPrismaId)
-      .map((product) => [product.legacyPrismaId!, product]),
-  );
   const inventoryItems = input.items.filter(
-    (item): item is CanonicalCartItem & { inventoryId: string } =>
-      item.source === "inventory" && Boolean(item.inventoryId),
+    (item): item is CanonicalCartItem & { inventoryId: string } => item.source === "inventory" && Boolean(item.inventoryId),
   );
-  const items = inventoryItems.map((item) => {
-    const product = productsByLegacyId.get(item.inventoryId);
-    if (!product) {
-      throw new Error(
-        `Product '${item.inventoryId}' is not linked to the canonical catalog`,
-      );
-    }
-    return {
-      productId: product._id,
-      quantityGrams: item.weightGrams ?? item.qty,
-    };
+  const identities = await client.query(api.commerceIdentity.resolveCart, {
+    businessId: input.businessId, productIds: inventoryItems.map(item => item.inventoryId), customerId: input.customerId ?? undefined,
   });
+  const items = inventoryItems.map((item, index) => ({ productId: identities.productIds[index], quantityGrams: item.weightGrams ?? item.qty }));
   const manualItems = input.items
     .filter((item) => item.source === "manual")
     .map((item) => ({
       lineId: item.id,
       name: item.name,
       quantity: item.qty,
-      unitPriceCents: Math.round(item.unitPrice * 100),
+      unitPriceCents: checkedCents(item.unitPrice),
     }));
   if (items.length + manualItems.length !== input.items.length) {
     throw new Error("Commerce checkout contains an invalid inventory line");
   }
 
-  let customerId: Id<"customers"> | undefined;
-  if (input.customerId) {
-    const customer = customers.find(
-      (candidate) => candidate.legacyPrismaId === input.customerId,
-    );
-    if (!customer) {
-      throw new Error(
-        "Selected customer is not synchronized to the canonical customer record",
-      );
-    }
-    customerId = customer._id;
-  }
+  const customerId = identities.customerId;
 
   return {
     client,
@@ -195,34 +160,11 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
 
 export async function checkoutCanonicalCommerce(
   input: CanonicalInput & {
+    amountPaid?: number;
     idempotencyKey: string;
     paymentMethod: QuickPosPaymentMethod;
   },
 ) {
-  // A retry may move here after product configuration changes. Until the
-  // transitional web writer is retired, its completed sale remains authoritative
-  // for that idempotency key. A failed lookup must never allow another sale.
-  const existingLegacySale = await db.sales.findFirst({
-    where: {
-      businessId: input.businessId,
-      orderNumber: `POS-${input.idempotencyKey}`.slice(0, 50),
-      orderStatus: "completed",
-    },
-    select: { id: true, orderNumber: true, totalAmount: true, changeAmount: true },
-  }).catch(() => {
-    // The route exposes error.message. Never pass provider details through it.
-    console.error("Checkout retry verification failed");
-    throw new Error("Checkout retry verification is temporarily unavailable. Please retry.");
-  });
-  if (existingLegacySale) {
-    return {
-      saleId: existingLegacySale.id,
-      orderNumber: existingLegacySale.orderNumber,
-      total: Number(existingLegacySale.totalAmount ?? 0),
-      changeAmount: Number(existingLegacySale.changeAmount ?? 0),
-    };
-  }
-
   const canonical = await resolveCanonicalInput(input);
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,
@@ -240,7 +182,7 @@ export async function checkoutCanonicalCommerce(
       ? { manualItems: canonical.manualItems }
       : {}),
     paymentMethod: input.paymentMethod,
-    amountPaidCents: input.paymentMethod === "credit" ? 0 : quote.totalAmountCents,
+    amountPaidCents: input.paymentMethod === "credit" ? 0 : input.amountPaid === undefined ? quote.totalAmountCents : checkedCents(input.amountPaid),
     delivery: canonical.delivery,
   });
   return {
@@ -249,4 +191,10 @@ export async function checkoutCanonicalCommerce(
     total: result.totalAmountCents / 100,
     changeAmount: result.changeAmountCents / 100,
   };
+}
+
+function checkedCents(value: number) {
+  const cents = Math.round(value * 100);
+  if (!Number.isFinite(value) || value < 0 || !Number.isSafeInteger(cents) || Math.abs(cents - value * 100) > 1e-6) throw new Error("INVALID_ARGUMENT: Money must use up to two decimal places");
+  return cents;
 }

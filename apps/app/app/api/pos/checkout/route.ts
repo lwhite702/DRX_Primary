@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { posCheckoutSchema } from "@/lib/pos/schemas";
-import {
-  PosCheckoutError,
-  addItem,
-  checkout,
-  createCart,
-  setAmountPaid,
-  setDelivery,
-  setFees,
-  setPayment,
-  setPaymentRef,
-  setTaxAmount,
-} from "@/lib/pos/core";
+
 import type { ReceiptOutput } from "@/lib/pos/contract";
 import type { PosCartItem, PosFee, PosPayment } from "@/lib/pos/types";
 import {
@@ -21,9 +10,8 @@ import {
 } from "@/lib/pos/response";
 import {
   checkoutCanonicalCommerce,
-  shouldUseCanonicalCommerce,
 } from "@/app/api/pos/_lib/convex-commerce";
-import { hasConfiguredCanonicalCommerce } from "@/app/api/pos/_lib/commerce-routing";
+
 
 type PosCheckoutResponse = {
   success: boolean;
@@ -41,7 +29,7 @@ type PosCheckoutResponse = {
 };
 
 export async function POST(request: NextRequest) {
-  const { userId, businessId } = await resolveAuthContext();
+  const { userId, businessId } = await resolveAuthContext(request);
 
   if (!userId || !businessId) {
     const response: PosCheckoutResponse = {
@@ -66,11 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   const payload = parsed.data;
-  const requiresCanonicalCommerce =
-    payload.mode === "quick" &&
-    (shouldUseCanonicalCommerce(payload) ||
-      (await hasConfiguredCanonicalCommerce(businessId, payload.items)));
-  if (payload.mode === "quick" && requiresCanonicalCommerce) {
+  if (payload.mode === "quick") {
     try {
       const result = await checkoutCanonicalCommerce({
         businessId,
@@ -91,6 +75,7 @@ export async function POST(request: NextRequest) {
       };
       return NextResponse.json(
         {
+          ...buildCheckoutSuccess(result),
           success: true,
           saleId: result.saleId,
           orderNumber: result.orderNumber,
@@ -101,14 +86,24 @@ export async function POST(request: NextRequest) {
         { status: 201 },
       );
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Delivery checkout failed";
-      return NextResponse.json(
-        { success: false, error: message } satisfies PosCheckoutResponse,
-        { status: 400 },
-      );
+      const raw = error instanceof Error ? error.message : "";
+      const status = raw.includes("CONFLICT:") ? 409 : raw.includes("FORBIDDEN:") ? 403 : 400;
+      const message = status === 409 ? "This checkout request was already used with different values" : "Checkout could not be completed. Refresh the cart and retry.";
+      return NextResponse.json({ ...buildCheckoutFailure(message), error: message }, { status });
     }
   }
+  const {
+  PosCheckoutError,
+  addItem,
+  checkout,
+  createCart,
+  setAmountPaid,
+  setDelivery,
+  setFees,
+  setPayment,
+  setPaymentRef,
+  setTaxAmount,
+} = await import("@/lib/pos/core");
   const cart = createCart({
     businessId,
     userId,
@@ -145,23 +140,15 @@ export async function POST(request: NextRequest) {
 
   updatedCart = setPayment(updatedCart, payment);
 
-  if (payload.mode === "quick") {
-    const fees: PosFee[] =
-      payload.payment.receipt === "none"
-        ? []
-        : [{ type: "receipt", value: payload.payment.receipt }];
-    updatedCart = setFees(updatedCart, fees);
-  } else {
-    updatedCart = setTaxAmount(updatedCart, payload.taxAmount ?? 0);
-    updatedCart = setFees(updatedCart, payload.fees ?? []);
-    updatedCart = setPaymentRef(updatedCart, payload.paymentRef);
-    updatedCart = setAmountPaid(updatedCart, payload.amountPaid);
-    updatedCart = setDelivery(updatedCart, {
-      deliveryManagementId: payload.deliveryManagementId ?? null,
-      deliveryAddress: payload.deliveryAddress ?? null,
-      deliveryPrice: payload.deliveryPrice ?? 0,
-    });
-  }
+  updatedCart = setTaxAmount(updatedCart, payload.taxAmount ?? 0);
+  updatedCart = setFees(updatedCart, payload.fees ?? []);
+  updatedCart = setPaymentRef(updatedCart, payload.paymentRef);
+  updatedCart = setAmountPaid(updatedCart, payload.amountPaid);
+  updatedCart = setDelivery(updatedCart, {
+    deliveryManagementId: payload.deliveryManagementId ?? null,
+    deliveryAddress: payload.deliveryAddress ?? null,
+    deliveryPrice: payload.deliveryPrice ?? 0,
+  });
 
   try {
     const result = await checkout(updatedCart, payload.idempotencyKey);

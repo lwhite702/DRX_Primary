@@ -54,7 +54,7 @@ export const posProductSchema = z.object({
 });
 
 export const stockAdjustmentSchema = z.object({
-  inventoryId: z.string().uuid(),
+  inventoryId: z.string().min(1).max(128),
   quantityDelta: z.number().int(),
   reason: z.string().min(1),
   lowStockThreshold: z.number().int().nonnegative().optional(),
@@ -62,7 +62,7 @@ export const stockAdjustmentSchema = z.object({
 
 export const cartLineItemSchema = z.object({
   id: z.string().min(1),
-  inventoryId: z.string().uuid().nullable(),
+  inventoryId: z.string().min(1).max(128).nullable(),
   name: z.string().min(1),
   sku: z.string().min(1).optional().nullable(),
   barcode: z.string().min(1).optional().nullable(),
@@ -107,7 +107,7 @@ export const fullPosPaymentSchema = z.object({
 export const quickCheckoutPayloadSchema = z.object({
   mode: z.literal("quick"),
   idempotencyKey: z.string().uuid(),
-  customerId: z.string().uuid().nullable().optional(),
+  customerId: z.string().min(1).max(128).nullable().optional(),
   source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
   delivery: quickPosDeliverySchema.optional(),
@@ -124,13 +124,13 @@ export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
 export const fullCheckoutPayloadSchema = z.object({
   mode: z.literal("full"),
   idempotencyKey: z.string().uuid(),
-  customerId: z.string().uuid().nullable().optional(),
+  customerId: z.string().min(1).max(128).nullable().optional(),
   source: posCheckoutSourceSchema.optional().default("legacy-sales"),
   payment: fullPosPaymentSchema,
   items: z
     .array(
       cartLineItemSchema.extend({
-        inventoryId: z.string().uuid(),
+        inventoryId: z.string().min(1).max(128),
         source: z.literal("inventory"),
       }),
     )

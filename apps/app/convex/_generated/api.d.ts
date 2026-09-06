@@ -10,6 +10,8 @@
 
 import type * as categories from "../categories.js";
 import type * as checkout from "../checkout.js";
+import type * as commerceIdentity from "../commerceIdentity.js";
+import type * as commerceSettings from "../commerceSettings.js";
 import type * as credit from "../credit.js";
 import type * as customers from "../customers.js";
 import type * as deliveries from "../deliveries.js";
@@ -34,6 +36,7 @@ import type * as onboarding from "../onboarding.js";
 import type * as products from "../products.js";
 import type * as push from "../push.js";
 import type * as reporting from "../reporting.js";
+import type * as session from "../session.js";
 import type * as settings from "../settings.js";
 
 import type {
@@ -45,6 +48,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   checkout: typeof checkout;
+  commerceIdentity: typeof commerceIdentity;
+  commerceSettings: typeof commerceSettings;
   credit: typeof credit;
   customers: typeof customers;
   deliveries: typeof deliveries;
@@ -69,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   products: typeof products;
   push: typeof push;
   reporting: typeof reporting;
+  session: typeof session;
   settings: typeof settings;
 }>;
 

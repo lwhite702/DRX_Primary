@@ -256,42 +256,15 @@ describe("POST /api/pos/checkout", () => {
     expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
-  it("processes quick mode checkout and forwards idempotency key", async () => {
-    const payload = makeQuickPayload();
+  it("processes ordinary quick checkout in Convex even without legacy routing flags", async () => {
+    const payload = makeQuickPayload({ customerId: null });
     const res = await POST(makeRequest(payload) as any);
     const data = await res.json();
-
     expect(res.status).toBe(201);
-    expect(data).toEqual({
-      success: true,
-      saleId: "sale_123",
-      orderNumber: "POS-33333333-3333-4333-8333-333333333333",
-      totals: {
-        total: 15,
-        changeAmount: 0,
-      },
-      errors: [],
-      total: 15,
-      changeAmount: 0,
-      receipt: {
-        saleId: "sale_123",
-        total: 15,
-        receipt: "sms",
-        channels: [{ type: "receipt", value: "sms" }],
-      },
-    });
-    expect(mocks.createCart).toHaveBeenCalledWith({
-      businessId: "business_123",
-      userId: "user_123",
-      mode: "quick",
-      source: "quick-pos",
-      customerId: QUICK_CUSTOMER_ID,
-    });
-    expect(mocks.setFees).toHaveBeenCalledWith(
-      expect.any(Object),
-      [{ type: "receipt", value: "sms" }],
-    );
-    expect(mocks.checkout).toHaveBeenCalledWith(expect.any(Object), payload.idempotencyKey);
+    expect(data).toMatchObject({ success: true, saleId: "convex_sale_123", total: 20, totals: { total: 20, changeAmount: 0 } });
+    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalledWith(expect.objectContaining({ idempotencyKey: payload.idempotencyKey }));
+    expect(mocks.createCart).not.toHaveBeenCalled();
+    expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
   it("processes full mode checkout with tax and fees", async () => {
@@ -330,7 +303,7 @@ describe("POST /api/pos/checkout", () => {
   it("returns 409 for duplicate idempotency keys", async () => {
     mocks.checkout.mockRejectedValue(new mocks.PosCheckoutError("Duplicate idempotency key", 409));
 
-    const res = await POST(makeRequest(makeQuickPayload()) as any);
+    const res = await POST(makeRequest(makeFullPayload()) as any);
     const data = await res.json();
 
     expect(res.status).toBe(409);

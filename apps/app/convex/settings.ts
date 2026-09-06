@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
-import { requirePermission } from "./helpers/permissions";
+import { requirePermission, hasPermission } from "./helpers/permissions";
 
 export const getBusinessSettings = query({
   args: {},
@@ -205,7 +205,7 @@ export const updateCommerceSettings = mutation({
         !user ||
         user.businessId !== auth.businessId ||
         user.status !== "ACTIVE" ||
-        (user.role !== "OWNER" && user.role !== "ADMIN")
+        !hasPermission(user, "MANAGE_COMMERCE_SETTINGS")
       ) {
         throw new Error(`INVALID_ARGUMENT: Manager notification user '${userId}' is not an active tenant manager`);
       }
