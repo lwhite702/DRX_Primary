@@ -1,0 +1,2 @@
+# Official Sentry plugin; reviewed under WRE-116.
+gem "fastlane-plugin-sentry", "2.6.3"
