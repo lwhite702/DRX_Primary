@@ -29,38 +29,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate production deployment configuration
-        id: config
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID_PRODUCTION: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
-        run: |
-          set -euo pipefail
-          for variable in \
-            VERCEL_TOKEN \
-            VERCEL_ORG_ID \
-            VERCEL_PROJECT_ID_PRODUCTION \
-            VERCEL_SCOPE
-          do
-            if [ -z "${!variable:-}" ]; then
-              echo "Missing required production configuration: $variable" >&2
-              exit 1
-            fi
-          done
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ -z "${CONVEX_DEPLOY_KEY:-}" ]; then
-            echo "Missing required production configuration: CONVEX_DEPLOY_KEY" >&2
-            exit 1
-          fi
-          if [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
-            echo "has_convex_key=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_convex_key=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: node scripts/release/deploy-preflight.mjs --environment production
 
       - name: Deploy Convex functions to Production
-        if: ${{ github.event_name != 'workflow_dispatch' || steps.config.outputs.has_convex_key == 'true' }}
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         working-directory: ./apps/app
