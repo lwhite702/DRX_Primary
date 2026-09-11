@@ -73,12 +73,22 @@ export default function TeamClient() {
     setLoading(true);
     setLoadError(null);
     try {
-      const response = await fetch(`/api/team?business_id=${business.id}`, { signal });
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) throw new Error(result.error || "Failed to load team members");
-
-      setUsers(result.data || []);
+      const collected: TeamMember[] = [];
+      const seenCursors = new Set<string>();
+      let cursor: string | null = null;
+      do {
+        const params = new URLSearchParams({ business_id: business.id });
+        if (cursor) params.set("cursor", cursor);
+        const response = await fetch(`/api/team?${params}`, { signal, headers: { "X-Business-Id": business.id }, cache: "no-store" });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !Array.isArray(result.data)) throw new Error(result.error || "Failed to load team members");
+        if (signal?.aborted) return;
+        collected.push(...result.data);
+        cursor = typeof result.nextCursor === "string" ? result.nextCursor : null;
+        if (cursor && seenCursors.has(cursor)) throw new Error("Team pagination could not complete");
+        if (cursor) seenCursors.add(cursor);
+      } while (cursor);
+      setUsers(collected);
       setLoadedBusinessId(business.id);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;

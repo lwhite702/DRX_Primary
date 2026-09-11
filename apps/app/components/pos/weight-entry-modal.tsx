@@ -11,8 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { quoteWeight } from "@/lib/pos/weight-quote-client";
+import { aliasWeightGrams, loadUnitAliases, type UnitAlias } from "@/lib/inventory/unit-aliases-client";
+import { formatQuantity } from "@/lib/number-format";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -51,56 +52,37 @@ export function WeightEntryModal({
   const [pricePerGram, setPricePerGram] = useState<number | null>(null);
   const [tierName, setTierName] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
-  const [aliases, setAliases] = useState<any[]>([]);
+  const [aliases, setAliases] = useState<UnitAlias[]>([]);
   const [loadingAliases, setLoadingAliases] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const supabase = createAppClient();
+  const [quoteKey, setQuoteKey] = useState<string>();
+  const [pricingError, setPricingError] = useState<string>();
+  const currentQuoteKey = JSON.stringify([businessId, product?.id, weightGrams]);
+  const quoteReady = open && quoteKey === currentQuoteKey && pricePerGram !== null;
+  const [aliasBusiness, setAliasBusiness] = useState<string>();
 
   useEffect(() => {
-    if (weightGrams && product && businessId) {
-      const calculatePrice = async () => {
-        const weight = parseFloat(weightGrams);
-        if (weight > 0) {
-          const pricing = await posWeightEngine.getBulkPricing(
-            businessId,
-            product.id,
-            weight,
-          );
-
-          setPricePerGram(pricing.price_per_gram);
-          setTierName(pricing.tier_name || null);
-          setTotalPrice(pricing.total_price);
-        }
-      };
-
-      calculatePrice();
-    }
-  }, [weightGrams, product, businessId]);
+    const controller = new AbortController();
+    setQuoteKey(undefined); setPricePerGram(null); setTierName(null); setTotalPrice(0); setPricingError(undefined);
+    const weight = Number(weightGrams);
+    if (!open || !product || !businessId || !weightGrams.trim() || !Number.isFinite(weight) || weight <= 0) return () => controller.abort();
+    quoteWeight(businessId, product.id, weight, controller.signal).then(pricing => {
+      if (controller.signal.aborted) return;
+      setPricePerGram(pricing.price_per_gram); setTierName(pricing.tier_name ?? null); setTotalPrice(pricing.total_price); setQuoteKey(currentQuoteKey);
+    }).catch(() => { if (!controller.signal.aborted) setPricingError("Weight pricing is unavailable. Change the weight or reopen to retry."); });
+    return () => controller.abort();
+  }, [open, product?.id, businessId, weightGrams, currentQuoteKey]);
 
   useEffect(() => {
-    if (open && businessId && supabase) {
-      const fetchAliases = async () => {
-        setLoadingAliases(true);
-        try {
-          const { data, error } = await supabase
-            .from("product_unit_aliases")
-            .select("*")
-            .eq("business_id", businessId)
-            .eq("is_enabled", true)
-            .order("quantity", { ascending: true });
-
-          if (error) throw error;
-          setAliases(data || []);
-        } catch (error) {
-          console.error("Error fetching aliases:", error);
-        } finally {
-          setLoadingAliases(false);
-        }
-      };
-
-      fetchAliases();
-    }
-  }, [open, businessId, supabase]);
+    const controller = new AbortController(); setAliases([]); setAliasBusiness(undefined);
+    if (!open || !businessId) { setLoadingAliases(false); return () => controller.abort(); }
+    setLoadingAliases(true);
+    loadUnitAliases(businessId, controller.signal).then(rows => {
+      if (!controller.signal.aborted) { setAliases(rows.filter(row => row.is_enabled).sort((a, b) => aliasWeightGrams(a) - aliasWeightGrams(b))); setAliasBusiness(businessId); }
+    }).catch(() => { if (!controller.signal.aborted) toast.error("Failed to load unit aliases"); })
+      .finally(() => { if (!controller.signal.aborted) setLoadingAliases(false); });
+    return () => controller.abort();
+  }, [open, businessId]);
 
   const handleAddToCart = () => {
     if (!product) {
@@ -113,13 +95,13 @@ export function WeightEntryModal({
       return;
     }
 
-    if (pricePerGram === null) {
+    if (!quoteReady || pricePerGram === null) {
       toast.error("Failed to calculate price");
       return;
     }
 
     if (
-      product.inventory_in_grams &&
+      product.inventory_in_grams !== undefined &&
       parseFloat(weightGrams) > product.inventory_in_grams
     ) {
       toast.error(
@@ -207,7 +189,7 @@ export function WeightEntryModal({
           </div>
 
           {/* Quick Aliases */}
-          {aliases.length > 0 && (
+          {aliasBusiness === businessId && aliases.length > 0 && (
             <div className="space-y-2">
               <Label className="text-xs uppercase text-muted-foreground font-semibold">
                 Quick Select
@@ -219,9 +201,9 @@ export function WeightEntryModal({
                     variant="outline"
                     size="sm"
                     className="h-8 text-xs bg-accent/5 hover:bg-accent/20 border-accent/20"
-                    onClick={() => setWeightGrams(alias.quantity.toString())}
+                    onClick={() => setWeightGrams(aliasWeightGrams(alias).toString())}
                   >
-                    {alias.alias_name} ({alias.quantity}
+                    {alias.alias_name} ({formatQuantity(alias.quantity)}
                     {alias.standard_unit})
                   </Button>
                 ))}
@@ -244,7 +226,7 @@ export function WeightEntryModal({
                   Price per {product?.base_unit || "g"}
                 </span>
                 <span className="font-medium text-blue-900">
-                  ${pricePerGram?.toFixed(4)}
+                  ${pricePerGram?.toFixed(2)}
                 </span>
               </div>
 
@@ -266,6 +248,7 @@ export function WeightEntryModal({
             </div>
           )}
 
+          {pricingError && <p role="alert" className="text-sm text-destructive">{pricingError}</p>}
           {/* Actions */}
           <div className="flex gap-3 justify-end pt-4">
             <Button variant="outline" onClick={onClose} disabled={processing}>
@@ -273,7 +256,7 @@ export function WeightEntryModal({
             </Button>
             <Button
               onClick={handleAddToCart}
-              disabled={processing || !weightGrams}
+              disabled={processing || !quoteReady}
             >
               {processing ? "Adding..." : "Add to Cart"}
             </Button>

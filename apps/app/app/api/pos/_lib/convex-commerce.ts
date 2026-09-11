@@ -174,7 +174,7 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
         }
       : undefined,
   });
-  return toWebQuote(quote);
+  return { ...toWebQuote(quote), lines: quote.lines };
 }
 
 export async function checkoutCanonicalCommerce(

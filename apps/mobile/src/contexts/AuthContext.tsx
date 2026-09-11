@@ -9,7 +9,7 @@ import {
   useSignIn,
   useUser,
 } from "../adapters/auth/client";
-import { getLegacyMobileSession } from "../services/apiClient";
+import { selectOperatorSession, type OperatorSession } from "../lib/operatorSession";
 import { unregisterPushBeforeSignOut } from "../lib/pushNotifications";
 
 const OPERATOR_SESSION_KEY_PREFIX = "drx.operator-session.v1";
@@ -38,17 +38,6 @@ const CONVEX_URL = process.env.EXPO_PUBLIC_CONVEX_URL!;
 const convex = CONVEX_URL
   ? new ConvexReactClient(CONVEX_URL, { unsavedChangesWarning: false })
   : null;
-
-type OperatorSession = {
-  operatorId: string;
-  displayName: string;
-  businessId: string;
-  businessName: string;
-  roles: string[];
-  permissions: string[];
-  email: string | null;
-  legacyBusinessId?: string;
-};
 
 interface AuthContextType {
   isSignedIn: boolean;
@@ -79,7 +68,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   };
   const onboarding = useQuery(
     api.onboarding.getCurrentOnboardingStatus,
-    isAuthenticated ? {} : "skip",
+    isAuthenticated && userId ? { expectedUserId: userId } : "skip",
   );
 
   const signIn = async (email?: string, password?: string) => {
@@ -129,19 +118,10 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   }, [isLoaded, isSignedIn, userId]);
 
   useEffect(() => {
-    if (!liveSession || !userId) return;
+    if (!liveSession || !userId || liveSession.operatorId !== userId) return;
     let active = true;
     const persist = async () => {
-      let legacyBusinessId =
-        cachedSession?.operatorId === userId ? cachedSession.legacyBusinessId : undefined;
-      try {
-        const token = await getToken();
-        const legacy = await getLegacyMobileSession(token);
-        if (legacy.operatorId === userId) legacyBusinessId = legacy.businessId;
-      } catch {
-        // Convex remains authoritative; retain the last tenant-scoped legacy ID for REST-only screens.
-      }
-      const next: OperatorSession = { ...liveSession, legacyBusinessId };
+      const next: OperatorSession = { ...liveSession };
       if (!active) return;
       setCachedSession(next);
       setCacheUserId(userId);
@@ -153,11 +133,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     };
     void persist();
     return () => { active = false; };
-  }, [cachedSession?.legacyBusinessId, cachedSession?.operatorId, getToken, liveSession, userId]);
+  }, [liveSession, userId]);
 
-  const session = liveSession
-    ? { ...liveSession, legacyBusinessId: cachedSession?.legacyBusinessId }
-    : cachedSession;
+  const session = selectOperatorSession({ userId, isSignedIn, liveSession, cachedSession, hasLiveStatus: onboarding !== undefined });
   const onboardingStatus = onboarding?.status ?? (session ? "READY" : null);
   const cacheHydrated = !isSignedIn || (!!userId && cacheUserId === userId);
   const loading =

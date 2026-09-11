@@ -4,10 +4,13 @@ import { mutation, query, type QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
-import { appendCreditEntry, positiveCreditCents } from "./helpers/creditLedger";
+import { appendCreditEntry, positiveCreditCents, creditDueAt } from "./helpers/creditLedger";
 
 const transaction = v.object({ id: v.string(), businessId: v.string(), customerId: v.string(), amount: v.number(), amountCents: v.number(), balanceAfterCents: v.number(), transactionType: v.string(), description: v.optional(v.string()), status: v.string(), createdBy: v.string(), createdAt: v.string(), balanceAfter: v.number(), dueDate: v.optional(v.string()), paymentMethod: v.optional(v.string()) });
 function project(entry: Doc<"creditEntries">) {
+  if (!Number.isSafeInteger(entry.deltaCents) || !Number.isSafeInteger(entry.balanceAfterCents) || entry.balanceAfterCents < 0 ||
+    !Number.isSafeInteger(entry.createdAt) || entry.createdAt < 0 || !Number.isFinite(new Date(entry.createdAt).getTime()) || (entry.kind === "payment" ? entry.deltaCents >= 0 : entry.kind === "opening" ? entry.deltaCents < 0 : entry.deltaCents <= 0)) throw new Error("INVALID_STATE: Credit entry requires reconciliation");
+  creditDueAt(entry.dueAt);
   return { id: entry._id, businessId: entry.businessId, customerId: entry.customerId, amount: Math.abs(entry.deltaCents) / 100, amountCents: Math.abs(entry.deltaCents), balanceAfterCents: entry.balanceAfterCents, transactionType: entry.kind === "issue" ? "extension" : entry.kind === "sale" ? "purchase" : entry.kind, description: entry.description, status: entry.kind === "opening" ? "unreconciled" : "completed", createdBy: entry.createdBy, createdAt: new Date(entry.createdAt).toISOString(), balanceAfter: entry.balanceAfterCents / 100, paymentMethod: entry.paymentMethod, dueDate: entry.dueAt === undefined ? undefined : new Date(entry.dueAt).toISOString() };
 }
 async function access(ctx: QueryCtx, businessId: string, writing: boolean) {
@@ -38,14 +41,30 @@ export const create = mutation({
   },
 });
 export const listPage = query({
-  args: { businessId: v.string(), customerId: v.optional(v.string()), paginationOpts: paginationOptsValidator },
+  args: { businessId: v.string(), customerId: v.optional(v.string()), expectedUserId: v.optional(v.string()), paginationOpts: paginationOptsValidator },
   returns: v.object({ page: v.array(transaction), isDone: v.boolean(), continueCursor: v.string() }),
   handler: async (ctx, args) => {
     const auth = await access(ctx, args.businessId, false);
+    if (args.expectedUserId !== undefined && args.expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Credit request belongs to another operator");
     const customer = args.customerId ? await customerFor(ctx, auth, args.customerId) : null;
     const source = customer ? ctx.db.query("creditEntries").withIndex("by_customerId", q => q.eq("customerId", customer._id)) : ctx.db.query("creditEntries").withIndex("by_businessId", q => q.eq("businessId", auth.businessId));
     const page = await source.order("desc").paginate({ ...args.paginationOpts, numItems: Math.max(1, Math.min(100, args.paginationOpts.numItems)) });
     if (page.page.some(entry => entry.businessId !== auth.businessId)) throw new Error("INVALID_STATE: Transaction ownership requires reconciliation");
     return { page: page.page.map(project), isDone: page.isDone, continueCursor: page.continueCursor };
+  },
+});
+
+export const get = query({
+  args: { businessId: v.string(), expectedUserId: v.string(), transactionId: v.string() },
+  returns: transaction,
+  handler: async (ctx, args) => {
+    const auth = await access(ctx, args.businessId, false);
+    if (args.expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Credit request belongs to another operator");
+    const id = ctx.db.normalizeId("creditEntries", args.transactionId);
+    const entry = id ? await ctx.db.get(id) : null;
+    if (!entry || entry.businessId !== auth.businessId) throw new Error("NOT_FOUND: Credit transaction is unavailable");
+    const customer = await ctx.db.get(entry.customerId);
+    if (!customer || customer.businessId !== auth.businessId) throw new Error("INVALID_STATE: Credit entry ownership requires reconciliation");
+    return project(entry);
   },
 });

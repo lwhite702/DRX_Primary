@@ -2,7 +2,7 @@ import { ROLE_PERMISSIONS as WEB_ROLE_PERMISSIONS, type Role as WebRole, type Pe
 import { businessProfileDto, businessProfileValidator } from "./businessProfiles";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import { activeOrganization, findCurrentMembership, requireUserAndBusiness } from "./helpers/auth";
+import { activeOrganization, findCurrentMembership, requireUserAndBusiness, requireExpectedIdentity } from "./helpers/auth";
 
 export const currentBusiness = query({
   args: { selectedBusinessId: v.optional(v.string()) },
@@ -56,5 +56,19 @@ export const currentBusinessProfile = query({
       throw new Error("FORBIDDEN: Selected organization does not match membership");
     }
     return businessProfileDto(business);
+  },
+});
+
+export const mobileBootstrap = query({
+  args: { expectedUserId: v.string(), expectedOrganizationId: v.union(v.string(), v.null()) },
+  returns: v.object({ operatorId: v.string(), displayName: v.string(), businessId: v.id("businesses"), legacyBusinessId: v.optional(v.string()), businessName: v.string(), roles: v.array(v.string()), permissions: v.array(v.string()), email: v.union(v.string(), v.null()) }),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("UNAUTHENTICATED: Authentication required");
+    requireExpectedIdentity(identity, args);
+    const { userId, userRecord: member, businessRecord: business } = await requireUserAndBusiness(ctx);
+    const role = member.role === "MEMBER" ? "staff" : member.role.toLowerCase();
+    const permissions = role === "owner" ? ["*"] : Object.entries(member.permissions ?? {}).filter(([permission, enabled]) => enabled === true && permission !== "*" && permission !== "users.manage_all").map(([permission]) => permission);
+    return { operatorId: userId, displayName: member.name || member.email || "DRX Operator", businessId: business._id, legacyBusinessId: business.legacyPrismaBusinessId, businessName: business.name, roles: [role], permissions, email: member.email || null };
   },
 });

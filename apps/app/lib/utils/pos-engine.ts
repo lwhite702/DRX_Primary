@@ -18,7 +18,7 @@ export type AIPricingRecommendation = {
   current_price: number;
   recommended_price: number;
   confidence_score: number;
-  price_change_percentage: number;
+  price_change_percentage: number | null;
   recommendation_reason?: string;
 };
 
@@ -317,14 +317,11 @@ export class POSEngine {
   async getAIPricingRecommendations(
     business_id: string,
   ): Promise<AIPricingRecommendation[]> {
-    try {
-      const res = await fetch(`/api/pos/ai-pricing?businessId=${business_id}`);
-      if (!res.ok) return [];
-      return await res.json();
-    } catch (e) {
-      console.error("Failed to get AI recommendations:", e);
-      return [];
-    }
+    const res = await fetch(`/api/pos/ai-pricing?businessId=${encodeURIComponent(business_id)}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("AI pricing recommendations are unavailable");
+    const payload = await res.json();
+    if (!Array.isArray(payload.items)) throw new Error("Invalid AI pricing response");
+    return payload.items;
   }
 
   async applyAIPricingRecommendation(
@@ -334,11 +331,14 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/apply-pricing", {
         method: "POST",
-        body: JSON.stringify({ recommendationId: recommendation_id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId: business_id, recommendationId: recommendation_id }),
       });
-      return await res.json();
-    } catch (e: any) {
-      return { success: false, message: e.message };
+      const result = await res.json();
+      if (!res.ok || result?.success !== true || !Number.isFinite(result.newPrice)) return { success: false, message: res.status === 409 ? "Price changed. Generate a new analysis." : "Price update was not confirmed. Retry the same recommendation." };
+      return { success: true, newPrice: result.newPrice, message: result.message };
+    } catch {
+      return { success: false, message: "Price update was not confirmed. Retry the same recommendation." };
     }
   }
 

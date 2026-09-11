@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { webcrypto } from "node:crypto";
-import { CreditPendingQueue, syncCreditRequests, type CreditQueueScope, type CreditQueueStorage, type SealedCreditRequest } from "../../lib/credit/pending-queue";
+import { CreditPendingQueue, syncCreditRequests, resolveCreditRequests, type CreditQueueScope, type CreditQueueStorage, type SealedCreditRequest } from "../../lib/credit/pending-queue";
 const cryptoProvider = webcrypto as unknown as Crypto;
 class MemoryStorage implements CreditQueueStorage {
   keys = new Map<string, CryptoKey>(); records = new Map<string, SealedCreditRequest>(); sequence = 0;
@@ -12,7 +12,7 @@ class MemoryStorage implements CreditQueueStorage {
 const scope: CreditQueueScope = { deployment: "https://synthetic.convex.cloud", operatorId: "synthetic-owner", businessId: "synthetic-business" };
 const request = { customerId: "synthetic-customer", kind: "issue" as const, amountCents: 1234, description: "Synthetic private note", dueDate: "2028-02-29" };
 function fixture() { const storage = new MemoryStorage(); return { storage, queue: new CreditPendingQueue(storage, cryptoProvider) }; }
-function ok(key: string) { return new Response(JSON.stringify({ id: "synthetic-ledger-entry" }), { status: 201, headers: { "Idempotency-Key": key } }); }
+function ok(key: string) { return new Response(JSON.stringify({ id: "synthetic-ledger-entry", customerId: request.customerId, createdBy: scope.operatorId, transactionType: "extension", amountCents: request.amountCents, status: "completed", balanceAfterCents: request.amountCents }), { status: 201, headers: { "Idempotency-Key": key } }); }
 describe("owned encrypted Convex credit queue", () => {
   it("persists encrypted requests and restores exact payloads across queue instances", async () => {
     const { storage, queue } = fixture(); const entry = await queue.create(scope, request);
@@ -27,7 +27,7 @@ describe("owned encrypted Convex credit queue", () => {
   it("retains requests after uncertain responses and replays the identical request key and terms", async () => {
     const { queue, storage } = fixture(); const entry = await queue.create(scope, request);
     const send = vi.fn().mockRejectedValueOnce(new Error("network unavailable")).mockResolvedValueOnce(ok(entry.requestKey));
-    await expect(syncCreditRequests(queue, scope, () => true, send)).rejects.toThrow("network unavailable");
+    await expect(syncCreditRequests(queue, scope, () => true, send)).rejects.toThrow("still pending");
     expect(storage.records.size).toBe(1);
     expect(await syncCreditRequests(new CreditPendingQueue(storage, cryptoProvider), scope, () => true, send)).toEqual({ confirmed: 1, hasMore: false });
     expect(send.mock.calls[0]).toEqual(send.mock.calls[1]);
@@ -85,4 +85,31 @@ it("captures ownership and form values before asynchronous encryption", async ()
   const entry = await queue.create(binding, input);
   expect(entry.operatorId).toBe(scope.operatorId); expect(entry.amountCents).toBe(request.amountCents);
   expect((await queue.pending(scope)).entries).toEqual([entry]);
+});
+
+it("retains encrypted requests after mismatched or malformed ledger receipts", async () => {
+  const { queue, storage } = fixture(); const entry = await queue.create(scope, request);
+  const valid = { id: "receipt", customerId: request.customerId, createdBy: scope.operatorId, transactionType: "extension", amountCents: request.amountCents, status: "completed", balanceAfterCents: request.amountCents };
+  for (const changed of [{ id: "" }, { customerId: "other" }, { createdBy: "other" }, { transactionType: "payment" }, { amountCents: 1 }, { status: "pending" }, { balanceAfterCents: -1 }, { balanceAfterCents: 0.5 }]) {
+    const send = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ...valid, ...changed }), { status: 201, headers: { "Idempotency-Key": entry.requestKey } }));
+    await expect(syncCreditRequests(queue, scope, () => true, send)).rejects.toThrow("still pending");
+    expect(storage.records.size).toBe(1);
+  }
+  const malformed = vi.fn().mockResolvedValue(new Response("invalid", { status: 201, headers: { "Idempotency-Key": entry.requestKey } }));
+  await expect(syncCreditRequests(queue, scope, () => true, malformed)).rejects.toThrow("still pending");
+  expect(storage.records.size).toBe(1);
+});
+
+it("keeps unresolved attempts after failed, mismatched or stale-context cancellation receipts", async () => {
+  const { queue, storage } = fixture(); const entry = await queue.create(scope, request);
+  const receipt = { status: "cancelled", requestKey: entry.requestKey, customerId: entry.customerId, operatorId: scope.operatorId };
+  for (const changed of [{ requestKey: "other" }, { customerId: "other" }, { operatorId: "other" }, { status: "unknown" }, { status: "recorded", balanceAfterCents: -1 }]) {
+    await expect(resolveCreditRequests(queue, scope, () => true, vi.fn().mockResolvedValue(new Response(JSON.stringify({ ...receipt, ...changed }))))).rejects.toThrow("Keep it pending");
+    expect(storage.records.size).toBe(1);
+  }
+  let current = true;
+  await expect(resolveCreditRequests(queue, scope, () => current, vi.fn(async () => { current = false; return new Response(JSON.stringify(receipt)); }))).rejects.toThrow("Sign in");
+  expect(storage.records.size).toBe(1);
+  await expect(resolveCreditRequests(queue, scope, () => true, vi.fn().mockResolvedValue(new Response("failure", { status: 503 })))).rejects.toThrow("Keep it pending");
+  expect(storage.records.size).toBe(1);
 });

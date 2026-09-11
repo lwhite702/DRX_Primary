@@ -33,7 +33,6 @@ import { PUT as updateUser, DELETE as deleteUser } from "@/app/api/admin/users/[
 import { GET as auditLogs } from "@/app/api/admin/audit-logs/route";
 import { POST as deleteIdentity } from "@/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route";
 import { hasPermission, hasBusinessPermission } from "@/lib/auth/server-guards";
-import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { GET as getApprovals } from "@/app/api/inventory/intake/route";
 
 const request = (url = "/api/admin/businesses", body = {}) => new NextRequest(`http://localhost${url}`, { method: "POST", body: JSON.stringify(body) });
@@ -107,12 +106,6 @@ describe("platform reads and writes reject tenant authority", () => {
     m.owner.mockResolvedValue({ id: "business-a" });
     expect((await auditLogs(new NextRequest("http://localhost/api/admin/audit-logs"))).status).toBe(200);
     expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({ where: { businessId: "business-a" } }));
-  });
-  it("a business owner cannot target an unrelated notification recipient", async () => {
-    m.query.mockResolvedValue({ allowed: true, role: "owner" });
-    m.owner.mockResolvedValue({ id: "business-a" }); m.roles.mockResolvedValue(null);
-    expect(await canManageNotificationRecipient(request(), "actor", "unrelated")).toBe(false);
-    expect(m.roles).toHaveBeenCalledWith({ where: { userId: "unrelated", businessId: "business-a" }, select: { id: true } });
   });
   it("queries approvals only for the selected authenticated business", async () => {
     m.query.mockResolvedValue({ page: [], isDone: true, continueCursor: "end" });

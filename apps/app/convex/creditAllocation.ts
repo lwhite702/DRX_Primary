@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { paginationOptsValidator, makeFunctionReference } from "convex/server";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { requireUserAndBusiness } from "./helpers/auth";
+import { requireUserAndBusiness, requireSelectedBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 import { creditDueAt } from "./helpers/creditLedger";
 import type { Id } from "./_generated/dataModel";
@@ -10,9 +10,10 @@ const advanceRef = makeFunctionReference<"mutation", { customerId: Id<"customers
 
 /** Starts/retries the rebuild without altering the account or source transactions. */
 export const refresh = mutation({
-  args: { customerId: v.id("customers") }, returns: v.null(),
-  handler: async (ctx, { customerId }) => {
-    const auth = await requireUserAndBusiness(ctx);
+  args: { customerId: v.id("customers"), businessId: v.optional(v.string()), expectedUserId: v.optional(v.string()) }, returns: v.null(),
+  handler: async (ctx, { customerId, businessId, expectedUserId }) => {
+    const auth = businessId === undefined ? await requireUserAndBusiness(ctx) : await requireSelectedBusiness(ctx, businessId, expectedUserId);
+    if (expectedUserId !== undefined && expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Operator changed");
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
     const customer = await ctx.db.get(customerId);
     if (!customer || customer.businessId !== auth.businessId) throw new Error("NOT_FOUND: Customer is unavailable");
@@ -88,20 +89,26 @@ export const advance = internalMutation({
 
 const debtRow = v.object({ entryId: v.id("creditEntries"), remainingCents: v.number(), dueAt: v.optional(v.number()), bucket: v.union(v.literal("current"), v.literal("1_7"), v.literal("8_14"), v.literal("15_30"), v.literal("31_plus"), v.literal("undated"), v.literal("unreconciled")) });
 export const agingPage = query({
-  args: { customerId: v.id("customers"), asOfDate: v.number(), paginationOpts: paginationOptsValidator },
+  args: { customerId: v.id("customers"), businessId: v.optional(v.string()), expectedUserId: v.optional(v.string()), asOfDate: v.number(), paginationOpts: paginationOptsValidator },
   returns: v.object({ status: v.union(v.literal("pending"), v.literal("ready")), balanceCents: v.number(), revision: v.optional(v.id("creditEntries")), lastPaymentAt: v.optional(v.number()), page: v.array(debtRow), isDone: v.boolean(), continueCursor: v.string() }),
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx);
+    const auth = args.businessId === undefined ? await requireUserAndBusiness(ctx) : await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
+    if (args.expectedUserId !== undefined && args.expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Operator changed");
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
     creditDueAt(args.asOfDate);
     const customer = await ctx.db.get(args.customerId);
     if (!customer || customer.businessId !== auth.businessId) throw new Error("NOT_FOUND: Customer is unavailable");
     const state = await ctx.db.query("creditAllocationState").withIndex("by_customerId", q => q.eq("customerId", args.customerId)).unique();
     const account = await ctx.db.query("creditAccounts").withIndex("by_customerId", q => q.eq("customerId", args.customerId)).unique();
-    if (!state || state.businessId !== auth.businessId || state.status !== "ready" || state.outstandingCents !== customer.totalCreditUsedCents || (account && (account.businessId !== auth.businessId || account.balanceCents !== state.outstandingCents))) return { status: "pending" as const, balanceCents: customer.totalCreditUsedCents, page: [], isDone: false, continueCursor: "" };
+    if (!Number.isSafeInteger(customer.totalCreditUsedCents) || customer.totalCreditUsedCents < 0 ||
+      (state && (state.businessId !== auth.businessId || !Number.isSafeInteger(state.outstandingCents) || state.outstandingCents < 0)) ||
+      (account && (account.businessId !== auth.businessId || !Number.isSafeInteger(account.balanceCents) || account.balanceCents < 0))) throw new Error("INVALID_STATE: Credit ownership or balance requires reconciliation");
+    if (!state || state.status !== "ready" || state.outstandingCents !== customer.totalCreditUsedCents || (account && account.balanceCents !== state.outstandingCents)) return { status: "pending" as const, balanceCents: customer.totalCreditUsedCents, page: [], isDone: false, continueCursor: "" };
     const page = await ctx.db.query("creditDebts").withIndex("by_customerId_and_status", q => q.eq("customerId", args.customerId).eq("status", "open")).paginate({ ...args.paginationOpts, numItems: Math.max(1, Math.min(100, args.paginationOpts.numItems)) });
     if (page.page.some(debt => debt.businessId !== auth.businessId)) throw new Error("INVALID_STATE: Debt ownership requires reconciliation");
     return { status: "ready" as const, balanceCents: state.outstandingCents, revision: state.lastEntryId, lastPaymentAt: state.lastPaymentAt, isDone: page.isDone, continueCursor: page.continueCursor, page: page.page.map(debt => {
+      if (!Number.isSafeInteger(debt.remainingCents) || debt.remainingCents <= 0 || !Number.isSafeInteger(debt.principalCents) || debt.remainingCents > debt.principalCents) throw new Error("INVALID_STATE: Outstanding debt requires reconciliation");
+      creditDueAt(debt.dueAt);
       const days = debt.dueAt === undefined ? 0 : (args.asOfDate - debt.dueAt) / 86_400_000;
       const bucket = debt.unreconciled ? "unreconciled" as const : debt.dueAt === undefined ? "undated" as const : days <= 0 ? "current" as const : days <= 7 ? "1_7" as const : days <= 14 ? "8_14" as const : days <= 30 ? "15_30" as const : "31_plus" as const;
       return { entryId: debt.entryId, remainingCents: debt.remainingCents, dueAt: debt.dueAt, bucket };

@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { getUnitLabel, type UnitOfMeasure } from "@/lib/utils/units";
+import { formatAmount, formatQuantity } from "@/lib/number-format";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
 
 interface IntakeFormData {
@@ -253,7 +254,7 @@ export default function InventoryIntakePage() {
                     {inventoryItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.product_name} (SKU: {item.sku}, Stock:{" "}
-                        {item.quantity_on_hand}g)
+                        {formatQuantity(item.quantity_on_hand)}g)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -335,8 +336,8 @@ export default function InventoryIntakePage() {
                     <Input
                       value={
                         costPerUnit > 0
-                          ? `$${costPerUnit.toFixed(6)}/${formData.unit_of_measure}`
-                          : `$0.000000/${formData.unit_of_measure}`
+                          ? `$${formatAmount(costPerUnit)}/${formData.unit_of_measure}`
+                          : `$0.00/${formData.unit_of_measure}`
                       }
                       readOnly
                       className="bg-muted"
@@ -407,20 +408,20 @@ export default function InventoryIntakePage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams || "0"}
+                    {formatQuantity(Number(formData.total_weight_grams || "0"))}
                     {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Product Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.total_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.total_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.delivery_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between border-t pt-3">
@@ -428,7 +429,7 @@ export default function InventoryIntakePage() {
                     Total Intake Cost:
                   </span>
                   <span className="font-bold text-lg">
-                    ${totalIntakeCost.toFixed(2)}
+                    ${formatAmount(totalIntakeCost)}
                   </span>
                 </div>
                 {costPerUnit > 0 && (
@@ -442,7 +443,7 @@ export default function InventoryIntakePage() {
                       :
                     </span>
                     <span className="font-mono font-bold text-primary">
-                      ${costPerUnit.toFixed(6)}
+                      ${formatAmount(costPerUnit)}
                     </span>
                   </div>
                 )}
@@ -476,26 +477,26 @@ export default function InventoryIntakePage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams}
+                    {formatQuantity(Number(formData.total_weight_grams))}
                     {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Product Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.total_cost).toFixed(2)}
+                    ${formatAmount(parseFloat(formData.total_cost))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Delivery Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.delivery_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm border-t pt-2">
                   <span className="font-semibold">Total Cost:</span>
                   <span className="font-bold">
-                    ${totalIntakeCost.toFixed(2)}
+                    ${formatAmount(totalIntakeCost)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
@@ -508,7 +509,7 @@ export default function InventoryIntakePage() {
                     :
                   </span>
                   <span className="font-mono font-bold text-primary">
-                    ${costPerUnit.toFixed(6)}/{formData.unit_of_measure}
+                    ${formatAmount(costPerUnit)}/{formData.unit_of_measure}
                   </span>
                 </div>
               </div>

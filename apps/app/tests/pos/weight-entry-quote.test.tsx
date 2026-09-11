@@ -1,0 +1,21 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+const mocks = vi.hoisted(() => ({ quote: vi.fn() }));
+vi.mock("@/lib/pos/weight-quote-client", () => ({ quoteWeight: mocks.quote }));
+vi.mock("@/lib/inventory/unit-aliases-client", () => ({ loadUnitAliases: async () => [], aliasWeightGrams: () => 1 }));
+import { WeightEntryModal } from "../../components/pos/weight-entry-modal";
+afterEach(() => { cleanup(); vi.resetAllMocks(); });
+it("disables submission for an unquoted weight and ignores late results after weight changes", async () => {
+  let resolveOld!: (value: unknown) => void;
+  mocks.quote.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; })).mockResolvedValueOnce({ price_per_gram: 2, total_price: 4 });
+  const added = vi.fn();
+  render(<WeightEntryModal open onClose={() => {}} businessId="tenant-a" product={{ id: "product-a", product_name: "Synthetic product", sku: "TEST", inventory_in_grams: 10 }} onAddToCart={added} />);
+  const input = screen.getByLabelText("Weight (g)");
+  fireEvent.change(input, { target: { value: "1" } });
+  expect((screen.getByText("Add to Cart") as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.change(input, { target: { value: "2" } });
+  await waitFor(() => expect((screen.getByText("Add to Cart") as HTMLButtonElement).disabled).toBe(false));
+  resolveOld({ price_per_gram: 99, total_price: 99 });
+  fireEvent.click(screen.getByText("Add to Cart"));
+  expect(added).toHaveBeenCalledWith(expect.objectContaining({ weight_grams: 2, unit_price: 4, line_total: 4 }));
+});

@@ -159,16 +159,47 @@ export async function syncCreditRequests(queue: CreditPendingQueue, scope: Credi
   const { entries, hasMore } = await queue.pending(scope);
   for (const entry of entries) {
     if (!isCurrent()) throw new Error("Sign in to sync your credit requests");
-    const response = await send("/api/credit/transactions", {
+    let response: Response;
+    try { response = await send("/api/credit/transactions", {
       method: "POST", headers: { "Content-Type": "application/json", "X-Business-Id": scope.businessId, "Idempotency-Key": entry.requestKey },
       body: JSON.stringify({ customer_id: entry.customerId, business_id: scope.businessId, expectedUserId: scope.operatorId, transaction_type: entry.kind === "issue" ? "extension" : "payment", amountCents: entry.amountCents, description: entry.description, due_date: entry.dueDate, payment_method: entry.paymentMethod }),
-    });
+    }); } catch { throw new Error("Credit request is still pending. Sign in and retry, or check its status."); }
     if (response.status !== 201 || response.headers.get("Idempotency-Key") !== entry.requestKey) throw new Error("Credit request is still pending. Sign in and retry, or check its status.");
-    const result = await response.json();
-    if (!result || typeof result.id !== "string") throw new Error("Credit request is still pending. Check its status before replacing it.");
+    let result;
+    try { result = await response.json(); } catch { throw new Error("Credit request is still pending. Check its status before replacing it."); }
     if (!isCurrent()) throw new Error("Sign in to sync your credit requests");
+    if (!result || typeof result.id !== "string" || !result.id.trim() ||
+      result.customerId !== entry.customerId || result.createdBy !== scope.operatorId ||
+      result.transactionType !== (entry.kind === "issue" ? "extension" : "payment") ||
+      result.amountCents !== entry.amountCents || result.status !== "completed" ||
+      !Number.isSafeInteger(result.balanceAfterCents) || result.balanceAfterCents < 0) {
+      throw new Error("Credit request is still pending. Check its status before replacing it.");
+    }
     await queue.confirm(scope, entry.requestKey);
     confirmed++;
   }
   return { confirmed, hasMore };
+}
+
+/** Resolve on the server before clearing an uncertain local attempt. Never reverses a recorded transaction. */
+export async function resolveCreditRequests(queue: CreditPendingQueue, scope: CreditQueueScope, isCurrent: () => boolean, send: typeof fetch = globalThis.fetch) {
+  scope = { ...scope };
+  let confirmed = 0, cancelled = 0;
+  if (!isCurrent()) throw new Error("Sign in to resolve your credit requests");
+  const { entries, hasMore } = await queue.pending(scope);
+  for (const entry of entries) {
+    if (!isCurrent()) throw new Error("Sign in to resolve your credit requests");
+    let result;
+    try {
+      const response = await send("/api/credit/requests/resolve", { method: "POST", headers: { "Content-Type": "application/json", "X-Business-Id": scope.businessId }, body: JSON.stringify({ business_id: scope.businessId, customer_id: entry.customerId, expectedUserId: scope.operatorId, requestKey: entry.requestKey }) });
+      if (!response.ok) throw new Error("unavailable");
+      result = await response.json();
+    } catch { throw new Error("Credit request could not be resolved. Keep it pending and retry."); }
+    if (!isCurrent()) throw new Error("Sign in to resolve your credit requests");
+    if (!result || result.requestKey !== entry.requestKey || result.customerId !== entry.customerId || result.operatorId !== scope.operatorId ||
+      !["recorded", "cancelled"].includes(result.status) || (result.status === "recorded" && (!Number.isSafeInteger(result.balanceAfterCents) || result.balanceAfterCents < 0))) throw new Error("Credit request could not be resolved. Keep it pending and retry.");
+    await queue.confirm(scope, entry.requestKey);
+    if (result.status === "recorded") confirmed++; else cancelled++;
+  }
+  return { confirmed, cancelled, hasMore };
 }

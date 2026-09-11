@@ -1,3 +1,5 @@
+import { webcrypto } from "node:crypto";
+import { CreditPendingQueue, syncCreditRequests, resolveCreditRequests, type CreditQueueStorage, type SealedCreditRequest } from "../../lib/credit/pending-queue";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { convexTest } from "convex-test";
@@ -7,14 +9,18 @@ import * as generated from "../../convex/_generated/api";
 import * as onboarding from "../../convex/onboarding";
 import * as customers from "../../convex/customers";
 import * as creditTransactions from "../../convex/creditTransactions";
+import * as credit from "../../convex/credit";
 import type { Id } from "../../convex/_generated/dataModel";
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), token: vi.fn(), query: vi.fn(), mutation: vi.fn() }));
+vi.mock("@/lib/adapters/auth", () => ({ getCurrentUser: async () => { const context = await mocks.auth(); return context?.userId ? { id: context.userId } : null; } }));
 vi.mock("@/lib/db", () => { throw new Error("Credit transactions must not load Prisma"); });
 vi.mock("@/app/api/pos/_lib/server", () => ({ resolveAuthContext: mocks.auth }));
 vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
 vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; mutation = mocks.mutation; } }));
 import { GET, POST } from "@/app/api/credit/transactions/route";
-const modules = { "_generated/api.js": async () => generated, "onboarding.ts": async () => onboarding, "customers.ts": async () => customers, "creditTransactions.ts": async () => creditTransactions };
+import { GET as detail, PUT as editEntry, DELETE as deleteEntry } from "../../app/api/credit/transactions/[id]/route";
+import { POST as resolveRequest } from "../../app/api/credit/requests/resolve/route";
+const modules = { "_generated/api.js": async () => generated, "onboarding.ts": async () => onboarding, "customers.ts": async () => customers, "creditTransactions.ts": async () => creditTransactions, "credit.ts": async () => credit };
 const createTest = () => convexTest(schema, modules);
 let t: ReturnType<typeof createTest>, businessId: string, customerId: Id<"customers">;
 const post = (body: object) => POST(new NextRequest("http://localhost/api/credit/transactions", { method: "POST", body: JSON.stringify(body) }));
@@ -132,4 +138,107 @@ it("accepts exact integer cents for queued requests and rejects contradictory am
   expect(await response.json()).toMatchObject({ amountCents: Number.MAX_SAFE_INTEGER, balanceAfterCents: Number.MAX_SAFE_INTEGER });
   expect((await post({ customer_id: customerId, amount: 1, amountCents: 101, transaction_type: "payment" })).status).toBe(400);
   expect((await post({ customer_id: customerId, amount: 0.001, amountCents: 1, transaction_type: "payment" })).status).toBe(400);
+});
+
+it("binds dashboard history reads to selected business and expected operator", async () => {
+  const other = t.withIdentity({ subject: "other-history" });
+  const foreign = await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
+  expect((await GET(new NextRequest(`http://localhost/api/credit/transactions?business_id=${foreign.businessId}`))).status).toBe(403);
+  expect((await GET(new NextRequest(`http://localhost/api/credit/transactions?expectedUserId=other`))).status).toBe(403);
+  const valid = await GET(new NextRequest(`http://localhost/api/credit/transactions?business_id=${businessId}&expectedUserId=credit-api-owner&limit=50`));
+  expect(valid.status).toBe(200);
+  const owner = t.withIdentity({ subject: "credit-api-owner" });
+  await expect(owner.query(api.creditTransactions.listPage, { businessId, expectedUserId: "other", paginationOpts: { cursor: null, numItems: 50 } })).rejects.toThrow("FORBIDDEN");
+});
+
+it("replays an encrypted pending request after the server commits but its response is lost", async () => {
+  const keys = new Map<string, CryptoKey>(), records = new Map<string, SealedCreditRequest>();
+  const storage: CreditQueueStorage = {
+    async key(scope, candidate) { if (!keys.has(scope) && candidate) keys.set(scope, candidate); return keys.get(scope); },
+    async list(scope, limit) { return [...records.values()].filter(row => row.scope === scope).slice(0, limit); },
+    async add(record) { records.set(record.id, record); },
+    async remove(scope, id) { if (records.get(id)?.scope === scope) records.delete(id); },
+  };
+  const queue = new CreditPendingQueue(storage, webcrypto as unknown as Crypto);
+  const scope = { deployment: "https://synthetic.convex.cloud", operatorId: "credit-api-owner", businessId };
+  const pending = await queue.create(scope, { customerId, kind: "issue", amountCents: 1234, dueDate: "2028-02-29" });
+  let loseResponse = true;
+  const send = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+    const response = await POST(new NextRequest("http://localhost/api/credit/transactions", { ...init, signal: init?.signal ?? undefined }));
+    if (loseResponse) { loseResponse = false; expect(response.status).toBe(201); throw new Error("Lost acknowledgement"); }
+    return response;
+  });
+  await expect(syncCreditRequests(queue, scope, () => true, send)).rejects.toThrow("still pending");
+  expect(records.size).toBe(1);
+  expect(await syncCreditRequests(new CreditPendingQueue(storage, webcrypto as unknown as Crypto), scope, () => true, send)).toEqual({ confirmed: 1, hasMore: false });
+  expect(records.size).toBe(0);
+  const entries = await t.run(ctx => ctx.db.query("creditEntries").collect());
+  expect(entries.filter(entry => entry.kind === "issue")).toHaveLength(1);
+  expect(entries.find(entry => entry.kind === "issue")).toMatchObject({ requestKey: pending.requestKey, deltaCents: 1234, balanceAfterCents: 1234 });
+});
+
+it("resolves recorded attempts and cancels unrecorded attempts before clearing the encrypted queue", async () => {
+  const keys = new Map<string, CryptoKey>(), records = new Map<string, SealedCreditRequest>();
+  const storage: CreditQueueStorage = {
+    async key(scope, candidate) { if (!keys.has(scope) && candidate) keys.set(scope, candidate); return keys.get(scope); },
+    async list(scope, limit) { return [...records.values()].filter(row => row.scope === scope).slice(0, limit); },
+    async add(record) { records.set(record.id, record); },
+    async remove(scope, id) { if (records.get(id)?.scope === scope) records.delete(id); },
+  };
+  const queue = new CreditPendingQueue(storage, webcrypto as unknown as Crypto);
+  const scope = { deployment: "https://synthetic.convex.cloud", operatorId: "credit-api-owner", businessId };
+  const recorded = await queue.create(scope, { customerId, kind: "issue", amountCents: 100 });
+  const cancelled = await queue.create(scope, { customerId, kind: "issue", amountCents: 200 });
+  expect((await post({ customer_id: customerId, amountCents: 100, transaction_type: "extension", requestKey: recorded.requestKey })).status).toBe(201);
+  const send = vi.fn((_url: RequestInfo | URL, init?: RequestInit) => resolveRequest(new NextRequest("http://localhost/api/credit/requests/resolve", { ...init, signal: init?.signal ?? undefined })));
+  expect(await resolveCreditRequests(queue, scope, () => true, send)).toEqual({ confirmed: 1, cancelled: 1, hasMore: false });
+  expect(records.size).toBe(0);
+  expect((await post({ customer_id: customerId, amountCents: 200, transaction_type: "extension", requestKey: cancelled.requestKey })).status).toBe(409);
+  expect((await t.run(ctx => ctx.db.query("creditEntries").collect())).filter(entry => entry.kind === "issue")).toHaveLength(1);
+  const forged = await resolveRequest(new NextRequest("http://localhost/api/credit/requests/resolve", { method: "POST", body: JSON.stringify({ business_id: businessId, customer_id: customerId, requestKey: cancelled.requestKey, expectedUserId: "other" }) }));
+  expect(forged.status).toBe(403);
+});
+
+it("reads immutable canonical transaction details and refuses edit/delete without changing accounting", async () => {
+  const response = await post({ customer_id: customerId, amountCents: 250, transaction_type: "extension", requestKey: "detail-entry-001" });
+  const recorded = await response.json();
+  const detailResponse = await detail(new NextRequest(`http://localhost/api/credit/transactions/${recorded.id}?business_id=${businessId}&expectedUserId=credit-api-owner`), { params: Promise.resolve({ id: recorded.id }) });
+  expect(detailResponse.status).toBe(200); expect(detailResponse.headers.get("cache-control")).toBe("private, no-store");
+  expect(await detailResponse.json()).toEqual(recorded);
+  expect((await editEntry()).status).toBe(405);
+  const denied = await deleteEntry(); expect(denied.status).toBe(405); expect(denied.headers.get("Allow")).toBe("GET");
+  expect((await t.run(ctx => ctx.db.get(customerId)))?.totalCreditUsedCents).toBe(250);
+  expect((await t.run(ctx => ctx.db.query("creditEntries").collect())).filter(entry => entry.kind === "issue")).toHaveLength(1);
+});
+it("isolates detail reads and refuses guessed legacy IDs or malformed ledger amounts", async () => {
+  const response = await post({ customer_id: customerId, amountCents: 100, transaction_type: "extension", requestKey: "detail-entry-002" });
+  const entry = await response.json();
+  const other = t.withIdentity({ subject: "detail-other" });
+  const foreign = await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
+  const read = (query = "", id = entry.id) => detail(new NextRequest(`http://localhost/api/credit/transactions/${id}${query}`), { params: Promise.resolve({ id }) });
+  expect((await read(`?business_id=${foreign.businessId}`)).status).toBe(403);
+  expect((await read("?expectedUserId=other")).status).toBe(403);
+  expect((await read("", "legacy-unmapped-transaction")).status).toBe(404);
+  mocks.query.mockImplementation((name, args) => other.query(name, args));
+  mocks.auth.mockResolvedValue({ userId: "detail-other", businessId: foreign.businessId });
+  expect((await read()).status).toBe(404);
+  mocks.auth.mockResolvedValue({ userId: "credit-api-owner", businessId });
+  const owner = t.withIdentity({ subject: "credit-api-owner" }); mocks.query.mockImplementation((name, args) => owner.query(name, args));
+  await t.run(async ctx => { const id = ctx.db.normalizeId("creditEntries", entry.id); if (!id) throw new Error("fixture"); await ctx.db.patch(id, { deltaCents: 0.5 }); });
+  expect((await read()).status).toBe(409);
+  expect((await GET(new NextRequest("http://localhost/api/credit/transactions?limit=50"))).status).toBe(409);
+  for (const patch of [{ deltaCents: 0 }, { deltaCents: 100, createdAt: Number.MAX_SAFE_INTEGER }]) {
+    await t.run(async ctx => { const id = ctx.db.normalizeId("creditEntries", entry.id); if (!id) throw new Error("fixture"); await ctx.db.patch(id, patch); });
+    expect((await read()).status).toBe(409);
+  }
+});
+
+it("requires financial permission before returning transaction detail", async () => {
+  const response = await post({ customer_id: customerId, amountCents: 100, transaction_type: "extension", requestKey: "detail-entry-003" });
+  const entry = await response.json();
+  await t.run(ctx => ctx.db.insert("users", { businessId: businessId as Id<"businesses">, clerkUserId: "no-financial-grant", email: "synthetic@example.invalid", role: "MEMBER", permissions: {}, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  const staff = t.withIdentity({ subject: "no-financial-grant" });
+  mocks.auth.mockResolvedValue({ userId: "no-financial-grant", businessId }); mocks.query.mockImplementation((name, args) => staff.query(name, args));
+  const result = await detail(new NextRequest(`http://localhost/api/credit/transactions/${entry.id}`), { params: Promise.resolve({ id: entry.id }) });
+  expect(result.status).toBe(403);
 });

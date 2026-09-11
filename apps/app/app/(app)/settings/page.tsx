@@ -456,6 +456,11 @@ export default function SettingsPage() {
                 </Button>
               </Link>
             )}
+            {hasPermission("settings.configure_pos") && (
+              <Link href="/settings/credit">
+                <Button variant="outline">Credit recommendations</Button>
+              </Link>
+            )}
             {hasPermission("inventory.manage") && (
               <Link href="/settings/inventory/aliases">
                 <Button variant="outline" className="gap-2">

@@ -1,10 +1,10 @@
-import { FLAG_DEFAULTS } from "@/lib/posthog/flags-manifest";
+import { FLAG_DEFAULTS } from "../posthog/flags-manifest";
 import type {
   FlagEvaluationContext,
   FlagValue,
   NormalizedFlagEvaluationContext,
   ServerFlagProvider,
-} from "@/lib/flags/types";
+} from "./types";
 
 type FlagCacheEntry = {
   value: FlagValue;

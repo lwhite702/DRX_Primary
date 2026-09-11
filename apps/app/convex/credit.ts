@@ -1,6 +1,7 @@
+import { nextCreditPolicyRevision } from "./helpers/creditPolicyRevision";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireUserAndBusiness } from "./helpers/auth";
+import { requireUserAndBusiness, requireSelectedBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 import { appendCreditEntry, positiveCreditCents, creditRequestKey } from "./helpers/creditLedger";
 
@@ -14,7 +15,7 @@ export const configureCustomerCredit = mutation({
     const customer = await ctx.db.get(args.customerId);
     if (!customer || customer.businessId !== auth.businessId || !customer.isActive) throw new Error("NOT_FOUND: Customer record not found");
     const now = Date.now();
-    await ctx.db.patch(customer._id, { creditEnabled: args.creditEnabled, creditLimitCents: args.creditLimitCents, updatedAt: now });
+    await ctx.db.patch(customer._id, { creditEnabled: args.creditEnabled, creditLimitCents: args.creditLimitCents, creditPolicyRevision: nextCreditPolicyRevision(customer.creditPolicyRevision), updatedAt: now });
     await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "CUSTOMER_CREDIT_POLICY_CHANGED", entityType: "customer", entityId: customer._id, metadata: JSON.stringify({ previousEnabled: customer.creditEnabled !== false, previousLimitCents: customer.creditLimitCents, enabled: args.creditEnabled, limitCents: args.creditLimitCents }), timestamp: now });
     return { customerId: customer._id, creditEnabled: args.creditEnabled, creditLimitCents: args.creditLimitCents, totalCreditUsedCents: customer.totalCreditUsedCents };
   },
@@ -22,13 +23,14 @@ export const configureCustomerCredit = mutation({
 
 /** Atomically resolves an uncertain attempt or prevents it from committing later. */
 export const resolvePendingRequest = mutation({
-  args: { customerId: v.id("customers"), requestKey: v.string() },
+  args: { customerId: v.id("customers"), requestKey: v.string(), businessId: v.optional(v.string()), expectedUserId: v.optional(v.string()) },
   returns: v.union(
     v.object({ status: v.literal("recorded"), balanceAfterCents: v.number() }),
     v.object({ status: v.literal("cancelled") }),
   ),
   handler: async (ctx, args) => {
-    const auth = await requireUserAndBusiness(ctx);
+    const auth = args.businessId === undefined ? await requireUserAndBusiness(ctx) : await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
+    if (args.expectedUserId !== undefined && args.expectedUserId !== auth.userId) throw new Error("FORBIDDEN: Operator changed");
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     creditRequestKey(args.requestKey);
     const customer = await ctx.db.get(args.customerId);
@@ -36,10 +38,12 @@ export const resolvePendingRequest = mutation({
     if (!customer || customer.businessId !== auth.businessId) throw new Error("NOT_FOUND: Customer record not found");
     const prior = await ctx.db.query("creditEntries").withIndex("by_businessId_and_requestKey", q => q.eq("businessId", auth.businessId).eq("requestKey", args.requestKey)).unique();
     if (prior) {
+      if (args.expectedUserId !== undefined && prior.createdBy !== auth.userId) throw new Error("FORBIDDEN: Request belongs to another operator");
       if (prior.customerId !== customer._id) throw new Error("IDEMPOTENCY_CONFLICT: Request belongs to another customer");
       return { status: "recorded" as const, balanceAfterCents: prior.balanceAfterCents };
     }
     const cancellation = await ctx.db.query("creditRequestCancellations").withIndex("by_businessId_and_requestKey", q => q.eq("businessId", auth.businessId).eq("requestKey", args.requestKey)).unique();
+    if (cancellation && args.expectedUserId !== undefined && cancellation.createdBy !== auth.userId) throw new Error("FORBIDDEN: Request belongs to another operator");
     if (cancellation && cancellation.customerId !== customer._id) throw new Error("IDEMPOTENCY_CONFLICT: Request belongs to another customer");
     if (!cancellation) {
       const now = Date.now();

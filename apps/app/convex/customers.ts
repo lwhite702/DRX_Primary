@@ -36,6 +36,7 @@ export const createCustomer = mutation({
       totalCreditUsedCents: 0,
       creditLimitCents: args.creditLimitCents || 0,
       creditEnabled: args.creditEnabled,
+      creditPolicyRevision: 0,
       purchaseCount: 0,
       loyaltyTier: "standard",
       discountRateBps: 0,

@@ -244,22 +244,7 @@ export default function CustomerDetailPage() {
               <div className="p-4 overflow-y-auto">
                 <AICreditPanel
                   customer_id={customer.id}
-                  current_limit={Number(
-                    customer.creditLimit || customer.credit_limit || 0,
-                  )}
-                  ai_recommended_limit={Number(
-                    customer.creditLimitAiRecommended ||
-                      customer.credit_limit_ai_recommended ||
-                      0,
-                  )}
-                  risk_score={Number(
-                    customer.creditRiskScore || customer.credit_risk_score || 0,
-                  )}
-                  last_reviewed_at={
-                    customer.creditLimitLastReviewedAt ||
-                    customer.credit_limit_last_reviewed_at
-                  }
-                  can_apply={can_apply_changes}
+            can_apply={can_apply_changes}
                 />
               </div>
             </SheetContent>
@@ -493,21 +478,6 @@ export default function CustomerDetailPage() {
         <div className="hidden lg:block">
           <AICreditPanel
             customer_id={customer.id}
-            current_limit={Number(
-              customer.creditLimit || customer.credit_limit || 0,
-            )}
-            ai_recommended_limit={Number(
-              customer.creditLimitAiRecommended ||
-                customer.credit_limit_ai_recommended ||
-                0,
-            )}
-            risk_score={Number(
-              customer.creditRiskScore || customer.credit_risk_score || 0,
-            )}
-            last_reviewed_at={
-              customer.creditLimitLastReviewedAt ||
-              customer.credit_limit_last_reviewed_at
-            }
             can_apply={can_apply_changes}
           />
         </div>

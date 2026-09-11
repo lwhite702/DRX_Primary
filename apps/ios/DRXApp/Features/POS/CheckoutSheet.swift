@@ -286,7 +286,7 @@ struct CheckoutSheet: View {
                                     .font(.caption)
                                     .foregroundStyle(DRXPalette.muted)
                             }
-                            Text("\((store.loyaltyTierName ?? customer.loyaltyTier).capitalized) loyalty\(store.loyaltyRateBps > 0 ? " · \(String(format: "%.2f", Double(store.loyaltyRateBps) / 100))% \(store.loyaltyPolicy == "stack" ? "stacks after" : "compared with") bulk pricing" : "")")
+                            Text("\((store.loyaltyTierName ?? customer.loyaltyTier).capitalized) loyalty\(store.loyaltyRateBps > 0 ? " · \(String(format: "%.1f", Double(store.loyaltyRateBps) / 100))% \(store.loyaltyPolicy == "stack" ? "stacks after" : "compared with") bulk pricing" : "")")
                                 .font(.caption2)
                                 .foregroundStyle(DRXPalette.accent)
                         }
@@ -718,5 +718,5 @@ private func formatCents(_ cents: Int) -> String {
 }
 
 private func formatGrams(_ grams: Double) -> String {
-    grams == grams.rounded() ? String(format: "%.0fg", grams) : String(format: "%.1fg", grams)
+    String(format: "%.2fg", grams)
 }

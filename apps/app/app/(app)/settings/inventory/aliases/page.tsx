@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { changeUnitAlias, loadUnitAliases } from "@/lib/inventory/unit-aliases-client";
+import { formatQuantity } from "@/lib/number-format";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, RotateCcw } from "lucide-react";
 import {
@@ -54,133 +55,60 @@ export default function AliasesSettingsPage() {
     standard_unit: "g",
     quantity: "",
   });
-  const supabase = createAppClient();
-
-  const fetchAliases = async () => {
-    if (!business?.id || !supabase) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("product_unit_aliases")
-        .select("*")
-        .eq("business_id", business.id)
-        .order("alias_name", { ascending: true });
-
-      if (error) throw error;
-      setAliases(data || []);
-    } catch (error: any) {
-      console.error("Error fetching aliases:", error);
-      toast.error("Failed to load aliases");
-    } finally {
-      setLoading(false);
-    }
+  const businessId = business?.id as string | undefined;
+  const currentBusiness = useRef(businessId); currentBusiness.current = businessId;
+  const generation = useRef(0);
+  const [loadedBusiness, setLoadedBusiness] = useState<string>();
+  const [loadError, setLoadError] = useState(false);
+  const fetchAliases = async (id: string, signal?: AbortSignal) => {
+    const epoch = generation.current;
+    const rows = await loadUnitAliases(id, signal);
+    if (currentBusiness.current === id && generation.current === epoch && !signal?.aborted) { setAliases(rows); setLoadedBusiness(id); setLoadError(false); }
   };
-
   useEffect(() => {
-    fetchAliases();
-  }, [business?.id]);
-
-  const handleToggle = async (id: string, isEnabled: boolean) => {
-    if (!supabase) return;
+    generation.current++;
+    const controller = new AbortController(); setAliases([]); setLoadedBusiness(undefined); setLoadError(false); setSaving(false);
+    if (!businessId) { setLoading(false); return () => controller.abort(); }
+    setLoading(true);
+    fetchAliases(businessId, controller.signal).catch(() => { if (!controller.signal.aborted) setLoadError(true); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [businessId]);
+  const runChange = async (operation: (id: string) => Promise<string>) => {
+    if (!businessId || saving) return;
+    const id = businessId, epoch = generation.current; setSaving(true);
     try {
-      const { error } = await supabase
-        .from("product_unit_aliases")
-        .update({ is_enabled: isEnabled })
-        .eq("id", id);
-
-      if (error) throw error;
-      setAliases(
-        aliases.map((a) => (a.id === id ? { ...a, is_enabled: isEnabled } : a)),
-      );
-      toast.success(isEnabled ? "Alias enabled" : "Alias disabled");
-    } catch (error: any) {
-      console.error("Error toggling alias:", error);
-      toast.error("Failed to update alias");
-    }
+      const message = await operation(id);
+      if (currentBusiness.current !== id || generation.current !== epoch) return;
+      await fetchAliases(id);
+      if (currentBusiness.current === id && generation.current === epoch) toast.success(message);
+    } catch (error) { if (currentBusiness.current === id && generation.current === epoch) toast.error(error instanceof Error ? error.message : "Failed to change alias"); }
+    finally { if (currentBusiness.current === id && generation.current === epoch) setSaving(false); }
   };
-
-  const handleDelete = async (id: string) => {
-    if (!supabase) return;
-    try {
-      const { error } = await supabase
-        .from("product_unit_aliases")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      setAliases(aliases.filter((a) => a.id !== id));
-      toast.success("Alias deleted");
-    } catch (error: any) {
-      console.error("Error deleting alias:", error);
-      toast.error("Failed to delete alias");
-    }
+  const handleToggle = (id: string, enabled: boolean) => runChange(async business => { await changeUnitAlias(business, { action: "toggle", id, enabled }); return enabled ? "Alias enabled" : "Alias disabled"; });
+  const handleDelete = (id: string) => runChange(async business => { await changeUnitAlias(business, { action: "remove", id }); return "Alias deleted"; });
+  const handleAdd = (event: React.FormEvent) => {
+    event.preventDefault();
+    const quantity = Number(newAlias.quantity);
+    if (!newAlias.alias_name.trim() || !newAlias.quantity.trim() || !Number.isFinite(quantity) || quantity <= 0) { toast.error("Enter an alias and a positive quantity"); return; }
+    return runChange(async business => {
+      await changeUnitAlias(business, { action: "create", name: newAlias.alias_name, standardUnit: newAlias.standard_unit, quantity });
+      if (currentBusiness.current === business) setNewAlias({ alias_name: "", standard_unit: "g", quantity: "" });
+      return "Alias added successfully";
+    });
   };
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!business?.id || !supabase) return;
-    if (!newAlias.alias_name || !newAlias.quantity) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const { data, error } = await supabase
-        .from("product_unit_aliases")
-        .insert({
-          business_id: business.id,
-          alias_name: newAlias.alias_name,
-          standard_unit: newAlias.standard_unit,
-          quantity: parseFloat(newAlias.quantity),
-          is_system_default: false,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      setAliases(
-        [...aliases, data].sort((a, b) =>
-          a.alias_name.localeCompare(b.alias_name),
-        ),
-      );
-      setNewAlias({ alias_name: "", standard_unit: "g", quantity: "" });
-      toast.success("Alias added successfully");
-    } catch (error: any) {
-      console.error("Error adding alias:", error);
-      toast.error(
-        error.code === "23505"
-          ? "Alias name already exists"
-          : "Failed to add alias",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRestoreDefaults = async () => {
-    if (!business?.id || !supabase) return;
-    if (
-      !confirm(
-        "Are you sure you want to restore all system default aliases? This will not delete your custom ones.",
-      )
-    )
-      return;
-
-    setSaving(true);
-    try {
-      const { error } = await supabase.rpc("seed_business_unit_aliases", {
-        target_business_id: business.id,
-      });
-      if (error) throw error;
-      await fetchAliases();
-      toast.success("Default aliases restored");
-    } catch (error: any) {
-      console.error("Error restoring defaults:", error);
-      toast.error("Failed to restore defaults");
-    } finally {
-      setSaving(false);
-    }
+  const handleRestoreDefaults = () => {
+    if (!confirm("Restore saved default aliases? Custom aliases will be preserved.")) return;
+    return runChange(async business => {
+      let cursor: string | null = null, found = 0; const seen = new Set<string>();
+      for (;;) {
+        const result = await changeUnitAlias(business, { action: "restore", cursor }); found += result.found;
+        if (result.isDone) break;
+        if (seen.has(result.continueCursor)) throw new Error("Alias restoration could not finish");
+        seen.add(result.continueCursor); cursor = result.continueCursor;
+      }
+      if (!found) throw new Error("No saved defaults are available. Historical defaults need to be restored first.");
+      return "Saved default aliases restored";
+    });
   };
 
   if (businessLoading || loading) {
@@ -190,6 +118,9 @@ export default function AliasesSettingsPage() {
       </div>
     );
   }
+
+  if (!businessId) return <p className="p-8">Select a business to manage aliases.</p>;
+  if (loadError) return <p role="alert" className="p-8">Aliases could not be loaded. Reload to try again.</p>;
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -288,7 +219,7 @@ export default function AliasesSettingsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {aliases.map((alias) => (
+              {(loadedBusiness === businessId ? aliases : []).map((alias) => (
                 <TableRow key={alias.id}>
                   <TableCell className="font-semibold">
                     {alias.alias_name}
@@ -296,9 +227,10 @@ export default function AliasesSettingsPage() {
                   <TableCell>
                     {alias.standard_unit === "g" ? "Grams (g)" : "Ounces (oz)"}
                   </TableCell>
-                  <TableCell>{alias.quantity}</TableCell>
+                  <TableCell>{formatQuantity(alias.quantity)}</TableCell>
                   <TableCell>
                     <Switch
+                      disabled={saving}
                       checked={alias.is_enabled}
                       onCheckedChange={(val) => handleToggle(alias.id, val)}
                     />
@@ -308,6 +240,8 @@ export default function AliasesSettingsPage() {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      disabled={saving}
+                      aria-label={`Delete ${alias.alias_name}`}
                       onClick={() => handleDelete(alias.id)}
                     >
                       <Trash2 className="w-4 h-4" />

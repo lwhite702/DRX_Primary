@@ -713,9 +713,7 @@ private func formatCents(_ cents: Int) -> String {
 private func formatGrams(_ grams: Double) -> String {
     if grams >= 1000 {
         return String(format: "%.2f kg", grams / 1000)
-    } else if grams == grams.rounded() {
-        return String(format: "%.0f g", grams)
     } else {
-        return String(format: "%.1f g", grams)
+        return String(format: "%.2f g", grams)
     }
 }
