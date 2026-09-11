@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => {
     inventory: { create: vi.fn() },
     businessSettings: { findUnique: vi.fn(), upsert: vi.fn() },
     inventoryLog: { create: vi.fn() },
+    user: { findFirst: vi.fn() },
   };
   return {
     tx,
@@ -153,5 +154,30 @@ describe("inventory creation with selling rules", () => {
       201,
     );
     expect(mocks.transaction).toHaveBeenCalledTimes(1);
+  });
+  it("resolves Clerk userId to user UUID for inventoryLog and accepts null unit_cost", async () => {
+    const internalUserUuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    mocks.auth.mockResolvedValueOnce({
+      userId: "user_2w3xyz987clerk",
+      businessId: "tenant-a",
+    });
+    mocks.tx.user.findFirst.mockResolvedValueOnce({ id: internalUserUuid });
+
+    const response = await POST(request({ unit_cost: null }));
+    expect(response.status).toBe(201);
+    expect(mocks.tx.inventory.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          unitCost: null,
+        }),
+      }),
+    );
+    expect(mocks.tx.inventoryLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          createdBy: internalUserUuid,
+        }),
+      }),
+    );
   });
 });

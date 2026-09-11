@@ -275,8 +275,8 @@ export function InventoryForm({
                 htmlFor="quantity_on_hand"
                 className="flex items-center gap-1"
               >
-                Initial Quantity On Hand *
-                <HelpTooltip content="The current physical amount in stock. Measured in grams (g) for bulk and units (ea) for items." />
+                Initial Quantity On Hand ({commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}) *
+                <HelpTooltip content="The current physical amount in stock. Measured in your chosen selling unit (e.g. grams or units)." />
               </Label>
               <Input
                 id="quantity_on_hand"

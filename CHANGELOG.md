@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **First product creation (WRE-115):** Resolved a 500 Internal Server Error when creating products on web by safely mapping Clerk user IDs to internal UUIDs for PostgreSQL audit logs, accepting null unit costs, enabling tap-to-toggle tooltip support in modals, and adding quick preset buttons for fractional quantities and pricing.
 - **Business approvals (WRE-87):** Keep all pending inventory approvals visible independently of the recent completed-history limit, with both reads scoped to the authorized business.
 - **Business page loading (WRE-87):** Remove nested brand links that caused hydration errors and keep route content available while the optional onboarding interface loads.
 - **Admin access (WRE-83):** Replaced the nonexistent business-role model lookup with the supported role store and avoided unnecessary business lookups for existing platform administrators.

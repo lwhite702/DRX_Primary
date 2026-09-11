@@ -46,12 +46,13 @@ function request(path: string, method = "GET", body?: Record<string, unknown>) {
 }
 
 const testInventoryId = "11111111-1111-4111-8111-111111111111";
+const testUserId = "22222222-2222-4222-8222-222222222222";
 
 describe("inventory [id] route with Next.js 16 async params", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user-1",
+      userId: testUserId,
       businessId: "business-1",
     });
     mocks.hasBusinessPermission.mockResolvedValue(true);
@@ -110,7 +111,7 @@ describe("inventory [id] route with Next.js 16 async params", () => {
         transactionType: "adjustment",
         quantityChange: 10,
         reason: "Inventory update via /api/inventory/[id]",
-        createdBy: "user-1",
+        createdBy: testUserId,
       },
     });
   });
