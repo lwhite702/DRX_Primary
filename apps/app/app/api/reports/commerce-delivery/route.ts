@@ -42,6 +42,7 @@ const metricRows = [
   ["gross_collected", "Gross collected", "cents", "grossCollectedCents"],
   ["net_cash_activity", "Net cash activity", "cents", "netCashActivityCents"],
   ["merchandise_revenue", "Merchandise revenue", "cents", "merchandiseRevenueCents"],
+  ["fee_revenue", "Other fee revenue", "cents", "feeRevenueCents"],
   ["delivery_revenue", "Delivery revenue", "cents", "deliveryRevenueCents"],
   ["vendor_delivery_expense", "Vendor delivery expense", "cents", "vendorDeliveryExpenseCents"],
   ["delivery_tax", "Delivery tax", "cents", "deliveryTaxCents"],

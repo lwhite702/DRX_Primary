@@ -1,13 +1,59 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { dashboardPreferences } from "./validators/dashboard";
+import { privacyProtocolValidator } from "./validators/privacy";
 
 export default defineSchema({
+  inventoryHealthReports: defineTable({
+    businessId: v.id("businesses"), actorId: v.string(), requestId: v.string(),
+    resultJson: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_actorId_and_requestId", ["businessId", "actorId", "requestId"]),
+  inventoryAnalysisRuns: defineTable({ status: v.optional(v.union(v.literal("queued"), v.literal("complete"), v.literal("failed"))), nextIndex: v.optional(v.number()), pricingGenerated: v.optional(v.number()), forecastsGenerated: v.optional(v.number()), failureCode: v.optional(v.string()), scheduledId: v.optional(v.id("_scheduled_functions")), optionsJson: v.optional(v.string()), businessId: v.id("businesses"), actorId: v.string(), requestId: v.string(), productIds: v.array(v.id("products")), createdAt: v.number() })
+    .index("by_businessId_and_actorId_and_requestId", ["businessId", "actorId", "requestId"]),
+  inventoryAnalyses: defineTable({ hasPricing: v.optional(v.boolean()), hasForecast: v.optional(v.boolean()), optionsJson: v.optional(v.string()), appliedAt: v.optional(v.number()), appliedPriceCents: v.optional(v.number()), businessId: v.id("businesses"), productId: v.id("products"), actorId: v.string(), requestId: v.string(), resultJson: v.string(), createdAt: v.number() })
+    .index("by_businessId_and_actorId_and_requestId", ["businessId", "actorId", "requestId"])
+    .index("by_businessId_and_productId_and_createdAt", ["businessId", "productId", "createdAt"])
+    .index("by_businessId_and_productId_and_hasPricing_and_createdAt", ["businessId", "productId", "hasPricing", "createdAt"])
+    .index("by_businessId_and_productId_and_hasForecast_and_createdAt", ["businessId", "productId", "hasForecast", "createdAt"]),
+  inventoryIntelligenceAlerts: defineTable({ businessId: v.id("businesses"), productId: v.id("products"), analysisId: v.id("inventoryAnalyses"), alertType: v.string(), severity: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("critical")), message: v.string(), isRead: v.boolean(), createdAt: v.number() })
+    .index("by_businessId_and_isRead_and_createdAt", ["businessId", "isRead", "createdAt"])
+    .index("by_businessId_and_isRead_and_severity_and_createdAt", ["businessId", "isRead", "severity", "createdAt"])
+    .index("by_businessId_and_productId_and_createdAt", ["businessId", "productId", "createdAt"]),
+  notifications: defineTable({ businessId: v.optional(v.id("businesses")), userId: v.string(), title: v.string(), message: v.string(), type: v.string(), link: v.optional(v.string()), metadataJson: v.optional(v.string()), isRead: v.boolean(), isDeleted: v.boolean(), createdAt: v.number(), legacyId: v.optional(v.string()) })
+    .index("by_userId_and_state", ["userId", "isDeleted", "isRead", "createdAt"])
+    .index("by_legacyId", ["legacyId"]),
+  notificationCreationReceipts: defineTable({ businessId: v.optional(v.id("businesses")), actorId: v.string(), requestId: v.string(), fingerprint: v.string(), notificationId: v.id("notifications"), recipientId: v.string(), createdAt: v.number() }).index("by_actorId_and_requestId", ["actorId", "requestId"]),
+  notificationDeletions: defineTable({ notificationId: v.id("notifications"), recipientId: v.string(), legacyId: v.optional(v.string()), deletedAt: v.number() })
+    .index("by_notificationId", ["notificationId"]).index("by_legacyId", ["legacyId"]),
+  notificationEvents: defineTable({ businessId: v.optional(v.id("businesses")), notificationId: v.id("notifications"), actorId: v.string(), recipientId: v.string(), eventType: v.union(v.literal("created"), v.literal("read"), v.literal("deleted")), createdAt: v.number() })
+    .index("by_actorId_and_createdAt", ["actorId", "createdAt"])
+    .index("by_businessId_and_createdAt", ["businessId", "createdAt"]),
+  platformAdminGrants: defineTable({ userId: v.string(), role: v.literal("super_admin"), isActive: v.boolean(), createdAt: v.number(), updatedAt: v.number() }).index("by_userId", ["userId"]),
+  notificationPreferences: defineTable({ userId: v.string(), preferencesJson: v.string(), revision: v.number(), createdAt: v.number(), updatedAt: v.number() }).index("by_userId", ["userId"]),
+  // Identity-provider facts are separate from operator-completed business setup.
+  clerkOrganizations: defineTable({
+    clerkOrgId: v.string(), name: v.string(), createdBy: v.optional(v.string()),
+    sourceEventId: v.string(), receivedAt: v.number(),
+  }).index("by_clerkOrgId", ["clerkOrgId"]),
+  authSessionEvents: defineTable({
+    sourceEventId: v.string(), userId: v.string(), sessionId: v.string(), eventType: v.string(),
+    occurredAt: v.optional(v.number()), receivedAt: v.number(),
+    ipAddress: v.optional(v.string()), userAgent: v.optional(v.string()), deviceType: v.optional(v.string()),
+    city: v.optional(v.string()), country: v.optional(v.string()),
+  }).index("by_sourceEventId", ["sourceEventId"]).index("by_userId_and_receivedAt", ["userId", "receivedAt"]),
   // Businesses / Tenants
   businesses: defineTable({
+    isActive: v.optional(v.boolean()),
     clerkOrgId: v.optional(v.string()),
     legacyPrismaBusinessId: v.optional(v.string()),
     name: v.string(),
     businessType: v.optional(v.string()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    email: v.optional(v.string()),
     ownerId: v.string(), // clerkUserId or user id
     currency: v.string(), // e.g. "USD"
     timezone: v.string(),
@@ -46,18 +92,44 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_businessId", ["businessId"]),
 
+  // Explicitly configured recommendation controls; missing historical settings
+  // must not silently become the former application's fallback defaults.
+  creditRecommendationSettings: defineTable({
+    businessId: v.id("businesses"), enabled: v.boolean(),
+    maxCustomerCents: v.number(), inventoryCapBps: v.number(),
+    newCustomerCents: v.number(), autoRefreshDays: v.number(),
+    revision: v.number(), createdAt: v.number(), updatedAt: v.number(), updatedBy: v.string(),
+  }).index("by_businessId", ["businessId"]),
+
+  // Explicit policies prevent unknown historical state from becoming a permissive default.
+  businessPrivacyPolicies: defineTable({
+    businessId: v.id("businesses"), protocol: privacyProtocolValidator,
+    revision: v.number(), createdAt: v.number(), updatedAt: v.number(), updatedBy: v.string(),
+  }).index("by_businessId", ["businessId"]),
+  operatorPrivacyPreferences: defineTable({
+    businessId: v.id("businesses"), clerkUserId: v.string(), manualScreenPrivacyEnabled: v.boolean(),
+    createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_businessId_and_clerkUserId", ["businessId", "clerkUserId"]),
+
   // Users & Memberships
   users: defineTable({
     clerkUserId: v.string(),
+    isDefaultMembership: v.optional(v.boolean()),
     email: v.string(),
     name: v.optional(v.string()),
-    role: v.string(), // "OWNER" | "ADMIN" | "MEMBER"
+    role: v.string(), // Native roles or migrated tenant role names
+    permissions: v.optional(v.record(v.string(), v.boolean())),
+    dashboardPreferences: v.optional(dashboardPreferences),
+    phoneNumber: v.optional(v.string()),
     businessId: v.id("businesses"),
     status: v.string(), // "ACTIVE" | "INVITED" | "SUSPENDED"
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_clerkUserId", ["clerkUserId"])
+    .index("by_clerkUserId_and_businessId", ["clerkUserId", "businessId"])
+    .index("by_clerkUserId_and_isDefaultMembership", ["clerkUserId", "isDefaultMembership"])
+    .index("by_email_and_businessId", ["email", "businessId"])
     .index("by_businessId", ["businessId"])
     .index("by_email", ["email"]),
 
@@ -68,14 +140,43 @@ export default defineSchema({
     token: v.string(),
     role: v.string(), // "ADMIN" | "MEMBER"
     status: v.string(), // "PENDING" | "ACCEPTED" | "EXPIRED"
+    deliveryStatus: v.optional(v.union(v.literal("PREPARED"), v.literal("SENT"), v.literal("UNKNOWN"))),
+    providerInvitationId: v.optional(v.string()),
+    acceptedBy: v.optional(v.string()),
+    acceptedAt: v.optional(v.number()),
     invitedBy: v.string(),
     expiresAt: v.number(),
     createdAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
     .index("by_token", ["token"])
+    .index("by_businessId_and_email_and_status_and_expiresAt", ["businessId", "email", "status", "expiresAt"])
     .index("by_email", ["email"]),
 
+  inventoryChecks: defineTable({
+    businessId: v.id("businesses"), userId: v.string(), productId: v.id("products"), requestId: v.string(),
+    expectedWeightGrams: v.number(), measuredWeightGrams: v.number(), deltaGrams: v.number(),
+    deltaPercentage: v.union(v.number(), v.null()), discrepancyFlagged: v.boolean(), tolerancePercentage: v.number(),
+    shrinkageId: v.optional(v.id("shrinkageEvents")), createdAt: v.number(),
+  }).index("by_businessId_and_requestId", ["businessId", "requestId"])
+    .index("by_businessId_and_createdAt", ["businessId", "createdAt"]),
+  shrinkageEvents: defineTable({
+    businessId: v.id("businesses"), userId: v.string(), productId: v.id("products"), requestId: v.string(),
+    quantityGrams: v.number(), shrinkageType: v.union(v.literal("personal_use"), v.literal("damaged"), v.literal("theft"), v.literal("expired"), v.literal("lost"), v.literal("store_use"), v.literal("sample"), v.literal("other"), v.literal("damage"), v.literal("spillage"), v.literal("inventory_variance")),
+    note: v.string(), newQuantityGrams: v.number(), costCents: v.number(), createdAt: v.number(),
+    allocations: v.array(v.object({ batchId: v.id("inventoryBatches"), allocatedGrams: v.number(), unitCostPerGramCents: v.number(), extendedCostCents: v.number() })),
+  }).index("by_businessId_and_requestId", ["businessId", "requestId"]).index("by_businessId_and_createdAt", ["businessId", "createdAt"]),
+  drawerEvents: defineTable({
+    businessId: v.id("businesses"), userId: v.string(), requestId: v.string(),
+    eventType: v.union(v.literal("no_sale"), v.literal("cash_drop"), v.literal("payout"), v.literal("audit"), v.literal("refund")),
+    note: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_requestId", ["businessId", "requestId"]).index("by_businessId_and_createdAt", ["businessId", "createdAt"]),
+  productUnitAliases: defineTable({
+    businessId: v.id("businesses"), name: v.string(), normalizedName: v.string(),
+    standardUnit: v.union(v.literal("g"), v.literal("oz")), quantity: v.number(),
+    enabled: v.boolean(), systemDefault: v.boolean(), removed: v.boolean(),
+    createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_businessId", ["businessId"]).index("by_businessId_and_normalizedName", ["businessId", "normalizedName"]),
   // Product Categories
   categories: defineTable({
     businessId: v.id("businesses"),
@@ -149,11 +250,20 @@ export default defineSchema({
     deliveryCostCents: v.number(),
     supplier: v.optional(v.string()),
     status: v.string(), // "approved" | "pending" | "rejected"
+    requiresApproval: v.optional(v.boolean()),
+    approvedBy: v.optional(v.string()),
+    approvedAt: v.optional(v.number()),
+    rejectionReason: v.optional(v.string()),
+    batchId: v.optional(v.id("inventoryBatches")),
     createdBy: v.string(),
     createdAt: v.number(),
   })
     .index("by_businessId", ["businessId"])
-    .index("by_productId", ["productId"]),
+    .index("by_productId", ["productId"])
+    .index("by_businessId_and_status", ["businessId", "status"])
+    .index("by_businessId_and_productId_and_status_and_createdAt", [
+      "businessId", "productId", "status", "createdAt",
+    ]),
 
   // Inventory Batches (FIFO tracking)
   inventoryBatches: defineTable({
@@ -185,6 +295,8 @@ export default defineSchema({
     loyaltyEligibleSpendCents: v.optional(v.number()),
     totalCreditUsedCents: v.number(),
     creditLimitCents: v.number(),
+    creditEnabled: v.optional(v.boolean()),
+    creditPolicyRevision: v.optional(v.number()),
     purchaseCount: v.number(),
     loyaltyTier: v.string(),
     discountRateBps: v.number(),
@@ -197,7 +309,67 @@ export default defineSchema({
       "businessId",
       "legacyPrismaId",
     ])
+    .index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_isActive_and_creditEnabled", ["businessId", "isActive", "creditEnabled"])
     .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
+
+  // Append-only balance changes. Opening entries preserve the pre-ledger
+  // aggregate explicitly; historical source reconciliation remains a migration gate.
+  creditAccounts: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    balanceCents: v.number(), createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_customerId", ["customerId"]),
+  creditRequestCancellations: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    requestKey: v.string(), createdBy: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_requestKey", ["businessId", "requestKey"]),
+  creditEntries: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    kind: v.union(v.literal("opening"), v.literal("issue"), v.literal("payment"), v.literal("sale")),
+    deltaCents: v.number(), balanceAfterCents: v.number(),
+    saleId: v.optional(v.id("sales")), requestKey: v.optional(v.string()),
+    description: v.optional(v.string()), dueAt: v.optional(v.number()),
+    paymentMethod: v.optional(v.union(v.literal("cash"), v.literal("check"), v.literal("transfer"), v.literal("other"))),
+    openingSource: v.optional(v.literal("existing_customer_balance_unreconciled")),
+    createdBy: v.string(), createdAt: v.number(),
+  }).index("by_businessId_and_requestKey", ["businessId", "requestKey"])
+    .index("by_businessId", ["businessId"])
+    .index("by_customerId", ["customerId"])
+    .index("by_saleId", ["saleId"]),
+
+  // Immutable recommendations retain the exact reviewed facts and configuration.
+  creditRecommendations: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    requestedBy: v.string(), requestKey: v.string(), snapshotAt: v.number(),
+    asOfDate: v.number(), inputsJson: v.string(), settingsRevision: v.number(),
+    recommendedLimitCents: v.number(), rangeMinCents: v.number(), rangeMaxCents: v.number(),
+    riskScore: v.number(), justification: v.string(),
+    provenance: v.union(v.literal("provider"), v.literal("rules")), engineVersion: v.string(),
+    createdAt: v.number(),
+  }).index("by_businessId_and_requestedBy_and_requestKey", ["businessId", "requestedBy", "requestKey"])
+    .index("by_businessId_and_customerId", ["businessId", "customerId"]),
+
+  // Rebuildable credit projections; immutable creditEntries remain authoritative.
+  creditAllocationState: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    cursor: v.union(v.string(), v.null()), status: v.union(v.literal("pending"), v.literal("ready")),
+    outstandingCents: v.number(), pendingPaymentId: v.optional(v.id("creditEntries")),
+    pendingPaymentCents: v.optional(v.number()), lastEntryId: v.optional(v.id("creditEntries")),
+    lastPaymentAt: v.optional(v.number()), updatedAt: v.number(),
+  }).index("by_customerId", ["customerId"]),
+  creditDebts: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"), entryId: v.id("creditEntries"),
+    principalCents: v.number(), remainingCents: v.number(), dueAt: v.optional(v.number()),
+    unreconciled: v.boolean(), status: v.union(v.literal("open"), v.literal("paid")),
+    createdAt: v.number(),
+  }).index("by_customerId_and_status", ["customerId", "status"])
+    .index("by_entryId", ["entryId"]),
+  creditPaymentAllocations: defineTable({
+    businessId: v.id("businesses"), customerId: v.id("customers"),
+    paymentEntryId: v.id("creditEntries"), debtEntryId: v.id("creditEntries"),
+    amountCents: v.number(), policy: v.literal("fifo_creation_v1"), createdAt: v.number(),
+  }).index("by_paymentEntryId", ["paymentEntryId"])
+    .index("by_debtEntryId", ["debtEntryId"]),
 
   // Sales Orders (Financial Ledger)
   sales: defineTable({
@@ -221,6 +393,11 @@ export default defineSchema({
     amountPaidCents: v.number(),
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
+    paymentReference: v.optional(v.string()),
+    fees: v.optional(v.array(v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) }))),
+    feeRevenueCents: v.optional(v.number()),
+    creditAmountCents: v.optional(v.number()),
+    vendorDeliveryExpenseKnown: v.optional(v.boolean()),
     checkoutFingerprint: v.optional(v.string()),
     createdBy: v.string(),
     offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
@@ -253,13 +430,15 @@ export default defineSchema({
     quantityGrams: v.number(),
     unitPriceCents: v.number(),
     lineTotalCents: v.number(),
+    priceOverrideReason: v.optional(v.string()),
+    catalogUnitPriceCents: v.optional(v.number()),
     baseUnitPriceCents: v.optional(v.number()),
     baseLineTotalCents: v.optional(v.number()),
     bulkDiscountCents: v.optional(v.number()),
     loyaltyDiscountCents: v.optional(v.number()),
     unitCostCents: v.number(),
     createdAt: v.number(),
-  }).index("by_saleId", ["saleId"]),
+  }).index("by_saleId", ["saleId"]).index("by_productId", ["productId"]),
 
   // Sales Batch Allocations (FIFO Cost Accounting)
   salesAllocations: defineTable({
@@ -276,12 +455,22 @@ export default defineSchema({
     .index("by_lineItemId", ["lineItemId"])
     .index("by_batchId", ["batchId"]),
 
+  deliveryProfiles: defineTable({
+    businessId: v.id("businesses"), legacyPrismaId: v.optional(v.string()),
+    name: v.string(), provider: v.optional(v.string()), basePriceCents: v.number(),
+    vendorFeeCents: v.optional(v.number()), allowPriceOverride: v.boolean(), isActive: v.boolean(),
+    createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_legacyPrismaId", ["businessId", "legacyPrismaId"]),
+
   // Delivery fulfillment is linked to an immutable completed sale. Customer
   // addresses are always encrypted before this record is persisted.
   deliveries: defineTable({
     businessId: v.id("businesses"),
     saleId: v.id("sales"),
     customerId: v.optional(v.id("customers")),
+    profileId: v.optional(v.id("deliveryProfiles")),
+    vendorExpenseKnown: v.optional(v.boolean()),
     assignedToUserId: v.optional(v.string()),
     addressEncrypted: v.string(),
     addressEncryptionVersion: v.number(),
@@ -469,7 +658,9 @@ export default defineSchema({
     timestamp: v.number(),
   })
     .index("by_businessId", ["businessId"])
-    .index("by_businessId_and_timestamp", ["businessId", "timestamp"]),
+    .index("by_businessId_and_timestamp", ["businessId", "timestamp"])
+    .index("by_businessId_and_entityType_and_timestamp", ["businessId", "entityType", "timestamp"])
+    .index("by_businessId_and_entityType_and_entityId_and_timestamp", ["businessId", "entityType", "entityId", "timestamp"]),
 
   // Idempotency Registry
   idempotencyKeys: defineTable({

@@ -1202,6 +1202,11 @@ describe("Convex commerce and delivery workflow", () => {
     });
     await owner.mutation(api.deliveries.markHandedOff, { deliveryId });
     await owner.mutation(api.deliveries.markDelivered, { deliveryId });
+    // Finish due dispatches before jumping past their recovery leases. WebCrypto
+    // is asynchronous even under fake timers; expiring a live send creates an
+    // artificial retry unrelated to this successful-provider contract.
+    vi.advanceTimersByTime(0);
+    await t.finishInProgressScheduledFunctions();
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     const persisted = await t.run(async (ctx) =>
       Promise.all(outboxRows.map((outbox) => ctx.db.get(outbox._id))),

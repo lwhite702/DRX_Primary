@@ -1,376 +1,120 @@
 "use client";
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/lib/adapters/auth/ui";
+import { useBusiness } from "@/lib/hooks/use-business";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { AlertCircle, Zap, TrendingUp, Lock } from "lucide-react";
-import { toast } from "sonner";
-
-interface CreditRecommendation {
-  recommended_limit: number;
-  risk_score: number;
-  justification: string;
-  range_min: number;
-  range_max: number;
+import { formatAmount, formatCount } from "@/lib/number-format";
+import { loadRecommendation, RecommendationAttempts, RecommendationClientError, sendRecommendationAttempt, resolveRecommendationAttempt, type RecommendationAttempt, type RecommendationScope, type CreditRecommendation, type RecommendationPolicy } from "@/lib/credit/recommendation-client";
+const centsInput = (cents: number) => { const digits = String(cents).padStart(3, "0"); return `${digits.slice(0, -2)}.${digits.slice(-2)}`; };
+const money = (cents: number) => { const value = formatAmount(cents / 100); return `$${value === centsInput(cents) ? value : centsInput(cents)}`; };
+function parseCents(value: string) {
+  if (!/^\d+(\.\d{1,2})?$/.test(value.trim())) return null;
+  const [whole, fraction = ""] = value.trim().split(".");
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
+  return Number.isSafeInteger(cents) && cents >= 0 ? cents : null;
 }
-
-interface AICreditPanelProps {
-  customer_id: string;
-  current_limit: number;
-  ai_recommended_limit?: number;
-  risk_score?: number;
-  last_reviewed_at?: string;
-  can_apply: boolean;
+function message(error: unknown) { return error instanceof RecommendationClientError ? error.message : "Credit recommendations are temporarily unavailable. Pending requests are retained."; }
+export function AICreditPanel({ customer_id, can_apply }: { customer_id: string; can_apply: boolean }) {
+  const { business, loading } = useBusiness(); const { userId } = useAuth();
+  const deployment = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (loading) return <p role="status">Loading credit account…</p>;
+  if (!business || !userId || !deployment) return <p role="status">Select a business and sign in to manage credit recommendations.</p>;
+  const scope = { deployment, businessId: business.id, operatorId: userId, customerId: customer_id, sourceCustomerId: customer_id };
+  return <CreditEditor key={JSON.stringify(scope)} initialScope={scope} canApply={can_apply} />;
 }
-
-export function AICreditPanel({
-  customer_id,
-  current_limit,
-  ai_recommended_limit = 0,
-  risk_score = 0,
-  last_reviewed_at,
-  can_apply,
-}: AICreditPanelProps) {
-  const [recommendation, setRecommendation] =
-    useState<CreditRecommendation | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [applying, setApplying] = useState(false);
-  const [showOverrideDialog, setShowOverrideDialog] = useState(false);
-  const [overrideLimit, setOverrideLimit] = useState(current_limit);
-  const [overrideReason, setOverrideReason] = useState("");
-  const [displayedLimit, setDisplayedLimit] = useState(current_limit);
-
-  useEffect(() => {
-    setDisplayedLimit(current_limit);
-  }, [current_limit]);
-
-  useEffect(() => {
-    // Load stored recommendation if available
-    if (ai_recommended_limit > 0) {
-      setRecommendation({
-        recommended_limit: ai_recommended_limit,
-        risk_score: risk_score || 0,
-        justification: `Last reviewed: ${last_reviewed_at ? new Date(last_reviewed_at).toLocaleDateString() : "Never"}`,
-        range_min: ai_recommended_limit * 0.8,
-        range_max: ai_recommended_limit * 1.2,
-      });
-    }
-  }, [ai_recommended_limit, risk_score, last_reviewed_at]);
-
-  const handleRefresh = async () => {
-    setLoading(true);
+function CreditEditor({ initialScope, canApply }: { initialScope: RecommendationScope; canApply: boolean }) {
+  const attempts = useRef(new RecommendationAttempts()).current;
+  const [policy, setPolicy] = useState<RecommendationPolicy | null>(null);
+  const [recommendation, setRecommendation] = useState<CreditRecommendation | null>(null);
+  const [pending, setPending] = useState<RecommendationAttempt[]>([]);
+  const [loading, setLoading] = useState(true), [working, setWorking] = useState(false);
+  const [error, setError] = useState<string | null>(null), [notice, setNotice] = useState<string | null>(null);
+  const [storageReady, setStorageReady] = useState(false);
+  const [ready, setReady] = useState(false), [editing, setEditing] = useState(false);
+  const [limit, setLimit] = useState(""), [enabled, setEnabled] = useState(false);
+  const scope = useRef(initialScope), alive = useRef(false), busy = useRef(false), controllers = useRef(new Set<AbortController>());
+  async function reload() {
+    if (!alive.current) return;
+    const controller = new AbortController(); controllers.current.add(controller);
     try {
-      const response = await fetch("/api/credit/refresh-customer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to refresh recommendation");
-      }
-
-      const data = await response.json();
-      if (data.recommendation) {
-        setRecommendation(data.recommendation);
-        toast.success("AI recommendation updated");
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to refresh");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApplyRecommendation = async () => {
-    setApplying(true);
+      const restored = await attempts.restore(scope.current);
+      if (!alive.current || controller.signal.aborted) return;
+      setPending(restored); setStorageReady(true);
+      const data = await loadRecommendation(scope.current, controller.signal);
+      if (!alive.current || controller.signal.aborted) return;
+      if (restored.length && restored[0].customerId !== data.policy.customerId) throw new RecommendationClientError("INVALID_RESPONSE");
+      // A fresh request uses the live mapping; recovery uses its encrypted original identity.
+      scope.current = { ...scope.current, customerId: data.policy.customerId };
+      setPolicy(data.policy); setRecommendation(data.recommendation); setPending(restored); setReady(true);
+      if (!restored.length) { setLimit(centsInput(data.policy.limitCents)); setEnabled(data.policy.creditEnabled); }
+    } finally { controllers.current.delete(controller); }
+  }
+  async function refresh() {
+    if (busy.current) return;
+    busy.current = true; setLoading(true); setError(null); setReady(false);
+    try { await reload(); } catch (cause) { if (alive.current) setError(message(cause)); }
+    finally { if (alive.current) { busy.current = false; setLoading(false); } }
+  }
+  useEffect(() => { alive.current = true; void refresh(); return () => { alive.current = false; for (const controller of controllers.current) controller.abort(); }; }, []); // Scope changes remount and abort.
+  async function perform(kind: "generate" | "apply" | "policy", retry?: RecommendationAttempt) {
+    if (busy.current || (retry ? !storageReady : !ready || pending.length > 0)) return;
+    if (!retry && kind !== "generate" && !canApply) return;
+    const amount = kind === "policy" && !retry ? parseCents(limit) : 0;
+    if (amount === null) { setError("Enter a nonnegative credit limit with at most two decimals."); return; }
+    if (!retry && (!policy || (kind === "apply" && !recommendation))) return;
+    busy.current = true; setWorking(true); setError(null); setNotice(null);
+    const controller = new AbortController(); controllers.current.add(controller);
+    const requestScope = { ...scope.current, customerId: retry?.customerId ?? scope.current.customerId };
     try {
-      const response = await fetch("/api/credit/apply-recommendation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id,
-          action: "apply_ai_recommendation",
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to apply recommendation");
-      }
-
-      const data = await response.json();
-      setDisplayedLimit(
-        Number(
-          data.new_limit ?? recommendation?.recommended_limit ?? displayedLimit,
-        ),
-      );
-      toast.success("Balance limit updated.");
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to apply recommendation",
-      );
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  const handleOverride = async () => {
-    if (!overrideReason.trim()) {
-      toast.error("Please provide a reason for override");
-      return;
-    }
-
-    setApplying(true);
+      const entry = retry ?? await attempts.create(scope.current, kind === "generate" ? { kind } : kind === "apply" ? { kind, proposal: recommendation!, balanceCents: policy!.balanceCents } : { kind, creditEnabled: enabled, limitCents: amount!, expectedCreditEnabled: policy!.creditEnabled, expectedLimitCents: policy!.limitCents });
+      if (!alive.current || controller.signal.aborted) return;
+      const waiting = await attempts.restore(scope.current);
+      if (!alive.current || controller.signal.aborted) return;
+      setPending(waiting);
+      await sendRecommendationAttempt(requestScope, entry, controller.signal);
+      if (!alive.current || controller.signal.aborted) return;
+      await attempts.confirm(scope.current, entry.requestKey);
+      if (!alive.current || controller.signal.aborted) return;
+      const remaining = await attempts.restore(scope.current);
+      if (!alive.current || controller.signal.aborted) return;
+      setPending(remaining); setNotice("Request confirmed. Current policy has not been reloaded."); setEditing(false); setReady(false);
+      await reload();
+      if (alive.current) setNotice("Request confirmed. Current policy reloaded.");
+    } catch (cause) { if (alive.current && !controller.signal.aborted) setError(message(cause)); }
+    finally { controllers.current.delete(controller); if (alive.current) { busy.current = false; setWorking(false); } }
+  }
+  async function resolve(entry: RecommendationAttempt) {
+    if (busy.current || !storageReady) return;
+    busy.current = true; setWorking(true); setError(null); setNotice(null);
+    const controller = new AbortController(); controllers.current.add(controller);
     try {
-      const response = await fetch("/api/credit/apply-recommendation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id,
-          action: "override",
-          new_limit: overrideLimit,
-          reason: overrideReason,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to override limit");
-      }
-
-      const data = await response.json();
-      setDisplayedLimit(Number(data.new_limit ?? overrideLimit));
-      toast.success("Balance limit changed.");
-      setShowOverrideDialog(false);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to override limit",
-      );
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  const getRiskColor = (score: number): string => {
-    if (score >= 75) return "text-red-600";
-    if (score >= 50) return "text-yellow-600";
-    return "text-green-600";
-  };
-
-  const getRiskLabel = (score: number): string => {
-    if (score >= 75) return "High Risk";
-    if (score >= 50) return "Medium Risk";
-    return "Low Risk";
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Current Limit Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Current Credit Limit
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">${displayedLimit.toFixed(2)}</div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Approved maximum credit exposure
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* AI Recommendation Card */}
-      {recommendation ? (
-        <Card className="border-blue-500/20 bg-[#161616]">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2 text-white">
-              <Zap className="h-4 w-4 text-blue-400" />
-              AI Recommendation
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  Recommended Limit
-                </Label>
-                <div className="text-2xl font-bold font-mono text-blue-400">
-                  ${recommendation.recommended_limit.toFixed(2)}
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  Risk Score
-                </Label>
-                <div
-                  className={`text-2xl font-bold font-mono ${getRiskColor(recommendation.risk_score)}`}
-                >
-                  {recommendation.risk_score.toFixed(0)}/100
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {getRiskLabel(recommendation.risk_score)}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
-              <p className="text-sm text-white/90 leading-relaxed">
-                {recommendation.justification}
-              </p>
-            </div>
-
-            <div className="bg-[#1C1C1C] p-3 rounded-lg border border-white/10">
-              <Label className="text-xs text-muted-foreground">
-                Suggested Range
-              </Label>
-              <p className="text-sm font-mono font-medium text-white mt-1">
-                ${recommendation.range_min.toFixed(2)} - $
-                {recommendation.range_max.toFixed(2)}
-              </p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                onClick={handleRefresh}
-                disabled={loading}
-                variant="outline"
-                size="sm"
-              >
-                {loading ? "Refreshing..." : "Refresh Recommendation"}
-              </Button>
-              {can_apply && (
-                <>
-                  <Button
-                    onClick={handleApplyRecommendation}
-                    disabled={applying || loading}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {applying ? "Applying..." : "Apply Recommendation"}
-                  </Button>
-                  <Button
-                    onClick={() => setShowOverrideDialog(true)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Override
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {recommendation.recommended_limit > displayedLimit && (
-              <div className="flex gap-2 p-3 bg-green-50 border border-green-200 rounded">
-                <TrendingUp className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-green-800">
-                  <strong>Opportunity:</strong> Customer qualifies for increase
-                  of $
-                  {(recommendation.recommended_limit - displayedLimit).toFixed(
-                    2,
-                  )}
-                </p>
-              </div>
-            )}
-
-            {recommendation.recommended_limit < displayedLimit && (
-              <div className="flex gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-yellow-800">
-                  <strong>Caution:</strong> Recent activity suggests reducing
-                  limit by $
-                  {(displayedLimit - recommendation.recommended_limit).toFixed(
-                    2,
-                  )}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-dashed">
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              No AI recommendation available yet
-            </p>
-            <Button
-              onClick={handleRefresh}
-              disabled={loading}
-              variant="outline"
-              size="sm"
-              className="w-full mt-4"
-            >
-              {loading ? "Generating..." : "Generate AI Recommendation"}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Override Dialog */}
-      <Dialog open={showOverrideDialog} onOpenChange={setShowOverrideDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Override Credit Limit</DialogTitle>
-            <DialogDescription>
-              Set a custom credit limit and provide a reason for the override.
-              This action will be logged in the audit trail.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="override_limit">New Credit Limit</Label>
-              <Input
-                id="override_limit"
-                type="number"
-                value={overrideLimit}
-                onChange={(e) => setOverrideLimit(Number(e.target.value))}
-                min="0"
-                step="100"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="override_reason">Reason for Override *</Label>
-              <textarea
-                id="override_reason"
-                value={overrideReason}
-                onChange={(e) => setOverrideReason(e.target.value)}
-                placeholder="Explain why you're overriding the AI recommendation..."
-                className="w-full mt-1 p-2 border rounded text-sm"
-                rows={3}
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setShowOverrideDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleOverride}
-                disabled={applying || !overrideReason.trim()}
-              >
-                {applying ? "Saving..." : "Confirm Override"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+      const status = await resolveRecommendationAttempt({ ...scope.current, customerId: entry.customerId }, entry, controller.signal);
+      if (!alive.current || controller.signal.aborted) return;
+      await attempts.confirm(scope.current, entry.requestKey);
+      if (!alive.current || controller.signal.aborted) return;
+      const remaining = await attempts.restore(scope.current);
+      if (!alive.current || controller.signal.aborted) return;
+      setPending(remaining); setReady(false);
+      setNotice(status === "recorded" ? "Recorded policy change confirmed. Current policy has not been reloaded." : "Unrecorded request cancelled. Current policy has not been reloaded.");
+      await reload();
+      if (alive.current) setNotice(status === "recorded" ? "Recorded policy change confirmed. Current policy reloaded." : "Unrecorded request cancelled. Current policy reloaded.");
+    } catch (cause) { if (alive.current && !controller.signal.aborted) setError(message(cause)); }
+    finally { controllers.current.delete(controller); if (alive.current) { busy.current = false; setWorking(false); } }
+  }
+  const locked = loading || working || !ready || pending.length > 0;
+  const expired = recommendation ? Date.now() >= recommendation.expiresAt : false;
+  return <section aria-label="Credit recommendations" className="space-y-4">
+    <h2 className="text-lg font-semibold">Credit recommendations</h2>
+    {loading && <p role="status">Loading saved credit settings…</p>}
+    {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
+    <Button variant="outline" disabled={loading || working} onClick={() => void refresh()}>Reload current policy</Button>
+    {policy && <section aria-label="Current credit policy" className="rounded-lg border p-4"><h3 className="font-semibold">Last loaded credit policy</h3><p>{policy.creditEnabled ? policy.unlimited ? "Credit enabled · Unlimited" : `Credit enabled · Limit ${money(policy.limitCents)}` : `Credit disabled · Stored limit ${money(policy.limitCents)}`}</p><p>Balance {money(policy.balanceCents)}</p>{!ready && <p>Current policy needs a successful reload before a new request.</p>}</section>}
+    {pending.length > 0 && <section aria-label="Pending credit requests" className="rounded-lg border p-4 space-y-2"><p>{formatCount(pending.length)} unconfirmed request(s). Original requests are saved encrypted on this browser, including across reloads. Reloading current policy does not discard them.</p>{pending.map(entry => <div key={entry.requestKey} className="space-y-2"><Button disabled={loading || working || !storageReady} onClick={() => void perform(entry.request.kind, entry)}>Retry {entry.request.kind === "generate" ? "generation" : entry.request.kind === "apply" ? "application" : "policy change"}</Button>{entry.request.kind !== "generate" && <><p>Recorded changes are kept. Unrecorded attempts can be stopped.</p><Button variant="outline" disabled={loading || working || !storageReady} onClick={() => void resolve(entry)}>Check status and cancel unrecorded request</Button></>}</div>)}</section>}
+    {recommendation ? <section aria-label="Saved recommendation" className="rounded-lg border p-4 space-y-2"><h3 className="font-semibold">Saved recommendation</h3><p>{recommendation.provenance === "provider" ? "AI-generated suggestion" : "Rule-based suggestion"} · {new Date(recommendation.createdAt).toLocaleString()}</p><p>Recommended amount {money(recommendation.recommendedLimitCents)}</p><p>Suggested range {money(recommendation.rangeMinCents)} – {money(recommendation.rangeMaxCents)}</p><p>Recorded risk score {formatCount(recommendation.riskScore)}/100. Repayment timing was not evaluated.</p><p>{recommendation.justification}</p><p>{recommendation.proposedCreditEnabled ? `Proposed enabled limit ${money(recommendation.proposedLimitCents)}` : `Proposed credit disabled; stored limit ${money(recommendation.proposedLimitCents)}`}</p><p>{expired ? "Expired. Generate a new recommendation." : `Expires ${new Date(recommendation.expiresAt).toLocaleString()}. Applying checks current facts again.`}</p>{canApply && <Button disabled={locked || expired} onClick={() => void perform("apply")}>Apply saved recommendation</Button>}</section> : ready && <p>No saved recommendation is available.</p>}
+    <Button disabled={locked} onClick={() => void perform("generate")}>Generate recommendation</Button>
+    {canApply && <Button variant="outline" disabled={locked} onClick={() => setEditing(!editing)}>Edit credit policy</Button>}
+    {editing && <form aria-label="Manual credit policy" className="space-y-3 rounded-lg border p-4" onSubmit={event => { event.preventDefault(); void perform("policy"); }}><div className="flex gap-2"><input id="credit-policy-enabled" type="checkbox" checked={enabled} disabled={locked} onChange={event => setEnabled(event.target.checked)} /><Label htmlFor="credit-policy-enabled">Enable credit</Label></div><Label htmlFor="credit-policy-limit">Credit limit ($)</Label><Input id="credit-policy-limit" inputMode="decimal" value={limit} disabled={locked} onChange={event => setLimit(event.target.value)} /><p>{enabled && parseCents(limit) === 0 ? "Enabled credit with a zero limit is unlimited." : "Disabling credit stops new charges and preserves the balance."}</p><Button type="submit" disabled={locked}>Save credit policy</Button></form>}
+  </section>;
 }

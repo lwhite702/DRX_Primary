@@ -1,26 +1,24 @@
-import { db } from "@/lib/db";
-import { hasCompletedOnboardingSettings } from "./onboarding-completion";
+import { auth } from "@/lib/adapters/auth/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "./convex-token";
 
+/** Completion belongs to the authenticated tenant membership, not a global Clerk flag. */
 export async function getCompletedOnboardingBusinessId(userId: string) {
-  const [ownedBusiness, assignedRole] = await Promise.all([
-    db.businessProfile.findFirst({
-      where: { ownerId: userId, isActive: true },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    }),
-    db.userRole.findFirst({
-      where: { userId, business: { isActive: true } },
-      select: { businessId: true },
-    }),
-  ]);
-
-  const businessId = ownedBusiness?.id ?? assignedRole?.businessId;
-  if (!businessId) return null;
-
-  const settings = await db.businessSettings.findUnique({
-    where: { businessId },
-    select: { settingsData: true },
-  });
-
-  return hasCompletedOnboardingSettings(settings?.settingsData) ? businessId : null;
+  const session = await auth();
+  if (session.userId !== userId) throw new Error("Onboarding status is temporarily unavailable");
+  const token = await getConvexAuthToken();
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  if (!token || !url) throw new Error("Onboarding status is temporarily unavailable");
+  const client = new ConvexHttpClient(url);
+  client.setAuth(token);
+  try {
+    const result = await client.query(api.onboarding.getCurrentOnboardingStatus, { expectedUserId: userId, expectedOrganizationId: session.orgId ?? null });
+    if (result.status === "NEEDS_BUSINESS_ONBOARDING") return null;
+    if (result.status !== "READY") throw new Error("Onboarding requires reconciliation");
+    if (result.session.operatorId !== userId) throw new Error("Unexpected operator");
+    return result.session.businessId;
+  } catch {
+    throw new Error("Onboarding status is temporarily unavailable");
+  }
 }

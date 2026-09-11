@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const checks = {
@@ -7,23 +10,20 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   };
-
   try {
-    await db.$queryRaw`SELECT 1`;
-    checks.database = true;
-
-    return NextResponse.json({
-      status: "healthy",
-      checks,
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!url) throw new Error("Convex unavailable");
+    const client = new ConvexHttpClient(url, {
+      logger: false,
+      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10000), cache: "no-store" }),
     });
-  } catch (error: unknown) {
-    console.error("Health check failed:", error);
-    return NextResponse.json(
-      {
-        status: "unhealthy",
-        checks,
-      },
-      { status: 503 },
-    );
+    checks.database = await client.query(api.health.readiness, {}) === true;
+  } catch {
+    // Readiness responses must not disclose backend URLs, errors or tenant data.
+    checks.database = false;
   }
+  return NextResponse.json({ status: checks.database ? "healthy" : "unhealthy", checks }, {
+    status: checks.database ? 200 : 503,
+    headers: { "Cache-Control": "no-store" },
+  });
 }

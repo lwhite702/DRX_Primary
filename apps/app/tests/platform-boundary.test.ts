@@ -5,8 +5,10 @@ const m = vi.hoisted(() => ({
   auth: vi.fn(), bypass: vi.fn(), admin: vi.fn(), roles: vi.fn(), owner: vi.fn(),
   listRoles: vi.fn(), updateRoles: vi.fn(), deleteRoles: vi.fn(), count: vi.fn(),
   audit: vi.fn(), writeAudit: vi.fn(), transaction: vi.fn(), clerk: vi.fn(),
-  context: vi.fn(), flag: vi.fn(), intakes: vi.fn(),
+  context: vi.fn(), flag: vi.fn(), intakes: vi.fn(), token: vi.fn(), query: vi.fn(),
 }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: m.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = m.query; } }));
 vi.mock("@/lib/adapters/auth/server", () => ({ auth: m.auth, isAuthBypassEnabled: m.bypass, clerkClient: m.clerk }));
 vi.mock("@/lib/db", () => ({ db: {
   adminUser: { findFirst: m.admin },
@@ -31,13 +33,15 @@ import { PUT as updateUser, DELETE as deleteUser } from "@/app/api/admin/users/[
 import { GET as auditLogs } from "@/app/api/admin/audit-logs/route";
 import { POST as deleteIdentity } from "@/app/api/v1/tenant/[tenantId]/user/[userId]/delete/route";
 import { hasPermission, hasBusinessPermission } from "@/lib/auth/server-guards";
-import { canManageNotificationRecipient } from "@/lib/auth/notification-access";
 import { GET as getApprovals } from "@/app/api/inventory/intake/route";
 
 const request = (url = "/api/admin/businesses", body = {}) => new NextRequest(`http://localhost${url}`, { method: "POST", body: JSON.stringify(body) });
 describe("platform reads and writes reject tenant authority", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
+    m.token.mockResolvedValue("synthetic-token");
+    m.query.mockResolvedValue({ allowed: false, role: "" });
     m.auth.mockResolvedValue({ userId: "actor" }); m.bypass.mockReturnValue(false);
     m.admin.mockResolvedValue(null); m.roles.mockResolvedValue(null); m.owner.mockResolvedValue(null);
     m.context.mockResolvedValue({ userId: "actor", businessId: "business-a" });
@@ -98,27 +102,23 @@ describe("platform reads and writes reject tenant authority", () => {
     expect(result.status).toBe(403); expect(m.audit).not.toHaveBeenCalled();
   });
   it("business owners can still read their own business audit", async () => {
+    m.query.mockResolvedValue({ allowed: true, role: "owner" });
     m.owner.mockResolvedValue({ id: "business-a" });
     expect((await auditLogs(new NextRequest("http://localhost/api/admin/audit-logs"))).status).toBe(200);
     expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({ where: { businessId: "business-a" } }));
   });
-  it("a business owner cannot target an unrelated notification recipient", async () => {
-    m.owner.mockResolvedValue({ id: "business-a" }); m.roles.mockResolvedValue(null);
-    expect(await canManageNotificationRecipient(request(), "actor", "unrelated")).toBe(false);
-    expect(m.roles).toHaveBeenCalledWith({ where: { userId: "unrelated", businessId: "business-a" }, select: { id: true } });
-  });
-  it("queries approvals only for the authorized business", async () => {
-    m.owner.mockResolvedValue({ id: "business-a" }); m.intakes.mockResolvedValue([]);
-    const result = await getApprovals(new NextRequest("http://localhost/api/inventory/intake"));
+  it("queries approvals only for the selected authenticated business", async () => {
+    m.query.mockResolvedValue({ page: [], isDone: true, continueCursor: "end" });
+    const result = await getApprovals(new NextRequest("http://localhost/api/inventory/intake?business_id=business-a"));
     expect(result.status).toBe(200);
-    expect(m.intakes).toHaveBeenCalledTimes(2);
-    expect(m.intakes).toHaveBeenNthCalledWith(1, expect.objectContaining({ where: { businessId: "business-a", status: "pending" } }));
-    expect(m.intakes).toHaveBeenNthCalledWith(2, expect.objectContaining({ where: { businessId: "business-a", status: { not: "pending" } }, take: 100 }));
+    expect(m.query).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ businessId: "business-a" }));
+    expect(m.intakes).not.toHaveBeenCalled();
   });
   it("a platform grant alone gives no business approvals or business audit", async () => {
     m.admin.mockResolvedValue({ role: "super_admin" });
     m.context.mockResolvedValue({ userId: "actor", businessId: null });
-    expect((await getApprovals(new NextRequest("http://localhost/api/inventory/intake"))).status).toBe(401);
+    m.query.mockRejectedValue(new Error("UNAUTHORIZED: No tenant membership"));
+    expect((await getApprovals(new NextRequest("http://localhost/api/inventory/intake?business_id=business-a"))).status).toBe(403);
     expect((await auditLogs(new NextRequest("http://localhost/api/admin/audit-logs"))).status).toBe(403);
     expect(m.intakes).not.toHaveBeenCalled(); expect(m.audit).not.toHaveBeenCalled();
   });

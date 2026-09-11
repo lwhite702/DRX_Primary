@@ -1,39 +1,8 @@
 import { createAppClient } from "@/lib/data/client/supabase-client";
 
-export interface CustomerFeatures {
-  customer_id: string;
-  sales_30d: number;
-  sales_90d: number;
-  sales_all_time: number;
-  credit_issued_30d: number;
-  credit_issued_90d: number;
-  credit_issued_all_time: number;
-  credit_repaid_all_time: number;
-  completed_transactions: number;
-  late_payment_count: number;
-  days_since_first_transaction: number;
-  current_credit_balance: number;
-  average_ticket_size: number;
-  purchase_frequency_per_week: number;
-  on_time_repayment_ratio: number;
-  credit_utilization_ratio: number;
-  total_inventory_value: number;
-  inventory_velocity_7d: number;
-  inventory_restock_cost_ratio: number;
-}
-
-export interface NormalizedFeatures {
-  customer_id: string;
-  recency_score: number; // 0-100: how recently they've transacted
-  frequency_score: number; // 0-100: how often they transact
-  monetary_score: number; // 0-100: average transaction size
-  tenure_days: number; // days since first transaction
-  on_time_ratio: number; // 0-1: % of on-time repayments
-  late_payment_count: number;
-  credit_issued_30d: number;
-  inventory_coverage_ratio: number; // 0-1: available inventory / credit requested
-  inventory_turnover: number; // 0-100 normalized
-}
+import type { CustomerFeatures } from "./calculation";
+export type { CustomerFeatures, NormalizedFeatures } from "./calculation";
+export { normalizeFeatures } from "./calculation";
 
 async function getCustomerSalesMetrics(
   supabase: any,
@@ -276,54 +245,4 @@ export async function computeCustomerFeatures(
     console.error("Error computing customer features:", error);
     return null;
   }
-}
-
-export function normalizeFeatures(
-  features: CustomerFeatures
-): NormalizedFeatures {
-  // Recency: recent activity scores higher (0-100)
-  // Last transaction within 30 days = high score, beyond 1 year = low
-  const recency_days = 30;
-  const days_since_transaction = features.days_since_first_transaction;
-  const recency_score = Math.max(
-    0,
-    100 * (1 - Math.min(days_since_transaction / 365, 1))
-  );
-
-  // Frequency: transactions per week (normalize 0-10 per week to 0-100)
-  const frequency_score = Math.min(
-    100,
-    features.purchase_frequency_per_week * 10
-  );
-
-  // Monetary: average ticket size (normalize $0-$5000 to 0-100)
-  const monetary_score = Math.min(
-    100,
-    (features.average_ticket_size / 5000) * 100
-  );
-
-  // Inventory coverage: can business support this customer's credit?
-  const inventory_coverage_ratio =
-    features.total_inventory_value > 0
-      ? Math.min(
-          1,
-          features.total_inventory_value / Math.max(1, features.sales_30d)
-        )
-      : 0;
-
-  // Inventory turnover normalized to 0-100
-  const inventory_turnover = Math.min(100, features.inventory_velocity_7d * 10);
-
-  return {
-    customer_id: features.customer_id,
-    recency_score,
-    frequency_score,
-    monetary_score,
-    tenure_days: features.days_since_first_transaction,
-    on_time_ratio: features.on_time_repayment_ratio,
-    late_payment_count: features.late_payment_count,
-    credit_issued_30d: features.credit_issued_30d,
-    inventory_coverage_ratio,
-    inventory_turnover,
-  };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
+import { getCheckProduct, recordCheck, InventoryCheckRejectedError, type CheckProduct, type CheckRequest, type CheckReceipt } from "@/lib/pos/inventory-check-client";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -28,82 +28,56 @@ export function InventoryCheckModal({
   businessId,
   onSuccess,
 }: InventoryCheckModalProps) {
-  const [product, setProduct] = useState<{
-    inventory_id?: string;
-    product_name?: string;
-    expected_weight_grams?: number;
-  } | null>(null);
+  const [product, setProduct] = useState<CheckProduct | null>(null);
   const [measuredWeight, setMeasuredWeight] = useState("");
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CheckReceipt | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
+  const [retryPending, setRetryPending] = useState(false);
+  const pending = useRef(new Map<string, { product: CheckProduct; request: CheckRequest }>());
+  const scope = useRef(businessId); scope.current = businessId;
+  const busy = useRef(false);
 
   useEffect(() => {
-    if (!open || !businessId) return;
-
-    const loadProduct = async () => {
-      setLoading(true);
-      setError(null);
-      setResult(null);
-      setMeasuredWeight("");
-
-      const productData =
-        await posWeightEngine.getRandomCheckProduct(businessId);
-
-      if (productData.error) {
-        setError(productData.error);
-      } else {
-        setProduct(productData);
-      }
-
-      setLoading(false);
-    };
-
-    loadProduct();
-  }, [open, businessId]);
+    const controller = new AbortController();
+    setProduct(null); setResult(null); setError(null); setMeasuredWeight(""); setLoading(false);
+    const attempt = pending.current.get(businessId); setRetryPending(Boolean(attempt));
+    if (!open || !businessId) return () => controller.abort();
+    if (attempt) { setProduct(attempt.product); setMeasuredWeight(String(attempt.request.measuredWeightGrams)); return () => controller.abort(); }
+    setLoading(true);
+    getCheckProduct(businessId, controller.signal).then(value => { if (!controller.signal.aborted) setProduct(value); })
+      .catch(() => { if (!controller.signal.aborted) setError("Inventory check could not be loaded. Try again."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [open, businessId, reload]);
 
   const handleSubmit = async () => {
-    if (!product?.inventory_id) {
-      toast.error("No product selected");
-      return;
+    if (busy.current || !product || !businessId || result) return;
+    const tenant = businessId;
+    let attempt = pending.current.get(tenant);
+    if (!attempt) {
+      const measured = Number(measuredWeight);
+      if (!measuredWeight.trim() || !Number.isFinite(measured) || measured < 0) { toast.error("Please enter a valid measured weight"); return; }
+      attempt = { product, request: { requestId: crypto.randomUUID(), inventoryId: product.inventory_id, expectedWeightGrams: product.expected_weight_grams, measuredWeightGrams: measured } };
+      pending.current.set(tenant, attempt); setRetryPending(true);
     }
-
-    if (!measuredWeight || parseFloat(measuredWeight) < 0) {
-      toast.error("Please enter a valid measured weight");
-      return;
-    }
-
-    setProcessing(true);
-
+    busy.current = true; setProcessing(true);
     try {
-      const checkResult = await posWeightEngine.recordInventoryCheck(
-        businessId,
-        product.inventory_id,
-        parseFloat(measuredWeight),
-      );
-
-      if (checkResult.success) {
-        setResult(checkResult);
-
-        if (checkResult.discrepancy_flagged) {
-          toast.warning("Discrepancy detected and logged");
-        } else {
-          toast.success("Stock check saved.");
-        }
-
-        onSuccess?.();
-      } else {
-        toast.error(
-          checkResult.error || "That stock check didn’t save. Try again.",
-        );
+      const receipt = await recordCheck(tenant, attempt.request);
+      pending.current.delete(tenant);
+      if (scope.current !== tenant) return;
+      setRetryPending(false); setResult(receipt);
+      if (receipt.discrepancy_flagged) toast.warning("Discrepancy detected and logged"); else toast.success("Stock check saved.");
+      onSuccess?.();
+    } catch (failure) {
+      if (failure instanceof InventoryCheckRejectedError) {
+        pending.current.delete(tenant);
+        if (scope.current === tenant) { setRetryPending(false); if (failure.code === "STALE_STOCK") setReload(value => value + 1); }
       }
-    } catch (error) {
-      console.error("Error recording check:", error);
-      toast.error("That stock check didn’t save. Try again.");
-    } finally {
-      setProcessing(false);
-    }
+      if (scope.current === tenant) toast.error(failure instanceof Error ? failure.message : "Inventory check could not be confirmed. Retry the same request.");
+    } finally { busy.current = false; setProcessing(false); }
   };
 
   const handleClose = () => {
@@ -130,7 +104,7 @@ export function InventoryCheckModal({
           ) : error ? (
             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded flex gap-3">
               <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive">{error}</p><Button onClick={() => setReload(value => value + 1)}>Reload check</Button>
             </div>
           ) : result ? (
             <div className="space-y-4">
@@ -197,7 +171,7 @@ export function InventoryCheckModal({
                           : "text-green-600"
                       }`}
                     >
-                      {Math.abs(result.delta_percentage || 0).toFixed(2)}%
+                      {result.delta_percentage === null ? "Not applicable (zero expected stock)" : `${Math.abs(result.delta_percentage).toFixed(1)}%`}
                     </p>
                   </div>
                 </div>
@@ -242,7 +216,7 @@ export function InventoryCheckModal({
                     placeholder="0.00"
                     value={measuredWeight}
                     onChange={(e) => setMeasuredWeight(e.target.value)}
-                    disabled={processing}
+                    disabled={processing || retryPending}
                     autoFocus
                   />
                 </div>
@@ -260,8 +234,8 @@ export function InventoryCheckModal({
                 >
                   Skip
                 </Button>
-                <Button onClick={handleSubmit} disabled={processing}>
-                  {processing ? "Recording..." : "Submit Check"}
+                <Button onClick={handleSubmit} disabled={processing || !product}>
+                  {processing ? "Recording..." : retryPending ? "Retry Check" : "Submit Check"}
                 </Button>
               </div>
             </>

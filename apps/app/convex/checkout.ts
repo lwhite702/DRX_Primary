@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { appendCreditEntry } from "./helpers/creditLedger";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
   mutation,
@@ -23,16 +24,21 @@ import {
 import { normalizeProductCommerceConfig } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 
+import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calculateSettlement, type CheckoutFee, type CheckoutPaymentMethod } from "./helpers/checkoutSettlement";
+
+import { priceOverride, normalizeOverrides, deliveryTerms, validateDeliveryTerms, type PriceOverride, type DeliveryTerms } from "./helpers/checkoutTerms";
+
 const paymentMethod = v.union(
   v.literal("cash"),
   v.literal("card"),
   v.literal("credit"),
+  v.literal("mixed"),
+  v.literal("zelle"),
 );
 
 const deliveryInput = v.object({
   address: v.string(),
-  vendorFeeCents: v.number(),
-  chargeCustomer: v.boolean(),
+  ...deliveryTerms,
 });
 
 const manualItemInput = v.object({
@@ -75,6 +81,7 @@ const quoteResult = v.object({
     }),
   ),
   merchandiseSubtotalCents: v.number(),
+  feeRevenueCents: v.optional(v.number()),
   discountCents: v.number(),
   subtotalCents: v.number(),
   taxableSubtotalCents: v.number(),
@@ -92,6 +99,7 @@ const checkoutResult = v.object({
   status: v.union(v.literal("COMPLETED"), v.literal("ALREADY_PROCESSED")),
   subtotalCents: v.number(),
   merchandiseSubtotalCents: v.number(),
+  feeRevenueCents: v.optional(v.number()),
   discountCents: v.number(),
   merchandiseTaxCents: v.number(),
   deliveryRevenueCents: v.number(),
@@ -128,6 +136,11 @@ const saleRecord = v.object({
   amountPaidCents: v.number(),
   changeAmountCents: v.number(),
   paymentMethod: v.string(),
+  paymentReference: v.optional(v.string()),
+  fees: v.optional(v.array(checkoutFee)),
+  feeRevenueCents: v.optional(v.number()),
+  creditAmountCents: v.optional(v.number()),
+  vendorDeliveryExpenseKnown: v.optional(v.boolean()),
   checkoutFingerprint: v.optional(v.string()),
   createdBy: v.string(),
   offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
@@ -268,13 +281,12 @@ async function createCheckoutFingerprint(input: {
   customerId?: Id<"customers">;
   items: Array<{ productId: Id<"products">; quantityGrams: number }>;
   manualItems: ManualItem[];
-  paymentMethod: "cash" | "card" | "credit";
+  paymentMethod: CheckoutPaymentMethod;
+  fees?: CheckoutFee[];
+  priceOverrides?: PriceOverride[];
+  paymentReference?: string;
   amountPaidCents: number;
-  delivery?: {
-    address: string;
-    vendorFeeCents: number;
-    chargeCustomer: boolean;
-  };
+  delivery?: DeliveryTerms & { address: string };
 }): Promise<string> {
   return JSON.stringify({
     customerId: input.customerId ? String(input.customerId) : null,
@@ -288,6 +300,9 @@ async function createCheckoutFingerprint(input: {
       quantity: item.quantity,
       unitPriceCents: item.unitPriceCents,
     })),
+    ...(input.fees?.length ? { fees: input.fees } : {}),
+    ...(input.priceOverrides?.length ? { priceOverrides: input.priceOverrides } : {}),
+    ...(input.paymentReference ? { paymentReference: input.paymentReference } : {}),
     paymentMethod: input.paymentMethod,
     amountPaidCents: input.amountPaidCents,
     delivery: input.delivery
@@ -295,6 +310,9 @@ async function createCheckoutFingerprint(input: {
           addressHash: await hashDeliveryAddress(input.delivery.address),
           vendorFeeCents: input.delivery.vendorFeeCents,
           chargeCustomer: input.delivery.chargeCustomer,
+          ...(input.delivery.customerFeeCents === undefined ? {} : { customerFeeCents: input.delivery.customerFeeCents }),
+          ...(input.delivery.profileId ? { profileId: input.delivery.profileId } : {}),
+          ...(input.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: input.delivery.vendorExpenseKnown }),
         }
       : null,
   });
@@ -310,18 +328,19 @@ export const quoteCheckout = query({
       }),
     ),
     manualItems: v.optional(v.array(manualItemInput)),
+    fees: v.optional(v.array(checkoutFee)),
+    priceOverrides: v.optional(v.array(priceOverride)),
     delivery: v.optional(
-      v.object({
-        vendorFeeCents: v.number(),
-        chargeCustomer: v.boolean(),
-      }),
+      v.object(deliveryTerms),
     ),
   },
   returns: quoteResult,
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
+    const feeRevenueCents = totalFees(normalizeFees(args.fees));
     const items = normalizeItems(args.items);
+    const overrides = normalizeOverrides(auth.userRecord, items, args.priceOverrides);
     const normalizedManualItems = normalizeManualItems(args.manualItems);
     requireNonemptyCart(items.length, normalizedManualItems.length);
     const manualItems = await resolveManualItems(
@@ -329,15 +348,7 @@ export const quoteCheckout = query({
       auth.businessId,
       normalizedManualItems,
     );
-    if (args.delivery) {
-      requireNonnegativeSafeInteger(
-        args.delivery.vendorFeeCents,
-        "delivery.vendorFeeCents",
-      );
-      if (args.delivery.vendorFeeCents === 0) {
-        throw new Error("INVALID_ARGUMENT: Delivery vendor fee must be positive");
-      }
-    }
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     let customer: Doc<"customers"> | null = null;
     if (args.customerId) {
       customer = await ctx.db.get(args.customerId);
@@ -386,13 +397,13 @@ export const quoteCheckout = query({
           product: {
           productId: String(product._id),
           productName: product.productName,
-          baseUnitPriceCents: product.sellingPriceCents,
+          baseUnitPriceCents: overrides.find(override => override.productId === product._id)?.unitPriceCents ?? product.sellingPriceCents,
           taxable: product.isTaxable !== false,
           allowFractional: product.allowFractionalWeight,
             quantityPrecision: commerceConfig.quantityPrecision,
             minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
             quantityIncrement: commerceConfig.quantityIncrement,
-            bulkPriceTiers: commerceConfig.bulkPriceTiers,
+            bulkPriceTiers: overrides.some(override => override.productId === product._id) ? [] : commerceConfig.bulkPriceTiers,
           },
         };
       }),
@@ -455,16 +466,17 @@ export const quoteCheckout = query({
       taxableMerchandiseCents,
       taxRateBps,
     );
-    const deliveryRevenueCents = args.delivery?.chargeCustomer
-      ? args.delivery.vendorFeeCents
-      : 0;
+    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
     const deliveryTaxCents =
       args.delivery?.chargeCustomer && settings?.deliveryFeeTaxable
         ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
         : 0;
     const taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
+    const totalAmountCents = pricing.merchandiseTotalCents + manualMerchandiseTotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+    requireNonnegativeSafeInteger(totalAmountCents, "totalAmountCents");
     return {
       lines: [...inventoryLines, ...manualLines],
+      ...(feeRevenueCents ? { feeRevenueCents } : {}),
       merchandiseSubtotalCents:
         pricing.merchandiseSubtotalCents + manualMerchandiseSubtotalCents,
       discountCents: pricing.discountCents + manualDiscountCents,
@@ -478,11 +490,7 @@ export const quoteCheckout = query({
       vendorDeliveryExpenseCents: args.delivery?.vendorFeeCents ?? 0,
       deliveryTaxCents,
       taxAmountCents,
-      totalAmountCents:
-        pricing.merchandiseTotalCents +
-        manualMerchandiseTotalCents +
-        deliveryRevenueCents +
-        taxAmountCents,
+      totalAmountCents,
     };
   },
 });
@@ -498,7 +506,11 @@ export const processCheckout = mutation({
       }),
     ),
     manualItems: v.optional(v.array(manualItemInput)),
+    fees: v.optional(v.array(checkoutFee)),
+    priceOverrides: v.optional(v.array(priceOverride)),
     paymentMethod,
+    paymentReference: v.optional(v.string()),
+    expectedTotalCents: v.optional(v.number()),
     amountPaidCents: v.number(),
     delivery: v.optional(deliveryInput),
   },
@@ -507,6 +519,9 @@ export const processCheckout = mutation({
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     requireNonnegativeSafeInteger(args.amountPaidCents, "amountPaidCents");
+    const fees = normalizeFees(args.fees);
+    const feeRevenueCents = totalFees(fees);
+    const paymentReference = normalizePaymentReference(args.paymentReference);
 
     const originalOrderNumber = args.orderNumber;
     const orderNumber = originalOrderNumber.trim();
@@ -517,6 +532,7 @@ export const processCheckout = mutation({
     }
 
     const normalizedItems = normalizeItems(args.items);
+    const overrides = normalizeOverrides(auth.userRecord, normalizedItems, args.priceOverrides);
     const normalizedManualItems = normalizeManualItems(args.manualItems);
     requireNonemptyCart(normalizedItems.length, normalizedManualItems.length);
     const resolvedManualItems = await resolveManualItems(
@@ -524,20 +540,15 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
-    if (args.delivery) {
-      requireNonnegativeSafeInteger(
-        args.delivery.vendorFeeCents,
-        "delivery.vendorFeeCents",
-      );
-      if (args.delivery.vendorFeeCents === 0) {
-        throw new Error("INVALID_ARGUMENT: Delivery vendor fee must be positive");
-      }
-    }
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
       manualItems: normalizedManualItems,
       paymentMethod: args.paymentMethod,
+      fees,
+      priceOverrides: overrides,
+      paymentReference,
       amountPaidCents: args.amountPaidCents,
       delivery: args.delivery,
     });
@@ -605,6 +616,7 @@ export const processCheckout = mutation({
         orderNumber: existingOrder.orderNumber,
         status: "ALREADY_PROCESSED" as const,
         subtotalCents: existingOrder.subtotalCents,
+        ...(existingOrder.feeRevenueCents ? { feeRevenueCents: existingOrder.feeRevenueCents } : {}),
         merchandiseSubtotalCents:
           existingOrder.merchandiseSubtotalCents ?? existingOrder.subtotalCents,
         discountCents: existingOrder.discountCents ?? 0,
@@ -691,13 +703,13 @@ export const processCheckout = mutation({
           product: {
             productId: String(product._id),
             productName: product.productName,
-            baseUnitPriceCents: product.sellingPriceCents,
+            baseUnitPriceCents: overrides.find(override => override.productId === product._id)?.unitPriceCents ?? product.sellingPriceCents,
             taxable: product.isTaxable !== false,
             allowFractional: product.allowFractionalWeight,
             quantityPrecision: commerceConfig.quantityPrecision,
             minimumSaleQuantity: commerceConfig.minimumSaleQuantity,
             quantityIncrement: commerceConfig.quantityIncrement,
-            bulkPriceTiers: commerceConfig.bulkPriceTiers,
+            bulkPriceTiers: overrides.some(override => override.productId === product._id) ? [] : commerceConfig.bulkPriceTiers,
           },
         };
       }),
@@ -765,9 +777,7 @@ export const processCheckout = mutation({
     const discountCents = pricing.discountCents + manualDiscountCents;
     const subtotalCents =
       pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
-    const deliveryRevenueCents = args.delivery?.chargeCustomer
-      ? args.delivery.vendorFeeCents
-      : 0;
+    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
     const vendorDeliveryExpenseCents = args.delivery?.vendorFeeCents ?? 0;
 
     const taxRateBps = auth.businessRecord.collectTax
@@ -793,38 +803,23 @@ export const processCheckout = mutation({
       (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
     const taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
     const totalAmountCents =
-      subtotalCents + deliveryRevenueCents + taxAmountCents;
+      subtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
     if (!Number.isSafeInteger(totalAmountCents)) {
       throw new Error(
         "INVALID_ARGUMENT: Calculated checkout total is outside the safe range",
       );
     }
 
-    if (
-      args.paymentMethod === "cash" &&
-      args.amountPaidCents < totalAmountCents
-    ) {
-      throw new Error(
-        `PAYMENT_ERROR: Amount paid (${args.amountPaidCents}¢) is less than total order amount (${totalAmountCents}¢)`,
-      );
-    }
-    if (
-      args.paymentMethod === "card" &&
-      args.amountPaidCents !== totalAmountCents
-    ) {
-      throw new Error(
-        "PAYMENT_ERROR: Card tender amount must equal the order total",
-      );
-    }
-    if (args.paymentMethod === "credit" && args.amountPaidCents !== 0) {
-      throw new Error(
-        "PAYMENT_ERROR: Credit sales cannot record a tender amount",
-      );
-    }
+    if (args.expectedTotalCents !== undefined && args.expectedTotalCents !== totalAmountCents) throw new Error("QUOTE_CHANGED: Refresh and review the checkout total");
+    const { creditAmountCents, changeAmountCents } = calculateSettlement(args.paymentMethod, totalAmountCents, args.amountPaidCents);
 
-    if (args.paymentMethod === "credit" && customer) {
+    if (creditAmountCents > 0 && !customer) throw new Error("INVALID_ARGUMENT: Unpaid mixed sales require a customer");
+    if (creditAmountCents > 0 && customer) {
+      requireNonnegativeSafeInteger(customer.totalCreditUsedCents, "totalCreditUsedCents");
+      requireNonnegativeSafeInteger(customer.creditLimitCents, "creditLimitCents");
       const newCreditUsedCents =
-        customer.totalCreditUsedCents + totalAmountCents;
+        customer.totalCreditUsedCents + creditAmountCents;
+      requireNonnegativeSafeInteger(newCreditUsedCents, "newCreditUsedCents");
       if (
         customer.creditLimitCents > 0 &&
         newCreditUsedCents > customer.creditLimitCents
@@ -836,10 +831,6 @@ export const processCheckout = mutation({
     }
 
     const now = Date.now();
-    const changeAmountCents = Math.max(
-      0,
-      args.amountPaidCents - totalAmountCents,
-    );
     const saleId = await ctx.db.insert("sales", {
       businessId: auth.businessId,
       customerId: args.customerId,
@@ -851,6 +842,7 @@ export const processCheckout = mutation({
       merchandiseRevenueCents: subtotalCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents,
+      ...(args.delivery?.vendorExpenseKnown === undefined ? {} : { vendorDeliveryExpenseKnown: args.delivery.vendorExpenseKnown }),
       deliveryTaxCents,
       merchandiseTaxCents,
       loyaltyEligibleSpendCents: subtotalCents,
@@ -861,6 +853,9 @@ export const processCheckout = mutation({
       amountPaidCents: args.amountPaidCents,
       changeAmountCents,
       paymentMethod: args.paymentMethod,
+      ...(paymentReference ? { paymentReference } : {}),
+      ...(fees.length ? { fees, feeRevenueCents } : {}),
+      creditAmountCents,
       checkoutFingerprint: fingerprint,
       createdBy: auth.userId,
       createdAt: now,
@@ -875,6 +870,8 @@ export const processCheckout = mutation({
         businessId: auth.businessId,
         saleId,
         customerId: args.customerId,
+        ...(args.delivery.profileId ? { profileId: args.delivery.profileId } : {}),
+        ...(args.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: args.delivery.vendorExpenseKnown }),
         addressEncrypted: "pending",
         addressEncryptionVersion: 0,
         vendorFeeCents: vendorDeliveryExpenseCents,
@@ -926,6 +923,7 @@ export const processCheckout = mutation({
         unitPriceCents: lineItem.unitPriceCents,
         lineTotalCents: lineItem.lineTotalCents,
         baseUnitPriceCents: lineItem.product.sellingPriceCents,
+        ...(overrides.find(override => override.productId === lineItem.product._id) ? { priceOverrideReason: overrides.find(override => override.productId === lineItem.product._id)!.reason, catalogUnitPriceCents: lineItem.product.sellingPriceCents } : {}),
         baseLineTotalCents: lineItem.baseLineTotalCents,
         bulkDiscountCents: lineItem.bulkDiscountCents,
         loyaltyDiscountCents: lineItem.loyaltyDiscountCents,
@@ -959,6 +957,15 @@ export const processCheckout = mutation({
           lineItem.product.quantityOnHandGrams - lineItem.quantityGrams,
         updatedAt: now,
       });
+      await ctx.db.insert("auditEvents", {
+        businessId: auth.businessId,
+        userId: auth.userId,
+        action: "INVENTORY_SOLD",
+        entityType: "product",
+        entityId: lineItem.product._id,
+        metadata: JSON.stringify({ saleId, delta: -lineItem.quantityGrams, reason: "Checkout", previousQuantity: lineItem.product.quantityOnHandGrams, quantity: lineItem.product.quantityOnHandGrams - lineItem.quantityGrams }),
+        timestamp: now,
+      });
     }
     for (const lineItem of processedManualLineItems) {
       await ctx.db.insert("salesLineItems", {
@@ -986,15 +993,13 @@ export const processCheckout = mutation({
     await ctx.db.patch(saleId, { cogsCents, updatedAt: now });
 
     if (customer && args.customerId) {
+      if (creditAmountCents > 0) await appendCreditEntry(ctx, { customer, userId: auth.userId, kind: "sale", deltaCents: creditAmountCents, saleId });
       await ctx.db.patch(args.customerId, {
         totalPurchasesCents: customer.totalPurchasesCents + totalAmountCents,
         loyaltyEligibleSpendCents:
           (customer.loyaltyEligibleSpendCents ??
             customer.totalPurchasesCents ??
             0) + subtotalCents,
-        totalCreditUsedCents:
-          customer.totalCreditUsedCents +
-          (args.paymentMethod === "credit" ? totalAmountCents : 0),
         purchaseCount: customer.purchaseCount + 1,
         updatedAt: now,
       });
@@ -1017,6 +1022,8 @@ export const processCheckout = mutation({
         taxableSubtotalCents,
         taxAmountCents,
         totalAmountCents,
+        feeRevenueCents,
+        creditAmountCents,
         itemCount: processedLineItems.length + processedManualLineItems.length,
       }),
       timestamp: now,
@@ -1026,6 +1033,7 @@ export const processCheckout = mutation({
       saleId,
       orderNumber,
       status: "COMPLETED" as const,
+      ...(feeRevenueCents ? { feeRevenueCents } : {}),
       subtotalCents,
       merchandiseSubtotalCents,
       discountCents,

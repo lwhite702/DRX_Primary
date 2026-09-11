@@ -1,0 +1,38 @@
+import { expect, it } from "vitest";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as aliases from "../../convex/unitAliases";
+import * as onboarding from "../../convex/onboarding";
+import * as generatedApi from "../../convex/_generated/api";
+const modules = { "unitAliases.ts": async () => aliases, "onboarding.ts": async () => onboarding, "_generated/api.js": async () => generatedApi };
+it("validates aliases, preserves conversion precision and enforces tenant/role boundaries", async () => {
+  const t = convexTest(schema, modules), owner = t.withIdentity({ subject: "owner" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Aliases" });
+  const context = { businessId, expectedUserId: "owner" };
+  const id = await owner.mutation(api.unitAliases.create, { ...context, name: "Synthetic", standardUnit: "g", quantity: 1.2345 });
+  await expect(owner.mutation(api.unitAliases.create, { ...context, name: " SYNTHETIC ", standardUnit: "g", quantity: 2 })).rejects.toThrow(/ALREADY_EXISTS/);
+  await expect(owner.mutation(api.unitAliases.create, { ...context, name: "Invalid", standardUnit: "g", quantity: 0 })).rejects.toThrow(/INVALID_ARGUMENT/);
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "cashier", email: "cashier@example.invalid", role: "cashier", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  await expect(t.withIdentity({ subject: "cashier" }).mutation(api.unitAliases.update, { ...context, expectedUserId: "cashier", id, remove: true })).rejects.toThrow(/FORBIDDEN/);
+  const foreign = t.withIdentity({ subject: "foreign" });
+  const other = await foreign.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Foreign" });
+  await expect(foreign.mutation(api.unitAliases.update, { businessId: other.businessId, expectedUserId: "foreign", id, remove: true })).rejects.toThrow(/NOT_FOUND/);
+  const listed = await owner.query(api.unitAliases.list, { ...context, paginationOpts: { cursor: null, numItems: 100 } });
+  expect(listed.page[0].quantity).toBe(1.2345);
+});
+it("restores retained defaults without altering custom aliases and avoids duplicate audit on retry", async () => {
+  const t = convexTest(schema, modules), owner = t.withIdentity({ subject: "owner" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Restore aliases" });
+  const context = { businessId, expectedUserId: "owner" };
+  const custom = await owner.mutation(api.unitAliases.create, { ...context, name: "Custom", standardUnit: "oz", quantity: 0.125 });
+  const defaultId = await t.run(ctx => ctx.db.insert("productUnitAliases", { businessId, name: "Imported default", normalizedName: "imported default", standardUnit: "g", quantity: 2.25, enabled: false, systemDefault: true, removed: true, createdAt: 1, updatedAt: 1 }));
+  await owner.mutation(api.unitAliases.update, { ...context, id: custom, remove: true });
+  const args = { ...context, paginationOpts: { cursor: null, numItems: 100 } };
+  expect((await owner.mutation(api.unitAliases.restoreSavedDefaults, args)).restored).toBe(1);
+  expect((await owner.mutation(api.unitAliases.restoreSavedDefaults, args)).restored).toBe(0);
+  expect(await t.run(ctx => ctx.db.get(custom))).toMatchObject({ removed: true });
+  const replacement = await owner.mutation(api.unitAliases.create, { ...context, name: "Custom", standardUnit: "g", quantity: 1.25 });
+  expect(replacement).not.toBe(custom);
+  expect(await t.run(ctx => ctx.db.get(defaultId))).toMatchObject({ removed: false, enabled: true, quantity: 2.25 });
+});

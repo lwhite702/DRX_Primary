@@ -1,102 +1,31 @@
 "use server";
 
-import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-
-function isMissingColumnError(error: unknown) {
-  return Boolean(
-    error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error as { code?: string }).code === "P2022",
-  );
-}
-
-const businessProfileSelect = {
-  id: true,
-  businessName: true,
-  businessType: true,
-  address: true,
-  city: true,
-  state: true,
-  zipCode: true,
-  phoneNumber: true,
-  email: true,
-  ownerId: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { auth } from "@/lib/adapters/auth/server";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 export async function getCurrentBusinessProfile() {
   try {
-    const { orgId, userId } = await auth();
-    const bypass = isAuthBypassEnabled();
-
-    if (orgId && !bypass) {
-      try {
-        const byOrg = await db.businessProfile.findUnique({
-          where: { clerkOrgId: orgId },
-          select: businessProfileSelect,
-        });
-        if (byOrg) return { ...byOrg, clerkOrgId: orgId };
-      } catch (error: any) {
-        // Some local databases are missing the newer clerk_org_id column.
-        // Fall back to ownerId lookup instead of hard-failing local testing.
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    if (userId) {
-      try {
-        const byOwner = await db.businessProfile.findFirst({
-          where: { ownerId: userId },
-          orderBy: { createdAt: "desc" },
-          select: businessProfileSelect,
-        });
-        if (byOwner) return { ...byOwner, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-
-      try {
-        const role = await db.userRole.findFirst({
-          where: { userId },
-          select: {
-            business: {
-              select: businessProfileSelect,
-            },
-          },
-        });
-        if (role?.business) return { ...role.business, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    if (bypass && userId) {
-      try {
-        const firstProfile = await db.businessProfile.findFirst({
-          orderBy: { createdAt: "desc" },
-          select: businessProfileSelect,
-        });
-        if (firstProfile) return { ...firstProfile, clerkOrgId: null };
-      } catch (error) {
-        if (!isMissingColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Error fetching current business profile:", error);
-    return null;
+    const { userId, orgId } = await auth();
+    if (!userId) return null;
+    const token = await getConvexAuthToken();
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) throw new Error("Business service is unavailable");
+    const client = new ConvexHttpClient(url);
+    client.setAuth(token);
+    const profile = await client.query(api.session.currentBusinessProfile, {
+      expectedOrganizationId: orgId ?? undefined,
+      expectedUserId: userId,
+    });
+    return profile ? {
+      ...profile,
+      createdAt: new Date(profile.createdAt),
+      updatedAt: new Date(profile.updatedAt),
+    } : null;
+  } catch {
+    // Failure is not an empty account. Keep the UI out of onboarding on outages
+    // and never expose provider payloads, identifiers or configuration in logs.
+    throw new Error("We could not load your business. Please try again.");
   }
 }

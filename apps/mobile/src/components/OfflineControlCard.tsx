@@ -67,7 +67,7 @@ export function OfflineControlCard() {
 
   return <View style={styles.card}>
     <View style={styles.row}><View><Text style={styles.title}>Offline checkout</Text><Text style={styles.meta}>{isOnline ? "Connected to Convex" : "Connection unavailable"}</Text></View><View style={[styles.dot, !isOnline && styles.dotOffline]} /></View>
-    <Text style={styles.summary}>{queue.pending} queued · ${(queue.totalCents / 100).toFixed(2)} · {queue.quarantined} exceptions</Text>
+    <Text style={styles.summary}>{queue.pending.toFixed(1)} queued · ${(queue.totalCents / 100).toFixed(2)} · {queue.quarantined.toFixed(1)} exceptions</Text>
     <Text style={styles.meta}>{authorization ? `Authorized until ${new Date(authorization.expiresAt).toLocaleString()}` : "No active device authorization"}</Text>
     {canManage ? <View style={styles.form}>
       <Text style={styles.help}>Owner limits are required. DRX does not supply risk defaults.</Text>

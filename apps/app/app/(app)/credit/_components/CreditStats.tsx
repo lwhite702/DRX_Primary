@@ -1,129 +1,27 @@
 import React from "react";
+import { formatCount, formatPercentage } from "@/lib/number-format";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { AlertCircle, ArrowRight } from "lucide-react";
-
-interface CreditStatsProps {
-  totalOutstanding: number;
-  customerCount: number;
-  overdueBalance: number;
-  overdueCount: number;
-  totalLimit: number;
-  onViewOverdue?: () => void;
-}
-
-export function CreditStats({
-  totalOutstanding = 0,
-  customerCount = 0,
-  overdueBalance = 0,
-  overdueCount = 0,
-  totalLimit = 0,
-  onViewOverdue,
-}: CreditStatsProps) {
-  const safeTotalOutstanding = Number(totalOutstanding || 0);
-  const safeOverdueBalance = Number(overdueBalance || 0);
-  const safeTotalLimit = Number(totalLimit || 0);
-  const safeCustomerCount = Number(customerCount || 0);
-  const safeOverdueCount = Number(overdueCount || 0);
-
-  const utilization =
-    safeTotalLimit > 0 ? (safeTotalOutstanding / safeTotalLimit) * 100 : 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Top Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Total Outstanding */}
-        <Card className="bg-card border-border/80">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Total Outstanding
-              </p>
-              <p className="text-3xl font-bold text-accent font-mono">
-                ${safeTotalOutstanding.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Across {safeCustomerCount} customers
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Overdue Balance */}
-        <Card className="bg-card border-border/80">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Overdue Balance
-              </p>
-              <p className="text-3xl font-bold text-destructive font-mono">
-                ${safeOverdueBalance.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {safeOverdueCount} {safeOverdueCount === 1 ? "customer" : "customers"}{" "}
-                overdue
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Credit Utilization Bar */}
-      <div>
-        <div className="flex justify-between items-end mb-2">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Credit Utilization
-          </p>
-          <p className="text-xs font-bold font-mono text-foreground">
-            {utilization.toFixed(1)}%
-          </p>
-        </div>
-        <Progress
-          value={utilization}
-          className="h-2 bg-muted"
-          indicatorClassName="bg-accent"
-        />
-        <div className="flex justify-between mt-1 text-[10px] text-muted-foreground font-mono">
-          <span>${safeTotalOutstanding.toFixed(2)} used</span>
-          <span>${safeTotalLimit.toFixed(2)} total limit</span>
-        </div>
-      </div>
-
-      {/* Overdue Alert */}
-      {safeOverdueCount > 0 && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex gap-3 items-start">
-            <div className="bg-destructive/20 p-2 h-fit rounded-lg text-destructive shrink-0">
-              <AlertCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-destructive font-semibold text-sm mb-0.5">
-                {safeOverdueCount} Overdue{" "}
-                {safeOverdueCount === 1 ? "Account" : "Accounts"}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Total overdue: ${safeOverdueBalance.toFixed(2)} • Please review accounts below
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (onViewOverdue) {
-                onViewOverdue();
-              } else {
-                document.getElementById("tour-credit-list")?.scrollIntoView({ behavior: "smooth" });
-              }
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-destructive hover:text-foreground transition-colors self-start md:self-auto min-h-[44px] px-2"
-          >
-            <span>View Overdue Accounts</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
+import type { CreditAccount, CreditAgingResult } from "@/lib/credit/dashboard-client";
+import { creditMoney } from "./CreditAgingTable";
+function sumSafe(values: number[]) { let sum = 0; for (const value of values) { if (!Number.isSafeInteger(value) || value < 0 || value > Number.MAX_SAFE_INTEGER - sum) return null; sum += value; } return sum; }
+export function CreditStats({ accounts, agingByCustomer, accountsComplete, unavailable = false }: { accounts: CreditAccount[]; agingByCustomer: Record<string, CreditAgingResult>; accountsComplete: boolean; unavailable?: boolean }) {
+  const balance = sumSafe(accounts.map(account => account.balanceCents));
+  const finite = accounts.filter(account => account.creditEnabled && !account.unlimited);
+  const limit = sumSafe(finite.map(account => account.limitCents)), finiteUsed = sumSafe(finite.map(account => account.balanceCents));
+  const unlimitedCount = accounts.filter(account => account.creditEnabled && account.unlimited).length;
+  const agingKnown = accounts.every(account => agingByCustomer[account.customerId]?.status === "ready");
+  const overdueValues = accounts.map(account => { const aging = agingByCustomer[account.customerId]; return aging?.status === "ready" ? sumSafe([aging.bucketsCents["1_7"], aging.bucketsCents["8_14"], aging.bucketsCents["15_30"], aging.bucketsCents["31_plus"]]) : null; });
+  const overdue = agingKnown && overdueValues.every(value => value !== null) ? sumSafe(overdueValues as number[]) : null;
+  const undated = accounts.some(account => { const aging = agingByCustomer[account.customerId]; return account.allocationStatus === "unreconciled" || (aging?.status === "ready" && (aging.bucketsCents.undated > 0 || aging.bucketsCents.unreconciled > 0)); });
+  const totalLabel = accountsComplete ? "All accounts" : "Loaded accounts";
+  const amount = (value: number | null) => unavailable ? "Unavailable" : value === null ? "Needs reconciliation" : creditMoney(value);
+  return <section aria-label="Credit totals" className="space-y-3">
+    <p className="text-sm text-muted-foreground">{totalLabel}: {formatCount(accounts.length)}. {accountsComplete ? "Account list complete." : "Load more accounts for complete totals."}</p>
+    <div className="grid gap-4 sm:grid-cols-3">
+      <Card><CardContent className="p-5"><h2 className="text-sm text-muted-foreground">Outstanding balance</h2><p className="text-2xl font-mono font-semibold">{amount(balance)}</p></CardContent></Card>
+      <Card><CardContent className="p-5"><h2 className="text-sm text-muted-foreground">Overdue balance</h2><p className="text-2xl font-mono font-semibold">{unavailable ? "Unavailable" : !agingKnown ? "Aging pending" : undated ? "Incomplete aging" : amount(overdue)}</p><p className="text-xs text-muted-foreground">{undated ? "Undated or unreconciled balances need review before the full overdue total is known." : "All overdue buckets, from 1 day onward."}</p></CardContent></Card>
+      <Card><CardContent className="p-5"><h2 className="text-sm text-muted-foreground">Finite credit limits</h2><p className="text-2xl font-mono font-semibold">{amount(limit)}</p><p className="text-xs text-muted-foreground">{formatCount(unlimitedCount)} unlimited {unlimitedCount === 1 ? "account" : "accounts"}; excluded from utilization.</p></CardContent></Card>
     </div>
-  );
+    <p className="text-sm text-muted-foreground">Finite-account utilization: {unavailable || limit === null || finiteUsed === null ? "Unavailable" : limit === 0 ? "Not applicable" : `${formatPercentage(finiteUsed / limit * 100)}%`}</p>
+  </section>;
 }

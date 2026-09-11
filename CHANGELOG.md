@@ -9,13 +9,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Saved Convex recommendations (WRE-115, unreleased)**: Added internal recommendation recording and atomic policy application with canonical-history checks, exact source/settings revisions, expiry and immutable retry receipts. Zero recommendations freeze credit while retaining the configured limit. Provider generation, customer panels and scheduled refresh integration remain pending.
+
+- **Intake and mobile display precision (WRE-115, unreleased)**: Intake stock, weight and cost summaries and mobile checkout quantities show two decimal places; mobile queue counts show one. Entry values and stored calculations retain their precision.
+
+- **Recommendation settings on Convex (WRE-115, unreleased)**: Added explicit, revision-safe configuration and an operator settings page. The engine reads canonical settings and rejects missing, disabled or changed configuration. Historical settings migration and scheduled recommendation conversion remain pending.
+
+- **Credit recommendation failure handling (WRE-115, unreleased)**: Invalid provider/input and rate-limit failures return unavailable instead of a fabricated credit limit. Removed stale customer-only recommendation caching and preserved explicit zero values.
+
+- **Canonical recommendation inputs (WRE-115, unreleased)**: Added bounded, authorized credit/sales/inventory facts with explicit allocation and historical coverage. Extracted credit calculations from database dependencies. Recommendation persistence, configuration and interactive/cron conversion remain in progress.
+
+- **Canonical credit policy API (WRE-115, unreleased)**: Added permission-checked Convex policy reads and atomic changes with stale-policy rejection and immutable retry receipts. Disabled credit retains its limit; enabled zero remains unlimited. Existing AI panel integration and recommendation conversion remain open.
+
+- **Canonical credit detail and audit APIs (WRE-115, unreleased)**: Transaction details read the immutable Convex ledger with financial permission checks. Editing/deleting recorded transactions is rejected; the old legacy deletion path is retired. Credit audit pages return canonical customer credit events with minimized metadata and explicit legacy-history exclusion. Unmapped legacy IDs fail explicitly.
+
+- **Credit screen on Convex (WRE-115, unreleased)**: Account balances, aging and recent history now use canonical data. Extensions/payments save encrypted pending attempts before submission and replay verified receipts. Explicit recovery confirms recorded transactions or cancels unrecorded attempts before clearing local state. The screen shows loaded-account totals, all seven aging buckets, privacy-safe account labels and pending/reconciliation states. Historical reconciliation, remaining credit service endpoints and live verification remain open.
+
+- **Canonical credit dashboard data API (WRE-115, unreleased)**: Added paginated account summaries and allocation refresh/aging access with selected operator/business checks, neutral labels, explicit pending/unreconciled states and safe cent values. The client reader validates complete, consistent seven-bucket totals. Existing credit UI and offline mutation integration remain pending.
+
+- **Persisted forecast acknowledgement (WRE-115, unreleased)**: Forecast cards acknowledge actual saved Convex alerts and verify receipts. Partial failures retain confirmed progress for retry, and scope changes suppress stale UI results. Removed the placeholder Supabase-dependent success path.
+
+- **Inventory health on Convex (WRE-115, unreleased)**: Health metrics and optional generated insights now use canonical inventory and Convex report receipts, with permission rechecks, bounded history and explicit provider status. Provider configuration and historical insight reconciliation remain pending.
+
+- **AI card number formatting (WRE-115, unreleased)**: Money, weights and quantities display two decimals; percentages and counts display one. Rounded negative zero displays as zero while stored precision is preserved.
+
+- **Convex readiness probe (WRE-115, unreleased)**: The health endpoint now checks the canonical Convex database, returns unavailable on configuration/backend failures, and disables response caching. This probe does not establish authenticated workflow or historical migration readiness.
+
+- **Pricing analysis queue on Convex (WRE-115, unreleased)**: Queued requests now use durable Convex scheduling with saved progress, per-step authority checks, sanitized failure status and retry/resume. Job status is available through the same endpoint. Legacy Prisma worker registration is retired; existing production queue runs require reconciliation before deployment.
+
+- **Queued calculation parity (WRE-115, unreleased)**: The legacy queued formulas now live in a pure calculator shared with the Convex writer. A receipt-bound queued profile preserves its distinct pricing/forecast rules and zero-cost behavior. The queued transport and persistence cutover remain pending.
+
+- **Canonical analysis modes (WRE-115, unreleased)**: Pricing-only and inventory-only analysis now create only their requested results and enforce the corresponding permissions. Dashboard and pricing reads retain the newest result of each kind independently. Queued job cutover and legacy formula parity remain pending.
+
+- **Analysis option parity (WRE-115, unreleased)**: Canonical product analysis honors validated margin, supplier lead time, price bounds and restock cost. Product and batch retry receipts bind normalized options, rejecting changed attempts. Queued worker/mode conversion remains pending.
+
+- **POS pricing on Convex (WRE-115, unreleased)**: Older POS recommendation/apply endpoints now use canonical analysis and atomic pricing application, with required business identity. Lists exclude applied or stale recommendations and represent zero-base percentage as null. The client unwraps the response envelope and reports unavailable data. Unused legacy intelligence engine modules were retired. Historical reconciliation and scale/live gates remain open.
+
+- **Inventory intelligence web cutover (WRE-115, unreleased)**: Single/batch analysis, saved dashboard totals, alert read/acknowledgement and the intelligence card’s price application now use Convex. Callers preserve retry IDs after uncertain failures. Batch retries reuse a saved product list; price application rejects stale catalog prices. UI result fields now match canonical calculations. Large-history/catalog processing, historical migration, restart recovery and live verification remain pending.
+
+- **Inventory intelligence reads (WRE-115, unreleased)**: Convex now exposes authorized saved analysis, severity-filtered unread alerts and idempotent acknowledgement with audit. Zero-sales pricing explicitly represents unavailable days of supply as null. Route/UI cutover remains pending.
+
+- **Canonical inventory intelligence writer (WRE-115, unreleased)**: A Convex transaction now computes and stores pricing, forecast, fractional sales velocity, alerts and audit together with retry deduplication. It uses completed sales and offline occurrence dates. Endpoint cutover, large-history pagination and historical reconciliation remain pending.
+
+- **Forecast calculation preparation (WRE-115, unreleased)**: Inventory forecasts share a database-independent calculation with explicit time and UTC date projection for Convex execution. Legacy persistence remains to convert; this does not complete the inventory intelligence migration.
+
+- **Notification audits on Convex (WRE-115, unreleased)**: Business-managed alerts retain their original business scope through read and deletion events. The audit endpoint returns a minimal authorized projection without message or metadata content. Personal/platform events remain unscoped; historical mapping and live verification remain pending.
+
+- **Alert creation on Convex (WRE-115, unreleased)**: Alert creation now shares the canonical notification store, enforces both backend gates and recipient access, and atomically records an audit and retry receipt. Callers must supply a stable request ID. Historical notification/audit import and live verification remain pending.
+
+- **Notification ownership on Convex (WRE-115, unreleased)**: Alert deletion now verifies recipient ownership, removes content, and records a minimal audit/retry receipt. Canonical listing and bounded mark-read endpoints are implemented; history reconciliation remains pending.
+
+- **Notification preferences on Convex (WRE-115, unreleased)**: Preference read/write endpoints now use Convex with user/recipient authorization, revision checks and both write gates enforced inside the backend action. Unresolved flags disable writes. Historical preferences and platform-grant reconciliation remain pending.
+
+- **Mobile session endpoint on Convex (WRE-115, unreleased)**: The session API now returns canonical business identity, a separate optional reconciled legacy ID, and tenant-scoped profile/role data from Convex. Older consumers of legacy businessId semantics require migration before release.
+
+- **Mobile session mapping on Convex (WRE-115, unreleased)**: Mobile reads reconciled business IDs from its canonical session instead of a Prisma-backed REST lookup and no longer mixes an older cached business mapping into a live session. Explicit inactive/missing live status suppresses cached session selection. Offline revocation and device verification remain pending.
+
+- **Help Center identity on Convex (WRE-115, unreleased)**: Featurebase sign-in reads the canonical operator profile, requires a verified identity-provider email, and stops on profile/email disagreement. Token responses are private and uncached. Historical identity reconciliation and live SSO verification remain pending.
+
+- **Legacy POS engine retired (WRE-115, unreleased)**: Removed the unused weight-engine module after migrating its remaining app callers to canonical Convex workflows. Other legacy database paths remain under conversion.
+
+- **Inventory check conversion in progress (WRE-115, unreleased)**: The Convex check transaction preserves above-tolerance shortage recording with FIFO cost and approval enforcement, rejects stale stock snapshots, and returns an original receipt on retries. Random selection and the inventory-check API now use Convex; web and Expo screens now preserve snapshots and retries, while approval completion, restart recovery and historical reconciliation remain pending.
+
+- **Shrinkage conversion in progress (WRE-115, unreleased)**: The shrinkage API targets an atomic Convex stock, FIFO-cost and audit transaction with required retry IDs and sanitized approval/stock failures. Web and Expo shrinkage now read the canonical catalog and preserve uncertain retries while mounted; supervisor approval, restart recovery and historical policy reconciliation remain unfinished; this is not a released workflow.
+
 - **Mobile internal testing companion**: Added a private-index guided web checklist for authorized iOS and Android testers with made-up-data safeguards, a broad phone and tablet picker, a dedicated first-time onboarding test, step-by-step transaction help, responsive progress controls, automatic local save-and-return, and local-only copy/download reporting. Every tester is also guided through a required phone-browser parity pass on the same device. Refreshed the public Resources page around current app, testing, help, privacy, and terms destinations (WRE-49).
 
 - **Fractional product setup**: Add Product and the guided first-product flow expose opt-in fractional sales, selling units, separate minimum/increment, precision, and dollar/quantity presets. Web creates the product and transitional commerce rules in one audited transaction; native iOS and Expo creation pass the same validated rules to the canonical product mutation. Onboarding explains per-product setup and the web first-product action opens creation directly (WRE-89). Web/backend deployed on 2026-08-31; authenticated cross-client/device verification and native distribution remain pending.
 
 ### Changed
 
-- **Minor release preparation**: Synchronized product metadata to 0.9.0 for the approved plain-language DRX content system, following the corrected WRE-87 0.8.0 baseline. Native build identifiers are unchanged; production deployment, native store distribution, and provider-controlled copy publication remain separately verified outcomes (WRE-107).
+- **Onboarding and dashboard preferences on Convex (WRE-115, unreleased)**: The separate onboarding form now saves its business, tax, location and dashboard choices atomically. Updates require the current owner and preserve unrelated settings. Dashboard preferences belong to each operator's business membership; the shared browser cache and Clerk metadata writes are removed. Onboarding checks verify the session's expected organization, and reconciliation no longer trusts global completion claims. Historical membership/preference import and deployed verification remain pending.
+
+- **Settings and setup on Convex (WRE-115, unreleased)**: Business tax, manager PIN and privacy settings use authenticated Convex records. PINs are preserved on ordinary saves and never returned as secrets. Customer views wait for verified privacy settings. The business setup wizard atomically creates contact details, presets, privacy policy and owner membership; completion checks verify the current Convex tenant. Historical settings import and the separate onboarding form remain in progress.
+
+- **Team conversion in progress (WRE-115, unreleased)**: Team directory, member details, role changes, removal and member audit reads target Convex. Role/removal changes write atomic audit events, and removed memberships retain history. Invitations, historical records and complete workflow verification remain pending.
+- **Business profiles on Convex (WRE-115, unreleased)**: Web profile loading and profile API edits now use the authenticated Convex business and preserve contact fields. Profile edits require settings permission and record changed field names in the audit trail. Organization selection resolves tenant-specific membership roles; inactive, foreign and ambiguous memberships fail explicitly. Service failures no longer appear as accounts needing setup. Historical organization/default-membership mapping and remaining identity/team workflows are still being migrated.
+
+- **Credit transaction API on Convex (WRE-115, unreleased)**: Credit transaction creation and history use the canonical ledger with tenant checks, explicit legacy customer-ID mapping, safe cents and request-key replay. Existing array/dollar response contracts remain; cursor headers support paged history. Web/native credit screens, transaction amendments and historical balances are still being migrated.
+
+- **Convex credit history foundation (WRE-115, unreleased)**: Credit issuance, repayments and online/offline credit sales append atomic balance entries. Supplied request keys prevent duplicate credit/payment writes; invalid cents and overpayments are rejected. Existing balances are explicitly marked as unreconciled opening entries. Payment allocation, legacy-client retry keys and historical reconciliation remain in progress.
+
+- **Quick POS favorites on Convex (WRE-115, unreleased)**: Register favorites and recent products now read canonical completed sales and current catalog stock, including sold-out products and fractional selling rules. Credit and delivery policy reads use Convex. Historical-data migration and production-volume verification remain pending.
+
+- **Full web checkout on Convex (WRE-115, unreleased)**: Full checkout and checkout-enhanced use canonical pricing, inventory, settlement and delivery profiles. Pricing overrides require permission and a reason. The client reviews changed totals and reuses an uncertain submission; checkout-enhanced requires a stable request key. Unknown delivery vendor costs remain explicit in profit reports. Sales API/history, data migration and remaining domains are still in progress.
+
+- **Convex full-checkout foundation (WRE-115, unreleased)**: Canonical settlement now records miscellaneous fees, payment references, Zelle and mixed tender, with atomic credit remainder and retry checks. Sales emit stock audit events and reports show fee revenue. Full web checkout routing, delivery-profile and price-override parity remain in progress.
+
+- **Convex checkout validation (WRE-115, unreleased)**: Stock, credit and preflight checks read the canonical records. Stock checks combine duplicate cart lines and enforce selling rules; unavailable credit checks fail closed. Full checkout and historical credit-policy reconciliation remain pending.
+
+- **Convex commerce settings (WRE-115, unreleased)**: Merchant policy and product-rule saves use one audited Convex transaction. The settings page uses the same catalog and removes manual cross-database linking. Tenant permission checks use Convex; platform administration and remaining operational domains are still being converted.
+
+- **Convex checkout conversion in progress (WRE-115)**: Ordinary Quick POS checkout, quotes, product search and selected-business resolution now use Convex. Full checkout and data reconciliation remain in progress; this branch is not released.
+
+- **Convex conversion in progress (WRE-115)**: Web catalog, product edits, stock adjustments, intake approvals and inventory history now target Convex in the working branch. Adjustments use atomic FIFO/stock/audit changes and retry keys. Remaining domains, historical-data reconciliation, full client parity and production verification are still pending.
 
 - **Plain-language product vocabulary**: Replaced complex public privacy labels with `Privacy`, `Hide details`, `Protect details`, `What's saved`, and `Delete old records`; aligned navigation, sales, stock, payment, onboarding, help, marketing, Expo, and native iOS copy through a shared DRX content catalog. Provider-controlled copy remains draft-only pending publication approval (WRE-107).
 
@@ -34,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-Surface Brand Voice**: Aligned marketing, web, onboarding, Expo, and native iOS copy around one operator-first vocabulary, corrected unsupported availability and report-label claims, and added an automated copy voice gate.
 
 ### Fixed
+
+- WRE-115: Move web stock intake, product selection, and approval decisions to Convex with tenant checks, integer-cent validation, retry protection, atomic FIFO stock updates, and audit history. Production cutover remains pending legacy stock/history reconciliation and release approval.
 
 - **Business approvals (WRE-87):** Keep all pending inventory approvals visible independently of the recent completed-history limit, with both reads scoped to the authorized business.
 - **Business page loading (WRE-87):** Remove nested brand links that caused hydration errors and keep route content available while the optional onboarding interface loads.

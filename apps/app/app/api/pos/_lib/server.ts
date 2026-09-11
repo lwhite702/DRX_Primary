@@ -1,115 +1,37 @@
-import { auth } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
+
+async function businessContext(selectedBusinessId?: string) {
+  const token = await getConvexAuthToken();
+  if (!token) return null;
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  if (!url) throw new Error("Business service is temporarily unavailable");
+  const client = new ConvexHttpClient(url);
+  client.setAuth(token);
+  try {
+    return await client.query(api.session.currentBusiness, { selectedBusinessId });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (["FORBIDDEN:", "UNAUTHORIZED:", "UNAUTHENTICATED:", "NOT_FOUND:"].some(code => message.includes(code))) return null;
+    throw new Error("Business service is temporarily unavailable");
+  }
+}
 
 export async function assertBusinessAccess(userId: string, businessId: string): Promise<boolean> {
-  const owned = await db.businessProfile.findFirst({
-    where: { ownerId: userId, id: businessId },
-    select: { id: true },
-  });
-  if (owned) return true;
-
-  const role = await db.userRole.findFirst({
-    where: { userId, businessId },
-    select: { id: true },
-  });
-  return !!role;
+  const context = await businessContext(businessId);
+  return context?.userId === userId;
 }
 
 export async function resolveAuthContext(request?: Request | string) {
-  const { userId, orgId } = await auth();
-  if (!userId) {
-    return { userId: null, businessId: null };
+  let selectedBusinessId: string | undefined;
+  if (typeof request === "string") selectedBusinessId = request;
+  else if (request) {
+    const url = new URL(request.url);
+    selectedBusinessId = request.headers.get("x-business-id") || url.searchParams.get("businessId") || url.searchParams.get("business_id") || undefined;
   }
-
-  // 1. Try explicit business selection from request or string input
-  let explicitBusinessId: string | null = null;
-  if (typeof request === "string") {
-    explicitBusinessId = request;
-  } else if (request) {
-    const headers = request.headers;
-    const headerBusinessId = headers instanceof Headers ? headers.get("x-business-id") : (headers as any)?.["x-business-id"];
-    if (headerBusinessId) {
-      explicitBusinessId = headerBusinessId;
-    } else {
-      try {
-        const url = new URL(request.url);
-        const queryBusinessId = url.searchParams.get("businessId") || url.searchParams.get("business_id");
-        if (queryBusinessId) {
-          explicitBusinessId = queryBusinessId;
-        }
-      } catch (err) {
-        // Ignore if invalid URL
-      }
-    }
-  }
-
-  if (explicitBusinessId) {
-    const hasAccess = await assertBusinessAccess(userId, explicitBusinessId);
-    return {
-      userId,
-      businessId: hasAccess ? explicitBusinessId : null,
-    };
-  }
-
-  // 2. Try to resolve using active Clerk organization in session (explicit session selection)
-  if (orgId) {
-    const business = await db.businessProfile.findUnique({
-      where: { clerkOrgId: orgId },
-      select: { id: true },
-    });
-    if (business) {
-      const hasAccess = await assertBusinessAccess(userId, business.id);
-      return {
-        userId,
-        businessId: hasAccess ? business.id : null,
-      };
-    }
-  }
-
-  // 3. Fallback for personal account context (no active organization)
-  // Lookup personal workspace via synthetic Clerk organization ID
-  const personalBusiness = await db.businessProfile.findUnique({
-    where: { clerkOrgId: `personal_${userId}` },
-    select: { id: true },
-  });
-  if (personalBusiness) {
-    return { userId, businessId: personalBusiness.id };
-  }
-
-  // Fallback: If no personal synthetic workspace, find the first business they own or have access to
-  const ownedBusiness = await db.businessProfile.findFirst({
-    where: { ownerId: userId },
-    select: { id: true },
-    orderBy: { createdAt: "desc" },
-  });
-  if (ownedBusiness) {
-    return { userId, businessId: ownedBusiness.id };
-  }
-
-  const roleBusiness = await db.userRole.findFirst({
-    where: { userId },
-    select: { businessId: true },
-    orderBy: { createdAt: "desc" },
-  });
-  if (roleBusiness) {
-    return { userId, businessId: roleBusiness.businessId };
-  }
-
-  // 4. Fallback for testing/development bypass mode ONLY.
-  // In production/staging, bypass is false, so it will never fall back to findFirst.
-  const bypass = isAuthBypassEnabledServer();
-  if (bypass) {
-    const firstBusiness = await db.businessProfile.findFirst({
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
-    if (firstBusiness) {
-      return { userId, businessId: firstBusiness.id };
-    }
-  }
-
-  return { userId, businessId: null };
+  const context = await businessContext(selectedBusinessId);
+  return { userId: context?.userId ?? null, businessId: context?.businessId ?? null };
 }
 
 export function toNumber(value: unknown): number {

@@ -28,19 +28,6 @@ async function fetchWithAuth(
   return response.json();
 }
 
-export type LegacyMobileSession = {
-  operatorId: string;
-  displayName: string;
-  businessId: string;
-  businessName: string;
-  roles: string[];
-  permissions: string[];
-  email: string | null;
-};
-
-export const getLegacyMobileSession = async (token: string | null) =>
-  fetchWithAuth("/api/mobile/v1/session", token) as Promise<LegacyMobileSession>;
-
 // ==================== INVENTORY ====================
 
 export const getProducts = async (businessId: string, token: string | null) => {
@@ -87,24 +74,6 @@ export const recordDrawerEvent = async (token: string | null, eventType: string 
   return fetchWithAuth("/api/pos/drawer", token, {
     method: "POST",
     body: JSON.stringify({ eventType, note }),
-  });
-};
-
-export const recordShrinkage = async (token: string | null, inventoryId: string, quantityGrams: number, shrinkageType: string, note?: string) => {
-  return fetchWithAuth("/api/pos/shrinkage", token, {
-    method: "POST",
-    body: JSON.stringify({ inventoryId, quantityGrams, shrinkageType, note }),
-  });
-};
-
-export const getRandomCheckProduct = async (token: string | null) => {
-  return fetchWithAuth("/api/pos/inventory-check", token);
-};
-
-export const recordInventoryCheck = async (token: string | null, inventoryId: string, measuredWeightGrams: number) => {
-  return fetchWithAuth("/api/pos/inventory-check", token, {
-    method: "POST",
-    body: JSON.stringify({ inventoryId, measuredWeightGrams }),
   });
 };
 
