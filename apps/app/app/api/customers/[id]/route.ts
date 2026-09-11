@@ -259,6 +259,7 @@ async function handleUpdate(request: NextRequest, customerId: string) {
     const incomingEmail = body.email;
     const incomingAddress = body.address;
     const incomingNotes = body.notes;
+    const incomingLastName = body.lastName ?? body.last_name;
     const incomingEphemeral =
       typeof body.ephemeral === "boolean" ? body.ephemeral : undefined;
     const incomingIsActive =
@@ -280,6 +281,12 @@ async function handleUpdate(request: NextRequest, customerId: string) {
     if (blockedByPrivacy(privacyProtocol, "first_name", incomingFirstName)) {
       return NextResponse.json(
         { error: "First name updates are disabled" },
+        { status: 400 },
+      );
+    }
+    if (blockedByPrivacy(privacyProtocol, "first_name", incomingLastName)) {
+      return NextResponse.json(
+        { error: "Last name updates are disabled" },
         { status: 400 },
       );
     }
@@ -322,15 +329,20 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       );
     }
 
+    const canStoreAddress = canWriteField(privacyProtocol, "address");
+    const canStoreName = canWriteField(privacyProtocol, "first_name");
+
     const nextPii = {
       alias:
         incomingAlias !== undefined
           ? sanitizePiiInput(incomingAlias)
           : currentPii.alias,
       first_name:
-        incomingFirstName !== undefined
-          ? sanitizePiiInput(incomingFirstName)
-          : currentPii.first_name,
+        !canStoreName
+          ? null
+          : incomingFirstName !== undefined
+            ? sanitizePiiInput(incomingFirstName)
+            : currentPii.first_name,
       phone:
         incomingPhone !== undefined
           ? sanitizePiiInput(incomingPhone)
@@ -340,9 +352,11 @@ async function handleUpdate(request: NextRequest, customerId: string) {
           ? sanitizePiiInput(incomingEmail)
           : currentPii.email,
       address:
-        incomingAddress !== undefined
-          ? sanitizePiiInput(incomingAddress)
-          : currentPii.address,
+        !canStoreAddress
+          ? null
+          : incomingAddress !== undefined
+            ? sanitizePiiInput(incomingAddress)
+            : currentPii.address,
       notes:
         incomingNotes !== undefined
           ? sanitizePiiInput(incomingNotes)
@@ -359,19 +373,29 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       address: null,
       notes: null,
       lastName:
-        body.lastName !== undefined || body.last_name !== undefined
-          ? sanitizePiiInput(body.lastName ?? body.last_name)
-          : customer.lastName,
+        !canStoreName
+          ? null
+          : body.lastName !== undefined || body.last_name !== undefined
+            ? sanitizePiiInput(body.lastName ?? body.last_name)
+            : customer.lastName,
       city:
-        body.city !== undefined ? sanitizePiiInput(body.city) : customer.city,
+        !canStoreAddress
+          ? null
+          : body.city !== undefined
+            ? sanitizePiiInput(body.city)
+            : customer.city,
       state:
-        body.state !== undefined
-          ? sanitizePiiInput(body.state)
-          : customer.state,
+        !canStoreAddress
+          ? null
+          : body.state !== undefined
+            ? sanitizePiiInput(body.state)
+            : customer.state,
       zipCode:
-        body.zipCode !== undefined || body.zip_code !== undefined
-          ? sanitizePiiInput(body.zipCode ?? body.zip_code)
-          : customer.zipCode,
+        !canStoreAddress
+          ? null
+          : body.zipCode !== undefined || body.zip_code !== undefined
+            ? sanitizePiiInput(body.zipCode ?? body.zip_code)
+            : customer.zipCode,
       customerType:
         body.customerType !== undefined || body.customer_type !== undefined
           ? sanitizePiiInput(body.customerType ?? body.customer_type)

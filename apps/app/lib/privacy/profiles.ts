@@ -317,10 +317,11 @@ export function canWritePrivacyField(
   settings: PrivacyProtocolSettings,
   field: PrivacyField,
 ): boolean {
+  if (!settings) return false;
   if (settings.alias_only_mode && field !== "alias") {
     return false;
   }
-  return settings.fields[field]?.visible ?? false;
+  return settings.fields?.[field]?.visible ?? false;
 }
 
 export function getRecommendedPrivacyFields(

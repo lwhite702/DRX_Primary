@@ -71,6 +71,7 @@ function collectWriteViolations(
   const fieldMap = {
     alias: "alias",
     first_name: "first_name",
+    last_name: "first_name",
     phone: "phone",
     email: "email",
     address: "address",
@@ -220,6 +221,7 @@ export async function POST(request: NextRequest) {
     const email = sanitizePiiInput(body.email);
     const address = sanitizePiiInput(body.address);
     const notes = sanitizePiiInput(body.notes);
+    const lastName = sanitizePiiInput(body.last_name ?? body.lastName);
     const requestedEphemeral = body.ephemeral === true;
     const requestedRetentionDays = parseEphemeralRetentionDays(
       body.ephemeral_retention_days ?? body.ephemeralRetentionDays,
@@ -228,6 +230,7 @@ export async function POST(request: NextRequest) {
     const writeViolations = collectWriteViolations(privacyProtocol, {
       alias,
       first_name: firstName,
+      last_name: lastName,
       phone,
       email,
       address,
@@ -262,12 +265,15 @@ export async function POST(request: NextRequest) {
       requestedRetentionDays ??
       privacyProtocol.ephemeral_profiles.default_retention_days;
 
+    const canStoreAddress = canWriteField(privacyProtocol, "address");
+    const canStoreName = canWriteField(privacyProtocol, "first_name");
+
     const piiStorage = await encodeCustomerPii({
       alias,
-      first_name: firstName,
+      first_name: canStoreName ? firstName : null,
       phone,
       email,
-      address,
+      address: canStoreAddress ? address : null,
       notes,
     });
 
@@ -287,14 +293,14 @@ export async function POST(request: NextRequest) {
       businessId,
       alias: null,
       firstName: null,
-      lastName: sanitizePiiInput(body.last_name ?? body.lastName),
+      lastName: canStoreName ? lastName : null,
       phoneNumber: null,
       email: null,
       address: null,
       notes: null,
-      city: sanitizePiiInput(body.city),
-      state: sanitizePiiInput(body.state),
-      zipCode: sanitizePiiInput(body.zip_code ?? body.zipCode),
+      city: canStoreAddress ? sanitizePiiInput(body.city) : null,
+      state: canStoreAddress ? sanitizePiiInput(body.state) : null,
+      zipCode: canStoreAddress ? sanitizePiiInput(body.zip_code ?? body.zipCode) : null,
       customerType,
       fixedPricePerGram,
       isActive,

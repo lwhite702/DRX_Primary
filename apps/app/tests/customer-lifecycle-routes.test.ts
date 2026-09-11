@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   mapCustomerToOperationalModel: vi.fn(),
   mapOperationalCustomerRecord: vi.fn(),
   createCustomerWithAudit: vi.fn(),
+  updateCustomerWithAudit: vi.fn(),
+  canWriteField: vi.fn().mockReturnValue(true),
   db: {
     $queryRaw: vi.fn(),
     customers: {
@@ -52,7 +54,7 @@ vi.mock("@/lib/customers/core/customer-lifecycle", () => {
     CustomerConflictError,
     CustomerLifecycleNotFoundError,
     createCustomerWithAudit: mocks.createCustomerWithAudit,
-    updateCustomerWithAudit: vi.fn(),
+    updateCustomerWithAudit: mocks.updateCustomerWithAudit,
   };
 });
 
@@ -70,7 +72,7 @@ vi.mock("@/lib/privacy/customer-pii", () => ({
 }));
 
 vi.mock("@/lib/privacy/privacy-policy", () => ({
-  canWriteField: vi.fn().mockReturnValue(true),
+  canWriteField: mocks.canWriteField,
 }));
 
 vi.mock("@/lib/customers/core/customer-normalizer", () => ({
@@ -84,7 +86,10 @@ import {
   GET as GET_CUSTOMERS,
   POST as CREATE_CUSTOMER,
 } from "@/app/api/customers/route";
-import { GET as GET_CUSTOMER } from "@/app/api/customers/[id]/route";
+import {
+  GET as GET_CUSTOMER,
+  PATCH as UPDATE_CUSTOMER,
+} from "@/app/api/customers/[id]/route";
 import { CustomerConflictError } from "@/lib/customers/core/customer-lifecycle";
 
 function request(path: string, method = "GET", body?: Record<string, unknown>) {
@@ -115,6 +120,10 @@ describe("customer lifecycle routes", () => {
     mocks.decodeCustomerPii.mockResolvedValue({});
     mocks.encodeCustomerPii.mockResolvedValue({});
     mocks.mapCustomerToOperationalModel.mockImplementation((customer) => ({
+      id: customer.id,
+      is_active: customer.isActive,
+    }));
+    mocks.mapOperationalCustomerRecord.mockImplementation((customer) => ({
       id: customer.id,
       is_active: customer.isActive,
     }));
@@ -222,5 +231,162 @@ describe("customer lifecycle routes", () => {
         total_amount: 10.8,
       }),
     ]);
+  });
+
+  it("blocks customer creation with 400 when address is provided but disallowed by privacy policy", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "Jane",
+        phone: "5551234567",
+        address: "123 Main St",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toEqual({
+      error: "Blocked by privacy policy: address",
+    });
+    expect(mocks.createCustomerWithAudit).not.toHaveBeenCalled();
+  });
+
+  it("succeeds when address is omitted or empty under restrictive privacy policy", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+    mocks.createCustomerWithAudit.mockResolvedValue({
+      id: "customer-new",
+      isActive: true,
+    });
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "Jane",
+        phone: "5551234567",
+        address: "   ",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(payload).toEqual({
+      id: "customer-new",
+      is_active: true,
+    });
+    expect(mocks.createCustomerWithAudit).toHaveBeenCalledTimes(1);
+  });
+
+  it("nullifies city, state, and zipCode when address is disallowed by privacy policy", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+    mocks.createCustomerWithAudit.mockResolvedValue({
+      id: "customer-no-address",
+      isActive: true,
+    });
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "Jane",
+        phone: "5551234567",
+        city: "Denver",
+        state: "CO",
+        zip_code: "80202",
+      }),
+    );
+    expect(response.status).toBe(201);
+    expect(mocks.createCustomerWithAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          city: null,
+          state: null,
+          zipCode: null,
+          address: null,
+        }),
+      }),
+    );
+  });
+
+  it("blocks customer creation when last_name is provided but first_name is disallowed (alias mode)", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field === "alias",
+    );
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        alias: "Shadow",
+        last_name: "Smith",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toContain("Blocked by privacy policy: last_name");
+    expect(mocks.createCustomerWithAudit).not.toHaveBeenCalled();
+  });
+
+  it("blocks customer update with 400 when address is updated but disallowed", async () => {
+    mocks.db.customers.findFirst.mockResolvedValue({
+      id: "customer-1",
+      businessId: "business-1",
+      isActive: true,
+    });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+
+    const response = await UPDATE_CUSTOMER(
+      request("/api/customers/customer-1", "PATCH", {
+        address: "789 Pine Rd",
+      }),
+      { params: { id: "customer-1" } },
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toEqual({
+      error: "Address updates are disabled",
+    });
+    expect(mocks.updateCustomerWithAudit).not.toHaveBeenCalled();
+  });
+
+  it("allows customer update with empty/whitespace address without error", async () => {
+    mocks.db.customers.findFirst.mockResolvedValue({
+      id: "customer-1",
+      businessId: "business-1",
+      isActive: true,
+    });
+    mocks.hasBusinessPermission.mockResolvedValue(true);
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+    mocks.updateCustomerWithAudit.mockResolvedValue({
+      id: "customer-1",
+      isActive: true,
+    });
+
+    const response = await UPDATE_CUSTOMER(
+      request("/api/customers/customer-1", "PATCH", {
+        address: "   ",
+      }),
+      { params: { id: "customer-1" } },
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.updateCustomerWithAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          address: null,
+          city: null,
+          state: null,
+          zipCode: null,
+        }),
+      }),
+    );
   });
 });

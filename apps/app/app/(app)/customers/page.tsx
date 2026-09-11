@@ -42,6 +42,13 @@ import {
   PrivacyPreset,
 } from "@/lib/utils/privacy";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
+import {
+  getDefaultPrivacyProtocol,
+  canWritePrivacyField,
+  PRIVACY_PROFILE_OPTIONS,
+} from "@/lib/privacy/profiles";
+import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import { ShieldAlert } from "lucide-react";
 
 type CustomerRecord = Customer & {
   id: string;
@@ -81,6 +88,29 @@ export default function CustomersPage() {
   const [lifecycleCustomerId, setLifecycleCustomerId] = useState<string | null>(
     null,
   );
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+
+  useEffect(() => {
+    fetch("/api/business/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((settingsData) => {
+        if (!settingsData) return;
+        setPrivacyProtocol(
+          settingsData.privacy_protocol ||
+            settingsData.privacyProtocol ||
+            getDefaultPrivacyProtocol(),
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to load business privacy settings:", error);
+      });
+  }, []);
+
+  const canWriteAddress = canWritePrivacyField(privacyProtocol, "address");
+  const currentProfileOption =
+    PRIVACY_PROFILE_OPTIONS.find((opt) => opt.id === privacyProtocol.profile) ||
+    PRIVACY_PROFILE_OPTIONS.find((opt) => opt.id === "standard_mode");
 
   const canManageCustomers =
     !permissionLoading && hasPermission("customers.manage");
@@ -128,6 +158,31 @@ export default function CustomersPage() {
       return;
     }
 
+    const payload: Record<string, unknown> = {
+      ...data,
+      business_id: business.id,
+    };
+
+    if (!canWriteAddress) {
+      delete payload.address;
+      delete payload.city;
+      delete payload.state;
+      delete payload.zip_code;
+    } else {
+      if (!data.address?.trim()) delete payload.address;
+      if (!data.city?.trim()) delete payload.city;
+      if (!data.state?.trim()) delete payload.state;
+      if (!data.zip_code?.trim()) delete payload.zip_code;
+    }
+
+    if (privacyProtocol.alias_only_mode) {
+      delete payload.first_name;
+      delete payload.last_name;
+      delete payload.phone_number;
+      delete payload.email;
+      delete payload.notes;
+    }
+
     const promise = async () => {
       const url = editingCustomer?.id
         ? `/api/customers/${editingCustomer.id}`
@@ -137,10 +192,7 @@ export default function CustomersPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          business_id: business.id,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -391,25 +443,40 @@ export default function CustomersPage() {
                 business needs.
               </p>
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" {...register("address")} />
-              </div>
+              {canWriteAddress ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" {...register("address")} />
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" {...register("city")} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input id="city" {...register("city")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input id="state" {...register("state")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zip_code">Zip Code</Label>
+                      <Input id="zip_code" {...register("zip_code")} />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-md border border-white/10 bg-muted/30 p-3 text-xs text-muted-foreground flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-accent shrink-0" />
+                  <span>
+                    Address collection is disabled under your{" "}
+                    <strong className="text-foreground font-semibold">
+                      {currentProfileOption?.label || "current"}
+                    </strong>{" "}
+                    privacy policy. To store customer addresses, switch to &quot;Keep details&quot; in Business Settings.
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input id="state" {...register("state")} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip_code">Zip Code</Label>
-                  <Input id="zip_code" {...register("zip_code")} />
-                </div>
-              </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="customer_type">
@@ -623,18 +690,20 @@ export default function CustomersPage() {
                             {Number(customer.total_credit_used || 0).toFixed(2)}
                           </p>
                         </div>
-                        <div className="col-span-2">
-                          <p className="text-xs text-muted-foreground">
-                            Address
-                          </p>
-                          <p className="text-sm text-foreground break-words">
-                            {customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${
-                                  customer.state || ""
-                                }`
-                              : "-"}
-                          </p>
-                        </div>
+                        {canWriteAddress ? (
+                          <div className="col-span-2">
+                            <p className="text-xs text-muted-foreground">
+                              Address
+                            </p>
+                            <p className="text-sm text-foreground break-words">
+                              {customer.address
+                                ? `${customer.address}, ${customer.city || ""} ${
+                                    customer.state || ""
+                                  }`
+                                : "-"}
+                            </p>
+                          </div>
+                        ) : null}
                       </div>
                     </CardContent>
                   </div>
@@ -655,9 +724,11 @@ export default function CustomersPage() {
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Email
                       </TableHead>
-                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Address
-                      </TableHead>
+                      {canWriteAddress ? (
+                        <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Address
+                        </TableHead>
+                      ) : null}
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Purchases
                       </TableHead>
@@ -707,16 +778,18 @@ export default function CustomersPage() {
                             settings?.privacy_preset as PrivacyPreset,
                           )}
                         </TableCell>
-                        <TableCell>
-                          {settings?.privacy_preset === "max_secure" ||
-                          settings?.privacy_preset === "private"
-                            ? "*** Redacted ***"
-                            : customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${
-                                  customer.state || ""
-                                }`
-                              : "-"}
-                        </TableCell>
+                        {canWriteAddress ? (
+                          <TableCell>
+                            {settings?.privacy_preset === "max_secure" ||
+                            settings?.privacy_preset === "private"
+                              ? "*** Redacted ***"
+                              : customer.address
+                                ? `${customer.address}, ${customer.city || ""} ${
+                                    customer.state || ""
+                                  }`
+                                : "-"}
+                          </TableCell>
+                        ) : null}
                         <TableCell>
                           ${Number(customer.total_purchases || 0).toFixed(2)}
                         </TableCell>
