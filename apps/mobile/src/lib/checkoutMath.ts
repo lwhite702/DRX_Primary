@@ -169,6 +169,14 @@ export function suggestedQuantityForDollars(
   return normalizeQuantity(product, quantity, availableQuantity);
 }
 
+const quantityDisplay = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: false,
+});
+
 export function formatQuantity(product: FractionalProduct, quantity: number) {
-  return `${quantity.toFixed(quantityPrecision(product))}${product.sellingUnit ?? legacyQuantityConfig(product).sellingUnit}`;
+  if (!Number.isFinite(quantity)) return "—";
+  const formatted = quantityDisplay.format(quantity);
+  return `${formatted === "-0.00" ? "0.00" : formatted}${product.sellingUnit ?? legacyQuantityConfig(product).sellingUnit}`;
 }

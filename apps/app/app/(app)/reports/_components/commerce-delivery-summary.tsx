@@ -27,6 +27,7 @@ const rows = [
   ["Gross collected", "grossCollectedCents", "money"],
   ["Net cash activity", "netCashActivityCents", "money"],
   ["Merchandise revenue", "merchandiseRevenueCents", "money"],
+  ["Other fee revenue", "feeRevenueCents", "money"],
   ["Delivery revenue", "deliveryRevenueCents", "money"],
   ["Vendor delivery expense", "vendorDeliveryExpenseCents", "money"],
   ["Delivery tax", "deliveryTaxCents", "money"],
@@ -134,17 +135,17 @@ export function CommerceDeliverySummary({
                 </TableCell>
                 <TableCell className="text-right">
                   {summary.canonical.available === false ? "Unavailable" : unit === "money"
-                    ? money(summary.canonical.totals[field])
+                    ? money(summary.canonical.totals[field] ?? 0)
                     : summary.canonical.totals[field]}
                 </TableCell>
                 <TableCell className="text-right">
                   {summary.legacyWeb.available === false ? "Unavailable" : unit === "money"
-                    ? money(summary.legacyWeb.totals[field])
+                    ? money(summary.legacyWeb.totals[field] ?? 0)
                     : summary.legacyWeb.totals[field]}
                 </TableCell>
                 <TableCell className="text-right font-semibold">
                   {unit === "money"
-                    ? money(summary.combined[field])
+                    ? money(summary.combined[field] ?? 0)
                     : summary.combined[field]}
                 </TableCell>
               </TableRow>

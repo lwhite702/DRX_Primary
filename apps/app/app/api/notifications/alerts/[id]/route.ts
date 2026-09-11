@@ -1,36 +1,15 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({}, { status: 401 });
-
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/convex/_generated/api";
+import { notificationClient, notificationFailure, notificationHeaders } from "@/lib/notifications/convex-server";
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await db.notification.delete({
-      where: { id },
-    });
-
-    // Audit Log
-    await db.systemAuditLog.create({
-      data: {
-        action: "delete_alert",
-        userId: userId,
-        entityType: "notification",
-        entityId: id,
-        newValues: { notificationId: id } as any,
-      },
-    });
-
-    return NextResponse.json({}, { status: 200 });
+    const { client, expectedUserId } = await notificationClient();
+    const { id } = await params;
+    if (!id || id.length > 200) return NextResponse.json({ error: "Invalid notification" }, { status: 400, headers: notificationHeaders });
+    await client.mutation(api.notifications.remove, { expectedUserId, notificationId: id });
+    return NextResponse.json({}, { headers: notificationHeaders });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    if (error instanceof Error && error.message.includes("NOT_FOUND:")) return NextResponse.json({ error: "Notification unavailable" }, { status: 404, headers: notificationHeaders });
+    return notificationFailure(error);
   }
 }

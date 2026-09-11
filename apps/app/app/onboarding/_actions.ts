@@ -1,19 +1,10 @@
 "use server";
-
-import {
-  auth,
-  clerkClient,
-  isAuthBypassEnabled,
-} from "@/lib/adapters/auth/server";
-import {
-  ONBOARDING_COMPLETION_COOKIE,
-  type OnboardingClaims,
-} from "@/lib/auth/onboarding-completion";
-import {
-  getDefaultPinnedItemsForPreset,
-  type DashboardViewPreset,
-} from "@/lib/auth/dashboard-preferences";
-import { provisionBusinessInConvex } from "@/lib/convex/onboarding-server";
+import { auth } from "@/lib/adapters/auth/server";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { onboardingCompletionSchema } from "@/lib/onboarding/completion-schema";
+import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -35,128 +26,42 @@ export type OnboardingSummary = {
 };
 
 export async function completeOnboarding(
-  _previousState: OnboardingActionState,
-  formData: FormData,
+  _previousState: OnboardingActionState, formData: FormData,
 ): Promise<OnboardingActionState> {
-  const { userId, orgId, sessionClaims } = await auth();
-
-  if (!userId) {
-    redirect("/login");
-  }
-
-  const businessName = String(formData.get("businessName") || "").trim();
-  const ownerName = String(formData.get("ownerName") || "").trim();
-  const businessType = String(formData.get("businessType") || "other").trim();
-  const currency = String(formData.get("currency") || "USD").trim();
-  const timezone = String(
-    formData.get("timezone") || "America/New_York",
-  ).trim();
-  const taxEnabled = String(formData.get("taxChoice") || "later") === "yes";
-  const tracksInventory =
-    String(formData.get("tracksInventory") || "true") === "true";
-  const locationName = String(formData.get("locationName") || "").trim();
-  const city = String(formData.get("city") || "").trim();
-  const region = String(formData.get("region") || "").trim();
-  const country = String(formData.get("country") || "").trim();
-  const taxRateRaw = String(formData.get("taxRate") || "0");
-  const taxRate = Number.parseFloat(taxRateRaw);
-  const taxRateBps = Number.isFinite(taxRate) ? Math.round(taxRate * 100) : 0;
-  const resolvedLocation = [locationName, city, region, country]
-    .filter(Boolean)
-    .join(" · ");
-  const dashboardPresetRaw = String(
-    formData.get("dashboardPreset") || "operations",
-  ).trim();
-  const dashboardPreset: DashboardViewPreset =
-    dashboardPresetRaw === "checkout" || dashboardPresetRaw === "inventory"
-      ? dashboardPresetRaw
-      : "operations";
-
-  if (!businessName || !ownerName) {
-    return { status: "error", error: "Missing required onboarding fields." };
-  }
-
-  const claims = sessionClaims as OnboardingClaims & {
-    metadata?: Record<string, unknown>;
-    publicMetadata?: Record<string, unknown>;
-    public_metadata?: Record<string, unknown>;
-  };
-
-  const currentMetadata =
-    claims?.metadata || claims?.publicMetadata || claims?.public_metadata || {};
-  const dashboardPreferences = {
-    preset: dashboardPreset,
-    pinnedItemIds: getDefaultPinnedItemsForPreset(dashboardPreset),
-    version: 1,
-    updatedAt: new Date().toISOString(),
-  };
-
-  try {
-    await provisionBusinessInConvex({
-      name: ownerName,
-      businessName,
-      businessType,
-      clerkOrgId: orgId ?? undefined,
-      currency,
-      timezone,
-      collectTax: taxEnabled,
-      taxRateBps,
-      setup: {
-        locationName,
-        city,
-        region,
-        country,
-        tracksInventory,
-        dashboardPreset,
-      },
-    });
-  } catch {
-    return {
-      status: "error",
-      error: "We couldn’t create your workspace just yet. Please try again.",
-    };
-  }
-
-  if (!isAuthBypassEnabled()) {
-    const client = await clerkClient();
-
-    await client.users.updateUser(userId, {
-      publicMetadata: {
-        ...currentMetadata,
-        onboardingComplete: true,
-        operatorProfile: {
-          businessName,
-          role: "owner",
-          teamSize: "1",
-          tooling: "web",
-          dashboardPreferences,
-        },
-      },
-    });
-  }
-
-  const cookieStore = await cookies();
-  cookieStore.set(ONBOARDING_COMPLETION_COOKIE, "true", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 10 * 60,
+  const { userId, orgId } = await auth();
+  if (!userId) redirect("/login");
+  const field = (key: string, fallback = "") => String(formData.get(key) ?? fallback).trim();
+  const taxEnabled = field("taxChoice", "later") === "yes";
+  const taxText = field("taxRate", "0") || "0";
+  if (taxEnabled && !/^\d{1,3}(?:\.\d{1,2})?$/.test(taxText)) return { status: "error", error: "Enter a valid tax percentage with at most two decimal places." };
+  const parsed = onboardingCompletionSchema.safeParse({
+    businessName: field("businessName"), ownerName: field("ownerName"),
+    businessType: field("businessType", "other"), currency: field("currency", "USD"),
+    timezone: field("timezone", "America/New_York"), taxEnabled,
+    taxRateBps: taxEnabled ? Math.round(Number(taxText) * 100) : 0,
+    inventoryEnabled: field("tracksInventory", "true") === "true",
+    locationName: field("locationName"), city: field("city"), region: field("region"), country: field("country"),
+    dashboardPreset: field("dashboardPreset", "operations"),
   });
-
-  return {
-    status: "success",
-    error: null,
-    summary: {
-      businessType: businessType || "other",
-      inventoryEnabled: tracksInventory,
-      taxEnabled,
-      taxRateBps,
-      businessName,
-      ownerName,
-      locationName: resolvedLocation,
-      currency,
-      timezone,
-    },
-  };
+  if (!parsed.success) return { status: "error", error: "Review the onboarding fields and try again." };
+  try {
+    const token = await getConvexAuthToken();
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) throw new Error("Unavailable");
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    await client.mutation(api.onboarding.completeBusinessOnboarding, { payload: JSON.stringify(parsed.data), expectedUserId: userId, expectedOrganizationId: orgId ?? null });
+    const cookieStore = await cookies();
+    cookieStore.set(ONBOARDING_COMPLETION_COOKIE, "true", {
+      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 10 * 60,
+    });
+    const input = parsed.data;
+    return { status: "success", error: null, summary: {
+      businessName: input.businessName, ownerName: input.ownerName, businessType: input.businessType,
+      currency: input.currency, timezone: input.timezone, taxEnabled: input.taxEnabled, taxRateBps: input.taxRateBps,
+      inventoryEnabled: input.inventoryEnabled,
+      locationName: [input.locationName, input.city, input.region, input.country].filter(Boolean).join(" · "),
+    } };
+  } catch {
+    return { status: "error", error: "Business setup could not be completed. Please retry." };
+  }
 }

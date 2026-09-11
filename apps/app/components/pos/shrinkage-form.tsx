@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,10 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { recordShrinkage, ShrinkageRejectedError, type ShrinkageRequest } from "@/lib/pos/shrinkage-client";
+import { loadShrinkageInventory, type ShrinkageProduct } from "@/lib/pos/shrinkage-inventory-client";
 import { toast } from "sonner";
-import { AlertCircle, Lock } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 interface ShrinkageFormProps {
   open: boolean;
@@ -37,116 +37,64 @@ export function ShrinkageForm({
   businessId,
   onSuccess,
 }: ShrinkageFormProps) {
-  const supabase = createAppClient();
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<ShrinkageProduct[]>([]);
+  const scope = useRef(businessId); scope.current = businessId;
+  const pending = useRef(new Map<string, ShrinkageRequest>());
+  const busy = useRef(false);
+  const [retryPending, setRetryPending] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState<string>("");
   const [quantityGrams, setQuantityGrams] = useState("");
-  const [shrinkageType, setShrinkageType] = useState("personal_use");
+  const [shrinkageType, setShrinkageType] = useState<ShrinkageRequest["shrinkageType"]>("personal_use");
   const [note, setNote] = useState("");
-  const [requiresSupervisorPin, setRequiresSupervisorPin] = useState(false);
-  const [supervisorPin, setSupervisorPin] = useState("");
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!businessId || !supabase || !open) return;
-
-    const loadInventory = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("inventory")
-        .select("id, product_name, sku, inventory_in_grams, base_unit")
-        .eq("business_id", businessId)
-        .gt("inventory_in_grams", 0)
-        .order("product_name");
-
-      if (error) {
-        console.error("Error loading inventory:", error);
-        toast.error("Couldn’t load products. Try again.");
-      } else {
-        setInventory(data || []);
-      }
-
-      // Check if supervisor PIN is required
-      const { data: settings } = await supabase
-        .from("business_settings")
-        .select("require_supervisor_pin_for_shrinkage")
-        .eq("business_id", businessId)
-        .single();
-
-      if (settings?.require_supervisor_pin_for_shrinkage) {
-        setRequiresSupervisorPin(true);
-      }
-
-      setLoading(false);
-    };
-
-    loadInventory();
-  }, [businessId, supabase, open]);
+    const controller = new AbortController();
+    setInventory([]); setSelectedInventory(""); setQuantityGrams(""); setNote("");
+    const attempt = pending.current.get(businessId);
+    setRetryPending(Boolean(attempt));
+    if (attempt) {
+      setSelectedInventory(attempt.inventoryId); setQuantityGrams(String(attempt.quantityGrams));
+      setShrinkageType(attempt.shrinkageType); setNote(attempt.note ?? "");
+    }
+    if (!businessId || !open) return () => controller.abort();
+    setLoading(true);
+    loadShrinkageInventory(businessId, controller.signal).then(items => {
+      if (!controller.signal.aborted) setInventory(items);
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error("Failed to load inventory");
+    }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [businessId, open]);
 
   const handleSubmit = async () => {
-    if (!selectedInventory) {
-      toast.error("Please select a product");
-      return;
+    if (busy.current) return;
+    const tenant = businessId;
+    let attempt = pending.current.get(tenant);
+    if (!attempt) {
+      const quantity = Number(quantityGrams);
+      if (!selectedInventory || !Number.isFinite(quantity) || quantity <= 0) {
+        toast.error("Select a product and enter a valid quantity"); return;
+      }
+      if (note.length > 500) { toast.error("Note must be 500 characters or fewer"); return; }
+      attempt = { requestId: crypto.randomUUID(), inventoryId: selectedInventory, quantityGrams: quantity, shrinkageType, note };
+      pending.current.set(tenant, attempt); setRetryPending(true);
     }
-
-    if (!quantityGrams || parseFloat(quantityGrams) <= 0) {
-      toast.error("Please enter a valid quantity");
-      return;
-    }
-
-    if (requiresSupervisorPin && !supervisorPin) {
-      toast.error("Supervisor PIN is required");
-      return;
-    }
-
-    setProcessing(true);
-
+    busy.current = true; setProcessing(true);
     try {
-      // Verify supervisor PIN if required
-      if (requiresSupervisorPin) {
-        if (!supabase) {
-          throw new Error("Supervisor verification is unavailable");
-        }
-        const { data: supervisors } = await supabase
-          .from("admin_users")
-          .select("id")
-          .eq("role", "supervisor")
-          .neq("pin_hash", null)
-          .limit(1);
-
-        if (!supervisors || supervisors.length === 0) {
-          // For now, accept any PIN if no supervisors configured
-          // In production, hash and verify against stored PIN
-        }
-      }
-
-      const result = await posWeightEngine.recordShrinkage(
-        businessId,
-        selectedInventory,
-        parseFloat(quantityGrams),
-        shrinkageType,
-        note,
-      );
-
-      if (result.success) {
-        toast.success("Loss recorded.");
-        setSelectedInventory("");
-        setQuantityGrams("");
-        setShrinkageType("personal_use");
-        setNote("");
-        setSupervisorPin("");
-        onClose();
-        onSuccess?.();
-      } else {
-        toast.error(result.error || "Failed to record shrinkage");
-      }
+      await recordShrinkage(tenant, attempt);
+      pending.current.delete(tenant);
+      if (scope.current !== tenant) return;
+      setRetryPending(false); setSelectedInventory(""); setQuantityGrams(""); setNote("");
+      toast.success("Loss recorded."); onClose(); onSuccess?.();
     } catch (error) {
-      console.error("Error recording shrinkage:", error);
-      toast.error("Failed to record shrinkage");
-    } finally {
-      setProcessing(false);
-    }
+      if (error instanceof ShrinkageRejectedError) {
+        pending.current.delete(tenant);
+        if (scope.current === tenant) setRetryPending(false);
+      }
+      if (scope.current === tenant) toast.error(error instanceof Error ? error.message : "Shrinkage could not be confirmed. Retry the same request.");
+    } finally { busy.current = false; setProcessing(false); }
   };
 
   const selectedItem = inventory.find((item) => item.id === selectedInventory);
@@ -173,6 +121,7 @@ export function ShrinkageForm({
               <Select
                 value={selectedInventory}
                 onValueChange={setSelectedInventory}
+                disabled={processing || retryPending}
               >
                 <SelectTrigger id="product">
                   <SelectValue placeholder="Select product..." />
@@ -180,15 +129,15 @@ export function ShrinkageForm({
                 <SelectContent>
                   {inventory.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.product_name} ({item.sku})
+                      {item.productName} ({item.sku})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {selectedItem && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Available: {selectedItem.inventory_in_grams.toFixed(2)}
-                  {selectedItem.base_unit}
+                  Available: {selectedItem.inventoryInGrams.toFixed(2)}
+                  {selectedItem.baseUnit}
                 </p>
               )}
             </div>
@@ -196,7 +145,7 @@ export function ShrinkageForm({
             {/* Quantity */}
             <div>
               <Label htmlFor="quantity">
-                Quantity ({selectedItem?.base_unit || "g"})
+                Quantity ({selectedItem?.baseUnit || "g"})
               </Label>
               <Input
                 id="quantity"
@@ -206,14 +155,14 @@ export function ShrinkageForm({
                 placeholder="0.00"
                 value={quantityGrams}
                 onChange={(e) => setQuantityGrams(e.target.value)}
-                disabled={processing}
+                disabled={processing || retryPending}
               />
             </div>
 
             {/* Shrinkage Type */}
             <div>
               <Label htmlFor="type">Type</Label>
-              <Select value={shrinkageType} onValueChange={setShrinkageType}>
+              <Select value={shrinkageType} onValueChange={value => setShrinkageType(value as ShrinkageRequest["shrinkageType"])} disabled={processing || retryPending}>
                 <SelectTrigger id="type">
                   <SelectValue />
                 </SelectTrigger>
@@ -236,27 +185,12 @@ export function ShrinkageForm({
                 placeholder="Additional details..."
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                disabled={processing}
+                disabled={processing || retryPending}
                 className="min-h-20"
               />
             </div>
 
-            {/* Supervisor PIN */}
-            {requiresSupervisorPin && (
-              <div className="space-y-2 p-3 bg-amber-50 border border-amber-200 rounded">
-                <div className="flex items-center gap-2 text-sm font-medium text-amber-900">
-                  <Lock className="h-4 w-4" />
-                  Supervisor Verification Required
-                </div>
-                <Input
-                  type="password"
-                  placeholder="Enter supervisor PIN"
-                  value={supervisorPin}
-                  onChange={(e) => setSupervisorPin(e.target.value)}
-                  disabled={processing}
-                />
-              </div>
-            )}
+            {retryPending && <p role="status" className="text-sm text-muted-foreground">This attempt is awaiting confirmation. Retry to check or complete the same removal.</p>}
 
             {/* Warning */}
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded flex gap-3">
@@ -272,8 +206,8 @@ export function ShrinkageForm({
               <Button variant="outline" onClick={onClose} disabled={processing}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={processing}>
-                {processing ? "Recording..." : "Record Shrinkage"}
+              <Button onClick={handleSubmit} disabled={processing || loading || !businessId}>
+                {processing ? "Recording..." : retryPending ? "Retry Shrinkage" : "Record Shrinkage"}
               </Button>
             </div>
           </div>

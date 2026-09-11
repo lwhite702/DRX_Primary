@@ -4,35 +4,94 @@ on:
   workflow_run:
     workflows: ["CI Gate"]
     types: [completed]
-    branches: [development]
+    branches: [staging]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'staging' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.1
+          cache: pnpm
+
+      - name: Validate staging configuration and tested commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONVEX_DEPLOY_KEY_STAGING: ${{ secrets.CONVEX_DEPLOY_KEY_STAGING }}
+          VERCEL_TOKEN_STAGING: ${{ secrets.VERCEL_TOKEN_STAGING }}
+          VERCEL_ORG_ID_STAGING: ${{ secrets.VERCEL_ORG_ID_STAGING }}
+          VERCEL_PROJECT_ID_STAGING: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+          VERCEL_SCOPE_STAGING: ${{ secrets.VERCEL_SCOPE_STAGING }}
+        run: node scripts/release/staging-deployment.mjs preflight
+
+      - name: Install staging deployment dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Recheck staging head before deploying
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/release/staging-deployment.mjs head
+
       - name: Deploy Convex functions to Staging
         working-directory: ./apps/app
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_STAGING || secrets.CONVEX_DEPLOY_KEY }}
-        run: npx convex deploy
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_STAGING }}
+        run: pnpm convex:deploy
 
-      - name: Deploy preview to Vercel (staging)
+      - name: Deploy preview to Vercel
         id: vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
-          scope: ${{ secrets.VERCEL_SCOPE }}
-          working-directory: ./apps/app
-      - name: Smoke test health endpoint
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_STAGING }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID_STAGING }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE_STAGING }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          DEPLOY_URL="${{ steps.vercel.outputs.preview-url }}"
-          if [ -z "$DEPLOY_URL" ]; then
-            echo "Missing preview deployment URL"
+          DEPLOYMENT_URL=$(pnpm dlx vercel@59.3.0 deploy \
+            --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_SCOPE" \
+            --meta "githubCommitSha=$TESTED_SHA" --meta "githubCommitRef=staging")
+          if [[ "$DEPLOYMENT_URL" != https://* ]]; then
+            echo "Vercel did not return a valid deployment URL" >&2
             exit 1
           fi
-          curl -fsSL "$DEPLOY_URL/api/health"
+          echo "deployment-url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify staging health
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_STAGING }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID_STAGING }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+          DEPLOYMENT_URL: ${{ steps.vercel.outputs.deployment-url }}
+        run: |
+          set -euo pipefail
+          HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+            --deployment "$DEPLOYMENT_URL" --yes)
+          HEALTH_RESPONSE="$HEALTH_RESPONSE" node scripts/release/staging-deployment.mjs health
+
+      - name: Record deployment source
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: echo "Staging deployment passed database health verification at commit $TESTED_SHA. Authenticated workflow acceptance remains separate." >> "$GITHUB_STEP_SUMMARY"

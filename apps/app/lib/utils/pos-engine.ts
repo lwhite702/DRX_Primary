@@ -18,7 +18,7 @@ export type AIPricingRecommendation = {
   current_price: number;
   recommended_price: number;
   confidence_score: number;
-  price_change_percentage: number;
+  price_change_percentage: number | null;
   recommendation_reason?: string;
 };
 
@@ -61,6 +61,9 @@ export interface CartState {
 
 export class POSEngine {
   private cart: CartState;
+  private checkoutInFlight = false;
+  private pendingCheckout?: { signature: string; body: string };
+  private reviewedQuote?: { terms: string; total: number };
 
   constructor() {
     this.cart = {
@@ -172,7 +175,7 @@ export class POSEngine {
   // Set amount paid
   setAmountPaid(amount: number) {
     this.cart.amount_paid = amount;
-    this.recalculate();
+    this.cart.change_amount = Math.max(0, amount - this.cart.total);
     return this.cart;
   }
 
@@ -222,7 +225,7 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
         body: JSON.stringify({
           businessId: business_id,
           items: this.cart.items.map((i) => ({
@@ -233,6 +236,7 @@ export class POSEngine {
           })),
         }),
       });
+      if (!res.ok) throw new Error("Checkout validation is unavailable");
       const payload = await res.json();
       return {
         valid: Boolean(payload?.stock?.valid ?? payload?.valid),
@@ -268,26 +272,32 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
         body: JSON.stringify({
           businessId: business_id,
           customerId: this.cart.customer_id,
-          amount: this.cart.total,
+          amount: Math.round(this.cart.total * 100) / 100,
           items: this.cart.items.map((i) => ({
             inventory_id: i.inventory_id,
             quantity: i.quantity,
             unit_price: i.unit_price,
+            weight_grams: i.weight_grams,
           })),
         }),
       });
+      if (!res.ok) throw new Error("Checkout validation is unavailable");
       const payload = await res.json();
       if (payload?.credit) {
-        return payload.credit;
+        return {
+          valid: payload.credit.valid === true,
+          credit_limit: payload.credit.maxLimit,
+          current_balance: payload.credit.currentBalance,
+          warning: payload.credit.warning,
+        };
       }
-      return { valid: true };
+      return { valid: false, warning: "Credit validation unavailable" };
     } catch (e: any) {
-      console.error("Credit validation error:", e);
-      return { valid: true, warning: "Credit validation unavailable" };
+      return { valid: false, warning: "Credit validation unavailable" };
     }
   }
 
@@ -307,14 +317,11 @@ export class POSEngine {
   async getAIPricingRecommendations(
     business_id: string,
   ): Promise<AIPricingRecommendation[]> {
-    try {
-      const res = await fetch(`/api/pos/ai-pricing?businessId=${business_id}`);
-      if (!res.ok) return [];
-      return await res.json();
-    } catch (e) {
-      console.error("Failed to get AI recommendations:", e);
-      return [];
-    }
+    const res = await fetch(`/api/pos/ai-pricing?businessId=${encodeURIComponent(business_id)}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("AI pricing recommendations are unavailable");
+    const payload = await res.json();
+    if (!Array.isArray(payload.items)) throw new Error("Invalid AI pricing response");
+    return payload.items;
   }
 
   async applyAIPricingRecommendation(
@@ -324,11 +331,14 @@ export class POSEngine {
     try {
       const res = await fetch("/api/pos/apply-pricing", {
         method: "POST",
-        body: JSON.stringify({ recommendationId: recommendation_id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId: business_id, recommendationId: recommendation_id }),
       });
-      return await res.json();
-    } catch (e: any) {
-      return { success: false, message: e.message };
+      const result = await res.json();
+      if (!res.ok || result?.success !== true || !Number.isFinite(result.newPrice)) return { success: false, message: res.status === 409 ? "Price changed. Generate a new analysis." : "Price update was not confirmed. Retry the same recommendation." };
+      return { success: true, newPrice: result.newPrice, message: result.message };
+    } catch {
+      return { success: false, message: "Price update was not confirmed. Retry the same recommendation." };
     }
   }
 
@@ -343,34 +353,19 @@ export class POSEngine {
     changeAmount?: number;
     error?: string;
   }> {
-    // Validate stock
-    const stockValidation = await this.validateStock(business_id);
-    if (!stockValidation.valid) {
-      return {
-        success: false,
-        error: stockValidation.errors.map((e) => e.message).join(", "),
-      };
-    }
-
-    // Validate credit limit
-    const creditValidation = await this.validateCreditLimit(business_id);
-    if (!creditValidation.valid) {
-      return {
-        success: false,
-        error: creditValidation.warning || "Credit limit exceeded",
-      };
-    }
-
+    if (this.checkoutInFlight) return { success: false, error: "Checkout is already being processed" };
+    this.checkoutInFlight = true;
     try {
       const checkoutData = {
         mode: "full",
         source: "legacy-sales",
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: "",
+        expectedTotal: 0,
         customerId: this.cart.customer_id,
         payment: {
           method: this.cart.payment_method,
           receipt: "none",
-          creditConfirmed: this.cart.payment_method === "credit",
+          creditConfirmed: this.cart.payment_method === "credit" || (this.cart.payment_method === "mixed" && Boolean(this.cart.customer_id)),
         },
         items: this.cart.items.map((i) => ({
           id: i.inventory_id,
@@ -396,15 +391,42 @@ export class POSEngine {
         amountPaid: this.cart.amount_paid,
       };
 
+      const { taxAmount, expectedTotal, idempotencyKey, ...requestTerms } = checkoutData;
+      const signature = JSON.stringify({ business_id, ...requestTerms });
+      if (this.pendingCheckout && this.pendingCheckout.signature !== signature) return { success: false, error: "A previous checkout has not been confirmed. Restore that cart and retry it before starting another sale." };
+      if (!this.pendingCheckout) {
+        const { payment, amountPaid, paymentRef, ...priceTerms } = requestTerms;
+        const terms = JSON.stringify({ business_id, ...priceTerms });
+        const response = await fetch("/api/pos/quote", { method: "POST", headers: { "Content-Type": "application/json", "x-business-id": business_id }, body: JSON.stringify(checkoutData) });
+        const quoted = await response.json();
+        if (!response.ok || !quoted.success || !Number.isFinite(quoted.quote?.total)) return { success: false, error: quoted.error || "Unable to quote this sale" };
+        const total = quoted.quote.total;
+        const displayedTotal = this.reviewedQuote?.terms === terms ? this.reviewedQuote.total : Math.round((this.cart.total + calculateFees(fees)) * 100) / 100;
+        this.cart.tax_amount = quoted.quote.taxAmount;
+        this.cart.subtotal = quoted.quote.subtotalAfterDiscount;
+        // The existing totals component adds miscellaneous fees separately.
+        this.cart.total = total - calculateFees(fees);
+        this.reviewedQuote = { terms, total };
+        if (Math.round(displayedTotal * 100) !== Math.round(total * 100)) return { success: false, error: "Prices changed. Review the updated total, then submit checkout again." };
+        checkoutData.expectedTotal = total;
+        checkoutData.taxAmount = quoted.quote.taxAmount;
+        checkoutData.idempotencyKey = crypto.randomUUID();
+        this.pendingCheckout = { signature, body: JSON.stringify(checkoutData) };
+      }
       const res = await fetch("/api/pos/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(checkoutData),
+        headers: { "Content-Type": "application/json", "x-business-id": business_id },
+        body: this.pendingCheckout.body,
       });
 
       const result = await res.json();
-      if (result.success) {
+      if (res.ok && result.success) {
+        this.pendingCheckout = undefined;
+        this.reviewedQuote = undefined;
         this.clearCart();
+      } else if (res.status >= 400 && res.status < 500) {
+        this.pendingCheckout = undefined;
+        this.reviewedQuote = undefined;
       }
       return {
         success: result.success,
@@ -416,8 +438,10 @@ export class POSEngine {
           result.error ??
           (Array.isArray(result.errors) ? result.errors.join(", ") : undefined),
       };
-    } catch (e: any) {
-      return { success: false, error: e.message };
+    } catch {
+      return { success: false, error: "Checkout was not confirmed. Retry the same cart." };
+    } finally {
+      this.checkoutInFlight = false;
     }
   }
 

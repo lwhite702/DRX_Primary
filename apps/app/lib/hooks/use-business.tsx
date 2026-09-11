@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  useOrganization,
   useOrganizationList,
   useUser,
   useIsBypassActive,
@@ -45,6 +46,7 @@ const BusinessContext = createContext<BusinessContextValue | null>(null);
 function useBusinessState(): BusinessContextValue {
   const authBypassEnabled = useIsBypassActive();
   const { user, isLoaded: isUserLoaded } = useUser();
+  const { organization } = useOrganization();
   const { userMemberships, setActive } = useOrganizationList({
     userMemberships: { infinite: true },
   });
@@ -54,7 +56,7 @@ function useBusinessState(): BusinessContextValue {
   const [error, setError] = useState<string | null>(null);
   const requestVersion = useRef(0);
   const hasResolved = useRef(false);
-  const identityKey = authBypassEnabled ? "bypass" : user?.id ?? "signed-out";
+  const identityKey = authBypassEnabled ? "bypass" : JSON.stringify([user?.id ?? "signed-out", organization?.id ?? null]);
 
   const fetchBusinessProfile = useCallback(async () => {
     if (!isUserLoaded && !authBypassEnabled) return;

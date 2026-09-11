@@ -1,70 +1,25 @@
-import { NextRequest } from "next/server";
-import { auth } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-import { errorResponse, successResponse } from "@/lib/api/response";
-
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { api } from "@/convex/_generated/api";
+import { notificationClient, notificationFailure, notificationHeaders } from "@/lib/notifications/convex-server";
 export async function GET(_request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const notifications = await db.notification.findMany({
-      where: {
-        userId: userId,
-        isRead: false,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 100,
-    });
-
-    return successResponse({
-      notifications,
-      data: notifications,
-      count: notifications.length,
-    });
-  } catch (error) {
-    console.error("Fetch notifications error:", error);
-    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
-  }
+    const { client, expectedUserId } = await notificationClient();
+    const notifications = await client.query(api.notifications.unread, { expectedUserId });
+    return NextResponse.json({ notifications, data: notifications, count: notifications.length }, { headers: notificationHeaders });
+  } catch (error) { return notificationFailure(error); }
 }
-
+const schema = z.object({ id: z.string().min(1).max(200).optional(), mark_all_read: z.boolean().optional() }).refine(value => value.mark_all_read === true || Boolean(value.id));
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const body = await request.json();
-    const { id, mark_all_read } = body;
-
-    if (mark_all_read) {
-      await db.notification.updateMany({
-        where: { userId: userId, isRead: false },
-        data: { isRead: true },
-      });
-    } else if (id) {
-      await db.notification.updateMany({
-        where: { id: id, userId: userId }, // Security check: ensure user owns notification
-        data: { isRead: true },
-      });
-    } else {
-      return errorResponse(
-        "BAD_REQUEST",
-        "Missing id or mark_all_read",
-        400,
-      );
-    }
-
-    return successResponse({ success: true });
+    const { client, expectedUserId } = await notificationClient();
+    const parsed = schema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) return NextResponse.json({ error: "Missing id or mark_all_read" }, { status: 400, headers: notificationHeaders });
+    if (parsed.data.mark_all_read) await client.action(api.notifications.markAllRead, { expectedUserId });
+    else await client.mutation(api.notifications.markRead, { expectedUserId, notificationId: parsed.data.id! });
+    return NextResponse.json({ success: true }, { headers: notificationHeaders });
   } catch (error) {
-    console.error("Update notification error:", error);
-    return errorResponse("INTERNAL_ERROR", "Failed to update notification", 500);
+    if (error instanceof Error && error.message.includes("NOT_FOUND:")) return NextResponse.json({ error: "Notification unavailable" }, { status: 404, headers: notificationHeaders });
+    return notificationFailure(error);
   }
 }

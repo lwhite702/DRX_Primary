@@ -1,93 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-
-const mocks = vi.hoisted(() => ({
-  resolveAuthContext: vi.fn(),
-  validateCreditBalance: vi.fn(),
-  db: { marker: "db" },
-}));
-
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  resolveAuthContext: mocks.resolveAuthContext,
-}));
-
-vi.mock("@/lib/db", () => ({
-  db: mocks.db,
-}));
-
-vi.mock("@/lib/pos/core", () => ({
-  validateCreditBalance: mocks.validateCreditBalance,
-}));
-
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), query: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Credit check must not load Prisma"); });
+vi.mock("@/app/api/pos/_lib/server", () => ({ resolveAuthContext: mocks.auth }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: async () => "synthetic" }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; } }));
 import { GET } from "@/app/api/pos/validate-credit/route";
-
-function makeRequest(query = "") {
-  return new NextRequest(`http://localhost/api/pos/validate-credit${query}`);
-}
-
-describe("GET /api/pos/validate-credit", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user_123",
-      businessId: "business_123",
-    });
-    mocks.validateCreditBalance.mockResolvedValue({
-      valid: true,
-      currentBalance: 20,
-      maxLimit: 100,
-      remaining: 80,
-      warning: null,
-    });
-  });
-
-  it("returns 401 when auth context is missing", async () => {
-    mocks.resolveAuthContext.mockResolvedValue({ userId: null, businessId: null });
-
-    const res = await GET(makeRequest("?customerId=123&amount=25"));
-    const data = await res.json();
-
-    expect(res.status).toBe(401);
-    expect(data).toEqual({ error: "Unauthorized" });
-    expect(mocks.validateCreditBalance).not.toHaveBeenCalled();
-  });
-
-  it("returns valid immediately when customerId is absent", async () => {
-    const res = await GET(makeRequest("?amount=25"));
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data).toEqual({ valid: true });
-    expect(mocks.validateCreditBalance).not.toHaveBeenCalled();
-  });
-
-  it("uses canonical credit-limit validation without customer purchase fallbacks", async () => {
-    mocks.validateCreditBalance.mockResolvedValue({
-      valid: false,
-      currentBalance: 90,
-      maxLimit: 100,
-      remaining: 10,
-      warning: "Credit limit exceeded",
-    });
-
-    const res = await GET(
-      makeRequest("?customerId=launch-verify-13&amount=25"),
-    );
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(mocks.validateCreditBalance).toHaveBeenCalledWith(
-      mocks.db,
-      "business_123",
-      "launch-verify-13",
-      25,
-    );
-    expect(data).toEqual({
-      valid: false,
-      currentBalance: 90,
-      maxLimit: 100,
-      remaining: 10,
-      warning: "Credit limit exceeded",
-    });
-  });
+const request = (query = "") => new NextRequest(`http://localhost/api/pos/validate-credit${query}`);
+beforeEach(() => { vi.clearAllMocks(); vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud"); mocks.auth.mockResolvedValue({ businessId: "tenant" }); mocks.query.mockResolvedValue({ credit: { valid: false, currentBalance: 90, maxLimit: 100, remaining: 10, unlimited: false, warning: "Credit limit exceeded" } }); });
+it("reads canonical customer credit with integer-cent inputs", async () => {
+  const response = await GET(request("?customerId=customer&amount=25"));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ valid: false, currentBalance: 90, remaining: 10 });
+  expect(mocks.query).toHaveBeenCalledWith(expect.anything(), { businessId: "tenant", items: [], customerId: "customer", amountCents: 2500 });
 });
+it("preserves the no-customer response after canonical authorization", async () => { expect(await (await GET(request("?amount=25"))).json()).toEqual({ valid: true }); expect(mocks.query).toHaveBeenCalledOnce(); });
+it.each(["-1", "NaN", "0.001"])("rejects invalid money %s", async amount => { expect((await GET(request(`?amount=${amount}`))).status).toBe(400); expect(mocks.query).not.toHaveBeenCalled(); });
+it("denies unauthenticated access", async () => { mocks.auth.mockResolvedValue({ businessId: null }); expect((await GET(request())).status).toBe(401); });
+it("does not return provider payloads", async () => { mocks.query.mockRejectedValue(new Error("private data")); const response = await GET(request("?customerId=customer")); expect(response.status).toBe(503); expect(await response.text()).not.toContain("private data"); });

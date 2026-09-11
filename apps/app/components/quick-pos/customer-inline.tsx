@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
-import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import { useEffect, useRef, useState } from "react";
+import { usePrivacyContext } from "@/lib/privacy/use-privacy-context";
 import {
   maskAlias,
   shouldMaskFromProtocol,
@@ -26,34 +25,13 @@ export function CustomerInline({
   const [alias, setAlias] = useState("");
   const [results, setResults] = useState<CustomerItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [privacyProtocol, setPrivacyProtocol] =
-    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
-  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
-    useState(false);
-
+  const privacy = usePrivacyContext();
+  const requestGeneration = useRef(0);
   useEffect(() => {
-    Promise.all([
-      fetch("/api/business/settings").then((res) => res.json()),
-      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
-    ])
-      .then(([settingsData, preferenceData]) => {
-        setPrivacyProtocol(
-          settingsData.privacy_protocol ||
-            settingsData.privacyProtocol ||
-            getDefaultPrivacyProtocol(),
-        );
-        setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
-      })
-      .catch((error) => {
-        console.error("Failed to load ProteXion settings", error);
-      });
-  }, []);
-
-  const shouldMask = shouldMaskFromProtocol(
-    privacyProtocol,
-    manualScreenPrivacyEnabled,
-    true,
-  );
+    requestGeneration.current += 1;
+    setResults([]); setPhone(""); setAlias(""); setLoading(false);
+  }, [privacy.businessId]);
+  const shouldMask = privacy.protocol ? shouldMaskFromProtocol(privacy.protocol, privacy.manualEnabled, true) : true;
 
   const lookup = async () => {
     const phoneValue = phone.trim();
@@ -62,28 +40,32 @@ export function CustomerInline({
 
     if (!searchValue) return;
 
+    const generation = ++requestGeneration.current;
     setLoading(true);
     const params = new URLSearchParams();
     params.set("search", searchValue);
     if (phoneValue) params.set("phone", phoneValue);
 
-    const res = await fetch(`/api/pos/customers?${params.toString()}`);
+    const res = await fetch(`/api/pos/customers?${params.toString()}`, { headers: { "X-Business-Id": privacy.businessId! } });
     const data = (await res.json()) as { items?: CustomerItem[] };
+    if (generation !== requestGeneration.current) return;
     setResults(data.items || []);
     setLoading(false);
   };
 
   const createInline = async () => {
     if (!phone.trim()) return;
+    const generation = ++requestGeneration.current;
     setLoading(true);
 
     const res = await fetch("/api/pos/customers/quick-create", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Business-Id": privacy.businessId! },
       body: JSON.stringify({ phone, alias }),
     });
 
     const data = (await res.json()) as CustomerItem;
+    if (generation !== requestGeneration.current) return;
     if (data.id) {
       onAttach(data);
       setResults([]);
@@ -91,6 +73,13 @@ export function CustomerInline({
 
     setLoading(false);
   };
+
+  if (!privacy.protocol) return (
+    <section className="rounded-xl border p-4" aria-live="polite">
+      <p>{privacy.error ?? "Loading customer privacy settings…"}</p>
+      {privacy.error && <button type="button" onClick={privacy.retry} className="underline">Retry privacy settings</button>}
+    </section>
+  );
 
   return (
     <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm">

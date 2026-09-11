@@ -76,18 +76,35 @@ export function ApprovalsClient() {
 
     try {
       setLoading(true);
-      const response = await fetch("/api/inventory/intake", { headers: { "x-business-id": businessId }, cache: "no-store" });
-      const result = await response.json();
-      if (activeBusinessId.current !== businessId) return;
-      if (!response.ok) throw new Error(result.error || "Approval queue unavailable");
-      setIntakes(result.items.filter((item: IntakeRequest) => item.status === "pending"));
-      setHistory(result.items.filter((item: IntakeRequest) => item.status !== "pending"));
+      const pending: IntakeRequest[] = [];
+      const completed: IntakeRequest[] = [];
+      for (const status of ["pending", "approved", "rejected"]) {
+        let cursor: string | null = null;
+        const seen = new Set<string>();
+        do {
+          const params = new URLSearchParams({ status });
+          if (cursor) params.set("cursor", cursor);
+          const response = await fetch(`/api/inventory/intake?${params}`, { headers: { "x-business-id": businessId }, cache: "no-store" });
+          const result = await response.json();
+          if (activeBusinessId.current !== businessId) return;
+          if (!response.ok) throw new Error(result.error || "Approval queue unavailable");
+          (status === "pending" ? pending : completed).push(...result.items);
+          // Load every pending page; completed history remains a bounded snapshot.
+          if (result.isDone || status !== "pending") break;
+          if (!result.continueCursor || seen.has(result.continueCursor)) throw new Error("Approval queue could not be fully loaded");
+          cursor = result.continueCursor;
+          seen.add(cursor!);
+        } while (activeBusinessId.current === businessId);
+      }
+      setIntakes(pending);
+      setHistory(completed.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 100));
       setLoadedBusinessId(businessId);
-    } catch (error) {
-      console.error("Error fetching approvals:", error);
+    } catch {
+      if (activeBusinessId.current !== businessId) return;
+      setIntakes([]); setHistory([]);
       toast.error("Failed to load approval queue");
     } finally {
-      setLoading(false);
+      if (activeBusinessId.current === businessId) setLoading(false);
     }
   };
 

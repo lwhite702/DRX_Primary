@@ -1,102 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import {
-  findTeamMembership,
-  isPrivilegedTeamRole,
-  normalizeTeamRole,
-  resolveTeamManagementContext,
-} from "../../../_lib/server";
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { api } from "@/convex/_generated/api";
+import { teamClient, teamFailure } from "../../../_lib/convex-server";
+import { normalizeTeamRole } from "@/lib/team/roles";
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const context = await resolveTeamManagementContext(request);
-    if (!context.ok) {
-      return NextResponse.json(
-        { error: context.error },
-        { status: context.status },
-      );
-    }
-
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
-    }
-
-    const role = normalizeTeamRole((body as Record<string, unknown>).role);
-    if (!role) {
-      return NextResponse.json(
-        { error: "Select a valid assignable role" },
-        { status: 400 },
-      );
-    }
-    if (isPrivilegedTeamRole(role) && !context.canManagePrivilegedRoles) {
-      return NextResponse.json(
-        { error: "Only an owner or administrator can assign that role" },
-        { status: 403 },
-      );
-    }
-
+    const { client, ...context } = await teamClient(request);
+    const payload = await request.json().catch(() => null);
+    const role = normalizeTeamRole(payload?.role);
+    if (!role) throw new Error("INVALID_ARGUMENT: Invalid role");
     const { id } = await params;
-    const membership = await findTeamMembership(context.businessId, id);
-    if (!membership) {
-      return NextResponse.json({ error: "Member not found" }, { status: 404 });
-    }
-    if (membership.userId === context.userId) {
-      return NextResponse.json(
-        { error: "You cannot change your own role" },
-        { status: 409 },
-      );
-    }
-    if (membership.userId === context.ownerId || membership.role === "owner") {
-      return NextResponse.json(
-        { error: "The business owner role cannot be changed" },
-        { status: 403 },
-      );
-    }
-    if (
-      isPrivilegedTeamRole(membership.role) &&
-      !context.canManagePrivilegedRoles
-    ) {
-      return NextResponse.json(
-        { error: "Only an owner or administrator can manage that role" },
-        { status: 403 },
-      );
-    }
-
-    await db.$transaction([
-      db.userRole.update({
-        where: { id: membership.id },
-        data: { role },
-      }),
-      db.systemAuditLog.create({
-        data: {
-          action: "role_update",
-          entityId: membership.userId,
-          userId: context.userId,
-          businessId: context.businessId,
-          entityType: "team_member",
-          oldValues: { role: membership.role },
-          newValues: { role },
-        },
-      }),
-    ]);
-
-    return NextResponse.json({ id: membership.userId, role }, { status: 200 });
-  } catch (error) {
-    console.error("Update team role failed", {
-      errorType: error instanceof Error ? error.name : "UnknownError",
-    });
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
+    const result = await client.mutation(api.teamManagement.updateTeamRole, { ...context, id, role });
+    return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return teamFailure(error); }
 }

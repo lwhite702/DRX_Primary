@@ -18,7 +18,7 @@ import {
 import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
 
 export function DashboardViewSwitcher() {
-  const { preferences, setPreset, saving, error } = useDashboardPreferences();
+  const { preferences, setPreset, saving, error, status } = useDashboardPreferences();
 
   const currentLabel =
     dashboardPresetLabels[preferences.preset] ?? "Operations";
@@ -29,6 +29,7 @@ export function DashboardViewSwitcher() {
         <Button
           variant="outline"
           role="combobox"
+          disabled={saving || status === "loading"}
           aria-label="Choose Home view"
           className="hidden w-[180px] justify-between md:flex"
         >
@@ -39,7 +40,7 @@ export function DashboardViewSwitcher() {
           {saving ? (
             <span className="text-[10px] text-muted-foreground">Saving</span>
           ) : error ? (
-            <span className="text-[10px] text-warning">Local only</span>
+            <span className="text-[10px] text-warning">Not saved</span>
           ) : null}
         </Button>
       </DropdownMenuTrigger>

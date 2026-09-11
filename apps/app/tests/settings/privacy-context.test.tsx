@@ -1,0 +1,50 @@
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { useBusiness } from "@/lib/hooks/use-business";
+import { usePrivacyContext } from "@/lib/privacy/use-privacy-context";
+import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
+const mocks = vi.hoisted(() => ({ fetch: vi.fn() }));
+vi.mock("@/lib/privacy/client-context", () => ({ fetchPrivacyContext: mocks.fetch }));
+let businessId = "business-a";
+const value = { protocol: getDefaultPrivacyProtocol("alias_mode"), manualEnabled: true };
+beforeEach(() => {
+  businessId = "business-a";
+  mocks.fetch.mockReset();
+  vi.mocked(useBusiness).mockImplementation(() => ({ business: { id: businessId }, loading: false }) as unknown as ReturnType<typeof useBusiness>);
+});
+afterEach(cleanup);
+it("hides policy immediately on tenant switch and discards an old response", async () => {
+  let resolveOld!: (payload: typeof value) => void;
+  const old = new Promise<typeof value>(resolve => { resolveOld = resolve; });
+  mocks.fetch.mockReturnValueOnce(old).mockResolvedValueOnce({ ...value, manualEnabled: false });
+  const { result, rerender } = renderHook(() => usePrivacyContext());
+  expect(result.current.protocol).toBeNull();
+  businessId = "business-b";
+  rerender();
+  expect(result.current.protocol).toBeNull();
+  await waitFor(() => expect(result.current.manualEnabled).toBe(false));
+  await act(async () => { resolveOld(value); await old; });
+  await waitFor(() => expect(result.current.protocol).toEqual(value.protocol));
+  expect(result.current.businessId).toBe("business-b");
+  expect(result.current.manualEnabled).toBe(false);
+  expect(mocks.fetch.mock.calls[0][1].aborted).toBe(true);
+});
+it("removes previously loaded policy while retrying and fails closed on provider errors", async () => {
+  mocks.fetch.mockResolvedValueOnce(value).mockRejectedValueOnce(new Error("unavailable"));
+  const { result } = renderHook(() => usePrivacyContext());
+  await waitFor(() => expect(result.current.protocol).toEqual(value.protocol));
+  act(() => { window.dispatchEvent(new Event("drx:privacy-updated")); });
+  expect(result.current.protocol).toBeNull();
+  await waitFor(() => expect(result.current.error).toMatch(/could not load/));
+  expect(result.current.protocol).toBeNull();
+  mocks.fetch.mockResolvedValueOnce(value);
+  act(() => result.current.retry());
+  await waitFor(() => expect(result.current.protocol).toEqual(value.protocol));
+});
+it("does not expose a cached policy while its dialog is closed", async () => {
+  mocks.fetch.mockResolvedValue(value);
+  const { result, rerender } = renderHook(({ active }) => usePrivacyContext(active), { initialProps: { active: true } });
+  await waitFor(() => expect(result.current.protocol).toEqual(value.protocol));
+  rerender({ active: false });
+  expect(result.current.protocol).toBeNull();
+});

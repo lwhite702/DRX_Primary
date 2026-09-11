@@ -1,10 +1,16 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import schema from "./schema";
+import { configuredPin, publicSettingsData, saveBusinessPreferences } from "./helpers/businessPreferences";
 import { requireUserAndBusiness } from "./helpers/auth";
-import { requirePermission } from "./helpers/permissions";
+import { requirePermission, hasPermission } from "./helpers/permissions";
 
 export const getBusinessSettings = query({
   args: {},
+  returns: v.object({
+    business: v.object({ ...schema.tables.businesses.validator.fields, _id: v.id("businesses"), _creationTime: v.number() }),
+    settings: v.union(v.null(), v.object({ ...schema.tables.businessSettings.validator.fields, _id: v.id("businessSettings"), _creationTime: v.number() })),
+  }),
   handler: async (ctx) => {
     const auth = await requireUserAndBusiness(ctx);
     const settings = await ctx.db
@@ -17,7 +23,8 @@ export const getBusinessSettings = query({
       settings: settings
         ? {
             ...settings,
-            posManagerPin: settings.posManagerPin ? "••••" : undefined,
+            posManagerPin: configuredPin(settings) ? "••••" : undefined,
+            settingsData: publicSettingsData(settings),
           }
         : null,
     };
@@ -86,45 +93,11 @@ export const updateBusinessSettings = mutation({
     posManagerPin: v.optional(v.string()),
     themePreference: v.optional(v.string()),
   },
+  returns: v.object({ success: v.literal(true) }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    requirePermission(auth.userRecord, "MANAGE_COMMERCE_SETTINGS");
-
-    const now = Date.now();
-
-    // 1. Update Business Profile
-    if (args.name !== undefined || args.taxRateBps !== undefined || args.collectTax !== undefined) {
-      await ctx.db.patch(auth.businessId, {
-        ...(args.name !== undefined && { name: args.name }),
-        ...(args.taxRateBps !== undefined && { taxRateBps: args.taxRateBps }),
-        ...(args.collectTax !== undefined && { collectTax: args.collectTax }),
-        updatedAt: now,
-      });
-    }
-
-    // 2. Update or Insert Business Settings Record
-    const existingSettings = await ctx.db
-      .query("businessSettings")
-      .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
-      .unique();
-
-    if (existingSettings) {
-      await ctx.db.patch(existingSettings._id, {
-        ...(args.posManagerPin !== undefined && { posManagerPin: args.posManagerPin }),
-        ...(args.themePreference !== undefined && { themePreference: args.themePreference }),
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.insert("businessSettings", {
-        businessId: auth.businessId,
-        posManagerPin: args.posManagerPin,
-        themePreference: args.themePreference || "dark",
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-
-    return { success: true };
+    await saveBusinessPreferences(ctx, auth, args);
+    return { success: true as const };
   },
 });
 
@@ -199,13 +172,13 @@ export const updateCommerceSettings = mutation({
     for (const userId of managerIds) {
       const user = await ctx.db
         .query("users")
-        .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", userId))
+        .withIndex("by_clerkUserId_and_businessId", (q) => q.eq("clerkUserId", userId).eq("businessId", auth.businessId))
         .unique();
       if (
         !user ||
         user.businessId !== auth.businessId ||
         user.status !== "ACTIVE" ||
-        (user.role !== "OWNER" && user.role !== "ADMIN")
+        !hasPermission(user, "MANAGE_COMMERCE_SETTINGS")
       ) {
         throw new Error(`INVALID_ARGUMENT: Manager notification user '${userId}' is not an active tenant manager`);
       }

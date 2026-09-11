@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { usePrivacyContext } from "@/lib/privacy/use-privacy-context";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, User, CreditCard, Award } from "lucide-react";
 import { LoyaltyBadge } from "./loyalty-badge";
-import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
-import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
 import {
   maskAlias,
   maskSensitiveText,
@@ -52,34 +51,8 @@ export function CustomerSelectorModal({
   selectedCustomerId,
 }: CustomerSelectorModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [privacyProtocol, setPrivacyProtocol] =
-    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
-  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
-    useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/business/settings").then((res) => res.json()),
-      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
-    ])
-      .then(([settingsData, preferenceData]) => {
-        setPrivacyProtocol(
-          settingsData.privacy_protocol ||
-            settingsData.privacyProtocol ||
-            getDefaultPrivacyProtocol(),
-        );
-        setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
-      })
-      .catch((error) => {
-        console.error("Failed to load ProteXion settings", error);
-      });
-  }, []);
-
-  const shouldMask = shouldMaskFromProtocol(
-    privacyProtocol,
-    manualScreenPrivacyEnabled,
-    true,
-  );
+  const privacy = usePrivacyContext(open);
+  const shouldMask = privacy.protocol ? shouldMaskFromProtocol(privacy.protocol, privacy.manualEnabled, true) : true;
 
   const filteredCustomers = customers.filter((customer) => {
     const searchLower = searchTerm.toLowerCase();
@@ -90,7 +63,14 @@ export function CustomerSelectorModal({
     const phone = customer.phone_number?.toLowerCase() || "";
     const email = customer.email?.toLowerCase() || "";
 
-    return (
+    if (!privacy.protocol) return (
+    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent>
+      <DialogHeader><DialogTitle>Select Customer</DialogTitle><DialogDescription>{privacy.error ?? "Loading customer privacy settings…"}</DialogDescription></DialogHeader>
+      {privacy.error && <Button type="button" onClick={privacy.retry}>Retry privacy settings</Button>}
+    </DialogContent></Dialog>
+  );
+
+  return (
       fullName.includes(searchLower) ||
       phone.includes(searchLower) ||
       email.includes(searchLower)

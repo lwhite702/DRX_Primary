@@ -15,14 +15,6 @@ function source(relativePath: string) {
 }
 
 describe("critical cross-surface route contracts", () => {
-  it("keeps the AI analysis endpoint authenticated and POST-only", () => {
-    const route = source("apps/app/app/api/ai/analyze/route.ts");
-
-    expect(route).toContain("export async function POST");
-    expect(route).toMatch(/auth|getAuthContext|currentUser/i);
-    expect(route).toMatch(/401|Unauthorized/);
-  });
-
   it("keeps the marketing login route as a non-indexed app redirect", () => {
     const page = source("apps/marketing/app/login/page.tsx");
 

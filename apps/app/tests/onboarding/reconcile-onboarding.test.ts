@@ -40,13 +40,7 @@ describe("GET /api/onboarding/reconcile", () => {
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/dashboard");
     expect(response.headers.get("set-cookie")).toContain("drx_onboarding_complete=true");
-    expect(mocks.updateUser).toHaveBeenCalledWith("user_123", {
-      publicMetadata: {
-        existing: "kept",
-        onboardingComplete: true,
-        businessId: "business_123",
-      },
-    });
+    expect(mocks.updateUser).not.toHaveBeenCalled();
   });
 
   it("keeps incomplete accounts in onboarding", async () => {
@@ -71,4 +65,14 @@ describe("GET /api/onboarding/reconcile", () => {
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://www.deelrxcrm.app/login");
   });
+  it("does not issue a completion cookie or expose provider details during an outage", async () => {
+    mocks.getCompletedBusinessId.mockRejectedValue(new Error("private provider payload"));
+    const response = await GET(new Request("https://www.deelrxcrm.app/api/onboarding/reconcile"));
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(await response.json()).toEqual({ error: "Onboarding status is temporarily unavailable" });
+    expect(mocks.updateUser).not.toHaveBeenCalled();
+  });
+
 });

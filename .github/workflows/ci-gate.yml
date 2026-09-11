@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 22.23.1
       - name: Validate CI routing and failure handling
-        run: node --test scripts/testing/ci-policy.test.mjs
+        run: node --test scripts/testing/ci-policy.test.mjs scripts/release/staging-deployment.test.mjs
       - name: Classify complete PR diff
         id: scope
         run: node scripts/testing/ci-change-scope.mjs

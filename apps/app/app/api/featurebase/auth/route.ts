@@ -1,80 +1,32 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { db } from "@/lib/db";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { getCurrentUser } from "@/lib/adapters/auth";
 import { clerkClient } from "@/lib/adapters/auth/server";
-
-const FEATUREBASE_JWT_SECRET = process.env.FEATUREBASE_JWT_SECRET;
-
-export async function GET(request: Request) {
-  if (!FEATUREBASE_JWT_SECRET) {
-    console.error("FEATUREBASE_JWT_SECRET is not defined.");
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 },
-    );
-  }
-
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let userProfile = await db.user.findFirst({
-    where: { clerkUserId: user.id },
-    select: { email: true, name: true },
-  });
-
-  if (!userProfile?.email) {
-    const client = await clerkClient();
-    const clerkUser = await client.users.getUser(user.id);
-    const fallbackEmail = clerkUser.primaryEmailAddress?.emailAddress;
-
-    if (!fallbackEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const fallbackName =
-      clerkUser.firstName && clerkUser.lastName
-        ? `${clerkUser.firstName} ${clerkUser.lastName}`
-        : clerkUser.firstName ??
-          clerkUser.lastName ??
-          clerkUser.username ??
-          fallbackEmail.split("@")[0] ??
-          "User";
-
-    userProfile = {
-      email: fallbackEmail,
-      name: fallbackName,
-    };
-  }
-
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
+const headers = { "Cache-Control": "private, no-store" };
+export async function GET() {
   try {
-    // Generate JWT for Featurebase SSO
-    // The instructions say: "Generate a JWT ... using your Featurebase API Key as the secret"
-    // Claims:
-    // - id: Featurebase User ID (optional, we use external ID usually)
-    // - userId: Your system's User ID
-    // - email: User's email
-    // - name: User's name
-    // - exp: Expiration time (optional but recommended)
-
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: userProfile.email,
-        name: userProfile.name || userProfile.email.split("@")[0] || "User",
-      },
-      FEATUREBASE_JWT_SECRET,
-      { expiresIn: "1h", algorithm: "HS256" },
-    );
-
-    return NextResponse.json({ token });
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers });
+    const secret = process.env.FEATUREBASE_JWT_SECRET;
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    const authToken = await getConvexAuthToken();
+    if (!secret || !url || !authToken) throw new Error("UNAVAILABLE:");
+    const client = new ConvexHttpClient(url); client.setAuth(authToken);
+    const profile = await client.query(api.featurebase.currentProfile, { expectedUserId: user.id });
+    const clerk = await clerkClient();
+    const identity = await clerk.users.getUser(user.id);
+    const email = identity.primaryEmailAddress?.emailAddress?.trim();
+    if (identity.id !== user.id || !email || identity.primaryEmailAddress?.verification?.status !== "verified") throw new Error("FORBIDDEN:");
+    if (profile?.email && profile.email.trim().toLowerCase() !== email.toLowerCase()) throw new Error("PROFILE_MISMATCH:");
+    const name = profile?.name?.trim() || [identity.firstName, identity.lastName].filter(Boolean).join(" ").trim() || identity.username || email.split("@")[0] || "User";
+    const token = jwt.sign({ userId: user.id, email, name }, secret, { expiresIn: "1h", algorithm: "HS256" });
+    return NextResponse.json({ token }, { headers });
   } catch (error) {
-    console.error("Error generating Featurebase JWT:", error);
-    return NextResponse.json(
-      { error: "Failed to generate token" },
-      { status: 500 },
-    );
+    const message = error instanceof Error ? error.message : "";
+    const status = message.includes("UNAUTHORIZED:") ? 401 : message.includes("FORBIDDEN:") ? 403 : 503;
+    return NextResponse.json({ error: status === 401 ? "Unauthorized" : status === 403 ? "A verified email and active account are required" : message.includes("PROFILE_MISMATCH:") ? "Your profile email requires reconciliation before signing in" : "Help center sign-in is temporarily unavailable" }, { status, headers });
   }
 }

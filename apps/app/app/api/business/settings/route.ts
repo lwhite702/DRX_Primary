@@ -1,223 +1,60 @@
-import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
-import { resolveAuthContext } from "../../pos/_lib/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { hasPermission } from "@/lib/auth/server-guards";
-import { errorResponse, successResponse } from "@/lib/api/response";
-import { extractPrivacyProtocol } from "@/lib/privacy/settings";
-import { normalizePrivacyPolicy } from "@/lib/privacy/privacy-policy";
-import { updateBusinessPrivacyPolicy } from "@/lib/privacy/privacy-resolution";
+import type { FunctionReturnType } from "convex/server";
+import { api } from "@/convex/_generated/api";
+import { businessClient, businessFailure } from "@/lib/business/convex-server";
+import { privacyProtocolSchema } from "@/lib/privacy/protocol-schema";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 
-const BusinessSettingsPatchSchema = z
-  .object({
-    collect_tax: z.boolean().optional(),
-    collectTax: z.boolean().optional(),
-    pos_manager_pin: z.string().trim().min(4).max(50).optional().nullable(),
-    posManagerPin: z.string().trim().min(4).max(50).optional().nullable(),
-    privacy_protocol: z.enum(["Standard", "Protexion", "Strict"]).optional(),
-    privacyProtocol: z.enum(["Standard", "Protexion", "Strict"]).optional(),
-    defaultTaxRate: z.number().min(0).max(1).optional(),
-    default_tax_rate: z.number().min(0).max(1).optional(),
-  })
-  .strict();
-
-function mapSettingsResponse(settings: any) {
-  const protocol = extractPrivacyProtocol(settings?.settingsData);
-  const data =
-    settings?.settingsData && typeof settings.settingsData === "object"
-      ? (settings.settingsData as Record<string, unknown>)
-      : {};
-  return {
-    collect_tax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
-    collectTax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
-    default_tax_rate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
-    defaultTaxRate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
-    pos_manager_pin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
-    posManagerPin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
-    privacy_protocol: protocol,
-    privacyProtocol: protocol,
-  };
+const patchSchema = z.object({
+  collect_tax: z.boolean().optional(), collectTax: z.boolean().optional(),
+  defaultTaxRate: z.number().min(0).max(1).optional(), default_tax_rate: z.number().min(0).max(1).optional(),
+  posManagerPin: z.string().max(50).nullable().optional(), pos_manager_pin: z.string().max(50).nullable().optional(),
+  privacyProtocol: privacyProtocolSchema.optional(), privacy_protocol: privacyProtocolSchema.optional(),
+  privacyRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
+}).strict();
+function response(settings: FunctionReturnType<typeof api.businessPreferences.getSettings>, privacyEnabled: boolean) {
+  return NextResponse.json({
+    collect_tax: settings.collectTax, collectTax: settings.collectTax,
+    default_tax_rate: settings.taxRateBps / 10000, defaultTaxRate: settings.taxRateBps / 10000,
+    pos_manager_pin: null, posManagerPin: null,
+    posManagerPinConfigured: settings.hasPinConfigured,
+    privacySettingsEnabled: privacyEnabled,
+    ...(privacyEnabled ? { privacy_protocol: settings.privacyProtocol, privacyProtocol: settings.privacyProtocol, privacyRevision: settings.privacyRevision } : {}),
+  }, { headers: { "Cache-Control": "private, no-store" } });
 }
-
-function mapLegacySettingsResponse(settings: any) {
-  const data =
-    settings?.settingsData && typeof settings.settingsData === "object"
-      ? (settings.settingsData as Record<string, unknown>)
-      : {};
-  return {
-    collect_tax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
-    collectTax: settings?.collectTax ?? (data.collect_tax as boolean) ?? true,
-    default_tax_rate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
-    defaultTaxRate: Number(settings?.defaultTaxRate ?? data.default_tax_rate ?? 0.08),
-    pos_manager_pin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
-    posManagerPin: (settings?.posManagerPin ?? data.pos_manager_pin ?? null) as string | null,
-  };
+async function context(request: NextRequest) {
+  const connection = await businessClient(request);
+  const includePrivacy = await ensureServerFlag("feat_privacy_settings_v2", {
+    distinctId: connection.expectedUserId, groups: { business: connection.businessId }, defaultValue: true,
+  });
+  return { ...connection, includePrivacy };
 }
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const privacySettingsEnabled = await ensureServerFlag(
-      "feat_privacy_settings_v2",
-      {
-        distinctId: userId ?? businessId,
-        groups: { business: businessId },
-        defaultValue: true,
-      },
-    );
-
-    let settings: any = null;
-    try {
-      settings = await db.businessSettings.findFirst({
-        where: { businessId },
-      });
-    } catch (err) {
-      console.warn("GET Business Settings fallback to settingsData:", err);
-      try {
-        settings = await db.businessSettings.findFirst({
-          where: { businessId },
-          select: { id: true, businessId: true, settingsData: true },
-        });
-      } catch {
-        settings = null;
-      }
-    }
-
-    if (!settings) {
-      return successResponse(
-        privacySettingsEnabled
-          ? mapSettingsResponse(null)
-          : mapLegacySettingsResponse(null),
-      );
-    }
-
-    return successResponse(
-      privacySettingsEnabled
-        ? mapSettingsResponse(settings)
-        : mapLegacySettingsResponse(settings),
-    );
-  } catch (error) {
-    console.error("GET Business Settings Error:", error);
-    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
-  }
+    const { client, ...args } = await context(request);
+    return response(await client.query(api.businessPreferences.getSettings, args), args.includePrivacy);
+  } catch (error) { return businessFailure(error); }
 }
-
 export async function PATCH(request: NextRequest) {
   try {
-    const { userId, businessId } = await resolveAuthContext();
-    if (!businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+    const { client, ...args } = await context(request);
+    const parsed = patchSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) throw new Error("INVALID_ARGUMENT:");
+    const body = parsed.data;
+    for (const [camel, snake] of [["collectTax", "collect_tax"], ["defaultTaxRate", "default_tax_rate"], ["posManagerPin", "pos_manager_pin"], ["privacyProtocol", "privacy_protocol"]] as const) {
+      if (body[camel] !== undefined && body[snake] !== undefined && JSON.stringify(body[camel]) !== JSON.stringify(body[snake])) throw new Error("INVALID_ARGUMENT:");
     }
-
-    const canConfigure = await hasPermission("settings.configure_pos");
-    if (!canConfigure) {
-      return errorResponse("FORBIDDEN", "Forbidden", 403);
-    }
-
-    const privacySettingsEnabled = await ensureServerFlag(
-      "feat_privacy_settings_v2",
-      {
-        distinctId: userId ?? businessId,
-        groups: { business: businessId },
-        defaultValue: true,
-      },
-    );
-
-    const parsed = BusinessSettingsPatchSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid settings payload",
-        400,
-        parsed.error.flatten(),
-      );
-    }
-
-    const collectTax = parsed.data.collect_tax ?? parsed.data.collectTax;
-    const defaultTaxRate =
-      parsed.data.default_tax_rate ?? parsed.data.defaultTaxRate;
-    const posManagerPin =
-      parsed.data.pos_manager_pin !== undefined
-        ? parsed.data.pos_manager_pin
-        : parsed.data.posManagerPin;
-
-    let baseUpdate: any = null;
-    try {
-      baseUpdate = await db.businessSettings.upsert({
-        where: { businessId },
-        update: {
-          collectTax: collectTax ?? undefined,
-          defaultTaxRate: defaultTaxRate ?? undefined,
-          posManagerPin: posManagerPin ?? undefined,
-        },
-        create: {
-          businessId,
-          collectTax: collectTax ?? true,
-          defaultTaxRate: defaultTaxRate ?? 0.08,
-          posManagerPin: posManagerPin ?? null,
-        },
-      });
-    } catch (err) {
-      console.warn("PATCH Business Settings fallback to settingsData:", err);
-      const existing = await db.businessSettings.findUnique({
-        where: { businessId },
-        select: { id: true, settingsData: true },
-      });
-      const existingData =
-        existing?.settingsData && typeof existing.settingsData === "object"
-          ? (existing.settingsData as Record<string, unknown>)
-          : {};
-      const updatedData = {
-        ...existingData,
-        ...(collectTax !== undefined && { collect_tax: collectTax }),
-        ...(defaultTaxRate !== undefined && { default_tax_rate: defaultTaxRate }),
-        ...(posManagerPin !== undefined && { pos_manager_pin: posManagerPin }),
-      };
-      if (existing) {
-        baseUpdate = await db.businessSettings.update({
-          where: { id: existing.id },
-          data: { settingsData: updatedData },
-        });
-      } else {
-        baseUpdate = await db.businessSettings.create({
-          data: { businessId, settingsData: updatedData },
-        });
-      }
-    }
-
-    const nextProtocolCandidate =
-      parsed.data.privacy_protocol ?? parsed.data.privacyProtocol;
-
-    if (privacySettingsEnabled && nextProtocolCandidate !== undefined) {
-      await updateBusinessPrivacyPolicy({
-        businessId,
-        userId,
-        nextPolicy: normalizePrivacyPolicy(nextProtocolCandidate),
-      });
-    }
-
-    let refreshed: any = null;
-    try {
-      refreshed = await db.businessSettings.findFirst({
-        where: { businessId },
-      });
-    } catch {
-      refreshed = baseUpdate;
-    }
-
-    return successResponse({
-      ...(privacySettingsEnabled
-        ? mapSettingsResponse(refreshed || baseUpdate)
-        : mapLegacySettingsResponse(refreshed || baseUpdate)),
-      data: refreshed || baseUpdate,
+    const privacyProtocol = body.privacyProtocol ?? body.privacy_protocol;
+    if (!args.includePrivacy && privacyProtocol !== undefined) throw new Error("FEATURE_DISABLED:");
+    const rate = body.defaultTaxRate ?? body.default_tax_rate;
+    const taxRateBps = rate === undefined ? undefined : Math.round(rate * 10000);
+    if (rate !== undefined && Math.abs(rate * 10000 - taxRateBps!) > 1e-6) throw new Error("INVALID_ARGUMENT:");
+    const settings = await client.mutation(api.businessPreferences.saveSettings, {
+      ...args, collectTax: body.collectTax ?? body.collect_tax, taxRateBps,
+      posManagerPin: body.posManagerPin !== undefined ? body.posManagerPin : body.pos_manager_pin,
+      privacyProtocol, expectedPrivacyRevision: body.privacyRevision,
     });
-  } catch (error) {
-    console.error("PATCH Business Settings Error:", error);
-    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
-  }
+    return response(settings, args.includePrivacy);
+  } catch (error) { return businessFailure(error); }
 }

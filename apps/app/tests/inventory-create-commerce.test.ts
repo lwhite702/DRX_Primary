@@ -1,183 +1,62 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { creationCommerceDefaults } from "../lib/commerce/product-creation";
-import { getDefaultCommerceSettings } from "../lib/commerce/config";
-const mocks = vi.hoisted(() => {
-  const tx = {
-    inventory: { create: vi.fn() },
-    businessSettings: { findUnique: vi.fn(), upsert: vi.fn() },
-    inventoryLog: { create: vi.fn() },
-    user: { findFirst: vi.fn() },
-  };
-  return {
-    tx,
-    auth: vi.fn(),
-    permission: vi.fn(),
-    transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(tx)),
-  };
-});
-vi.mock("@/lib/db", () => ({
-  db: { ...mocks.tx, $transaction: mocks.transaction },
-}));
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  resolveAuthContext: mocks.auth,
-}));
-vi.mock("@/lib/auth/server-guards", () => ({
-  hasBusinessPermission: mocks.permission,
-}));
-import { POST } from "../app/api/inventory/route";
-const id = "11111111-1111-4111-8111-111111111111";
-const body = {
-  sku: "NEW",
-  product_name: "Synthetic",
-  selling_price: 10,
-  unit_cost: 3,
-  quantity_on_hand: 2,
-  reorder_level: 0,
-  commerce_config: {
-    ...creationCommerceDefaults("g", true),
-    suggestedDollarAmounts: [10, 20],
-    suggestedQuantities: [0.5, 1],
-  },
+const mocks = vi.hoisted(() => ({ query: vi.fn(), mutation: vi.fn(), token: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Catalog must not load Prisma"); });
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class {
+  setAuth() {} query = mocks.query; mutation = mocks.mutation;
+} }));
+import { GET, POST } from "../app/api/inventory/route";
+const product = {
+  _id: "canonical-product", businessId: "canonical-business", sku: "NEW", productName: "Synthetic",
+  quantityOnHandGrams: 2.5, reorderLevelGrams: 0, sellingPriceCents: 1000, unitCostCents: 300,
+  sellingUnit: "g", allowFractionalWeight: true, createdAt: 1, updatedAt: 2,
 };
-const request = (patch = {}) =>
-  new NextRequest("https://example.test/api/inventory", {
-    method: "POST",
-    body: JSON.stringify({ ...body, ...patch }),
-  });
+const body = { business_id: "canonical-business", sku: "NEW", product_name: "Synthetic", selling_price: 10,
+  unit_cost: 3, quantity_on_hand: 2.5, reorder_level: 0, commerce_config: creationCommerceDefaults("g", true) };
+const request = (patch = {}) => new NextRequest("https://example.test/api/inventory", {
+  method: "POST", body: JSON.stringify({ ...body, ...patch }),
+});
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.auth.mockResolvedValue({ userId: "owner", businessId: "tenant-a" });
-  mocks.permission.mockResolvedValue(true);
-  mocks.tx.inventory.create.mockImplementation(async ({ data }) => ({
-    id,
-    ...data,
-  }));
-  mocks.tx.businessSettings.findUnique.mockResolvedValue({
-    settingsData: {
-      unrelated: "preserved",
-      commerce: getDefaultCommerceSettings(),
-    },
-  });
-  mocks.tx.businessSettings.upsert.mockResolvedValue({});
+  process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
+  mocks.token.mockResolvedValue("synthetic-token");
+  mocks.mutation.mockResolvedValue(product._id);
+  mocks.query.mockResolvedValue(product);
 });
-describe("inventory creation with selling rules", () => {
-  it("writes product, quantity rules and audit in one serializable tenant-scoped transaction", async () => {
+describe("Convex catalog adapter", () => {
+  it("creates canonical stock and selling rules and returns the operator row", async () => {
     const response = await POST(request());
     expect(response.status).toBe(201);
-    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), {
-      isolationLevel: "Serializable",
-    });
-    expect(mocks.tx.inventory.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        businessId: "tenant-a",
-        allowFractionalWeight: true,
-        pricePerGram: 10,
-        inventoryInGrams: 2,
-        reorderLevel: 0,
-      }),
-    });
-    expect(mocks.tx.businessSettings.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { businessId: "tenant-a" },
-        update: {
-          settingsData: expect.objectContaining({
-            unrelated: "preserved",
-            commerce: expect.objectContaining({
-              productConfigs: { [id]: body.commerce_config },
-            }),
-          }),
-        },
-      }),
-    );
-    expect(mocks.tx.inventoryLog.create).toHaveBeenCalledOnce();
+    expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      selectedBusinessId: body.business_id, sellingPriceCents: 1000, unitCostCents: 300, initialQuantity: 2.5,
+      commerceConfig: expect.objectContaining({ sellingUnit: "g" }),
+    }));
+    expect(await response.json()).toMatchObject({ id: product._id, quantityOnHand: 2.5, sellingPrice: 10 });
   });
-  it.each([
-    { quantityIncrement: 0 },
-    { decimalPrecision: 0 },
-    { suggestedQuantities: [0.005] },
-    { suggestedDollarAmounts: [10.001] },
-  ])("rejects invalid config before writes: %j", async (patch) => {
-    expect(
-      (
-        await POST(
-          request({ commerce_config: { ...body.commerce_config, ...patch } }),
-        )
-      ).status,
-    ).toBe(400);
-    expect(mocks.tx.inventory.create).not.toHaveBeenCalled();
-  });
-  it("does not claim success if saving the rules fails", async () => {
-    mocks.tx.businessSettings.upsert.mockRejectedValueOnce(
-      new Error("Synthetic write failure"),
-    );
-    expect((await POST(request())).status).toBe(500);
-  });
-  it("does not replace malformed existing commerce settings", async () => {
-    mocks.tx.businessSettings.findUnique.mockResolvedValueOnce({
-      settingsData: { commerce: { invalid: true } },
-    });
-    expect((await POST(request())).status).toBe(500);
-    expect(mocks.tx.businessSettings.upsert).not.toHaveBeenCalled();
-    expect(mocks.tx.inventoryLog.create).not.toHaveBeenCalled();
-  });
-  it("reports a retryable conflict without claiming a successful create", async () => {
-    mocks.transaction.mockImplementationOnce(async () => {
-      throw { code: "P2034" };
-    });
+  it("rejects excess money precision and duplicate SKU without hiding the conflict", async () => {
+    expect((await POST(request({ selling_price: 1.001 }))).status).toBe(400);
+    expect(mocks.mutation).not.toHaveBeenCalled();
+    mocks.mutation.mockRejectedValue(new Error("ALREADY_EXISTS: private identifier"));
     const response = await POST(request());
     expect(response.status).toBe(409);
-    expect(await response.json()).toMatchObject({
-      error: expect.stringContaining("please try again"),
-    });
+    expect(JSON.stringify(await response.json())).not.toContain("private identifier");
   });
-  it("denies unauthorized roles before any writes", async () => {
-    mocks.permission.mockResolvedValue(false);
-    expect((await POST(request())).status).toBe(403);
-    expect(mocks.transaction).not.toHaveBeenCalled();
+  it("reads canonical stock through bounded pages, preserving search and offset", async () => {
+    mocks.query.mockResolvedValueOnce({ page: [product], continueCursor: "next", isDone: false })
+      .mockResolvedValueOnce({ page: [{ ...product, _id: "second" }], continueCursor: "end", isDone: true });
+    const response = await GET(new NextRequest("https://example.test/api/inventory?business_id=canonical-business&limit=1&offset=1&search=synthetic"));
+    expect(response.status).toBe(200);
+    expect((await response.json()).data).toEqual([expect.objectContaining({ id: "second", quantityOnHand: 2.5 })]);
+    expect(mocks.query).toHaveBeenLastCalledWith(expect.anything(), { businessId: body.business_id, paginationOpts: { numItems: 1, cursor: "next" } });
   });
-  it("preserves whole-unit defaults and legacy requests", async () => {
-    expect(
-      (
-        await POST(
-          request({ commerce_config: creationCommerceDefaults("unit") }),
-        )
-      ).status,
-    ).toBe(201);
-    expect(mocks.tx.inventory.create).toHaveBeenLastCalledWith({
-      data: expect.objectContaining({
-        allowFractionalWeight: false,
-        pricePerGram: null,
-      }),
-    });
-    expect((await POST(request({ commerce_config: undefined }))).status).toBe(
-      201,
-    );
-    expect(mocks.transaction).toHaveBeenCalledTimes(1);
-  });
-  it("resolves Clerk userId to user UUID for inventoryLog and accepts null unit_cost", async () => {
-    const internalUserUuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-    mocks.auth.mockResolvedValueOnce({
-      userId: "user_2w3xyz987clerk",
-      businessId: "tenant-a",
-    });
-    mocks.tx.user.findFirst.mockResolvedValueOnce({ id: internalUserUuid });
-
-    const response = await POST(request({ unit_cost: null }));
-    expect(response.status).toBe(201);
-    expect(mocks.tx.inventory.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          unitCost: null,
-        }),
-      }),
-    );
-    expect(mocks.tx.inventoryLog.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          createdBy: internalUserUuid,
-        }),
-      }),
-    );
+  it("requires identity and selected tenant before any catalog call", async () => {
+    mocks.token.mockResolvedValue(null);
+    expect((await POST(request())).status).toBe(401);
+    expect(mocks.mutation).not.toHaveBeenCalled();
+    mocks.token.mockResolvedValue("synthetic-token");
+    expect((await GET(new NextRequest("https://example.test/api/inventory"))).status).toBe(400);
+    expect(mocks.query).not.toHaveBeenCalled();
   });
 });
