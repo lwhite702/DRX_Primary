@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clerk/clerk-expo": "^2.19.22",
+    "@clerk/clerk-expo": "2.19.36",
     "@deelrx/content": "workspace:*",
     "@expo/ngrok": "^4.1.3",
     "@expo/vector-icons": "^15.0.3",
@@ -28,7 +28,7 @@
     "@wrelik/analytics": "workspace:*",
     "@wrelik/auth": "2.0.0",
     "@wrelik/errors": "workspace:*",
-    "axios": "^1.13.5",
+    "axios": "^1.20.0",
     "convex": "^1.42.3",
     "date-fns": "^4.1.0",
     "expo": "~54.0.37",
