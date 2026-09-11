@@ -121,12 +121,14 @@ export function FractionalProductFields({
       )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="create-dollar-presets">
-            Suggested dollar amounts
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="create-dollar-presets">
+              Suggested dollar amounts
+            </Label>
+          </div>
           <Input
             id="create-dollar-presets"
-            placeholder="10, 20, 50"
+            placeholder="e.g. 10, 20, 50"
             value={dollars}
             onChange={(e) => {
               setDollars(e.target.value);
@@ -135,24 +137,81 @@ export function FractionalProductFields({
               });
             }}
           />
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-[11px] text-muted-foreground">Quick presets:</span>
+            {[
+              [10, 20, 50],
+              [15, 30, 60],
+              [20, 40, 80],
+            ].map((presetGroup, idx) => {
+              const label = `$${presetGroup.join(", $")}`;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    const str = presetGroup.join(", ");
+                    setDollars(str);
+                    update({ suggestedDollarAmounts: presetGroup });
+                  }}
+                  className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="create-quantity-presets">Suggested quantities</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="create-quantity-presets">
+              Suggested quantities
+            </Label>
+          </div>
           <Input
             id="create-quantity-presets"
-            placeholder={value.fractionalEnabled ? "0.5, 1, 3.5" : "1, 2, 3"}
+            placeholder={value.fractionalEnabled ? "e.g. 0.5, 1, 3.5" : "e.g. 1, 2, 3"}
             value={quantities}
             onChange={(e) => {
               setQuantities(e.target.value);
               update({ suggestedQuantities: parsePresetInput(e.target.value) });
             }}
           />
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-[11px] text-muted-foreground">Common:</span>
+            {(value.fractionalEnabled && value.sellingUnit === "g"
+              ? [
+                  [1, 3.5, 7],
+                  [0.5, 1, 2],
+                  [3.5, 7, 14, 28],
+                ]
+              : [
+                  [1, 2, 5],
+                  [1, 3, 6],
+                  [2, 4, 8],
+                ]
+            ).map((presetGroup, idx) => {
+              const label = presetGroup.join(", ") + ` ${value.sellingUnit}`;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    const str = presetGroup.join(", ");
+                    setQuantities(str);
+                    update({ suggestedQuantities: presetGroup });
+                  }}
+                  className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Optional: enter up to eight comma-separated amounts. Checkout suggests
-        the matching quantity for a dollar amount. Configure bulk tiers in
-        Commerce & Delivery after creating the product.
+      <p className="text-xs text-muted-foreground">
+        Quick-tap buttons created here will appear on your checkout register so staff can tap popular amounts with one touch.
       </p>
     </fieldset>
   );

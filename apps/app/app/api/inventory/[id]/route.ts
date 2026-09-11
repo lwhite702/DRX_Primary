@@ -7,6 +7,41 @@ import { errorResponse } from "@/lib/api/response";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 
 const RouteParamsSchema = z.object({ id: z.string().min(1) });
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function toValidUuid(value: unknown): string | null {
+  return typeof value === "string" && UUID_REGEX.test(value.trim())
+    ? value.trim()
+    : null;
+}
+
+async function resolveCreatorUuid(
+  tx: Prisma.TransactionClient,
+  userId: string | null | undefined,
+): Promise<string | null> {
+  const directUuid = toValidUuid(userId);
+  if (directUuid) return directUuid;
+  if (!userId || typeof userId !== "string") return null;
+
+  try {
+    const userDelegate = (tx as unknown as { user?: { findFirst?: (args: unknown) => unknown } }).user;
+    if (typeof userDelegate?.findFirst === "function") {
+      const result = await userDelegate.findFirst({
+        where: { clerkUserId: userId },
+        select: { id: true },
+      });
+      if (result && typeof result === "object" && "id" in result) {
+        return toValidUuid(result.id);
+      }
+    }
+  } catch {
+    // Fall back to null if user lookup is unsupported or fails
+  }
+
+  return null;
+}
+
 const InventoryUpdateSchema = z
   .object({
     product_name: z.string().min(1).optional(),
@@ -98,13 +133,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       });
 
       if (quantityChanged) {
+        const creatorId = await resolveCreatorUuid(tx, resolved.userId);
         await tx.inventoryLog.create({
           data: {
             inventoryId: resolved.item.id,
             transactionType: "adjustment",
             quantityChange: input.quantity_on_hand! - resolved.item.quantityOnHand,
             reason: "Inventory update via /api/inventory/[id]",
-            createdBy: resolved.userId,
+            createdBy: creatorId,
           },
         });
       }

@@ -9,6 +9,41 @@ import {
   readCommerceSettings,
 } from "@/lib/commerce/config";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function toValidUuid(value: unknown): string | null {
+  return typeof value === "string" && UUID_REGEX.test(value.trim())
+    ? value.trim()
+    : null;
+}
+
+async function resolveCreatorUuid(
+  tx: Prisma.TransactionClient,
+  userId: string | null | undefined,
+): Promise<string | null> {
+  const directUuid = toValidUuid(userId);
+  if (directUuid) return directUuid;
+  if (!userId || typeof userId !== "string") return null;
+
+  try {
+    const userDelegate = (tx as unknown as { user?: { findFirst?: (args: unknown) => unknown } }).user;
+    if (typeof userDelegate?.findFirst === "function") {
+      const result = await userDelegate.findFirst({
+        where: { clerkUserId: userId },
+        select: { id: true },
+      });
+      if (result && typeof result === "object" && "id" in result) {
+        return toValidUuid(result.id);
+      }
+    }
+  } catch {
+    // Fall back to null if user lookup is unsupported or fails
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { userId, businessId } = await resolveAuthContext(request);
@@ -116,6 +151,7 @@ export async function POST(request: NextRequest) {
         !Number.isSafeInteger(reorder_level ?? 10) ||
         (reorder_level ?? 10) < 0 ||
         (unit_cost !== undefined &&
+          unit_cost !== null &&
           (!Number.isFinite(unit_cost) || unit_cost < 0)))
     ) {
       return NextResponse.json(
@@ -138,7 +174,7 @@ export async function POST(request: NextRequest) {
             category,
             quantityOnHand: quantity_on_hand || 0,
             reorderLevel: reorder_level ?? 10,
-            unitCost: unit_cost,
+            unitCost: unit_cost ?? null,
             sellingPrice: selling_price,
             supplierId: supplier_id,
             baseUnit: config?.sellingUnit || unit_of_measure || "g",
@@ -190,13 +226,14 @@ export async function POST(request: NextRequest) {
                 create: { businessId, settingsData: data },
                 update: { settingsData: data },
               });
+              const creatorId = await resolveCreatorUuid(tx, userId);
               await tx.inventoryLog.create({
                 data: {
                   inventoryId: item.id,
                   transactionType: "creation",
                   quantityChange: quantity_on_hand ?? 0,
                   reason: "Product created with selling rules",
-                  createdBy: userId,
+                  createdBy: creatorId,
                 },
               });
               return item;
