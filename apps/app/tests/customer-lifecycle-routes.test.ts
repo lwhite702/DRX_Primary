@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   mapCustomerToOperationalModel: vi.fn(),
   mapOperationalCustomerRecord: vi.fn(),
   createCustomerWithAudit: vi.fn(),
+  canWriteField: vi.fn().mockReturnValue(true),
   db: {
     $queryRaw: vi.fn(),
     customers: {
@@ -70,7 +71,7 @@ vi.mock("@/lib/privacy/customer-pii", () => ({
 }));
 
 vi.mock("@/lib/privacy/privacy-policy", () => ({
-  canWriteField: vi.fn().mockReturnValue(true),
+  canWriteField: mocks.canWriteField,
 }));
 
 vi.mock("@/lib/customers/core/customer-normalizer", () => ({
@@ -115,6 +116,10 @@ describe("customer lifecycle routes", () => {
     mocks.decodeCustomerPii.mockResolvedValue({});
     mocks.encodeCustomerPii.mockResolvedValue({});
     mocks.mapCustomerToOperationalModel.mockImplementation((customer) => ({
+      id: customer.id,
+      is_active: customer.isActive,
+    }));
+    mocks.mapOperationalCustomerRecord.mockImplementation((customer) => ({
       id: customer.id,
       is_active: customer.isActive,
     }));
@@ -222,5 +227,52 @@ describe("customer lifecycle routes", () => {
         total_amount: 10.8,
       }),
     ]);
+  });
+
+  it("blocks customer creation with 400 when address is provided but disallowed by privacy policy", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "Jane",
+        phone: "5551234567",
+        address: "123 Main St",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toEqual({
+      error: "Blocked by privacy policy: address",
+    });
+    expect(mocks.createCustomerWithAudit).not.toHaveBeenCalled();
+  });
+
+  it("succeeds when address is omitted or empty under restrictive privacy policy", async () => {
+    mocks.canWriteField.mockImplementation(
+      (_policy, field) => field !== "address",
+    );
+    mocks.createCustomerWithAudit.mockResolvedValue({
+      id: "customer-new",
+      isActive: true,
+    });
+
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "Jane",
+        phone: "5551234567",
+        address: "   ",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(payload).toEqual({
+      id: "customer-new",
+      is_active: true,
+    });
+    expect(mocks.createCustomerWithAudit).toHaveBeenCalledTimes(1);
   });
 });
