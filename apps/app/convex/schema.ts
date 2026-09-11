@@ -396,9 +396,23 @@ export default defineSchema({
     paymentReference: v.optional(v.string()),
     fees: v.optional(v.array(v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) }))),
     feeRevenueCents: v.optional(v.number()),
+    deliveryFeeCents: v.optional(v.number()),
+    discountAmountCents: v.optional(v.number()),
+    isComp: v.optional(v.boolean()),
     creditAmountCents: v.optional(v.number()),
     vendorDeliveryExpenseKnown: v.optional(v.boolean()),
     checkoutFingerprint: v.optional(v.string()),
+    voidReason: v.optional(v.string()),
+    voidSettlementStatus: v.optional(v.string()),
+    voidReference: v.optional(v.string()),
+    voidedBy: v.optional(v.string()),
+    voidedAt: v.optional(v.number()),
+    refundReason: v.optional(v.string()),
+    refundDisposition: v.optional(v.string()), // "restock" | "scrap"
+    refundSettlementStatus: v.optional(v.string()),
+    refundReference: v.optional(v.string()),
+    refundedBy: v.optional(v.string()),
+    refundedAt: v.optional(v.number()),
     createdBy: v.string(),
     offlineAuthorizationId: v.optional(v.id("offlineAuthorizations")),
     offlineDeviceId: v.optional(v.string()),
@@ -646,6 +660,23 @@ export default defineSchema({
     .index("by_status_and_nextAttemptAt", ["status", "nextAttemptAt"])
     .index("by_notificationId", ["notificationId"])
     .index("by_deviceTokenId", ["deviceTokenId"]),
+
+  // Inventory Stock Adjustments (shrinkage, recount, damage, spill)
+  stockAdjustments: defineTable({
+    businessId: v.id("businesses"),
+    productId: v.id("products"),
+    batchId: v.id("inventoryBatches"),
+    adjustmentType: v.string(), // "shrinkage" | "spill" | "damage" | "recount"
+    direction: v.string(), // "increase" | "decrease"
+    quantityGrams: v.number(),
+    costLossCents: v.number(),
+    notes: v.optional(v.string()),
+    createdBy: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_businessId", ["businessId"])
+    .index("by_productId", ["productId"])
+    .index("by_batchId", ["batchId"]),
 
   // Immutable Audit Events
   auditEvents: defineTable({

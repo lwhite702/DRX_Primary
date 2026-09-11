@@ -34,6 +34,7 @@ const paymentMethod = v.union(
   v.literal("credit"),
   v.literal("mixed"),
   v.literal("zelle"),
+  v.literal("comp"),
 );
 
 const deliveryInput = v.object({
@@ -285,6 +286,9 @@ async function createCheckoutFingerprint(input: {
   fees?: CheckoutFee[];
   priceOverrides?: PriceOverride[];
   paymentReference?: string;
+  deliveryFeeCents?: number;
+  discountAmountCents?: number;
+  isComp?: boolean;
   amountPaidCents: number;
   delivery?: DeliveryTerms & { address: string };
 }): Promise<string> {
@@ -303,6 +307,9 @@ async function createCheckoutFingerprint(input: {
     ...(input.fees?.length ? { fees: input.fees } : {}),
     ...(input.priceOverrides?.length ? { priceOverrides: input.priceOverrides } : {}),
     ...(input.paymentReference ? { paymentReference: input.paymentReference } : {}),
+    ...(input.deliveryFeeCents !== undefined ? { deliveryFeeCents: input.deliveryFeeCents } : {}),
+    ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
+    ...(input.isComp !== undefined ? { isComp: input.isComp } : {}),
     paymentMethod: input.paymentMethod,
     amountPaidCents: input.amountPaidCents,
     delivery: input.delivery
@@ -510,6 +517,9 @@ export const processCheckout = mutation({
     priceOverrides: v.optional(v.array(priceOverride)),
     paymentMethod,
     paymentReference: v.optional(v.string()),
+    deliveryFeeCents: v.optional(v.number()),
+    discountAmountCents: v.optional(v.number()),
+    isComp: v.optional(v.boolean()),
     expectedTotalCents: v.optional(v.number()),
     amountPaidCents: v.number(),
     delivery: v.optional(deliveryInput),
@@ -519,6 +529,20 @@ export const processCheckout = mutation({
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
     requireNonnegativeSafeInteger(args.amountPaidCents, "amountPaidCents");
+    if (args.deliveryFeeCents !== undefined) {
+      requireNonnegativeSafeInteger(args.deliveryFeeCents, "deliveryFeeCents");
+    }
+    if (args.discountAmountCents !== undefined) {
+      requireNonnegativeSafeInteger(args.discountAmountCents, "discountAmountCents");
+    }
+    if (
+      (args.deliveryFeeCents !== undefined && args.deliveryFeeCents > 0) ||
+      (args.discountAmountCents !== undefined && args.discountAmountCents > 0) ||
+      args.isComp
+    ) {
+      requirePermission(auth.userRecord, "APPLY_CHECKOUT_OVERRIDE");
+    }
+
     const fees = normalizeFees(args.fees);
     const feeRevenueCents = totalFees(fees);
     const paymentReference = normalizePaymentReference(args.paymentReference);
@@ -549,6 +573,9 @@ export const processCheckout = mutation({
       fees,
       priceOverrides: overrides,
       paymentReference,
+      deliveryFeeCents: args.deliveryFeeCents,
+      discountAmountCents: args.discountAmountCents,
+      isComp: args.isComp,
       amountPaidCents: args.amountPaidCents,
       delivery: args.delivery,
     });
@@ -772,12 +799,19 @@ export const processCheckout = mutation({
       (total, line) => total + (line.isTaxable ? line.lineTotalCents : 0),
       0,
     );
-    const merchandiseSubtotalCents =
+    const baseMerchandiseSubtotalCents =
       pricing.merchandiseSubtotalCents + manualMerchandiseSubtotalCents;
-    const discountCents = pricing.discountCents + manualDiscountCents;
-    const subtotalCents =
+    const baseDiscountCents = pricing.discountCents + manualDiscountCents;
+    const baseSubtotalCents =
       pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
-    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
+
+    let subtotalCents = baseSubtotalCents;
+    let merchandiseSubtotalCents = baseMerchandiseSubtotalCents;
+    let discountCents = baseDiscountCents + (args.discountAmountCents ?? 0);
+    let deliveryRevenueCents =
+      args.delivery?.customerFeeCents ??
+      (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0) +
+        (args.deliveryFeeCents ?? 0);
     const vendorDeliveryExpenseCents = args.delivery?.vendorFeeCents ?? 0;
 
     const taxRateBps = auth.businessRecord.collectTax
@@ -787,23 +821,52 @@ export const processCheckout = mutation({
     if (taxRateBps > 10_000) {
       throw new Error("INVALID_ARGUMENT: taxRateBps cannot exceed 10000");
     }
-    const merchandiseTaxCents = calculateTaxCents(
-      pricing.taxableMerchandiseCents + manualTaxableCents,
-      taxRateBps,
-    );
-    const deliveryTaxCents =
-      args.delivery &&
-      args.delivery.chargeCustomer &&
-      commerceSettings?.deliveryFeeTaxable
-        ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
+
+    let merchandiseTaxCents = 0;
+    let deliveryTaxCents = 0;
+    let taxableSubtotalCents = 0;
+    let taxAmountCents = 0;
+    let totalAmountCents = 0;
+
+    if (args.isComp) {
+      totalAmountCents = 0;
+      taxAmountCents = 0;
+      merchandiseTaxCents = 0;
+      deliveryTaxCents = 0;
+      taxableSubtotalCents = 0;
+    } else if (args.discountAmountCents !== undefined || args.deliveryFeeCents !== undefined) {
+      const discountedSubtotalCents = Math.max(0, subtotalCents - (args.discountAmountCents ?? 0));
+      merchandiseTaxCents = auth.businessRecord.collectTax
+        ? calculateTaxCents(discountedSubtotalCents, taxRateBps)
         : 0;
-    const taxableSubtotalCents =
-      pricing.taxableMerchandiseCents +
-      manualTaxableCents +
-      (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
-    const taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
-    const totalAmountCents =
-      subtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+      deliveryTaxCents =
+        args.delivery &&
+        args.delivery.chargeCustomer &&
+        commerceSettings?.deliveryFeeTaxable
+          ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
+          : 0;
+      taxableSubtotalCents = discountedSubtotalCents + (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
+      taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
+      totalAmountCents = discountedSubtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+    } else {
+      merchandiseTaxCents = calculateTaxCents(
+        pricing.taxableMerchandiseCents + manualTaxableCents,
+        taxRateBps,
+      );
+      deliveryTaxCents =
+        args.delivery &&
+        args.delivery.chargeCustomer &&
+        commerceSettings?.deliveryFeeTaxable
+          ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
+          : 0;
+      taxableSubtotalCents =
+        pricing.taxableMerchandiseCents +
+        manualTaxableCents +
+        (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
+      taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
+      totalAmountCents =
+        subtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+    }
     if (!Number.isSafeInteger(totalAmountCents)) {
       throw new Error(
         "INVALID_ARGUMENT: Calculated checkout total is outside the safe range",
@@ -855,6 +918,9 @@ export const processCheckout = mutation({
       paymentMethod: args.paymentMethod,
       ...(paymentReference ? { paymentReference } : {}),
       ...(fees.length ? { fees, feeRevenueCents } : {}),
+      ...(args.deliveryFeeCents !== undefined ? { deliveryFeeCents: args.deliveryFeeCents } : {}),
+      ...(args.discountAmountCents !== undefined ? { discountAmountCents: args.discountAmountCents } : {}),
+      ...(args.isComp !== undefined ? { isComp: args.isComp } : {}),
       creditAmountCents,
       checkoutFingerprint: fingerprint,
       createdBy: auth.userId,

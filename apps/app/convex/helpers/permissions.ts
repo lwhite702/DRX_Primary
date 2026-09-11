@@ -8,6 +8,8 @@ export type Permission =
   | "MANAGE_INVENTORY"
   | "MANAGE_CUSTOMERS"
   | "PROCESS_CHECKOUT"
+  | "APPLY_CHECKOUT_OVERRIDE"
+  | "MANAGE_SALES_RETURNS"
   | "MANAGE_DELIVERIES"
   | "MANAGE_COMMERCE_SETTINGS"
   | "VIEW_FINANCIALS"
@@ -22,6 +24,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_INVENTORY",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
+    "APPLY_CHECKOUT_OVERRIDE",
+    "MANAGE_SALES_RETURNS",
     "MANAGE_DELIVERIES",
     "MANAGE_COMMERCE_SETTINGS",
     "VIEW_FINANCIALS",
@@ -35,6 +39,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_INVENTORY",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
+    "APPLY_CHECKOUT_OVERRIDE",
+    "MANAGE_SALES_RETURNS",
     "MANAGE_DELIVERIES",
     "MANAGE_COMMERCE_SETTINGS",
     "VIEW_FINANCIALS",
@@ -46,7 +52,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
 export function hasPermission(user: Doc<"users">, permission: Permission): boolean {
   const webPermission: Record<Permission, WebPermission> = {
     MANAGE_PRICING: "pricing.manage", MANAGE_PRODUCTS: "inventory.manage", RECORD_INTAKE: "inventory.manage", MANAGE_INVENTORY: "inventory.manage",
-    MANAGE_CUSTOMERS: "customers.manage", PROCESS_CHECKOUT: "sales.create", MANAGE_DELIVERIES: "sales.create",
+    MANAGE_CUSTOMERS: "customers.manage", PROCESS_CHECKOUT: "sales.create", APPLY_CHECKOUT_OVERRIDE: "pricing.manage",
+    MANAGE_SALES_RETURNS: "sales.void", MANAGE_DELIVERIES: "sales.create",
     MANAGE_COMMERCE_SETTINGS: "settings.configure_pos", VIEW_FINANCIALS: "reports.view_all",
     MANAGE_MEMBERS: "staff.manage", VIEW_AUDIT_LOGS: "audit.view",
   };
