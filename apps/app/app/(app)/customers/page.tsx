@@ -175,6 +175,14 @@ export default function CustomersPage() {
       if (!data.zip_code?.trim()) delete payload.zip_code;
     }
 
+    if (privacyProtocol.alias_only_mode) {
+      delete payload.first_name;
+      delete payload.last_name;
+      delete payload.phone_number;
+      delete payload.email;
+      delete payload.notes;
+    }
+
     const promise = async () => {
       const url = editingCustomer?.id
         ? `/api/customers/${editingCustomer.id}`
