@@ -2,7 +2,6 @@
 
 import { useUser } from "@/lib/adapters/auth/ui";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { useUserRole } from "@/lib/hooks/use-user-role";
 import { BusinessSetupWizard } from "@/components/onboarding/business-setup-wizard";
 import { ErrorState } from "@/components/ui/error-state";
 
@@ -20,9 +19,9 @@ export function BusinessSetupProvider({
     status: businessStatus,
     error: businessError,
   } = useBusiness();
-  const { role, loading: roleLoading } = useUserRole(business?.id);
+  const role = business?.role ?? null;
 
-  if (!isLoaded || businessLoading || (business && roleLoading)) {
+  if (!isLoaded || businessLoading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

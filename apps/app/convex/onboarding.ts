@@ -21,6 +21,73 @@ const onboardingStatusValidator = v.union(
   }),
 );
 
+const onboardingSetupValidator = v.object({
+  locationName: v.optional(v.string()),
+  address: v.optional(v.string()),
+  city: v.optional(v.string()),
+  region: v.optional(v.string()),
+  country: v.optional(v.string()),
+  postalCode: v.optional(v.string()),
+  ownerPhone: v.optional(v.string()),
+  tracksInventory: v.optional(v.boolean()),
+  dashboardPreset: v.optional(
+    v.union(
+      v.literal("operations"),
+      v.literal("checkout"),
+      v.literal("inventory"),
+    ),
+  ),
+  defaultUnit: v.optional(v.string()),
+  privacyPreset: v.optional(v.string()),
+  privacyProtocolJson: v.optional(v.string()),
+  quickQuantities: v.optional(
+    v.array(
+      v.object({
+        label: v.string(),
+        value: v.number(),
+        unit: v.string(),
+      }),
+    ),
+  ),
+  inventoryReasons: v.optional(
+    v.array(
+      v.object({
+        label: v.string(),
+        type: v.string(),
+      }),
+    ),
+  ),
+  nicknames: v.optional(
+    v.array(
+      v.object({
+        slang: v.string(),
+        quantity: v.number(),
+        unit: v.string(),
+      }),
+    ),
+  ),
+});
+
+const currentBusinessProfileValidator = v.union(
+  v.null(),
+  v.object({
+    id: v.id("businesses"),
+    businessName: v.string(),
+    business_name: v.string(),
+    businessType: v.union(v.string(), v.null()),
+    business_type: v.union(v.string(), v.null()),
+    ownerId: v.string(),
+    owner_id: v.string(),
+    clerkOrgId: v.union(v.string(), v.null()),
+    currency: v.string(),
+    timezone: v.string(),
+    collectTax: v.boolean(),
+    taxRateBps: v.number(),
+    role: v.string(),
+    settingsData: v.union(v.string(), v.null()),
+  }),
+);
+
 const onboardingMutationResultValidator = v.union(
   v.object({
     businessId: v.id("businesses"),
@@ -76,6 +143,48 @@ export const getCurrentOnboardingStatus = query({
   },
 });
 
+export const getCurrentBusinessProfile = query({
+  args: {},
+  returns: currentBusinessProfileValidator,
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("UNAUTHENTICATED");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", identity.subject))
+      .unique();
+    if (!user || user.status !== "ACTIVE") return null;
+
+    const business = await ctx.db.get(user.businessId);
+    if (!business) return null;
+
+    const settings = await ctx.db
+      .query("businessSettings")
+      .withIndex("by_businessId", (q) => q.eq("businessId", business._id))
+      .unique();
+
+    return {
+      id: business._id,
+      businessName: business.name,
+      business_name: business.name,
+      businessType: business.businessType ?? null,
+      business_type: business.businessType ?? null,
+      ownerId: business.ownerId,
+      owner_id: business.ownerId,
+      clerkOrgId: business.clerkOrgId ?? null,
+      currency: business.currency,
+      timezone: business.timezone,
+      collectTax: business.collectTax,
+      taxRateBps: business.taxRateBps,
+      role: user.role.toLowerCase(),
+      settingsData: settings?.settingsData ?? null,
+    };
+  },
+});
+
 export const createBusinessOnboarding = mutation({
   args: {
     name: v.optional(v.string()),
@@ -86,6 +195,7 @@ export const createBusinessOnboarding = mutation({
     timezone: v.optional(v.string()),
     collectTax: v.optional(v.boolean()),
     taxRateBps: v.optional(v.number()),
+    setup: v.optional(onboardingSetupValidator),
   },
   returns: onboardingMutationResultValidator,
   handler: async (ctx, args) => {
@@ -154,6 +264,37 @@ export const createBusinessOnboarding = mutation({
       updatedAt: now,
     });
 
+    const setup = args.setup;
+    await ctx.db.insert("businessSettings", {
+      businessId,
+      themePreference: "dark",
+      settingsData: JSON.stringify({
+        onboarding_completed: true,
+        collect_tax: args.collectTax ?? true,
+        default_tax_rate: (args.collectTax === false ? 0 : (args.taxRateBps ?? 825)) / 10_000,
+        location_name: setup?.locationName ?? "",
+        address: setup?.address ?? "",
+        city: setup?.city ?? "",
+        region: setup?.region ?? "",
+        country: setup?.country ?? "",
+        postal_code: setup?.postalCode ?? "",
+        owner_phone: setup?.ownerPhone ?? "",
+        tracks_inventory: setup?.tracksInventory ?? true,
+        dashboard_preset: setup?.dashboardPreset ?? "operations",
+        default_unit: setup?.defaultUnit ?? "unit",
+        privacy_preset: setup?.privacyPreset ?? "standard_mode",
+        privacy_protocol: setup?.privacyProtocolJson
+          ? JSON.parse(setup.privacyProtocolJson)
+          : null,
+        quick_quantities: setup?.quickQuantities ?? [],
+        inventory_reasons: setup?.inventoryReasons ?? [],
+        nicknames: setup?.nicknames ?? [],
+        owner_name: args.name ?? "",
+      }),
+      createdAt: now,
+      updatedAt: now,
+    });
+
     // 3. Log the audit event
     await ctx.db.insert("auditEvents", {
       businessId,
@@ -163,7 +304,7 @@ export const createBusinessOnboarding = mutation({
       entityId: businessId,
       metadata: JSON.stringify({
         businessName: args.businessName,
-        ownerEmail: email,
+        onboardingVersion: 2,
       }),
       timestamp: now,
     });

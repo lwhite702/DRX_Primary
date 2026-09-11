@@ -48,6 +48,64 @@ describe("native provisioning contract", () => {
     });
   });
 
+  it("stores the complete onboarding setup in Convex without a Prisma write path", async () => {
+    const t = convexTest(schema, modules);
+    const authenticated = t.withIdentity({
+      subject: "convex_only_owner",
+      email: "owner@example.com",
+    });
+
+    const created = await authenticated.mutation(
+      api.onboarding.createBusinessOnboarding,
+      {
+        name: "Store Owner",
+        businessName: "Convex Market",
+        businessType: "retail",
+        currency: "USD",
+        timezone: "America/New_York",
+        collectTax: true,
+        taxRateBps: 825,
+        setup: {
+          locationName: "Main Store",
+          city: "Albany",
+          region: "NY",
+          country: "US",
+          tracksInventory: true,
+          dashboardPreset: "checkout",
+          defaultUnit: "g",
+          privacyPreset: "standard_mode",
+        },
+      },
+    );
+
+    const records = await t.run(async (ctx) => ({
+      business: await ctx.db.get(created.businessId),
+      settings: await ctx.db
+        .query("businessSettings")
+        .withIndex("by_businessId", (q) =>
+          q.eq("businessId", created.businessId),
+        )
+        .unique(),
+    }));
+
+    expect(records.business).toMatchObject({
+      name: "Convex Market",
+      collectTax: true,
+      taxRateBps: 825,
+    });
+    expect(JSON.parse(records.settings?.settingsData ?? "{}")).toMatchObject({
+      onboarding_completed: true,
+      location_name: "Main Store",
+      city: "Albany",
+      region: "NY",
+      country: "US",
+      tracks_inventory: true,
+      dashboard_preset: "checkout",
+      default_unit: "g",
+      privacy_preset: "standard_mode",
+    });
+  });
+
   it("returns controlled inactive and missing-business states", async () => {
     const t = convexTest(schema, modules);
     const authenticated = t.withIdentity({ subject: "recoverable_identity", email: "owner@example.com" });
