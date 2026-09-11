@@ -20,7 +20,7 @@ async function fixture(policy: unknown = false) {
     return ctx.db.insert("inventoryBatches", { businessId, productId, originalQuantityGrams: 2, remainingQuantityGrams: 2, unitCostPerGramCents: 12.5, receivedAt: 1, createdBy: "owner", createdAt: 1, updatedAt: 1 });
   });
   const args = { businessId, expectedUserId: "owner", productId, requestId: "synthetic-request", quantityGrams: 0.4, shrinkageType: "damaged" as const, note: "Synthetic private note" };
-  const state = () => t.run(async ctx => ({ product: await ctx.db.get(productId), batch: await ctx.db.get(batchId), events: await ctx.db.query("shrinkageEvents").collect(), audits: await ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "SHRINKAGE_RECORDED")).collect() }));
+  const state = () => t.run(async ctx => ({ product: await ctx.db.get(productId) as any, batch: await ctx.db.get(batchId), events: await ctx.db.query("shrinkageEvents").collect(), audits: await ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "SHRINKAGE_RECORDED")).collect() }));
   return { t, owner, businessId, productId, batchId, args, state };
 }
 it("commits stock, FIFO costs and a private audit atomically; identical retry returns the original receipt", async () => {

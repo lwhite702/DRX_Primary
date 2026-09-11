@@ -21,7 +21,7 @@ async function setup() {
   const t = convexTest(schema, modules);
   const actor = t.withIdentity({ subject: "profile-owner", email: "synthetic@example.invalid" });
   const created = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic original" });
-  await t.run(ctx => ctx.db.patch(created.businessId, { legacyPrismaBusinessId: "legacy-synthetic", address: "Synthetic address" }));
+  await t.run((ctx: any) => ctx.db.patch(created.businessId, { legacyPrismaBusinessId: "legacy-synthetic", address: "Synthetic address" }));
   mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
   mocks.mutation.mockImplementation((ref, args) => actor.mutation(ref, args));
   return { t, actor, ...created };
@@ -38,8 +38,8 @@ it("persists aliased fields in Convex, preserves omitted fields, and audits no p
   expect((await result.json()).data).toMatchObject({ id: businessId, businessName: "Synthetic renamed", phoneNumber: "0000000000", email: "contact@example.invalid", address: "Synthetic address", createdAt: expect.stringMatching(/Z$/) });
   expect(await actor.query(api.session.currentBusinessProfile, {})).toMatchObject({ businessName: "Synthetic renamed" });
   await PATCH(patch(update));
-  const audits = await t.run(ctx => ctx.db.query("auditEvents").collect());
-  const updates = audits.filter(row => row.action === "BUSINESS_PROFILE_UPDATED");
+  const audits: any = await t.run((ctx: any) => ctx.db.query("auditEvents").collect());
+  const updates = audits.filter((row: any) => row.action === "BUSINESS_PROFILE_UPDATED");
   expect(updates).toHaveLength(1);
   expect(JSON.parse(updates[0].metadata!)).toEqual({ changedFields: expect.arrayContaining(["name", "phoneNumber", "email"]) });
   expect(updates[0].metadata).not.toContain("contact@example.invalid");
@@ -48,10 +48,10 @@ it("persists aliased fields in Convex, preserves omitted fields, and audits no p
 });
 it("enforces the selected membership's settings permission and explicit grants", async () => {
   const { t, userId, businessId } = await setup();
-  await t.run(ctx => ctx.db.patch(userId, { role: "MEMBER" }));
+  await t.run((ctx: any) => ctx.db.patch(userId, { role: "MEMBER" }));
   expect((await PATCH(patch({ businessName: "Denied" }))).status).toBe(403);
-  expect(await t.run(ctx => ctx.db.get(businessId))).toMatchObject({ name: "Synthetic original" });
-  await t.run(ctx => ctx.db.patch(userId, { permissions: { "settings.configure_pos": true } }));
+  expect(await t.run((ctx: any) => ctx.db.get(businessId))).toMatchObject({ name: "Synthetic original" });
+  await t.run((ctx: any) => ctx.db.patch(userId, { permissions: { "settings.configure_pos": true } }));
   expect((await PATCH(patch({ businessName: "Allowed" }))).status).toBe(200);
   expect((await PATCH(patch({ businessName: "Foreign" }, "foreign"))).status).toBe(401);
 });
@@ -61,7 +61,7 @@ it("rejects contradictory aliases, invalid data, ownership fields and anonymous/
     expect((await PATCH(patch(body))).status).toBe(400);
   }
   await expect(actor.mutation(api.businessProfiles.updateProfile, { businessId, expectedUserId: "outsider", patch: { businessName: "No" } })).rejects.toThrow(/FORBIDDEN/);
-  expect(await t.run(ctx => ctx.db.get(businessId))).toMatchObject({ name: "Synthetic original" });
+  expect(await t.run((ctx: any) => ctx.db.get(businessId))).toMatchObject({ name: "Synthetic original" });
   mocks.token.mockResolvedValue(null);
   expect((await PATCH(patch({ businessName: "No" }))).status).toBe(401);
   mocks.token.mockResolvedValue("synthetic-token");

@@ -7,7 +7,7 @@ import * as onboarding from "../../convex/onboarding";
 import * as generatedApi from "../../convex/_generated/api";
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), token: vi.fn(), query: vi.fn() }));
 vi.mock("@/lib/db", () => { throw new Error("Business profiles must not load Prisma"); });
-vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth }));
+vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth, isAuthBypassEnabled: () => false }));
 vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
 vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; } }));
 import { getCurrentBusinessProfile } from "../../app/actions/get-current-business";

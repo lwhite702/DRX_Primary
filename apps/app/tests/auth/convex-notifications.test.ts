@@ -26,7 +26,7 @@ it("lists only the actor's unread notifications in newest-first order with the e
     await ctx.db.insert("notifications", { ...row, isDeleted: true, createdAt: 201 });
   });
   const result = await t.withIdentity({ subject: "recipient" }).query(api.notifications.unread, { expectedUserId: "recipient" });
-  expect(result).toHaveLength(100); expect(result[0].createdAt).toBe(new Date(104).toISOString()); expect(result.every(item => item.userId === "recipient")).toBe(true);
+  expect(result).toHaveLength(100); expect(result[0].createdAt).toBe(new Date(104).toISOString()); expect(result.every((item: any) => item.userId === "recipient")).toBe(true);
 });
 it("marks bounded pages through a fixed cutoff while preserving later and foreign notifications", async () => {
   const t = create(), recipient = t.withIdentity({ subject: "recipient" });

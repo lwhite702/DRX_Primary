@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import type { FunctionReturnType } from "convex/server";
+import type { Id } from "./_generated/dataModel";
 import { action, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireSelectedBusiness } from "./helpers/auth";
@@ -56,7 +57,26 @@ export const reserveProviderAttempt = internalMutation({
 });
 
 type Snapshot = FunctionReturnType<typeof internal.creditRecommendationGeneration.snapshot>;
-type Saved = FunctionReturnType<typeof internal.creditRecommendations.recordGenerated>;
+type Saved = {
+  recommendationId: Id<"creditRecommendations">;
+  customerId: Id<"customers">;
+  businessId: Id<"businesses">;
+  asOfDate: number;
+  snapshotAt: number;
+  settingsRevision: number;
+  createdAt: number;
+  expiresAt: number;
+  proposedCreditEnabled: boolean;
+  proposedLimitCents: number;
+  policyRevision: number;
+  recommendedLimitCents: number;
+  rangeMinCents: number;
+  rangeMaxCents: number;
+  riskScore: number;
+  justification: string;
+  provenance: "provider" | "rules";
+  engineVersion: string;
+};
 type Output = { recommendedLimitCents: number; rangeMinCents: number; rangeMaxCents: number; riskScore: number; justification: string };
 function parseOutput(body: string, cap: number): Output {
   const envelope = JSON.parse(body);

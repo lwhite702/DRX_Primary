@@ -20,7 +20,7 @@ async function fixture(approval = false) {
     return ctx.db.insert("inventoryBatches", { businessId, productId, originalQuantityGrams: 10, remainingQuantityGrams: 10, unitCostPerGramCents: 12.5, receivedAt: 1, createdBy: "owner", createdAt: 1, updatedAt: 1 });
   });
   const args = { businessId, expectedUserId: "owner", productId, requestId: "check-a", expectedWeightGrams: 10, measuredWeightGrams: 8 };
-  const state = () => t.run(async ctx => ({ product: await ctx.db.get(productId), batch: await ctx.db.get(batchId), checks: await ctx.db.query("inventoryChecks").collect(), losses: await ctx.db.query("shrinkageEvents").collect(), audits: await ctx.db.query("auditEvents").collect() }));
+  const state = () => t.run(async ctx => ({ product: await ctx.db.get(productId) as any, batch: await ctx.db.get(batchId), checks: await ctx.db.query("inventoryChecks").collect(), losses: await ctx.db.query("shrinkageEvents").collect(), audits: await ctx.db.query("auditEvents").collect() }));
   return { t, owner, args, state, productId, batchId };
 }
 it("commits shortage, FIFO cost, check and audit once and returns the original result on retry", async () => {
@@ -63,7 +63,7 @@ it("flags unexpected stock at zero expected balance without dividing by zero or 
 it("searches beyond the first catalog page and selects only stocked gram products", async () => {
   const { t, owner, args, productId } = await fixture();
   const eligible = await t.run(async ctx => {
-    const product = (await ctx.db.get(productId))!;
+    const product: any = (await ctx.db.get(productId))!;
     const { _id, _creationTime, ...data } = product;
     for (let i = 0; i < 200; i++) await ctx.db.insert("products", { ...data, sku: `UNIT-${i}`, sellingUnit: "unit" });
     await ctx.db.insert("products", { ...data, sku: "EMPTY", sellingUnit: "g", quantityOnHandGrams: 0 });

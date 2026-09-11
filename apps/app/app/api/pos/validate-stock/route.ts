@@ -8,6 +8,6 @@ export async function POST(request: NextRequest) {
     if (!businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const body = await request.json();
     const { stock } = await checkCanonicalCart({ businessId, items: normalizeCheckItems(body?.items), amountCents: 0 });
-    return NextResponse.json({ valid: stock.valid, errors: stock.errors.map(entry => ({ inventory_id: entry.inventoryId, message: entry.message })) }, { headers: { "Cache-Control": "private, no-store" } });
+    return NextResponse.json({ valid: stock.valid, errors: stock.errors.map((entry: { inventoryId: string; message: string }) => ({ inventory_id: entry.inventoryId, message: entry.message })) }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return checkFailure(error); }
 }
