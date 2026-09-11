@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, TrendingDown, Zap } from "lucide-react";
 import { toast } from "sonner";
-import { type PricingRecommendation } from "@/lib/utils/pricing-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { type PricingRecommendation } from "@/lib/utils/pricing-recommendation";
+import { formatAmount, formatPercentage } from "@/lib/number-format";
+
 
 interface PricingRecommendationCardProps {
   recommendation: PricingRecommendation | null;
@@ -30,54 +31,31 @@ export function PricingRecommendationCard({
   onApplied,
 }: PricingRecommendationCardProps) {
   const [applying, setApplying] = useState(false);
-  const supabase = createAppClient();
+
 
   if (!recommendation) {
     return null;
   }
 
   const priceDifference = recommendation.recommendedPrice - currentPrice;
-  const percentChange = ((priceDifference / currentPrice) * 100).toFixed(1);
+  const percentChange = formatPercentage((priceDifference / currentPrice) * 100);
   const isIncrease = priceDifference > 0;
 
   const handleApplyRecommendation = async () => {
-    if (!supabase || !recommendationId) {
+    if (!recommendationId) {
       toast.error("Unable to apply recommendation");
       return;
     }
 
     setApplying(true);
     try {
-      const { error } = await supabase
-        .from("inventory")
-        .update({
-          selling_price: recommendation.recommendedPrice,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", inventoryId);
-
-      if (error) throw error;
-
-      await supabase
-        .from("ai_pricing_recommendations")
-        .update({ status: "applied", applied_at: new Date().toISOString() })
-        .eq("id", recommendationId);
-
-      await supabase.from("ai_decision_log").insert({
-        business_id: businessId,
-        product_id: inventoryId,
-        decision_type: "pricing",
-        old_value: { selling_price: currentPrice },
-        new_value: { selling_price: recommendation.recommendedPrice },
-        ai_recommendation: { recommended_price: recommendation.recommendedPrice },
-        reasoning: recommendation.reasoning,
-        decided_by: "user",
-      });
-
+      const response = await fetch("/api/ai/apply-pricing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ business_id: businessId, recommendation_id: recommendationId }) });
+      const receipt = await response.json();
+      if (!response.ok || receipt?.success !== true || !Number.isFinite(receipt.newPrice)) throw new Error(response.status === 409 ? "Price changed. Generate a new analysis." : "Price update was not confirmed. Retry this recommendation.");
       toast.success(
-        `Price updated to $${recommendation.recommendedPrice.toFixed(2)} for ${productName}`
+        `Price updated to $${formatAmount(receipt.newPrice)} for ${productName}`
       );
-      onApplied?.(recommendation.recommendedPrice);
+      onApplied?.(receipt.newPrice);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to apply recommendation");
     } finally {
@@ -110,7 +88,7 @@ export function PricingRecommendationCard({
         <div className="grid grid-cols-3 gap-4">
           <div>
             <p className="text-xs text-muted-foreground">Current</p>
-            <p className="text-lg font-semibold">${currentPrice.toFixed(2)}</p>
+            <p className="text-lg font-semibold">${formatAmount(currentPrice)}</p>
           </div>
           <div className="flex items-center justify-center">
             <div className={`text-sm font-bold ${isIncrease ? "text-green-600" : "text-orange-600"}`}>
@@ -120,7 +98,7 @@ export function PricingRecommendationCard({
           <div>
             <p className="text-xs text-muted-foreground">Recommended</p>
             <p className="text-lg font-semibold text-green-600">
-              ${recommendation.recommendedPrice.toFixed(2)}
+              ${formatAmount(recommendation.recommendedPrice)}
             </p>
           </div>
         </div>
@@ -129,8 +107,8 @@ export function PricingRecommendationCard({
         <div className="bg-white p-2 rounded text-xs">
           <p className="text-muted-foreground mb-1">Price Range</p>
           <p className="font-mono">
-            ${recommendation.recommendedRangeMin.toFixed(2)} - $
-            {recommendation.recommendedRangeMax.toFixed(2)}
+            ${formatAmount(recommendation.recommendedRangeMin)} - $
+            {formatAmount(recommendation.recommendedRangeMax)}
           </p>
         </div>
 
@@ -143,7 +121,7 @@ export function PricingRecommendationCard({
         {/* Confidence */}
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Confidence</span>
-          <span className="font-semibold">{recommendation.confidenceScore.toFixed(0)}%</span>
+          <span className="font-semibold">{formatPercentage(recommendation.confidenceScore)}%</span>
         </div>
 
         {/* Actions */}

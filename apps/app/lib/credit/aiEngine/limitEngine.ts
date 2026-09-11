@@ -1,86 +1,27 @@
-import { createAppClient } from "@/lib/data/client/supabase-client";
-import { redis, cache } from "@/lib/redis";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getCurrentUser } from "@/lib/adapters/auth";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
+import { redis } from "@/lib/redis";
 import { logger } from "@/lib/logging";
 import { Ratelimit } from "@upstash/ratelimit";
-import type { CustomerFeatures, NormalizedFeatures } from "./features";
-import { normalizeFeatures } from "./features";
+import type { CustomerFeatures, NormalizedFeatures, AILimitRecommendation, AIEngineConfig, AIEngineResponse } from "./calculation";
+import { normalizeFeatures, applyRuleBasedFallback, clampAndValidateResult, validateProviderResponse } from "./calculation";
+export type { AILimitRecommendation, AIEngineConfig } from "./calculation";
 
-export interface AILimitRecommendation {
-  recommended_limit_final: number;
-  risk_score_final: number;
-  justification_final: string;
-  suggested_range_min: number;
-  suggested_range_max: number;
-  used_ai: boolean;
-  fallback_reason?: string;
-}
-
-export interface AIEngineConfig {
-  global_max_credit_per_customer: number;
-  global_max_credit_ratio_of_inventory: number;
-  default_credit_limit_for_new_customer: number;
-}
-
-interface AIEngineResponse {
-  recommended_limit: number;
-  suggested_range_min: number;
-  suggested_range_max: number;
-  risk_score: number;
-  justification: string;
-}
-
-async function getBusinessConfig(business_id: string): Promise<AIEngineConfig> {
-  return cache(`business_config:${business_id}`, 300, async () => {
-    const supabase = createAppClient();
-
-    if (!supabase) {
-      return {
-        global_max_credit_per_customer: 10000,
-        global_max_credit_ratio_of_inventory: 0.5,
-        default_credit_limit_for_new_customer: 1000,
-      };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("business_settings")
-        .select(
-          "global_max_credit_per_customer, global_max_credit_ratio_of_inventory, default_credit_limit_for_new_customer"
-        )
-        .eq("business_id", business_id)
-        .single();
-
-      if (error || !data) {
-        return {
-          global_max_credit_per_customer: 10000,
-          global_max_credit_ratio_of_inventory: 0.5,
-          default_credit_limit_for_new_customer: 1000,
-        };
-      }
-
-      return {
-        global_max_credit_per_customer: Number(
-          data.global_max_credit_per_customer || 10000
-        ),
-        global_max_credit_ratio_of_inventory: Number(
-          data.global_max_credit_ratio_of_inventory || 0.5
-        ),
-        default_credit_limit_for_new_customer: Number(
-          data.default_credit_limit_for_new_customer || 1000
-        ),
-      };
-    } catch (error) {
-      logger.error("Error fetching business config", {
-        business_id,
-        error,
-      });
-      return {
-        global_max_credit_per_customer: 10000,
-        global_max_credit_ratio_of_inventory: 0.5,
-        default_credit_limit_for_new_customer: 1000,
-      };
-    }
-  });
+async function getBusinessConfig(businessId: string): Promise<{ config: AIEngineConfig; revision: number; businessId: string; operatorId: string }> {
+  const user = await getCurrentUser();
+  const token = await getConvexAuthToken(), url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  if (!user || !token || !url) throw new Error("Recommendation settings unavailable");
+  const client = new ConvexHttpClient(url); client.setAuth(token);
+  const settings = await client.query(api.creditRecommendationSettings.read, { businessId, expectedUserId: user.id });
+  if (!settings || !settings.enabled) throw new Error("Recommendation settings missing or disabled");
+  if (![settings.maxCustomerCents, settings.newCustomerCents, settings.inventoryCapBps, settings.revision].every(Number.isSafeInteger) || settings.maxCustomerCents < 0 || settings.newCustomerCents < 0 || settings.inventoryCapBps < 0 || settings.inventoryCapBps > 10000 || settings.revision < 1) throw new Error("Invalid recommendation settings");
+  return { revision: settings.revision, businessId: settings.businessId, operatorId: user.id, config: {
+    global_max_credit_per_customer: settings.maxCustomerCents / 100,
+    global_max_credit_ratio_of_inventory: settings.inventoryCapBps / 10000,
+    default_credit_limit_for_new_customer: settings.newCustomerCents / 100,
+  } };
 }
 
 async function callAILimitEngine(
@@ -135,14 +76,14 @@ Always return valid JSON with no additional text.`,
         status_text: response.statusText,
         model,
       });
-      return null;
+      throw new Error("Credit provider request failed");
     }
 
     const data = await response.json();
 
     if (!data.choices || !data.choices[0]?.message?.content) {
       logger.error("Unexpected AI response format", { model });
-      return null;
+      throw new Error("Credit provider response is unavailable");
     }
 
     const content = data.choices[0].message.content.trim();
@@ -156,25 +97,12 @@ Always return valid JSON with no additional text.`,
 
     const parsed = JSON.parse(jsonStr);
 
-    return {
-      recommended_limit: Math.max(0, Number(parsed.recommended_limit || 0)),
-      suggested_range_min: Math.max(0, Number(parsed.suggested_range_min || 0)),
-      suggested_range_max: Math.max(
-        0,
-        Number(parsed.suggested_range_max || 5000)
-      ),
-      risk_score: Math.min(100, Math.max(0, Number(parsed.risk_score || 50))),
-      justification: String(
-        parsed.justification || "AI recommendation"
-      ).substring(0, 200),
-    };
-  } catch (error) {
-    logger.error("Error calling AI limit engine", {
-      model,
-      error,
-    });
-    return null;
+    return validateProviderResponse(parsed);
+  } catch {
+    // Invalid or failed provider output must never become an actionable fallback.
+    throw new Error("CREDIT_RECOMMENDATION_UNAVAILABLE: Credit provider response is unavailable");
   }
+
 }
 
 function buildPrompt(
@@ -229,138 +157,6 @@ Respond with ONLY valid JSON (no markdown, no explanation):
 `;
 }
 
-function applyRuleBasedFallback(
-  features: NormalizedFeatures,
-  current_balance: number,
-  total_inventory_value: number,
-  config: AIEngineConfig,
-  current_limit: number
-): AILimitRecommendation {
-  let recommended_limit = config.default_credit_limit_for_new_customer;
-  let risk_score = 50; // Medium risk by default
-
-  // For new customers with very little history
-  if (features.tenure_days < 30) {
-    recommended_limit = Math.min(
-      config.default_credit_limit_for_new_customer,
-      config.global_max_credit_per_customer * 0.3
-    );
-    risk_score = 70;
-  } else if (features.tenure_days < 90) {
-    // Early stage customers
-    recommended_limit = Math.min(
-      config.default_credit_limit_for_new_customer * 1.5,
-      config.global_max_credit_per_customer * 0.5
-    );
-    risk_score = 60;
-  } else {
-    // Established customers
-    // Use historical sales as a base
-    const sales_based_limit = Math.min(
-      features.credit_issued_30d * 3, // 3x monthly average
-      config.global_max_credit_per_customer
-    );
-
-    // Consider repayment behavior
-    if (features.on_time_ratio >= 0.95 && features.late_payment_count === 0) {
-      recommended_limit = sales_based_limit * 1.2;
-      risk_score = 20;
-    } else if (features.on_time_ratio >= 0.8) {
-      recommended_limit = sales_based_limit;
-      risk_score = 45;
-    } else if (features.on_time_ratio >= 0.5) {
-      recommended_limit = sales_based_limit * 0.7;
-      risk_score = 70;
-    } else {
-      recommended_limit = sales_based_limit * 0.3;
-      risk_score = 90;
-    }
-  }
-
-  // Apply hard cap based on inventory
-  const inventory_based_cap =
-    total_inventory_value * config.global_max_credit_ratio_of_inventory;
-  recommended_limit = Math.min(recommended_limit, inventory_based_cap);
-
-  // Apply global maximum cap
-  recommended_limit = Math.min(
-    recommended_limit,
-    config.global_max_credit_per_customer
-  );
-
-  // Never return negative
-  recommended_limit = Math.max(recommended_limit, 0);
-
-  const suggested_range_min = Math.max(0, recommended_limit * 0.8);
-  const suggested_range_max = Math.min(
-    config.global_max_credit_per_customer,
-    recommended_limit * 1.3
-  );
-
-  const justification = buildFallbackJustification(
-    features,
-    recommended_limit,
-    current_limit
-  );
-
-  return {
-    recommended_limit_final: recommended_limit,
-    risk_score_final: Math.min(100, Math.max(0, risk_score)),
-    justification_final: justification,
-    suggested_range_min,
-    suggested_range_max,
-    used_ai: false,
-    fallback_reason: "Using rule-based fallback",
-  };
-}
-
-function buildFallbackJustification(
-  features: NormalizedFeatures,
-  recommended_limit: number,
-  current_limit: number
-): string {
-  const parts: string[] = [];
-
-  if (features.tenure_days < 30) {
-    parts.push("New customer - conservative limit recommended");
-  } else if (features.on_time_ratio >= 0.95) {
-    parts.push("Excellent payment history");
-  } else if (features.on_time_ratio < 0.5) {
-    parts.push("Recent late payments - caution advised");
-  }
-
-  if (recommended_limit > current_limit) {
-    parts.push(`Strong sales performance suggests room to increase`);
-  } else if (recommended_limit < current_limit) {
-    parts.push(`Recent activity suggests lower limit is prudent`);
-  }
-
-  return parts.join(". ") || "Limit based on customer profile and history";
-}
-
-async function clampAndValidateResult(
-  recommendation: AIEngineResponse,
-  config: AIEngineConfig,
-  total_inventory_value: number
-): Promise<AIEngineResponse> {
-  const inventory_cap =
-    total_inventory_value * config.global_max_credit_ratio_of_inventory;
-
-  return {
-    ...recommendation,
-    recommended_limit: Math.min(
-      Math.max(recommendation.recommended_limit, 0),
-      Math.min(config.global_max_credit_per_customer, inventory_cap)
-    ),
-    suggested_range_min: Math.max(recommendation.suggested_range_min, 0),
-    suggested_range_max: Math.min(
-      recommendation.suggested_range_max,
-      config.global_max_credit_per_customer
-    ),
-    risk_score: Math.min(100, Math.max(0, recommendation.risk_score)),
-  };
-}
-
 export async function computeAICreditLimit(
   customer_id: string,
   business_id: string,
@@ -369,96 +165,36 @@ export async function computeAICreditLimit(
   current_balance: number
 ): Promise<AILimitRecommendation> {
   try {
-    // 1. Rate Limiting
-    if (redis) {
-      const ratelimit = new Ratelimit({
-        redis,
-        limiter: Ratelimit.slidingWindow(10, "1 h"),
-      });
-
-      const { success } = await ratelimit.limit(`limit_engine:${business_id}`);
-      if (!success) {
-        return {
-          recommended_limit_final: current_limit,
-          risk_score_final: 50,
-          justification_final: "Rate limit exceeded - please try again later",
-          suggested_range_min: current_limit * 0.9,
-          suggested_range_max: current_limit * 1.1,
-          used_ai: false,
-          fallback_reason: "Rate limit exceeded",
-        };
-      }
-    }
-
-    // Use a stable tenant/customer cache key.
-    const simpleCacheKey = `credit_limit:${business_id}:${customer_id}`;
-
-    if (redis) {
-      const cachedResult = await redis.get<AILimitRecommendation>(simpleCacheKey);
-      if (cachedResult) return cachedResult;
-    }
-
     const normalized = normalizeFeatures(features);
-    const config = await getBusinessConfig(business_id);
-
-    // Try AI first
-    const aiRecommendation = await callAILimitEngine(
-      normalized,
-      current_balance,
-      features.total_inventory_value,
-      config
-    );
-
-    let finalResult: AILimitRecommendation;
-
-    if (aiRecommendation) {
-      const clamped = await clampAndValidateResult(
-        aiRecommendation,
-        config,
-        features.total_inventory_value
-      );
-
-      finalResult = {
-        recommended_limit_final: clamped.recommended_limit,
-        risk_score_final: clamped.risk_score,
-        justification_final: clamped.justification,
-        suggested_range_min: clamped.suggested_range_min,
-        suggested_range_max: clamped.suggested_range_max,
-        used_ai: true,
-      };
-    } else {
-      // Fallback to rule-based
-      finalResult = applyRuleBasedFallback(
-        normalized,
-        current_balance,
-        features.total_inventory_value,
-        config,
-        current_limit
-      );
+    for (const value of [current_limit, current_balance]) {
+      if (!Number.isFinite(value) || value < 0) throw new Error("Invalid credit amount");
     }
-
-    // Cache the result for 1 hour
     if (redis) {
-      await redis.set(simpleCacheKey, finalResult, { ex: 3600 });
+      const ratelimit = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 h") });
+      const { success } = await ratelimit.limit(`limit_engine:${business_id}`);
+      if (!success) throw new Error("Credit recommendation rate limit reached");
     }
-
-    return finalResult;
-  } catch (error) {
-    logger.error("Error in computeAICreditLimit", {
-      customer_id,
-      business_id,
-      error,
-    });
-
-    // Emergency fallback
+    const snapshot = await getBusinessConfig(business_id);
+    const config = snapshot.config;
+    // Validate all inputs/configuration before any provider call. This same
+    // deterministic result is used only when no provider key is configured.
+    const fallback = applyRuleBasedFallback(normalized, current_balance, features.total_inventory_value, config, current_limit);
+    const aiRecommendation = await callAILimitEngine(normalized, current_balance, features.total_inventory_value, config);
+    const currentSettings = await getBusinessConfig(business_id);
+    if (currentSettings.revision !== snapshot.revision || currentSettings.businessId !== snapshot.businessId || currentSettings.operatorId !== snapshot.operatorId || JSON.stringify(currentSettings.config) !== JSON.stringify(config)) throw new Error("Recommendation settings changed during generation");
+    if (!aiRecommendation) return fallback;
+    const clamped = clampAndValidateResult(aiRecommendation, config, features.total_inventory_value);
+    // Do not reuse the former customer-only recommendation cache: it omitted
+    // source balances, policy, inventory and feature revisions.
     return {
-      recommended_limit_final: 1000,
-      risk_score_final: 50,
-      justification_final: "System error - using safe default limit",
-      suggested_range_min: 500,
-      suggested_range_max: 2000,
-      used_ai: false,
-      fallback_reason: "System error occurred",
+      recommended_limit_final: clamped.recommended_limit,
+      risk_score_final: clamped.risk_score,
+      justification_final: clamped.justification,
+      suggested_range_min: clamped.suggested_range_min,
+      suggested_range_max: clamped.suggested_range_max,
+      used_ai: true,
     };
+  } catch {
+    throw new Error("CREDIT_RECOMMENDATION_UNAVAILABLE: Credit recommendation is unavailable");
   }
 }

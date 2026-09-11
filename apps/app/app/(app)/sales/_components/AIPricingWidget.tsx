@@ -1,3 +1,4 @@
+import { formatPercentage } from "@/lib/number-format";
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,18 +34,18 @@ export function AIPricingWidget({
                 <div className="flex-1">
                   <p className="font-medium">{rec.product_name}</p>
                   <p className="text-xs text-muted-foreground">
-                    Confidence: {rec.confidence_score}%
+                    Confidence: {formatPercentage(rec.confidence_score)}%
                   </p>
                 </div>
                 <span
                   className={`text-sm font-bold px-2 py-1 rounded ${
-                    rec.price_change_percentage > 0
+                    (rec.price_change_percentage ?? 0) > 0
                       ? "bg-green-100 text-green-800"
                       : "bg-red-100 text-red-800"
                   }`}
                 >
-                  {rec.price_change_percentage > 0 ? "+" : ""}
-                  {rec.price_change_percentage}%
+                  {(rec.price_change_percentage ?? 0) > 0 ? "+" : ""}
+                  {rec.price_change_percentage === null ? "No prior price" : `${formatPercentage(rec.price_change_percentage)}%`}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">

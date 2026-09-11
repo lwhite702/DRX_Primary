@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,8 @@ export default function InventoryAdjustPage() {
     syncStatus,
     refresh: refreshInventory,
   } = useRealtimeInventory(business?.id || null);
+  const pending = useRef<{ fingerprint: string; key: string } | null>(null);
+  const inFlight = useRef(false);
   const [processing, setProcessing] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -38,7 +40,8 @@ export default function InventoryAdjustPage() {
   const selectedProduct = inventory.find((p) => p.id === selectedProductId);
 
   const handleAdjust = async () => {
-    if (!selectedProductId || !value || !reason) {
+    if (inFlight.current) return;
+    if (!business?.id || !selectedProductId || !value || !reason) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -60,11 +63,14 @@ export default function InventoryAdjustPage() {
     }
     // "add" is default positive delta
 
+    const fingerprint = JSON.stringify([business.id, selectedProductId, apiType, apiValue, reason]);
+    if (pending.current?.fingerprint !== fingerprint) pending.current = { fingerprint, key: crypto.randomUUID() };
+    inFlight.current = true;
     setProcessing(true);
     try {
       const res = await fetch("/api/inventory/adjust", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business.id, "idempotency-key": pending.current.key },
         body: JSON.stringify({
           inventory_id: selectedProductId,
           type: apiType,
@@ -76,6 +82,8 @@ export default function InventoryAdjustPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to adjust");
 
+      pending.current = null;
+      await refreshInventory();
       toast.success("Stock count fixed.");
       // Reset form
       setValue("");
@@ -84,6 +92,7 @@ export default function InventoryAdjustPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to adjust");
     } finally {
+      inFlight.current = false;
       setProcessing(false);
     }
   };

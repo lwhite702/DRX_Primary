@@ -9,8 +9,7 @@ struct RecordPaymentSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var paymentAmountString = ""
-    @State private var isSaving = false
-    @State private var saveError: String?
+    @State private var attempt = CreditAttemptController()
 
     private var paymentAmountCents: Int { CurrencyInput.cents(from: paymentAmountString) ?? 0 }
 
@@ -31,6 +30,7 @@ struct RecordPaymentSheet: View {
                         Text("$").foregroundStyle(DRXPalette.muted)
                         TextField("0.00", text: $paymentAmountString)
                             .keyboardType(.decimalPad)
+                            .disabled(attempt.pending != nil || attempt.busy)
                     }
 
                     if paymentAmountCents > 0 {
@@ -45,7 +45,15 @@ struct RecordPaymentSheet: View {
                     }
                 }
 
-                if let error = saveError {
+                if attempt.pending != nil {
+                    Section {
+                        Button("Check previous request") {
+                            Task { if await attempt.checkPending() { await onSaved(); dismiss() } }
+                        }.disabled(attempt.busy)
+                    }
+                }
+
+                if let error = attempt.error {
                     Section {
                         Label(error, systemImage: "exclamationmark.triangle.fill")
                             .foregroundStyle(DRXPalette.danger)
@@ -53,49 +61,35 @@ struct RecordPaymentSheet: View {
                     }
                 }
             }
+            .task {
+                await attempt.prepare(customerId: customer.id, kind: .payment)
+                if let saved = attempt.pending {
+                    paymentAmountString = String(format: "%.2f", Double(saved.amountCents) / 100)
+                }
+            }
+            .interactiveDismissDisabled(attempt.busy)
             .scrollContentBackground(.hidden)
             .background(DRXPalette.canvas)
             .navigationTitle("Record Credit Payment")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") { dismiss() }.disabled(attempt.busy)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Record") { Task { await save() } }
-                        .disabled(!isValid || isSaving)
-                        .overlay { if isSaving { ProgressView().scaleEffect(0.7) } }
+                        .disabled((!isValid && attempt.pending == nil) || attempt.busy || !attempt.ready)
+                        .overlay { if attempt.busy { ProgressView().scaleEffect(0.7) } }
                 }
             }
         }
     }
 
     private func save() async {
-        isSaving = true
-        saveError = nil
-        struct RecordPaymentArgs: Encodable, Sendable {
-            let customerId: String
-            let paymentAmountCents: Int
-        }
-
-        struct Result: Decodable, Sendable {
-            let customerId: String
-            let remainingCreditUsedCents: Int
-        }
-
-        let args = RecordPaymentArgs(
-            customerId: customer.id,
-            paymentAmountCents: paymentAmountCents
-        )
-
-        do {
-            let _: Result = try await ConvexClient.shared.mutation("credit:recordCreditPayment", args: args)
+        if await attempt.submit(customerId: customer.id, kind: .payment, amountCents: paymentAmountCents) {
             await onSaved()
             dismiss()
-        } catch {
-            saveError = error.localizedDescription
         }
-        isSaving = false
     }
 }
 

@@ -1,0 +1,35 @@
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { useBusiness } from "@/lib/hooks/use-business";
+import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
+const mocks = vi.hoisted(() => ({ get: vi.fn(), update: vi.fn() }));
+vi.mock("@/app/actions/dashboard-preferences", () => ({ getDashboardPreferencesAction: mocks.get, updateDashboardPreferencesAction: mocks.update }));
+vi.mock("@/lib/adapters/auth/ui", () => ({ useUser: () => ({ user: { id: "synthetic-owner" } }) }));
+let businessId = "business-a";
+const response = (preset: "checkout" | "inventory") => ({ success: true as const, preferences: { preset, pinnedItemIds: [], version: 1 as const } });
+beforeEach(() => { mocks.get.mockReset(); mocks.update.mockReset(); businessId = "business-a"; vi.mocked(useBusiness).mockImplementation(() => ({ business: { id: businessId }, loading: false }) as unknown as ReturnType<typeof useBusiness>); });
+afterEach(cleanup);
+it("discards a previous business's pending preferences and never reads the global cache", async () => {
+  window.localStorage.setItem("drx_dashboard_preferences_v1", JSON.stringify(response("inventory").preferences));
+  let resolveOld!: (result: ReturnType<typeof response>) => void;
+  const pending = new Promise<ReturnType<typeof response>>(resolve => { resolveOld = resolve; });
+  mocks.get.mockReturnValueOnce(pending).mockResolvedValueOnce(response("checkout"));
+  const { result, rerender } = renderHook(() => useDashboardPreferences());
+  expect(result.current.preferences.preset).toBe("operations");
+  businessId = "business-b"; rerender();
+  await waitFor(() => expect(result.current.preferences.preset).toBe("checkout"));
+  await act(async () => { resolveOld(response("inventory")); await pending; });
+  expect(result.current.preferences.preset).toBe("checkout");
+  expect(mocks.get).toHaveBeenLastCalledWith("business-b");
+});
+it("retains the confirmed choice and exposes an error when a write fails", async () => {
+  mocks.get.mockResolvedValue(response("checkout"));
+  mocks.update.mockResolvedValue({ success: false, error: "Unavailable" });
+  const { result } = renderHook(() => useDashboardPreferences());
+  await waitFor(() => expect(result.current.status).toBe("success"));
+  await act(async () => { await result.current.setPreset("inventory"); });
+  expect(result.current.preferences.preset).toBe("checkout");
+  expect(result.current.status).toBe("error");
+  expect(result.current.error).toMatch(/could not be saved/);
+  expect(mocks.update).toHaveBeenCalledWith({ preset: "inventory" }, "business-a");
+});

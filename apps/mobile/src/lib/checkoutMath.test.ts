@@ -35,6 +35,23 @@ const product: FractionalProduct = {
 };
 
 describe("fractional checkout math", () => {
+  it("formats display quantities to two decimals without changing calculation precision", () => {
+    const precise = { ...product, quantityPrecision: 6, minimumSaleQuantity: 0.000001, quantityIncrement: 0.000001 };
+    const quantity = normalizeQuantity(precise, 1.234567, 10);
+    expect(quantity).toBe(1.234567);
+    expect(formatQuantity(precise, quantity)).toBe("1.23g");
+    expect(quantity).toBe(1.234567);
+    expect(lineTotalCents({ ...precise, sellingPriceCents: 1000000 }, quantity)).toBe(1234567);
+    expect(formatQuantity({ ...product, quantityPrecision: 0, sellingUnit: "unit" }, 2)).toBe("2.00unit");
+    expect(formatQuantity(product, 1e21)).toBe("1000000000000000000000.00g");
+  });
+
+  it("normalizes displayed negative zero and marks nonfinite quantities unavailable", () => {
+    expect(formatQuantity(product, -0)).toBe("0.00g");
+    expect(formatQuantity(product, -0.000001)).toBe("0.00g");
+    expect(formatQuantity(product, -1.25)).toBe("-1.25g");
+    for (const quantity of [NaN, Infinity, -Infinity]) expect(formatQuantity(product, quantity)).toBe("—");
+  });
   it("converts reciprocal dollar input and respects increments", () => {
     expect(suggestedQuantityForDollars(product, 1_000, 100)).toBe(1.6);
     expect(lineTotalCents(product, 1.6)).toBe(1_000);
@@ -84,7 +101,7 @@ describe("fractional checkout math", () => {
       quantityIncrement: 0.000001,
     });
     expect(normalizeQuantity(legacy, 0.000001, 1)).toBe(0.000001);
-    expect(formatQuantity(legacy, 0.000001)).toBe("0.000001unit");
+    expect(formatQuantity(legacy, 0.000001)).toBe("0.00unit");
   });
 });
 

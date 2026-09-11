@@ -5,12 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getCurrentBusinessProfile: vi.fn(),
   useIsBypassActive: vi.fn(),
+  useOrganization: vi.fn(),
   useOrganizationList: vi.fn(),
   useUser: vi.fn(),
 }));
 
 vi.mock("@/lib/adapters/auth/ui", () => ({
   useIsBypassActive: mocks.useIsBypassActive,
+  useOrganization: mocks.useOrganization,
   useOrganizationList: mocks.useOrganizationList,
   useUser: mocks.useUser,
 }));
@@ -31,6 +33,7 @@ describe("useBusiness", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.useIsBypassActive.mockReturnValue(false);
+    mocks.useOrganization.mockReturnValue({ organization: null });
     mocks.useUser.mockReturnValue({ isLoaded: true });
     mocks.useOrganizationList.mockReturnValue({
       isLoaded: false,
@@ -174,4 +177,23 @@ describe("useBusiness", () => {
     expect(result.current.business).toBeNull();
     expect(result.current.error).toMatch(/could not switch/i);
   });
+});
+
+
+it("discards an old request when the organization changes outside the local switcher", async () => {
+  mocks.useOrganizationList.mockReturnValue({ userMemberships: { data: [] }, setActive: vi.fn() });
+  let finishFirst: ((value: unknown) => void) | undefined;
+  mocks.useIsBypassActive.mockReturnValue(false);
+  mocks.useUser.mockReturnValue({ isLoaded: true, user: { id: "operator" } });
+  mocks.useOrganization.mockReturnValue({ organization: { id: "org-first" } });
+  mocks.getCurrentBusinessProfile.mockReset();
+  mocks.getCurrentBusinessProfile.mockImplementationOnce(() => new Promise(resolve => { finishFirst = resolve; }))
+    .mockResolvedValueOnce({ id: "second", businessName: "Second" });
+  const { result, rerender } = renderHook(() => useBusiness(), { wrapper });
+  await waitFor(() => expect(finishFirst).toBeDefined());
+  mocks.useOrganization.mockReturnValue({ organization: { id: "org-second" } });
+  rerender();
+  await waitFor(() => expect(result.current.business?.id).toBe("second"));
+  await act(async () => { finishFirst?.({ id: "first", businessName: "First" }); });
+  expect(result.current.business?.id).toBe("second");
 });

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { businessSettingsResponseSchema, pinUpdate } from "@/lib/business/settings-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -96,11 +97,20 @@ export default function SettingsPage() {
   const [taxRate, setTaxRate] = useState("");
   const [collectTax, setCollectTax] = useState(true);
   const [posManagerPin, setPosManagerPin] = useState("");
+  const [pinConfigured, setPinConfigured] = useState(false);
+  const [pinDirty, setPinDirty] = useState(false);
+  const [settingsReady, setSettingsReady] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [settingsReload, setSettingsReload] = useState(0);
+  const [privacySettingsEnabled, setPrivacySettingsEnabled] = useState(false);
+  const [privacyRevision, setPrivacyRevision] = useState<number | null>(null);
+  const activeBusinessId = useRef<string | null>(null);
+  activeBusinessId.current = business?.id ?? null;
 
   const [privacyProtocol, setPrivacyProtocol] =
     useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
-  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
-    useState(false);
+  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] = useState(false);
+  const [manualPreferenceReady, setManualPreferenceReady] = useState(false);
   const [inventorySnapshot, setInventorySnapshot] =
     useState<PrivacyInventorySnapshot | null>(null);
   const [inventoryLoading, setInventoryLoading] = useState(false);
@@ -127,43 +137,47 @@ export default function SettingsPage() {
   }, [business]);
 
   useEffect(() => {
+    let cancelled = false;
+    setSettingsReady(false); setSettingsError(null); setPosManagerPin(""); setPinDirty(false);
     if (!business?.id) return;
-
-    fetch("/api/business/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && !data.error) {
-          setTaxRate(
-            ((data.defaultTaxRate || data.default_tax_rate || 0) * 100).toFixed(
-              2,
-            ),
-          );
-          setCollectTax(
-            data.collectTax !== false && data.collect_tax !== false,
-          );
-          setPosManagerPin(data.posManagerPin || data.pos_manager_pin || "");
-          setPrivacyProtocol(
-            data.privacy_protocol ||
-              data.privacyProtocol ||
-              getDefaultPrivacyProtocol(),
-          );
-        }
+    fetch("/api/business/settings", { headers: { "X-Business-Id": String(business.id) }, cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Settings unavailable");
+        return businessSettingsResponseSchema.parse(await response.json());
       })
-      .catch((error) => {
-        console.error("Error loading business settings:", error);
+      .then((data) => {
+        if (cancelled) return;
+        setTaxRate((data.defaultTaxRate * 100).toFixed(2)); setCollectTax(data.collectTax);
+        setPinConfigured(data.posManagerPinConfigured); setPrivacySettingsEnabled(data.privacySettingsEnabled);
+        setPrivacyRevision(data.privacyRevision ?? null);
+        if (data.privacyProtocol) setPrivacyProtocol(data.privacyProtocol);
+        setSettingsReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setSettingsError("We could not load your settings. Retry before making changes.");
       });
-  }, [business?.id]);
+    return () => { cancelled = true; };
+  }, [business?.id, settingsReload]);
 
   useEffect(() => {
+    let cancelled = false;
+    setManualPreferenceReady(false);
     if (!business?.id) return;
 
     setInventoryLoading(true);
     Promise.all([
-      fetch("/api/privacy/protexion/preferences").then((res) => res.json()),
+      fetch("/api/privacy/protexion/preferences", { headers: { "X-Business-Id": String(business.id) } }).then(async (res) => {
+        if (!res.ok) throw new Error("Preference unavailable");
+        const data = await res.json();
+        if (typeof data.manual_enabled !== "boolean") throw new Error("Preference unavailable");
+        return data;
+      }),
       fetch("/api/privacy/inventory").then((res) => res.json()),
       fetch("/api/privacy/vault-status").then((res) => res.json()),
     ])
       .then(([preferenceData, inventoryData, vaultData]) => {
+        if (cancelled) return;
+        setManualPreferenceReady(true);
         setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
         setInventorySnapshot(
           (inventoryData?.latest_snapshot as PrivacyInventorySnapshot) ?? null,
@@ -174,9 +188,10 @@ export default function SettingsPage() {
         console.error("Error loading privacy extension data:", error);
       })
       .finally(() => {
-        setInventoryLoading(false);
+        if (!cancelled) setInventoryLoading(false);
       });
-  }, [business?.id]);
+    return () => { cancelled = true; };
+  }, [business?.id, settingsReload]);
 
   useEffect(() => {
     if (!business?.id) return;
@@ -198,6 +213,7 @@ export default function SettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!settingsReady) { toast.error("Load your settings before saving."); return; }
     if (!business?.id) {
       toast.error("Business not found");
       return;
@@ -213,7 +229,7 @@ export default function SettingsPage() {
     try {
       const profileRes = await fetch("/api/business/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Business-Id": String(business.id) },
         body: JSON.stringify({
           businessName,
           businessType,
@@ -230,17 +246,23 @@ export default function SettingsPage() {
 
       const settingsRes = await fetch("/api/business/settings", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Business-Id": String(business.id) },
         body: JSON.stringify({
           defaultTaxRate: parseFloat(taxRate) / 100,
           collectTax,
-          posManagerPin: posManagerPin || null,
-          privacy_protocol: privacyProtocol,
+          ...pinUpdate(posManagerPin, pinDirty),
+          ...(privacySettingsEnabled ? { privacy_protocol: privacyProtocol, privacyRevision } : {}),
         }),
       });
 
-      if (!settingsRes.ok) throw new Error("Failed to save business settings");
+      if (!settingsRes.ok) throw new Error(settingsRes.status === 409 ? "Settings changed. Reload before saving." : "Failed to save business settings");
+      const savedSettings = businessSettingsResponseSchema.parse(await settingsRes.json());
+      if (activeBusinessId.current !== business.id) return;
+      setPinConfigured(savedSettings.posManagerPinConfigured); setPinDirty(false); setPosManagerPin("");
+      setPrivacyRevision(savedSettings.privacyRevision ?? null);
+      if (savedSettings.privacyProtocol) setPrivacyProtocol(savedSettings.privacyProtocol);
 
+      window.dispatchEvent(new Event("drx:privacy-updated"));
       toast.success("Changes saved.");
       await refreshBusiness();
     } catch (error: any) {
@@ -370,10 +392,12 @@ export default function SettingsPage() {
   };
 
   const updateManualScreenPrivacyPreference = async (enabled: boolean) => {
+    const requestedBusinessId = business?.id;
+    if (!requestedBusinessId) return;
     try {
       const response = await fetch("/api/privacy/protexion/preferences", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Business-Id": requestedBusinessId },
         body: JSON.stringify({ manual_enabled: enabled }),
       });
       const data = await response.json();
@@ -382,7 +406,10 @@ export default function SettingsPage() {
           data.error || "Failed to update screen privacy preference",
         );
       }
-      setManualScreenPrivacyEnabled(!!data.manual_enabled);
+      if (activeBusinessId.current !== requestedBusinessId) return;
+      if (typeof data.manual_enabled !== "boolean") throw new Error("Invalid preference response");
+      setManualScreenPrivacyEnabled(data.manual_enabled);
+      window.dispatchEvent(new Event("drx:privacy-updated"));
       toast.success("Screen privacy preference updated");
     } catch (error: any) {
       toast.error(error?.message || "Failed to update preference");
@@ -445,6 +472,11 @@ export default function SettingsPage() {
                 </Button>
               </Link>
             )}
+            {hasPermission("settings.configure_pos") && (
+              <Link href="/settings/credit">
+                <Button variant="outline">Credit recommendations</Button>
+              </Link>
+            )}
             {hasPermission("inventory.manage") && (
               <Link href="/settings/inventory/aliases">
                 <Button variant="outline" className="gap-2">
@@ -465,7 +497,10 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {settingsError && <div role="alert" className="rounded-lg border p-4"><p>{settingsError}</p><Button type="button" variant="outline" onClick={() => setSettingsReload(value => value + 1)}>Retry settings</Button></div>}
+      {!settingsReady && !settingsError && <p role="status">Loading settings…</p>}
       <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
+        <fieldset disabled={!settingsReady || saving} className="space-y-4 md:space-y-6">
         <div className="md:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 flex items-center gap-2">
@@ -637,18 +672,20 @@ export default function SettingsPage() {
               <Label htmlFor="posManagerPin">Manager PIN</Label>
               <Input
                 id="posManagerPin"
-                type="text"
+                type="password"
+                autoComplete="new-password"
                 pattern="[0-9]*"
                 inputMode="numeric"
                 maxLength={4}
                 value={posManagerPin}
-                onChange={(e) => setPosManagerPin(e.target.value)}
-                placeholder="Set 4-digit PIN"
+                onChange={(e) => { setPosManagerPin(e.target.value); setPinDirty(true); }}
+                placeholder={pinConfigured ? "Enter a replacement PIN" : "Set 4-digit PIN"}
                 disabled={saving}
               />
               <p className="text-sm text-muted-foreground">
-                PIN required for manager overrides.
+                {pinDirty && !posManagerPin ? "The PIN will be removed when you save." : pinConfigured ? "A PIN is set. Leave this field unchanged to keep it." : "Set a PIN to require verification when exiting Quick Sale."}
               </p>
+              {pinConfigured && <Button type="button" variant="outline" onClick={() => { setPosManagerPin(""); setPinDirty(true); }} disabled={saving}>Remove PIN</Button>}
             </div>
           </CardContent>
         </Card>
@@ -663,6 +700,7 @@ export default function SettingsPage() {
               Privacy Protocol Dashboard
             </CardTitle>
           </CardHeader>
+          {!privacySettingsEnabled && <p className="px-6 pb-4">Privacy settings are currently unavailable.</p>}
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="privacyProfile">Onboarding Profile</Label>
@@ -671,7 +709,7 @@ export default function SettingsPage() {
                 value={privacyProtocol.profile}
                 onChange={(e) => applyProfile(e.target.value as PrivacyProfile)}
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                disabled={saving}
+                disabled={saving || !privacySettingsEnabled}
               >
                 {PRIVACY_PROFILE_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -699,7 +737,7 @@ export default function SettingsPage() {
                 id="aliasOnlyMode"
                 checked={privacyProtocol.alias_only_mode}
                 onCheckedChange={handleAliasOnlyToggle}
-                disabled={saving}
+                disabled={saving || !privacySettingsEnabled}
               />
             </div>
 
@@ -720,7 +758,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 >
                   <option value="manual">When I turn it on</option>
                   <option value="pos_only">During a new sale</option>
@@ -743,7 +781,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -752,7 +790,7 @@ export default function SettingsPage() {
                   id="manualScreenPrivacy"
                   checked={manualScreenPrivacyEnabled}
                   onCheckedChange={updateManualScreenPrivacyPreference}
-                  disabled={saving}
+                  disabled={saving || !manualPreferenceReady}
                 />
               </div>
             </div>
@@ -775,7 +813,7 @@ export default function SettingsPage() {
                         updateFieldVisibility(field, "visible", value)
                       }
                       disabled={
-                        saving ||
+                        saving || !privacySettingsEnabled ||
                         (privacyProtocol.alias_only_mode && field !== "alias")
                       }
                     />
@@ -790,7 +828,7 @@ export default function SettingsPage() {
                         updateFieldVisibility(field, "recommended", value)
                       }
                       disabled={
-                        saving ||
+                        saving || !privacySettingsEnabled ||
                         !privacyProtocol.fields[field].visible ||
                         (privacyProtocol.alias_only_mode && field !== "alias")
                       }
@@ -818,7 +856,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -839,7 +877,7 @@ export default function SettingsPage() {
                         },
                       }))
                     }
-                    disabled={saving}
+                    disabled={saving || !privacySettingsEnabled}
                   />
                 </div>
                 <div className="space-y-1">
@@ -857,7 +895,7 @@ export default function SettingsPage() {
                         },
                       }))
                     }
-                    disabled={saving}
+                    disabled={saving || !privacySettingsEnabled}
                   >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -883,7 +921,7 @@ export default function SettingsPage() {
                         },
                       }))
                     }
-                    disabled={saving}
+                    disabled={saving || !privacySettingsEnabled}
                   />
                 </div>
               </div>
@@ -901,7 +939,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
               <Button
@@ -939,7 +977,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
               <div className="space-y-1">
@@ -964,7 +1002,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 >
                   <option value={1}>24 hours</option>
                   <option value={7}>7 days</option>
@@ -990,7 +1028,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
             </div>
@@ -1013,7 +1051,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 />
               </div>
               <div className="space-y-1">
@@ -1033,7 +1071,7 @@ export default function SettingsPage() {
                       },
                     }))
                   }
-                  disabled={saving}
+                  disabled={saving || !privacySettingsEnabled}
                 >
                   <option value="daily">Daily</option>
                   <option value="manual">Manual</option>
@@ -1256,6 +1294,7 @@ export default function SettingsPage() {
             {saving ? "Saving..." : "Save Settings"}
           </Button>
         </div>
+        </fieldset>
       </form>
 
       <Tour

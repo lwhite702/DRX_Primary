@@ -216,6 +216,7 @@ struct DRXCustomer: Decodable, Identifiable, Sendable {
     let loyaltyEligibleSpendCents: Int?
     let totalCreditUsedCents: Int
     let creditLimitCents: Int
+    let creditEnabled: Bool?
     let purchaseCount: Int
     let loyaltyTier: String
     let discountRateBps: Int
@@ -226,7 +227,7 @@ struct DRXCustomer: Decodable, Identifiable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id = "_id"
         case firstName, lastName, phoneNumber, email
-        case totalPurchasesCents, loyaltyEligibleSpendCents, totalCreditUsedCents, creditLimitCents
+        case totalPurchasesCents, loyaltyEligibleSpendCents, totalCreditUsedCents, creditLimitCents, creditEnabled
         case purchaseCount, loyaltyTier, discountRateBps
         case isActive, createdAt, updatedAt
     }
@@ -235,14 +236,14 @@ struct DRXCustomer: Decodable, Identifiable, Sendable {
         let full = [firstName, lastName].compactMap { $0 }.joined(separator: " ")
         return full.isEmpty ? (phoneNumber ?? "Guest") : full
     }
-    var creditAvailableCents: Int { max(0, creditLimitCents - totalCreditUsedCents) }
-    var hasUnlimitedStoreAccount: Bool { creditLimitCents == 0 }
+    var creditAvailableCents: Int { creditEnabled == false ? 0 : max(0, creditLimitCents - totalCreditUsedCents) }
+    var hasUnlimitedStoreAccount: Bool { creditEnabled != false && creditLimitCents == 0 }
     func canChargeStoreAccount(_ amountCents: Int) -> Bool {
-        amountCents >= 0 && (hasUnlimitedStoreAccount || creditAvailableCents >= amountCents)
+        creditEnabled != false && amountCents >= 0 && (hasUnlimitedStoreAccount || creditAvailableCents >= amountCents)
     }
     var totalPurchasesFormatted: String { formatCents(totalPurchasesCents) }
     var creditUsedFormatted: String { formatCents(totalCreditUsedCents) }
-    var creditLimitFormatted: String { formatCents(creditLimitCents) }
+    var creditLimitFormatted: String { creditEnabled == false ? "Disabled" : formatCents(creditLimitCents) }
     var creditAvailableFormatted: String { formatCents(creditAvailableCents) }
     var discountPercent: Double { Double(discountRateBps) / 100.0 }
     var loyaltySpendCents: Int { loyaltyEligibleSpendCents ?? totalPurchasesCents }
@@ -712,9 +713,7 @@ private func formatCents(_ cents: Int) -> String {
 private func formatGrams(_ grams: Double) -> String {
     if grams >= 1000 {
         return String(format: "%.2f kg", grams / 1000)
-    } else if grams == grams.rounded() {
-        return String(format: "%.0f g", grams)
     } else {
-        return String(format: "%.1f g", grams)
+        return String(format: "%.2f g", grams)
     }
 }

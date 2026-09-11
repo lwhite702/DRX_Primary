@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   resolveAuthContext: vi.fn(),
+  preferenceQuery: vi.fn(),
+  preferenceMutation: vi.fn(),
   getVaultRuntimeStatus: vi.fn(),
   computePrivacyInventoryCounts: vi.fn(),
   getLatestPrivacyInventorySnapshot: vi.fn(),
@@ -32,6 +34,14 @@ vi.mock("@/lib/privacy/inventory", () => ({
   computePrivacyInventoryCounts: mocks.computePrivacyInventoryCounts,
   getLatestPrivacyInventorySnapshot: mocks.getLatestPrivacyInventorySnapshot,
   capturePrivacyInventorySnapshot: mocks.capturePrivacyInventorySnapshot,
+}));
+
+vi.mock("@/lib/business/convex-server", () => ({
+  businessClient: vi.fn(async () => ({
+    client: { query: mocks.preferenceQuery, mutation: mocks.preferenceMutation },
+    businessId: "biz_1", expectedUserId: "user_1",
+  })),
+  businessFailure: vi.fn(() => new Response(null, { status: 503 })),
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -147,64 +157,25 @@ describe("Privacy endpoints", () => {
     expect(mocks.db.businessSettings.update).toHaveBeenCalled();
   });
 
-  it("supports ProteXion preference GET in auth bypass mode", async () => {
-    mocks.auth.mockResolvedValue({
-      userId: "user_1",
-      sessionClaims: {
-        publicMetadata: {
-          operatorProfile: {
-            screenPrivacy: {
-              manual_enabled: true,
-            },
-          },
-        },
-      },
-    });
-    mocks.isAuthBypassEnabled.mockReturnValue(true);
-
-    const res = await getProteXionPreference();
-    const json = await res.json();
-
+  it("reads the tenant operator preference from Convex", async () => {
+    mocks.preferenceQuery.mockResolvedValue({ manual_enabled: false });
+    const res = await getProteXionPreference(new NextRequest("http://localhost/api/privacy/protexion/preferences"));
     expect(res.status).toBe(200);
-    expect(json.manual_enabled).toBe(true);
+    expect(await res.json()).toEqual({ manual_enabled: false });
+    expect(mocks.preferenceQuery).toHaveBeenCalledWith(expect.anything(), { businessId: "biz_1", expectedUserId: "user_1" });
+    expect(mocks.clerkClient).not.toHaveBeenCalled();
   });
 
-  it("updates ProteXion preference for authenticated user", async () => {
-    mocks.auth.mockResolvedValue({
-      userId: "user_1",
-      sessionClaims: {},
-    });
-    mocks.isAuthBypassEnabled.mockReturnValue(false);
-    const updateUser = vi.fn().mockResolvedValue({});
-    const getUser = vi.fn().mockResolvedValue({
-      publicMetadata: {},
-    });
-    mocks.clerkClient.mockResolvedValue({
-      users: {
-        getUser,
-        updateUser,
-      },
-    });
-
-    const req = new NextRequest(
-      "http://localhost:3000/api/privacy/protexion/preferences",
-      {
-        method: "POST",
-        body: JSON.stringify({ manual_enabled: true }),
-        headers: { "content-type": "application/json" },
-      },
-    );
-
-    const res = await postProteXionPreference(req);
-    const json = await res.json();
-
+  it("updates the authenticated tenant operator preference in Convex", async () => {
+    mocks.preferenceMutation.mockResolvedValue({ manual_enabled: true });
+    const res = await postProteXionPreference(new NextRequest("http://localhost/api/privacy/protexion/preferences", {
+      method: "POST", body: JSON.stringify({ manual_enabled: true }),
+      headers: { "content-type": "application/json" },
+    }));
     expect(res.status).toBe(200);
-    expect(json.manual_enabled).toBe(true);
-    expect(updateUser).toHaveBeenCalledWith(
-      "user_1",
-      expect.objectContaining({
-        publicMetadata: expect.any(Object),
-      }),
-    );
+    expect(await res.json()).toEqual({ manual_enabled: true });
+    expect(mocks.preferenceMutation).toHaveBeenCalledWith(expect.anything(), { businessId: "biz_1", expectedUserId: "user_1", manualEnabled: true });
+    expect(mocks.clerkClient).not.toHaveBeenCalled();
+    expect(mocks.db.$executeRaw).not.toHaveBeenCalled();
   });
 });

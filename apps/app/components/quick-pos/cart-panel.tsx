@@ -1,5 +1,6 @@
 "use client";
 
+import { formatQuantity, formatCount } from "@/lib/number-format";
 import { useRef } from "react";
 import { QUICK_POS_LONG_PRESS_MS } from "@/lib/quick-pos/constants";
 import type { QuickPosCartItem } from "@/lib/quick-pos/types";
@@ -39,7 +40,7 @@ export function CartPanel({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Cart</h2>
         <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          {items.length} item{items.length === 1 ? "" : "s"}
+          {formatCount(items.length)} item{items.length === 1 ? "" : "s"}
         </span>
       </div>
       <div className="mt-3 space-y-2">
@@ -62,8 +63,8 @@ export function CartPanel({
             <span className="text-lg font-semibold">
               {item.name}{" "}
               {item.weightGrams
-                ? `${item.weightGrams}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`
-                : `x${item.qty}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`}
+                ? `${formatQuantity(item.weightGrams)}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`
+                : `x${formatQuantity(item.qty)}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`}
             </span>
             <span className="text-lg font-semibold text-accent">${(item.unitPrice * item.qty).toFixed(2)}</span>
           </button>

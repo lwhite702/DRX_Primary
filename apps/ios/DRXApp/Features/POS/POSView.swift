@@ -592,9 +592,9 @@ private func formatCents(_ cents: Int) -> String {
 }
 
 private func formatGrams(_ grams: Double) -> String {
-    grams == grams.rounded() ? String(format: "%.0fg", grams) : String(format: "%.1fg", grams)
+    String(format: "%.2fg", grams)
 }
 
 private func formatQuantity(_ product: DRXProduct, _ quantity: Double) -> String {
-    String(format: "%.*f%@", product.salePrecision, quantity, product.saleUnit)
+    String(format: "%.2f%@", quantity, product.saleUnit)
 }

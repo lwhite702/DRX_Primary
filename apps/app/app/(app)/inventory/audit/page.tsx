@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useBusiness } from "@/lib/hooks/use-business";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
@@ -27,19 +28,23 @@ interface InventoryLog {
 }
 
 export default function InventoryAuditPage() {
+  const { business } = useBusiness();
   const [logs, setLogs] = useState<InventoryLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLogs([]);
+    if (!business?.id) { setLoading(false); return; }
+    setLoading(true);
     const controller = new AbortController();
-    void fetch("/api/inventory/audit", {
+    void fetch(`/api/inventory/audit?business_id=${encodeURIComponent(business.id)}`, {
       credentials: "same-origin",
       signal: controller.signal,
     })
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(body.error || "Failed to load audit log");
-        setLogs(Array.isArray(body.data) ? body.data : []);
+        if (!controller.signal.aborted) setLogs(Array.isArray(body.data) ? body.data : []);
       })
       .catch((error) => {
         if (!controller.signal.aborted) {
@@ -51,7 +56,7 @@ export default function InventoryAuditPage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [business?.id]);
 
   return (
     <PermissionGuard requiredPermission="audit.view" fallback={<div>Access Denied</div>}>

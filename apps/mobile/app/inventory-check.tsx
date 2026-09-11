@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -12,80 +12,78 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
-import {
-  getRandomCheckProduct,
-  recordInventoryCheck,
-} from "../src/services/apiClient";
-import {
-  COLORS,
-  SPACING,
-  FONT_SIZES,
-  BORDER_RADIUS,
-} from "../src/constants/theme";
+import { useAction, useMutation } from "convex/react";
+import { api } from "@drx-convex/_generated/api";
+import type { FunctionArgs, FunctionReturnType } from "convex/server";
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from "../src/constants/theme";
 
 export default function InventoryCheck() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getToken } = useAuth();
-
+  const { businessId, userId } = useAuth();
+  const selectRandom = useAction(api.inventoryChecks.selectRandom);
+  const record = useMutation(api.inventoryChecks.record);
+  type Product = NonNullable<FunctionReturnType<typeof api.inventoryChecks.selectRandom>>;
+  type Attempt = { product: Product; request: FunctionArgs<typeof api.inventoryChecks.record> };
+  const identity = `${businessId ?? ""}:${userId ?? ""}`;
+  const scope = useRef(identity); scope.current = identity;
+  const generation = useRef(0), busy = useRef(false);
+  const pending = useRef(new Map<string, Attempt>());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [product, setProduct] = useState<any>(null);
+  const [retryPending, setRetryPending] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
   const [measuredWeight, setMeasuredWeight] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadRandomProduct = useCallback(async () => {
+    const version = ++generation.current;
+    setProduct(null); setMeasuredWeight(""); setLoadError(null);
+    const attempt = pending.current.get(identity); setRetryPending(Boolean(attempt));
+    if (attempt) { setProduct(attempt.product); setMeasuredWeight(String(attempt.request.measuredWeightGrams)); setLoading(false); return; }
+    if (!businessId || !userId) { setLoading(false); return; }
+    setLoading(true);
     try {
-      setLoading(true);
-      const token = await getToken();
-      const data = await getRandomCheckProduct(token);
-      setProduct(data);
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "Couldn’t load a product",
-        "Check your connection and try again.",
-        [{ text: "Go back", onPress: () => router.back() }],
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken, router]);
+      const selected = await selectRandom({ businessId, expectedUserId: userId });
+      if (generation.current === version && scope.current === identity) setProduct(selected);
+    } catch {
+      if (generation.current === version && scope.current === identity) setLoadError("Inventory check could not be loaded. Try refreshing.");
+    } finally { if (generation.current === version && scope.current === identity) setLoading(false); }
+  }, [businessId, userId, identity, selectRandom]);
 
   useEffect(() => {
-    loadRandomProduct();
+    void loadRandomProduct();
+    return () => { generation.current++; };
   }, [loadRandomProduct]);
 
   const handleSubmit = async () => {
-    if (!product?.inventory_id || !measuredWeight) {
-      Alert.alert("Add the weight", "Enter the weight shown on the scale.");
-      return;
+    if (busy.current || !product || !businessId || !userId) return;
+    const origin = identity;
+    let attempt = pending.current.get(origin);
+    if (!attempt) {
+      const measured = Number(measuredWeight);
+      if (!measuredWeight.trim() || !Number.isFinite(measured) || measured < 0) { Alert.alert("Check entry", "Enter a valid non-negative measured weight."); return; }
+      attempt = { product, request: { businessId, expectedUserId: userId, productId: product.inventory_id, requestId: globalThis.crypto.randomUUID(), expectedWeightGrams: product.expected_weight_grams, measuredWeightGrams: measured } };
+      pending.current.set(origin, attempt); setRetryPending(true);
     }
-
+    busy.current = true; setSubmitting(true);
     try {
-      setSubmitting(true);
-      const token = await getToken();
-      const res = await recordInventoryCheck(
-        token,
-        product.inventory_id,
-        Number(measuredWeight),
-      );
-
-      const discrepancyMsg = res.discrepancy_flagged
-        ? `The count is off by ${res.delta_grams}g (${res.delta_percentage}%). Check it before changing stock.`
-        : "The stock count matches.";
-
-      Alert.alert("Stock check saved", discrepancyMsg, [
-        { text: "Done", onPress: () => router.back() },
-      ]);
+      const receipt = await record(attempt.request);
+      pending.current.delete(origin);
+      if (scope.current !== origin) return;
+      setRetryPending(false); setProduct(null); setMeasuredWeight("");
+      const percentage = receipt.delta_percentage === null ? "percentage not applicable at zero expected stock" : `${receipt.delta_percentage.toFixed(1)}%`;
+      const message = receipt.discrepancy_flagged ? `Discrepancy flagged: ${receipt.delta_grams.toFixed(2)}g (${percentage}).` : "Check recorded within tolerance.";
+      Alert.alert("Inventory Check Logged", message, [{ text: "Done", onPress: () => { if (scope.current === origin) router.back(); } }]);
     } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "That check didn’t save",
-        "Your weight is still here. Try again.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+      const message = error instanceof Error ? error.message : "";
+      const code = ["STALE_STOCK", "APPROVAL_REQUIRED", "INSUFFICIENT_STOCK", "INVALID_ARGUMENT", "NOT_FOUND", "FORBIDDEN", "UNAUTHORIZED", "INVALID_STATE"].find(code => message.includes(`${code}:`));
+      if (code) { pending.current.delete(origin); if (scope.current === origin) setRetryPending(false); }
+      if (scope.current === origin) {
+        if (code === "STALE_STOCK") void loadRandomProduct();
+        Alert.alert("Check not confirmed", code === "STALE_STOCK" ? "Stock changed. A fresh check is loading; measure again." : code === "APPROVAL_REQUIRED" ? "Supervisor approval is required." : code ? "Check inventory, permissions and approval settings before trying again." : "Retry to check or complete the same attempt.");
+      }
+    } finally { busy.current = false; setSubmitting(false); }
   };
 
   return (
@@ -94,8 +92,8 @@ export default function InventoryCheck() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.title}>Check stock</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={loadRandomProduct}>
+        <Text style={styles.title}>Inventory Check</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={loadRandomProduct} disabled={submitting || retryPending || loading}>
           <Ionicons name="refresh" size={20} color={COLORS.accent} />
         </TouchableOpacity>
       </View>
@@ -103,36 +101,32 @@ export default function InventoryCheck() {
       <View style={styles.content}>
         {loading ? (
           <View style={styles.center}>
-            <ActivityIndicator size="large" color={COLORS.accent} />
-            <Text style={styles.loadingText}>Choosing a product…</Text>
+             <ActivityIndicator size="large" color={COLORS.accent} />
+             <Text style={styles.loadingText}>Selecting a random product...</Text>
           </View>
         ) : product ? (
           <View>
             <View style={styles.card}>
               <View style={styles.iconContainer}>
-                <Ionicons
-                  name="scale-outline"
-                  size={48}
-                  color={COLORS.accent}
-                />
+                <Ionicons name="scale-outline" size={48} color={COLORS.accent} />
               </View>
               <Text style={styles.productName}>{product.product_name}</Text>
               <Text style={styles.instruction}>
-                Put all available {product.product_name} on the scale. Enter the
-                total weight below.
+                Please place all available {product.product_name} on the scale and enter the total measured weight below.
               </Text>
               <Text style={styles.expectedText}>
                 Expected: {product.expected_weight_grams?.toFixed(2)}g
               </Text>
             </View>
 
-            <Text style={styles.label}>Weight in grams</Text>
+            <Text style={styles.label}>Measured Weight (Grams)</Text>
             <TextInput
               style={styles.input}
               keyboardType="decimal-pad"
               placeholder="e.g. 104.5"
               placeholderTextColor={COLORS.textMuted}
               value={measuredWeight}
+              editable={!submitting && !retryPending}
               onChangeText={setMeasuredWeight}
               autoFocus
             />
@@ -145,11 +139,11 @@ export default function InventoryCheck() {
               {submitting ? (
                 <ActivityIndicator color={COLORS.background} />
               ) : (
-                <Text style={styles.actionBtnText}>Save check</Text>
+                <Text style={styles.actionBtnText}>{retryPending ? "Retry Check" : "Submit Check"}</Text>
               )}
             </TouchableOpacity>
           </View>
-        ) : null}
+        ) : <Text style={styles.loadingText}>{loadError ?? "No product selected. Refresh to start a check."}</Text>}
       </View>
     </View>
   );
@@ -166,12 +160,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   title: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "700" },
   content: { flex: 1, padding: SPACING.xl },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -189,7 +178,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.accent + "15",
+    backgroundColor: COLORS.accent + '15',
     alignItems: "center",
     justifyContent: "center",
     marginBottom: SPACING.lg,
@@ -212,11 +201,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONT_SIZES.sm,
   },
-  label: {
-    color: COLORS.textSecondary,
-    fontSize: FONT_SIZES.sm,
-    marginBottom: SPACING.xs,
-  },
+  label: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: SPACING.xs },
   input: {
     backgroundColor: COLORS.surface,
     color: COLORS.text,
@@ -235,9 +220,5 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
     alignItems: "center",
   },
-  actionBtnText: {
-    color: COLORS.background,
-    fontSize: FONT_SIZES.md,
-    fontWeight: "700",
-  },
+  actionBtnText: { color: COLORS.background, fontSize: FONT_SIZES.md, fontWeight: "700" }
 });

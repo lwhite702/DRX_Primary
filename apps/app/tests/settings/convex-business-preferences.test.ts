@@ -1,0 +1,120 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as session from "../../convex/session";
+import * as onboarding from "../../convex/onboarding";
+import * as preferences from "../../convex/businessPreferences";
+import * as settings from "../../convex/settings";
+import * as customers from "../../convex/customers";
+import * as generatedApi from "../../convex/_generated/api";
+import { getDefaultPrivacyProtocol } from "../../lib/privacy/profiles";
+const mocks = vi.hoisted(() => ({ token: vi.fn(), query: vi.fn(), mutation: vi.fn(), flag: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Business privacy/settings must not load Prisma"); });
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("@/lib/posthog/server-flags", () => ({ ensureServerFlag: mocks.flag }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; mutation = mocks.mutation; } }));
+import { GET, PATCH } from "../../app/api/business/settings/route";
+import { GET as getPreference, POST as setPreference } from "../../app/api/privacy/protexion/preferences/route";
+import { resolveBusinessPrivacyPolicy } from "../../lib/privacy/privacy-resolution";
+const modules = { "_generated/api.js": async () => generatedApi, "session.ts": async () => session, "onboarding.ts": async () => onboarding, "businessPreferences.ts": async () => preferences, "settings.ts": async () => settings, "customers.ts": async () => customers };
+function request(body?: unknown, businessId?: string) { return new NextRequest("https://example.invalid/api/business/settings", { method: body === undefined ? "GET" : "PATCH", headers: { "Content-Type": "application/json", ...(businessId ? { "X-Business-Id": businessId } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }); }
+async function setup() {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "settings-operator", email: "synthetic@example.invalid" });
+  const created = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic settings", taxRateBps: 825 });
+  mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
+  mocks.mutation.mockImplementation((ref, args) => actor.mutation(ref, args));
+  return { t, actor, ...created };
+}
+beforeEach(() => { vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.token.mockResolvedValue("synthetic"); mocks.flag.mockResolvedValue(true); });
+it("reads canonical zero/nonzero tax and commits structured policy, PIN and tax together", async () => {
+  const { actor, businessId } = await setup();
+  expect(await (await GET(request())).json()).toMatchObject({ defaultTaxRate: 0.0825, posManagerPin: null, privacyRevision: 0, privacyProtocol: getDefaultPrivacyProtocol() });
+  const policy = getDefaultPrivacyProtocol("alias_mode"); policy.retention.days = 14;
+  const saved = await PATCH(request({ default_tax_rate: 0, collect_tax: false, pos_manager_pin: "2468", privacy_protocol: policy, privacyRevision: 0 }));
+  expect(saved.status).toBe(200); const json = await saved.json();
+  expect(json).toMatchObject({ defaultTaxRate: 0, collectTax: false, posManagerPin: null, posManagerPinConfigured: true, privacyProtocol: policy, privacyRevision: 1 });
+  expect(JSON.stringify(json)).not.toContain("2468");
+  expect(await resolveBusinessPrivacyPolicy(businessId)).toEqual(policy);
+  expect(await actor.query(api.businessPreferences.verifyExitPin, { businessId, pin: "2468" })).toEqual({ allowed: true, hasPinConfigured: true });
+  await actor.mutation(api.settings.updateBusinessSettings, { collectTax: true, taxRateBps: 900 });
+  expect(await (await GET(request())).json()).toMatchObject({ collectTax: true, defaultTaxRate: 0.09, posManagerPinConfigured: true });
+});
+it("preserves an omitted PIN, clears both canonical and imported PINs, and redacts native settings", async () => {
+  const { t, actor, businessId } = await setup();
+  await t.run(ctx => ctx.db.insert("businessSettings", { businessId, settingsData: JSON.stringify({ quick_pos_exit_pin: "2468", keep: "synthetic" }), createdAt: 1, updatedAt: 1 }));
+  expect(await (await GET(request())).json()).toMatchObject({ posManagerPinConfigured: true });
+  expect(JSON.stringify(await actor.query(api.settings.getBusinessSettings, {}))).not.toContain("2468");
+  expect((await PATCH(request({ collectTax: false }))).status).toBe(200);
+  expect(await actor.query(api.businessPreferences.verifyExitPin, { businessId, pin: "2468" })).toMatchObject({ allowed: true, hasPinConfigured: true });
+  expect((await PATCH(request({ posManagerPin: null }))).status).toBe(200);
+  expect(await actor.query(api.businessPreferences.verifyExitPin, { businessId })).toEqual({ allowed: true, hasPinConfigured: false });
+  const row = await t.run(ctx => ctx.db.query("businessSettings").withIndex("by_businessId", q => q.eq("businessId", businessId)).unique());
+  expect(JSON.parse(row!.settingsData!)).toEqual({ keep: "synthetic" });
+});
+it("rejects stale or malformed policy changes atomically without resetting privacy", async () => {
+  const { actor, businessId } = await setup(); const policy = getDefaultPrivacyProtocol("alias_mode");
+  expect((await PATCH(request({ privacyProtocol: policy, privacyRevision: 0 }))).status).toBe(200);
+  expect((await PATCH(request({ collectTax: false, defaultTaxRate: 0, privacyProtocol: getDefaultPrivacyProtocol(), privacyRevision: 0 }))).status).toBe(409);
+  for (const patch of [{ privacyProtocol: "Strict" }, { privacy_protocol: { ...policy, fields: { ...policy.fields, phone: { visible: true, recommended: false } } } }, { privacyProtocol: { ...policy, retention: { ...policy.retention, local_hour: 24 } } }, { posManagerPin: "••••" }, { defaultTaxRate: 0.00001 }, { collectTax: false, collect_tax: true }]) expect((await PATCH(request(patch))).status).toBe(400);
+  expect(await actor.query(api.businessPreferences.getSettings, { businessId })).toMatchObject({ collectTax: true, taxRateBps: 825, privacyProtocol: policy, privacyRevision: 1 });
+});
+it("keeps server-managed policy job timestamps when changing profiles", async () => {
+  const { t, actor, businessId } = await setup(); const timestamp = "2026-09-06T00:00:00.000Z";
+  await t.run(async ctx => { const row = await ctx.db.query("businessPrivacyPolicies").withIndex("by_businessId", q => q.eq("businessId", businessId)).unique(); await ctx.db.patch(row!._id, { protocol: { ...row!.protocol, retention: { ...row!.protocol.retention, last_run_at: timestamp } } }); });
+  expect((await PATCH(request({ privacyProtocol: getDefaultPrivacyProtocol("alias_mode"), privacyRevision: 0 }))).status).toBe(200);
+  expect((await actor.query(api.businessPreferences.getPrivacyPolicy, { businessId })).retention.last_run_at).toBe(timestamp);
+  const policy = getDefaultPrivacyProtocol("alias_mode"); policy.retention.last_run_at = "2026-09-07T00:00:00.000Z";
+  expect((await PATCH(request({ privacyProtocol: policy }))).status).toBe(400);
+});
+it("fails closed for missing or semantically invalid persisted policy", async () => {
+  const { t, actor, businessId } = await setup();
+  const row = await t.run(ctx => ctx.db.query("businessPrivacyPolicies").withIndex("by_businessId", q => q.eq("businessId", businessId)).unique());
+  await t.run(ctx => ctx.db.patch(row!._id, { protocol: { ...getDefaultPrivacyProtocol(), alias_only_mode: true } }));
+  expect((await GET(request())).status).toBe(503);
+  await t.run(ctx => ctx.db.delete(row!._id));
+  await expect(resolveBusinessPrivacyPolicy(businessId)).rejects.toThrow(/INVALID_STATE/);
+  expect((await PATCH(request({ defaultTaxRate: 0 }))).status).toBe(503);
+  expect((await t.run(ctx => ctx.db.get(businessId)))?.taxRateBps).toBe(825);
+  await expect(actor.mutation(api.customers.createCustomer, { firstName: "Synthetic" })).rejects.toThrow(/INVALID_STATE/);
+});
+it("enforces roles, identity, tenant ownership and the privacy rollout flag", async () => {
+  const { t, actor, businessId, userId } = await setup();
+  await t.run(ctx => ctx.db.patch(userId, { role: "MEMBER" }));
+  expect((await PATCH(request({ defaultTaxRate: 0 }))).status).toBe(403);
+  await t.run(ctx => ctx.db.patch(userId, { permissions: { "settings.configure_pos": true } }));
+  expect((await PATCH(request({ defaultTaxRate: 0 }))).status).toBe(200);
+  expect((await PATCH(request({ defaultTaxRate: 0.05 }, "foreign"))).status).toBe(401);
+  await expect(actor.mutation(api.businessPreferences.saveSettings, { businessId, expectedUserId: "foreign", collectTax: false })).rejects.toThrow(/FORBIDDEN/);
+  mocks.flag.mockResolvedValue(false);
+  expect(await (await GET(request())).json()).toMatchObject({ privacySettingsEnabled: false });
+  expect((await PATCH(request({ collectTax: false }))).status).toBe(200);
+  expect((await PATCH(request({ privacyProtocol: getDefaultPrivacyProtocol() }))).status).toBe(403);
+});
+it("isolates manual preferences by operator and business, preserving explicit false", async () => {
+  const { t, actor, businessId } = await setup();
+  const policy = getDefaultPrivacyProtocol(); policy.screen_privacy.default_enabled = true;
+  await actor.mutation(api.businessPreferences.saveSettings, { businessId, privacyProtocol: policy });
+  expect(await (await getPreference(request())).json()).toEqual({ manual_enabled: true });
+  expect(await (await setPreference(request({ manual_enabled: false }))).json()).toEqual({ manual_enabled: false });
+  expect(await (await getPreference(request())).json()).toEqual({ manual_enabled: false });
+  expect((await setPreference(request({ manual_enabled: "false" }))).status).toBe(400);
+  await expect(actor.mutation(api.businessPreferences.setManualPreference, { businessId, expectedUserId: "another", manualEnabled: true })).rejects.toThrow(/FORBIDDEN/);
+  await t.run(ctx => ctx.db.insert("users", { clerkUserId: "another", email: "other@example.invalid", businessId, role: "MEMBER", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  expect(await t.withIdentity({ subject: "another" }).query(api.businessPreferences.getManualPreference, { businessId })).toBeNull();
+  const second = t.withIdentity({ subject: "settings-operator", o: { id: "synthetic-org", rol: "admin" } });
+  const other = await second.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other synthetic" });
+  expect(await second.query(api.businessPreferences.getManualPreference, { businessId: other.businessId })).toBeNull();
+  const rows = await t.run(ctx => ctx.db.query("operatorPrivacyPreferences").collect()); expect(rows).toHaveLength(1);
+});
+it("enforces canonical customer field policy and does not audit customer PII", async () => {
+  const { t, actor, businessId } = await setup();
+  await actor.mutation(api.customers.createCustomer, { firstName: "Synthetic-private-name", phoneNumber: "0000000000" });
+  const audit = await t.run(ctx => ctx.db.query("auditEvents").collect());
+  expect(JSON.stringify(audit.map(row => row.metadata))).not.toContain("Synthetic-private-name"); expect(JSON.stringify(audit.map(row => row.metadata))).not.toContain("0000000000");
+  await actor.mutation(api.businessPreferences.saveSettings, { businessId, privacyProtocol: getDefaultPrivacyProtocol("alias_mode") });
+  await expect(actor.mutation(api.customers.createCustomer, { phoneNumber: "0000000000" })).rejects.toThrow(/FORBIDDEN/);
+  expect(await t.run(ctx => ctx.db.query("customers").collect())).toHaveLength(1);
+});

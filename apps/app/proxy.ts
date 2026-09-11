@@ -14,11 +14,9 @@ import {
 } from "@/lib/auth/route-classification";
 import { NextResponse } from "next/server";
 import {
-  hasCompletedOnboardingClaims,
   hasOnboardingCompletionCookieFromHeader,
   isOnboardingCompletionCookieValue,
   ONBOARDING_COMPLETION_COOKIE,
-  type OnboardingClaims,
 } from "@/lib/auth/onboarding-completion";
 import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
 // In preview/staging environments we occasionally deploy without Clerk secrets.
@@ -193,7 +191,7 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         return NextResponse.next();
       }
 
-      const { userId, sessionClaims } = await auth();
+      const { userId } = await auth();
       // Platform staff need no merchant onboarding. The page and every data
       // operation independently require an explicit platform grant.
       if (pathname === "/control" || pathname.startsWith("/control/")) {
@@ -211,9 +209,9 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
         response.headers.set("Referrer-Policy", "no-referrer");
         return response;
       }
-      const claims = sessionClaims as OnboardingClaims;
-      const onboardingComplete =
-        hasCompletedOnboardingClaims(claims) || hasOnboardingCompletionCookie(req);
+      // This cookie is only a routing hint. Tenant completion and access are
+      // verified by Convex-backed page/API guards, never global Clerk metadata.
+      const onboardingComplete = hasOnboardingCompletionCookie(req);
 
       if (pathname === "/") {
         if (!userId) {
@@ -232,9 +230,6 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
           return redirectToApp(req, "/onboarding", true);
         }
 
-        if (onboardingComplete && isOnboardingPath(pathname)) {
-          return redirectToApp(req, "/dashboard", true);
-        }
       }
 
       if (!userId && !isPublicAppPath(pathname)) {

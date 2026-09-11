@@ -165,5 +165,5 @@ private struct BatchRowView: View {
 }
 
 private func formatGrams(_ grams: Double) -> String {
-    grams == grams.rounded() ? String(format: "%.0f g", grams) : String(format: "%.1f g", grams)
+    String(format: "%.2f g", grams)
 }

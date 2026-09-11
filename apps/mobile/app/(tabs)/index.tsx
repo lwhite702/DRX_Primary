@@ -463,7 +463,7 @@ export default function POSScreen() {
               !isOnline && styles.connectionTextOffline,
             ]}
           >
-            {isOnline ? "ONLINE" : `OFFLINE · ${queue.pending} QUEUED`}
+            {isOnline ? "ONLINE" : `OFFLINE · ${queue.pending.toFixed(1)} QUEUED`}
           </Text>
         </View>
       </View>
@@ -483,7 +483,7 @@ export default function POSScreen() {
               {item.productName}
             </Text>
             <Text style={styles.productMeta}>
-              {item.sku} · {item.quantityOnHandGrams.toFixed(1)}g
+              {item.sku} · {item.quantityOnHandGrams.toFixed(2)}g
             </Text>
             <Text style={styles.productPrice}>
               {money(item.sellingPriceCents)}/{pricing(item).sellingUnit ?? "g"}
@@ -612,7 +612,7 @@ export default function POSScreen() {
           onPress={() => void syncPending()}
         >
           <Text style={styles.syncText}>
-            Sync {queue.pending} queued sale(s)
+            Sync {queue.pending.toFixed(1)} queued sale(s)
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -681,7 +681,7 @@ export default function POSScreen() {
               <Text style={styles.loyaltyNotice}>
                 {customer.loyaltyTier.toUpperCase()} loyalty
                 {loyaltyRateBps > 0
-                  ? ` · ${(loyaltyRateBps / 100).toFixed(2)}% ${loyaltyPolicy === "stack" ? "stacks after" : "compared with"} bulk pricing`
+                  ? ` · ${(loyaltyRateBps / 100).toFixed(1)}% ${loyaltyPolicy === "stack" ? "stacks after" : "compared with"} bulk pricing`
                   : " · no checkout discount"}
               </Text>
             ) : null}

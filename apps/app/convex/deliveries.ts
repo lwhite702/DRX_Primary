@@ -48,6 +48,8 @@ const queueRecord = v.object({
   status: deliveryStatus,
   addressLabel: v.string(),
   assignedToUserId: v.optional(v.string()),
+  profileId: v.optional(v.id("deliveryProfiles")),
+  vendorExpenseKnown: v.optional(v.boolean()),
   vendorFeeCents: v.number(),
   customerFeeCents: v.number(),
   deliveryTaxCents: v.number(),
@@ -358,7 +360,7 @@ export const assignDelivery = mutation({
     }
     const assignee = await ctx.db
       .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", assigneeUserId))
+      .withIndex("by_clerkUserId_and_businessId", (q) => q.eq("clerkUserId", assigneeUserId).eq("businessId", auth.businessId))
       .unique();
     if (
       !assignee ||

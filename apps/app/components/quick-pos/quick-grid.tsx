@@ -27,7 +27,7 @@ export function QuickGrid({
             </div>
             <div className="mt-2 text-xl font-bold text-accent">
               {item.fractional_config
-                ? `$${item.fractional_config.baseUnitPrice.toFixed(4)}/${item.fractional_config.sellingUnit}`
+                ? `$${item.fractional_config.baseUnitPrice.toFixed(2)}/${item.fractional_config.sellingUnit}`
                 : `$${item.price.toFixed(2)}`}
             </div>
             {item.commerce_config?.bulkPriceTiers.length ? (

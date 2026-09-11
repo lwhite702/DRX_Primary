@@ -27,8 +27,10 @@ const aggregateRecord = v.object({
   totalSubtotalCents: v.number(),
   averageOrderValueCents: v.number(),
   merchandiseRevenueCents: v.number(),
+  feeRevenueCents: v.optional(v.number()),
   deliveryRevenueCents: v.number(),
   vendorDeliveryExpenseCents: v.number(),
+  unknownVendorExpenseOrderCount: v.optional(v.number()),
   deliveryTaxCents: v.number(),
   deliveryTaxRefundCents: v.number(),
   discountCents: v.number(),
@@ -100,6 +102,7 @@ async function aggregatePeriod(
   let saleTaxCents = 0;
   let totalSubtotalCents = 0;
   let merchandiseRevenueCents = 0;
+  let feeRevenueCents = 0;
   let deliveryRevenueCents = 0;
   let vendorDeliveryExpenseCents = 0;
   let saleDeliveryTaxCents = 0;
@@ -142,6 +145,7 @@ async function aggregatePeriod(
     grossCollectedCents += sale.totalAmountCents;
     saleTaxCents += sale.taxAmountCents;
     totalSubtotalCents += sale.subtotalCents;
+    feeRevenueCents += sale.feeRevenueCents ?? 0;
     merchandiseRevenueCents +=
       sale.merchandiseRevenueCents ?? sale.subtotalCents;
     deliveryRevenueCents += sale.deliveryRevenueCents ?? 0;
@@ -209,7 +213,7 @@ async function aggregatePeriod(
         );
   const manualCostComplete = unknownCostLineCount === 0;
   const grossProfitComplete =
-    coverageBps === 10_000 && manualCostComplete;
+    coverageBps === 10_000 && manualCostComplete && sales.every(sale => sale.vendorDeliveryExpenseKnown !== false);
 
   let customerFeeRefundCents = 0;
   let vendorCreditsCents = 0;
@@ -227,7 +231,7 @@ async function aggregatePeriod(
   const netCashActivityCents =
     grossCollectedCents - customerFeeRefundCents - deliveryTaxRefundCents;
   const netRevenueCents =
-    merchandiseRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
+    merchandiseRevenueCents + feeRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
   const grossProfitCents =
     netRevenueCents -
     cogsCents -
@@ -256,8 +260,10 @@ async function aggregatePeriod(
     averageOrderValueCents:
       orderCount > 0 ? Math.round(grossCollectedCents / orderCount) : 0,
     merchandiseRevenueCents,
+    ...(feeRevenueCents ? { feeRevenueCents } : {}),
     deliveryRevenueCents,
     vendorDeliveryExpenseCents,
+    ...(sales.some(sale => sale.vendorDeliveryExpenseKnown === false) ? { unknownVendorExpenseOrderCount: sales.filter(sale => sale.vendorDeliveryExpenseKnown === false).length } : {}),
     deliveryTaxCents: saleDeliveryTaxCents - deliveryTaxRefundCents,
     deliveryTaxRefundCents,
     discountCents,

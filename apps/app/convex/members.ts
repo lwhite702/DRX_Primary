@@ -1,10 +1,16 @@
+import { acceptTeamInvitation, createTeamInvitation } from "./helpers/teamInvitations";
+import { changeMember } from "./helpers/teamManagement";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
-import { requirePermission } from "./helpers/permissions";
+import { hasPermission } from "./helpers/permissions";
 
 export const listMembers = query({
   args: {},
+  returns: v.object({
+    members: v.array(v.object({ _id: v.id("users"), _creationTime: v.number(), businessId: v.id("businesses"), clerkUserId: v.string(), email: v.string(), name: v.optional(v.string()), role: v.string(), status: v.string(), createdAt: v.number(), updatedAt: v.number() })),
+    invites: v.array(v.object({ _id: v.id("invites"), _creationTime: v.number(), businessId: v.id("businesses"), email: v.string(), role: v.string(), status: v.string(), invitedBy: v.string(), expiresAt: v.number(), createdAt: v.number() })),
+  }),
   handler: async (ctx) => {
     const auth = await requireUserAndBusiness(ctx);
     const members = await ctx.db
@@ -12,13 +18,20 @@ export const listMembers = query({
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
       .collect();
 
-    const invites = await ctx.db
+    const invites = hasPermission(auth.userRecord, "MANAGE_MEMBERS") ? await ctx.db
       .query("invites")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
-      .filter((q) => q.eq(q.field("status"), "PENDING"))
-      .collect();
+      .filter((q) => q.and(q.eq(q.field("status"), "PENDING"), q.gt(q.field("expiresAt"), Date.now())))
+      .collect() : [];
 
-    return { members, invites };
+    return {
+      members: members.filter(member => member.status === "ACTIVE").map(member => ({
+        _id: member._id, _creationTime: member._creationTime, businessId: member.businessId,
+        clerkUserId: member.clerkUserId, email: member.email, name: member.name,
+        role: member.role, status: member.status, createdAt: member.createdAt, updatedAt: member.updatedAt,
+      })),
+      invites: invites.map(invite => ({ _id: invite._id, _creationTime: invite._creationTime, businessId: invite.businessId, email: invite.email, role: invite.role, status: invite.status, invitedBy: invite.invitedBy, expiresAt: invite.expiresAt, createdAt: invite.createdAt })),
+    };
   },
 });
 
@@ -27,26 +40,10 @@ export const inviteMember = mutation({
     email: v.string(),
     role: v.string(), // "ADMIN" | "MEMBER"
   },
+  returns: v.object({ inviteId: v.id("invites"), token: v.string() }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    requirePermission(auth.userRecord, "MANAGE_MEMBERS");
-
-    const now = Date.now();
-    const token = `inv_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    const expiresAt = now + 7 * 24 * 60 * 60 * 1000; // 7 days
-
-    const inviteId = await ctx.db.insert("invites", {
-      businessId: auth.businessId,
-      email: args.email.toLowerCase(),
-      token,
-      role: args.role,
-      status: "PENDING",
-      invitedBy: auth.userId,
-      expiresAt,
-      createdAt: now,
-    });
-
-    return { inviteId, token };
+    return createTeamInvitation(ctx, auth, args);
   },
 });
 
@@ -57,22 +54,21 @@ export const updateMemberRole = mutation({
   },
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    requirePermission(auth.userRecord, "MANAGE_MEMBERS");
-
-    const targetUser = await ctx.db.get(args.targetUserId);
-    if (!targetUser || targetUser.businessId !== auth.businessId) {
-      throw new Error("NOT_FOUND: User not found in organization");
-    }
-
-    if (targetUser.role === "OWNER") {
-      throw new Error("FORBIDDEN: Cannot alter role of organization owner");
-    }
-
-    await ctx.db.patch(args.targetUserId, {
-      role: args.newRole,
-      updatedAt: Date.now(),
-    });
+    await changeMember(ctx, auth, args.targetUserId, { role: args.newRole });
 
     return { success: true };
+  },
+});
+
+
+export const acceptInvitation = mutation({
+  args: { token: v.string(), businessId: v.id("businesses") },
+  returns: v.object({ status: v.union(v.literal("accepted"), v.literal("already_accepted"), v.literal("expired")), businessId: v.id("businesses") }),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("UNAUTHORIZED: Authentication required");
+    // Possession of a link alone cannot assign a membership to another identity.
+    if (identity.emailVerified !== true || typeof identity.email !== "string") throw new Error("FORBIDDEN: Verified email required");
+    return acceptTeamInvitation(ctx, args, { subject: identity.subject, email: identity.email, ...(identity.name ? { name: identity.name } : {}) });
   },
 });

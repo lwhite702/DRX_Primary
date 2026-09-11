@@ -1,58 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 import { z } from "zod";
-import { errorResponse } from "@/lib/api/response";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { businessClient } from "@/lib/business/convex-server";
 
-const ShrinkageSchema = z.object({
-  inventoryId: z.string().uuid(),
-  quantityGrams: z.number().positive(),
-  shrinkageType: z.enum(["personal_use", "damaged", "theft", "expired", "lost"]).default("personal_use"),
+const schema = z.object({
+  requestId: z.string().min(1).max(200).refine(value => Boolean(value.trim())),
+  inventoryId: z.string().regex(/^[a-z0-9]{20,64}$/),
+  quantityGrams: z.number().finite().positive(),
+  shrinkageType: z.enum(["personal_use", "damaged", "theft", "expired", "lost", "store_use", "sample", "other", "damage", "spillage"]).default("personal_use"),
   note: z.string().max(500).optional(),
 });
-
 export async function POST(request: NextRequest) {
+  const headers = { "Cache-Control": "private, no-store" };
   try {
-    const { userId, businessId } = await resolveAuthContext(request);
-    if (!userId || !businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const body = await request.json();
-    const payload = ShrinkageSchema.safeParse(body);
-    if (!payload.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid shrinkage event payload",
-        400,
-        payload.error.flatten(),
-      );
-    }
-
-    const result = await posWeightEngine.recordShrinkage(
-      businessId,
-      payload.data.inventoryId,
-      payload.data.quantityGrams,
-      payload.data.shrinkageType,
-      payload.data.note
-    );
-
-    if (!result.success) {
-      return errorResponse(
-        "BAD_REQUEST",
-        result.error || "Failed to record shrinkage",
-        400,
-      );
-    }
-
-    return NextResponse.json(result, { status: 201 });
+    const { client, ...context } = await businessClient(request);
+    const payload = schema.safeParse(await request.json().catch(() => null));
+    if (!payload.success) return NextResponse.json({ success: false, code: "INVALID_ARGUMENT", error: "Invalid shrinkage request" }, { status: 400, headers });
+    const { inventoryId, ...values } = payload.data;
+    const result = await client.mutation(api.shrinkage.record, { ...context, ...values, productId: inventoryId as Id<"products"> });
+    return NextResponse.json(result, { status: 201, headers });
   } catch (error) {
-    console.error("Shrinkage event error:", error);
-    return errorResponse(
-      "INTERNAL_ERROR",
-      "Internal Server Error",
-      500,
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    const message = error instanceof Error ? error.message : "";
+    const failures: Array<[string, number, string]> = [
+      ["UNAUTHORIZED", 401, "Unauthorized"],
+      ["FORBIDDEN", 403, "Inventory permission is required"],
+      ["APPROVAL_REQUIRED", 403, "Supervisor approval is required"],
+      ["NOT_FOUND", 404, "Product unavailable"],
+      ["INVALID_ARGUMENT", 400, "Invalid shrinkage request"],
+      ["INSUFFICIENT_STOCK", 409, "Insufficient stock to record this shrinkage"],
+      ["CONFLICT", 409, "Retry the original shrinkage request"],
+      ["INVALID_STATE", 503, "Inventory or approval settings require reconciliation"],
+    ];
+    const [code, status, publicMessage] = failures.find(([code]) => message.includes(`${code}:`)) ?? ["UNAVAILABLE", 503, "Shrinkage could not be confirmed. Retry the same request."];
+    return NextResponse.json({ success: false, code, error: publicMessage }, { status, headers });
   }
 }

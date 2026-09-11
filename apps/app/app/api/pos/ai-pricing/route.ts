@@ -1,46 +1,13 @@
-import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { errorResponse, successResponse } from "@/lib/api/response";
-import { getRequestId, logger } from "@/lib/logging";
-
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/convex/_generated/api";
+import { intelligenceClient, headers, failure } from "../../ai/_lib/convex";
 export async function GET(request: NextRequest) {
-  const requestId = getRequestId(request.headers);
-
   try {
-    const { businessId } = await resolveAuthContext(request);
-    if (!businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const searchParams = request.nextUrl.searchParams;
-    const rawLimit = searchParams.get("limit") || "10";
-    const limit = Number(rawLimit);
-    if (Number.isNaN(limit) || !Number.isInteger(limit) || limit <= 0 || limit > 100) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid limit query parameter",
-        400,
-      );
-    }
-
-    // Call the Postgres function securely using Prisma.sql and explicit type casts
-    const recommendations = await db.$queryRaw(
-      Prisma.sql`SELECT * FROM get_ai_pricing_recommendations(${businessId}::uuid, ${limit}::int)`
-    );
-
-    return successResponse({ items: recommendations, data: recommendations });
-  } catch (error: any) {
-    logger.error("AI pricing route failed", {
-      requestId,
-      error,
-    });
-    return errorResponse(
-      "INTERNAL_ERROR",
-      "Internal Server Error",
-      500,
-      error instanceof Error ? error.message : "Unexpected server error",
-    );
-  }
+    const requested = request.nextUrl.searchParams.get("businessId"), raw = request.nextUrl.searchParams.get("limit");
+    const limit = raw === null ? 10 : Number(raw);
+    if (!requested || !Number.isSafeInteger(limit) || limit < 1 || limit > 100) throw new Error("INVALID_ARGUMENT:");
+    const { client, businessId, expectedUserId } = await intelligenceClient(requested);
+    const items = await client.query(api.inventoryIntelligence.pricingRecommendations, { businessId, expectedUserId, limit });
+    return NextResponse.json({ items, data: items }, { headers });
+  } catch (error) { return failure(error); }
 }
