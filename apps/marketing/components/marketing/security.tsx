@@ -9,7 +9,7 @@ export function Security() {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-white uppercase">
-            Security Without Theater
+            Keep private details private
           </h2>
           <p className="text-[#BFFF00] mt-4 font-mono text-sm tracking-widest uppercase">
             Clear controls. Bounded claims.
@@ -21,12 +21,11 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <Lock className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                Encrypted Sensitive Fields
+                Protected details
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Sensitive customer fields are encrypted and require the configured
-              keys to be read.
+              DRX encrypts sensitive customer details before storing them.
             </p>
           </div>
 
@@ -34,11 +33,11 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <EyeOff className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                Visual Obfuscation
+                Hide details
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              ProteXion Mode can mask sensitive customer values on shared screens.
+              Hide customer details when other people can see the screen.
             </p>
           </div>
 
@@ -46,11 +45,11 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <ShieldCheck className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                Role-Based Access
+                Choose who sees what
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Configurable role controls limit access to supported team actions.
+              Give each team member access to only what they need.
             </p>
           </div>
 
@@ -58,11 +57,11 @@ export function Security() {
             <div className="flex items-center gap-3 mb-3">
               <FileKey className="w-5 h-5 text-[#BFFF00]" />
               <h3 className="font-bold text-white uppercase text-sm">
-                Activity Context
+                Change history
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Supported actions retain user context for operational review.
+              See who made supported changes and when.
             </p>
           </div>
         </div>

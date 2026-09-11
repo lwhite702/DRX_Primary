@@ -1,15 +1,154 @@
 import React from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "convex/react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@drx-convex/_generated/api";
-import { BORDER_RADIUS, COLORS, FONT_SIZES, SPACING } from "../../../src/constants/theme";
+import {
+  BORDER_RADIUS,
+  COLORS,
+  FONT_SIZES,
+  SPACING,
+} from "../../../src/constants/theme";
 
-export default function InventoryScreen(){
+export default function InventoryScreen() {
   const router = useRouter();
-  const insets=useSafeAreaInsets(); const products=useQuery(api.products.listProducts);
-  const low=(products??[]).filter((p)=>p.quantityOnHandGrams>0&&p.quantityOnHandGrams<=p.reorderLevelGrams).length; const out=(products??[]).filter((p)=>p.quantityOnHandGrams<=0).length;
-  return <View style={[styles.screen,{paddingTop:insets.top}]}><View style={styles.header}><Text style={styles.eyebrow}>LIVE CONVEX INVENTORY</Text><Text style={styles.title}>Inventory</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Add Product" onPress={() => router.push("/(tabs)/inventory/add")} style={{ minHeight: 48, justifyContent: "center" }}><Text style={{ color: COLORS.accent, fontWeight: "700" }}>Add Product</Text></TouchableOpacity><Text style={styles.summary}>{(products?.length??0).toFixed(1)} products · {low.toFixed(1)} low · {out.toFixed(1)} out</Text></View>{products===undefined?<ActivityIndicator style={styles.loader} color={COLORS.accent}/>:<FlatList data={products} keyExtractor={(item)=>item._id} contentContainerStyle={styles.list} ListEmptyComponent={<Text style={styles.empty}>No active products.</Text>} renderItem={({item})=>{const status=item.quantityOnHandGrams<=0?"OUT":item.quantityOnHandGrams<=item.reorderLevelGrams?"LOW":"READY";return <View style={styles.card}><View style={styles.row}><View style={styles.info}><Text style={styles.name}>{item.productName}</Text><Text style={styles.meta}>{item.sku} · {item.category}</Text></View><Text style={[styles.status,status!=="READY"&&styles.warning]}>{status}</Text></View><View style={styles.row}><Text style={styles.stock}>{item.quantityOnHandGrams.toFixed(2)} {item.sellingUnit}</Text><Text style={styles.price}>${(item.sellingPriceCents/100).toFixed(2)}/{item.sellingUnit}</Text></View></View>;}}/>}</View>;
+  const insets = useSafeAreaInsets();
+  const products = useQuery(api.products.listProducts);
+  const low = (products ?? []).filter(
+    (p) =>
+      p.quantityOnHandGrams > 0 && p.quantityOnHandGrams <= p.reorderLevelGrams,
+  ).length;
+  const out = (products ?? []).filter((p) => p.quantityOnHandGrams <= 0).length;
+  return (
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>STOCK COUNTS</Text>
+        <Text style={styles.title}>Products</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Add product"
+          onPress={() => router.push("/(tabs)/inventory/add")}
+          style={{ minHeight: 48, justifyContent: "center" }}
+        >
+          <Text style={{ color: COLORS.accent, fontWeight: "700" }}>
+            Add product
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.summary}>
+          {products?.length ?? 0} products · {low} low · {out} out
+        </Text>
+      </View>
+      {products === undefined ? (
+        <ActivityIndicator style={styles.loader} color={COLORS.accent} />
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={styles.empty}>
+              No products yet. Add your first product.
+            </Text>
+          }
+          renderItem={({ item }) => {
+            const status =
+              item.quantityOnHandGrams <= 0
+                ? "OUT"
+                : item.quantityOnHandGrams <= item.reorderLevelGrams
+                  ? "LOW"
+                  : "READY";
+            return (
+              <View style={styles.card}>
+                <View style={styles.row}>
+                  <View style={styles.info}>
+                    <Text style={styles.name}>{item.productName}</Text>
+                    <Text style={styles.meta}>
+                      {item.sku} · {item.category}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.status,
+                      status !== "READY" && styles.warning,
+                    ]}
+                  >
+                    {status}
+                  </Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={styles.stock}>
+                    {item.quantityOnHandGrams.toFixed(item.quantityPrecision)}{" "}
+                    {item.sellingUnit}
+                  </Text>
+                  <Text style={styles.price}>
+                    ${(item.sellingPriceCents / 100).toFixed(2)}/
+                    {item.sellingUnit}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+      )}
+    </View>
+  );
 }
-const styles=StyleSheet.create({screen:{flex:1,backgroundColor:COLORS.background},header:{padding:SPACING.md,borderBottomColor:COLORS.border,borderBottomWidth:1},eyebrow:{color:COLORS.accent,fontSize:FONT_SIZES.xs,fontWeight:"800",letterSpacing:1.1},title:{color:COLORS.text,fontSize:FONT_SIZES.xxl,fontWeight:"700"},summary:{color:COLORS.textSecondary,fontSize:FONT_SIZES.sm,marginTop:SPACING.xs},loader:{marginTop:60},list:{padding:SPACING.md,paddingBottom:120},empty:{color:COLORS.textMuted,textAlign:"center",padding:SPACING.xl},card:{backgroundColor:COLORS.surface,borderRadius:BORDER_RADIUS.lg,padding:SPACING.md,marginBottom:SPACING.sm},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between"},info:{flex:1},name:{color:COLORS.text,fontSize:FONT_SIZES.md,fontWeight:"700"},meta:{color:COLORS.textMuted,fontSize:FONT_SIZES.xs,marginTop:3},status:{color:COLORS.success,fontSize:FONT_SIZES.xs,fontWeight:"900"},warning:{color:COLORS.warning},stock:{color:COLORS.text,fontSize:FONT_SIZES.xl,fontWeight:"800",marginTop:SPACING.md},price:{color:COLORS.accent,fontSize:FONT_SIZES.md,fontWeight:"700",marginTop:SPACING.md}});
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: COLORS.background },
+  header: {
+    padding: SPACING.md,
+    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1,
+  },
+  eyebrow: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "800",
+    letterSpacing: 1.1,
+  },
+  title: { color: COLORS.text, fontSize: FONT_SIZES.xxl, fontWeight: "700" },
+  summary: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.sm,
+    marginTop: SPACING.xs,
+  },
+  loader: { marginTop: 60 },
+  list: { padding: SPACING.md, paddingBottom: 120 },
+  empty: { color: COLORS.textMuted, textAlign: "center", padding: SPACING.xl },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  info: { flex: 1 },
+  name: { color: COLORS.text, fontSize: FONT_SIZES.md, fontWeight: "700" },
+  meta: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs, marginTop: 3 },
+  status: { color: COLORS.success, fontSize: FONT_SIZES.xs, fontWeight: "900" },
+  warning: { color: COLORS.warning },
+  stock: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.xl,
+    fontWeight: "800",
+    marginTop: SPACING.md,
+  },
+  price: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.md,
+    fontWeight: "700",
+    marginTop: SPACING.md,
+  },
+});

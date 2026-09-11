@@ -103,7 +103,7 @@ describe("useDashboardData refresh states", () => {
     expect(result.current.stats?.salesToday).toBe(125);
     expect(result.current.loading).toBe(false);
     expect(result.current.refreshing).toBe(false);
-    expect(result.current.error).toBe("Failed to load dashboard data");
+    expect(result.current.error).toBe("Couldn’t load today’s numbers. Try again.");
   });
 
   it("does not publish an aborted business request after a business switch", async () => {

@@ -233,7 +233,7 @@ final class AppEnvironment {
                 rootState = .loadingWorkspace
                 guard let operatorSession = response.session else {
                     showRecovery(
-                        "We couldn't read your workspace details. Please try again.",
+                        "We couldn’t read your business details. Try again.",
                         failure: .invalidResponse
                     )
                     return
@@ -248,7 +248,7 @@ final class AppEnvironment {
                 )
             case .businessMissing:
                 showRecovery(
-                    "Your workspace needs attention. Contact support or try again.",
+                    "We couldn’t open your business. Try again or contact support.",
                     failure: .missingBusiness
                 )
             }
@@ -364,11 +364,11 @@ final class AppEnvironment {
         case .authentication:
             "We couldn't verify your session. Sign out, then sign in again."
         case .network:
-            "We couldn't reach your workspace. Check your connection and try again."
+            "We couldn’t reach your business. Check your connection and try again."
         case .invalidResponse:
-            "We couldn't read your workspace details. Please try again."
+            "We couldn’t read your business details. Try again."
         default:
-            "We couldn't confirm your workspace. Please try again."
+            "We couldn’t confirm your business. Try again."
         }
     }
 

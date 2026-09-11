@@ -10,7 +10,7 @@ export const helpCenterData: HelpArticle[] = [
   {
     title: "What DRX Is and How It Works",
     summary:
-      "The basics of DRX: privacy, local-first data, and how it keeps your business running smoothly.",
+      "The basics of DRX: sales, stock, customers, payments, and privacy.",
     tags: [
       "help",
       "v1",
@@ -20,23 +20,23 @@ export const helpCenterData: HelpArticle[] = [
       "order:001",
     ],
     content: `
-      <p>DRX is a modern point-of-sale system built for speed and privacy. Unlike cloud-only systems, DRX stores data on your device first.</p>
+      <p>DRX helps you keep customers, products, stock, sales, payments, and balances due in one place.</p>
       <h3>Who is this for?</h3>
       <p>Owners, Managers, and Staff.</p>
       <h3>Key Features</h3>
       <ul>
-        <li><strong>Privacy Profiles:</strong> You decide data retention.</li>
-        <li><strong>Vault Mode:</strong> Encryption keys stay in your environment, never in the database.</li>
-        <li><strong>Minimal Data Engine:</strong> Monitor stored PII counts and trend changes.</li>
-        <li><strong>Ephemeral Profiles:</strong> Quick POS customers can auto-expire in 1, 7, or 30 days.</li>
-        <li><strong>Offline Mode:</strong> Keep selling without Wi-Fi.</li>
+        <li><strong>Privacy:</strong> Choose what customer details DRX saves.</li>
+        <li><strong>Protect details:</strong> Sensitive customer details are encrypted before storage.</li>
+        <li><strong>What’s saved:</strong> Check how much customer information you keep.</li>
+        <li><strong>Delete old records:</strong> Choose when temporary customer records are removed.</li>
+        <li><strong>Offline:</strong> Support varies by device and action. Check before relying on it.</li>
       </ul>
       <h3>Common Mistakes</h3>
       <ul><li>Thinking it's cloud-only. Sync is automatic but requires internet.</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Tenant Basics: Businesses Stay Separate</li>
-         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
+         <li>Businesses Stay Separate</li>
+         <li>Owner Setup: Business Info, Units, Privacy</li>
       </ul>
     `,
   },
@@ -55,7 +55,7 @@ export const helpCenterData: HelpArticle[] = [
       <p>Run through this list to be ready.</p>
       <ol>
         <li>Create Business Profile.</li>
-        <li>Configure Privacy Profile.</li>
+        <li>Choose what customer details are saved.</li>
         <li>Add a Unit.</li>
         <li>Create Staff Accounts.</li>
         <li>Add Products.</li>
@@ -64,13 +64,13 @@ export const helpCenterData: HelpArticle[] = [
       <ul><li>Using Owner account for sales.</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
-         <li>Staff Roles Overview (Owner, Manager, Staff)</li>
+         <li>Owner Setup: Business Info, Units, Privacy</li>
+         <li>Team Roles (Owner, Manager, Staff)</li>
       </ul>
     `,
   },
   {
-    title: "Owner Setup: Business Info, Units, Privacy Profile",
+    title: "Owner Setup: Business Info, Units, Privacy",
     summary: "Configure your business identity and privacy settings.",
     tags: [
       "help",
@@ -85,14 +85,14 @@ export const helpCenterData: HelpArticle[] = [
       <ol>
        <li>Go to Settings > Business.</li>
        <li>Enter Name and Logo.</li>
-       <li>Set Privacy Profile (Alias Mode, Standard Mode, Business CRM Mode).</li>
+       <li>Choose Hide details, Protect details, or Keep details.</li>
       </ol>
       <h3>Fixes</h3>
       <ul><li>If logo doesn't load, check file size (< 2MB).</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
-         <li>Tenant Basics: Businesses Stay Separate</li>
+         <li>Choose What Customer Details Are Saved</li>
+         <li>Businesses Stay Separate</li>
       </ul>
     `,
   },
@@ -110,7 +110,7 @@ export const helpCenterData: HelpArticle[] = [
     content: `
       <p>Add products one by one.</p>
       <ol>
-        <li>Go to Inventory > Products.</li>
+        <li>Open Products.</li>
         <li>Click "Add Product".</li>
         <li>Enter Name, Price, and SKU.</li>
       </ol>
@@ -149,7 +149,7 @@ export const helpCenterData: HelpArticle[] = [
     `,
   },
   {
-    title: "Staff Roles Overview (Owner, Manager, Staff)",
+    title: "Team Roles (Owner, Manager, Staff)",
     summary: "Understand what each role can see and do.",
     tags: [
       "help",
@@ -163,19 +163,19 @@ export const helpCenterData: HelpArticle[] = [
       <p>Roles define access.</p>
       <ul>
         <li><strong>Owner:</strong> Full access, billing, privacy settings.</li>
-        <li><strong>Manager:</strong> Inventory, staff management, reports.</li>
+        <li><strong>Manager:</strong> Products, stock, team, and reports.</li>
         <li><strong>Staff:</strong> Sales, basic customer add.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Add Staff and Assign Roles</li>
+         <li>Add Team Members and Choose Roles</li>
          <li>Sensitive Actions: Who Can Do What</li>
       </ul>
     `,
   },
   {
-    title: "Tenant Basics: Businesses Stay Separate",
-    summary: "How data isolation works in DRX.",
+    title: "Businesses Stay Separate",
+    summary: "How DRX keeps each business in its own account area.",
     tags: [
       "help",
       "v1",
@@ -186,11 +186,11 @@ export const helpCenterData: HelpArticle[] = [
     ],
     content: `
       <p>Your data is yours.</p>
-      <p>Each tenant is completely isolated. Staff in one tenant cannot see data from another.</p>
+      <p>DRX checks business access before showing records. Team members should only see businesses they are allowed to open.</p>
       <h3>Related Articles</h3>
       <ul>
          <li>What DRX Is and How It Works</li>
-         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
+         <li>Choose What Customer Details Are Saved</li>
       </ul>
     `,
   },
@@ -215,7 +215,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Setup Checklist Before Your First Sale</li>
-         <li>POS Troubleshooting: Most Common Fixes</li>
+         <li>New Sale Troubleshooting: Common Fixes</li>
       </ul>
     `,
   },
@@ -223,7 +223,7 @@ export const helpCenterData: HelpArticle[] = [
   // POS and Sales (9)
   {
     title: "Start a Sale (Mobile)",
-    summary: "How to begin a new transaction.",
+    summary: "How to begin a new sale.",
     tags: [
       "help",
       "v1",
@@ -235,7 +235,7 @@ export const helpCenterData: HelpArticle[] = [
     content: `
       <p>Starting a sale is simple.</p>
       <ol>
-        <li>Tap "New Sale" on the POS screen.</li>
+        <li>Open New sale.</li>
         <li>Add items to the cart.</li>
         <li>Tap "Checkout".</li>
       </ol>
@@ -436,10 +436,10 @@ export const helpCenterData: HelpArticle[] = [
     `,
   },
 
-  // Inventory (12)
+  // Stock (12)
   {
-    title: "Inventory Basics: Units, Conversions, Canonical Stock",
-    summary: "How we track Grams vs Units.",
+    title: "Stock Basics: Units and Conversions",
+    summary: "How DRX tracks grams and whole units.",
     tags: [
       "help",
       "v1",
@@ -449,20 +449,20 @@ export const helpCenterData: HelpArticle[] = [
       "order:018",
     ],
     content: `
-      <p>DRX tracks inventory flexibly.</p>
+      <p>DRX can track products by weight or by count.</p>
       <ul>
-         <li><strong>Canonical:</strong> The base unit (e.g., Grams for flower, Count for edibles).</li>
-         <li><strong>Conversions:</strong> e.g., "1/8th" = 3.5g. We deduct 3.5g when you sell an eighth.</li>
+         <li><strong>Base unit:</strong> The unit DRX uses to keep the stock count.</li>
+         <li><strong>Conversions:</strong> For example, selling 3.5g removes 3.5g from stock.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Add Inventory (Mobile Intake)</li>
+         <li>Add Stock (Mobile)</li>
          <li>Product Costs (If Enabled)</li>
       </ul>
     `,
   },
   {
-    title: "Add Inventory (Mobile Intake)",
+    title: "Add Stock (Mobile)",
     summary: "Bringing new stock in using the mobile app.",
     tags: [
       "help",
@@ -473,21 +473,21 @@ export const helpCenterData: HelpArticle[] = [
       "order:019",
     ],
     content: `
-      <p>Receive stock on the go.</p>
+      <p>Add stock from your phone.</p>
       <ol>
-        <li>Go to Inventory > Intake.</li>
-        <li>Scan or search product.</li>
-        <li>Enter quantity received.</li>
+        <li>Open Products and tap Add stock.</li>
+        <li>Scan or search for the product.</li>
+        <li>Enter what came in.</li>
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Inventory Basics: Units, Conversions, Canonical Stock</li>
+         <li>Stock Basics: Units and Conversions</li>
          <li>Bulk Intake (Web): Multi-row Entry</li>
       </ul>
     `,
   },
   {
-    title: "Adjust Inventory: Increase, Decrease, Set-to Value",
+    title: "Fix a Count: Add, Remove, or Set",
     summary: "Fixing counts and handling breakage.",
     tags: [
       "help",
@@ -507,13 +507,13 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Required Reasons: How and Why</li>
-         <li>Inventory History: View Recent Changes</li>
+         <li>Stock History: See Recent Changes</li>
       </ul>
     `,
   },
   {
     title: "Required Reasons: How and Why",
-    summary: "Why you must give a reason for inventory changes.",
+    summary: "Why you must give a reason when a stock count changes.",
     tags: [
       "help",
       "v1",
@@ -524,16 +524,16 @@ export const helpCenterData: HelpArticle[] = [
     ],
     content: `
       <p>Accountability matters.</p>
-      <p>Every adjustment requires a reason (e.g., "Damaged", "Transfer") for the audit log.</p>
+      <p>Every count change needs a reason, such as Damaged or Transfer. DRX adds it to History.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Adjust Inventory: Increase, Decrease, Set-to Value</li>
+         <li>Fix a Count: Add, Remove, or Set</li>
          <li>Audit Logs + Exports: What’s Recorded, What’s Allowed</li>
       </ul>
     `,
   },
   {
-    title: "Inventory History: View Recent Changes",
+    title: "Stock History: See Recent Changes",
     summary: "See who changed what and when.",
     tags: [
       "help",
@@ -545,10 +545,10 @@ export const helpCenterData: HelpArticle[] = [
     ],
     content: `
       <p>Trace your stock.</p>
-      <p>Go to Product > History tab to see a timeline of all sales, intakes, and adjustments.</p>
+      <p>Open a product and choose Stock history. You’ll see sales, added stock, and count fixes.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Adjust Inventory: Increase, Decrease, Set-to Value</li>
+         <li>Fix a Count: Add, Remove, or Set</li>
          <li>Audit Logs + Exports: What’s Recorded, What’s Allowed</li>
       </ul>
     `,
@@ -568,12 +568,12 @@ export const helpCenterData: HelpArticle[] = [
       <p>Never run out.</p>
       <ol>
         <li>Set a "Low Stock Threshold" on the product page.</li>
-        <li>Notifications appear on the Dashboard when stock dips below this number.</li>
+        <li>An alert appears on Home when stock falls below this number.</li>
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Inventory Basics: Units, Conversions, Canonical Stock</li>
-         <li>Add Inventory (Mobile Intake)</li>
+         <li>Stock Basics: Units and Conversions</li>
+         <li>Add Stock (Mobile)</li>
       </ul>
     `,
   },
@@ -590,16 +590,16 @@ export const helpCenterData: HelpArticle[] = [
     ],
     content: `
       <p>Know your margins.</p>
-      <p>Enter cost per unit (or gram) during Intake or on the Product page.</p>
+      <p>Enter the cost per unit or gram when you add stock.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Inventory Basics: Units, Conversions, Canonical Stock</li>
-         <li>Add Inventory (Mobile Intake)</li>
+         <li>Stock Basics: Units and Conversions</li>
+         <li>Add Stock (Mobile)</li>
       </ul>
     `,
   },
   {
-    title: "Bulk Intake (Web): Multi-row Entry",
+    title: "Add Stock in Bulk (Web)",
     summary: "Adding many items at once on the computer.",
     tags: [
       "help",
@@ -610,18 +610,18 @@ export const helpCenterData: HelpArticle[] = [
       "order:025",
     ],
     content: `
-      <p>Process big shipments.</p>
-      <p>Use the "Bulk Intake" grid to enter multiple products and quantities in one save action.</p>
+      <p>Add a larger delivery.</p>
+      <p>Use Add stock in bulk to enter several products and quantities before saving.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Add Inventory (Mobile Intake)</li>
+         <li>Add Stock (Mobile)</li>
          <li>CSV Import (Web): Template + Fixing Errors</li>
       </ul>
     `,
   },
   {
     title: "CSV Import (Web): Template + Fixing Errors",
-    summary: "Importing extensive catalogs via spreadsheet.",
+    summary: "Add many products from a spreadsheet.",
     tags: [
       "help",
       "v1",
@@ -631,7 +631,7 @@ export const helpCenterData: HelpArticle[] = [
       "order:026",
     ],
     content: `
-      <p>Move data fast.</p>
+      <p>Add a long product list faster.</p>
       <ol>
         <li>Download our CSV template.</li>
         <li>Fill it out (don't change headers).</li>
@@ -641,14 +641,14 @@ export const helpCenterData: HelpArticle[] = [
       <ul><li>Changing column names.</li><li>Duplicate SKUs.</li></ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Bulk Intake (Web): Multi-row Entry</li>
-         <li>Inventory Conflicts: What They Mean</li>
+         <li>Add Stock in Bulk (Web)</li>
+         <li>Stock Conflicts: What They Mean</li>
       </ul>
     `,
   },
   {
-    title: "Inventory Conflicts: What They Mean",
-    summary: "Resolving sync issues or duplicate SKUs.",
+    title: "Stock Conflicts: What They Mean",
+    summary: "Choose which change to keep when stock updates clash.",
     tags: [
       "help",
       "v1",
@@ -658,17 +658,17 @@ export const helpCenterData: HelpArticle[] = [
       "order:027",
     ],
     content: `
-      <p>When data clashes.</p>
-      <p>A conflict means the same item was changed in two places. Choose which version (Server vs Local) to keep.</p>
+      <p>A conflict means the same product was changed in two places.</p>
+      <p>Review both changes, then choose the count you want to keep.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Inventory Troubleshooting: Intake Errors + Fixes</li>
+         <li>Stock Troubleshooting: Add Stock Errors</li>
          <li>Offline Sales: What Happens</li>
       </ul>
     `,
   },
   {
-    title: "Inventory Troubleshooting: Intake Errors + Fixes",
+    title: "Stock Troubleshooting: Add Stock Errors",
     summary: "Solving common stock problems.",
     tags: [
       "help",
@@ -681,19 +681,19 @@ export const helpCenterData: HelpArticle[] = [
     content: `
       <p>Stuck?</p>
       <ul>
-        <li><strong>Negative Inventory:</strong> You sold more than recorded. Count and adjust.</li>
-        <li><strong>Can't Find Product:</strong> Check Archieved filter.</li>
+        <li><strong>Count below zero:</strong> Count what is on hand, then fix the count.</li>
+        <li><strong>Can't find a product:</strong> Check the Archived filter.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Adjust Inventory: Increase, Decrease, Set-to Value</li>
-         <li>Inventory Best Practices (Counts That Stay Accurate)</li>
+         <li>Fix a Count: Add, Remove, or Set</li>
+         <li>Stock Habits That Keep Counts Right</li>
       </ul>
     `,
   },
   {
-    title: "Inventory Best Practices (Counts That Stay Accurate)",
-    summary: "Habits for a healthy warehouse.",
+    title: "Stock Habits That Keep Counts Right",
+    summary: "Simple habits that help keep stock counts accurate.",
     tags: [
       "help",
       "v1",
@@ -703,16 +703,16 @@ export const helpCenterData: HelpArticle[] = [
       "order:029",
     ],
     content: `
-      <p>Stay ready.</p>
+      <p>Small checks prevent bigger count problems.</p>
       <ul>
-        <li>Count regularly (cycle counts).</li>
-        <li>Process breakdown/waste immediately.</li>
-        <li>Restrict adjustment permissions.</li>
+        <li>Count a few products regularly.</li>
+        <li>Record damaged or wasted stock right away.</li>
+        <li>Limit who can fix stock counts.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
          <li>Sensitive Actions: Who Can Do What</li>
-         <li>Inventory Basics: Units, Conversions, Canonical Stock</li>
+         <li>Stock Basics: Units and Conversions</li>
       </ul>
     `,
   },
@@ -802,7 +802,7 @@ export const helpCenterData: HelpArticle[] = [
       <h3>Related Articles</h3>
       <ul>
          <li>Aliases/Nicknames: What They Are</li>
-         <li>Inventory Basics: Units, Conversions, Canonical Stock</li>
+         <li>Stock Basics: Units and Conversions</li>
       </ul>
     `,
   },
@@ -894,12 +894,12 @@ export const helpCenterData: HelpArticle[] = [
       <p>You don't always need a name.</p>
       <ul>
         <li><strong>Guest:</strong> Fast, no data recorded.</li>
-        <li><strong>Profile:</strong> Tracks history, preferences, and credit.</li>
+        <li><strong>Customer:</strong> Keeps the details, history, and balance you choose to record.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
          <li>Add a Customer (Minimal vs Full Details)</li>
-         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
+         <li>Choose What Customer Details Are Saved</li>
       </ul>
     `,
   },
@@ -919,7 +919,7 @@ export const helpCenterData: HelpArticle[] = [
       <p>You can create a profile with just a nickname, or add full info (Name, Phone, Email) if permitted.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Customer Visibility by Privacy Profile</li>
+         <li>Who Can See Customer Details</li>
          <li>Customers: When You Need Them and When You Don’t</li>
       </ul>
     `,
@@ -946,8 +946,8 @@ export const helpCenterData: HelpArticle[] = [
     `,
   },
   {
-    title: "Customer Visibility by Privacy Profile",
-    summary: "How privacy rules hide customer info.",
+    title: "Who Can See Customer Details",
+    summary: "How your privacy choice changes what the team sees.",
     tags: [
       "help",
       "v1",
@@ -957,24 +957,24 @@ export const helpCenterData: HelpArticle[] = [
       "order:040",
     ],
     content: `
-      <p>Protecting data.</p>
+      <p>Choose how much customer information your team can see.</p>
       <ul>
-         <li><strong>Open:</strong> All staff see full details.</li>
-         <li><strong>Private:</strong> Staff see Nickname only.</li>
-         <li><strong>Max Secure:</strong> Details masked even for managers.</li>
+         <li><strong>Keep details:</strong> Save the details you choose to collect.</li>
+         <li><strong>Protect details:</strong> Limit sensitive details by role.</li>
+         <li><strong>Hide details:</strong> Save only the minimum needed.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)</li>
+         <li>Choose What Customer Details Are Saved</li>
          <li>Sensitive Actions: Who Can Do What</li>
       </ul>
     `,
   },
 
-  // Credit (5)
+  // Balances due (5)
   {
-    title: "Credit Basics: Limits, Roles, Rules",
-    summary: "How store credit works in DRX.",
+    title: "Balances Due: Limits and Rules",
+    summary: "Keep a clear record when a customer still owes money.",
     tags: [
       "help",
       "v1",
@@ -984,17 +984,17 @@ export const helpCenterData: HelpArticle[] = [
       "order:041",
     ],
     content: `
-      <p>Lend responsibly.</p>
-      <p>Credit allows customers to buy now, pay later. You set the rules on who can authorize it.</p>
+      <p>Record what is owed and who can approve a balance.</p>
+      <p>DRX keeps the balance with the customer record so payments are easier to follow.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Set Credit Limits (Owner/Manager)</li>
-         <li>Overdue Balances: Viewing and Managing</li>
+         <li>Set Balance Limits</li>
+         <li>See Balances Due</li>
       </ul>
     `,
   },
   {
-    title: "Set Credit Limits (Owner/Manager)",
+    title: "Set Balance Limits",
     summary: "Controlling how much a customer can owe.",
     tags: [
       "help",
@@ -1008,19 +1008,19 @@ export const helpCenterData: HelpArticle[] = [
       <p>Set boundaries.</p>
       <ol>
         <li>Go to Customer Profile.</li>
-        <li>Set "Credit Limit".</li>
-        <li>Save. Stops sales if balance exceeds limit.</li>
+        <li>Set the "Balance Limit".</li>
+        <li>Save. DRX warns when a sale would pass the limit.</li>
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Credit Basics: Limits, Roles, Rules</li>
-         <li>Record a Credit Sale (If Enabled)</li>
+         <li>Balances Due: Limits and Rules</li>
+         <li>Add a Sale to a Balance</li>
       </ul>
     `,
   },
   {
-    title: "Record a Credit Sale (If Enabled)",
-    summary: "Checking out on account.",
+    title: "Add a Sale to a Balance",
+    summary: "Record a sale the customer will pay later.",
     tags: [
       "help",
       "v1",
@@ -1030,7 +1030,7 @@ export const helpCenterData: HelpArticle[] = [
       "order:043",
     ],
     content: `
-      <p>Put it on the tab.</p>
+      <p>Add the sale to the customer's balance.</p>
       <ol>
         <li>Add items to cart.</li>
         <li>Assign Customer.</li>
@@ -1038,14 +1038,14 @@ export const helpCenterData: HelpArticle[] = [
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Set Credit Limits (Owner/Manager)</li>
+         <li>Set Balance Limits</li>
          <li>Record a Payment</li>
       </ul>
     `,
   },
   {
     title: "Record a Payment",
-    summary: "Accepting payment for past debts.",
+    summary: "Record a customer payment against a balance.",
     tags: [
       "help",
       "v1",
@@ -1063,13 +1063,13 @@ export const helpCenterData: HelpArticle[] = [
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Record a Credit Sale (If Enabled)</li>
-         <li>Overdue Balances: Viewing and Managing</li>
+         <li>Add a Sale to a Balance</li>
+         <li>See Balances Due</li>
       </ul>
     `,
   },
   {
-    title: "Overdue Balances: Viewing and Managing",
+    title: "See Balances Due",
     summary: "Tracking who owes you money.",
     tags: [
       "help",
@@ -1080,11 +1080,11 @@ export const helpCenterData: HelpArticle[] = [
       "order:045",
     ],
     content: `
-      <p>Get paid.</p>
-      <p>Use the "Outstanding Balances" report to see all debts aged by time.</p>
+      <p>See who still owes you and how long each balance has been open.</p>
+      <p>Open the "Balances due" report to review customer balances.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Credit Basics: Limits, Roles, Rules</li>
+         <li>Balances Due: Limits and Rules</li>
          <li>Record a Payment</li>
       </ul>
     `,
@@ -1092,7 +1092,7 @@ export const helpCenterData: HelpArticle[] = [
 
   // Roles and Permissions (3)
   {
-    title: "Add Staff and Assign Roles",
+    title: "Add Team Members and Choose Roles",
     summary: "Creating logins for your team.",
     tags: [
       "help",
@@ -1105,15 +1105,15 @@ export const helpCenterData: HelpArticle[] = [
     content: `
       <p>Grow your team.</p>
       <ol>
-        <li>Settings > Staff.</li>
-        <li>Add New.</li>
+        <li>Go to Settings > Team.</li>
+        <li>Select Add team member.</li>
         <li>Choose Role (Manager, Staff).</li>
         <li>Set Pin.</li>
       </ol>
       <h3>Related Articles</h3>
       <ul>
-         <li>Staff Roles Overview (Owner, Manager, Staff)</li>
-         <li>Remove Access: Offboarding Staff</li>
+         <li>Team Roles Overview (Owner, Manager, Staff)</li>
+         <li>Remove Team Access</li>
       </ul>
     `,
   },
@@ -1130,17 +1130,17 @@ export const helpCenterData: HelpArticle[] = [
     ],
     content: `
       <p>Protect your business.</p>
-      <p>Only Owners/Managers can usually: Refunds, Void saved orders, View full reports, Edit inventory.</p>
+      <p>Owners and managers can control who may issue refunds, void saved orders, view full reports, or fix stock counts.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Staff Roles Overview (Owner, Manager, Staff)</li>
-         <li>Audit Logs + Exports: What’s Recorded, What’s Allowed</li>
+         <li>Team Roles Overview (Owner, Manager, Staff)</li>
+         <li>History and Exports: What’s Recorded</li>
       </ul>
     `,
   },
   {
-    title: "Remove Access: Offboarding Staff",
-    summary: "Securely removing former employees.",
+    title: "Remove Team Access",
+    summary: "Remove access when someone leaves your team.",
     tags: [
       "help",
       "v1",
@@ -1150,11 +1150,11 @@ export const helpCenterData: HelpArticle[] = [
       "order:048",
     ],
     content: `
-      <p>Safety first.</p>
-      <p>Deactivate the staff member immediately in Settings > Staff. This revokes access to all devices instantly (once synced).</p>
+      <p>Open Settings > Team and deactivate the team member.</p>
+      <p>Their access ends after the change reaches each connected device.</p>
       <h3>Related Articles</h3>
       <ul>
-         <li>Add Staff and Assign Roles</li>
+         <li>Add Team Members and Choose Roles</li>
          <li>Sensitive Actions: Who Can Do What</li>
       </ul>
     `,
@@ -1162,8 +1162,8 @@ export const helpCenterData: HelpArticle[] = [
 
   // Privacy, Exports, Audit, Security (2)
   {
-    title: "Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)",
-    summary: "Choosing the right data policy for you.",
+    title: "Choose What Customer Details Are Saved",
+    summary: "Choose how much customer information DRX keeps.",
     tags: [
       "help",
       "v1",
@@ -1173,23 +1173,22 @@ export const helpCenterData: HelpArticle[] = [
       "order:049",
     ],
     content: `
-      <p>Your data, your rules.</p>
+      <p>Start with the least information your business needs.</p>
       <ul>
-        <li><strong>Open:</strong> Maximum convenience, most data visible.</li>
-        <li><strong>Balanced:</strong> Hides sensitive fields from Staff.</li>
-        <li><strong>Private:</strong> Minimal retention.</li>
-        <li><strong>Max Secure:</strong> Aggressive masking, auto-deletion triggers.</li>
+        <li><strong>Hide details:</strong> Save only the minimum needed.</li>
+        <li><strong>Protect details:</strong> Limit sensitive details by role.</li>
+        <li><strong>Keep details:</strong> Save the details you choose to collect.</li>
       </ul>
       <h3>Related Articles</h3>
       <ul>
-         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
-         <li>Customer Visibility by Privacy Profile</li>
+         <li>Owner Setup: Business Info, Units, Privacy</li>
+         <li>Who Can See Customer Details</li>
       </ul>
     `,
   },
   {
-    title: "Audit Logs + Exports: What’s Recorded, What’s Allowed",
-    summary: "Transparency for sensitive actions.",
+    title: "History and Exports: What’s Recorded",
+    summary: "See the record kept for sensitive actions.",
     tags: [
       "help",
       "v1",
@@ -1199,12 +1198,11 @@ export const helpCenterData: HelpArticle[] = [
       "order:050",
     ],
     content: `
-      <p>Trust but verify.</p>
-      <p>Sensitive actions (Discounts, Voids, Inventory Changes) are logged forever in the Audit Log. This cannot be deleted.</p>
+      <p>Discounts, voids, and stock changes are added to History and kept under the current retention rules.</p>
       <h3>Related Articles</h3>
       <ul>
          <li>Sensitive Actions: Who Can Do What</li>
-         <li>Owner Setup: Business Info, Units, Privacy Profile</li>
+         <li>Owner Setup: Business Info, Units, Privacy</li>
       </ul>
     `,
   },

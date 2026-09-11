@@ -1,4 +1,5 @@
 import { drxAudience } from "@/lib/feature-canon";
+import { drxContent } from "@deelrx/content";
 
 export type HeroContent = {
   preheadline: string;
@@ -39,41 +40,40 @@ export type FooterContent = {
 
 export const marketingContent = {
   hero: {
-    preheadline: "Built for people who actually run the business",
-    headlineLead: "Keep the count right.",
-    headlineAccent: "Keep the line moving.",
-    subheadline:
-      "Know what you have, what you sold, what you made, and who still owes you. No spreadsheet circus required.",
+    preheadline: "Customers, stock, sales, and money. Kept straight.",
+    headlineLead: "Know what you sold.",
+    headlineAccent: "See who still owes you.",
+    subheadline: drxContent.brand.promise,
     proofLabels: drxAudience.proofLabels,
-    primaryCta: { label: "Get Early Access", href: "/waitlist" },
-    secondaryCta: { label: "See How It Works", href: "/#product" },
+    primaryCta: { label: "Join early access", href: "/waitlist" },
+    secondaryCta: { label: "See how it works", href: "/#product" },
   } satisfies HeroContent,
   benefits: [
     {
       id: "checkout",
-      title: "Keep the Line Moving",
-      body: "Find the product, set the amount, take payment, done.",
+      title: "Add a sale fast",
+      body: "Find the product, set the amount, take payment, and you’re done.",
     },
     {
       id: "inventory",
-      title: "Keep the Count Right",
-      body: "Know what you have, what moved, and what needs a reup.",
+      title: "Know what’s left",
+      body: "See what came in, what went out, and what is running low.",
     },
     {
       id: "reporting",
-      title: "Know Your Numbers",
-      body: "See sales, profit, and low stock without digging through reports.",
+      title: "Check your numbers",
+      body: "See sales, totals, and low stock without digging around.",
     },
     {
       id: "access",
-      title: "Keep Your Crew in Check",
-      body: "Give people the access they need and keep a record of who did what.",
+      title: "Choose who sees what",
+      body: "Give each team member the access they need. Keep a history of changes.",
     },
   ] satisfies BenefitCard[],
   betaAccess: {
-    title: "Keep the count right.",
-    lead: "DRX is opening early access to operators who want a faster way to track stock, sales, and balances without the usual software nonsense.",
-    cta: { label: "Get Early Access", href: "/waitlist" },
+    title: "Keep the business straight.",
+    lead: "DRX early access is for people who need a clear way to track customers, stock, sales, payments, and balances due.",
+    cta: { label: "Join early access", href: "/waitlist" },
   } satisfies BetaAccessSection,
   faq: [
     {

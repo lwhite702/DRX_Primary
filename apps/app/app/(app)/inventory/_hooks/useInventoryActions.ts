@@ -25,7 +25,9 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
     description:
       typeof item.description === "string" ? item.description : undefined,
     category: typeof item.category === "string" ? item.category : undefined,
-    unit_of_measure: (item.unit_of_measure ?? item.baseUnit ?? "g") as Inventory["unit_of_measure"],
+    unit_of_measure: (item.unit_of_measure ??
+      item.baseUnit ??
+      "g") as Inventory["unit_of_measure"],
     quantity_on_hand: Number(item.quantity_on_hand ?? item.quantityOnHand ?? 0),
     reorder_level: Number(item.reorder_level ?? item.reorderLevel ?? 10),
     unit_cost: unitCost != null ? Number(unitCost) : undefined,
@@ -40,7 +42,7 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
 async function readApiResponse(response: Response) {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(body.error || "Inventory request failed");
+    throw new Error(body.error || "That stock change didn’t save. Try again.");
   }
   return body;
 }
@@ -100,7 +102,9 @@ export function useInventoryActions(businessId: string | undefined) {
       if (!controller.signal.aborted) {
         console.error("Failed to load inventory", caught);
         const message =
-          caught instanceof Error ? caught.message : "Failed to load inventory";
+          caught instanceof Error
+            ? caught.message
+            : "Couldn’t load products. Try again.";
         setError(message);
         if (!hasCurrentData) setInventory([]);
       }
@@ -147,20 +151,18 @@ export function useInventoryActions(businessId: string | undefined) {
         const response = await fetch(
           `/api/inventory/${editingItem.id}?business_id=${encodeURIComponent(businessId)}`,
           {
-          method: "PUT",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+            method: "PUT",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
           },
         );
         const body = await readApiResponse(response);
         const updatedItem = normalizeInventoryItem(body.data ?? data);
         setInventory((prev) =>
-          prev.map((item) =>
-            item.id === editingItem.id ? updatedItem : item,
-          ),
+          prev.map((item) => (item.id === editingItem.id ? updatedItem : item)),
         );
-        return "Item updated successfully";
+        return "Product updated.";
       } else {
         const response = await fetch("/api/inventory", {
           method: "POST",
@@ -170,7 +172,7 @@ export function useInventoryActions(businessId: string | undefined) {
         });
         const newItem = normalizeInventoryItem(await readApiResponse(response));
         setInventory((prev) => [...prev, newItem]);
-        return "Item added successfully";
+        return "Product added.";
       }
     };
 

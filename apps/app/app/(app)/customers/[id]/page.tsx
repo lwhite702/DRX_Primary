@@ -361,7 +361,9 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Sales</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Total Sales
+                  </p>
                   <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
@@ -393,7 +395,9 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On-Time Ratio</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    On-Time Ratio
+                  </p>
                   <p className="text-xl font-bold font-mono text-[#4ADE80] mt-1">
                     {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
                     %
@@ -427,7 +431,7 @@ export default function CustomerDetailPage() {
                           href={`/sales/${transaction.id}`}
                           className="font-medium hover:underline"
                         >
-                          {transaction.order_number || "Transaction"}
+                          {transaction.order_number || "Sale"}
                         </Link>
                         <p className="text-xs text-muted-foreground">
                           {new Intl.DateTimeFormat(undefined, {

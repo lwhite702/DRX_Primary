@@ -76,4 +76,3 @@ For each provider, confirm controller/processor role, retention, deletion propag
 4. Decide the production Sentry posture and verify PostHog configuration against the final signed artifact.
 5. Review every table row with the product/privacy owner and record the approval in WRE-49.
 6. Only then enter the answers in Play Console, save the draft, and submit it for review.
-

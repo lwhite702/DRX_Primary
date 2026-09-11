@@ -69,7 +69,7 @@ export function InventoryCheckModal({
       pending.current.delete(tenant);
       if (scope.current !== tenant) return;
       setRetryPending(false); setResult(receipt);
-      if (receipt.discrepancy_flagged) toast.warning("Discrepancy detected and logged"); else toast.success("Inventory check recorded");
+      if (receipt.discrepancy_flagged) toast.warning("Discrepancy detected and logged"); else toast.success("Stock check saved.");
       onSuccess?.();
     } catch (failure) {
       if (failure instanceof InventoryCheckRejectedError) {
@@ -130,7 +130,9 @@ export function InventoryCheckModal({
                       <CheckCircle className="h-4 w-4" />
                     )}
                     <span className="font-medium">
-                      {result.discrepancy_flagged ? "Discrepancy Detected" : "Check Passed"}
+                      {result.discrepancy_flagged
+                        ? "Discrepancy Detected"
+                        : "Check Passed"}
                     </span>
                   </div>
                 </div>
@@ -177,7 +179,8 @@ export function InventoryCheckModal({
 
               {result.discrepancy_flagged && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900">
-                  This discrepancy has been logged as shrinkage for investigation.
+                  This discrepancy has been logged as shrinkage for
+                  investigation.
                 </div>
               )}
 
@@ -196,7 +199,10 @@ export function InventoryCheckModal({
                     {product?.product_name}
                   </p>
                   <p className="text-sm text-blue-800">
-                    Expected weight: <span className="font-bold">{product?.expected_weight_grams?.toFixed(2)}g</span>
+                    Expected weight:{" "}
+                    <span className="font-bold">
+                      {product?.expected_weight_grams?.toFixed(2)}g
+                    </span>
                   </p>
                 </div>
 

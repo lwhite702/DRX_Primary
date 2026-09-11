@@ -153,9 +153,7 @@ export default function CustomersPage() {
         await loadArchived();
       }
 
-      return editingCustomer?.id
-        ? "Customer updated successfully"
-        : "Customer added successfully";
+      return editingCustomer?.id ? "Customer updated." : "Customer added.";
     };
 
     const savePromise = promise();
@@ -238,18 +236,21 @@ export default function CustomersPage() {
 
   const displayedCustomers =
     viewStatus === "active"
-      ? (Array.isArray(customers) ? customers : []) as CustomerRecord[]
+      ? ((Array.isArray(customers) ? customers : []) as CustomerRecord[])
       : archivedCustomers;
   const normalizedSearch = searchTerm.toLowerCase();
-  const filteredCustomers = displayedCustomers.filter(
-    (customer) =>
-      [
-        customer?.first_name,
-        customer?.last_name,
-        customer?.alias,
-        customer?.phone_number,
-        customer?.email,
-      ].some((value) => String(value ?? "").toLowerCase().includes(normalizedSearch)),
+  const filteredCustomers = displayedCustomers.filter((customer) =>
+    [
+      customer?.first_name,
+      customer?.last_name,
+      customer?.alias,
+      customer?.phone_number,
+      customer?.email,
+    ].some((value) =>
+      String(value ?? "")
+        .toLowerCase()
+        .includes(normalizedSearch),
+    ),
   );
 
   if (businessLoading || customersLoading) {
@@ -287,11 +288,10 @@ export default function CustomersPage() {
       <div className="noise-overlay" />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="text-3xl font-bold">
-            Customers
-          </h1>
+          <h1 className="text-3xl font-bold">Customers</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filteredCustomers.length} customer {filteredCustomers.length === 1 ? "profile" : "profiles"}
+            {filteredCustomers.length} customer{" "}
+            {filteredCustomers.length === 1 ? "profile" : "profiles"}
           </p>
         </div>
         <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />

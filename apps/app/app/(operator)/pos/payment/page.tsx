@@ -179,7 +179,7 @@ export default function QuickPosPaymentPage() {
 
       <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/10 via-white/5 to-white/0 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
-          Quick Sale Total
+          Sale total
         </p>
         <div className="mt-1 text-3xl font-bold text-white">
           ${(quote?.total ?? total).toFixed(2)}
@@ -202,16 +202,34 @@ export default function QuickPosPaymentPage() {
             ) : null}
             <div className="flex justify-between">
               <dt>Merchandise tax</dt>
-              <dd>${(quote.merchandiseTaxAmount ?? quote.taxAmount ?? 0).toFixed(2)}</dd>
+              <dd>
+                $
+                {(quote.merchandiseTaxAmount ?? quote.taxAmount ?? 0).toFixed(
+                  2,
+                )}
+              </dd>
             </div>
             {(quote.deliveryRevenue ?? 0) > 0 ? (
-              <div className="flex justify-between"><dt>Delivery charged</dt><dd>${(quote.deliveryRevenue ?? 0).toFixed(2)}</dd></div>
+              <div className="flex justify-between">
+                <dt>Delivery charged</dt>
+                <dd>${(quote.deliveryRevenue ?? 0).toFixed(2)}</dd>
+              </div>
             ) : null}
             {(quote.deliveryTaxAmount ?? 0) > 0 ? (
-              <div className="flex justify-between"><dt>Delivery tax</dt><dd>${(quote.deliveryTaxAmount ?? 0).toFixed(2)}</dd></div>
+              <div className="flex justify-between">
+                <dt>Delivery tax</dt>
+                <dd>${(quote.deliveryTaxAmount ?? 0).toFixed(2)}</dd>
+              </div>
             ) : null}
-            {state.delivery.enabled && state.delivery.feeAllocation === "absorb" && (quote.vendorDeliveryExpense ?? 0) > 0 ? (
-              <div className="flex justify-between text-amber-200"><dt>Delivery absorbed</dt><dd>${(quote.vendorDeliveryExpense ?? 0).toFixed(2)} expense</dd></div>
+            {state.delivery.enabled &&
+            state.delivery.feeAllocation === "absorb" &&
+            (quote.vendorDeliveryExpense ?? 0) > 0 ? (
+              <div className="flex justify-between text-amber-200">
+                <dt>Delivery absorbed</dt>
+                <dd>
+                  ${(quote.vendorDeliveryExpense ?? 0).toFixed(2)} expense
+                </dd>
+              </div>
             ) : null}
           </dl>
         ) : null}

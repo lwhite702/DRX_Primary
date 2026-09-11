@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import * as Application from "expo-application";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
 import { getBusinessSettings } from "../src/services/apiClient";
@@ -123,7 +124,7 @@ export default function Settings() {
               <Ionicons name="hardware-chip" size={24} color={COLORS.textMuted} />
               <View style={styles.rowContent}>
                 <Text style={styles.label}>Version</Text>
-                <Text style={styles.value}>v1.0.0</Text>
+                <Text style={styles.value}>v{Application.nativeApplicationVersion ?? "unknown"}</Text>
               </View>
             </View>
           </View>

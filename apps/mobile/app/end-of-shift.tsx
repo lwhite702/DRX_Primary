@@ -12,7 +12,12 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../src/contexts/AuthContext";
 import { getPosReconciliation } from "../src/services/apiClient";
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from "../src/constants/theme";
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZES,
+  BORDER_RADIUS,
+} from "../src/constants/theme";
 
 export default function EndOfShift() {
   const insets = useSafeAreaInsets();
@@ -33,7 +38,11 @@ export default function EndOfShift() {
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
 
-      const data = await getPosReconciliation(token, startOfDay.toISOString(), endOfDay.toISOString());
+      const data = await getPosReconciliation(
+        token,
+        startOfDay.toISOString(),
+        endOfDay.toISOString(),
+      );
       setReport(data);
     } catch (error) {
       console.error(error);
@@ -63,8 +72,8 @@ export default function EndOfShift() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {loading ? (
           <View style={styles.center}>
-             <ActivityIndicator size="large" color={COLORS.accent} />
-             <Text style={styles.loadingText}>Generating Shift Report...</Text>
+            <ActivityIndicator size="large" color={COLORS.accent} />
+            <Text style={styles.loadingText}>Checking the day’s numbers…</Text>
           </View>
         ) : report ? (
           <View>
@@ -73,32 +82,50 @@ export default function EndOfShift() {
                 {hasDiscrepancies ? (
                   <Ionicons name="warning" size={48} color={COLORS.warning} />
                 ) : (
-                  <Ionicons name="checkmark-circle" size={48} color={COLORS.success} />
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={48}
+                    color={COLORS.success}
+                  />
                 )}
               </View>
               <Text style={styles.summaryTitle}>
-                {hasDiscrepancies ? "Discrepancies Found" : "All Clear"}
+                {hasDiscrepancies
+                  ? "Some numbers don’t match"
+                  : "Everything matches"}
               </Text>
               <Text style={styles.summarySubtitle}>
                 {hasDiscrepancies
-                  ? "There are mismatches between recorded sales and inventory changes for this shift."
-                  : "Sales and inventory changes match perfectly for this shift."}
+                  ? "Some saved sales and stock changes don’t match. Check the details below."
+                  : "Saved sales and stock changes match for this day."}
               </Text>
             </View>
 
             {hasDiscrepancies && (
               <View style={styles.discrepanciesSection}>
-                <Text style={styles.sectionTitle}>Discrepancies ({report.discrepancies.length})</Text>
+                <Text style={styles.sectionTitle}>
+                  What needs a check ({report.discrepancies.length})
+                </Text>
                 {report.discrepancies.map((item: any, index: number) => (
                   <View key={index} style={styles.discrepancyCard}>
-                    <Text style={styles.discrepancyCode}>{item.code.toUpperCase()}</Text>
-                    <Text style={styles.discrepancyMessage}>{item.message}</Text>
+                    <Text style={styles.discrepancyCode}>
+                      {item.code.toUpperCase()}
+                    </Text>
+                    <Text style={styles.discrepancyMessage}>
+                      {item.message}
+                    </Text>
                     <View style={styles.discrepancyDetails}>
-                      <Text style={styles.discrepancyValue}>Expected: {item.expected}</Text>
-                      <Text style={styles.discrepancyValue}>Actual: {item.actual}</Text>
+                      <Text style={styles.discrepancyValue}>
+                        Expected: {item.expected}
+                      </Text>
+                      <Text style={styles.discrepancyValue}>
+                        Actual: {item.actual}
+                      </Text>
                     </View>
                     {item.saleId && (
-                      <Text style={styles.discrepancyMeta}>Sale: {item.saleId.slice(0, 8)}</Text>
+                      <Text style={styles.discrepancyMeta}>
+                        Sale: {item.saleId.slice(0, 8)}
+                      </Text>
                     )}
                   </View>
                 ))}
@@ -135,10 +162,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "700" },
   content: { padding: SPACING.md },
-  center: { alignItems: "center", justifyContent: "center", paddingVertical: SPACING.xxl },
+  center: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: SPACING.xxl,
+  },
   loadingText: { color: COLORS.textSecondary, marginTop: SPACING.md },
   summaryCard: {
     backgroundColor: COLORS.surface,
@@ -210,5 +246,5 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.md,
     textAlign: "center",
-  }
+  },
 });

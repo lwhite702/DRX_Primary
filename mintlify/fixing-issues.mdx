@@ -4,7 +4,7 @@ description: "Step-by-step troubleshooting playbook for store cashiers, floor st
 icon: "wrench"
 ---
 
-This guide is the troubleshooting playbook for store staff when encountering register issues, card reader delays, or inventory discrepancies during active store hours.
+This guide is the troubleshooting playbook for store staff when encountering register issues, card reader delays, or stock discrepancies during active store hours.
 
 ## What this page is for
 
@@ -14,10 +14,10 @@ Use this guide when something isn't working as expected to quickly recover witho
 
 - **Recommended role**: Any staff member can run initial checks; supervisors or managers handle deeper account escalations.
 - **Key screens**:
-  - **Quick Sale** (`/pos/sale`) and **Sales** (`/sales`)
-  - **Inventory** (`/inventory`)
+  - **New sale** (`/pos/sale`) and **Sales** (`/sales`)
+  - **Products** (`/inventory`)
   - **Customers** (`/customers`)
-  - **Operations Insights** (`/insights`)
+  - **Trends** (`/insights`)
   - **Help Center** (`/help`): Submit a support request directly to our team.
 
 ## Fast path
@@ -35,36 +35,41 @@ Use this guide when something isn't working as expected to quickly recover witho
 ## If blocked
 
 ### 1. Checkout will not complete
+
 - **Check**: Is the shopping cart empty? Was a payment method selected?
-- **Store Credit**: If paying with store credit, is an active customer profile attached?
+- **Balance due**: If paying with balance due, is an active customer profile attached?
 - **Out of stock**: Are any items in the cart showing 0 available stock?
-- **Fix**: Select a payment method, attach customer if using credit, tap **Complete Order** once.
+- **Fix**: Select a payment method, attach customer if using balance, tap **Complete Order** once.
 
 ### 2. Barcode scanner does not find an item
+
 - **Check**: Is the barcode smudged or poorly lit?
-- **Fix**: Type the product name or SKU into search. Check in **Inventory** that the SKU is assigned to the product.
+- **Fix**: Type the product name or SKU into search. Check in **Products** that the SKU is assigned to the product.
 
 ### 3. Customer profile will not save
+
 - **Check**: Are there formatting errors in the optional phone number or email?
 - **Fix**: Clear out the optional fields and save with just their first name or alias first, then add contact details later.
 
 ### 4. Daily sales numbers look lower than expected
-- **Check**: Did you select the correct date filter? Are you in the right store workspace?
-- **Fix**: Open **Operations Insights** (`/insights`) and ensure you are viewing today's date for your current store location.
+
+- **Check**: Did you select the correct date filter? Do you have the right business open?
+- **Fix**: Open **Trends** (`/insights`) and ensure you are viewing today's date for your current store location.
 
 ### 5. "Permission Denied" message appears
+
 - **Check**: Does the action require a Supervisor or Manager PIN (e.g., voiding an item or editing a tax rate)?
 - **Fix**: Ask a shift supervisor or manager to enter their PIN or perform the action from their account.
 
 ## What is beta here
 
 - Automated live remote diagnostics screen sharing is in preview testing.
-- Built-in error alerts, safe transaction retry logic, and support ticket submissions are fully live.
+- Built-in error alerts, safe transaction retry logic, and support ticket submissions are available in early access.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
-- [Quick Sale runbook](/quick-sale-runbook)
+- [New sale runbook](/quick-sale-runbook)
 - [Your products](/your-products)
 - [Your customers](/your-customers)
 - [Keeping your data safe](/keeping-your-data-safe)
@@ -73,7 +78,7 @@ Use this guide when something isn't working as expected to quickly recover witho
 
 When submitting a help ticket to `support@deelrxcrm.com`:
 
-1. Which screen you were using (e.g. Quick Sale, Receive Stock).
+1. Which screen you were using (e.g. New sale, Receive Stock).
 2. What you were trying to do.
 3. The exact message shown on the screen.
 4. Whether the receipt or sale ID was created.

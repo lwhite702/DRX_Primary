@@ -33,6 +33,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, intake: { id: result.intakeId, status: result.status },
       requires_approval: result.requiresApproval, replayed: result.replayed,
       message: result.requiresApproval ? "Intake submitted for manager approval due to unusual cost" :
-        result.status === "rejected" ? "This intake was already rejected; refresh to start a new entry" : "Inventory successfully updated and approved" });
+        result.status === "rejected" ? "This intake was already rejected; refresh to start a new entry" : "Stock added and approved." });
   } catch (error) { return intakeFailure(error); }
 }

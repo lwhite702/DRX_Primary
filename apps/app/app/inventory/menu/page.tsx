@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 export default function InventoryMenuPage() {
   const menuItems = [
     {
-      label: "INTAKE",
-      description: "Add inventory stock",
+      label: "ADD STOCK",
+      description: "Add what came in",
       icon: PackagePlus,
       href: "/inventory/intake",
       color: "text-[#00F0FF]", // Neon Cyan
@@ -24,8 +24,8 @@ export default function InventoryMenuPage() {
       colSpan: "col-span-1 md:col-span-1",
     },
     {
-      label: "POS",
-      description: "Process sales",
+      label: "NEW SALE",
+      description: "Add a sale",
       icon: ShoppingCart,
       href: "/sales",
       color: "text-[#ccff00]", // Neon Lime
@@ -34,8 +34,8 @@ export default function InventoryMenuPage() {
       colSpan: "col-span-1 md:col-span-1",
     },
     {
-      label: "INVENTORY",
-      description: "View & edit list",
+      label: "PRODUCTS",
+      description: "View and edit products",
       icon: Package,
       href: "/inventory",
       color: "text-[#FF0099]", // Neon Pink
@@ -44,8 +44,8 @@ export default function InventoryMenuPage() {
       colSpan: "col-span-1 md:col-span-1",
     },
     {
-      label: "CREDIT",
-      description: "Customer accounts",
+      label: "PAYMENTS",
+      description: "Customer balances",
       icon: CreditCard,
       href: "/customers",
       color: "text-[#FFD700]", // Neon Gold
@@ -55,7 +55,7 @@ export default function InventoryMenuPage() {
     },
     {
       label: "MORE",
-      description: "Additional options",
+      description: "Check stock history",
       icon: MoreHorizontal,
       href: "/inventory/audit",
       color: "text-muted-foreground",
@@ -70,7 +70,7 @@ export default function InventoryMenuPage() {
       <div className="w-full max-w-2xl space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase">
-            Select Operation Type
+            What do you need?
           </h1>
         </div>
 

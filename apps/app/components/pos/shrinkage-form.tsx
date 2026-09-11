@@ -87,7 +87,7 @@ export function ShrinkageForm({
       pending.current.delete(tenant);
       if (scope.current !== tenant) return;
       setRetryPending(false); setSelectedInventory(""); setQuantityGrams(""); setNote("");
-      toast.success("Shrinkage recorded successfully"); onClose(); onSuccess?.();
+      toast.success("Loss recorded."); onClose(); onSuccess?.();
     } catch (error) {
       if (error instanceof ShrinkageRejectedError) {
         pending.current.delete(tenant);

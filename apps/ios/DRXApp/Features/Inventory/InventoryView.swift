@@ -25,9 +25,9 @@ struct InventoryView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading inventory…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView("Loading products…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error {
-                ContentUnavailableView("Failed to load", systemImage: "exclamationmark.triangle.fill", description: Text(error))
+                ContentUnavailableView("Couldn’t load products", systemImage: "exclamationmark.triangle.fill", description: Text(error))
             } else if filtered.isEmpty && !searchText.isEmpty {
                 ContentUnavailableView.search
             } else if products.isEmpty {
@@ -38,7 +38,7 @@ struct InventoryView: View {
             }
         }
         .background(DRXPalette.canvas)
-        .navigationTitle("Inventory")
+        .navigationTitle(DRXContent.Navigation.products)
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, prompt: "Search by name or SKU…")
         .toolbar {

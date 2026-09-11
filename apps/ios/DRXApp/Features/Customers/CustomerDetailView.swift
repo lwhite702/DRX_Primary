@@ -38,22 +38,22 @@ struct CustomerDetailView: View {
                 // Stats
                 Section("Summary") {
                     LabeledContent("Loyalty Tier", value: customer.loyaltyTier.capitalized)
-                    LabeledContent("Total Purchases", value: customer.totalPurchasesFormatted)
-                    LabeledContent("Orders Completed", value: "\(customer.purchaseCount)")
+                    LabeledContent("Total spent", value: customer.totalPurchasesFormatted)
+                    LabeledContent("Sales", value: "\(customer.purchaseCount)")
                     if customer.discountRateBps > 0 {
                         LabeledContent("Discount Rate", value: String(format: "%.1f%%", customer.discountPercent))
                     }
                 }
 
                 // Credit Account
-                Section("Store Credit") {
+                Section(DRXContent.Navigation.payments) {
                     LabeledContent(
-                        "Credit Limit",
+                        "Balance limit",
                         value: customer.creditLimitCents == 0 ? "Unlimited" : customer.creditLimitFormatted
                     )
-                    LabeledContent("Used Balance", value: customer.creditUsedFormatted)
+                    LabeledContent(DRXContent.Terms.balanceDue, value: customer.creditUsedFormatted)
                     HStack {
-                        Text("Available Credit")
+                        Text("Available balance")
                         Spacer()
                         Text(customer.creditLimitCents == 0 ? "Unlimited" : customer.creditAvailableFormatted)
                             .font(.subheadline.bold())
@@ -73,7 +73,7 @@ struct CustomerDetailView: View {
                         Button {
                             showRecordPayment = true
                         } label: {
-                            Label("Record Payment", systemImage: "checkmark.circle.fill")
+                            Label(DRXContent.Actions.recordPayment, systemImage: "checkmark.circle.fill")
                                 .font(.caption.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                         }

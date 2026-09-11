@@ -7,26 +7,34 @@ on:
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "docs/content/**"
+      - "packages/content/**"
       - "apps/app/lib/copy/**"
+      - "apps/app/components/layout/**"
       - "apps/app/lib/privacy/profiles.ts"
       - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
       - "apps/marketing/**"
-      - "apps/mobile/app/login.tsx"
-      - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      - "apps/mobile/**"
+      - "apps/ios/DRXApp/**"
       - "scripts/copy-lint.js"
+      - "scripts/content/generate-swift-copy.mjs"
       - ".github/workflows/copy-voice.yml"
   pull_request:
     branches: [main, development, staging]
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "docs/content/**"
+      - "packages/content/**"
       - "apps/app/lib/copy/**"
+      - "apps/app/components/layout/**"
       - "apps/app/lib/privacy/profiles.ts"
       - "apps/app/components/onboarding/steps/PrivacyStep.tsx"
       - "apps/marketing/**"
-      - "apps/mobile/app/login.tsx"
-      - "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      - "apps/mobile/**"
+      - "apps/ios/DRXApp/**"
       - "scripts/copy-lint.js"
+      - "scripts/content/generate-swift-copy.mjs"
       - ".github/workflows/copy-voice.yml"
 
 concurrency:
@@ -39,5 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check generated iOS copy
+        run: node --experimental-strip-types scripts/content/generate-swift-copy.mjs --check
       - name: Check cross-surface copy
         run: node scripts/copy-lint.js

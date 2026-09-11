@@ -48,6 +48,13 @@ export function WorkspaceCard({
   isActive,
   onSelect,
 }: WorkspaceCardProps) {
+  const privacyLabel: Record<PrivacyStatus, string> = {
+    ACTIVE: "Active",
+    BALANCED: "Protect details",
+    PRIVATE: "Hide details",
+    "MAX SECURE": "Hide details",
+  };
+
   return (
     <button
       onClick={onSelect}
@@ -70,7 +77,9 @@ export function WorkspaceCard({
           <div
             className={cn(
               "h-12 w-12 rounded-lg flex items-center justify-center text-lg font-bold",
-              color.includes("green") || color.includes("accent") ? "text-black" : "text-white",
+              color.includes("green") || color.includes("accent")
+                ? "text-black"
+                : "text-white",
               color,
             )}
           >
@@ -110,7 +119,7 @@ export function WorkspaceCard({
                       status === "PRIVATE" && "bg-yellow-500",
                     )}
                   />
-                  {status}
+                  {privacyLabel[status]}
                 </div>
               ))}
             </div>
@@ -120,7 +129,7 @@ export function WorkspaceCard({
         {isActive && (
           <div className="bg-[#4ADE80]/10 text-[#4ADE80] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border border-[#4ADE80]/20">
             <div className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
-            TARGET
+            OPEN
           </div>
         )}
       </div>

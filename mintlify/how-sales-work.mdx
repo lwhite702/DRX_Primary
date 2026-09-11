@@ -10,15 +10,15 @@ This page covers the standard **Sales** screen for full order management and cou
 
 Use this guide when ringing customer sales from the **Sales** tab (`/sales`) when you need full order options—such as attaching detailed customer notes, managing delivery address fields, adding custom delivery fees, or splitting tenders.
 
-For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook](/quick-sale-runbook) instead.
+For high-speed counter lanes ringing quick walk-ins, see the [New sale runbook](/quick-sale-runbook) instead.
 
 ## Before you start
 
 - **Recommended role**: Cashier or above for ringing sales; Supervisor or Manager for manual discounts and voids.
 - **Screen**: **Sales** (`/sales`).
 - **Required information**:
-  - Sellable products in inventory with active stock.
-  - An attached customer profile if accepting store credit as payment.
+  - Sellable products in stock with active stock.
+  - An attached customer profile if accepting balance due as payment.
   - Active tax settings (configured in Store Settings).
 - **Staff permissions**:
   - Price overrides and manager voids may require a supervisor PIN depending on your store rules.
@@ -32,18 +32,18 @@ For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook
    - Adjust quantities or remove line items as needed.
 3. **Attach a customer profile (optional)**:
    - Walk-in cash or card sales do not require a customer profile.
-   - Attach a customer if they want receipt texts, loyalty points, or are paying with store credit.
+   - Attach a customer if they want receipt texts, loyalty points, or are paying with balance due.
 4. **Choose payment tender**:
-   - Select **Cash**, **Card**, **Store Credit**, **Zelle**, or **Split Payment**.
+   - Select **Cash**, **Card**, **Balance due**, **Zelle**, or **Split Payment**.
    - For electronic transfers like Zelle, enter the transfer confirmation code for shift reconciliation.
 5. **Review receipt totals**:
    - Double-check the subtotal, applicable taxes, delivery charges, and final balance.
 6. **Complete the sale**:
    - Tap **Complete Sale** once.
    - A green confirmation badge with the receipt number will appear on screen.
-7. **Verify inventory and balance**:
-   - Inventory counts deduct automatically.
-   - If store credit was used, the customer's remaining balance updates immediately.
+7. **Verify stock and balance**:
+   - Products counts deduct automatically.
+   - If balance due was used, the customer's remaining balance updates immediately.
 
 ## If blocked
 
@@ -51,8 +51,8 @@ For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook
   - Check that there is at least one item in the shopping cart.
   - Verify that no item is listed as out-of-stock.
   - Ensure a payment method has been selected.
-- **Store Credit option is greyed out**:
-  - Attach an active customer profile to the cart first, and ensure they have an approved credit limit.
+- **Balance due option is greyed out**:
+  - Attach an active customer profile to the cart first, and ensure they have an approved balance limit.
 - **Zelle transfer submission fails**:
   - Enter the reference or confirmation note from the customer's transfer app.
 - **Cannot discount an item or change price**:
@@ -65,11 +65,11 @@ For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook
 ## What is beta here
 
 - Advanced multi-tender custom tip splits and scheduled layaway plans are in preview testing.
-- Standard cash, credit card, Zelle, store credit, customer attach, and receipt printing are fully live.
+- Cash, card, transfer, balance due, customer attach, and receipt printing are available in early access.
 
 ## Related docs
 
-- [Quick Sale runbook](/quick-sale-runbook)
+- [New sale runbook](/quick-sale-runbook)
 - [Payments and plans](/payments-and-plans)
 - [Your products](/your-products)
 - [Your customers](/your-customers)
@@ -80,4 +80,4 @@ For high-speed counter lanes ringing quick walk-ins, see the [Quick Sale runbook
 - Ring a quick 1-cent test transaction at opening to verify card terminal and cash drawer response.
 - Confirm tax rate is calculating properly on the subtotal.
 - Verify customer search finds active profiles quickly.
-- At closing, spot-check your payment breakdown in **Operations Insights** against your drawer cash and terminal batch slips.
+- At closing, spot-check your payment breakdown in **Trends** against your drawer cash and terminal batch slips.

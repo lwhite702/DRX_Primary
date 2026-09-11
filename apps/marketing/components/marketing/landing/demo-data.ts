@@ -42,7 +42,7 @@ export const stockRows = [
 
 export const revenueRows = [
   { label: "Today Sales", value: "$12,840" },
-  { label: "Transactions", value: "147" },
+  { label: "Sales", value: "147" },
   { label: "Avg Ticket", value: "$87.35" },
 ];
 

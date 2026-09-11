@@ -29,15 +29,20 @@ export function isOperatorFixtureScreen(
 }
 
 const navigation = [
-  { label: "Dashboard", screen: "dashboard", icon: LayoutDashboard },
-  { label: "Quick sale", screen: "pos-sale", icon: ShoppingCart },
-  { label: "Inventory", screen: "inventory", icon: Boxes },
+  { label: "Home", screen: "dashboard", icon: LayoutDashboard },
+  { label: "New sale", screen: "pos-sale", icon: ShoppingCart },
+  { label: "Products", screen: "inventory", icon: Boxes },
   { label: "Customers", screen: "customers", icon: Users },
 ] as const;
 
 const products = [
   { name: "Northstar Sparkling", sku: "NS-12-LME", stock: 24, price: "$36.00" },
-  { name: "Night Shift Cold Brew", sku: "CB-08-BLK", stock: 11, price: "$28.00" },
+  {
+    name: "Night Shift Cold Brew",
+    sku: "CB-08-BLK",
+    stock: 11,
+    price: "$28.00",
+  },
   { name: "District Energy Pack", sku: "DE-24-ORG", stock: 7, price: "$52.00" },
 ];
 
@@ -101,16 +106,33 @@ function DashboardFixture() {
     <>
       <FixtureHeader
         eyebrow="Live operation"
-        title="Operator dashboard"
+        title="Home"
         description="Revenue, stock risk, and the next actions that keep the shift moving."
-        action="Start quick sale"
+        action="New sale"
       />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Revenue today" value="$8,420" detail="32 completed sales" />
-        <MetricCard label="Avg. ticket" value="$263.13" detail="+8.4% from last Thursday" />
-        <MetricCard label="Items moved" value="147" detail="19 SKUs across all sales" />
-        <MetricCard label="Stock alerts" value="03" detail="Action needed before close" direction="down" />
+        <MetricCard
+          label="Revenue today"
+          value="$8,420"
+          detail="32 completed sales"
+        />
+        <MetricCard
+          label="Avg. ticket"
+          value="$263.13"
+          detail="+8.4% from last Thursday"
+        />
+        <MetricCard
+          label="Items moved"
+          value="147"
+          detail="19 SKUs across all sales"
+        />
+        <MetricCard
+          label="Stock alerts"
+          value="03"
+          detail="Action needed before close"
+          direction="down"
+        />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
@@ -118,7 +140,9 @@ function DashboardFixture() {
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
               <p className="text-sm font-semibold">Moving today</p>
-              <p className="mt-1 text-xs text-zinc-500">Top products by gross sales</p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Top products by gross sales
+              </p>
             </div>
             <StatusPill tone="success">Live</StatusPill>
           </div>
@@ -128,7 +152,9 @@ function DashboardFixture() {
                 key={product.sku}
                 className="grid grid-cols-[32px_1fr_auto] items-center gap-3 px-5 py-4"
               >
-                <span className="font-mono text-xs text-zinc-600">0{index + 1}</span>
+                <span className="font-mono text-xs text-zinc-600">
+                  0{index + 1}
+                </span>
                 <div>
                   <p className="text-sm font-medium">{product.name}</p>
                   <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600">
@@ -147,9 +173,14 @@ function DashboardFixture() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-semibold">Needs attention</p>
-              <p className="mt-1 text-xs text-zinc-500">Prioritized for this shift</p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Prioritized for this shift
+              </p>
             </div>
-            <TriangleAlert className="size-5 text-amber-400" aria-hidden="true" />
+            <TriangleAlert
+              className="size-5 text-amber-400"
+              aria-hidden="true"
+            />
           </div>
           <div className="mt-5 space-y-3">
             {[
@@ -184,7 +215,7 @@ function PosFixture() {
     <>
       <FixtureHeader
         eyebrow="Register 01 · Online"
-        title="Quick sale"
+        title="New sale"
         description="Search or scan. Add. Done."
         action="Hold order"
         compact
@@ -206,37 +237,48 @@ function PosFixture() {
             />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
-            {products.concat([
-              { name: "Metro Citrus Case", sku: "MC-12-CTR", stock: 18, price: "$42.00" },
-            ]).map((product, index) => (
-              <article
-                key={product.sku}
-                className="group flex min-h-36 flex-col justify-between rounded-xl border border-white/10 bg-[#121212] p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <StatusPill tone={product.stock < 10 ? "warning" : "neutral"}>
-                    {product.stock} on hand
-                  </StatusPill>
-                  <span className="font-mono text-sm text-zinc-400">{product.price}</span>
-                </div>
-                <div>
-                  <p className="font-medium">{product.name}</p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600">
-                    {product.sku}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className={`mt-4 h-10 rounded-md text-sm font-semibold ${
-                    index === 0
-                      ? "bg-[#ccff00] text-black"
-                      : "border border-white/10 bg-white/[0.04] text-zinc-200"
-                  }`}
+            {products
+              .concat([
+                {
+                  name: "Metro Citrus Case",
+                  sku: "MC-12-CTR",
+                  stock: 18,
+                  price: "$42.00",
+                },
+              ])
+              .map((product, index) => (
+                <article
+                  key={product.sku}
+                  className="group flex min-h-36 flex-col justify-between rounded-xl border border-white/10 bg-[#121212] p-4"
                 >
-                  {index === 0 ? "Added · 2" : "Add to cart"}
-                </button>
-              </article>
-            ))}
+                  <div className="flex items-start justify-between gap-4">
+                    <StatusPill
+                      tone={product.stock < 10 ? "warning" : "neutral"}
+                    >
+                      {product.stock} on hand
+                    </StatusPill>
+                    <span className="font-mono text-sm text-zinc-400">
+                      {product.price}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600">
+                      {product.sku}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={`mt-4 h-10 rounded-md text-sm font-semibold ${
+                      index === 0
+                        ? "bg-[#ccff00] text-black"
+                        : "border border-white/10 bg-white/[0.04] text-zinc-200"
+                    }`}
+                  >
+                    {index === 0 ? "Added · 2" : "Add to cart"}
+                  </button>
+                </article>
+              ))}
           </div>
         </div>
 
@@ -254,14 +296,18 @@ function PosFixture() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium">Northstar Sparkling</p>
-                <p className="mt-1 font-mono text-xs text-zinc-500">2 × $36.00</p>
+                <p className="mt-1 font-mono text-xs text-zinc-500">
+                  2 × $36.00
+                </p>
               </div>
               <p className="font-mono text-sm">$72.00</p>
             </div>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium">Night Shift Cold Brew</p>
-                <p className="mt-1 font-mono text-xs text-zinc-500">1 × $28.00</p>
+                <p className="mt-1 font-mono text-xs text-zinc-500">
+                  1 × $28.00
+                </p>
               </div>
               <p className="font-mono text-sm">$28.00</p>
             </div>
@@ -269,13 +315,16 @@ function PosFixture() {
           <div className="mt-auto border-t border-white/10 p-5">
             <div className="space-y-2 font-mono text-xs">
               <div className="flex justify-between text-zinc-500">
-                <span>Subtotal</span><span>$100.00</span>
+                <span>Subtotal</span>
+                <span>$100.00</span>
               </div>
               <div className="flex justify-between text-zinc-500">
-                <span>Tax</span><span>$8.25</span>
+                <span>Tax</span>
+                <span>$8.25</span>
               </div>
               <div className="flex justify-between pt-3 text-xl font-semibold text-white">
-                <span>Total</span><span>$108.25</span>
+                <span>Total</span>
+                <span>$108.25</span>
               </div>
             </div>
             <button
@@ -296,15 +345,28 @@ function InventoryFixture() {
   return (
     <>
       <FixtureHeader
-        eyebrow="147 active SKUs"
-        title="Inventory"
-        description="Know what is on deck and what needs action."
-        action="Add inventory"
+        eyebrow="147 active products"
+        title="Products"
+        description="Know what’s left and what needs attention."
+        action="Add stock"
       />
       <section className="grid gap-3 sm:grid-cols-3">
-        <MetricCard label="Stock value" value="$42,680" detail="At current unit cost" />
-        <MetricCard label="Units on hand" value="1,284" detail="Across 147 active SKUs" />
-        <MetricCard label="Low stock" value="01" detail="1 item below reorder point" direction="down" />
+        <MetricCard
+          label="Stock value"
+          value="$42,680"
+          detail="At current unit cost"
+        />
+        <MetricCard
+          label="Units on hand"
+          value="1,284"
+          detail="Across 147 active SKUs"
+        />
+        <MetricCard
+          label="Low stock"
+          value="01"
+          detail="1 item below reorder point"
+          direction="down"
+        />
       </section>
       <section className="overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
         <div className="flex flex-col gap-3 border-b border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -313,7 +375,7 @@ function InventoryFixture() {
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
               aria-hidden="true"
             />
-            <span className="sr-only">Search inventory</span>
+            <span className="sr-only">Search products</span>
             <input
               readOnly
               placeholder="Search name, SKU, or barcode"
@@ -326,37 +388,55 @@ function InventoryFixture() {
           </div>
         </div>
         <div className="hidden grid-cols-[1.5fr_0.7fr_0.55fr_0.55fr_40px] gap-3 border-b border-white/[0.06] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-600 md:grid">
-          <span>Product</span><span>SKU</span><span>On hand</span><span>Unit price</span><span />
+          <span>Product</span>
+          <span>SKU</span>
+          <span>On hand</span>
+          <span>Unit price</span>
+          <span />
         </div>
         <div className="divide-y divide-white/[0.06]">
-          {products.concat([
-            { name: "Metro Citrus Case", sku: "MC-12-CTR", stock: 18, price: "$42.00" },
-            { name: "After Hours Tonic", sku: "AH-06-TNC", stock: 39, price: "$24.00" },
-          ]).map((product) => (
-            <div
-              key={product.sku}
-              className="grid gap-3 px-5 py-4 md:grid-cols-[1.5fr_0.7fr_0.55fr_0.55fr_40px] md:items-center"
-            >
-              <div>
-                <p className="text-sm font-medium">{product.name}</p>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600 md:hidden">
-                  {product.sku}
-                </p>
-              </div>
-              <span className="hidden font-mono text-xs text-zinc-500 md:block">{product.sku}</span>
-              <StatusPill tone={product.stock < 10 ? "warning" : "success"}>
-                {product.stock} units
-              </StatusPill>
-              <span className="font-mono text-sm">{product.price}</span>
-              <button
-                type="button"
-                aria-label={`Open ${product.name}`}
-                className="hidden size-9 items-center justify-center rounded-md border border-white/10 text-zinc-500 md:flex"
+          {products
+            .concat([
+              {
+                name: "Metro Citrus Case",
+                sku: "MC-12-CTR",
+                stock: 18,
+                price: "$42.00",
+              },
+              {
+                name: "After Hours Tonic",
+                sku: "AH-06-TNC",
+                stock: 39,
+                price: "$24.00",
+              },
+            ])
+            .map((product) => (
+              <div
+                key={product.sku}
+                className="grid gap-3 px-5 py-4 md:grid-cols-[1.5fr_0.7fr_0.55fr_0.55fr_40px] md:items-center"
               >
-                <ChevronRight className="size-4" aria-hidden="true" />
-              </button>
-            </div>
-          ))}
+                <div>
+                  <p className="text-sm font-medium">{product.name}</p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600 md:hidden">
+                    {product.sku}
+                  </p>
+                </div>
+                <span className="hidden font-mono text-xs text-zinc-500 md:block">
+                  {product.sku}
+                </span>
+                <StatusPill tone={product.stock < 10 ? "warning" : "success"}>
+                  {product.stock} units
+                </StatusPill>
+                <span className="font-mono text-sm">{product.price}</span>
+                <button
+                  type="button"
+                  aria-label={`Open ${product.name}`}
+                  className="hidden size-9 items-center justify-center rounded-md border border-white/10 text-zinc-500 md:flex"
+                >
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
         </div>
       </section>
     </>
@@ -380,9 +460,22 @@ function CustomersFixture() {
         action="Add customer"
       />
       <section className="grid gap-3 sm:grid-cols-3">
-        <MetricCard label="Active profiles" value="284" detail="11 added this month" />
-        <MetricCard label="Repeat buyers" value="68%" detail="+4.2% over 30 days" />
-        <MetricCard label="Open credit" value="$7,420" detail="Across 14 accounts" direction="down" />
+        <MetricCard
+          label="Active profiles"
+          value="284"
+          detail="11 added this month"
+        />
+        <MetricCard
+          label="Repeat buyers"
+          value="68%"
+          detail="+4.2% over 30 days"
+        />
+        <MetricCard
+          label="Balances due"
+          value="$7,420"
+          detail="Across 14 customers"
+          direction="down"
+        />
       </section>
       <section className="overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
         <div className="flex flex-col gap-3 border-b border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -401,7 +494,11 @@ function CustomersFixture() {
           <StatusPill tone="info">Protected view</StatusPill>
         </div>
         <div className="hidden grid-cols-[1.3fr_0.75fr_0.65fr_0.65fr_40px] gap-3 border-b border-white/[0.06] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-600 md:grid">
-          <span>Customer</span><span>Account</span><span>History</span><span>Lifetime value</span><span />
+          <span>Customer</span>
+          <span>Account</span>
+          <span>History</span>
+          <span>Lifetime value</span>
+          <span />
         </div>
         <div className="divide-y divide-white/[0.06]">
           {customers.map(([name, account, history, value, status]) => (
@@ -415,15 +512,21 @@ function CustomersFixture() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{name}</p>
-                  <p className="mt-1 text-xs text-zinc-600 md:hidden">{history}</p>
+                  <p className="mt-1 text-xs text-zinc-600 md:hidden">
+                    {history}
+                  </p>
                 </div>
               </div>
               <span className="font-mono text-xs text-zinc-500">{account}</span>
-              <span className="hidden text-sm text-zinc-400 md:block">{history}</span>
+              <span className="hidden text-sm text-zinc-400 md:block">
+                {history}
+              </span>
               <div>
                 <p className="font-mono text-sm">{value}</p>
                 <div className="mt-2 md:hidden">
-                  <StatusPill tone={status === "Review" ? "warning" : "success"}>
+                  <StatusPill
+                    tone={status === "Review" ? "warning" : "success"}
+                  >
                     {status}
                   </StatusPill>
                 </div>
@@ -457,7 +560,9 @@ function FixtureHeader({
   compact?: boolean;
 }) {
   return (
-    <header className={`flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between ${compact ? "pb-1" : ""}`}>
+    <header
+      className={`flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between ${compact ? "pb-1" : ""}`}
+    >
       <div>
         <div className="mb-3 flex items-center gap-2">
           <span className="size-1.5 rounded-full bg-[#ccff00]" />
@@ -465,14 +570,18 @@ function FixtureHeader({
             {eyebrow}
           </p>
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">{description}</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {title}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+          {description}
+        </p>
       </div>
       <button
         type="button"
         className="flex h-11 items-center justify-center gap-2 rounded-md bg-[#ccff00] px-5 text-sm font-semibold text-black"
       >
-        {action === "Add inventory" ? <PackagePlus className="size-4" /> : null}
+        {action === "Add stock" ? <PackagePlus className="size-4" /> : null}
         {action === "Add customer" ? <UserPlus className="size-4" /> : null}
         {action}
       </button>
@@ -496,7 +605,10 @@ function FixtureSidebar({ screen }: { screen: OperatorFixtureScreen }) {
           <StatusPill tone="warning">Beta</StatusPill>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 p-3" aria-label="Visual fixture navigation">
+      <nav
+        className="flex-1 space-y-1 p-3"
+        aria-label="Visual fixture navigation"
+      >
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.screen === screen;
@@ -504,7 +616,9 @@ function FixtureSidebar({ screen }: { screen: OperatorFixtureScreen }) {
             <div
               key={item.screen}
               className={`flex h-11 items-center gap-3 rounded-lg px-3 text-sm ${
-                active ? "bg-[#ccff00] font-semibold text-black" : "text-zinc-400"
+                active
+                  ? "bg-[#ccff00] font-semibold text-black"
+                  : "text-zinc-400"
               }`}
             >
               <Icon className="size-4" aria-hidden="true" />
@@ -515,10 +629,13 @@ function FixtureSidebar({ screen }: { screen: OperatorFixtureScreen }) {
         <div className="my-3 border-t border-white/[0.07]" />
         {[
           [BarChart3, "Reports"],
-          [CircleDollarSign, "Credit"],
+          [CircleDollarSign, "Payments"],
           [ShieldCheck, "Team & access"],
         ].map(([Icon, label]) => (
-          <div key={String(label)} className="flex h-11 items-center gap-3 px-3 text-sm text-zinc-500">
+          <div
+            key={String(label)}
+            className="flex h-11 items-center gap-3 px-3 text-sm text-zinc-500"
+          >
             <Icon className="size-4" aria-hidden="true" />
             {String(label)}
           </div>
@@ -568,7 +685,7 @@ function FixtureMobileChrome({ screen }: { screen: OperatorFixtureScreen }) {
               }`}
             >
               <Icon className="size-4" aria-hidden="true" />
-              {item.label === "Quick sale" ? "Sell" : item.label}
+              {item.label}
             </div>
           );
         })}

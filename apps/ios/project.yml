@@ -23,7 +23,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     VERSIONING_SYSTEM: apple-generic
     CURRENT_PROJECT_VERSION: 44
-    MARKETING_VERSION: 1.0.0
+    MARKETING_VERSION: 0.9.0
 targets:
   DRXApp:
     type: application

@@ -1,5 +1,5 @@
 import { FeatureStatusChip } from "@/components/marketing/site/feature-status-chip";
-import { drxPrivacyProtexion } from "@/lib/feature-canon";
+import { drxPrivacy } from "@/lib/feature-canon";
 
 export function PrivacyProtexionSection() {
   return (
@@ -7,10 +7,10 @@ export function PrivacyProtexionSection() {
       <div className="glass-effect rounded-[2rem] p-8 md:p-10">
         <div className="mb-7">
           <h2 className="headline-text text-3xl text-white md:text-4xl">
-            {drxPrivacyProtexion.title}
+            {drxPrivacy.title}
           </h2>
           <div className="mt-4 space-y-1">
-            {drxPrivacyProtexion.brandLines.map((line) => (
+            {drxPrivacy.brandLines.map((line) => (
               <p key={`top-${line}`} className="technical-label text-neon-lime">
                 {line}
               </p>
@@ -19,28 +19,32 @@ export function PrivacyProtexionSection() {
         </div>
 
         <div className="luminosity-card rounded-2xl border border-border/60 p-5">
-          {drxPrivacyProtexion.concept.map((line) => (
+          {drxPrivacy.concept.map((line) => (
             <p key={line} className="body-copy text-text-secondary">
               {line}
             </p>
           ))}
           <p className="body-copy mt-3 text-lg font-semibold text-white">
-            {drxPrivacyProtexion.principle}
+            {drxPrivacy.principle}
           </p>
         </div>
 
         <div className="mt-7 grid gap-5 md:grid-cols-2">
-          {drxPrivacyProtexion.blocks.map((block) => (
+          {drxPrivacy.blocks.map((block) => (
             <article
               key={block.id}
               className="luminosity-card rounded-2xl border border-border/60 p-5"
             >
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-xl font-semibold text-white">{block.title}</h3>
+                <h3 className="text-xl font-semibold text-white">
+                  {block.title}
+                </h3>
                 <FeatureStatusChip status={block.status} showLive />
               </div>
 
-              <p className="body-copy mt-3 text-sm text-text-secondary">{block.body}</p>
+              <p className="body-copy mt-3 text-sm text-text-secondary">
+                {block.body}
+              </p>
 
               <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-white/90">
                 {block.bullets.map((bullet) => (
@@ -60,7 +64,9 @@ export function PrivacyProtexionSection() {
                       </p>
                       <div className="mt-2 space-y-1 text-sm text-white">
                         {example.lines.map((line) => (
-                          <p key={`${block.id}-${example.label}-${line}`}>{line}</p>
+                          <p key={`${block.id}-${example.label}-${line}`}>
+                            {line}
+                          </p>
                         ))}
                       </div>
                     </div>
@@ -72,10 +78,13 @@ export function PrivacyProtexionSection() {
         </div>
 
         <div className="mt-7 rounded-2xl border border-neon-lime/30 bg-neon-lime/5 p-5">
-          <p className="body-copy text-white">{drxPrivacyProtexion.closing}</p>
+          <p className="body-copy text-white">{drxPrivacy.closing}</p>
           <div className="mt-4 space-y-1">
-            {drxPrivacyProtexion.brandLines.map((line) => (
-              <p key={`bottom-${line}`} className="technical-label text-neon-lime">
+            {drxPrivacy.brandLines.map((line) => (
+              <p
+                key={`bottom-${line}`}
+                className="technical-label text-neon-lime"
+              >
                 {line}
               </p>
             ))}

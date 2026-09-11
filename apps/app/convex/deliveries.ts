@@ -154,7 +154,9 @@ function requireAssignedOperator(
   role: string,
 ): void {
   if (!isManager(role) && delivery.assignedToUserId !== userId) {
-    throw new Error("FORBIDDEN: Delivery must be assigned to the active operator");
+    throw new Error(
+      "FORBIDDEN: Delivery must be assigned to the active operator",
+    );
   }
 }
 
@@ -217,10 +219,7 @@ async function transitionDelivery(
   });
 }
 
-function toQueueRecord(
-  delivery: Doc<"deliveries">,
-  orderNumber: string,
-) {
+function toQueueRecord(delivery: Doc<"deliveries">, orderNumber: string) {
   return {
     _id: delivery._id,
     saleId: delivery.saleId,
@@ -255,8 +254,10 @@ export const listDeliveries = query({
       }),
     );
     return records.sort((left, right) => {
-      const leftTerminal = left.status === "delivered" || left.status === "canceled";
-      const rightTerminal = right.status === "delivered" || right.status === "canceled";
+      const leftTerminal =
+        left.status === "delivered" || left.status === "canceled";
+      const rightTerminal =
+        right.status === "delivered" || right.status === "canceled";
       if (leftTerminal !== rightTerminal) return leftTerminal ? 1 : -1;
       return left.dispatchDueAt - right.dispatchDueAt;
     });
@@ -302,12 +303,12 @@ export const getDeliveryAddress = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
-    requireAssignedOperator(
-      delivery,
-      auth.userId,
-      auth.userRecord.role,
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
     );
+    requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
     const address = await decryptDeliveryAddress(delivery.addressEncrypted, {
       businessId: String(delivery.businessId),
       saleId: String(delivery.saleId),
@@ -332,20 +333,30 @@ export const assignDelivery = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     if (delivery.status === "delivered" || delivery.status === "canceled") {
-      throw new Error("INVALID_STATE: Terminal deliveries cannot be reassigned");
+      throw new Error(
+        "INVALID_STATE: Terminal deliveries cannot be reassigned",
+      );
     }
     const assigneeUserId = args.assigneeUserId?.trim() || auth.userId;
     if (!isManager(auth.userRecord.role) && assigneeUserId !== auth.userId) {
-      throw new Error("FORBIDDEN: Operators may only assign deliveries to themselves");
+      throw new Error(
+        "FORBIDDEN: Operators may only assign deliveries to themselves",
+      );
     }
     if (
       !isManager(auth.userRecord.role) &&
       delivery.assignedToUserId &&
       delivery.assignedToUserId !== auth.userId
     ) {
-      throw new Error("FORBIDDEN: Delivery is already assigned to another operator");
+      throw new Error(
+        "FORBIDDEN: Delivery is already assigned to another operator",
+      );
     }
     const assignee = await ctx.db
       .query("users")
@@ -356,7 +367,9 @@ export const assignDelivery = mutation({
       assignee.businessId !== auth.businessId ||
       assignee.status !== "ACTIVE"
     ) {
-      throw new Error(`NOT_FOUND: Active tenant operator '${assigneeUserId}' not found`);
+      throw new Error(
+        `NOT_FOUND: Active tenant operator '${assigneeUserId}' not found`,
+      );
     }
     const now = Date.now();
     let supersededNotificationCount = 0;
@@ -367,13 +380,11 @@ export const assignDelivery = mutation({
     ) {
       const oldNotifications = await ctx.db
         .query("deliveryNotifications")
-        .withIndex(
-          "by_deliveryId_and_targetUserId_and_acknowledgedAt",
-          (q) =>
-            q
-              .eq("deliveryId", delivery._id)
-              .eq("targetUserId", delivery.assignedToUserId)
-              .eq("acknowledgedAt", undefined),
+        .withIndex("by_deliveryId_and_targetUserId_and_acknowledgedAt", (q) =>
+          q
+            .eq("deliveryId", delivery._id)
+            .eq("targetUserId", delivery.assignedToUserId)
+            .eq("acknowledgedAt", undefined),
         )
         .take(500);
       for (const notification of oldNotifications) {
@@ -435,7 +446,8 @@ export const assignDelivery = mutation({
         deliveryId: delivery._id,
         targetUserId: assigneeUserId,
         kind: "assignment_handoff",
-        message: "A delivery was reassigned to you. Review the fulfillment queue.",
+        message:
+          "A delivery is now assigned to you. Open Deliveries to check it.",
         scheduledFor: now,
         createdAt: now,
       });
@@ -454,7 +466,10 @@ export const assignDelivery = mutation({
 
 export const markUberOrdered = mutation({
   args: { deliveryId: v.id("deliveries"), waitMinutes: v.number() },
-  returns: v.object({ success: v.literal(true), estimatedArrivalAt: v.number() }),
+  returns: v.object({
+    success: v.literal(true),
+    estimatedArrivalAt: v.number(),
+  }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
@@ -462,7 +477,11 @@ export const markUberOrdered = mutation({
     if (args.waitMinutes > 24 * 60) {
       throw new Error("INVALID_ARGUMENT: waitMinutes cannot exceed 1440");
     }
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
     const now = Date.now();
     const estimatedArrivalAt = now + args.waitMinutes * 60_000;
@@ -513,7 +532,11 @@ export const markHandedOff = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
     await transitionDelivery(ctx, {
       delivery,
@@ -531,7 +554,11 @@ export const markDelivered = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
     await transitionDelivery(ctx, {
       delivery,
@@ -549,13 +576,19 @@ export const cancelDelivery = mutation({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     if (!isManager(auth.userRecord.role)) {
       throw new Error("FORBIDDEN: Manager role required to cancel delivery");
     }
     const reason = args.reason.trim();
     if (reason.length < 3 || reason.length > 500) {
-      throw new Error("INVALID_ARGUMENT: Cancellation reason must be between 3 and 500 characters");
+      throw new Error(
+        "INVALID_ARGUMENT: Cancellation reason must be between 3 and 500 characters",
+      );
     }
     await transitionDelivery(ctx, {
       delivery,
@@ -585,10 +618,16 @@ export const recordFinancialAdjustment = mutation({
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
     requirePositiveSafeInteger(args.amountCents, "amountCents");
-    const delivery = await requireDelivery(ctx, args.deliveryId, auth.businessId);
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
     const reason = args.reason.trim();
     if (reason.length < 3 || reason.length > 500) {
-      throw new Error("INVALID_ARGUMENT: Adjustment reason must be between 3 and 500 characters");
+      throw new Error(
+        "INVALID_ARGUMENT: Adjustment reason must be between 3 and 500 characters",
+      );
     }
     const idempotencyKey = args.idempotencyKey.trim();
     if (idempotencyKey.length < 8 || idempotencyKey.length > 128) {
@@ -649,7 +688,11 @@ export const recordFinancialAdjustment = mutation({
       deliveryId: delivery._id,
       actorUserId: auth.userId,
       type: "financial_adjustment_recorded",
-      metadata: { adjustmentId, kind: args.kind, amountCents: args.amountCents },
+      metadata: {
+        adjustmentId,
+        kind: args.kind,
+        amountCents: args.amountCents,
+      },
       createdAt: now,
     });
     return { adjustmentId };
@@ -687,26 +730,22 @@ export const listUnreadNotifications = query({
     }
     const direct = await ctx.db
       .query("deliveryNotifications")
-      .withIndex(
-        "by_businessId_and_targetUserId_and_acknowledgedAt",
-        (q) =>
-          q
-            .eq("businessId", auth.businessId)
-            .eq("targetUserId", auth.userId)
-            .eq("acknowledgedAt", undefined),
+      .withIndex("by_businessId_and_targetUserId_and_acknowledgedAt", (q) =>
+        q
+          .eq("businessId", auth.businessId)
+          .eq("targetUserId", auth.userId)
+          .eq("acknowledgedAt", undefined),
       )
       .order("desc")
       .take(100);
     const manager = isManager(auth.userRecord.role)
       ? await ctx.db
           .query("deliveryNotifications")
-          .withIndex(
-            "by_businessId_and_targetRole_and_acknowledgedAt",
-            (q) =>
-              q
-                .eq("businessId", auth.businessId)
-                .eq("targetRole", "manager")
-                .eq("acknowledgedAt", undefined),
+          .withIndex("by_businessId_and_targetRole_and_acknowledgedAt", (q) =>
+            q
+              .eq("businessId", auth.businessId)
+              .eq("targetRole", "manager")
+              .eq("acknowledgedAt", undefined),
           )
           .order("desc")
           .take(100)
@@ -750,7 +789,9 @@ export const acknowledgeNotification = mutation({
       notification.targetRole === "manager" &&
       isManager(auth.userRecord.role);
     if (!isDirectTarget && !isManagerTarget) {
-      throw new Error("FORBIDDEN: Delivery notification is not assigned to this user");
+      throw new Error(
+        "FORBIDDEN: Delivery notification is not assigned to this user",
+      );
     }
     if (notification.acknowledgedAt !== undefined) {
       return {
@@ -803,13 +844,15 @@ export const processReminder = internalMutation({
     const now = Date.now();
     const settings = await ctx.db
       .query("businessSettings")
-      .withIndex("by_businessId", (q) => q.eq("businessId", delivery.businessId))
+      .withIndex("by_businessId", (q) =>
+        q.eq("businessId", delivery.businessId),
+      )
       .unique();
     const managerTargets =
       args.kind === "manager_escalation"
-        ? settings?.deliveryManagerNotificationUserIds ?? []
-        : [delivery.assignedToUserId].filter(
-            (value): value is string => Boolean(value),
+        ? (settings?.deliveryManagerNotificationUserIds ?? [])
+        : [delivery.assignedToUserId].filter((value): value is string =>
+            Boolean(value),
           );
     let targets = managerTargets;
     if (targets.length === 0) {
@@ -828,12 +871,16 @@ export const processReminder = internalMutation({
         .map((user) => user.clerkUserId);
     }
     const messages = {
-      dispatch_overdue: "Delivery dispatch is overdue. Order courier service now.",
-      eta_warning: "Courier wait time expires in two minutes. Prepare the handoff.",
-      eta_due: "Courier wait time has expired. Confirm the handoff.",
-      overdue: "Courier handoff remains overdue.",
-      manager_escalation: "Delivery handoff is overdue and requires manager attention.",
-      assignment_handoff: "A delivery was reassigned to you. Review the fulfillment queue.",
+      dispatch_overdue:
+        "This delivery is late to leave. Request a courier now.",
+      eta_warning:
+        "The courier arrives in about two minutes. Get the order ready.",
+      eta_due: "The courier should be here. Confirm the handoff.",
+      overdue: "This delivery handoff is late.",
+      manager_escalation:
+        "A delivery handoff is late. A manager needs to check it.",
+      assignment_handoff:
+        "A delivery is now assigned to you. Open Deliveries to check it.",
     } as const;
     for (const targetUserId of targets) {
       const notificationId = await ctx.db.insert("deliveryNotifications", {

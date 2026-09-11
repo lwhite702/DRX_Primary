@@ -474,7 +474,7 @@ struct CheckoutSheet: View {
                 .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
                 .padding(.horizontal)
             } else {
-                Label("Select a customer to use store credit.", systemImage: "info.circle")
+                Label("Choose a customer to add a balance due.", systemImage: "info.circle")
                     .font(.footnote)
                     .foregroundStyle(DRXPalette.muted)
                     .padding(.horizontal)

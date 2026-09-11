@@ -126,7 +126,7 @@ describe("first-time tester guidance", () => {
     expect(onboarding?.steps.length).toBeGreaterThanOrEqual(5);
     expect(checkout?.steps.join(" ")).toContain("Cash");
     expect(checkout?.steps.join(" ")).toContain("Credit");
-    expect(webCheckout?.steps.join(" ")).toContain("Quick Sale");
+    expect(webCheckout?.steps.join(" ")).toContain("New sale");
   });
 
   it("only asks Android testers to verify controls the app exposes", () => {

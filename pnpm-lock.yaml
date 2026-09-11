@@ -377,6 +377,9 @@ importers:
       '@deelrx/brand':
         specifier: link:../../packages/brand
         version: link:../../packages/brand
+      '@deelrx/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@ducanh2912/next-pwa':
         specifier: ^10.2.9
         version: 10.2.9(@types/babel__core@7.20.5)(next@16.1.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(webpack@5.104.1(esbuild@0.21.5))
@@ -714,6 +717,9 @@ importers:
       '@deelrx/brand':
         specifier: link:../../packages/brand
         version: link:../../packages/brand
+      '@deelrx/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@deelrx/ui':
         specifier: link:../../packages/ui
         version: link:../../packages/ui
@@ -778,6 +784,9 @@ importers:
       '@clerk/clerk-expo':
         specifier: ^2.19.22
         version: 2.19.26(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.9.3))(@types/react@19.1.17)(bufferutil@4.1.0)(expo-auth-session@7.0.11(expo@54.0.37)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0))(expo-crypto@15.0.9(expo@54.0.37))(expo-secure-store@15.0.8(expo@54.0.37))(expo-web-browser@15.0.11(expo@54.0.37)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)))(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.1.0))(zod@3.25.76)
+      '@deelrx/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@expo/ngrok':
         specifier: ^4.1.3
         version: 4.1.3
@@ -958,6 +967,8 @@ importers:
         version: 5.9.3
 
   packages/brand: {}
+
+  packages/content: {}
 
   packages/ui:
     dependencies:

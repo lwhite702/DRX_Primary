@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "issue": "WRE-107",
+  "sourceOfTruth": "packages/content/src/index.ts",
+  "entries": [
+    {
+      "id": "nav.home",
+      "surface": "web",
+      "source": "apps/app/components/layout/nav-items.ts",
+      "context": "Primary navigation and accessible mobile navigation",
+      "currentText": "Dashboard",
+      "replacementText": "Home",
+      "feature": "Home",
+      "severity": "high",
+      "platform": "web,pwa",
+      "plan": "all",
+      "evidence": "Shared catalog import and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "nav.products",
+      "surface": "web",
+      "source": "apps/app/components/layout/nav-items.ts",
+      "context": "Primary navigation",
+      "currentText": "Inventory",
+      "replacementText": "Products",
+      "feature": "Products",
+      "severity": "high",
+      "platform": "web,pwa",
+      "plan": "all",
+      "evidence": "Shared catalog import and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "nav.new-sale",
+      "surface": "web",
+      "source": "apps/app/components/layout/nav-items.ts",
+      "context": "Primary navigation",
+      "currentText": "Point of Sale",
+      "replacementText": "New sale",
+      "feature": "Sales",
+      "severity": "high",
+      "platform": "web,pwa",
+      "plan": "all",
+      "evidence": "Shared catalog import and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "nav.payments",
+      "surface": "web",
+      "source": "apps/app/components/layout/nav-items.ts",
+      "context": "Primary navigation",
+      "currentText": "Store Credit",
+      "replacementText": "Payments",
+      "feature": "Payments",
+      "severity": "high",
+      "platform": "web,pwa",
+      "plan": "all",
+      "evidence": "Shared catalog import and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "privacy.section",
+      "surface": "marketing",
+      "source": "apps/marketing/lib/feature-canon.ts",
+      "context": "Privacy feature heading",
+      "currentText": "DRX Privacy ProteXion™",
+      "replacementText": "Privacy",
+      "feature": "Privacy",
+      "severity": "high",
+      "platform": "marketing,web,help",
+      "plan": "all",
+      "evidence": "Retired phrase scan returns no active public hits",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "privacy.hide-details",
+      "surface": "web",
+      "source": "packages/content/src/index.ts",
+      "context": "Screen privacy control",
+      "currentText": "ProteXion Mode",
+      "replacementText": "Hide details",
+      "feature": "Privacy",
+      "severity": "high",
+      "platform": "marketing,web,help",
+      "plan": "all",
+      "evidence": "Generated catalog and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "privacy.protect-details",
+      "surface": "web",
+      "source": "packages/content/src/index.ts",
+      "context": "Stored-detail protection",
+      "currentText": "DRX Vault Mode",
+      "replacementText": "Protect details",
+      "feature": "Privacy",
+      "severity": "high",
+      "platform": "marketing,web,help",
+      "plan": "all",
+      "evidence": "Generated catalog and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "privacy.whats-saved",
+      "surface": "web",
+      "source": "packages/content/src/index.ts",
+      "context": "Saved customer-detail count",
+      "currentText": "Minimal Data Engine",
+      "replacementText": "What’s saved",
+      "feature": "Privacy",
+      "severity": "high",
+      "platform": "marketing,web,help",
+      "plan": "all",
+      "evidence": "Generated catalog and copy lint",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "marketing.hero",
+      "surface": "marketing",
+      "source": "apps/marketing/lib/marketing-content.ts",
+      "context": "Home-page promise",
+      "currentText": "Keep the count right. Keep the line moving.",
+      "replacementText": "Know what you sold. See who still owes you.",
+      "feature": "Brand",
+      "severity": "high",
+      "platform": "marketing",
+      "plan": "all",
+      "evidence": "Marketing claims check",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "onboarding.business-ready",
+      "surface": "web",
+      "source": "apps/app/app/onboarding/_components/OnboardingForm.tsx",
+      "context": "Onboarding completion",
+      "currentText": "Your DRX workspace is ready",
+      "replacementText": "Your DRX business is ready",
+      "feature": "Business",
+      "severity": "high",
+      "platform": "web,pwa,ios",
+      "plan": "all",
+      "evidence": "Web typecheck and iOS build",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "ios.tabs",
+      "surface": "ios",
+      "source": "apps/ios/DRXApp/App/AppRootView.swift",
+      "context": "Primary tabs",
+      "currentText": "Dashboard / POS / Inventory / Credit",
+      "replacementText": "Home / New sale / Products / Payments",
+      "feature": "Navigation",
+      "severity": "high",
+      "platform": "ios",
+      "plan": "all",
+      "evidence": "Generated Swift catalog and arm64 simulator build",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "android.tabs",
+      "surface": "android",
+      "source": "apps/mobile/app/(tabs)/_layout.tsx",
+      "context": "Primary tabs",
+      "currentText": "POS / Credit / Inventory",
+      "replacementText": "New sale / Payments / Products",
+      "feature": "Navigation",
+      "severity": "high",
+      "platform": "android,ios-expo",
+      "plan": "all",
+      "evidence": "Mobile typecheck and shared catalog import",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "help.add-stock",
+      "surface": "help",
+      "source": "apps/app/lib/help/support-center.ts",
+      "context": "Stock setup instructions",
+      "currentText": "Load inventory with Intake",
+      "replacementText": "Add your first stock",
+      "feature": "Products",
+      "severity": "high",
+      "platform": "help",
+      "plan": "all",
+      "evidence": "Mintlify and Help source audits",
+      "reviewState": "implemented"
+    },
+    {
+      "id": "push.low-stock",
+      "surface": "push",
+      "source": "docs/content/provider-copy-templates.md",
+      "context": "Lock-screen low-stock alert",
+      "currentText": "Inventory threshold event",
+      "replacementText": "You’re running low",
+      "feature": "Products",
+      "severity": "medium",
+      "platform": "ios,android",
+      "plan": "all",
+      "evidence": "Privacy-safe provider draft",
+      "reviewState": "draft"
+    },
+    {
+      "id": "email.weekly-numbers",
+      "surface": "email",
+      "source": "docs/content/provider-copy-templates.md",
+      "context": "Weekly report email",
+      "currentText": "Weekly analytics report",
+      "replacementText": "Your weekly numbers are ready",
+      "feature": "Reports",
+      "severity": "medium",
+      "platform": "email",
+      "plan": "all",
+      "evidence": "Provider-ready draft; no send path changed",
+      "reviewState": "draft"
+    },
+    {
+      "id": "store.listing-lead",
+      "surface": "app-store",
+      "source": "apps/marketing/lib/app-store-metadata.ts",
+      "context": "Store description opening",
+      "currentText": "POS and inventory for retail",
+      "replacementText": "Keep track of customers, stock, sales, payments, and money owed.",
+      "feature": "Brand",
+      "severity": "high",
+      "platform": "app-store,google-play",
+      "plan": "all",
+      "evidence": "Draft contract; provider submission remains blocked",
+      "reviewState": "draft"
+    },
+    {
+      "id": "pricing.unverified-plans",
+      "surface": "web",
+      "source": "apps/app/app/pricing/page.tsx",
+      "context": "Pricing page",
+      "currentText": "Starter $49/mo / Growth $149/mo / Scale",
+      "replacementText": "DRX is in early access. Final plans and prices are still being worked out.",
+      "feature": "Pricing",
+      "severity": "high",
+      "platform": "web,pwa",
+      "plan": "unapproved",
+      "evidence": "Unverified prices removed pending product and billing decision",
+      "reviewState": "blocked"
+    }
+  ],
+  "surfaceDisposition": [
+    {
+      "surface": "marketing",
+      "status": "implemented-core",
+      "remaining": "Provider publication approval"
+    },
+    {
+      "surface": "web",
+      "status": "implemented-core",
+      "remaining": "Authenticated production-session review"
+    },
+    {
+      "surface": "pwa",
+      "status": "shared-with-web",
+      "remaining": "Installed-device visual review"
+    },
+    {
+      "surface": "ios",
+      "status": "implemented-core",
+      "remaining": "Physical-device layout review"
+    },
+    {
+      "surface": "android",
+      "status": "implemented-core",
+      "remaining": "Physical-device layout review"
+    },
+    {
+      "surface": "help",
+      "status": "draft-ready",
+      "remaining": "Reconcile WRE-92 and publish with approval"
+    },
+    {
+      "surface": "email",
+      "status": "draft",
+      "remaining": "Provider and owner approval"
+    },
+    {
+      "surface": "push",
+      "status": "draft-plus-existing",
+      "remaining": "Privacy review and device verification"
+    },
+    {
+      "surface": "app-store",
+      "status": "draft",
+      "remaining": "Product and store owner approval"
+    },
+    {
+      "surface": "google-play",
+      "status": "draft",
+      "remaining": "Listing source and store owner approval"
+    },
+    {
+      "surface": "sales",
+      "status": "draft",
+      "remaining": "Delivery owner approval"
+    }
+  ]
+}

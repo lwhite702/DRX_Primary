@@ -56,9 +56,9 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
                 Overdue Credit Balances
               </h3>
               <p className="mt-0.5 text-xs text-white/70">
-                {stats.overdueCount} customers have outstanding balances past
-                due date, totaling ${stats.overdueBalance}. Collection action
-                may be required.
+                {stats.overdueCount} customers have balances due past due date,
+                totaling ${stats.overdueBalance}. Collection action may be
+                required.
               </p>
               <Link
                 href="/credit"

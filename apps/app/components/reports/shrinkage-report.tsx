@@ -54,7 +54,7 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
           inventory_id,
           inventory:inventory_id(product_name, sku),
           user_id
-        `
+        `,
         )
         .eq("business_id", businessId)
         .gte("created_at", startDate.toISOString())
@@ -68,7 +68,7 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
         // Calculate totals
         const totalCost = (events || []).reduce(
           (sum: number, e: any) => sum + (e.cost_value || 0),
-          0
+          0,
         );
         setTotalCostLoss(totalCost);
 
@@ -92,7 +92,7 @@ export function ShrinkageReport({ businessId }: ShrinkageReportProps) {
     damaged: "Damaged",
     theft: "Theft",
     sample: "Sample",
-    inventory_variance: "Inventory Variance",
+    inventory_variance: "Stock difference",
     other: "Other",
   };
 

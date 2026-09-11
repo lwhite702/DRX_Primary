@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { businessSettingsResponseSchema, pinUpdate } from "@/lib/business/settings-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, PackageOpen, Shield, SlidersHorizontal, Smartphone, Users } from "lucide-react";
+import {
+  Loader2,
+  PackageOpen,
+  Shield,
+  SlidersHorizontal,
+  Smartphone,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -256,11 +263,13 @@ export default function SettingsPage() {
       if (savedSettings.privacyProtocol) setPrivacyProtocol(savedSettings.privacyProtocol);
 
       window.dispatchEvent(new Event("drx:privacy-updated"));
-      toast.success("Settings saved successfully");
+      toast.success("Changes saved.");
       await refreshBusiness();
     } catch (error: any) {
       console.error("Error saving settings:", error);
-      toast.error(error?.message || "Failed to save settings. Please try again.");
+      toast.error(
+        error?.message || "Failed to save settings. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -364,7 +373,7 @@ export default function SettingsPage() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to refresh inventory");
+        throw new Error(data.error || "Couldn’t check what’s saved.");
       }
       setInventorySnapshot(data.snapshot as PrivacyInventorySnapshot);
       setPrivacyProtocol((prev) => ({
@@ -374,9 +383,9 @@ export default function SettingsPage() {
           last_snapshot_at: data.last_snapshot_at,
         },
       }));
-      toast.success("Customer data inventory refreshed");
+      toast.success("Saved details checked.");
     } catch (error: any) {
-      toast.error(error?.message || "Failed to refresh inventory");
+      toast.error(error?.message || "Couldn’t check what’s saved. Try again.");
     } finally {
       setInventoryRefreshing(false);
     }
@@ -393,7 +402,9 @@ export default function SettingsPage() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update screen privacy preference");
+        throw new Error(
+          data.error || "Failed to update screen privacy preference",
+        );
       }
       if (activeBusinessId.current !== requestedBusinessId) return;
       if (typeof data.manual_enabled !== "boolean") throw new Error("Invalid preference response");
@@ -407,9 +418,12 @@ export default function SettingsPage() {
 
   const revokeSession = async (sessionId: string) => {
     try {
-      const response = await fetch(`/api/security/sessions/${sessionId}/revoke`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/security/sessions/${sessionId}/revoke`,
+        {
+          method: "POST",
+        },
+      );
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to revoke session");
@@ -443,7 +457,9 @@ export default function SettingsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-2">Configure your business settings</p>
+          <p className="text-muted-foreground mt-2">
+            Configure your business settings
+          </p>
         </div>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
           <p className="text-xs text-muted-foreground">v{appPackage.version}</p>
@@ -498,11 +514,16 @@ export default function SettingsPage() {
                 />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground shrink-0">Step {mobileStep} of 2</span>
+            <span className="text-sm text-muted-foreground shrink-0">
+              Step {mobileStep} of 2
+            </span>
           </div>
         </div>
 
-        <Card id="tour-settings-profile" className={mobileStep === 1 ? "" : "hidden md:block"}>
+        <Card
+          id="tour-settings-profile"
+          className={mobileStep === 1 ? "" : "hidden md:block"}
+        >
           <CardHeader>
             <CardTitle>Business Profile</CardTitle>
           </CardHeader>
@@ -613,7 +634,8 @@ export default function SettingsPage() {
                   Enable Tax Collection
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  When disabled, no tax will be charged on sales. Subtotal = Total.
+                  When disabled, no tax will be charged on sales. Subtotal =
+                  Total.
                 </p>
               </div>
               <Switch
@@ -668,7 +690,10 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card id="tour-settings-privacy" className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card
+          id="tour-settings-privacy"
+          className={mobileStep === 2 ? "" : "hidden md:block"}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
@@ -703,9 +728,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <Label htmlFor="aliasOnlyMode">Alias-only mode</Label>
+                <Label htmlFor="aliasOnlyMode">Save aliases only</Label>
                 <p className="text-xs text-muted-foreground">
-                  Block non-alias customer field writes.
+                  Stop this business from saving other customer details.
                 </p>
               </div>
               <Switch
@@ -717,9 +742,9 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-3 rounded-lg border p-4">
-              <p className="text-sm font-medium">ProteXion Mode (Screen Privacy)</p>
+              <p className="text-sm font-medium">Hide details</p>
               <div className="space-y-1">
-                <Label htmlFor="screenPrivacyMode">Masking mode</Label>
+                <Label htmlFor="screenPrivacyMode">When to hide details</Label>
                 <select
                   id="screenPrivacyMode"
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -735,14 +760,14 @@ export default function SettingsPage() {
                   }
                   disabled={saving || !privacySettingsEnabled}
                 >
-                  <option value="manual">Manual</option>
-                  <option value="pos_only">POS Only</option>
-                  <option value="always_on">Always On</option>
+                  <option value="manual">When I turn it on</option>
+                  <option value="pos_only">During a new sale</option>
+                  <option value="always_on">Always</option>
                 </select>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="screenPrivacyDefaultEnabled">
-                  Manual mode default enabled
+                  Start with details hidden
                 </Label>
                 <Switch
                   id="screenPrivacyDefaultEnabled"
@@ -760,9 +785,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="manualScreenPrivacy">
-                  My manual ProteXion toggle
-                </Label>
+                <Label htmlFor="manualScreenPrivacy">Hide details now</Label>
                 <Switch
                   id="manualScreenPrivacy"
                   checked={manualScreenPrivacyEnabled}
@@ -773,15 +796,22 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm font-medium">CRM fields</p>
+              <p className="text-sm font-medium">Customer details</p>
               {PRIVACY_FIELDS.map((field) => (
-                <div key={field} className="grid grid-cols-3 items-center gap-3 rounded-lg border p-3">
+                <div
+                  key={field}
+                  className="grid grid-cols-3 items-center gap-3 rounded-lg border p-3"
+                >
                   <p className="text-sm font-medium">{FIELD_LABELS[field]}</p>
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Visible</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      Save
+                    </Label>
                     <Switch
                       checked={privacyProtocol.fields[field].visible}
-                      onCheckedChange={(value) => updateFieldVisibility(field, "visible", value)}
+                      onCheckedChange={(value) =>
+                        updateFieldVisibility(field, "visible", value)
+                      }
                       disabled={
                         saving || !privacySettingsEnabled ||
                         (privacyProtocol.alias_only_mode && field !== "alias")
@@ -789,10 +819,14 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Recommended</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      Suggested
+                    </Label>
                     <Switch
                       checked={privacyProtocol.fields[field].recommended}
-                      onCheckedChange={(value) => updateFieldVisibility(field, "recommended", value)}
+                      onCheckedChange={(value) =>
+                        updateFieldVisibility(field, "recommended", value)
+                      }
                       disabled={
                         saving || !privacySettingsEnabled ||
                         !privacyProtocol.fields[field].visible ||
@@ -807,7 +841,9 @@ export default function SettingsPage() {
             <div className="space-y-3 rounded-lg border p-4">
               <p className="text-sm font-medium">Retention controls</p>
               <div className="flex items-center justify-between">
-                <Label htmlFor="retentionEnabled">Enable retention cleanup</Label>
+                <Label htmlFor="retentionEnabled">
+                  Enable retention cleanup
+                </Label>
                 <Switch
                   id="retentionEnabled"
                   checked={privacyProtocol.retention.enabled}
@@ -878,7 +914,10 @@ export default function SettingsPage() {
                         ...prev,
                         retention: {
                           ...prev.retention,
-                          local_hour: Math.max(0, Math.min(23, Number(e.target.value || 0))),
+                          local_hour: Math.max(
+                            0,
+                            Math.min(23, Number(e.target.value || 0)),
+                          ),
                         },
                       }))
                     }
@@ -923,7 +962,9 @@ export default function SettingsPage() {
             <div className="space-y-3 rounded-lg border p-4">
               <p className="text-sm font-medium">Ephemeral customer profiles</p>
               <div className="flex items-center justify-between">
-                <Label htmlFor="ephemeralEnabled">Enable ephemeral profiles</Label>
+                <Label htmlFor="ephemeralEnabled">
+                  Enable ephemeral profiles
+                </Label>
                 <Switch
                   id="ephemeralEnabled"
                   checked={privacyProtocol.ephemeral_profiles.enabled}
@@ -940,17 +981,24 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="ephemeralRetentionDays">Default retention</Label>
+                <Label htmlFor="ephemeralRetentionDays">
+                  Default retention
+                </Label>
                 <select
                   id="ephemeralRetentionDays"
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={privacyProtocol.ephemeral_profiles.default_retention_days}
+                  value={
+                    privacyProtocol.ephemeral_profiles.default_retention_days
+                  }
                   onChange={(e) =>
                     setPrivacyProtocol((prev) => ({
                       ...prev,
                       ephemeral_profiles: {
                         ...prev.ephemeral_profiles,
-                        default_retention_days: Number(e.target.value) as 1 | 7 | 30,
+                        default_retention_days: Number(e.target.value) as
+                          | 1
+                          | 7
+                          | 30,
                       },
                     }))
                   }
@@ -968,7 +1016,8 @@ export default function SettingsPage() {
                 <Switch
                   id="allowEphemeralCreate"
                   checked={
-                    privacyProtocol.ephemeral_profiles.allow_in_standard_customer_create
+                    privacyProtocol.ephemeral_profiles
+                      .allow_in_standard_customer_create
                   }
                   onCheckedChange={(value) =>
                     setPrivacyProtocol((prev) => ({
@@ -1006,7 +1055,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="inventoryRefreshFrequency">Refresh frequency</Label>
+                <Label htmlFor="inventoryRefreshFrequency">
+                  Refresh frequency
+                </Label>
                 <select
                   id="inventoryRefreshFrequency"
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -1027,7 +1078,11 @@ export default function SettingsPage() {
                 </select>
               </div>
               {inventoryLoading ? (
-                <div className="grid grid-cols-2 gap-3" aria-label="Loading privacy inventory" aria-busy="true">
+                <div
+                  className="grid grid-cols-2 gap-3"
+                  aria-label="Checking what’s saved"
+                  aria-busy="true"
+                >
                   {[0, 1, 2, 3].map((item) => (
                     <Skeleton key={item} className="h-12 w-full" />
                   ))}
@@ -1035,27 +1090,33 @@ export default function SettingsPage() {
               ) : inventorySnapshot ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                   <p>
-                    Aliases: {inventorySnapshot.alias_count} ({inventorySnapshot.alias_delta >= 0 ? "+" : ""}
+                    Aliases: {inventorySnapshot.alias_count} (
+                    {inventorySnapshot.alias_delta >= 0 ? "+" : ""}
                     {inventorySnapshot.alias_delta})
                   </p>
                   <p>
-                    Phones: {inventorySnapshot.phone_count} ({inventorySnapshot.phone_delta >= 0 ? "+" : ""}
+                    Phones: {inventorySnapshot.phone_count} (
+                    {inventorySnapshot.phone_delta >= 0 ? "+" : ""}
                     {inventorySnapshot.phone_delta})
                   </p>
                   <p>
-                    Emails: {inventorySnapshot.email_count} ({inventorySnapshot.email_delta >= 0 ? "+" : ""}
+                    Emails: {inventorySnapshot.email_count} (
+                    {inventorySnapshot.email_delta >= 0 ? "+" : ""}
                     {inventorySnapshot.email_delta})
                   </p>
                   <p>
-                    Addresses: {inventorySnapshot.address_count} ({inventorySnapshot.address_delta >= 0 ? "+" : ""}
+                    Addresses: {inventorySnapshot.address_count} (
+                    {inventorySnapshot.address_delta >= 0 ? "+" : ""}
                     {inventorySnapshot.address_delta})
                   </p>
                   <p>
-                    Notes: {inventorySnapshot.notes_count} ({inventorySnapshot.notes_delta >= 0 ? "+" : ""}
+                    Notes: {inventorySnapshot.notes_count} (
+                    {inventorySnapshot.notes_delta >= 0 ? "+" : ""}
                     {inventorySnapshot.notes_delta})
                   </p>
                   <p className="text-xs text-muted-foreground md:col-span-2">
-                    Last snapshot {new Date(inventorySnapshot.captured_at).toLocaleString()}
+                    Last snapshot{" "}
+                    {new Date(inventorySnapshot.captured_at).toLocaleString()}
                   </p>
                   {[
                     inventorySnapshot.alias_delta,
@@ -1065,13 +1126,13 @@ export default function SettingsPage() {
                     inventorySnapshot.notes_delta,
                   ].some((delta) => delta > 0) ? (
                     <p className="text-xs text-amber-600 md:col-span-2">
-                      PII storage increased since the previous snapshot.
+                      More customer details are saved than at the last check.
                     </p>
                   ) : null}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  No inventory snapshot yet. Refresh to initialize.
+                  No saved-details check yet. Run the first check.
                 </p>
               )}
               <Button
@@ -1083,24 +1144,36 @@ export default function SettingsPage() {
                 {inventoryRefreshing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Refreshing...
+                    Checking...
                   </>
                 ) : (
-                  "Refresh inventory snapshot"
+                  "Check what’s saved"
                 )}
               </Button>
             </div>
 
             <div className="space-y-3 rounded-lg border p-4">
-              <p className="text-sm font-medium">Vault Mode Status</p>
+              <p className="text-sm font-medium">Protection status</p>
               {vaultStatus ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                  <p>Vault active: {vaultStatus.vault_mode_active ? "Yes" : "No"}</p>
-                  <p>Current key loaded: {vaultStatus.current_key_loaded ? "Yes" : "No"}</p>
-                  <p>Previous key loaded: {vaultStatus.previous_key_loaded ? "Yes" : "No"}</p>
-                  <p>Hash key loaded: {vaultStatus.hash_key_loaded ? "Yes" : "No"}</p>
+                  <p>
+                    Protection on:{" "}
+                    {vaultStatus.vault_mode_active ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    Current key ready:{" "}
+                    {vaultStatus.current_key_loaded ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    Previous key ready:{" "}
+                    {vaultStatus.previous_key_loaded ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    Lookup key ready:{" "}
+                    {vaultStatus.hash_key_loaded ? "Yes" : "No"}
+                  </p>
                   <p className="text-xs text-muted-foreground md:col-span-2">
-                    Last vault error:{" "}
+                    Last protection error:{" "}
                     {vaultStatus.last_error_at
                       ? new Date(vaultStatus.last_error_at).toLocaleString()
                       : "None"}
@@ -1108,14 +1181,17 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Vault status unavailable.
+                  Protection status is not available.
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card id="tour-settings-sessions" className={mobileStep === 2 ? "" : "hidden md:block"}>
+        <Card
+          id="tour-settings-sessions"
+          className={mobileStep === 2 ? "" : "hidden md:block"}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
@@ -1124,13 +1200,19 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {sessionsLoading ? (
-              <div className="space-y-3" aria-label="Loading device sessions" aria-busy="true">
+              <div
+                className="space-y-3"
+                aria-label="Loading device sessions"
+                aria-busy="true"
+              >
                 {[0, 1, 2].map((item) => (
                   <Skeleton key={item} className="h-14 w-full" />
                 ))}
               </div>
             ) : sessions.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No active sessions found.</div>
+              <div className="text-sm text-muted-foreground">
+                No active sessions found.
+              </div>
             ) : (
               sessions.map((session) => (
                 <div
@@ -1142,15 +1224,19 @@ export default function SettingsPage() {
                       {session.browser} • {session.device_type || "unknown"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {session.city || "Unknown city"}, {session.country || "Unknown country"}
+                      {session.city || "Unknown city"},{" "}
+                      {session.country || "Unknown country"}
                       {session.ip ? ` • ${session.ip}` : ""}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Last active {new Date(session.last_active_at).toLocaleString()}
+                      Last active{" "}
+                      {new Date(session.last_active_at).toLocaleString()}
                     </p>
                   </div>
                   {session.is_current ? (
-                    <span className="text-xs font-medium text-emerald-600">Current</span>
+                    <span className="text-xs font-medium text-emerald-600">
+                      Current
+                    </span>
                   ) : (
                     <Button
                       type="button"
@@ -1192,7 +1278,12 @@ export default function SettingsPage() {
               Continue
             </Button>
           ) : (
-            <Button type="submit" disabled={saving} size="lg" className="flex-1">
+            <Button
+              type="submit"
+              disabled={saving}
+              size="lg"
+              className="flex-1"
+            >
               {saving ? "Saving..." : "Save Settings"}
             </Button>
           )}
@@ -1213,17 +1304,20 @@ export default function SettingsPage() {
           {
             targetId: "tour-settings-profile",
             title: "Your business.",
-            description: "Update your name, contact info, and address. This shows up on receipts and reports.",
+            description:
+              "Update your name, contact info, and address. This shows up on receipts and reports.",
           },
           {
             targetId: "tour-settings-privacy",
             title: "Privacy controls.",
-            description: "Set how customer data is collected and masked. Alias-only mode keeps it tight.",
+            description:
+              "Set how customer data is collected and masked. Alias-only mode keeps it tight.",
           },
           {
             targetId: "tour-settings-sessions",
             title: "Active sessions.",
-            description: "See every device logged in. Revoke anything you don't recognize.",
+            description:
+              "See every device logged in. Revoke anything you don't recognize.",
           },
         ]}
       />

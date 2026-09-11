@@ -1,3 +1,5 @@
+import { drxContent } from "@deelrx/content";
+
 export const drxCopy = {
   common: {
     back: "Back",
@@ -10,8 +12,8 @@ export const drxCopy = {
   onboarding: {
     page: {
       label: "Get started",
-      title: "Set up your shop.",
-      body: "A few quick choices and you're in.",
+      title: "Set up your business.",
+      body: "Make a few quick choices. You can change them later.",
       businessName: "Business name",
       role: "Your role",
       teamSize: "Team size",
@@ -33,7 +35,8 @@ export const drxCopy = {
         review: "Review",
         complete: "Done",
       },
-      detailsDescription: "Basic info. Keep it simple.",
+      detailsDescription:
+        "Add the basics so your records stay in the right place.",
       finish: "Finish setup",
       setupComplete: "You're set.",
       setupFailed: "Setup didn't finish. Try again.",
@@ -43,27 +46,27 @@ export const drxCopy = {
       body: "Let's get the basics set. This takes about 2 minutes.",
     },
     privacy: {
-      title: "Your records. Your call.",
-      body: "Each preset controls which customer details you keep and permanently deletes inactive customer records after the listed window. You can change it later.",
+      title: drxContent.privacy.section,
+      body: "Choose what customer details to save. Old inactive records are deleted after the time shown. You can change this later.",
       presets: {
         aliasMode: {
-          label: "ALIAS MODE",
-          desc: "Aliases only. Inactive customer records are permanently deleted after 30 days.",
+          label: drxContent.privacy.presets.hideDetails.label,
+          desc: drxContent.privacy.presets.hideDetails.description,
         },
         standardMode: {
-          label: "STANDARD MODE",
-          desc: "Optional contact details. Inactive customer records are permanently deleted after 180 days.",
+          label: drxContent.privacy.presets.protectDetails.label,
+          desc: drxContent.privacy.presets.protectDetails.description,
         },
         businessCrmMode: {
-          label: "FULL CUSTOMER MODE",
-          desc: "Full customer details. Inactive customer records are permanently deleted after 365 days.",
+          label: drxContent.privacy.presets.keepDetails.label,
+          desc: drxContent.privacy.presets.keepDetails.description,
         },
       },
     },
   },
   pos: {
-    title: "Sales",
-    subtitlePrefix: "Register:",
+    title: drxContent.navigation.newSale,
+    subtitlePrefix: "Location:",
     missingBusiness: "Finish setup before starting a sale.",
     cart: {
       emptyTitle: "Nothing here yet.",
@@ -78,8 +81,8 @@ export const drxCopy = {
     },
   },
   inventory: {
-    title: "Inventory",
-    description: "Know what you have, what moved, and what needs a reup.",
+    title: drxContent.navigation.products,
+    description: "Know what you have, what moved, and what is running low.",
     missingBusiness: "Finish setup before working with stock.",
     operationsLabel: "What do you need?",
     searchLabel: "Find product",

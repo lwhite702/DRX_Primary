@@ -5,51 +5,53 @@ import { SectionBlock } from "@/components/marketing/site/section-block";
 import { CtaRow } from "@/components/marketing/site/cta-row";
 
 export const metadata: Metadata = {
-  title: "Guide: Privacy Profiles and Team Roles | Deelrx CRM",
+  title: "Guide: Privacy and Team Roles | Deelrx CRM",
   description:
-    "Step-by-step guide for DRX privacy profile configuration, Vault Mode controls, and team role management.",
+    "Choose what customer details DRX saves, when to hide them, and what each team member can see.",
 };
 
 export default function PrivacyRolesGuidePage() {
   return (
     <PageFrame>
       <h1 className="mb-8 text-4xl font-bold text-white">
-        Guide: Privacy profiles and team roles
+        Guide: Privacy and team roles
       </h1>
 
       <SectionBlock title="What this does">
         <p>
-          Shows how to configure your privacy posture with DRX Privacy ProteXion
-          Protocol profiles, ProteXion screen privacy, and keep role access tight.
+          Choose what customer details DRX saves, when to hide them, and what
+          each team member can see.
         </p>
       </SectionBlock>
 
       <SectionBlock title="Why it matters operationally" className="mt-6">
         <p>
-          Loose access controls and excessive data collection turn simple
-          mistakes into expensive incidents.
+          Saving less and limiting access lowers the damage a mistake can cause.
         </p>
       </SectionBlock>
 
       <SectionBlock title="Proof from live product behavior" className="mt-6">
         <ol className="list-decimal space-y-2 pl-5">
-          <li>Select one of three onboarding privacy profiles:</li>
-          <li>Alias Mode, Standard Mode, or Business CRM Mode.</li>
+          <li>Choose one of three privacy settings.</li>
+          <li>Hide details, Protect details, or Keep details.</li>
           <li>
-            Open <strong>Settings → Privacy Protocol Dashboard</strong> to tune
-            field visibility, retention, alias-only mode, and screen privacy behavior.
+            Open <strong>Settings → Privacy</strong> to choose what is saved,
+            when old records are deleted, and when details are hidden.
           </li>
-          <li>Review Vault Mode status and Customer Data Inventory in Settings.</li>
-          <li>Set ephemeral profile defaults (1, 7, or 30 days) for quick POS customers.</li>
+          <li>Check protection status and what is saved.</li>
+          <li>Choose when temporary customer records are deleted.</li>
           <li>
-            Open <strong>Settings → Manage Team</strong> for role assignment and
-            least-privilege controls.
+            Open <strong>Settings → Team</strong> to choose what each team
+            member can do.
           </li>
           <li>Confirm restricted routes and session controls per role.</li>
         </ol>
       </SectionBlock>
 
-      <SectionBlock title="What's in beta / current limitations" className="mt-6">
+      <SectionBlock
+        title="What's in beta / current limitations"
+        className="mt-6"
+      >
         <ul className="list-disc space-y-2 pl-5">
           <li>Some role and permission UX is still maturing.</li>
           <li>

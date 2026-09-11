@@ -209,15 +209,15 @@ export function POSReviewModal({
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {customer
-                          ? "Customer linked to transaction"
-                          : "No customer linked • Alias-only mode"}
+                          ? "Customer linked to sale"
+                          : "No customer linked • Details hidden"}
                       </p>
                     </div>
                   </div>
                   {!customer && (
                     <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400">
                       <Lock className="w-3 h-3" />
-                      <span className="font-bold">MAX SECURE PRESET:</span>
+                      <span className="font-bold">DETAILS HIDDEN:</span>
                       <span className="text-red-400/80">
                         Customer PII masked.
                       </span>
