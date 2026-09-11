@@ -25,6 +25,11 @@ const mocks = vi.hoisted(() => ({
   decodeCustomerPii: vi.fn(),
   hashPhoneLookupCandidates: vi.fn(),
   hashEmailLookupCandidates: vi.fn(),
+  resolveBusinessPrivacyPolicy: vi.fn(),
+}));
+
+vi.mock("@/lib/privacy/privacy-resolution", () => ({
+  resolveBusinessPrivacyPolicy: mocks.resolveBusinessPrivacyPolicy,
 }));
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
@@ -99,15 +104,14 @@ describe("Customers API ephemeral controls", () => {
   });
 
   it("blocks standard customer ephemeral creation when disabled", async () => {
-    mocks.db.businessSettings.findFirst.mockResolvedValue({
-      settingsData: {
-        privacy_protocol: {
-          ephemeral_profiles: {
-            enabled: true,
-            default_retention_days: 7,
-            allow_in_standard_customer_create: false,
-          },
-        },
+    mocks.resolveBusinessPrivacyPolicy.mockResolvedValue({
+      fields: {
+        alias: { visible: true, recommended: true },
+      },
+      ephemeral_profiles: {
+        enabled: true,
+        default_retention_days: 7,
+        allow_in_standard_customer_create: false,
       },
     });
 
@@ -129,15 +133,14 @@ describe("Customers API ephemeral controls", () => {
   });
 
   it("creates ephemeral customer when allowed", async () => {
-    mocks.db.businessSettings.findFirst.mockResolvedValue({
-      settingsData: {
-        privacy_protocol: {
-          ephemeral_profiles: {
-            enabled: true,
-            default_retention_days: 7,
-            allow_in_standard_customer_create: true,
-          },
-        },
+    mocks.resolveBusinessPrivacyPolicy.mockResolvedValue({
+      fields: {
+        alias: { visible: true, recommended: true },
+      },
+      ephemeral_profiles: {
+        enabled: true,
+        default_retention_days: 7,
+        allow_in_standard_customer_create: true,
       },
     });
 
