@@ -60,6 +60,7 @@ This document defines the authoritative environment variables across runtime env
 | `INNGEST_SIGNING_KEY` | Inngest endpoint webhook signature verification key | Yes | Inngest |
 | `KV_REST_API_URL` | Upstash Redis REST API URL for distributed rate-limiting | Yes | Upstash |
 | `KV_REST_API_TOKEN` | Upstash Redis REST API Token | Yes | Upstash |
+| `HEALTHCHECK_SECRET` | Secret for deployment readiness and health check probe authorization | Optional | Operations |
 
 ## Prohibited in Production
 

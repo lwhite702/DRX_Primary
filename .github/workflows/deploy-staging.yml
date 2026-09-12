@@ -84,11 +84,18 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_STAGING }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID_STAGING }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+          HEALTHCHECK_SECRET: ${{ secrets.HEALTHCHECK_SECRET_STAGING || secrets.HEALTHCHECK_SECRET }}
           DEPLOYMENT_URL: ${{ steps.vercel.outputs.deployment-url }}
         run: |
           set -euo pipefail
-          HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
-            --deployment "$DEPLOYMENT_URL" --yes)
+          if [ -n "$HEALTHCHECK_SECRET" ]; then
+            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              --deployment "$DEPLOYMENT_URL" --yes \
+              -- --header "Authorization: Bearer $HEALTHCHECK_SECRET")
+          else
+            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              --deployment "$DEPLOYMENT_URL" --yes)
+          fi
           HEALTH_RESPONSE="$HEALTH_RESPONSE" node scripts/release/staging-deployment.mjs health
 
       - name: Record deployment source

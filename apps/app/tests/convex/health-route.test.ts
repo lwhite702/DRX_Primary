@@ -26,3 +26,65 @@ it("fails closed for missing configuration, backend errors and malformed results
   mocks.query.mockResolvedValueOnce({ unexpected: true });
   expect((await GET()).status).toBe(503);
 });
+
+it("enforces machine authorization when HEALTHCHECK_SECRET is configured", async () => {
+  vi.stubEnv("HEALTHCHECK_SECRET", "super-secret-probe-token");
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  // Anonymous request without credentials -> 401
+  const anonRes = await GET();
+  expect(anonRes.status).toBe(401);
+  expect(anonRes.headers.get("Cache-Control")).toBe("no-store");
+  expect(await anonRes.json()).toEqual({ error: "Unauthorized" });
+
+  // Request with invalid Bearer token -> 401
+  const invalidBearer = new Request("https://deelrxcrm.app/api/health", {
+    headers: { authorization: "Bearer wrong-token" },
+  });
+  const invalidRes = await GET(invalidBearer);
+  expect(invalidRes.status).toBe(401);
+
+  // Request with valid Bearer token -> 200
+  const validBearer = new Request("https://deelrxcrm.app/api/health", {
+    headers: { authorization: "Bearer super-secret-probe-token" },
+  });
+  const bearerRes = await GET(validBearer);
+  expect(bearerRes.status).toBe(200);
+  expect((await bearerRes.json()).status).toBe("healthy");
+
+  // Request with x-readiness-token header -> 200
+  const validReadiness = new Request("https://deelrxcrm.app/api/health", {
+    headers: { "x-readiness-token": "super-secret-probe-token" },
+  });
+  const readinessRes = await GET(validReadiness);
+  expect(readinessRes.status).toBe(200);
+
+  // Request with x-healthcheck-token header -> 200
+  const validHealthcheck = new Request("https://deelrxcrm.app/api/health", {
+    headers: { "x-healthcheck-token": "super-secret-probe-token" },
+  });
+  const healthcheckRes = await GET(validHealthcheck);
+  expect(healthcheckRes.status).toBe(200);
+});
+
+it("supports Vercel protection bypass secret when configured", async () => {
+  vi.stubEnv("VERCEL_AUTOMATION_BYPASS_SECRET", "vercel-bypass-token");
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  // Wrong bypass token -> 401
+  const wrongReq = new Request("https://deelrxcrm.app/api/health", {
+    headers: { "x-vercel-protection-bypass": "wrong-bypass" },
+  });
+  expect((await GET(wrongReq)).status).toBe(401);
+
+  // Correct bypass token -> 200
+  const correctReq = new Request("https://deelrxcrm.app/api/health", {
+    headers: { "x-vercel-protection-bypass": "vercel-bypass-token" },
+  });
+  const res = await GET(correctReq);
+  expect(res.status).toBe(200);
+  expect((await res.json()).status).toBe("healthy");
+});
+
