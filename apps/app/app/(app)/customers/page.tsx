@@ -49,6 +49,7 @@ import {
 } from "@/lib/privacy/profiles";
 import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
 import { ShieldAlert } from "lucide-react";
+import { ProgressiveSection } from "@/components/ui/progressive-section";
 
 type CustomerRecord = Customer & {
   id: string;
@@ -443,62 +444,68 @@ export default function CustomersPage() {
                 business needs.
               </p>
 
-              {canWriteAddress ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" {...register("address")} />
-                  </div>
+              <ProgressiveSection
+                title="Additional Details & Custom Pricing"
+                description="Address, customer type, and price overrides"
+                defaultOpen={false}
+              >
+                {canWriteAddress ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Address</Label>
+                      <Input id="address" {...register("address")} />
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" {...register("city")} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" {...register("city")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input id="state" {...register("state")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="zip_code">Zip Code</Label>
+                        <Input id="zip_code" {...register("zip_code")} />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" {...register("state")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip_code">Zip Code</Label>
-                      <Input id="zip_code" {...register("zip_code")} />
-                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-md border border-white/10 bg-muted/30 p-3 text-xs text-muted-foreground flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4 text-accent shrink-0" />
+                    <span>
+                      Address collection is disabled under your{" "}
+                      <strong className="text-foreground font-semibold">
+                        {currentProfileOption?.label || "current"}
+                      </strong>{" "}
+                      privacy policy. To store customer addresses, switch to &quot;Keep details&quot; in Business Settings.
+                    </span>
                   </div>
-                </>
-              ) : (
-                <div className="rounded-md border border-white/10 bg-muted/30 p-3 text-xs text-muted-foreground flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-accent shrink-0" />
-                  <span>
-                    Address collection is disabled under your{" "}
-                    <strong className="text-foreground font-semibold">
-                      {currentProfileOption?.label || "current"}
-                    </strong>{" "}
-                    privacy policy. To store customer addresses, switch to &quot;Keep details&quot; in Business Settings.
-                  </span>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="customer_type">
+                    Customer Type
+                    <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
+                  </Label>
+                  <Input id="customer_type" {...register("customer_type")} />
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="customer_type">
-                  Customer Type
-                  <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
-                </Label>
-                <Input id="customer_type" {...register("customer_type")} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fixed_price_per_gram">
-                  Fixed Price / Gram ($)
-                  <HelpTooltip content="Override base price for weight-based products for this customer." />
-                </Label>
-                <Input
-                  id="fixed_price_per_gram"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register("fixed_price_per_gram")}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fixed_price_per_gram">
+                    Fixed Price / Gram ($)
+                    <HelpTooltip content="Override base price for weight-based products for this customer." />
+                  </Label>
+                  <Input
+                    id="fixed_price_per_gram"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...register("fixed_price_per_gram")}
+                  />
+                </div>
+              </ProgressiveSection>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button

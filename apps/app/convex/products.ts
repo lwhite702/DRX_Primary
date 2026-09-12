@@ -26,6 +26,7 @@ export const productRecord = v.object({
   sellingPriceCents: v.number(),
   unitCostCents: v.number(),
   isTaxable: v.optional(v.boolean()),
+  location: v.optional(v.string()),
   quantityOnHandGrams: v.number(),
   reorderLevelGrams: v.number(),
   allowFractionalWeight: v.boolean(),
@@ -383,6 +384,7 @@ export const createProduct = mutation({
     sellingPriceCents: v.number(),
     unitCostCents: v.number(),
     isTaxable: v.optional(v.boolean()),
+    location: v.optional(v.string()),
     allowFractionalWeight: v.optional(v.boolean()),
     reorderLevelGrams: v.optional(v.number()),
     commerceConfig: v.optional(v.object({
@@ -442,6 +444,7 @@ export const createProduct = mutation({
     if (initialQuantity > 0 && (!Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0)) {
       throw new Error("INVALID_ARGUMENT: Starting stock requires a nonnegative integer-cent unit cost");
     }
+    const location = args.location?.trim() || undefined;
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
       sku: args.sku,
@@ -451,6 +454,7 @@ export const createProduct = mutation({
       sellingPriceCents: args.sellingPriceCents,
       unitCostCents: args.unitCostCents,
       isTaxable: args.isTaxable ?? true,
+      location,
       quantityOnHandGrams: initialQuantity,
       reorderLevelGrams: args.reorderLevelGrams ?? 10,
       allowFractionalWeight,
@@ -466,10 +470,16 @@ export const createProduct = mutation({
 
     if (initialQuantity > 0) {
       await ctx.db.insert("inventoryBatches", {
-        businessId: auth.businessId, productId,
-        originalQuantityGrams: initialQuantity, remainingQuantityGrams: initialQuantity,
-        unitCostPerGramCents: args.unitCostCents, receivedAt: now,
-        createdBy: auth.userId, createdAt: now, updatedAt: now,
+        businessId: auth.businessId,
+        productId,
+        originalQuantityGrams: initialQuantity,
+        remainingQuantityGrams: initialQuantity,
+        unitCostPerGramCents: args.unitCostCents,
+        location,
+        receivedAt: now,
+        createdBy: auth.userId,
+        createdAt: now,
+        updatedAt: now,
       });
     }
 
@@ -487,17 +497,67 @@ export const createProduct = mutation({
   },
 });
 
-export const listProducts = query({
-  args: {},
-  returns: v.array(productRecord),
-  handler: async (ctx) => {
+export const archiveProduct = mutation({
+  args: { productId: v.id("products") },
+  returns: v.object({ success: v.literal(true) }),
+  handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_businessId_and_isActive", (q) =>
-        q.eq("businessId", auth.businessId).eq("isActive", true),
-      )
-      .take(500);
+    requirePermission(auth.userRecord, "MANAGE_INVENTORY");
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId) {
+      throw new Error(`NOT_FOUND: Product '${args.productId}' not found`);
+    }
+    const now = Date.now();
+    await ctx.db.patch(args.productId, { isActive: false, updatedAt: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "PRODUCT_ARCHIVED",
+      entityType: "product",
+      entityId: args.productId,
+      metadata: JSON.stringify({ sku: product.sku, name: product.productName }),
+      timestamp: now,
+    });
+    return { success: true as const };
+  },
+});
+
+export const reactivateProduct = mutation({
+  args: { productId: v.id("products") },
+  returns: v.object({ success: v.literal(true) }),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_INVENTORY");
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId) {
+      throw new Error(`NOT_FOUND: Product '${args.productId}' not found`);
+    }
+    const now = Date.now();
+    await ctx.db.patch(args.productId, { isActive: true, updatedAt: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "PRODUCT_REACTIVATED",
+      entityType: "product",
+      entityId: args.productId,
+      metadata: JSON.stringify({ sku: product.sku, name: product.productName }),
+      timestamp: now,
+    });
+    return { success: true as const };
+  },
+});
+
+export const listProducts = query({
+  args: { includeArchived: v.optional(v.boolean()) },
+  returns: v.array(productRecord),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    const queryBuilder = args?.includeArchived
+      ? ctx.db.query("products").withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
+      : ctx.db.query("products").withIndex("by_businessId_and_isActive", (q) =>
+          q.eq("businessId", auth.businessId).eq("isActive", true),
+        );
+    const products = await queryBuilder.take(500);
 
     return products.map((product) => ({
       ...product,

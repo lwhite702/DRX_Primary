@@ -29,6 +29,9 @@ export async function POST(request: NextRequest) {
       totalCostCents: moneyCents(body.total_cost, "total cost"), totalWeightGrams: body.total_weight_grams,
       deliveryCostCents: moneyCents(body.delivery_cost ?? 0, "delivery cost", true),
       ...(typeof body.supplier === "string" ? { supplier: body.supplier.trim() } : {}),
+      ...(typeof body.lot_number === "string" ? { lotNumber: body.lot_number.trim() } : {}),
+      ...(body.expiration_date ? { expirationDate: Number(body.expiration_date) } : {}),
+      ...(typeof body.location === "string" ? { location: body.location.trim() } : {}),
     });
     return NextResponse.json({ success: true, intake: { id: result.intakeId, status: result.status },
       requires_approval: result.requiresApproval, replayed: result.replayed,

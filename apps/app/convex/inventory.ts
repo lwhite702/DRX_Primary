@@ -76,6 +76,7 @@ export const adjustStock = mutation({
 export const updateProduct = mutation({
   args: { businessId: v.string(), productId: v.id("products"), productName: v.optional(v.string()), sku: v.optional(v.string()),
     description: v.optional(v.string()), category: v.optional(v.string()), sellingUnit: v.optional(v.string()),
+    location: v.optional(v.string()), isTaxable: v.optional(v.boolean()),
     quantity: v.optional(v.number()), reorderLevel: v.optional(v.number()), unitCostCents: v.optional(v.number()), sellingPriceCents: v.optional(v.number()) },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -101,6 +102,8 @@ export const updateProduct = mutation({
     if (args.description !== undefined) patch.description = args.description;
     if (args.category !== undefined) patch.category = args.category;
     if (args.sellingUnit !== undefined) patch.sellingUnit = args.sellingUnit.trim();
+    if (args.location !== undefined) patch.location = args.location.trim() || undefined;
+    if (args.isTaxable !== undefined) patch.isTaxable = args.isTaxable;
     if (args.reorderLevel !== undefined) patch.reorderLevelGrams = args.reorderLevel;
     if (args.unitCostCents !== undefined) patch.unitCostCents = args.unitCostCents;
     if (args.sellingPriceCents !== undefined) patch.sellingPriceCents = args.sellingPriceCents;
