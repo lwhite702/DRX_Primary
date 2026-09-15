@@ -275,13 +275,9 @@ private struct ProvisioningRecoveryView: View {
                 .buttonStyle(.drxPrimary).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
                 Task {
-                    do {
-                        await PushNotificationCoordinator.shared.unregister()
-                        try await clerk.auth.signOut()
-                        await environment.clerkSignedOut()
-                    } catch {
-                        signOutError = "We couldn't sign you out. Check your connection and try again."
-                    }
+                    await PushNotificationCoordinator.shared.unregister()
+                    try? await clerk.auth.signOut()
+                    await environment.signOut()
                 }
             }
             if let requestID = environment.supportRequestID {
@@ -382,13 +378,9 @@ private struct OperatorTabView: View {
 
                         Button("Sign Out", role: .destructive) {
                             Task {
-                                do {
-                                    await PushNotificationCoordinator.shared.unregister()
-                                    try await clerk.auth.signOut()
-                                    await environment.signOut()
-                                } catch {
-                                    signOutError = "We couldn't sign you out. Check your connection and try again."
-                                }
+                                await PushNotificationCoordinator.shared.unregister()
+                                try? await clerk.auth.signOut()
+                                await environment.signOut()
                             }
                         }
                         .accessibilityIdentifier("signOutButton")
