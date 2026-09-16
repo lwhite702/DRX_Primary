@@ -18,11 +18,16 @@ async function loadSharp() {
       .find((entry) => entry.startsWith("sharp@"));
     if (!packageDir)
       throw new Error("sharp is required to validate Help Center visuals");
+    const sharpRoot = path.join(pnpmRoot, packageDir, "node_modules/sharp");
+    const sharpPackage = JSON.parse(
+      fs.readFileSync(path.join(sharpRoot, "package.json"), "utf8"),
+    );
+    const importPath = sharpPackage.exports?.["."]?.import?.default;
+    if (!importPath)
+      throw new Error("sharp does not declare an ESM entry point");
     return (
       await import(
-        pathToFileURL(
-          path.join(pnpmRoot, packageDir, "node_modules/sharp/lib/index.js"),
-        ).href
+        pathToFileURL(path.join(sharpRoot, importPath)).href
       )
     ).default;
   }

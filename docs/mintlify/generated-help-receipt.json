@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "canonicalArticleCount": 19,
+  "visualAssetCount": 20,
+  "generated": [
+    {
+      "articleId": "1633388",
+      "title": "Get started with DRX",
+      "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
+      "mintlifyPath": "mintlify/start/get-started-with-drx.mdx",
+      "route": "/start/get-started-with-drx",
+      "sourceSha256": "b764e19dc6ba476c313b90c853d929bb6cfe469bd42c88716f01288e9ad386ae",
+      "outputSha256": "de168336b4b136416fadf82e8c111514d7710cc63c40224cdf16af7e3f9e6edc"
+    },
+    {
+      "articleId": "2502678",
+      "title": "Dashboard and reports",
+      "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "mintlifyPath": "mintlify/start/dashboard-and-reports.mdx",
+      "route": "/start/dashboard-and-reports",
+      "sourceSha256": "49edbf641080f53cbeda3df9fe2e089f7d56eafb49cd90239db0f0466ffb2703",
+      "outputSha256": "2979fe2456c451b7b3a68e57da99f62a5d42ac30a6fbe1b2095aab3f79c44ea7"
+    },
+    {
+      "articleId": "2070517",
+      "title": "Help and support",
+      "sourcePath": "app-docs/feature_overview/help-and-support.md",
+      "mintlifyPath": "mintlify/start/help-and-support.mdx",
+      "route": "/start/help-and-support",
+      "sourceSha256": "f16019c39118a27b44719ccaf24fbc32a92e6d010cf776ebd510bf8ce9c683f9",
+      "outputSha256": "77fa385b77de8013d640251c5c2d76a50a98bbec21d19328d552ae1a8e5b6c5f"
+    },
+    {
+      "articleId": "3489602",
+      "title": "Troubleshoot dashboard and reports",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "mintlifyPath": "mintlify/start/troubleshoot-dashboard-and-reports.mdx",
+      "route": "/start/troubleshoot-dashboard-and-reports",
+      "sourceSha256": "9aecd45df6764a649d145b4a4cedaaf99e38c140a822d5566de24052588cb2ac",
+      "outputSha256": "d84b3f012ad18e9608bf4439e0b315b5696fcf4dd9936a80291cd32435d97d84"
+    },
+    {
+      "articleId": "6417807",
+      "title": "Privacy and minimal data",
+      "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "mintlifyPath": "mintlify/privacy/privacy-and-minimal-data.mdx",
+      "route": "/privacy/privacy-and-minimal-data",
+      "sourceSha256": "39741ec36731a366b79ea66cfb0183ec22cf4d689d4ae938e82358f13b3ff0df",
+      "outputSha256": "73b00e2260a06fc9886cd6c90147d05deae87838b59705788b4fa103c62bf318"
+    },
+    {
+      "articleId": "3948745",
+      "title": "Troubleshoot workspaces and access",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "mintlifyPath": "mintlify/access/troubleshoot-workspaces-and-access.mdx",
+      "route": "/access/troubleshoot-workspaces-and-access",
+      "sourceSha256": "7420017c4fe047d79e40a546ff8ec10f0fad6c2a51b17b3ad69e725d700f944a",
+      "outputSha256": "abf2f191e985f681103f466b6401460684dccdf7cf2b734f46498ce622856cba"
+    },
+    {
+      "articleId": "4735029",
+      "title": "Switch workspaces and check access",
+      "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
+      "mintlifyPath": "mintlify/access/switch-workspaces-and-check-access.mdx",
+      "route": "/access/switch-workspaces-and-check-access",
+      "sourceSha256": "9631e67637fe2b17a4ef664fc4ba97ecb4363c5fbb8911423e9f0e6a63fa19a3",
+      "outputSha256": "c3408816526fca16ed29beea63bbfdc06f38edefce6c3aed762f970e44960130"
+    },
+    {
+      "articleId": "1831819",
+      "title": "Customers and store credit",
+      "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "mintlifyPath": "mintlify/customers/customers-and-store-credit.mdx",
+      "route": "/customers/customers-and-store-credit",
+      "sourceSha256": "44c74481b87ff8c8bd2c3dcccfe59adcde04f3cac19fa91c21b6780e9f76d612",
+      "outputSha256": "d46a67a436bcd0152c797a33bd46adabfc8653c1b36fe5e201c0327024e12fdf"
+    },
+    {
+      "articleId": "9156766",
+      "title": "Troubleshoot customers and credit",
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "mintlifyPath": "mintlify/customers/troubleshoot-customers-and-credit.mdx",
+      "route": "/customers/troubleshoot-customers-and-credit",
+      "sourceSha256": "32aeafc884af7ec6ba869d9b54e3cfeab7028f9c0824fc7ec6d97d0ef63b0e87",
+      "outputSha256": "3f1445f0c438b0531baae625a074112c1a158a4229f671ab56ebbe5358e62c35"
+    },
+    {
+      "articleId": "6300641",
+      "title": "Inventory intake and adjustments",
+      "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "mintlifyPath": "mintlify/inventory/inventory-intake-and-adjustments.mdx",
+      "route": "/inventory/inventory-intake-and-adjustments",
+      "sourceSha256": "6dfa2e51a4ff62274094bd9a39099e0642b10ab3748c1f02a67f6e42218fe3e0",
+      "outputSha256": "1e79bf58ee9905a6235496d41757bd5ec47d34730ae87883aee60c31e0b7c74d"
+    },
+    {
+      "articleId": "0272622",
+      "title": "Troubleshoot inventory and audit",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "mintlifyPath": "mintlify/inventory/troubleshoot-inventory-and-audit.mdx",
+      "route": "/inventory/troubleshoot-inventory-and-audit",
+      "sourceSha256": "22711ced00888bebe96ae83a5d56fc83682e93dfc465ccfc8b3387ce98b959d4",
+      "outputSha256": "cdfce0480cf2c0fef55f74b35089e53698ef37b19c10dc17fbc73d901db522b0"
+    },
+    {
+      "articleId": "2995914",
+      "title": "DRX Intelligence",
+      "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
+      "mintlifyPath": "mintlify/inventory/drx-intelligence.mdx",
+      "route": "/inventory/drx-intelligence",
+      "sourceSha256": "9d86e4266f43394a5d13a7add8423489cc6f17d162f24bc2a2540771b524a074",
+      "outputSha256": "69fce6d3248eac65a6bf3d45222972086b6511a7584c1859762ffd52a66c1fb4"
+    },
+    {
+      "articleId": "3974136",
+      "title": "Purchase orders (beta)",
+      "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
+      "mintlifyPath": "mintlify/inventory/purchase-orders-beta.mdx",
+      "route": "/inventory/purchase-orders-beta",
+      "sourceSha256": "1d3188cf452c4f74f3789058d6dd121d2e2fa9b6c9c3bd5f12cb1188fc31715f",
+      "outputSha256": "970047215d621923940c259c42228b6b3520b4cb740d1d2469f074b1437b79b4"
+    },
+    {
+      "articleId": "9003136",
+      "title": "Troubleshoot AI Intelligence",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
+      "mintlifyPath": "mintlify/inventory/troubleshoot-ai-intelligence.mdx",
+      "route": "/inventory/troubleshoot-ai-intelligence",
+      "sourceSha256": "141c3b80f236893b2ed38b14b0eb46955dd4c71777f80053295c90ea6b980160",
+      "outputSha256": "3ec62f435b2bb541f5b726e923f3767393ac86989802b166bb283d5fc69118e6"
+    },
+    {
+      "articleId": "0236106",
+      "title": "Quick Sale checkout",
+      "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
+      "mintlifyPath": "mintlify/sales/quick-sale-checkout.mdx",
+      "route": "/sales/quick-sale-checkout",
+      "sourceSha256": "7e08952eb24c715108f4a4aabb53053bc93dda293d0944259a179789350bccbe",
+      "outputSha256": "edd4b898f5576edc15d674b75b2b522a1fc1a7cbae2630cd017444f1cd26d89a"
+    },
+    {
+      "articleId": "5281725",
+      "title": "Sales history and receipts",
+      "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "mintlifyPath": "mintlify/sales/sales-history-and-receipts.mdx",
+      "route": "/sales/sales-history-and-receipts",
+      "sourceSha256": "4e8c440974185bcd3f840c7c39234318b1d8e0c485e3ffd9c5adf69fe52a2e4c",
+      "outputSha256": "39e2cecaf233fe491ef54fb80ee22c751fb2581a4c1801f57ad96f2dd63b11cd"
+    },
+    {
+      "articleId": "3230948",
+      "title": "Troubleshoot checkout and payments",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "mintlifyPath": "mintlify/sales/troubleshoot-checkout-and-payments.mdx",
+      "route": "/sales/troubleshoot-checkout-and-payments",
+      "sourceSha256": "d4229b6560abeca7fe87bdd0173962cb1725c6888bcd9cd45cd8eca5f2f4da2d",
+      "outputSha256": "77ccb828022098375181f73396ab5a547a60f6633c445ceba63f94a72970d150"
+    },
+    {
+      "articleId": "7723456",
+      "title": "Sales and deliveries (beta)",
+      "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "mintlifyPath": "mintlify/sales/sales-and-deliveries-beta.mdx",
+      "route": "/sales/sales-and-deliveries-beta",
+      "sourceSha256": "9e398aff05a298fb9bb27f878c73b3df079026c64eea806d85c52907ec396f6a",
+      "outputSha256": "1e2a4d046064aec356530409bbcef33576151e8b948b4e3b345290cc00275b3b"
+    },
+    {
+      "articleId": "2709969",
+      "title": "Connect barcode scanners",
+      "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "mintlifyPath": "mintlify/sales/connect-barcode-scanners.mdx",
+      "route": "/sales/connect-barcode-scanners",
+      "sourceSha256": "758ce083773487803a08a51ed044f5ef0609308a96c094e67da74c59b808b6af",
+      "outputSha256": "8af550ac627fe24b9ea55b15d8705cbed8c59e5a38ca78b20ad7f302c705b429"
+    }
+  ],
+  "legacyRedirectCount": 17
+}

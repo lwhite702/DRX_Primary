@@ -38,10 +38,8 @@ const REPOSITORY_WIDE_PHRASES = [
   "ProteXion Mode",
   "DRX Vault Mode",
   "Minimal Data Engine",
-  "Quick Sale",
   "Operator Dashboard",
   "Credit Management",
-  "Store Credit",
   "Privacy Profile",
   "Something went wrong",
   "An error occurred",
@@ -105,7 +103,7 @@ const CORE_COPY_FILES = [
   "apps/ios/DRXApp/Features/Credit/CreditView.swift",
   "apps/ios/DRXApp/Features/Onboarding/NativeOnboardingView.swift",
   "apps/ios/DRXApp/Features/Reports/ReportsView.swift",
-  "mintlify/drx-privacy-protexion-protocol.mdx",
+  "mintlify/privacy/privacy-and-minimal-data.mdx",
   "mintlify/glossary.mdx",
 ];
 

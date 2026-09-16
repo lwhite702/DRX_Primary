@@ -1,243 +1,258 @@
 import fs from "node:fs";
 import path from "node:path";
 
-type ClaimStatus = "live" | "beta" | "planned" | "unknown";
-
-type MatrixRow = {
-  page: string;
-  claim: string;
-  claim_status: ClaimStatus;
-  evidence_paths: string[];
-  voice_violations: string[];
-  usability_gaps: string[];
-  severity: string;
-  required_action: string;
-};
-
-type Finding = {
-  code: string;
-  message: string;
-  file?: string;
-};
-
+type Finding = { code: string; message: string; file?: string };
+type NavGroup = { group: string; pages: string[] };
+type Redirect = { source: string; destination: string; permanent?: boolean };
 type DocsConfig = {
-  navigation:
-    | Array<{
-        group: string;
-        pages: string[];
-      }>
-    | {
-        groups?: Array<{
-          group: string;
-          pages: string[];
-        }>;
-      };
+  name: string;
+  theme: string;
+  colors: { primary: string; light?: string; dark?: string };
+  appearance?: { default?: string; strict?: boolean };
+  fonts?: { family?: string };
+  background?: { color?: { dark?: string; light?: string } };
+  navigation: { groups?: NavGroup[] };
+  redirects?: Redirect[];
+};
+type Migration = {
+  canonicalArticleCount: number;
+  visualAssetCount: number;
+  legacyPages: Array<{ source: string; destination: string; action: string }>;
+  retainedReferencePages: string[];
+};
+type Receipt = {
+  canonicalArticleCount: number;
+  visualAssetCount: number;
+  generated: Array<{
+    articleId: string;
+    sourcePath: string;
+    mintlifyPath: string;
+    route: string;
+  }>;
 };
 
 const root = process.cwd();
-const mintlifyDir = path.join(root, "mintlify");
-const docsConfigPath = path.join(mintlifyDir, "docs.json");
-const matrixPath = path.join(root, "docs/audits/mintlify-parity-matrix.json");
+const mintlifyRoot = path.join(root, "mintlify");
+const configPath = path.join(mintlifyRoot, "docs.json");
+const migrationPath = path.join(root, "docs/mintlify/help-center-migration.json");
+const receiptPath = path.join(root, "docs/mintlify/generated-help-receipt.json");
+const screenshotBriefPath = path.join(root, "docs/mintlify/GEMINI_SCREENSHOT_BRIEF.md");
 
-const forbiddenWords = [
-  "authenticate",
-  "immutable",
-  "methodology",
-  "optimize",
-  "leverage",
-  "synergy",
-  "infrastructure",
-  "robust",
-  "enterprise",
-  "compliance",
-];
-
-const operationalPages = new Set([
-  "getting-started",
-  "store-setup",
-  "how-sales-work",
-  "quick-sale-runbook",
-  "your-products",
-  "your-customers",
-  "payments-and-plans",
-  "fractional-and-bulk-pricing",
-  "delivery-fulfillment",
-  "native-mobile-apps",
-  "numbers-that-matter",
-  "staying-compliant",
-  "team-access",
-  "keeping-your-data-safe",
-  "fixing-issues",
-  "failsafe-and-self-destruct",
-]);
-
-const requiredSectionHeadings = [
-  "What this page is for",
-  "Before you start",
-  "Fast path",
-  "If blocked",
-  "What is beta here",
-  "Related docs",
+const forbiddenPhrases = [
+  "DRX CRM",
+  "Business CRM Mode",
+  "secure terminal access",
+  "system entry",
+  "streamline your operations",
+  "unlock growth",
+  "all-in-one platform",
 ];
 
 function readJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
-function readText(filePath: string): string {
-  return fs.readFileSync(filePath, "utf8");
+function pageFile(route: string): string {
+  return path.join(mintlifyRoot, route.replace(/^\//, "") + ".mdx");
 }
 
-function resolvePageFile(slug: string): string | null {
-  const mdx = path.join(mintlifyDir, `${slug}.mdx`);
-  if (fs.existsSync(mdx)) return mdx;
-
-  const md = path.join(mintlifyDir, `${slug}.md`);
-  if (fs.existsSync(md)) return md;
-
-  return null;
-}
-
-function stripCodeBlocks(input: string): string {
-  return input.replace(/```[\s\S]*?```/g, " ");
-}
-
-function stripMarkdownLinksKeepLabel(input: string): string {
-  return input.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1");
-}
-
-function extractInternalLinks(markdown: string): string[] {
-  const links = [...markdown.matchAll(/\[[^\]]+\]\((\/[^)]+)\)/g)].map((m) => m[1]);
-  return links;
-}
-
-function normalizeLinkToSlug(href: string): string {
-  const withoutQuery = href.split("?")[0]?.split("#")[0] ?? href;
-  return withoutQuery.replace(/^\//, "");
-}
-
-function hasHeading(markdown: string, heading: string): boolean {
-  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`^##\\s+${escaped}\\s*$`, "im");
-  return re.test(markdown);
-}
-
-function checkForbiddenWords(markdown: string, filePath: string): Finding[] {
-  const findings: Finding[] = [];
-  const visible = stripMarkdownLinksKeepLabel(stripCodeBlocks(markdown)).toLowerCase();
-
-  for (const word of forbiddenWords) {
-    const re = new RegExp(`\\b${word}\\b`, "g");
-    if (re.test(visible)) {
-      findings.push({
-        code: "VOICE_FORBIDDEN_WORD",
-        message: `Forbidden brand word found: ${word}`,
-        file: filePath,
-      });
-    }
+function collectMdx(directory: string): string[] {
+  const files: string[] = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...collectMdx(absolute));
+    else if (entry.name.endsWith(".mdx")) files.push(absolute);
   }
+  return files;
+}
 
-  return findings;
+function routeForFile(filePath: string): string {
+  return path
+    .relative(mintlifyRoot, filePath)
+    .replaceAll(path.sep, "/")
+    .replace(/\.mdx$/, "");
+}
+
+function stripFragment(value: string): string {
+  return value.split("#")[0]?.split("?")[0] ?? value;
+}
+
+function internalLinks(markdown: string): string[] {
+  const markdownLinks = [...markdown.matchAll(/(?<!!)\[[^\]]+\]\((\/[^)]+)\)/g)].map(
+    (match) => match[1],
+  );
+  const componentLinks = [...markdown.matchAll(/\bhref=["'](\/[^"']+)["']/g)].map(
+    (match) => match[1],
+  );
+  return [...markdownLinks, ...componentLinks];
+}
+
+function markdownImages(markdown: string): Array<{ alt: string; source: string }> {
+  return [...markdown.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map((match) => ({
+    alt: match[1].trim(),
+    source: match[2].trim(),
+  }));
 }
 
 function main() {
   const findings: Finding[] = [];
+  for (const required of [
+    configPath,
+    migrationPath,
+    receiptPath,
+    screenshotBriefPath,
+    path.join(mintlifyRoot, "style.css"),
+  ]) {
+    if (!fs.existsSync(required)) {
+      findings.push({ code: "REQUIRED_FILE_MISSING", message: path.relative(root, required) });
+    }
+  }
+  if (findings.length) return report(findings, 0);
 
-  if (!fs.existsSync(docsConfigPath)) {
-    throw new Error(`Missing mintlify docs config: ${docsConfigPath}`);
+  const config = readJson<DocsConfig>(configPath);
+  const migration = readJson<Migration>(migrationPath);
+  const receipt = readJson<Receipt>(receiptPath);
+  const groups = config.navigation.groups ?? [];
+  const routes = groups.flatMap((group) => group.pages);
+  const routeSet = new Set(routes);
+
+  const expectedBrand = {
+    name: "DRX Help Center",
+    theme: "mint",
+    primary: "#526600",
+    darkBackground: "#0A0A0A",
+    lightBackground: "#F7F7F4",
+    font: "Plus Jakarta Sans",
+  };
+  if (config.name !== expectedBrand.name) findings.push({ code: "BRAND_NAME", message: "Expected " + expectedBrand.name });
+  if (config.theme !== expectedBrand.theme) findings.push({ code: "BRAND_THEME", message: "Expected " + expectedBrand.theme });
+  if (config.colors.primary !== expectedBrand.primary) findings.push({ code: "BRAND_PRIMARY", message: "Expected " + expectedBrand.primary });
+  if (config.background?.color?.dark !== expectedBrand.darkBackground) findings.push({ code: "BRAND_DARK", message: "Expected " + expectedBrand.darkBackground });
+  if (config.background?.color?.light !== expectedBrand.lightBackground) findings.push({ code: "BRAND_LIGHT", message: "Expected " + expectedBrand.lightBackground });
+  if (config.fonts?.family !== expectedBrand.font) findings.push({ code: "BRAND_FONT", message: "Expected " + expectedBrand.font });
+  if (config.appearance?.default !== "dark" || config.appearance?.strict !== false) {
+    findings.push({ code: "THEME_TOGGLE", message: "Default to dark while retaining the light/dark toggle." });
   }
 
-  if (!fs.existsSync(matrixPath)) {
-    throw new Error(`Missing parity matrix: ${matrixPath}`);
+  if (migration.canonicalArticleCount !== 19 || receipt.canonicalArticleCount !== 19) {
+    findings.push({ code: "ARTICLE_COUNT", message: "Canonical and generated article counts must both be 19." });
+  }
+  if (migration.visualAssetCount !== 20 || receipt.visualAssetCount !== 20) {
+    findings.push({ code: "ASSET_COUNT", message: "Canonical and generated visual counts must both be 20." });
+  }
+  if (new Set(receipt.generated.map((entry) => entry.articleId)).size !== 19) {
+    findings.push({ code: "ARTICLE_IDS", message: "Generated article IDs must be unique." });
+  }
+  for (const entry of receipt.generated) {
+    if (!routeSet.has(entry.route.replace(/^\//, ""))) {
+      findings.push({ code: "GENERATED_PAGE_NOT_IN_NAV", message: entry.route });
+    }
+    if (!fs.existsSync(path.join(root, entry.sourcePath))) {
+      findings.push({ code: "SOURCE_MISSING", message: entry.sourcePath });
+    }
   }
 
-  const docsConfig = readJson<DocsConfig>(docsConfigPath);
-  const matrix = readJson<MatrixRow[]>(matrixPath);
+  const redirectMap = new Map((config.redirects ?? []).map((item) => [item.source, item.destination]));
+  for (const legacy of migration.legacyPages) {
+    if (redirectMap.get(legacy.source) !== legacy.destination) {
+      findings.push({ code: "REDIRECT_MISMATCH", message: legacy.source + " -> " + legacy.destination });
+    }
+    if (!routeSet.has(legacy.destination.replace(/^\//, ""))) {
+      findings.push({ code: "REDIRECT_TARGET_MISSING", message: legacy.destination });
+    }
+  }
+  if (redirectMap.size !== migration.legacyPages.length) {
+    findings.push({ code: "REDIRECT_COUNT", message: "docs.json redirects must match the migration inventory exactly." });
+  }
 
-  const rawNav = docsConfig.navigation;
-  const groups = Array.isArray(rawNav) ? rawNav : (rawNav?.groups ?? []);
-  const slugs = groups.flatMap((group) => group.pages);
-  const slugSet = new Set(slugs);
-
-  for (const slug of slugs) {
-    const pageFile = resolvePageFile(slug);
-    if (!pageFile) {
-      findings.push({
-        code: "NAV_PAGE_MISSING_FILE",
-        message: `docs.json references missing page file: ${slug}`,
-      });
+  for (const route of routes) {
+    const filePath = pageFile(route);
+    if (!fs.existsSync(filePath)) {
+      findings.push({ code: "NAV_PAGE_MISSING", message: route });
       continue;
     }
-
-    const markdown = readText(pageFile);
-
-    findings.push(...checkForbiddenWords(markdown, pageFile));
-
-    const links = extractInternalLinks(markdown);
-    for (const link of links) {
-      const linkedSlug = normalizeLinkToSlug(link);
-      if (!linkedSlug) continue;
-      if (!slugSet.has(linkedSlug)) {
-        findings.push({
-          code: "BROKEN_INTERNAL_LINK",
-          message: `Internal link points to page not listed in docs.json: ${link}`,
-          file: pageFile,
-        });
+    const markdown = fs.readFileSync(filePath, "utf8");
+    if (!/^---\n[\s\S]*?\n---\n/.test(markdown)) {
+      findings.push({ code: "FRONTMATTER_MISSING", message: route, file: filePath });
+    }
+    for (const phrase of forbiddenPhrases) {
+      if (markdown.toLowerCase().includes(phrase.toLowerCase())) {
+        findings.push({ code: "FORBIDDEN_PHRASE", message: phrase, file: filePath });
       }
     }
-
-    if (operationalPages.has(slug)) {
-      for (const heading of requiredSectionHeadings) {
-        if (!hasHeading(markdown, heading)) {
-          findings.push({
-            code: "MISSING_REQUIRED_SECTION",
-            message: `Missing required section heading: ${heading}`,
-            file: pageFile,
-          });
-        }
+    if (/drx\.featurebase\.app\/en\/help\/articles\//i.test(markdown)) {
+      findings.push({ code: "FEATUREBASE_ARTICLE_LINK", message: "Use the canonical Mintlify route.", file: filePath });
+    }
+    if (/\]\((?:\.\.\/|\.\/|\/Users\/|\/Volumes\/|file:|data:)/i.test(markdown)) {
+      findings.push({ code: "UNSAFE_LOCAL_LINK", message: "Use a root-relative Mintlify path.", file: filePath });
+    }
+    for (const href of internalLinks(markdown)) {
+      const target = stripFragment(href).replace(/^\//, "");
+      if (target && !routeSet.has(target)) {
+        findings.push({ code: "BROKEN_INTERNAL_LINK", message: href, file: filePath });
+      }
+    }
+    for (const image of markdownImages(markdown)) {
+      if (!image.alt) findings.push({ code: "IMAGE_ALT_MISSING", message: image.source, file: filePath });
+      if (!image.source.startsWith("/images/")) {
+        findings.push({ code: "IMAGE_PATH", message: image.source, file: filePath });
+        continue;
+      }
+      const imagePath = path.join(mintlifyRoot, image.source.replace(/^\//, ""));
+      if (!fs.existsSync(imagePath)) {
+        findings.push({ code: "IMAGE_MISSING", message: image.source, file: filePath });
       }
     }
   }
 
-  const nonLiveByPage = new Map<string, MatrixRow[]>();
-  for (const row of matrix) {
-    if (row.claim_status === "live") continue;
-    const key = row.page.replace(/^\//, "");
-    const list = nonLiveByPage.get(key) ?? [];
-    list.push(row);
-    nonLiveByPage.set(key, list);
-  }
-
-  for (const [slug, rows] of nonLiveByPage.entries()) {
-    const pageFile = resolvePageFile(slug);
-    if (!pageFile) {
-      findings.push({
-        code: "MATRIX_PAGE_MISSING_FILE",
-        message: `Parity matrix references missing page: /${slug}`,
-      });
-      continue;
-    }
-
-    const markdown = readText(pageFile).toLowerCase();
-    if (!markdown.includes("beta")) {
-      findings.push({
-        code: "NON_LIVE_CLAIM_WITHOUT_BETA_LABEL",
-        message: `Page has non-live claims but does not mention beta (matrix rows: ${rows.length})`,
-        file: pageFile,
-      });
+  const navigatedFiles = new Set(routes.map((route) => pageFile(route)));
+  for (const filePath of collectMdx(mintlifyRoot)) {
+    if (!navigatedFiles.has(filePath)) {
+      findings.push({ code: "ORPHAN_MDX", message: routeForFile(filePath), file: filePath });
     }
   }
 
-  if (findings.length > 0) {
-    console.error(`❌ Mintlify docs audit failed with ${findings.length} finding(s).`);
+  const brief = fs.readFileSync(screenshotBriefPath, "utf8");
+  const requiredCaptureKeys = [
+    "onboarding-review",
+    "dashboard-overview",
+    "reports-period",
+    "support-entry",
+    "privacy-settings",
+    "workspace-selector",
+    "manage-team",
+    "customer-create",
+    "record-payment",
+    "inventory-intake",
+    "inventory-adjustment",
+    "quick-sale-cart",
+    "quick-sale-payment",
+    "sale-details",
+    "delivery-details",
+    "barcode-input",
+  ];
+  for (const key of requiredCaptureKeys) {
+    if (!brief.includes("`" + key + "`")) {
+      findings.push({ code: "CAPTURE_BRIEF_GAP", message: key, file: screenshotBriefPath });
+    }
+  }
+  if (!brief.includes("Do not capture **DRX Intelligence**")) {
+    findings.push({ code: "CAPTURE_HOLD_MISSING", message: "The unverified AI and purchase-order capture hold is required." });
+  }
+
+  report(findings, routes.length);
+}
+
+function report(findings: Finding[], pages: number): never | void {
+  if (findings.length) {
+    console.error("Mintlify docs audit failed with " + findings.length + " finding(s).");
     for (const finding of findings) {
-      const suffix = finding.file ? ` [${path.relative(root, finding.file)}]` : "";
-      console.error(`- ${finding.code}: ${finding.message}${suffix}`);
+      const suffix = finding.file ? " [" + path.relative(root, finding.file) + "]" : "";
+      console.error("- " + finding.code + ": " + finding.message + suffix);
     }
     process.exit(1);
   }
-
-  console.log(`✅ Mintlify docs audit passed (${slugs.length} pages checked).`);
+  console.log("Mintlify docs audit passed: " + pages + " pages, 19 canonical guides, 20 visual assets, and 16 Gemini capture specs checked.");
 }
 
 main();

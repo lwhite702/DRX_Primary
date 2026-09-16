@@ -45,7 +45,7 @@ The configured schedule is not proof that a cleanup ran successfully. If you nee
 
 ## Check screen privacy and exports
 
-**ProteXion Mode (Screen Privacy)** changes what is shown on screen. It does not itself permanently delete stored records or revoke account access.
+**Screen privacy** changes what is shown on screen. It does not itself permanently delete stored records or revoke account access.
 
 Check the actual Settings values rather than device or privacy badges on the workspace overview; those badges are not a reliable privacy status report in the beta.
 

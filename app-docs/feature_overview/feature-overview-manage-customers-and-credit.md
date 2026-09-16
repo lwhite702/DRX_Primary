@@ -7,7 +7,7 @@ description: "Keep customer records minimal and record payments against the corr
 
 ## Before you start
 
-Confirm the business, your customer and credit permissions, and the shop's approved credit policy. **Store Credit** in web navigation opens **Credit Management**. Here, credit means an amount a customer owes for later payment; it is not a gift card or proof that money was received.
+Confirm the business, your customer and credit permissions, and the shop's approved credit policy. **Payments** in web navigation opens customer balances and recorded payments. Here, credit means an amount a customer owes for later payment; it is not a gift card or proof that money was received.
 
 ![Illustrative customer and Record Payment forms using a fictional alias and balance.](../_assets/help-center/screenshots/customers-credit.png)
 
@@ -34,7 +34,7 @@ If a form requires contact information that your privacy policy does not allow, 
 ## Record a payment toward an existing balance
 
 1. Confirm the payment was actually received through the shop's approved process.
-2. Open **Store Credit** and choose **Record Payment**.
+2. Open **Payments** and choose **Record Payment**.
 3. Select **Customer**, enter **Amount ($)**, and choose the matching **Payment Method**: Cash, Check, Transfer, or Other.
 4. Use **Notes** only for a necessary reference. Do not enter card numbers or account credentials.
 5. Check the amount and previous payments, then choose **Record Payment** once.

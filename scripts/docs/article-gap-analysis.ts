@@ -9,6 +9,9 @@ const audit = JSON.parse(
 const review = JSON.parse(
   fs.readFileSync("docs/featurebase/audit-review.json", "utf8"),
 );
+const mintlifyReceipt = JSON.parse(
+  fs.readFileSync("docs/mintlify/generated-help-receipt.json", "utf8"),
+);
 
 function markdownFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -52,6 +55,9 @@ const report = {
   topics: review.coverage.length,
   gaps: review.productGaps,
   apiAuditComplete: review.completeApiAudit,
+  mintlifySourceReady:
+    mintlifyReceipt.canonicalArticleCount === 19 &&
+    mintlifyReceipt.visualAssetCount === 20,
   publicationReady: false,
 };
 writeJson(".featurebase/gap-analysis.json", report);

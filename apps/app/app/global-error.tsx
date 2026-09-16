@@ -40,9 +40,9 @@ export default function GlobalError({
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-xl font-semibold tracking-tight">Something went wrong</h1>
+            <h1 className="text-xl font-semibold tracking-tight">This page could not load</h1>
             <p className="text-sm text-neutral-400">
-              An unexpected application error occurred. You can reload the page or return to the dashboard.
+              Reload the page or return to the dashboard and try again.
             </p>
           </div>
 

@@ -226,9 +226,9 @@
     },
     {
       "id": "G9",
-      "topic": "Legacy Moxie and other docs destinations",
-      "source": "apps/marketing/lib/docs-links.ts",
-      "finding": "This PR updates Featurebase source and tooling only. Moxie/Mintlify synchronization and prior marketing deployment are not implied."
+      "topic": "Mintlify publication and help-link cutover",
+      "source": "docs/mintlify/help-center-migration.json",
+      "finding": "The repository now generates the 19 canonical guides and 20 visual assets for Mintlify. Live Mintlify deployment, the DRX-owned docs domain, and public help-link cutover remain unverified and must not be claimed from source alone."
     }
   ],
   "helpCenterVisuals": {

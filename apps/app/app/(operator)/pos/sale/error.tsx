@@ -21,7 +21,7 @@ export default function PosSaleError({
       <div>
         <h2 className="text-lg font-semibold text-destructive-foreground">POS Register Error</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          An error occurred in the point of sale interface. You can retry the operation or reload the register.
+          The point of sale is unavailable right now. Retry the operation or reload the register.
         </p>
       </div>
       <div className="flex justify-center gap-3 pt-2">
