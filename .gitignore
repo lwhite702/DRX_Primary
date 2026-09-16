@@ -96,3 +96,19 @@ credentials.json
 .credentials
 # Native iOS telemetry values generated from Doppler/Xcode Cloud.
 apps/ios/Configuration/Telemetry.generated.xcconfig
+
+# Fastlane local dependencies, artifacts and private signing material
+/.bundle/
+/vendor/bundle/
+/build/fastlane/
+/fastlane/report.xml
+/fastlane/README.md
+/fastlane/.env*
+/fastlane/screenshots/
+/fastlane/test_output/
+*.p8
+*.p12
+*.mobileprovision
+/fastlane/swift/
+
+/fastlane/FastlaneRunner

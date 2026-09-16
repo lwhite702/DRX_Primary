@@ -38,6 +38,7 @@
 		AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */; };
 		AE7D3C7CC88D491DD0E44DB2 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */; };
 		B1026D4A47BBA93D12CF9E5A /* CheckoutMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909A6994ECA4E9A32476783E /* CheckoutMathTests.swift */; };
+		B11D75F93C69434583B761B5 /* AppScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA0AA86E801C2744DE0C5DD /* AppScreenshotTests.swift */; };
 		BCAA050143D6794DB071711B /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC0CCEEB1F18309178BD8C6 /* DashboardView.swift */; };
 		BEA122DB8F726D4255CDD7D3 /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE87F196C9004F94F3DF00 /* ProductDetailView.swift */; };
 		C86299704C919CF44DEAF3CC /* IssueCreditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953882B6DCDFF21B7675A67D /* IssueCreditSheet.swift */; };
@@ -46,6 +47,7 @@
 		CEF72CA1E3A575322C8FC24F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CB8951AEBE6F21E84CE23D66 /* PrivacyInfo.xcprivacy */; };
 		D5941015F321F19E6C34BBDA /* DRXWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09C4521D08CF914F8427B58 /* DRXWebView.swift */; };
 		D758055376EE25EFC0EA32A2 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA881E95C60310AC4903A0B1 /* TelemetryService.swift */; };
+		E1D6A497F284D91BB03B8868 /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8ECA20893687E299A9B86A9 /* SnapshotHelper.swift */; };
 		E3B5577DCE2E3E62A6C96DF4 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0DF65613D95A790A5EFE0755 /* ClerkKitUI */; };
 		E5DC699832F98C029A5D0623 /* OnboardingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF80A1A5BFB8884101C9DDC /* OnboardingModel.swift */; };
 		E79EF87AF6AAD9A9EB78D423 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = E90E5E4D4537197DB93C1307 /* Sentry */; };
@@ -58,6 +60,13 @@
 
 /* Begin PBXContainerItemProxy section */
 		65F53F33434B53E722016897 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4520B45F499DC25F383DD814 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5FC126EB9A548FFF4B531C0F;
+			remoteInfo = DRXApp;
+		};
+		AFBBB01B086AF8CF3DC4C177 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4520B45F499DC25F383DD814 /* Project object */;
 			proxyType = 1;
@@ -100,6 +109,7 @@
 		75E2395234C3E6A101C2D452 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
 		75F617B1A2AB5710EDDA5FB4 /* CreditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditView.swift; sourceTree = "<group>"; };
 		77A8EDF8E5F5CCCC4336ED53 /* CustomersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomersView.swift; sourceTree = "<group>"; };
+		7AA0AA86E801C2744DE0C5DD /* AppScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScreenshotTests.swift; sourceTree = "<group>"; };
 		7F3D0F8920A8D613B9E54100 /* AddCustomerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCustomerSheet.swift; sourceTree = "<group>"; };
 		874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CC80B197BB4EAC341A692EC /* POSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSView.swift; sourceTree = "<group>"; };
@@ -112,6 +122,7 @@
 		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
 		A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryServiceTests.swift; sourceTree = "<group>"; };
 		AA881E95C60310AC4903A0B1 /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
+		B66C538E7475A993669D6854 /* DRXAppScreenshotTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DRXAppScreenshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B795B70D7DE21081FD179D19 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		BBF80A1A5BFB8884101C9DDC /* OnboardingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingModel.swift; sourceTree = "<group>"; };
@@ -121,6 +132,7 @@
 		DB9B29F3A2EB07F6584C3123 /* AccountAndLegalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAndLegalView.swift; sourceTree = "<group>"; };
 		DE0B9BED7BD4DC61585B2716 /* RecordPaymentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordPaymentSheet.swift; sourceTree = "<group>"; };
 		E86BDB2CD743B3AD8FB8E1EE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		E8ECA20893687E299A9B86A9 /* SnapshotHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		F09C4521D08CF914F8427B58 /* DRXWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXWebView.swift; sourceTree = "<group>"; };
 		F0C6B56CDB918459390B7EA2 /* CheckoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -173,6 +185,7 @@
 				716E47E8C63108F433929A80 /* DRXApp */,
 				3723D5134D0DC66A8ED0395D /* DRXAppTests */,
 				35AB48A3A73EF83116AFADFE /* DRXAppUITests */,
+				45BE0E295753293EFD2BE9F1 /* ScreenshotTests */,
 				4887DBEFDB8A90284B1E8516 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -227,10 +240,21 @@
 			path = Tokens;
 			sourceTree = "<group>";
 		};
+		45BE0E295753293EFD2BE9F1 /* ScreenshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				7AA0AA86E801C2744DE0C5DD /* AppScreenshotTests.swift */,
+				E8ECA20893687E299A9B86A9 /* SnapshotHelper.swift */,
+			);
+			name = ScreenshotTests;
+			path = ../../fastlane/ScreenshotTests;
+			sourceTree = "<group>";
+		};
 		4887DBEFDB8A90284B1E8516 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				483B2AFD834F1E38EF79CF3F /* Deelrx CRM.app */,
+				B66C538E7475A993669D6854 /* DRXAppScreenshotTests.xctest */,
 				874D4BF6B1EEFBBEA8D9CAD5 /* DRXAppTests.xctest */,
 				63FB69DE830E7800B13E0FDA /* DRXAppUITests.xctest */,
 			);
@@ -433,6 +457,24 @@
 			productReference = 483B2AFD834F1E38EF79CF3F /* Deelrx CRM.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D48060AEA7AB61F5D87EE1A9 /* DRXAppScreenshotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5FEF0C7AC719E6C9FFF2062E /* Build configuration list for PBXNativeTarget "DRXAppScreenshotTests" */;
+			buildPhases = (
+				4DCB1FD33669B6B0B250B4A4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D39F02158A2CF19A2654A99F /* PBXTargetDependency */,
+			);
+			name = DRXAppScreenshotTests;
+			packageProductDependencies = (
+			);
+			productName = DRXAppScreenshotTests;
+			productReference = B66C538E7475A993669D6854 /* DRXAppScreenshotTests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		F719BA7B6F64935FE564D7B5 /* DRXAppUITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C82E294EE062D1A1E9E2470 /* Build configuration list for PBXNativeTarget "DRXAppUITests" */;
@@ -468,6 +510,11 @@
 						DevelopmentTeam = L8R42BJ54K;
 						ProvisioningStyle = Automatic;
 					};
+					D48060AEA7AB61F5D87EE1A9 = {
+						DevelopmentTeam = L8R42BJ54K;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 5FC126EB9A548FFF4B531C0F;
+					};
 					F719BA7B6F64935FE564D7B5 = {
 						DevelopmentTeam = L8R42BJ54K;
 						ProvisioningStyle = Automatic;
@@ -498,6 +545,7 @@
 				5FC126EB9A548FFF4B531C0F /* DRXApp */,
 				005008D9108E0C10FDB31BC7 /* DRXAppTests */,
 				F719BA7B6F64935FE564D7B5 /* DRXAppUITests */,
+				D48060AEA7AB61F5D87EE1A9 /* DRXAppScreenshotTests */,
 			);
 		};
 /* End PBXProject section */
@@ -520,6 +568,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3AEBF21C2E0C526E49BA385 /* DRXAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4DCB1FD33669B6B0B250B4A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B11D75F93C69434583B761B5 /* AppScreenshotTests.swift in Sources */,
+				E1D6A497F284D91BB03B8868 /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -589,9 +646,32 @@
 			target = 5FC126EB9A548FFF4B531C0F /* DRXApp */;
 			targetProxy = 65F53F33434B53E722016897 /* PBXContainerItemProxy */;
 		};
+		D39F02158A2CF19A2654A99F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5FC126EB9A548FFF4B531C0F /* DRXApp */;
+			targetProxy = AFBBB01B086AF8CF3DC4C177 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1D8AD2C56BA3755A8D634C87 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.screenshots;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DRXApp;
+			};
+			name = Debug;
+		};
 		5D22643E774C0B0C43F8F869 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9A457BCD7B55819E511BF905 /* Debug.xcconfig */;
@@ -644,6 +724,24 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.uitests;
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DRXApp;
+			};
+			name = Release;
+		};
+		91996061F2F0D1C1F3C6A91D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wrelik.drx.screenshots;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = DRXApp;
 			};
@@ -843,6 +941,15 @@
 			buildConfigurations = (
 				5F3209F6D7B033436173F7A1 /* Debug */,
 				F026C38202D55DF618FFDF2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5FEF0C7AC719E6C9FFF2062E /* Build configuration list for PBXNativeTarget "DRXAppScreenshotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D8AD2C56BA3755A8D634C87 /* Debug */,
+				91996061F2F0D1C1F3C6A91D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
