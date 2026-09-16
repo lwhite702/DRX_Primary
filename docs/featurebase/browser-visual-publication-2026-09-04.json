@@ -1,0 +1,1196 @@
+{
+  "schemaVersion": 1,
+  "issue": "WRE-92",
+  "pullRequest": 171,
+  "helpCenterId": "l4o5pamx855mr65p",
+  "publishedAt": "2026-09-05T03:29:18.102Z",
+  "method": "authenticated-browser-editor",
+  "verificationMethod": "public-html-export-and-browser",
+  "contentHash": "004a05606fc5c20b4d5ae9cc4c6a972aa13bcb70348e65f4be9ea80789d5d6f1",
+  "publicVerification": {
+    "collections": 6,
+    "articles": 19,
+    "visualAssets": 20,
+    "visualPlacements": 23,
+    "missingArticles": 0,
+    "unexpectedArticles": 0,
+    "semanticContentMatches": 19,
+    "uniqueVisualKeys": 20,
+    "imageRequestsChecked": 23,
+    "imageRequestsSuccessful": 23,
+    "unexpectedImages": 0
+  },
+  "responsiveVerification": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "articleClientWidth": 358,
+    "articlesChecked": ["6417807", "0236106", "4735029"],
+    "horizontalOverflowFailures": 0,
+    "imageLoadFailures": 0,
+    "captionOverflowFailures": 0,
+    "darkThemeVerified": true,
+    "lightThemeVerified": false,
+    "lightThemeNote": "The published Help Center remained in its configured dark theme when the system color preference was emulated as light."
+  },
+  "hostedPlatformWarnings": [
+    {
+      "owner": "Featurebase",
+      "scope": "clean public article load",
+      "messages": ["React hydration error 418", "React hydration error 423"],
+      "observedImpact": "No missing content, failed image, caption error, or measured layout failure."
+    }
+  ],
+  "links": {
+    "uniqueDestinations": 15,
+    "successfulHttpsGets": 14,
+    "validMailtoLinks": 1,
+    "failedHttpsGets": 0
+  },
+  "historicalHeadingFragments": {
+    "previousIds": 150,
+    "currentLiveHeadings": 97,
+    "preservedPreviousIds": 0,
+    "note": "The earlier text publication regenerated heading IDs. This visual pass records the current public IDs but cannot restore the removed aliases."
+  },
+  "articles": [
+    {
+      "id": "1633388",
+      "title": "Get started with DRX",
+      "slug": "1633388-get-started-with-drx",
+      "state": "live",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1633388-get-started-with-drx",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "k38cpzix8a5",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "eio3oza316a",
+          "text": "Sign in or create an owner account"
+        },
+        {
+          "level": "H2",
+          "id": "dty2bw2xx18",
+          "text": "Set up your business"
+        },
+        {
+          "level": "H2",
+          "id": "3kcztzczwfc",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "2tzlwewd8o5",
+          "text": "If setup does not finish"
+        },
+        {
+          "level": "H2",
+          "id": "l55rz57437q",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "early-access waitlist",
+          "url": "https://deelrxcrm.com/waitlist"
+        },
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Switch workspaces and check access",
+          "url": "https://drx.featurebase.app/en/help/articles/4735029"
+        },
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "getting-started-header",
+          "attachmentIdentity": "01a06f61-7d09-7dde-828b-8eb0e1c00d0d",
+          "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        }
+      ]
+    },
+    {
+      "id": "2502678",
+      "title": "Dashboard and reports",
+      "slug": "2502678-dashboard-and-reports",
+      "state": "live",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 2,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2502678-dashboard-and-reports",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "dbz8k7s53wa",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "saxwfbixok4",
+          "text": "Check your numbers"
+        },
+        {
+          "level": "H2",
+          "id": "yzmk6rwt33r",
+          "text": "Export reconciliation data"
+        },
+        {
+          "level": "H2",
+          "id": "w7x1a08p0pl",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "loofla5ccqt",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        },
+        {
+          "text": "Troubleshoot dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/3489602"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "dashboard-reports-screen",
+          "attachmentIdentity": "01a06f65-71eb-72cf-92c7-678f27503739",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Check your numbers"
+        }
+      ]
+    },
+    {
+      "id": "2070517",
+      "title": "Help and support",
+      "slug": "2070517-help-and-support",
+      "state": "live",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 3,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2070517-help-and-support",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "ye45e83x228",
+          "text": "Get help with a private issue"
+        },
+        {
+          "level": "H2",
+          "id": "4c8oko5wzql",
+          "text": "Share product feedback"
+        },
+        {
+          "level": "H2",
+          "id": "8qpzzz84e83",
+          "text": "Check device availability"
+        },
+        {
+          "level": "H2",
+          "id": "fqa54lkpkl6",
+          "text": "What happens next"
+        }
+      ],
+      "links": [
+        {
+          "text": "DRX support",
+          "url": "mailto:support@deelrxcrm.com"
+        },
+        {
+          "text": "DRX feedback",
+          "url": "https://drx.featurebase.app/"
+        },
+        {
+          "text": "early-access waitlist",
+          "url": "https://deelrxcrm.com/waitlist"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "safe-support-screenshot",
+          "attachmentIdentity": "01a06f66-97bf-72a5-915e-52157f9fbb71",
+          "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "Get help with a private issue"
+        }
+      ]
+    },
+    {
+      "id": "3489602",
+      "title": "Troubleshoot dashboard and reports",
+      "slug": "3489602-troubleshoot-dashboard-and-reports",
+      "state": "live",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 4,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3489602-troubleshoot-dashboard-and-reports",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "lb512aiisqo",
+          "text": "A total looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "btkcbzki880",
+          "text": "A page is empty or fails to load"
+        },
+        {
+          "level": "H2",
+          "id": "5qqwiiidyey",
+          "text": "An export fails"
+        },
+        {
+          "level": "H2",
+          "id": "ktfyopke8kp",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "dashboard-reports-screen",
+          "attachmentIdentity": "01a06f67-2fb8-75b0-91a2-00e11f51b426",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "A total looks wrong"
+        }
+      ]
+    },
+    {
+      "id": "6417807",
+      "title": "Privacy and minimal data",
+      "slug": "6417807-privacy-and-minimal-data",
+      "state": "live",
+      "parentId": "5580893",
+      "collection": "Privacy & Security",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6417807-privacy-and-minimal-data",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "1k4dqdaz76l",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "6e16cpk8ie6",
+          "text": "Choose a privacy preset"
+        },
+        {
+          "level": "H2",
+          "id": "1wk102eoero",
+          "text": "Review and save the settings"
+        },
+        {
+          "level": "H2",
+          "id": "ea3t4ldc7lo",
+          "text": "What happens when cleanup runs"
+        },
+        {
+          "level": "H2",
+          "id": "lizlq5fwab8",
+          "text": "Check screen privacy and exports"
+        },
+        {
+          "level": "H2",
+          "id": "p1dw3iizeyf",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "privacy-header",
+          "attachmentIdentity": "01a06f67-d4f4-7ea2-8add-e9483606106d",
+          "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        },
+        {
+          "id": "privacy-retention-timeline",
+          "attachmentIdentity": "01a06f69-3852-7505-a8d8-c4061cf404b1",
+          "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "Choose a privacy preset"
+        },
+        {
+          "id": "privacy-settings-screen",
+          "attachmentIdentity": "01a06f69-b0a9-7bc9-9868-a766b03f6a6c",
+          "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Review and save the settings"
+        }
+      ]
+    },
+    {
+      "id": "3948745",
+      "title": "Troubleshoot workspaces and access",
+      "slug": "3948745-troubleshoot-workspaces-and-access",
+      "state": "live",
+      "parentId": "4525056",
+      "collection": "Roles",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3948745-troubleshoot-workspaces-and-access",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "zy33s1y228d",
+          "text": "You cannot sign in"
+        },
+        {
+          "level": "H2",
+          "id": "f6e8za1c4os",
+          "text": "The business you need is missing"
+        },
+        {
+          "level": "H2",
+          "id": "m4e2k28qq37",
+          "text": "A page or action is blocked"
+        },
+        {
+          "level": "H2",
+          "id": "178q7k32ocm",
+          "text": "The wrong business appears"
+        },
+        {
+          "level": "H2",
+          "id": "8ia4i4e4smi",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "workspace-access-recovery",
+          "attachmentIdentity": "01a06f6a-6b1e-78d6-a928-8dce2e286c56",
+          "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "You cannot sign in"
+        }
+      ]
+    },
+    {
+      "id": "4735029",
+      "title": "Switch workspaces and check access",
+      "slug": "4735029-switch-workspaces-and-check-access",
+      "state": "live",
+      "parentId": "4525056",
+      "collection": "Roles",
+      "publicOrder": 2,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/4735029-switch-workspaces-and-check-access",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "q75dx77iwmo",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "y850ciyaoa2",
+          "text": "Switch businesses"
+        },
+        {
+          "level": "H2",
+          "id": "2mit2i8l5l8",
+          "text": "Invite a team member"
+        },
+        {
+          "level": "H2",
+          "id": "k1f4mzwcycc",
+          "text": "Review or remove access"
+        },
+        {
+          "level": "H2",
+          "id": "51f2l8mi3fs",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "m7mbt3p3rtc",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Troubleshoot workspaces and access",
+          "url": "https://drx.featurebase.app/en/help/articles/3948745"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "workspace-access-header",
+          "attachmentIdentity": "01a06f6b-1a52-72b5-a59c-b5103dd16c06",
+          "alt": "Two workspaces connect to separate groups of scoped team access.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        },
+        {
+          "id": "workspace-team-screen",
+          "attachmentIdentity": "01a06f6b-b1c0-7f5f-82f1-5b74647bac80",
+          "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Switch businesses"
+        }
+      ]
+    },
+    {
+      "id": "1831819",
+      "title": "Customers and store credit",
+      "slug": "1831819-customers-and-store-credit",
+      "state": "live",
+      "parentId": "6393095",
+      "collection": "Customers",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1831819-customers-and-store-credit",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "7zciwkbk31m",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "dac4161ym1p",
+          "text": "Find or add a customer"
+        },
+        {
+          "level": "H2",
+          "id": "e0x6ay3ac4w",
+          "text": "Attach a customer at checkout"
+        },
+        {
+          "level": "H2",
+          "id": "yo10txsb4lq",
+          "text": "Record a payment toward an existing balance"
+        },
+        {
+          "level": "H2",
+          "id": "ozqdik46am8",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "1r42o3tmp1o",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Troubleshoot customers and credit",
+          "url": "https://drx.featurebase.app/en/help/articles/9156766"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "customers-credit-header",
+          "attachmentIdentity": "01a06f6c-8ae8-7d36-8b47-1fc8081f4baa",
+          "alt": "A customer alias card connects to a purchase and received-payment ledger.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        },
+        {
+          "id": "customers-credit-screen",
+          "attachmentIdentity": "01a06f6d-05e0-72fa-b24b-cfbda4ebe203",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Find or add a customer"
+        }
+      ]
+    },
+    {
+      "id": "9156766",
+      "title": "Troubleshoot customers and credit",
+      "slug": "9156766-troubleshoot-customers-and-credit",
+      "state": "live",
+      "parentId": "6393095",
+      "collection": "Customers",
+      "publicOrder": 2,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9156766-troubleshoot-customers-and-credit",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "i61y3k4pbaz",
+          "text": "A customer will not save or appear"
+        },
+        {
+          "level": "H2",
+          "id": "dq4dzrzz376",
+          "text": "Customer history is missing"
+        },
+        {
+          "level": "H2",
+          "id": "66qm2ksszxi",
+          "text": "Credit is unavailable"
+        },
+        {
+          "level": "H2",
+          "id": "7l41a7i02ym",
+          "text": "A payment or balance looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "xepx8spsepo",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "customers-credit-screen",
+          "attachmentIdentity": "01a06f6d-a655-781b-bd2e-785d663e464e",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "A customer will not save or appear"
+        },
+        {
+          "id": "uncertain-checkout-payment",
+          "attachmentIdentity": "01a06f6e-1e37-7e2c-be38-3792858ecd05",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "A payment or balance looks wrong"
+        }
+      ]
+    },
+    {
+      "id": "6300641",
+      "title": "Inventory intake and adjustments",
+      "slug": "6300641-inventory-intake-and-adjustments",
+      "state": "live",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6300641-inventory-intake-and-adjustments",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "cb804qwe2ro",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "xapyzxoo4m3",
+          "text": "Add or edit a product"
+        },
+        {
+          "level": "H2",
+          "id": "rdxc4mbwp06",
+          "text": "Receive goods"
+        },
+        {
+          "level": "H2",
+          "id": "rcak8fbcrxx",
+          "text": "Correct a count"
+        },
+        {
+          "level": "H2",
+          "id": "x7at8qerlz5",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "1qf8431x4dd",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "inventory-intake-header",
+          "attachmentIdentity": "01a06f6e-d6f1-79e5-b1bf-4300d6d326f7",
+          "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        },
+        {
+          "id": "inventory-intake-screen",
+          "attachmentIdentity": "01a06f6f-4d10-7349-868d-6a6e58979fa4",
+          "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Add or edit a product"
+        }
+      ]
+    },
+    {
+      "id": "0272622",
+      "title": "Troubleshoot inventory and audit",
+      "slug": "0272622-troubleshoot-inventory-and-audit",
+      "state": "live",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 2,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "a4ki5dy3w36",
+          "text": "Intake will not save"
+        },
+        {
+          "level": "H2",
+          "id": "bmkfoxwtf5w",
+          "text": "A saved change did not affect the count"
+        },
+        {
+          "level": "H2",
+          "id": "2imse2ef1fy",
+          "text": "An adjustment is rejected"
+        },
+        {
+          "level": "H2",
+          "id": "ari7q288ccp",
+          "text": "Inventory could not refresh"
+        },
+        {
+          "level": "H2",
+          "id": "ssato0es5iq",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "inventory-save-and-count",
+          "attachmentIdentity": "01a06f70-0f3f-7bd5-93c0-b5378ac82cfb",
+          "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "Intake will not save"
+        }
+      ]
+    },
+    {
+      "id": "2995914",
+      "title": "DRX Intelligence",
+      "slug": "2995914-drx-intelligence",
+      "state": "live",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 3,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2995914-drx-intelligence",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "mw7szfay0kc",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "zaql7pt6pkb",
+          "text": "Review a suggestion"
+        },
+        {
+          "level": "H2",
+          "id": "krz10x2laf5",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "tmfk64mebs6",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Troubleshoot AI Intelligence",
+          "url": "https://drx.featurebase.app/en/help/articles/9003136"
+        }
+      ],
+      "visuals": []
+    },
+    {
+      "id": "3974136",
+      "title": "Purchase orders (beta)",
+      "slug": "3974136-purchase-orders-beta",
+      "state": "live",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 4,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3974136-purchase-orders-beta",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "si0x5la23zt",
+          "text": "Check availability first"
+        },
+        {
+          "level": "H2",
+          "id": "243dkzkqwr5",
+          "text": "Record goods that have arrived"
+        },
+        {
+          "level": "H2",
+          "id": "ecawp2iel27",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "w6txff87fl6",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "visuals": []
+    },
+    {
+      "id": "9003136",
+      "title": "Troubleshoot AI Intelligence",
+      "slug": "9003136-troubleshoot-ai-intelligence",
+      "state": "live",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 5,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9003136-troubleshoot-ai-intelligence",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "2i0xtlak37i",
+          "text": "Intelligence is missing or analysis fails"
+        },
+        {
+          "level": "H2",
+          "id": "wy40c8kw8tb",
+          "text": "A suggestion looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "wbw3tlpmy1d",
+          "text": "A change has an uncertain result"
+        },
+        {
+          "level": "H2",
+          "id": "zaakkbcar48",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": []
+    },
+    {
+      "id": "0236106",
+      "title": "Quick Sale checkout",
+      "slug": "0236106-quick-sale-checkout",
+      "state": "live",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 1,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0236106-quick-sale-checkout",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "dbwoz1m45bb",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "foz4biya8c2",
+          "text": "Build the sale"
+        },
+        {
+          "level": "H2",
+          "id": "w6oof3y7w24",
+          "text": "Record payment and finish"
+        },
+        {
+          "level": "H2",
+          "id": "awzzf4bwtzy",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "zteafw37m8z",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "quick-sale-header",
+          "attachmentIdentity": "01a06f70-bdc7-7b72-8768-43610edd0f3c",
+          "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
+          "caption": null,
+          "kind": "header",
+          "placement": "lead",
+          "heading": null
+        },
+        {
+          "id": "quick-sale-screen",
+          "attachmentIdentity": "01a06f71-4b8a-71d8-b7d3-c85a38a2fb25",
+          "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Build the sale"
+        }
+      ]
+    },
+    {
+      "id": "5281725",
+      "title": "Sales history and receipts",
+      "slug": "5281725-sales-history-and-receipts",
+      "state": "live",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 2,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/5281725-sales-history-and-receipts",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "ztlfwemo6pi",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "2o3y4lokcac",
+          "text": "Find a sale"
+        },
+        {
+          "level": "H2",
+          "id": "4o0wo7ylwic",
+          "text": "Review an authorized correction"
+        },
+        {
+          "level": "H2",
+          "id": "74ppa0y67rt",
+          "text": "Check a receipt"
+        },
+        {
+          "level": "H2",
+          "id": "l82pyx6eltt",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "2w1113xaslf",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "sales-history-screen",
+          "attachmentIdentity": "01a06f72-c8ad-7782-82ee-2c11834f0d92",
+          "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Find a sale"
+        }
+      ]
+    },
+    {
+      "id": "3230948",
+      "title": "Troubleshoot checkout and payments",
+      "slug": "3230948-troubleshoot-checkout-and-payments",
+      "state": "live",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 3,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3230948-troubleshoot-checkout-and-payments",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "w3c7ytqw1ei",
+          "text": "The cart will not load or a product is missing"
+        },
+        {
+          "level": "H2",
+          "id": "p1pwqq1babe",
+          "text": "You cannot continue"
+        },
+        {
+          "level": "H2",
+          "id": "aeq4pio11b0",
+          "text": "Complete Sale is disabled or rejected"
+        },
+        {
+          "level": "H2",
+          "id": "kxk102b23l0",
+          "text": "The result is uncertain"
+        },
+        {
+          "level": "H2",
+          "id": "73cd66cy7bt",
+          "text": "A receipt did not arrive"
+        },
+        {
+          "level": "H2",
+          "id": "sre3tb506dm",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "uncertain-checkout-payment",
+          "attachmentIdentity": "01a06f73-bfae-7cf7-95c0-21323668628b",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "The result is uncertain"
+        }
+      ]
+    },
+    {
+      "id": "7723456",
+      "title": "Sales and deliveries (beta)",
+      "slug": "7723456-sales-and-deliveries-beta",
+      "state": "live",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 4,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "xro63o17e4o",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "2ws7kq4dxy7",
+          "text": "Include delivery in a sale"
+        },
+        {
+          "level": "H2",
+          "id": "2ywdtr5edyq",
+          "text": "Update an enabled delivery task"
+        },
+        {
+          "level": "H2",
+          "id": "myyqdbai32d",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "4c185zzs0os",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "deliveries-screen",
+          "attachmentIdentity": "01a06f74-cbe4-7e11-bdbd-4c6ed2277f3d",
+          "alt": "Illustrative completed sale linked to fictional delivery details.",
+          "caption": "Illustrative screen with fictional data.",
+          "kind": "screenshot",
+          "placement": "before-heading",
+          "heading": "Include delivery in a sale"
+        }
+      ]
+    },
+    {
+      "id": "2709969",
+      "title": "Connect barcode scanners",
+      "slug": "2709969-connect-barcode-scanners",
+      "state": "live",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 5,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2709969-connect-barcode-scanners",
+      "headings": [
+        {
+          "level": "H2",
+          "id": "66wraoq3o62",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "zzam3r76osy",
+          "text": "Connect and check a scanner"
+        },
+        {
+          "level": "H2",
+          "id": "do770lm1py5",
+          "text": "If scanning does not work"
+        },
+        {
+          "level": "H2",
+          "id": "qy5zlr7wycd",
+          "text": "What happens next"
+        },
+        {
+          "level": "H2",
+          "id": "6d4e4t4yes7",
+          "text": "Related articles"
+        }
+      ],
+      "links": [
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        }
+      ],
+      "visuals": [
+        {
+          "id": "barcode-keyboard-path",
+          "attachmentIdentity": "01a06f5a-73c8-76fd-97e7-00f8e6294c8f",
+          "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+          "caption": null,
+          "kind": "diagram",
+          "placement": "before-heading",
+          "heading": "Connect and check a scanner"
+        }
+      ]
+    }
+  ],
+  "untouchedDrafts": [
+    {
+      "id": "0023434",
+      "title": "Untitled document"
+    },
+    {
+      "id": "6969477",
+      "title": "Test Article with parentId"
+    },
+    {
+      "id": "4502473",
+      "title": "Test Article Payload 2"
+    }
+  ],
+  "remainingVerificationLimits": [
+    "FEATUREBASE_API_KEY is unavailable, so the authenticated API export and API dry run could not run.",
+    "The configured public Help Center did not expose a light theme for verification.",
+    "Featurebase emits React hydration errors 418 and 423 on a clean public load.",
+    "The 150 historical section-fragment aliases removed during the earlier text publication remain unavailable."
+  ]
+}

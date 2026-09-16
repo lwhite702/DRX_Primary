@@ -12,6 +12,14 @@ import {
 } from "@/lib/help/featurebase-taxonomy";
 
 describe("Featurebase taxonomy alignment", () => {
+  it("preserves complete rendered HTML for legacy read-only consumers", () => {
+    expect(helpCenterData).toHaveLength(19);
+    for (const article of helpCenterData) {
+      expect(article.content).toContain("<h2");
+      expect(article.content).toContain("<p>");
+      expect(article.content).not.toContain("\n---\n");
+    }
+  });
   it("maps every help-center category explicitly", () => {
     const unmapped = findUnmappedCategories(helpCenterData, FEATUREBASE_CATEGORY_MAP);
     expect(unmapped).toEqual([]);

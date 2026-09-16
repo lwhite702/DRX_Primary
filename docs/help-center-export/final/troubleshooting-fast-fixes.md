@@ -1,48 +1,7 @@
-# Troubleshooting: Fast Fixes First
+# Moved: Help and support
 
-When something feels off, run this sequence before deep debugging.
+This historical source is excluded from Featurebase imports. Use [Help and support](../../../app-docs/feature_overview/help-and-support.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Help and support](https://drx.featurebase.app/en/help/articles/2070517).
 
-Gives a quick response path for the most common DRX issues.
-
-## Who can use it
-
-All roles (within their access scope)
-
-## Before you start
-
-- Capture what route failed and what action you took right before it.
-
-## Step-by-step
-
-1. Confirm workspace and user role context.
-2. Refresh the route and retry the action once.
-3. Validate source data in supporting pages (sales, inventory, customer).
-4. Check whether issue is permission, data, or flow-state related.
-5. Escalate with exact route + timestamp + user role + action details.
-
-## What happens next
-
-Most issues resolve quickly; escalations become cleaner when needed.
-
-## Tips
-
-- Report with specifics, not “it broke.”
-
-## Common mistakes
-
-- Jumping straight to manual data edits before confirming root cause.
-
-## Troubleshooting
-
-- POS issue: confirm product visibility and session state.
-- Inventory issue: compare intake/adjustments/sales.
-- Access issue: verify role permission mapping.
-
-## Related articles
-
-- `quick-pos-run-sale.md`
-- `inventory-audit-fixes.md`
-- `roles-permissions-staff-access.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

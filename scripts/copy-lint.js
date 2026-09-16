@@ -38,10 +38,8 @@ const REPOSITORY_WIDE_PHRASES = [
   "ProteXion Mode",
   "DRX Vault Mode",
   "Minimal Data Engine",
-  "Quick Sale",
   "Operator Dashboard",
   "Credit Management",
-  "Store Credit",
   "Privacy Profile",
   "Something went wrong",
   "An error occurred",
@@ -105,7 +103,7 @@ const CORE_COPY_FILES = [
   "apps/ios/DRXApp/Features/Credit/CreditView.swift",
   "apps/ios/DRXApp/Features/Onboarding/NativeOnboardingView.swift",
   "apps/ios/DRXApp/Features/Reports/ReportsView.swift",
-  "mintlify/drx-privacy-protexion-protocol.mdx",
+  "mintlify/privacy/privacy-and-minimal-data.mdx",
   "mintlify/glossary.mdx",
 ];
 
@@ -311,6 +309,27 @@ console.log(
 );
 CORE_COPY_FILES.forEach(checkFile);
 checkRepositoryWidePhrases();
+const helpManifest = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "../docs/featurebase/help-center-manifest.json"),
+    "utf8",
+  ),
+);
+helpManifest.articles.forEach((article) => {
+  checkFile(article.sourcePath);
+  const content = fs.readFileSync(
+    path.join(__dirname, "..", article.sourcePath),
+    "utf8",
+  );
+  if (
+    /Business CRM Mode|DRX CRM|Settings\s*>\s*Staff|\]\([^)]*\/support\)/i.test(
+      content,
+    )
+  ) {
+    console.error(`Outdated Help Center term or route: ${article.sourcePath}`);
+    violationsCount += 1;
+  }
+});
 checkRequiredFragments();
 checkCopyInventory();
 

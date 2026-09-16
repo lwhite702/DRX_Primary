@@ -1,0 +1,1149 @@
+{
+  "issue": "WRE-92",
+  "baseCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
+  "repositorySourceRecordsReviewed": 100,
+  "appDocsSources": 34,
+  "legacyFinalSources": 16,
+  "legacySeedEntries": 50,
+  "records": [
+    {
+      "sourcePath": "app-docs/feature_overview/ai-inventory-insights.md",
+      "originalTitle": "AI inventory insights",
+      "originalSha256": "5109cf214ad6500e118ded2ac8ca681136398f12c00ce1d4c5b62174f720708a",
+      "action": "reference-stub",
+      "replacementId": "2995914",
+      "replacementSource": "app-docs/feature_overview/drx-intelligence.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/dashboard-overview.md",
+      "originalTitle": "Dashboard Overview",
+      "originalSha256": "7e1a8768c51d1a7d3af72bf0f6d4720cd19cde8fe83573613685d2f6b30b6874",
+      "action": "reference-stub",
+      "replacementId": "2502678",
+      "replacementSource": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
+      "originalTitle": "DRX Intelligence",
+      "originalSha256": "467780e072586b08f4b7947b4f26bc812bcae6acd57b3c3d0b1268bfcc93dc87",
+      "action": "update",
+      "replacementId": "2995914",
+      "replacementSource": "app-docs/feature_overview/drx-intelligence.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/admin-tools-overview.md"
+      ]
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalTitle": "Dashboard and reports",
+      "originalSha256": "9b9884063fe8940fc6859c5d7db408d7542a1d69a467e7cb44f73b336a2a278d",
+      "action": "update",
+      "replacementId": "2502678",
+      "replacementSource": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-inventory-receive-and-adjust.md",
+      "originalTitle": "Inventory intake and audit",
+      "originalSha256": "11d318815fc1b42443f6b4d64ab516545965ec482f96f49120631f044335a95b",
+      "action": "reference-stub",
+      "replacementId": "6300641",
+      "replacementSource": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "originalTitle": "Customers and store credit",
+      "originalSha256": "5a8bd1acca26be3bfb3c9e5095ed5a71521995a6666dffedcb50dede203d6b19",
+      "action": "update",
+      "replacementId": "1831819",
+      "replacementSource": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "originalTitle": "Privacy and minimal data",
+      "originalSha256": "16ccb111a71fcf5655273118d6d02e7b7267631c966b2b3b980acc742b7647c4",
+      "action": "update",
+      "replacementId": "6417807",
+      "replacementSource": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-quick-sale-checkout.md",
+      "originalTitle": "Quick Sale checkout",
+      "originalSha256": "0556b140e3887485f6c5a3ea3c6678feec9f77aa3326958ae9e0487cdd61b209",
+      "action": "reference-stub",
+      "replacementId": "0236106",
+      "replacementSource": "app-docs/feature_overview/quick-sale-checkout.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "originalTitle": "Standard Sales console",
+      "originalSha256": "b74d79ad9350c2c28cfd6efd873ecb9e4339634eddd6351744cfe617e59806cb",
+      "action": "update",
+      "replacementId": "7723456",
+      "replacementSource": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/feature-overview-switch-stores-and-roles.md",
+      "originalTitle": "Switch stores and roles",
+      "originalSha256": "daa9e5a62804df3b1d99a35a9d8563b465edeffc162f98e90effcd28447dcbd0",
+      "action": "reference-stub",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/help-and-support.md",
+      "originalTitle": "Help and Support",
+      "originalSha256": "fd59d3d6febc5cac3823aace9c0ace08626a58be5f3e996754c00c4455730f36",
+      "action": "update",
+      "replacementId": "2070517",
+      "replacementSource": "app-docs/feature_overview/help-and-support.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalTitle": "Inventory Intake and Adjustments",
+      "originalSha256": "71a49a2de32b2175caf241a9b8bc3539cf87606a131a0bce192593a60a39daaf",
+      "action": "update",
+      "replacementId": "6300641",
+      "replacementSource": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/manage-credit-and-payments.md",
+      "originalTitle": "Manage Credit and Payments",
+      "originalSha256": "a47fa828ce04125f7d56d25d7099f2f11085f3a27ceac928e6ddc6de33dd37d2",
+      "action": "reference-stub",
+      "replacementId": "1831819",
+      "replacementSource": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/manage-inventory.md",
+      "originalTitle": "Manage inventory",
+      "originalSha256": "6bf306905b0ae897e4e1ff5bac37daddbc2fdeba91be203822808bbf92a96d0d",
+      "action": "reference-stub",
+      "replacementId": "6300641",
+      "replacementSource": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [
+        "/inventory",
+        "/inventory/adjust",
+        "/inventory/audit",
+        "/inventory/intake"
+      ],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
+      "originalTitle": "Purchase orders (beta)",
+      "originalSha256": "2a2405d988bf34c08374f63def3b8f8565dad7bb9cfe242e448c963b3ee52ceb",
+      "action": "update",
+      "replacementId": "3974136",
+      "replacementSource": "app-docs/feature_overview/purchase-orders-beta.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
+      "originalTitle": "Quick Sale checkout",
+      "originalSha256": "6bbe556428ecd42b92b90ad4d36b06cbb3e5b93feb7894ad464032142119b9ac",
+      "action": "update",
+      "replacementId": "0236106",
+      "replacementSource": "app-docs/feature_overview/quick-sale-checkout.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/reports-and-insights.md",
+      "originalTitle": "Reports and Insights",
+      "originalSha256": "ba68220d4d4aa90d212860d4d3398c9962cc27de0963092293a5d789100b57f4",
+      "action": "reference-stub",
+      "replacementId": "2502678",
+      "replacementSource": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/credit-balances-payments.md",
+        "docs/help-center-export/final/dashboard-daily-check.md",
+        "docs/help-center-export/final/drx-intelligence.md",
+        "docs/help-center-export/final/inventory-manage-stock.md",
+        "docs/help-center-export/final/sales-history-receipts.md",
+        "docs/help-center-export/final/workspaces-and-tenants.md"
+      ]
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "originalTitle": "Sales History and Receipts",
+      "originalSha256": "4782de6a59a313a6727649362cd51b0a41093bac8463f7f48d352e77c0f73a8b",
+      "action": "update",
+      "replacementId": "5281725",
+      "replacementSource": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/switch-stores-and-views.md",
+      "originalTitle": "Switch stores and views",
+      "originalSha256": "c52ca793ddf44f04ecf7b31ec43f8155f1e843e932b80fac78aaa815acbf18ca",
+      "action": "reference-stub",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
+      "originalTitle": "Switch Workspaces",
+      "originalSha256": "367ad4ec1262d6ec7301cb2ac75a6e7e4fe2a56fbd0a372af1844f53f1f12963",
+      "action": "update",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
+      "originalTitle": "Get started with DRX",
+      "originalSha256": "e8bb66be10a9ae71f333cbc445c5a6a26619ac859a455cff1b9947e078c57551",
+      "action": "update",
+      "replacementId": "1633388",
+      "replacementSource": "app-docs/getting_started/get-started-with-drx.md",
+      "originalLinks": [
+        "moxie-doc:section/inventory-basics",
+        "moxie-doc:section/customers",
+        "moxie-doc:section/team-access-logs",
+        "moxie-doc:section/operations-insights"
+      ],
+      "originalVisuals": [],
+      "originalRoutes": [
+        "/inventory",
+        "/inventory/adjust",
+        "/inventory/intake",
+        "/pos/complete",
+        "/pos/payment",
+        "/pos/sale"
+      ],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/getting_started/getting-started-get-started-with-drx.md",
+      "originalTitle": "Get started with DRX",
+      "originalSha256": "523ebfe85cab883d55a2ec414134792578fb41e8a8e23a9994b2753ff7f9d5c9",
+      "action": "reference-stub",
+      "replacementId": "1633388",
+      "replacementSource": "app-docs/getting_started/get-started-with-drx.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/integration_guide/barcode-scanners-and-receipts.md",
+      "originalTitle": "Barcode scanners and receipts",
+      "originalSha256": "dd46a5c9c0c3be95dd193af592bf5f7d82bb1ee287b0eca5b3fda30a965a23ef",
+      "action": "reference-stub",
+      "replacementId": "2709969",
+      "replacementSource": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": ["/pos/complete", "/pos/payment", "/pos/sale"],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "originalTitle": "Connect barcode scanners",
+      "originalSha256": "9c820f4715a6d9c39a228598dd71dc9bf6e07eed732ffdf86fc150c682214d7d",
+      "action": "update",
+      "replacementId": "2709969",
+      "replacementSource": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/customer-and-alias-issues.md",
+      "originalTitle": "Customer and alias issues",
+      "originalSha256": "5ecb10f5554c2a852f23cc4bb19f518a1a804b642a6a16f4b48020dbd1e2ac6c",
+      "action": "reference-stub",
+      "replacementId": "9156766",
+      "replacementSource": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/reports-and-dashboard-issues.md",
+      "originalTitle": "Reports and dashboard issues",
+      "originalSha256": "6000d80da23477d6233cea412b845c0eedbb9c2cc8459afe27204549680084bc",
+      "action": "reference-stub",
+      "replacementId": "3489602",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
+      "originalTitle": "Troubleshoot AI Intelligence",
+      "originalSha256": "7169ee049286658445530bc54a4a9f62f2ac9f9d38e15172f9799cd4c196726c",
+      "action": "update",
+      "replacementId": "9003136",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "originalTitle": "Troubleshoot Checkout and Payments",
+      "originalSha256": "955311978c853827907e595044be53fa106983798606c94def5a8d1ea2079346",
+      "action": "update",
+      "replacementId": "3230948",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "originalTitle": "Troubleshoot Dashboard and Insights",
+      "originalSha256": "a2a9b4564f8a853e656c107b31581da4c11f3aeae22da4aa89076fe0c695af5e",
+      "action": "update",
+      "replacementId": "3489602",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "originalTitle": "Troubleshoot Inventory and Audit",
+      "originalSha256": "d7e06eb6791019308d7df85af2381e5e6e1b7b1780d722c784ef67e538dcdac5",
+      "action": "update",
+      "replacementId": "0272622",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "originalTitle": "Troubleshoot Workspace and Access",
+      "originalSha256": "1b79365a2251245f29d65c86f537d84aafd7c7016091dd83fe97d40518e9fb15",
+      "action": "update",
+      "replacementId": "3948745",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-checkout-and-sales.md",
+      "originalTitle": "Troubleshoot checkout and sales",
+      "originalSha256": "31d6d12093fcb5966d4863b8ffd4ea4b1259ef73f4a8099a58d69200776f4192",
+      "action": "reference-stub",
+      "replacementId": "3230948",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "originalTitle": "Troubleshoot customers and credit",
+      "originalSha256": "16bea905dd23c10aebade796a19f3f49b3c4bb065ffa5c41cd45a343ccd3708c",
+      "action": "update",
+      "replacementId": "9156766",
+      "replacementSource": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-stores-and-access.md",
+      "originalTitle": "Troubleshoot stores and access",
+      "originalSha256": "f58d684b7603ef7bdabee47bb669ee511105acbb41c5618d0d9310eea3953736",
+      "action": "reference-stub",
+      "replacementId": "3948745",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/admin-tools-overview.md",
+      "originalTitle": "Admin Tools Overview",
+      "originalSha256": "f656bddbc20f39e661fd1c73fedc340e7a6333bdd230ef3b09e7cac88c72731e",
+      "action": "reference-stub",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/privacy-security-rtbf.md",
+        "docs/help-center-export/final/roles-permissions-staff-access.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/credit-balances-payments.md",
+      "originalTitle": "Front / Balances: Credit and Payment Workflow",
+      "originalSha256": "b873d450ca3044c6dc91a9a071cd97e6632af2aa24808de7e01204f5db6c559e",
+      "action": "reference-stub",
+      "replacementId": "1831819",
+      "replacementSource": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/customers-profiles-history.md",
+        "docs/help-center-export/final/drx-intelligence.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/customers-profiles-history.md",
+      "originalTitle": "Customers: Profiles and History",
+      "originalSha256": "40b42e60cbb56190a3913388cd1fe248e7f22e18ade65ee35d5013e13135d0bd",
+      "action": "reference-stub",
+      "replacementId": "1831819",
+      "replacementSource": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/credit-balances-payments.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/dashboard-daily-check.md",
+      "originalTitle": "Dashboard: Daily Check in 2 Minutes",
+      "originalSha256": "8318881a20c3f7a9fb6fa442a16b857c2207a7c6937055b34bb6a1b61948eb6f",
+      "action": "reference-stub",
+      "replacementId": "2502678",
+      "replacementSource": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/drx-intelligence.md",
+        "docs/help-center-export/final/reports-and-insights.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/drx-intelligence.md",
+      "originalTitle": "DRX Intelligence: Using AI Support Features",
+      "originalSha256": "db5b7729f49b96f3c467d184351076a708634c3b3f0480a60e534e9220e9548e",
+      "action": "reference-stub",
+      "replacementId": "2995914",
+      "replacementSource": "app-docs/feature_overview/drx-intelligence.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/admin-tools-overview.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/getting-started-first-week.md",
+      "originalTitle": "Getting Started: Your First Week in DRX",
+      "originalSha256": "a16eacd0809a7bcdeca8ada4d61adc743e6e189c6c86da78e0215b3c390cc831",
+      "action": "reference-stub",
+      "replacementId": "1633388",
+      "replacementSource": "app-docs/getting_started/get-started-with-drx.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/workspaces-and-tenants.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/inventory-audit-fixes.md",
+      "originalTitle": "Inventory Audit: Fix Count Problems Fast",
+      "originalSha256": "cb2b9692440ad6b3ad9708c98b032ca5434fe896c1484a2355963cff5eaf5cf3",
+      "action": "reference-stub",
+      "replacementId": "0272622",
+      "replacementSource": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/dashboard-daily-check.md",
+        "docs/help-center-export/final/inventory-manage-stock.md",
+        "docs/help-center-export/final/reports-and-insights.md",
+        "docs/help-center-export/final/sales-history-receipts.md",
+        "docs/help-center-export/final/troubleshooting-fast-fixes.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/inventory-manage-stock.md",
+      "originalTitle": "Inventory: Manage Stock Without Guessing",
+      "originalSha256": "31f7ac622866ae99b11a884bfe5b6cb909323d37d498c5ce849166b79ad468b8",
+      "action": "reference-stub",
+      "replacementId": "6300641",
+      "replacementSource": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/getting-started-first-week.md",
+        "docs/help-center-export/final/inventory-audit-fixes.md",
+        "docs/help-center-export/final/settings-and-aliases.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/privacy-security-rtbf.md",
+      "originalTitle": "Privacy and Security: Daily Controls + RTBF",
+      "originalSha256": "045c6575174fa618bb31be1f147c8a5af9c113dc6c2bac2496ffdc57c1468336",
+      "action": "reference-stub",
+      "replacementId": "6417807",
+      "replacementSource": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/admin-tools-overview.md",
+        "docs/help-center-export/final/customers-profiles-history.md",
+        "docs/help-center-export/final/roles-permissions-staff-access.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/quick-pos-run-sale.md",
+      "originalTitle": "Quick POS: Run a Sale Fast",
+      "originalSha256": "167439a743214cf31b3a9ec29111f953f64fae28bedd6fe41405d957f9fb3339",
+      "action": "reference-stub",
+      "replacementId": "0236106",
+      "replacementSource": "app-docs/feature_overview/quick-sale-checkout.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/getting-started-first-week.md",
+        "docs/help-center-export/final/inventory-manage-stock.md",
+        "docs/help-center-export/final/sales-history-receipts.md",
+        "docs/help-center-export/final/settings-and-aliases.md",
+        "docs/help-center-export/final/troubleshooting-fast-fixes.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/reports-and-insights.md",
+      "originalTitle": "Reports and Operations Insights",
+      "originalSha256": "a6a772b8708a7487eb223fcdeff89217753c3522b27a5813efe27fa07cf001ef",
+      "action": "reference-stub",
+      "replacementId": "2502678",
+      "replacementSource": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/credit-balances-payments.md",
+        "docs/help-center-export/final/dashboard-daily-check.md",
+        "docs/help-center-export/final/drx-intelligence.md",
+        "docs/help-center-export/final/inventory-manage-stock.md",
+        "docs/help-center-export/final/sales-history-receipts.md",
+        "docs/help-center-export/final/workspaces-and-tenants.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/roles-permissions-staff-access.md",
+      "originalTitle": "Roles and Permissions: Keep Access Tight",
+      "originalSha256": "24f91c88f6d58114b1376a359c93ed132ee0b8b800236a19197b7192c2b5a911",
+      "action": "reference-stub",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/admin-tools-overview.md",
+        "docs/help-center-export/final/credit-balances-payments.md",
+        "docs/help-center-export/final/customers-profiles-history.md",
+        "docs/help-center-export/final/getting-started-first-week.md",
+        "docs/help-center-export/final/privacy-security-rtbf.md",
+        "docs/help-center-export/final/settings-and-aliases.md",
+        "docs/help-center-export/final/troubleshooting-fast-fixes.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/sales-history-receipts.md",
+      "originalTitle": "Sales History and Receipt Checks",
+      "originalSha256": "123f124145301275a7a51fb898f20ca42f534e513cafd3a5352609ceea40901b",
+      "action": "reference-stub",
+      "replacementId": "5281725",
+      "replacementSource": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/dashboard-daily-check.md",
+        "docs/help-center-export/final/inventory-audit-fixes.md",
+        "docs/help-center-export/final/quick-pos-run-sale.md",
+        "docs/help-center-export/final/reports-and-insights.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/settings-and-aliases.md",
+      "originalTitle": "Settings and Aliases: Keep Workflows Clean",
+      "originalSha256": "169359006d65b72e6f8b9eb60b73a94e75d980ad3827f14c378c1b0d41c1c606",
+      "action": "reference-stub",
+      "replacementId": "6300641",
+      "replacementSource": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/quick-pos-run-sale.md",
+        "docs/help-center-export/final/roles-permissions-staff-access.md",
+        "docs/help-center-export/final/workspaces-and-tenants.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/troubleshooting-fast-fixes.md",
+      "originalTitle": "Troubleshooting: Fast Fixes First",
+      "originalSha256": "5938c7b13c11895cad0eb5beb45ece95b27f3f04a5fa156b60cac2931d663d58",
+      "action": "reference-stub",
+      "replacementId": "2070517",
+      "replacementSource": "app-docs/feature_overview/help-and-support.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": [
+        "docs/help-center-export/final/inventory-audit-fixes.md",
+        "docs/help-center-export/final/privacy-security-rtbf.md",
+        "docs/help-center-export/final/quick-pos-run-sale.md"
+      ]
+    },
+    {
+      "sourcePath": "docs/help-center-export/final/workspaces-and-tenants.md",
+      "originalTitle": "Workspaces and Tenant Context",
+      "originalSha256": "6ef97928e16ece5e958ca63a28d8e76720aea4a1035b57a7288f5f2ad7f63abb",
+      "action": "reference-stub",
+      "replacementId": "4735029",
+      "replacementSource": "app-docs/feature_overview/switch-workspaces.md",
+      "originalLinks": [],
+      "originalVisuals": [],
+      "originalRoutes": [],
+      "incomingRepositoryReferences": []
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 1,
+      "originalTitle": "What DRX Is and How It Works",
+      "originalSha256": "8c7e42a640404a99c2e0da8bf18e5b61f66aa2122f035c9f670beabe2af2945d",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 2,
+      "originalTitle": "Setup Checklist Before Your First Sale",
+      "originalSha256": "86fb2f3e13e8d36a07f0639ba13f814212fcaa2a6f41e99208056292207fa3e1",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 3,
+      "originalTitle": "Owner Setup: Business Info, Units, Privacy Profile",
+      "originalSha256": "2e5def83d2a6ae43a9ddafdc2a87b01cb7413250fa5bd0cbeb51e0e2a9e67614",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 4,
+      "originalTitle": "Adding Your First Products",
+      "originalSha256": "0f2376d5e97d778d72bdae4d8d6243cc12ec82d2607fba4f5b8261ed36ea7e45",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 5,
+      "originalTitle": "Quick Quantities (Quickpicks): Set, Edit, Use",
+      "originalSha256": "65bf806ab955e3eb677bf9974b4fdc67b4013b783c9967bbf3dc28a1121137bc",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 6,
+      "originalTitle": "Staff Roles Overview (Owner, Manager, Staff)",
+      "originalSha256": "0884a9a8fe0cd3634af965a04597208bea2553d86862b1790dd5d644af91fec6",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 7,
+      "originalTitle": "Tenant Basics: Businesses Stay Separate",
+      "originalSha256": "11d4a9fd11dfe9e2c6c5020f22caed6e52429bca0699374ca70b8a1ffa029e8c",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 8,
+      "originalTitle": "Common Setup Mistakes and Fixes",
+      "originalSha256": "375fe3af871dd7561f8a6a6bef5a39fc7c707b984c195881438d0947bee4bcb7",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1633388",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 9,
+      "originalTitle": "Start a Sale (Mobile)",
+      "originalSha256": "5f2806b753031c060a7b2502f505e62463cd08da2d1c580791cedf75c62ec88e",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 10,
+      "originalTitle": "Add Items Fast: Search, Quickpicks, Favorites",
+      "originalSha256": "38de36d25c6d67a2bb9653ff818a6816f4c3405efb127050c6d090a4732dbb80",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 11,
+      "originalTitle": "Receipts: What’s Included and Reprints",
+      "originalSha256": "90f07e345fbffa29b87ca35427d1c096add7f19cbf03f886ff3c8dc19d133436",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "5281725",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 12,
+      "originalTitle": "Discounts: Apply and Restrict (If Enabled)",
+      "originalSha256": "c74353a71f2f49ad7a95cf7e4aa689078b164202954d2e26ffe9e1b4a74b1503",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 13,
+      "originalTitle": "Refunds and Voids (If Enabled)",
+      "originalSha256": "708a7d85fb739f2d90f36a262e70df4287ed37db7e43a5ae243e44e47ca1b67f",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 14,
+      "originalTitle": "End-of-Shift Basics",
+      "originalSha256": "c3dd6f3183503101d525955cb957df4a40138262ad0622454dce81fb83f2978d",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 15,
+      "originalTitle": "POS Troubleshooting: Most Common Fixes",
+      "originalSha256": "707a11f45d62933d56e86b42e2d6276114b20db5c7a2d5eacd3e447e9bea3963",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "3230948",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 16,
+      "originalTitle": "Offline Sales: What Happens",
+      "originalSha256": "fb6e78316e5d23ad4e12f733f06cf6c1330347070ec0f1e5595df06bbfec0cf4",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 17,
+      "originalTitle": "Speed Tips: Keeping Checkout Fast",
+      "originalSha256": "d0b43f2776561e28221a4126184412bf3bde6487c890fd1022534a37ea241a7f",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0236106",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 18,
+      "originalTitle": "Inventory Basics: Units, Conversions, Canonical Stock",
+      "originalSha256": "455135f017c573f1de87e0b4035ece1e42ca465d38916490834115a9f4ab7afc",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 19,
+      "originalTitle": "Add Inventory (Mobile Intake)",
+      "originalSha256": "9ccf4721c7c8e95ed0218bace3e81d37f993159248d0e29437604de9626b8c05",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 20,
+      "originalTitle": "Adjust Inventory: Increase, Decrease, Set-to Value",
+      "originalSha256": "04ed4c0185a3a10ac68dab9a6c66913797ffa4eed412fd3b47a74f4e15ef7980",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 21,
+      "originalTitle": "Required Reasons: How and Why",
+      "originalSha256": "0d2a046a8b8420132e344113e4391a2d772d27b9f539bd5296993cc1c8fa820e",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 22,
+      "originalTitle": "Inventory History: View Recent Changes",
+      "originalSha256": "2bf5f4472504e8bd5974e306ac9681f84f69c712b63e0f7c08ed23c105330f23",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 23,
+      "originalTitle": "Low Stock Alerts (If Enabled)",
+      "originalSha256": "9cf68270085e08e86b1b5dcc1df2114da3ad066a6b1184c8bf711f192c88f69a",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 24,
+      "originalTitle": "Product Costs (If Enabled)",
+      "originalSha256": "08f43b4d4cf2bc98aa9933b5ac2122c83bacd7d1e76c92cf6b9599383b32bccb",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 25,
+      "originalTitle": "Bulk Intake (Web): Multi-row Entry",
+      "originalSha256": "59bcd72b37995c1387a27418728dd08e1c16e28457a8d9e788751469856837f6",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 26,
+      "originalTitle": "CSV Import (Web): Template + Fixing Errors",
+      "originalSha256": "3344a5063ac3f3b9a30ee391c1bd8fd779f490951b751b9cfbdc15c1c7d2bb95",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 27,
+      "originalTitle": "Inventory Conflicts: What They Mean",
+      "originalSha256": "be3e16facb3b06c3108a1c332f10baa709f8de2ef2ef91f0561ad526f562bc0e",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0272622",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 28,
+      "originalTitle": "Inventory Troubleshooting: Intake Errors + Fixes",
+      "originalSha256": "a0d7ed68313b6cf50759e01f5b9cd491a9856ac48275a91caa2ede85e46f9c87",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "0272622",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 29,
+      "originalTitle": "Inventory Best Practices (Counts That Stay Accurate)",
+      "originalSha256": "36cbe11d1abe617dc307522cd4ebc6d8d9633589aefeac3dac24103bb9dd7119",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 30,
+      "originalTitle": "Products: Create, Edit, Archive",
+      "originalSha256": "1fac22a83ee9412290e791936517b5583c2b391ed6d731420f68a2a90daeebc6",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 31,
+      "originalTitle": "Aliases/Nicknames: What They Are",
+      "originalSha256": "479b4552656f8a8549cc09f4fcfefc423779ec1b9e98c0bcc1a1e745d4bb20ba",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 32,
+      "originalTitle": "Create Aliases Staff Will Actually Use",
+      "originalSha256": "f055d1beb4af27c9e0d2c1fd592072c1e9e70e62e2af3aa6684fc1768fdc9aa5",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 33,
+      "originalTitle": "Alias Auto-Fill: Quantity + Unit behavior",
+      "originalSha256": "19a344062e00bb7c00e05994cfc797181a7c2f3342f7e4b8411bc29f418fc22d",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 34,
+      "originalTitle": "Alias Collisions: Fix Duplicate Nicknames",
+      "originalSha256": "1b91777ceda836c08596a9797350424044b58d583eac7fa8f38c0256973c57cf",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 35,
+      "originalTitle": "Product Search Tips (Mobile)",
+      "originalSha256": "1915ebfe4bccc19e416a0a2c6c1afa115861985ddc10eac6921e1d50547be4a3",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 36,
+      "originalTitle": "Barcode Mapping (If Enabled)",
+      "originalSha256": "2a235b4ae076875588799a79c9c73d91ae269cbb444a1d997992ac6d70bf6054",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6300641",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 37,
+      "originalTitle": "Customers: When You Need Them and When You Don’t",
+      "originalSha256": "9584df247dbd1476374e9cd1b37ff2c463865cd41dde5326af30663efdaa0702",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 38,
+      "originalTitle": "Add a Customer (Minimal vs Full Details)",
+      "originalSha256": "9c1e7c783ea8c86207c0e85df62acb4639019e03b21b824488c78326ab89723e",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 39,
+      "originalTitle": "Customer Search and History",
+      "originalSha256": "6e211122c8c989ade6c67e54fdd143131bc43e3c71f4d248a29923b937b436e9",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 40,
+      "originalTitle": "Customer Visibility by Privacy Profile",
+      "originalSha256": "47df02921407d4569927967bef063b0c9b6c102b1df2c0e7f493813c739c34b6",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 41,
+      "originalTitle": "Credit Basics: Limits, Roles, Rules",
+      "originalSha256": "a7bf2df5b18ae96a7ad703d458224b835c928a77506a9b1f908f8a8dc7c9fd76",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 42,
+      "originalTitle": "Set Credit Limits (Owner/Manager)",
+      "originalSha256": "129f68df615e4e0f13044253d7b89d8fdb6be1c53aa56911951982667c4477ee",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 43,
+      "originalTitle": "Record a Credit Sale (If Enabled)",
+      "originalSha256": "1a41d9bd05cdfb1eded3ce57721b07cbb0493a38404f54c437d0f2683f738f13",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 44,
+      "originalTitle": "Record a Payment",
+      "originalSha256": "f13ec173ab4ada1d19428fb3058490ebcda612b373a947fca0e951b5f4321c63",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 45,
+      "originalTitle": "Overdue Balances: Viewing and Managing",
+      "originalSha256": "b993fd3dfe7e1fa92199e082af53005c840401c4e0974f44e62d78211af9a13a",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "1831819",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 46,
+      "originalTitle": "Add Staff and Assign Roles",
+      "originalSha256": "577d179e6945bca3ae140f334bf46cf83835dd3a662c72f27cd10b33eeb6a9aa",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "4735029",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 47,
+      "originalTitle": "Sensitive Actions: Who Can Do What",
+      "originalSha256": "2894ab9abe3765cdc05b5fe3185557eaa5d5c01a83d6af5bf5287c3f676613ec",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "4735029",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 48,
+      "originalTitle": "Remove Access: Offboarding Staff",
+      "originalSha256": "53bab6ec9051c7c8086520deb215013dd4a03f561414ed476b993733ef35254d",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "4735029",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 49,
+      "originalTitle": "Privacy Profiles Explained (Alias Mode/Standard Mode/Business CRM Mode)",
+      "originalSha256": "5c80e17f9dd7563355aedc502179edf3097b3f718c56aef354f9f618b8c117f0",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6417807",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    },
+    {
+      "sourcePath": "apps/app/scripts/help-center-data.ts",
+      "entry": 50,
+      "originalTitle": "Audit Logs + Exports: What’s Recorded, What’s Allowed",
+      "originalSha256": "ef67f86c7975d0ccccf17e4566e10a29134cc2d3af52805cd73d7efc3a33dc06",
+      "action": "replaced-by-canonical-adapter",
+      "replacementId": "6417807",
+      "reason": "Legacy seed excluded; current adapter reads only the 19 ID-mapped sources. Unsupported legacy steps are not retained as public guidance."
+    }
+  ]
+}

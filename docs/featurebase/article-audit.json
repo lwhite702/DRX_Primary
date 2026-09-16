@@ -1,0 +1,2985 @@
+{
+  "issue": "WRE-92",
+  "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
+  "publicInspectionTime": "2026-09-05T03:29:18.102Z",
+  "contentHash": "004a05606fc5c20b4d5ae9cc4c6a972aa13bcb70348e65f4be9ea80789d5d6f1",
+  "scope": "19 published articles audited; 20 visual assets with 23 placements published through the authenticated editor and verified by a fresh public export",
+  "collections": [
+    {
+      "id": "9257182",
+      "name": "Getting Started",
+      "url": "https://drx.featurebase.app/en/help/collections/9257182-getting-started",
+      "publicOrder": 1,
+      "articleCount": 4
+    },
+    {
+      "id": "5580893",
+      "name": "Privacy & Security",
+      "url": "https://drx.featurebase.app/en/help/collections/5580893-privacy-and-security",
+      "publicOrder": 2,
+      "articleCount": 1
+    },
+    {
+      "id": "4525056",
+      "name": "Roles",
+      "url": "https://drx.featurebase.app/en/help/collections/4525056-roles",
+      "publicOrder": 3,
+      "articleCount": 2
+    },
+    {
+      "id": "6393095",
+      "name": "Customers",
+      "url": "https://drx.featurebase.app/en/help/collections/6393095-customers",
+      "publicOrder": 4,
+      "articleCount": 2
+    },
+    {
+      "id": "7358320",
+      "name": "Inventory",
+      "url": "https://drx.featurebase.app/en/help/collections/7358320-inventory",
+      "publicOrder": 5,
+      "articleCount": 5
+    },
+    {
+      "id": "4883754",
+      "name": "POS & Sales",
+      "url": "https://drx.featurebase.app/en/help/collections/4883754-pos-and-sales",
+      "publicOrder": 6,
+      "articleCount": 5
+    }
+  ],
+  "counts": {
+    "publishedArticlesReviewed": 19,
+    "repositorySourceRecordsReviewed": 100,
+    "intendedArticleUpdates": 19,
+    "unchanged": 0,
+    "retitled": 1,
+    "liveMerged": 0,
+    "split": 0,
+    "reordered": 0,
+    "archived": 0,
+    "deleted": 0,
+    "published": 0,
+    "referenceStubs": 31,
+    "legacySeedsReplaced": 50,
+    "internalLinksBefore": 37,
+    "internalLinksAfter": 27,
+    "articleDestinationAdditions": 15,
+    "articleDestinationRemovals": 26,
+    "visualsBefore": 0,
+    "visualsAfter": 23,
+    "preparedVisualAssets": 20,
+    "articlesWithVisuals": 16
+  },
+  "articles": [
+    {
+      "id": "1633388",
+      "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
+      "sourceSha256": "b764e19dc6ba476c313b90c853d929bb6cfe469bd42c88716f01288e9ad386ae",
+      "renderedFingerprint": "ab2237734eef65b70a72b6782b0583ee8c81f740e2b8a2f737a03a337956e170",
+      "oldTitle": "Get started with DRX",
+      "title": "Get started with DRX",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1633388-get-started-with-drx",
+      "publicSlug": "1633388-get-started-with-drx",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Replace obsolete setup with current owner onboarding steps and exact controls",
+        "Remove timed setup promise and test-sales-in-real-business advice",
+        "Clarify early access and existing staff invitation"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        },
+        {
+          "text": "Customers and store credit",
+          "url": "https://drx.featurebase.app/en/help/articles/1831819"
+        },
+        {
+          "text": "Switch workspaces and check access",
+          "url": "https://drx.featurebase.app/en/help/articles/4735029"
+        },
+        {
+          "text": "Dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/2502678"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "early-access waitlist",
+          "url": "https://deelrxcrm.com/waitlist"
+        },
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Switch workspaces and check access",
+          "url": "https://drx.featurebase.app/en/help/articles/4735029"
+        },
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": [
+          "https://deelrxcrm.com/waitlist",
+          "https://drx.featurebase.app/articles/6417807",
+          "https://drx.featurebase.app/articles/2070517"
+        ],
+        "removed": [
+          "https://drx.featurebase.app/articles/0236106",
+          "https://drx.featurebase.app/articles/1831819",
+          "https://drx.featurebase.app/articles/2502678"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "getting-started-header",
+          "kind": "header",
+          "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "lwfsx8t8k0i",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "f3p8e28ldm6",
+          "text": "What you need"
+        },
+        {
+          "level": "H2",
+          "id": "oo28cm6dkp5",
+          "text": "Steps"
+        },
+        {
+          "level": "H2",
+          "id": "12s8770pibx",
+          "text": "If something goes wrong"
+        },
+        {
+          "level": "H2",
+          "id": "lw8fkbzy3lw",
+          "text": "Next steps"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "before-you-start",
+          "text": "Before you start"
+        },
+        {
+          "id": "sign-in-or-create-an-owner-account",
+          "text": "Sign in or create an owner account"
+        },
+        {
+          "id": "set-up-your-business",
+          "text": "Set up your business"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "if-setup-does-not-finish",
+          "text": "If setup does not finish"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Sign in and confirm the workspace.",
+        "Review store settings and roles.",
+        "Review customer privacy.",
+        "Create your first products.",
+        "Receive stock.",
+        "Correct a count only when needed.",
+        "Check product search or scanning.",
+        "Build a sale.",
+        "Attach a customer when needed.",
+        "Record payment and choose the receipt.",
+        "Verify the result."
+      ],
+      "intendedEmphasizedLabels": [
+        "Username or email",
+        "Welcome to DRX",
+        "Set Up My Business",
+        "Full name",
+        "Business name",
+        "Continue",
+        "Location name",
+        "City",
+        "State or region",
+        "Country",
+        "Currency",
+        "Time zone",
+        "Yes",
+        "Tax rate (%)",
+        "Invite someone now",
+        "I’ll do this later",
+        "Review your setup",
+        "Edit",
+        "Create My Workspace",
+        "Settings",
+        "Inventory",
+        "Point of Sale",
+        "Orders & Receipts"
+      ],
+      "sourceEvidence": [
+        "apps/mobile/app/login.tsx",
+        "apps/app/app/login/[[...rest]]/page.tsx",
+        "apps/app/app/register/[[...rest]]/page.tsx",
+        "apps/app/app/onboarding/_components/OnboardingForm.tsx",
+        "apps/app/app/onboarding/_actions.ts",
+        "docs/BRAND_VOICE.md",
+        "apps/marketing/lib/feature-canon.ts",
+        "apps/marketing/lib/marketing-content.ts",
+        "apps/marketing/app/product/page.tsx",
+        "apps/marketing/components/marketing/features.tsx",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "2502678",
+      "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
+      "sourceSha256": "49edbf641080f53cbeda3df9fe2e089f7d56eafb49cd90239db0f0466ffb2703",
+      "renderedFingerprint": "b3e9f328d4fce8e528daea885a6290938336602c998208510bb7a1ae87e569a4",
+      "oldTitle": "Dashboard and reports",
+      "title": "Dashboard and reports",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2502678-dashboard-and-reports",
+      "publicSlug": "2502678-dashboard-and-reports",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 2,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Remove nonexistent staff/location/date-filter procedure",
+        "Document actual Reports Window and reconciliation CSV",
+        "Distinguish sales, receipts, credit and profit; qualify iPhone UTC view"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/3489602"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        },
+        {
+          "text": "Troubleshoot dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/3489602"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/5281725"],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "dashboard-reports-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "placement": "before-heading",
+          "heading": "Check your numbers",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "akrftt583fc",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "r0lcp6b2eit",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "4iqo0m41c7o",
+          "text": "Read the daily snapshot"
+        },
+        {
+          "level": "H2",
+          "id": "yp741czkxcw",
+          "text": "Review trends and best sellers"
+        },
+        {
+          "level": "H2",
+          "id": "izykst7wb7c",
+          "text": "Run and reconcile a report"
+        },
+        {
+          "level": "H2",
+          "id": "ali06a55lsz",
+          "text": "Reconcile the end of a shift"
+        },
+        {
+          "level": "H2",
+          "id": "154mk8xwcbk",
+          "text": "Export or share a report"
+        },
+        {
+          "level": "H2",
+          "id": "desq5y3fa1k",
+          "text": "Verify your work"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "r0lcp6b2eit",
+          "text": "Before you start"
+        },
+        {
+          "id": "check-your-numbers",
+          "text": "Check your numbers"
+        },
+        {
+          "id": "export-reconciliation-data",
+          "text": "Export reconciliation data"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Dashboard",
+        "Orders & Receipts",
+        "Reports",
+        "Window:",
+        "Today Sales",
+        "Today COGS",
+        "Week Gross Profit",
+        "Outstanding Credit",
+        "Recent Sales Margin",
+        "Top Products This Week",
+        "Insights",
+        "Reports",
+        "Window:",
+        "Export reconciliation CSV",
+        "Daily totals (UTC)"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/reports/page.tsx",
+        "apps/app/app/(app)/insights/page.tsx",
+        "apps/ios/DRXApp/Features/Reports/ReportsView.swift",
+        "apps/app/app/(app)/settings/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "2070517",
+      "sourcePath": "app-docs/feature_overview/help-and-support.md",
+      "sourceSha256": "f16019c39118a27b44719ccaf24fbc32a92e6d010cf776ebd510bf8ce9c683f9",
+      "renderedFingerprint": "15428b15981a66d8f0da41e482732b612a4f9ab762b4d0de4c10da202f582356",
+      "oldTitle": "Help and support",
+      "title": "Help and support",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2070517-help-and-support",
+      "publicSlug": "2070517-help-and-support",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 3,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Add verified private support and waitlist destinations",
+        "Separate public feedback from private account and payment issues",
+        "Bound web/PWA, iPhone, Expo and Android availability"
+      ],
+      "beforeLinks": [
+        {
+          "text": "DRX Help Center",
+          "url": "https://drx.featurebase.app/en/help"
+        },
+        {
+          "text": "support@deelrxcrm.com",
+          "url": "mailto:support@deelrxcrm.com"
+        },
+        {
+          "text": "Feedback",
+          "url": "https://drx.featurebase.app/"
+        },
+        {
+          "text": "Roadmap",
+          "url": "https://drx.featurebase.app/roadmap"
+        },
+        {
+          "text": "Changelog",
+          "url": "https://drx.featurebase.app/changelog"
+        },
+        {
+          "text": "Get started with DRX",
+          "url": "https://drx.featurebase.app/en/help/articles/1633388"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "DRX support",
+          "url": "mailto:support@deelrxcrm.com"
+        },
+        {
+          "text": "DRX feedback",
+          "url": "https://drx.featurebase.app/"
+        },
+        {
+          "text": "early-access waitlist",
+          "url": "https://deelrxcrm.com/waitlist"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://deelrxcrm.com/waitlist"],
+        "removed": [
+          "https://drx.featurebase.app/en/help",
+          "https://drx.featurebase.app/roadmap",
+          "https://drx.featurebase.app/changelog",
+          "https://drx.featurebase.app/articles/1633388"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "safe-support-screenshot",
+          "kind": "diagram",
+          "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
+          "placement": "before-heading",
+          "heading": "Get help with a private issue",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "521e15y1ik3",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "s5fl5tfyc8q",
+          "text": "Find an answer"
+        },
+        {
+          "level": "H2",
+          "id": "q7ra1s833d7",
+          "text": "Contact private support"
+        },
+        {
+          "level": "H2",
+          "id": "a1a4xcia2op",
+          "text": "Share a product idea"
+        },
+        {
+          "level": "H2",
+          "id": "w1rb8i3arxx",
+          "text": "Check setup before a first sale"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "get-help-with-a-private-issue",
+          "text": "Get help with a private issue"
+        },
+        {
+          "id": "share-product-feedback",
+          "text": "Share product feedback"
+        },
+        {
+          "id": "check-device-availability",
+          "text": "Check device availability"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [],
+      "sourceEvidence": [
+        "apps/marketing/lib/marketing-content.ts",
+        "apps/mobile/app/login.tsx",
+        "apps/ios/DRXApp/Features/Reports/ReportsView.swift",
+        "docs/BRAND_VOICE.md",
+        "apps/marketing/lib/feature-canon.ts",
+        "apps/marketing/app/product/page.tsx",
+        "apps/marketing/components/marketing/features.tsx",
+        "VERSION",
+        "CHANGELOG.md",
+        "apps/marketing/lib/docs-links.ts"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "3489602",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
+      "sourceSha256": "9aecd45df6764a649d145b4a4cedaaf99e38c140a822d5566de24052588cb2ac",
+      "renderedFingerprint": "7ad27af6d186caffaefa60b4e6b337c167253650934eaa4bb14830dd518bd0ad",
+      "oldTitle": "Troubleshoot dashboard and reports",
+      "title": "Troubleshoot dashboard and reports",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3489602-troubleshoot-dashboard-and-reports",
+      "publicSlug": "3489602-troubleshoot-dashboard-and-reports",
+      "parentId": "9257182",
+      "collection": "Getting Started",
+      "publicOrder": 4,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Remove invented filters and generic retry instructions",
+        "Compare saved orders, report periods and costs without editing money records"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot workspaces and access",
+          "url": "https://drx.featurebase.app/en/help/articles/3948745"
+        },
+        {
+          "text": "Checkout and payment problems",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        },
+        {
+          "text": "Customer, alias, and credit problems",
+          "url": "https://drx.featurebase.app/en/help/articles/9156766"
+        },
+        {
+          "text": "Inventory and audit problems",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        },
+        {
+          "text": "Scanner setup and checks",
+          "url": "https://drx.featurebase.app/en/help/articles/2709969"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": [
+          "https://drx.featurebase.app/articles/3948745",
+          "https://drx.featurebase.app/articles/3230948",
+          "https://drx.featurebase.app/articles/9156766",
+          "https://drx.featurebase.app/articles/0272622",
+          "https://drx.featurebase.app/articles/2709969"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "dashboard-reports-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "placement": "before-heading",
+          "heading": "A total looks wrong",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "eixqcyqw2s5",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "skqdqqczf8d",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "t1c00b0xwd6",
+          "text": "Recent sales are missing or totals look delayed"
+        },
+        {
+          "level": "H2",
+          "id": "i0r4seqw88d",
+          "text": "Report totals do not match Sales"
+        },
+        {
+          "level": "H2",
+          "id": "xey8xmkfbwq",
+          "text": "Best sellers are empty or unexpected"
+        },
+        {
+          "level": "H2",
+          "id": "0sks4mmfm4m",
+          "text": "Category breakdowns do not match the total"
+        },
+        {
+          "level": "H2",
+          "id": "edpaqpd3rrl",
+          "text": "Location filters appear to mix stores"
+        },
+        {
+          "level": "H2",
+          "id": "b6psy553lad",
+          "text": "An export fails or contains the wrong period"
+        },
+        {
+          "level": "H2",
+          "id": "zk2it6m6zff",
+          "text": "Use the guide for the underlying task"
+        },
+        {
+          "level": "H2",
+          "id": "eec581s85bq",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "a-total-looks-wrong",
+          "text": "A total looks wrong"
+        },
+        {
+          "id": "a-page-is-empty-or-fails-to-load",
+          "text": "A page is empty or fails to load"
+        },
+        {
+          "id": "an-export-fails",
+          "text": "An export fails"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Orders & Receipts",
+        "Sale Details",
+        "Reports",
+        "Window:",
+        "Daily totals (UTC)",
+        "Insights",
+        "Export reconciliation CSV",
+        "Reports"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/reports/page.tsx",
+        "apps/app/app/(app)/insights/page.tsx",
+        "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "6417807",
+      "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
+      "sourceSha256": "40eb239555c132a2ef4f7a8829df7e72f302041c9d71699b2f27f28d155e380b",
+      "renderedFingerprint": "30f9c49125d315aa039e59888adb91429b6206ce038236b699e2226f0bc400cd",
+      "oldTitle": "Privacy and minimal data",
+      "title": "Privacy and minimal data",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6417807-privacy-and-minimal-data",
+      "publicSlug": "6417807-privacy-and-minimal-data",
+      "parentId": "5580893",
+      "collection": "Privacy & Security",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Replace Business CRM Mode with Full Customer Mode",
+        "Disclose 30, 180 and 365 day default retention windows and permanent deletion when cleanup runs",
+        "Distinguish retention, masking, legal holds, outstanding balances and downloaded copies"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Switch workspaces and check access",
+          "url": "https://drx.featurebase.app/en/help/articles/4735029"
+        },
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": ["https://drx.featurebase.app/articles/4735029"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "privacy-header",
+          "kind": "header",
+          "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "privacy-retention-timeline",
+          "kind": "diagram",
+          "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
+          "placement": "before-heading",
+          "heading": "Choose a privacy preset",
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "privacy-settings-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
+          "placement": "before-heading",
+          "heading": "Review and save the settings",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "mcq0lakpr01",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "54fd06b228e",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "ox35x40p34x",
+          "text": "Choose and review a privacy profile"
+        },
+        {
+          "level": "H2",
+          "id": "t7yb518ftm4",
+          "text": "Create and use a minimal customer profile"
+        },
+        {
+          "level": "H2",
+          "id": "33q75wle3fr",
+          "text": "Review masking and retention"
+        },
+        {
+          "level": "H2",
+          "id": "s0p8p7wqoyy",
+          "text": "Keep audit information and exports private"
+        },
+        {
+          "level": "H2",
+          "id": "8kc0stypae6",
+          "text": "Verify and get help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "54fd06b228e",
+          "text": "Before you start"
+        },
+        {
+          "id": "choose-a-privacy-preset",
+          "text": "Choose a privacy preset"
+        },
+        {
+          "id": "review-and-save-the-settings",
+          "text": "Review and save the settings"
+        },
+        {
+          "id": "what-happens-when-cleanup-runs",
+          "text": "What happens when cleanup runs"
+        },
+        {
+          "id": "check-screen-privacy-and-exports",
+          "text": "Check screen privacy and exports"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Alias Mode",
+        "Standard Mode",
+        "Business CRM Mode"
+      ],
+      "intendedEmphasizedLabels": [
+        "Alias Mode",
+        "30 days",
+        "Standard Mode",
+        "180 days",
+        "Full Customer Mode",
+        "365 days",
+        "Settings",
+        "Privacy Protocol Dashboard",
+        "Onboarding Profile",
+        "Enable retention cleanup",
+        "Days",
+        "Frequency",
+        "Local hour (0-23)",
+        "Hard delete inactive records",
+        "Days",
+        "Save Settings",
+        "permanently deletes qualifying inactive customer records when it runs",
+        "ProteXion Mode (Screen Privacy)"
+      ],
+      "sourceEvidence": [
+        "apps/app/lib/privacy/profiles.ts",
+        "apps/app/lib/copy/drx.ts",
+        "apps/app/components/onboarding/steps/PrivacyStep.tsx",
+        "apps/app/app/api/privacy/cleanup/route.ts",
+        "apps/app/lib/customers/core/customer-retention.ts",
+        "apps/app/app/(app)/settings/page.tsx",
+        "apps/app/app/(app)/reports/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "3948745",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
+      "sourceSha256": "7420017c4fe047d79e40a546ff8ec10f0fad6c2a51b17b3ad69e725d700f944a",
+      "renderedFingerprint": "f3f65cfddb50fa8c9cbbaa2cac84018a0760b95ffe12071d1fb4f04921239c47",
+      "oldTitle": "Troubleshoot workspaces and access",
+      "title": "Troubleshoot workspaces and access",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3948745-troubleshoot-workspaces-and-access",
+      "publicSlug": "3948745-troubleshoot-workspaces-and-access",
+      "parentId": "4525056",
+      "collection": "Roles",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Add account recovery and membership checks",
+        "Remove role-switching and sample-badge assumptions",
+        "No bypass, duplicate account or instant session-revocation promise"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/3489602"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": ["https://drx.featurebase.app/articles/3489602"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "workspace-access-recovery",
+          "kind": "diagram",
+          "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
+          "placement": "before-heading",
+          "heading": "You cannot sign in",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "fy5irrfez32",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "6371x2y1zdo",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "k5kzdm46swb",
+          "text": "A workspace or store is missing"
+        },
+        {
+          "level": "H2",
+          "id": "wteffk6amym",
+          "text": "Sales, stock, customers, or reports look wrong or empty"
+        },
+        {
+          "level": "H2",
+          "id": "ikd0kydta8e",
+          "text": "An action is blocked or a control is missing"
+        },
+        {
+          "level": "H2",
+          "id": "s857e122r11",
+          "text": "I completed work in the wrong workspace"
+        },
+        {
+          "level": "H2",
+          "id": "wd1dob13ew1",
+          "text": "Reports differ between teammates"
+        },
+        {
+          "level": "H2",
+          "id": "f47f1wtx6mk",
+          "text": "Prevent repeat mistakes"
+        },
+        {
+          "level": "H2",
+          "id": "zoctr7i3qxo",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "you-cannot-sign-in",
+          "text": "You cannot sign in"
+        },
+        {
+          "id": "the-business-you-need-is-missing",
+          "text": "The business you need is missing"
+        },
+        {
+          "id": "a-page-or-action-is-blocked",
+          "text": "A page or action is blocked"
+        },
+        {
+          "id": "the-wrong-business-appears",
+          "text": "The wrong business appears"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Username or email",
+        "Settings",
+        "Manage Team",
+        "Manage Team"
+      ],
+      "sourceEvidence": [
+        "apps/mobile/app/login.tsx",
+        "apps/app/app/login/[[...rest]]/page.tsx",
+        "apps/app/app/register/[[...rest]]/page.tsx",
+        "apps/app/components/layout/business-switcher.tsx",
+        "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
+        "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "4735029",
+      "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
+      "sourceSha256": "9631e67637fe2b17a4ef664fc4ba97ecb4363c5fbb8911423e9f0e6a63fa19a3",
+      "renderedFingerprint": "f2653fbb2b0649970c2756a5f362b24690b3b1d1735f330f3f1bd7e4ff485d53",
+      "oldTitle": "Switch workspaces and check access",
+      "title": "Switch workspaces and check access",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/4735029-switch-workspaces-and-check-access",
+      "publicSlug": "4735029-switch-workspaces-and-check-access",
+      "parentId": "4525056",
+      "collection": "Roles",
+      "publicOrder": 2,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Use Select a business / My Businesses and Manage Team",
+        "Document actual email invitation and available business roles",
+        "Remove unverified deactivate control and all-device revocation guarantee"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Customers and store credit",
+          "url": "https://drx.featurebase.app/en/help/articles/1831819"
+        },
+        {
+          "text": "Dashboard and reports",
+          "url": "https://drx.featurebase.app/en/help/articles/2502678"
+        },
+        {
+          "text": "Troubleshoot workspaces and access",
+          "url": "https://drx.featurebase.app/en/help/articles/3948745"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Troubleshoot workspaces and access",
+          "url": "https://drx.featurebase.app/en/help/articles/3948745"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/6417807"],
+        "removed": [
+          "https://drx.featurebase.app/articles/1831819",
+          "https://drx.featurebase.app/articles/2502678"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "workspace-access-header",
+          "kind": "header",
+          "alt": "Two workspaces connect to separate groups of scoped team access.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "workspace-team-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
+          "placement": "before-heading",
+          "heading": "Switch businesses",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "ka174780f8m",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "xtpzzsfi141",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "cpwcczdme7q",
+          "text": "Switch to another workspace"
+        },
+        {
+          "level": "H2",
+          "id": "8db743m5ew3",
+          "text": "Check the access you need"
+        },
+        {
+          "level": "H2",
+          "id": "4zo3r78kxeb",
+          "text": "Add, review, or remove staff access"
+        },
+        {
+          "level": "H2",
+          "id": "ilkxim1yi86",
+          "text": "Verify before a sensitive action"
+        },
+        {
+          "level": "H2",
+          "id": "c4ba8p7rbbw",
+          "text": "Related tasks"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "xtpzzsfi141",
+          "text": "Before you start"
+        },
+        {
+          "id": "switch-businesses",
+          "text": "Switch businesses"
+        },
+        {
+          "id": "invite-a-team-member",
+          "text": "Invite a team member"
+        },
+        {
+          "id": "review-or-remove-access",
+          "text": "Review or remove access"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Select a business",
+        "My Businesses",
+        "Inventory",
+        "Customers",
+        "Orders & Receipts",
+        "Settings",
+        "Manage Team",
+        "Invite a Team Member",
+        "Email address",
+        "Role",
+        "Send Invitation",
+        "Team Members",
+        "Team Members"
+      ],
+      "sourceEvidence": [
+        "apps/app/components/layout/business-switcher.tsx",
+        "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
+        "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "1831819",
+      "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
+      "sourceSha256": "5d8e00e201cd80970279820b4aa708f49e10fa67d1c105027dda3eb6b63eac5f",
+      "renderedFingerprint": "547e4dee35c543723821f1c630deddcd9e14f5cd57d9d79058863f9fed7ab3cb",
+      "oldTitle": "Customers and store credit",
+      "title": "Customers and store credit",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/1831819-customers-and-store-credit",
+      "publicSlug": "1831819-customers-and-store-credit",
+      "parentId": "6393095",
+      "collection": "Customers",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Explain store account amount owed versus received payment",
+        "Use actual Record Payment fields; record-only money semantics",
+        "Disclose phone-required Quick Create conflict with alias-only policy"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        },
+        {
+          "text": "Troubleshoot customers and credit",
+          "url": "https://drx.featurebase.app/en/help/articles/9156766"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Privacy and minimal data",
+          "url": "https://drx.featurebase.app/en/help/articles/6417807"
+        },
+        {
+          "text": "Troubleshoot customers and credit",
+          "url": "https://drx.featurebase.app/en/help/articles/9156766"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/6417807"],
+        "removed": ["https://drx.featurebase.app/articles/0236106"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "customers-credit-header",
+          "kind": "header",
+          "alt": "A customer alias card connects to a purchase and received-payment ledger.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "customers-credit-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "placement": "before-heading",
+          "heading": "Find or add a customer",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "ombs0ctc7k8",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "cp56cq0ed3b",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "87i8srlko3z",
+          "text": "Create or find a customer"
+        },
+        {
+          "level": "H2",
+          "id": "ekffadbdl60",
+          "text": "Check limits and record a credit sale"
+        },
+        {
+          "level": "H2",
+          "id": "fo6i5i7s5qa",
+          "text": "Record a payment toward an existing balance"
+        },
+        {
+          "level": "H2",
+          "id": "stlf777iwdp",
+          "text": "Review overdue balances"
+        },
+        {
+          "level": "H2",
+          "id": "okxalo84sac",
+          "text": "Verify and get help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "cp56cq0ed3b",
+          "text": "Before you start"
+        },
+        {
+          "id": "find-or-add-a-customer",
+          "text": "Find or add a customer"
+        },
+        {
+          "id": "attach-a-customer-at-checkout",
+          "text": "Attach a customer at checkout"
+        },
+        {
+          "id": "fo6i5i7s5qa",
+          "text": "Record a payment toward an existing balance"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Credit adds an amount owed for later payment",
+        "limit",
+        "balance",
+        "available credit",
+        "Record Payment"
+      ],
+      "intendedEmphasizedLabels": [
+        "Store Credit",
+        "Credit Management",
+        "Customers",
+        "Add customer",
+        "Add",
+        "Point of Sale",
+        "Customer (Optional)",
+        "Alias",
+        "Phone number",
+        "Lookup",
+        "Attached:",
+        "CREDIT",
+        "Confirm credit charge",
+        "Complete Sale",
+        "Quick Create",
+        "Store Credit",
+        "Record Payment",
+        "Customer",
+        "Amount ($)",
+        "Payment Method",
+        "Notes",
+        "Record Payment"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/customers/page.tsx",
+        "apps/app/components/quick-pos/customer-inline.tsx",
+        "apps/app/app/(app)/credit/page.tsx",
+        "apps/app/app/(app)/credit/_components/PaymentDialog.tsx",
+        "apps/app/components/quick-pos/payment-methods.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "9156766",
+      "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
+      "sourceSha256": "32aeafc884af7ec6ba869d9b54e3cfeab7028f9c0824fc7ec6d97d0ef63b0e87",
+      "renderedFingerprint": "263d3ed7e83e8f46b8b7b1d082b80f642bd8f100ac23f89a5b1a27915372dd61",
+      "oldTitle": "Troubleshoot customers and credit",
+      "title": "Troubleshoot customers and credit",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9156766-troubleshoot-customers-and-credit",
+      "publicSlug": "9156766-troubleshoot-customers-and-credit",
+      "parentId": "6393095",
+      "collection": "Customers",
+      "publicOrder": 2,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Remove unsupported customer filters and restore promises",
+        "Document existing sale customer correction with credit reassignment restriction",
+        "Prevent duplicate payments and fabricated contact information"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": ["https://drx.featurebase.app/articles/3230948"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "customers-credit-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "placement": "before-heading",
+          "heading": "A customer will not save or appear",
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "uncertain-checkout-payment",
+          "kind": "diagram",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "placement": "before-heading",
+          "heading": "A payment or balance looks wrong",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "wqwkotdxc51",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "7pm17csewza",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "pm4m43yqsdx",
+          "text": "A customer will not save or asks for unwanted personal details"
+        },
+        {
+          "level": "H2",
+          "id": "8extl0myaq2",
+          "text": "An existing customer or alias is missing"
+        },
+        {
+          "level": "H2",
+          "id": "moa0bdkbr8l",
+          "text": "There are duplicate customer profiles"
+        },
+        {
+          "level": "H2",
+          "id": "0rlri778k1c",
+          "text": "Purchase history is missing"
+        },
+        {
+          "level": "H2",
+          "id": "pds0efi57y3",
+          "text": "A customer will not attach to checkout"
+        },
+        {
+          "level": "H2",
+          "id": "w2y14k512yc",
+          "text": "Credit is unavailable or the balance looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "i827efq8y0f",
+          "text": "Customer or credit controls are hidden"
+        },
+        {
+          "level": "H2",
+          "id": "6op56li4pb5",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "a-customer-will-not-save-or-appear",
+          "text": "A customer will not save or appear"
+        },
+        {
+          "id": "customer-history-is-missing",
+          "text": "Customer history is missing"
+        },
+        {
+          "id": "credit-is-unavailable",
+          "text": "Credit is unavailable"
+        },
+        {
+          "id": "a-payment-or-balance-looks-wrong",
+          "text": "A payment or balance looks wrong"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Quick Create",
+        "Customers",
+        "Orders & Receipts",
+        "Assign Customer",
+        "Change Customer",
+        "Sale Details",
+        "CREDIT"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/customers/page.tsx",
+        "apps/app/components/quick-pos/customer-inline.tsx",
+        "apps/app/app/(app)/credit/page.tsx",
+        "apps/app/app/(app)/credit/_components/PaymentDialog.tsx",
+        "apps/app/components/quick-pos/payment-methods.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "6300641",
+      "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      "sourceSha256": "6dfa2e51a4ff62274094bd9a39099e0642b10ab3748c1f02a67f6e42218fe3e0",
+      "renderedFingerprint": "3af46fb7c7f9a7e5b932dee2d252331dd13355e29fee8084c814b0d1f0b130ef",
+      "oldTitle": "Inventory intake and adjustments",
+      "title": "Inventory intake and adjustments",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/6300641-inventory-intake-and-adjustments",
+      "publicSlug": "6300641-inventory-intake-and-adjustments",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Inventory public name with contextual Add stock, Fix count, Stock history controls",
+        "Correct intake cost, quantity, review and confirm labels",
+        "Remove invented CSV, bulk-intake, product archive and intake reason requirements"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "inventory-intake-header",
+          "kind": "header",
+          "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "inventory-intake-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
+          "placement": "before-heading",
+          "heading": "Add or edit a product",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "q4zmfli7l72",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "i0dsaaoy0r8",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "5twtyrkokdk",
+          "text": "Create or find the product"
+        },
+        {
+          "level": "H2",
+          "id": "70yo5ksre88",
+          "text": "Maintain products, units, and aliases"
+        },
+        {
+          "level": "H2",
+          "id": "pifd3lbs3pa",
+          "text": "Import or receive multiple rows"
+        },
+        {
+          "level": "H2",
+          "id": "skyilxqz70d",
+          "text": "Receive incoming stock"
+        },
+        {
+          "level": "H2",
+          "id": "at6r27ielcl",
+          "text": "Correct a count"
+        },
+        {
+          "level": "H2",
+          "id": "re7f862fw2s",
+          "text": "Review history and low stock"
+        },
+        {
+          "level": "H2",
+          "id": "xxm35yp3yt3",
+          "text": "Keep counts accurate"
+        },
+        {
+          "level": "H2",
+          "id": "issfbpcotki",
+          "text": "If something goes wrong"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "i0dsaaoy0r8",
+          "text": "Before you start"
+        },
+        {
+          "id": "add-or-edit-a-product",
+          "text": "Add or edit a product"
+        },
+        {
+          "id": "receive-goods",
+          "text": "Receive goods"
+        },
+        {
+          "id": "at6r27ielcl",
+          "text": "Correct a count"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Total Cost",
+        "unit cost",
+        "Increase:",
+        "Decrease:",
+        "Set to:"
+      ],
+      "intendedEmphasizedLabels": [
+        "Inventory",
+        "Add product",
+        "SKU",
+        "Product Name",
+        "Initial Quantity On Hand",
+        "Reorder Alert Level",
+        "Acquisition Unit Cost ($)",
+        "Selling Retail Price ($)",
+        "Add Product",
+        "Create First Product",
+        "Edit product",
+        "Inventory",
+        "Add stock",
+        "Product",
+        "Total Cost",
+        "Supplier (Optional)",
+        "Delivery Cost",
+        "Review & Process Intake",
+        "Confirm Intake",
+        "Inventory",
+        "Fix count",
+        "Adjust inventory",
+        "Select Product",
+        "Set Quantity To",
+        "Add (+)",
+        "Remove (-)",
+        "Quantity",
+        "Reason",
+        "Confirm Adjustment",
+        "Refresh",
+        "Stock history"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/inventory/page.tsx",
+        "apps/app/app/(app)/inventory/_components/InventoryForm.tsx",
+        "apps/app/app/(app)/inventory/intake/page.tsx",
+        "apps/app/app/(app)/inventory/adjust/page.tsx",
+        "apps/app/app/(app)/inventory/audit/page.tsx",
+        "apps/marketing/lib/feature-canon.ts"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "0272622",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
+      "sourceSha256": "22711ced00888bebe96ae83a5d56fc83682e93dfc465ccfc8b3387ce98b959d4",
+      "renderedFingerprint": "b50ecd55f872c7245c2e886182bde194043e364cb69ebe7d330484b1c44e2fa1",
+      "oldTitle": "Troubleshoot inventory and audit",
+      "title": "Troubleshoot inventory and audit",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit",
+      "publicSlug": "0272622-troubleshoot-inventory-and-audit",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 2,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Use exact adjustment action labels and required reason",
+        "Distinguish pending intake from applied movement",
+        "Warn about previously loaded Inventory after refresh errors"
+      ],
+      "beforeLinks": [],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "inventory-save-and-count",
+          "kind": "diagram",
+          "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
+          "placement": "before-heading",
+          "heading": "Intake will not save",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "wxqckrysd25",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "6fykmttq6f2",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "c1d12220sbd",
+          "text": "You can’t record incoming stock"
+        },
+        {
+          "level": "H2",
+          "id": "lrewxr7pib0",
+          "text": "Your intake was saved but stock didn’t increase"
+        },
+        {
+          "level": "H2",
+          "id": "tw8maq38mi8",
+          "text": "An adjustment saved but didn’t change the count"
+        },
+        {
+          "level": "H2",
+          "id": "ocxk8zooz1p",
+          "text": "You can’t submit an adjustment because of missing fields"
+        },
+        {
+          "level": "H2",
+          "id": "4lwk1rtdy1d",
+          "text": "Movement history is missing or incomplete in Audit"
+        },
+        {
+          "level": "H2",
+          "id": "ybaw27pp3y4",
+          "text": "You don’t see Inventory or Audit options"
+        },
+        {
+          "level": "H2",
+          "id": "02xz10o54it",
+          "text": "An approver can’t find your pending change"
+        },
+        {
+          "level": "H2",
+          "id": "tz0rlif2amy",
+          "text": "Stock looks wrong after a sale or a low-stock alert is missing"
+        },
+        {
+          "level": "H2",
+          "id": "ook725clrar",
+          "text": "A batch, supplier, or purchase-order reference looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "zr20a7za4le",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "intake-will-not-save",
+          "text": "Intake will not save"
+        },
+        {
+          "id": "a-saved-change-did-not-affect-the-count",
+          "text": "A saved change did not affect the count"
+        },
+        {
+          "id": "an-adjustment-is-rejected",
+          "text": "An adjustment is rejected"
+        },
+        {
+          "id": "inventory-could-not-refresh",
+          "text": "Inventory could not refresh"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Open",
+        "Start",
+        "Enter",
+        "Review",
+        "Save",
+        "Ask",
+        "Check",
+        "Confirm",
+        "Request",
+        "Refresh",
+        "Select",
+        "Enter",
+        "Type",
+        "Save",
+        "Open",
+        "Clear",
+        "Adjust",
+        "Confirm",
+        "Look",
+        "Recheck",
+        "Confirm",
+        "Ask",
+        "Try",
+        "Share",
+        "Ask",
+        "Verify"
+      ],
+      "intendedEmphasizedLabels": [
+        "Inventory",
+        "Product",
+        "Total Cost",
+        "Review & Process Intake",
+        "Confirm Intake",
+        "Stock history",
+        "Inventory",
+        "Add (+)",
+        "Remove (-)",
+        "Adjust inventory",
+        "Select Product",
+        "Action",
+        "Quantity",
+        "Reason",
+        "Set Quantity To",
+        "Add (+)",
+        "Remove (-)",
+        "Refresh"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/inventory/page.tsx",
+        "apps/app/app/(app)/inventory/_components/InventoryForm.tsx",
+        "apps/app/app/(app)/inventory/intake/page.tsx",
+        "apps/app/app/(app)/inventory/adjust/page.tsx",
+        "apps/app/app/(app)/inventory/audit/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "2995914",
+      "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
+      "sourceSha256": "9d86e4266f43394a5d13a7add8423489cc6f17d162f24bc2a2540771b524a074",
+      "renderedFingerprint": "bcf1fbc284712be7887a4edc17e8cdf4a6cd8a6de610c6bdcf4aa7e9f7c4f864",
+      "oldTitle": "DRX Intelligence",
+      "title": "DRX Intelligence",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2995914-drx-intelligence",
+      "publicSlug": "2995914-drx-intelligence",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 3,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Bound AI beta and service availability",
+        "Remove generic suggestion queue controls and unsupported forecast assurances",
+        "Keep business approval separate from advice"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot AI Intelligence",
+          "url": "https://drx.featurebase.app/en/help/articles/9003136"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Troubleshoot AI Intelligence",
+          "url": "https://drx.featurebase.app/en/help/articles/9003136"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "14szefybdoc",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "rfbtzb87407",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "iwizaydkzfz",
+          "text": "Review a suggestion"
+        },
+        {
+          "level": "H2",
+          "id": "bfk5x5ww24q",
+          "text": "Decide and verify"
+        },
+        {
+          "level": "H2",
+          "id": "cqcrdeimwbf",
+          "text": "If suggestions are missing or outdated"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "rfbtzb87407",
+          "text": "Before you start"
+        },
+        {
+          "id": "iwizaydkzfz",
+          "text": "Review a suggestion"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": ["Inventory", "Orders & Receipts"],
+      "sourceEvidence": ["apps/app/app/(app)/ai-intelligence/page.tsx"],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
+    },
+    {
+      "id": "3974136",
+      "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
+      "sourceSha256": "1d3188cf452c4f74f3789058d6dd121d2e2fa9b6c9c3bd5f12cb1188fc31715f",
+      "renderedFingerprint": "ceb19c59d5b72fa8c20b02ec2c3cf14c37b8be664dcb651ab5795460136d4e78",
+      "oldTitle": "Purchase orders (beta)",
+      "title": "Purchase orders (beta)",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3974136-purchase-orders-beta",
+      "publicSlug": "3974136-purchase-orders-beta",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 4,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Remove unverified purchase-order creation and receiving UI procedure",
+        "State current beta limitation and use actual Inventory receiving workflow"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Inventory intake and adjustments",
+          "url": "https://drx.featurebase.app/en/help/articles/6300641"
+        },
+        {
+          "text": "Troubleshoot inventory and audit",
+          "url": "https://drx.featurebase.app/en/help/articles/0272622"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "qz6o3aitrl0",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "mw3ya654w3y",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "sp5tmr3p1e6",
+          "text": "When purchase-order controls are available"
+        },
+        {
+          "level": "H2",
+          "id": "a6k1x4o6lom",
+          "text": "Receive and reconcile the delivery"
+        },
+        {
+          "level": "H2",
+          "id": "a4e3a6f20ff",
+          "text": "If a save or stock update is uncertain"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "check-availability-first",
+          "text": "Check availability first"
+        },
+        {
+          "id": "record-goods-that-have-arrived",
+          "text": "Record goods that have arrived"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": ["Inventory", "Add stock", "Total Cost"],
+      "sourceEvidence": [
+        "docs/BRAND_VOICE.md",
+        "apps/marketing/lib/feature-canon.ts",
+        "apps/marketing/lib/marketing-content.ts",
+        "apps/marketing/app/product/page.tsx",
+        "apps/marketing/components/marketing/features.tsx",
+        "VERSION",
+        "CHANGELOG.md",
+        "apps/app/app/(app)/inventory/intake/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
+    },
+    {
+      "id": "9003136",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
+      "sourceSha256": "141c3b80f236893b2ed38b14b0eb46955dd4c71777f80053295c90ea6b980160",
+      "renderedFingerprint": "9001188dbef4242d21226e2e317390ea90c4b46033b09d95ef1914066eda3a45",
+      "oldTitle": "Troubleshoot AI Intelligence",
+      "title": "Troubleshoot AI Intelligence",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/9003136-troubleshoot-ai-intelligence",
+      "publicSlug": "9003136-troubleshoot-ai-intelligence",
+      "parentId": "7358320",
+      "collection": "Inventory",
+      "publicOrder": 5,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Remove invented filters and universal AI apply/history actions",
+        "Check source records and actual errors without bypassing approvals"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        },
+        {
+          "text": "private support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": ["https://drx.featurebase.app/articles/3230948"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "cie4cak1fey",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "c381qloltxe",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "rtf8pze0xwe",
+          "text": "Suggestions are missing"
+        },
+        {
+          "level": "H2",
+          "id": "ztw6d7mk7am",
+          "text": "Suggestions look outdated or incorrect"
+        },
+        {
+          "level": "H2",
+          "id": "s1qmw6odqcr",
+          "text": "Applying a suggestion fails or the result is uncertain"
+        },
+        {
+          "level": "H2",
+          "id": "kepw83y2ix8",
+          "text": "A history entry is missing"
+        },
+        {
+          "level": "H2",
+          "id": "7baio2e7yzl",
+          "text": "Continue work safely"
+        },
+        {
+          "level": "H2",
+          "id": "0r6kxadti3z",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "intelligence-is-missing-or-analysis-fails",
+          "text": "Intelligence is missing or analysis fails"
+        },
+        {
+          "id": "a-suggestion-looks-wrong",
+          "text": "A suggestion looks wrong"
+        },
+        {
+          "id": "a-change-has-an-uncertain-result",
+          "text": "A change has an uncertain result"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [],
+      "sourceEvidence": ["apps/app/app/(app)/ai-intelligence/page.tsx"],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "intentionally-text-only"
+    },
+    {
+      "id": "0236106",
+      "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
+      "sourceSha256": "7e08952eb24c715108f4a4aabb53053bc93dda293d0944259a179789350bccbe",
+      "renderedFingerprint": "1bbe5674b0b729e0f0c4045212cec8d434009dc8d188375c577208ad7028347b",
+      "oldTitle": "Quick Sale checkout",
+      "title": "Quick Sale checkout",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/0236106-quick-sale-checkout",
+      "publicSlug": "0236106-quick-sale-checkout",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 1,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Use current Point of Sale and payment controls",
+        "Remove receipt-delivery, mixed-payment and alternate-console assumptions",
+        "Explain payment recording and uncertain-result recovery"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Standard Sales console",
+          "url": "https://drx.featurebase.app/en/help/articles/7723456"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/5281725"],
+        "removed": ["https://drx.featurebase.app/articles/7723456"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "quick-sale-header",
+          "kind": "header",
+          "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
+          "placement": "lead",
+          "heading": null,
+          "publicationState": "uploaded"
+        },
+        {
+          "assetId": "quick-sale-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
+          "placement": "before-heading",
+          "heading": "Build the sale",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "fp02bfis4xe",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "z811o0rtr5i",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "lx26a656d5e",
+          "text": "Build and review the cart"
+        },
+        {
+          "level": "H2",
+          "id": "ssbk1iyfs8l",
+          "text": "Use search and quantity shortcuts"
+        },
+        {
+          "level": "H2",
+          "id": "kze4bifc63y",
+          "text": "Attach a customer when needed"
+        },
+        {
+          "level": "H2",
+          "id": "mm5ylirc38i",
+          "text": "Choose payment and receipt"
+        },
+        {
+          "level": "H2",
+          "id": "wmoz5te11r7",
+          "text": "Verify the completed sale"
+        },
+        {
+          "level": "H2",
+          "id": "4l4e5ptwplr",
+          "text": "If the result is uncertain"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "z811o0rtr5i",
+          "text": "Before you start"
+        },
+        {
+          "id": "build-the-sale",
+          "text": "Build the sale"
+        },
+        {
+          "id": "record-payment-and-finish",
+          "text": "Record payment and finish"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Payment Method",
+        "Cash",
+        "Card",
+        "Credit",
+        "Receipt",
+        "Print",
+        "SMS",
+        "None"
+      ],
+      "intendedEmphasizedLabels": [
+        "Point of Sale",
+        "Scan SKU / barcode or search products",
+        "Customer (Optional)",
+        "Alias",
+        "Phone number",
+        "Lookup",
+        "Attached:",
+        "Continue to Payment",
+        "Pay",
+        "Subtotal",
+        "Merchandise tax",
+        "Payment Method",
+        "CASH",
+        "CARD",
+        "CREDIT",
+        "Confirm credit charge",
+        "Receipt",
+        "PRINT",
+        "SMS",
+        "NONE",
+        "Complete Sale",
+        "Orders & Receipts"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(operator)/pos/sale/page.tsx",
+        "apps/app/app/(operator)/pos/payment/page.tsx",
+        "apps/app/app/(operator)/pos/complete/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "5281725",
+      "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
+      "sourceSha256": "4e8c440974185bcd3f840c7c39234318b1d8e0c485e3ffd9c5adf69fe52a2e4c",
+      "renderedFingerprint": "9bc949166a8c28d500c798a056c50ee1887464b71fdde22ccef6516a4ab17bd7",
+      "oldTitle": "Sales history and receipts",
+      "title": "Sales history and receipts",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/5281725-sales-history-and-receipts",
+      "publicSlug": "5281725-sales-history-and-receipts",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 2,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Correct recent-50 search scope and Sale Details controls",
+        "Remove universal reprint/email/refund instructions",
+        "Separate payment-label corrections from actual money movement"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "linkChanges": {
+        "added": [],
+        "removed": []
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "sales-history-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
+          "placement": "before-heading",
+          "heading": "Find a sale",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "8ftxk4b66ar",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "m1acmk3x3r8",
+          "text": "When to use it"
+        },
+        {
+          "level": "H2",
+          "id": "d4sz05xfw14",
+          "text": "How to use it"
+        },
+        {
+          "level": "H2",
+          "id": "11yceoydetf",
+          "text": "Handle a refund or correction"
+        },
+        {
+          "level": "H2",
+          "id": "xid6fl46liy",
+          "text": "Check receipt printing or delivery"
+        },
+        {
+          "level": "H2",
+          "id": "t44406qae6c",
+          "text": "Options and settings"
+        },
+        {
+          "level": "H2",
+          "id": "l5is78t72lp",
+          "text": "Tips"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "before-you-start",
+          "text": "Before you start"
+        },
+        {
+          "id": "find-a-sale",
+          "text": "Find a sale"
+        },
+        {
+          "id": "review-an-authorized-correction",
+          "text": "Review an authorized correction"
+        },
+        {
+          "id": "check-a-receipt",
+          "text": "Check a receipt"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [
+        "Open Sales history.",
+        "Search or filter for the sale.",
+        "Open the sale details.",
+        "Verify items and totals.",
+        "Check payments.",
+        "Reprint or share the receipt.",
+        "Add a note (if needed).",
+        "Close the record."
+      ],
+      "intendedEmphasizedLabels": [
+        "Orders & Receipts",
+        "Recent Orders",
+        "Search by ID or payment...",
+        "Sale Details",
+        "Payment Method",
+        "Sale Details",
+        "Assign Customer",
+        "Change Customer",
+        "PRINT",
+        "SMS",
+        "NONE"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(app)/sales/page.tsx",
+        "apps/app/app/(app)/sales/[id]/page.tsx",
+        "apps/app/components/quick-pos/receipt-choice.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "3230948",
+      "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
+      "sourceSha256": "d4229b6560abeca7fe87bdd0173962cb1725c6888bcd9cd45cd8eca5f2f4da2d",
+      "renderedFingerprint": "3829ce1c2c460f669d3335ac7fcbf7bbc3b02337775269b6d91ce113489327ab",
+      "oldTitle": "Troubleshoot checkout and payments",
+      "title": "Troubleshoot checkout and payments",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/3230948-troubleshoot-checkout-and-payments",
+      "publicSlug": "3230948-troubleshoot-checkout-and-payments",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 3,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Replace obsolete Standard Sales / Zelle / Mixed troubleshooting",
+        "Check verified totals, credit confirmation and delivery address",
+        "Do not reset cart, clear browser data or repeat payment on uncertainty"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Connect barcode scanners",
+          "url": "https://drx.featurebase.app/en/help/articles/2709969"
+        },
+        {
+          "text": "Troubleshoot customers and credit",
+          "url": "https://drx.featurebase.app/en/help/articles/9156766"
+        },
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Help and support",
+          "url": "https://drx.featurebase.app/en/help/articles/2070517"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/2070517"],
+        "removed": [
+          "https://drx.featurebase.app/articles/2709969",
+          "https://drx.featurebase.app/articles/9156766",
+          "https://drx.featurebase.app/articles/5281725"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "uncertain-checkout-payment",
+          "kind": "diagram",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "placement": "before-heading",
+          "heading": "The result is uncertain",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "c8osi1e27ck",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "qpmc16kcore",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "ml56smbfy2i",
+          "text": "Items will not scan or add to the cart"
+        },
+        {
+          "level": "H2",
+          "id": "laazslsc5ad",
+          "text": "Discounts, fees, or totals look wrong"
+        },
+        {
+          "level": "H2",
+          "id": "azmz6l2dd8l",
+          "text": "A customer will not attach"
+        },
+        {
+          "level": "H2",
+          "id": "pttrwsf03ie",
+          "text": "A payment method or split payment is unavailable"
+        },
+        {
+          "level": "H2",
+          "id": "b3xiczqeqkf",
+          "text": "Credit is unavailable"
+        },
+        {
+          "level": "H2",
+          "id": "sed415328q4",
+          "text": "Payment failed, timed out, or has an uncertain result"
+        },
+        {
+          "level": "H2",
+          "id": "3w42leaf7x7",
+          "text": "The receipt did not print or send"
+        },
+        {
+          "level": "H2",
+          "id": "7kd3o41cl27",
+          "text": "The completed sale looks wrong"
+        },
+        {
+          "level": "H2",
+          "id": "zftx5xbf1ib",
+          "text": "The connection drops or offline status appears"
+        },
+        {
+          "level": "H2",
+          "id": "3z24e8wttrw",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "the-cart-will-not-load-or-a-product-is-missing",
+          "text": "The cart will not load or a product is missing"
+        },
+        {
+          "id": "you-cannot-continue",
+          "text": "You cannot continue"
+        },
+        {
+          "id": "complete-sale-is-disabled-or-rejected",
+          "text": "Complete Sale is disabled or rejected"
+        },
+        {
+          "id": "the-result-is-uncertain",
+          "text": "The result is uncertain"
+        },
+        {
+          "id": "a-receipt-did-not-arrive",
+          "text": "A receipt did not arrive"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": ["Quick POS:", "Standard Sales:"],
+      "intendedEmphasizedLabels": [
+        "Continue to Payment",
+        "Pay",
+        "Verifying prices, discounts, and tax...",
+        "CASH",
+        "CARD",
+        "CREDIT",
+        "Confirm credit charge",
+        "Delivery address",
+        "Orders & Receipts",
+        "PRINT",
+        "SMS"
+      ],
+      "sourceEvidence": [
+        "apps/app/app/(operator)/pos/sale/page.tsx",
+        "apps/app/app/(operator)/pos/payment/page.tsx",
+        "apps/app/app/(operator)/pos/complete/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "7723456",
+      "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
+      "sourceSha256": "9e398aff05a298fb9bb27f878c73b3df079026c64eea806d85c52907ec396f6a",
+      "renderedFingerprint": "cdadef5fa0a8d0ce44ca60f7e4d8b04b326e59988794cad047354b685e4d57db",
+      "oldTitle": "Standard Sales console",
+      "title": "Sales and deliveries (beta)",
+      "action": "retitle-and-update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
+      "publicSlug": "7723456-sales-and-deliveries-beta",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 4,
+      "orderAction": "preserve",
+      "slugAction": "Featurebase regenerated the slug after the title change",
+      "notes": [
+        "Retitle Standard Sales console to Sales and deliveries (beta)",
+        "Move checkout detail to canonical Quick Sale guide without creating another article",
+        "Document manual vendor order, fee allocation, delivery status and cancellation limits"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        },
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/0236106"],
+        "removed": ["https://drx.featurebase.app/articles/5281725"]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "deliveries-screen",
+          "kind": "screenshot",
+          "alt": "Illustrative completed sale linked to fictional delivery details.",
+          "placement": "before-heading",
+          "heading": "Include delivery in a sale",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "wb0txeo4q1d",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "sz3di6aprdy",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "5828w3z4s02",
+          "text": "Build and review the sale"
+        },
+        {
+          "level": "H2",
+          "id": "ix8xo5pykza",
+          "text": "Record the payment correctly"
+        },
+        {
+          "level": "H2",
+          "id": "6zdstk627cc",
+          "text": "Verify the result"
+        },
+        {
+          "level": "H2",
+          "id": "q7wlko84sq8",
+          "text": "If something goes wrong"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "sz3di6aprdy",
+          "text": "Before you start"
+        },
+        {
+          "id": "include-delivery-in-a-sale",
+          "text": "Include delivery in a sale"
+        },
+        {
+          "id": "update-an-enabled-delivery-task",
+          "text": "Update an enabled delivery task"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": ["Mixed"],
+      "intendedEmphasizedLabels": [
+        "Point of Sale",
+        "Orders & Receipts",
+        "Deliveries",
+        "Point of Sale",
+        "Delivery",
+        "Include delivery",
+        "Delivery address",
+        "Uber/vendor quote",
+        "Who pays the vendor fee?",
+        "Charge customer",
+        "Business absorbs",
+        "Delivery charged",
+        "Delivery tax",
+        "Delivery absorbed",
+        "Deliveries",
+        "Assign to me",
+        "Reveal address (audited)",
+        "Uber wait time / ETA (minutes)",
+        "Mark ordered",
+        "Mark handed off",
+        "Mark delivered",
+        "Manager cancellation",
+        "Record adjustment"
+      ],
+      "sourceEvidence": [
+        "apps/app/components/quick-pos/delivery-checkout.tsx",
+        "apps/app/app/(app)/deliveries/page.tsx"
+      ],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "Verified one redirect from https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console to https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta; final HTTP status 200",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    },
+    {
+      "id": "2709969",
+      "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
+      "sourceSha256": "758ce083773487803a08a51ed044f5ef0609308a96c094e67da74c59b808b6af",
+      "renderedFingerprint": "99d4d07ffd59643f25388b97d7fc917a4d497f91b053003efb76365fccdadfd0",
+      "oldTitle": "Connect barcode scanners",
+      "title": "Connect barcode scanners",
+      "action": "update",
+      "publishedInThisChange": true,
+      "publicUrl": "https://drx.featurebase.app/en/help/articles/2709969-connect-barcode-scanners",
+      "publicSlug": "2709969-connect-barcode-scanners",
+      "parentId": "4883754",
+      "collection": "POS & Sales",
+      "publicOrder": 5,
+      "orderAction": "preserve",
+      "slugAction": "preserve; API field still requires export",
+      "notes": [
+        "Limit scanner instructions to keyboard-style web input",
+        "Remove unverified camera procedure and device-wide compatibility claims",
+        "Separate scanner success from printing or native availability"
+      ],
+      "beforeLinks": [
+        {
+          "text": "Sales history and receipts",
+          "url": "https://drx.featurebase.app/en/help/articles/5281725"
+        },
+        {
+          "text": "Troubleshoot checkout and payments",
+          "url": "https://drx.featurebase.app/en/help/articles/3230948"
+        }
+      ],
+      "intendedLinks": [
+        {
+          "text": "Quick Sale checkout",
+          "url": "https://drx.featurebase.app/en/help/articles/0236106"
+        }
+      ],
+      "linkChanges": {
+        "added": ["https://drx.featurebase.app/articles/0236106"],
+        "removed": [
+          "https://drx.featurebase.app/articles/5281725",
+          "https://drx.featurebase.app/articles/3230948"
+        ]
+      },
+      "beforeVisuals": [],
+      "intendedVisuals": [
+        {
+          "assetId": "barcode-keyboard-path",
+          "kind": "diagram",
+          "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+          "placement": "before-heading",
+          "heading": "Connect and check a scanner",
+          "publicationState": "uploaded"
+        }
+      ],
+      "oldHeadingAnchors": [
+        {
+          "level": "H2",
+          "id": "sylzl14zcmx",
+          "text": "Overview"
+        },
+        {
+          "level": "H2",
+          "id": "41dwb76xqpr",
+          "text": "Before you start"
+        },
+        {
+          "level": "H2",
+          "id": "zxbbzxdymkp",
+          "text": "Connect a USB scanner"
+        },
+        {
+          "level": "H2",
+          "id": "1bpm7irfzxq",
+          "text": "Connect a Bluetooth scanner"
+        },
+        {
+          "level": "H2",
+          "id": "sirfizotbtw",
+          "text": "Use a camera"
+        },
+        {
+          "level": "H2",
+          "id": "2yqm7l5c1rf",
+          "text": "Configure and verify"
+        },
+        {
+          "level": "H2",
+          "id": "t3kzr3m837q",
+          "text": "Nothing appears, the wrong item appears, or scans are unreliable"
+        },
+        {
+          "level": "H2",
+          "id": "f4dr3qp6rpl",
+          "text": "Disconnect or switch devices"
+        },
+        {
+          "level": "H2",
+          "id": "s33t8w5q0cs",
+          "text": "Still need help"
+        }
+      ],
+      "intendedHeadings": [
+        {
+          "id": "41dwb76xqpr",
+          "text": "Before you start"
+        },
+        {
+          "id": "connect-and-check-a-scanner",
+          "text": "Connect and check a scanner"
+        },
+        {
+          "id": "if-scanning-does-not-work",
+          "text": "If scanning does not work"
+        },
+        {
+          "id": "what-happens-next",
+          "text": "What happens next"
+        },
+        {
+          "id": "related-articles",
+          "text": "Related articles"
+        }
+      ],
+      "previousEmphasizedLabels": [],
+      "intendedEmphasizedLabels": [
+        "Point of Sale",
+        "Scan SKU / barcode or search products"
+      ],
+      "sourceEvidence": ["apps/app/components/quick-pos/product-search.tsx"],
+      "platformClaim": "Web beta unless explicitly bounded; no new native distribution claim",
+      "redirectAction": "No article URL change planned; historical section IDs kept as anchors",
+      "publicationMethod": "authenticated-browser-editor",
+      "publicVerifiedAt": "2026-09-04T05:04:10.093Z",
+      "visualPublicationState": "prepared-not-uploaded"
+    }
+  ],
+  "visualPreflightPublicInspectionTime": "2026-09-04T09:51:23.114Z"
+}

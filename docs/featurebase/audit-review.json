@@ -1,0 +1,329 @@
+{
+  "issue": "WRE-92",
+  "sourceCommit": "d1ccc93e1ae18c616b3982036f79aa7122f43ca8",
+  "completePublicAudit": true,
+  "completeApiAudit": false,
+  "unresolvedP1P2": 0,
+  "publicationStatus": "text-and-visuals-published-verified",
+  "blockers": [],
+  "coverage": [
+    {
+      "topic": "Account creation, owner accounts, sign-in and username or email",
+      "articleIds": ["1633388", "3948745"],
+      "sources": [
+        "apps/mobile/app/login.tsx",
+        "apps/app/app/login/[[...rest]]/page.tsx",
+        "apps/app/app/register/[[...rest]]/page.tsx"
+      ]
+    },
+    {
+      "topic": "Onboarding and business setup",
+      "articleIds": ["1633388"],
+      "sources": [
+        "apps/app/app/onboarding/_components/OnboardingForm.tsx",
+        "apps/app/app/onboarding/_actions.ts"
+      ]
+    },
+    {
+      "topic": "Privacy presets and retention periods",
+      "articleIds": ["6417807"],
+      "sources": [
+        "apps/app/lib/privacy/profiles.ts",
+        "apps/app/lib/copy/drx.ts",
+        "apps/app/components/onboarding/steps/PrivacyStep.tsx"
+      ]
+    },
+    {
+      "topic": "Permanent deletion, qualifying records, holds and outstanding balances",
+      "articleIds": ["6417807"],
+      "sources": [
+        "apps/app/app/api/privacy/cleanup/route.ts",
+        "apps/app/lib/customers/core/customer-retention.ts"
+      ]
+    },
+    {
+      "topic": "Screen masking and privacy settings",
+      "articleIds": ["6417807"],
+      "sources": ["apps/app/app/(app)/settings/page.tsx"]
+    },
+    {
+      "topic": "Customer details and alias-only limits",
+      "articleIds": ["1831819", "9156766"],
+      "sources": [
+        "apps/app/app/(app)/customers/page.tsx",
+        "apps/app/components/quick-pos/customer-inline.tsx"
+      ]
+    },
+    {
+      "topic": "Products, Inventory intake, adjustments and audit",
+      "articleIds": ["6300641", "0272622"],
+      "sources": [
+        "apps/app/app/(app)/inventory/page.tsx",
+        "apps/app/app/(app)/inventory/_components/InventoryForm.tsx",
+        "apps/app/app/(app)/inventory/intake/page.tsx",
+        "apps/app/app/(app)/inventory/adjust/page.tsx",
+        "apps/app/app/(app)/inventory/audit/page.tsx"
+      ]
+    },
+    {
+      "topic": "Sales and checkout",
+      "articleIds": ["0236106", "3230948"],
+      "sources": [
+        "apps/app/app/(operator)/pos/sale/page.tsx",
+        "apps/app/app/(operator)/pos/payment/page.tsx",
+        "apps/app/app/(operator)/pos/complete/page.tsx"
+      ]
+    },
+    {
+      "topic": "Orders, corrections and receipt limits",
+      "articleIds": ["5281725"],
+      "sources": [
+        "apps/app/app/(app)/sales/page.tsx",
+        "apps/app/app/(app)/sales/[id]/page.tsx",
+        "apps/app/components/quick-pos/receipt-choice.tsx"
+      ]
+    },
+    {
+      "topic": "Payments, credit and open balances",
+      "articleIds": ["1831819", "9156766"],
+      "sources": [
+        "apps/app/app/(app)/credit/page.tsx",
+        "apps/app/app/(app)/credit/_components/PaymentDialog.tsx",
+        "apps/app/components/quick-pos/payment-methods.tsx"
+      ]
+    },
+    {
+      "topic": "Delivery fees, manual vendor ordering and cancellation",
+      "articleIds": ["7723456"],
+      "sources": [
+        "apps/app/components/quick-pos/delivery-checkout.tsx",
+        "apps/app/app/(app)/deliveries/page.tsx"
+      ]
+    },
+    {
+      "topic": "Reports, time windows, Insights and reconciliation CSV",
+      "articleIds": ["2502678", "3489602"],
+      "sources": [
+        "apps/app/app/(app)/reports/page.tsx",
+        "apps/app/app/(app)/insights/page.tsx",
+        "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      ]
+    },
+    {
+      "topic": "Business switching, roles, team invitations and offboarding limits",
+      "articleIds": ["4735029", "3948745"],
+      "sources": [
+        "apps/app/components/layout/business-switcher.tsx",
+        "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
+        "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx"
+      ]
+    },
+    {
+      "topic": "Settings and customer data export limits",
+      "articleIds": ["6417807", "2502678"],
+      "sources": [
+        "apps/app/app/(app)/settings/page.tsx",
+        "apps/app/app/(app)/reports/page.tsx"
+      ]
+    },
+    {
+      "topic": "Mobile web, PWA, iPhone, Expo and Android availability",
+      "articleIds": ["2070517"],
+      "sources": [
+        "apps/marketing/lib/marketing-content.ts",
+        "apps/mobile/app/login.tsx",
+        "apps/ios/DRXApp/Features/Reports/ReportsView.swift"
+      ]
+    },
+    {
+      "topic": "Early access, waitlist, public feature names and beta posture",
+      "articleIds": ["1633388", "2070517", "3974136"],
+      "sources": [
+        "docs/BRAND_VOICE.md",
+        "apps/marketing/lib/feature-canon.ts",
+        "apps/marketing/lib/marketing-content.ts",
+        "apps/marketing/app/product/page.tsx",
+        "apps/marketing/components/marketing/features.tsx",
+        "VERSION",
+        "CHANGELOG.md"
+      ]
+    },
+    {
+      "topic": "AI advice and service availability",
+      "articleIds": ["2995914", "9003136"],
+      "sources": ["apps/app/app/(app)/ai-intelligence/page.tsx"]
+    },
+    {
+      "topic": "Barcode scanners and camera limits",
+      "articleIds": ["2709969"],
+      "sources": ["apps/app/components/quick-pos/product-search.tsx"]
+    },
+    {
+      "topic": "Private support and public feedback boundaries",
+      "articleIds": ["2070517"],
+      "sources": [
+        "apps/marketing/lib/docs-links.ts",
+        "apps/marketing/lib/marketing-content.ts"
+      ]
+    },
+    {
+      "topic": "Purchase-order and bulk-import limits",
+      "articleIds": ["3974136", "6300641"],
+      "sources": [
+        "apps/marketing/lib/feature-canon.ts",
+        "apps/app/app/(app)/inventory/intake/page.tsx"
+      ]
+    }
+  ],
+  "productGaps": [
+    {
+      "id": "G1",
+      "topic": "Workspace overview",
+      "source": "apps/app/app/(app)/workspaces/_components/WorkspacesClient.tsx",
+      "finding": "Sample device, location, last-access and privacy data; obsolete preset descriptions and version. Article explicitly directs privacy checks to Settings. Product repair is outside this documentation change."
+    },
+    {
+      "id": "G2",
+      "topic": "Alias-only checkout creation",
+      "source": "apps/app/components/quick-pos/customer-inline.tsx",
+      "finding": "Quick Create requires phone although Alias Mode permits aliases only. Guides instruct users not to fabricate or collect prohibited data; use Customers with owner review."
+    },
+    {
+      "id": "G3",
+      "topic": "Purchase orders",
+      "source": "apps/marketing/lib/feature-canon.ts",
+      "finding": "Marketing says beta; no current purchase-order page found. Procedural creation steps withheld; actual receiving documented."
+    },
+    {
+      "id": "G4",
+      "topic": "Native distribution and parity",
+      "source": "apps/marketing/lib/marketing-content.ts",
+      "finding": "No verified open iPhone TestFlight distribution or complete Expo/Android acceptance evidence. No install, offline or parity promise published."
+    },
+    {
+      "id": "G5",
+      "topic": "Receipt delivery, refunds and mixed payments",
+      "source": "apps/app/app/(app)/sales/[id]/page.tsx",
+      "finding": "Receipt preference is not delivery confirmation. Current checkout has one cash/card/credit method. Legacy reprint, email, universal refund and mixed/Zelle checkout procedures removed."
+    },
+    {
+      "id": "G6",
+      "topic": "Team offboarding",
+      "source": "apps/app/app/(app)/settings/team/_components/TeamClient.tsx",
+      "finding": "No verified removal/session-revocation UI workflow. Support review replaces invented deactivate button and immediate all-device revocation guarantee."
+    },
+    {
+      "id": "G7",
+      "topic": "Reports and runtime health",
+      "source": "apps/app/app/(app)/insights/page.tsx",
+      "finding": "Source verification is not credentialed report or ledger acceptance. Empty Insights is not proof of zero sales. Documented period and CSV controls only."
+    },
+    {
+      "id": "G8",
+      "topic": "Whole-account deletion and exports",
+      "source": "apps/app/app/api/privacy/cleanup/route.ts",
+      "finding": "Inactive customer cleanup is narrower than every financial/audit/exported copy. No account-wide recovery, erasure, compliance or encryption guarantee."
+    },
+    {
+      "id": "G9",
+      "topic": "Mintlify publication and help-link cutover",
+      "source": "docs/mintlify/help-center-migration.json",
+      "finding": "The repository now generates the 19 canonical guides and 20 visual assets for Mintlify. Live Mintlify deployment, the DRX-owned docs domain, and public help-link cutover remain unverified and must not be claimed from source alone."
+    }
+  ],
+  "helpCenterVisuals": {
+    "state": "published-and-publicly-verified",
+    "assetCount": 20,
+    "placementCount": 23,
+    "headers": 6,
+    "screenshots": 8,
+    "diagrams": 6,
+    "articlesWithVisuals": 16,
+    "intentionallyTextOnlyArticleIds": ["2995914", "3974136", "9003136"],
+    "canaryRoundTripVerified": true,
+    "authenticatedDryRunVerified": true,
+    "livePublicationVerified": true,
+    "blocker": null
+  },
+  "browserPublication": {
+    "publishedAt": "2026-09-04T05:04:10.093Z",
+    "method": "authenticated-browser-editor",
+    "canonicalArticleCount": 19,
+    "publicArticleCount": 19,
+    "publicCollectionCount": 6,
+    "contentStructureMatches": 19,
+    "createdArticles": 0,
+    "deletedArticles": 0,
+    "reorderedArticles": 0,
+    "unchangedDrafts": [
+      {
+        "id": "0023434",
+        "title": "Untitled document"
+      },
+      {
+        "id": "6969477",
+        "title": "Test Article with parentId"
+      },
+      {
+        "id": "4502473",
+        "title": "Test Article Payload 2"
+      }
+    ],
+    "retitledArticle": {
+      "id": "7723456",
+      "oldTitle": "Standard Sales console",
+      "title": "Sales and deliveries (beta)",
+      "oldUrl": "https://drx.featurebase.app/en/help/articles/7723456-standard-sales-console",
+      "url": "https://drx.featurebase.app/en/help/articles/7723456-sales-and-deliveries-beta",
+      "oldUrlRedirectStatus": 200,
+      "oldUrlRedirectCount": 1
+    },
+    "historicalHeadingFragments": {
+      "previousIds": 150,
+      "liveHeadings": 97,
+      "preservedPreviousIds": 0
+    },
+    "visualPublishedAt": "2026-09-05T03:29:18.102Z",
+    "publicVisualAssets": 20,
+    "publicVisualPlacements": 23,
+    "publicImageRequestsChecked": 23,
+    "publicImageRequestsSuccessful": 23
+  },
+  "completeBrowserDraftAudit": true,
+  "remainingVerificationLimits": [
+    "FEATUREBASE_API_KEY is unavailable; the authenticated browser receipt is the approved alternative for this visual publication.",
+    "The earlier text publication replaced 150 historical section-fragment IDs. The public export records the current 97 heading IDs, but the Featurebase editor cannot restore the removed aliases.",
+    "The published Help Center is configured with a dark theme. Emulating a light system preference did not expose a light variant, so light-theme readability could not be verified.",
+    "A clean public article load emits Featurebase React hydration errors 418 and 423. The 19-article semantic audit, image checks, and mobile rendering checks still passed; this is a hosted-platform warning."
+  ],
+  "visualDraftAudit": {
+    "evidence": "docs/featurebase/browser-visual-drafts-2026-09-04.json",
+    "method": "authenticated-browser-editor",
+    "articles": 16,
+    "assets": 20,
+    "placements": 23,
+    "currentHeadingIdsPreserved": false,
+    "titlesDescriptionsHeadingsLinksLabelsMatched": true,
+    "altTextCaptionsMatched": true,
+    "unexpectedImages": 0,
+    "publicImagesBeforePublication": 0
+  },
+  "visualPublicAudit": {
+    "evidence": "docs/featurebase/browser-visual-publication-2026-09-04.json",
+    "method": "public-html-export-and-browser",
+    "collections": 6,
+    "articles": 19,
+    "assets": 20,
+    "placements": 23,
+    "uniqueVisualKeys": 20,
+    "imageRequestsChecked": 23,
+    "imageRequestsSuccessful": 23,
+    "mobileViewport": "390x844",
+    "mobileOverflowFailures": 0,
+    "darkThemeVerified": true,
+    "lightThemeVerified": false,
+    "unexpectedImages": 0,
+    "missingArticles": 0,
+    "unexpectedArticles": 0
+  }
+}

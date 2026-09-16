@@ -1,64 +1,36 @@
-import path from "path";
-import { fbRequest, type FbList, writeJson, writeText } from "./_client";
-
-type Collection = { id: string; name: string; description?: string };
-type Article = {
-  id: string;
-  title: string;
-  slug?: string;
-  description?: string;
-  body?: string;
-  parentId?: string;
-  state?: string;
-  updatedAt?: string;
-  featurebaseUrl?: string;
-};
+import fs from "node:fs";
+import path from "node:path";
+import { writeJson } from "./_client";
+import { inspectPublicHelpCenter } from "./_help-public.mjs";
+import { exportHelpApi } from "./_help-api";
 
 async function main() {
-  const outDir = path.resolve(
-    process.cwd(),
-    process.argv[2] ?? "docs/help-center-export/raw",
+  const args = process.argv.slice(2);
+  const directory =
+    args.find((arg) => !arg.startsWith("--")) ?? ".featurebase/before-api";
+  const manifest = JSON.parse(
+    fs.readFileSync("docs/featurebase/help-center-manifest.json", "utf8"),
   );
-
-  const collections = await fbRequest<FbList<Collection>>(
-    "GET",
-    "/help_center/collections?limit=100",
+  const snapshot = args.includes("--public")
+    ? await inspectPublicHelpCenter()
+    : await exportHelpApi(manifest);
+  const output = path.resolve(
+    directory,
+    args.includes("--public") ? "public-snapshot.json" : "api-snapshot.json",
   );
-  const articles = await fbRequest<FbList<Article>>(
-    "GET",
-    "/help_center/articles?state=all&limit=100",
-  );
-
-  writeJson(path.join(outDir, "featurebase-collections.json"), collections);
-  writeJson(path.join(outDir, "featurebase-articles.json"), articles);
-
-  const byId = new Map(collections.data.map((c) => [c.id, c.name]));
-  const lines = [
-    "# Featurebase Help Articles (Export)",
-    "",
-    `Generated: ${new Date().toISOString()}`,
-    "",
-    `Total collections: ${collections.data.length}`,
-    `Total articles: ${articles.data.length}`,
-    "",
-  ];
-  for (const article of articles.data) {
-    lines.push(
-      `- ${article.title} | id: ${article.id} | slug: ${article.slug ?? "n/a"} | category: ${byId.get(article.parentId ?? "") ?? "n/a"} | state: ${article.state ?? "n/a"}`,
-    );
-  }
-  writeText(path.join(outDir, "featurebase-articles.md"), `${lines.join("\n")}\n`);
+  writeJson(output, snapshot);
   console.log(
-    JSON.stringify(
-      { ok: true, outDir, collections: collections.data.length, articles: articles.data.length },
-      null,
-      2,
-    ),
+    JSON.stringify({
+      ok: true,
+      method: snapshot.method,
+      output,
+      collections: snapshot.collections.length,
+      articles: snapshot.articles.length,
+      apiExportVerified: snapshot.method === "authenticated-api",
+    }),
   );
 }
-
 main().catch((error) => {
-  console.error(error);
-  process.exit(1);
+  console.error(error.message);
+  process.exitCode = 1;
 });
-

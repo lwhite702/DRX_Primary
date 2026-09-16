@@ -1,49 +1,7 @@
-# Front / Balances: Credit and Payment Workflow
+# Moved: Customers and store credit
 
-This is where you track who owes, who paid, and what still needs follow-up.
+This historical source is excluded from Featurebase imports. Use [Customers and store credit](../../../app-docs/feature_overview/feature-overview-manage-customers-and-credit.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Customers and store credit](https://drx.featurebase.app/en/help/articles/1831819).
 
-Covers credit sale handling, balance tracking, and payment logging.
-
-## Who can use it
-
-Manager, Owner (and staff if explicitly permitted)
-
-## Before you start
-
-- Credit flow must be enabled for your business policy.
-- Customer record should exist for balance tracking.
-
-## Step-by-step
-
-1. Open `Credit`.
-2. Review open balances and overdue accounts.
-3. Record new credit-linked transactions using approved flow.
-4. Record incoming payments against the right customer balance.
-5. Re-check totals after each payment post.
-
-## What happens next
-
-Balances update and become visible for follow-up and reporting.
-
-## Tips
-
-- Verify customer identity before applying payment.
-- Keep payment notes clean for audit trails.
-
-## Common mistakes
-
-- Posting a payment to the wrong customer record.
-
-## Troubleshooting
-
-- If balance doesn’t update, refresh and verify payment route response.
-- If overdue logic looks wrong, validate transaction dates and role visibility scope.
-
-## Related articles
-
-- `customers-profiles-history.md`
-- `reports-and-insights.md`
-- `roles-permissions-staff-access.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

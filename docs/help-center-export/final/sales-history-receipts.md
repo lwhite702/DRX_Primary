@@ -1,47 +1,7 @@
-# Sales History and Receipt Checks
+# Moved: Sales history and receipts
 
-This is where you confirm what sold, when it sold, and how the transaction landed.
+This historical source is excluded from Featurebase imports. Use [Sales history and receipts](../../../app-docs/feature_overview/sales-history-and-receipts.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Sales history and receipts](https://drx.featurebase.app/en/help/articles/5281725).
 
-Explains how to review completed sales and inspect transaction details.
-
-## Who can use it
-
-Staff (own scope), Manager, Owner
-
-## Before you start
-
-- At least one completed sale should exist.
-
-## Step-by-step
-
-1. Open `Sales`.
-2. Filter or search for the transaction.
-3. Open a sale detail view from the list.
-4. Verify line items, totals, and payment details.
-5. Use this view to resolve customer disputes and shift reconciliation issues.
-
-## What happens next
-
-Validated sale data supports reports, inventory movement, and audit checks.
-
-## Tips
-
-- Check sale detail before editing inventory when counts look off.
-
-## Common mistakes
-
-- Attempting to debug stock first without confirming the original sale record.
-
-## Troubleshooting
-
-- If a sale is missing, verify date filters and role scope.
-- If totals mismatch, re-check applied adjustments and payment state.
-
-## Related articles
-
-- `quick-pos-run-sale.md`
-- `reports-and-insights.md`
-- `inventory-audit-fixes.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

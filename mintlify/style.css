@@ -1,0 +1,53 @@
+:root {
+  --drx-ink: #0a0a0a;
+  --drx-surface: #141414;
+  --drx-lime: #ccff00;
+  --drx-lime-soft: #d8ff4d;
+  --drx-paper: #f7f7f4;
+}
+
+#navbar {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+#topbar-cta-button {
+  background: var(--drx-lime);
+  color: var(--drx-ink);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#page-title {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+mdx-content img {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 0.8rem;
+  background: var(--drx-surface);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 12%);
+}
+
+mdx-content a:not([data-card]) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+mdx-content strong {
+  font-weight: 750;
+}
+
+@media (max-width: 640px) {
+  mdx-content img {
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 28px rgb(0 0 0 / 10%);
+  }
+}
+
+nav-logo img {
+  width: auto;
+  height: 1.65rem;
+}

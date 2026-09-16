@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "issue": "WRE-92",
+  "helpCenterId": "l4o5pamx855mr65p",
+  "method": "authenticated-browser-editor",
+  "articleId": "2709969",
+  "articleTitle": "Connect barcode scanners",
+  "assetId": "barcode-keyboard-path",
+  "attachmentIdentity": "01a06ed7-a987-7806-a617-b0fdbe866464",
+  "publicUrl": "https://697de05e33284c294c2e343a.featurebase-attachments.com/c/article/697df743cd531d679bdf0bb1/01a06ed7-a987-7806-a617-b0fdbe866464/b64u-Y2xpcGJvYXJkLnBuZw.png",
+  "savedDraftRoundTrip": {
+    "reopened": true,
+    "imageCount": 1,
+    "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+    "emptyUploadBlocks": 0,
+    "expectedHeadings": 5,
+    "observedHeadings": 5
+  },
+  "published": false,
+  "note": "The canary proved that a native browser upload, alt text, and saved attachment survive a draft reload without an API key. Later visual draft preparation remains unpublished and requires a fresh receipt before publication."
+}

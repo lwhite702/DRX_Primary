@@ -7,6 +7,10 @@ on:
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "app-docs/**"
+      - "docs/featurebase/**"
+      - "docs/mintlify/**"
+      - "mintlify/**"
       - "docs/content/**"
       - "packages/content/**"
       - "apps/app/lib/copy/**"
@@ -24,6 +28,10 @@ on:
     paths:
       - "CHANGELOG.md"
       - "docs/BRAND_VOICE.md"
+      - "app-docs/**"
+      - "docs/featurebase/**"
+      - "docs/mintlify/**"
+      - "mintlify/**"
       - "docs/content/**"
       - "packages/content/**"
       - "apps/app/lib/copy/**"

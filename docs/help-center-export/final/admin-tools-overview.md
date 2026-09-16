@@ -1,45 +1,7 @@
-# Admin Tools Overview
+# Moved: Switch workspaces and check access
 
-Admin routes are for high-impact controls: feature gating, approvals, and system-level visibility.
+This historical source is excluded from Featurebase imports. Use [Switch workspaces and check access](../../../app-docs/feature_overview/switch-workspaces.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Switch workspaces and check access](https://drx.featurebase.app/en/help/articles/4735029).
 
-Summarizes the admin area and when to use each section.
-
-## Who can use it
-
-Admin-authorized users only
-
-## Before you start
-
-- Confirm you have explicit admin route access.
-
-## Step-by-step
-
-1. Open `Admin` dashboard.
-2. Use `Admin > Users` for access-level interventions.
-3. Use `Admin > Features` for feature gate review.
-4. Use `Admin > Approvals` for controlled actions.
-5. Use audit/admin analytics surfaces to trace sensitive changes.
-
-## What happens next
-
-Admin actions affect broad user behavior. Keep logs and change rationale tight.
-
-## Tips
-
-- Treat admin changes like production changes: small, traceable, reversible where possible.
-
-## Common mistakes
-
-- Rolling out feature toggles without a validation pass on target roles.
-
-## Troubleshooting
-
-- If a feature appears missing for users, inspect feature gate + role + tenant context.
-
-## Related articles
-
-- `roles-permissions-staff-access.md`
-- `privacy-security-rtbf.md`
-- `drx-intelligence.md`
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

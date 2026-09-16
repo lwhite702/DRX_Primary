@@ -1,15 +1,33 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "DRX",
+  "name": "DRX Help Center",
+  "description": "Clear setup, Inventory, sales, customer, privacy, access, and troubleshooting guides for DRX operators.",
   "theme": "mint",
   "colors": {
-    "primary": "#CCFF00",
-    "light": "#E5FF80",
-    "dark": "#A3CC00",
-    "background": {
+    "primary": "#526600",
+    "light": "#D8FF4D",
+    "dark": "#667F00"
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
       "dark": "#0A0A0A",
-      "light": "#FFFFFF"
+      "light": "#F7F7F4"
     }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": false
+  },
+  "fonts": {
+    "family": "Plus Jakarta Sans"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": "system"
   },
   "favicon": "/images/favicon.png",
   "logo": {
@@ -19,18 +37,13 @@
   },
   "navbar": {
     "links": [
-      {
-        "label": "Web App",
-        "href": "https://deelrxcrm.app"
-      },
-      {
-        "label": "Email Support",
-        "href": "mailto:support@deelrxcrm.com"
-      }
+      { "label": "Product", "href": "https://deelrxcrm.com" },
+      { "label": "Feedback", "href": "https://drx.featurebase.app" },
+      { "label": "Roadmap", "href": "https://drx.featurebase.app/roadmap" }
     ],
     "primary": {
       "type": "button",
-      "label": "Open App",
+      "label": "Open DRX",
       "href": "https://deelrxcrm.app"
     }
   },
@@ -40,62 +53,84 @@
       "github": "https://github.com/lwhite702/DRX_Primary"
     }
   },
-  "feedback": {
-    "suggestEdit": true,
-    "raiseIssue": true
-  },
-  "modeToggle": {
-    "default": "dark"
-  },
   "navigation": {
     "groups": [
       {
-        "group": "Start Here",
+        "group": "Start here",
         "pages": [
           "index",
-          "getting-started",
-          "store-setup",
-          "native-mobile-apps"
+          "start/get-started-with-drx",
+          "start/dashboard-and-reports",
+          "start/help-and-support",
+          "start/troubleshoot-dashboard-and-reports"
         ]
       },
       {
-        "group": "Daily Operations",
+        "group": "Privacy",
+        "pages": ["privacy/privacy-and-minimal-data"]
+      },
+      {
+        "group": "Team and access",
         "pages": [
-          "how-sales-work",
-          "quick-sale-runbook",
-          "fractional-and-bulk-pricing",
-          "delivery-fulfillment",
-          "your-products",
-          "your-customers",
-          "payments-and-plans"
+          "access/switch-workspaces-and-check-access",
+          "access/troubleshoot-workspaces-and-access"
         ]
       },
       {
-        "group": "Control & Visibility",
+        "group": "Customers and balances",
         "pages": [
-          "numbers-that-matter",
-          "staying-compliant",
-          "team-access",
-          "keeping-your-data-safe",
-          "drx-privacy-protexion-protocol",
-          "failsafe-and-self-destruct",
-          "fixing-issues"
+          "customers/customers-and-store-credit",
+          "customers/troubleshoot-customers-and-credit"
         ]
       },
       {
-        "group": "Policies & Reference",
+        "group": "Inventory",
+        "pages": [
+          "inventory/inventory-intake-and-adjustments",
+          "inventory/troubleshoot-inventory-and-audit",
+          "inventory/drx-intelligence",
+          "inventory/purchase-orders-beta",
+          "inventory/troubleshoot-ai-intelligence"
+        ]
+      },
+      {
+        "group": "Sales and delivery",
+        "pages": [
+          "sales/quick-sale-checkout",
+          "sales/sales-history-and-receipts",
+          "sales/sales-and-deliveries-beta",
+          "sales/connect-barcode-scanners",
+          "sales/troubleshoot-checkout-and-payments"
+        ]
+      },
+      {
+        "group": "Reference",
         "pages": [
           "beta-access-and-use",
+          "glossary",
           "legal-disclaimer",
-          "glossary"
-        ]
-      },
-      {
-        "group": "Release Notes",
-        "pages": [
           "CHANGELOG"
         ]
       }
     ]
-  }
+  },
+  "redirects": [
+    { "source": "/getting-started", "destination": "/start/get-started-with-drx" },
+    { "source": "/store-setup", "destination": "/start/get-started-with-drx" },
+    { "source": "/native-mobile-apps", "destination": "/start/get-started-with-drx" },
+    { "source": "/how-sales-work", "destination": "/sales/sales-and-deliveries-beta" },
+    { "source": "/quick-sale-runbook", "destination": "/sales/quick-sale-checkout" },
+    { "source": "/fractional-and-bulk-pricing", "destination": "/sales/quick-sale-checkout" },
+    { "source": "/delivery-fulfillment", "destination": "/sales/sales-and-deliveries-beta" },
+    { "source": "/your-products", "destination": "/inventory/inventory-intake-and-adjustments" },
+    { "source": "/your-customers", "destination": "/customers/customers-and-store-credit" },
+    { "source": "/payments-and-plans", "destination": "/customers/customers-and-store-credit" },
+    { "source": "/numbers-that-matter", "destination": "/start/dashboard-and-reports" },
+    { "source": "/staying-compliant", "destination": "/inventory/troubleshoot-inventory-and-audit" },
+    { "source": "/team-access", "destination": "/access/switch-workspaces-and-check-access" },
+    { "source": "/keeping-your-data-safe", "destination": "/privacy/privacy-and-minimal-data" },
+    { "source": "/drx-privacy-protexion-protocol", "destination": "/privacy/privacy-and-minimal-data" },
+    { "source": "/failsafe-and-self-destruct", "destination": "/start/help-and-support" },
+    { "source": "/fixing-issues", "destination": "/start/help-and-support" }
+  ]
 }

@@ -112,3 +112,7 @@ apps/ios/Configuration/Telemetry.generated.xcconfig
 /fastlane/swift/
 
 /fastlane/FastlaneRunner
+
+# Local Help Center exports and render previews; never commit raw API responses.
+.featurebase/
+/out/

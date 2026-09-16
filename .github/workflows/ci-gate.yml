@@ -39,6 +39,9 @@ jobs:
           node scripts/release/test-integrity.mjs
           node scripts/release/test-verify.mjs
           node scripts/featurebase/test-import-content.mjs
+          node scripts/docs/build-mintlify-help.mjs --check
+          node --experimental-strip-types scripts/testing/mintlify-docs-audit.ts
+          node scripts/featurebase/validate-help-visuals.mjs
 
   # One dependency installation for the preflight, audit, lint/typecheck,
   # build, and inexpensive runtime gates. Each command remains blocking.

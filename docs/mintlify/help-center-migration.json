@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "canonicalSource": "docs/featurebase/help-center-manifest.json",
+  "canonicalArticleCount": 19,
+  "visualSource": "docs/featurebase/help-center-visuals.json",
+  "visualAssetCount": 20,
+  "legacyPages": [
+    { "source": "/getting-started", "destination": "/start/get-started-with-drx", "action": "merged" },
+    { "source": "/store-setup", "destination": "/start/get-started-with-drx", "action": "merged" },
+    { "source": "/native-mobile-apps", "destination": "/start/get-started-with-drx", "action": "retired-unsupported-claims" },
+    { "source": "/how-sales-work", "destination": "/sales/sales-and-deliveries-beta", "action": "merged" },
+    { "source": "/quick-sale-runbook", "destination": "/sales/quick-sale-checkout", "action": "merged" },
+    { "source": "/fractional-and-bulk-pricing", "destination": "/sales/quick-sale-checkout", "action": "merged" },
+    { "source": "/delivery-fulfillment", "destination": "/sales/sales-and-deliveries-beta", "action": "merged" },
+    { "source": "/your-products", "destination": "/inventory/inventory-intake-and-adjustments", "action": "merged" },
+    { "source": "/your-customers", "destination": "/customers/customers-and-store-credit", "action": "merged" },
+    { "source": "/payments-and-plans", "destination": "/customers/customers-and-store-credit", "action": "merged" },
+    { "source": "/numbers-that-matter", "destination": "/start/dashboard-and-reports", "action": "merged" },
+    { "source": "/staying-compliant", "destination": "/inventory/troubleshoot-inventory-and-audit", "action": "merged" },
+    { "source": "/team-access", "destination": "/access/switch-workspaces-and-check-access", "action": "merged" },
+    { "source": "/keeping-your-data-safe", "destination": "/privacy/privacy-and-minimal-data", "action": "merged" },
+    { "source": "/drx-privacy-protexion-protocol", "destination": "/privacy/privacy-and-minimal-data", "action": "merged-and-retitled" },
+    { "source": "/failsafe-and-self-destruct", "destination": "/start/help-and-support", "action": "retired-unsupported-claims" },
+    { "source": "/fixing-issues", "destination": "/start/help-and-support", "action": "split-across-troubleshooting-guides" }
+  ],
+  "retainedReferencePages": [
+    "/beta-access-and-use",
+    "/legal-disclaimer",
+    "/glossary",
+    "/CHANGELOG"
+  ],
+  "transition": {
+    "featurebaseHelpCenter": "Keep public during the transition because drx.featurebase.app URLs cannot be redirected by Mintlify.",
+    "featurebaseProducts": "Continue using Featurebase for feedback, roadmap, changelog, and in-app support.",
+    "cutoverGate": "Do not change public help links until the Mintlify deployment and DRX-owned docs domain pass live verification."
+  }
+}

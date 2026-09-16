@@ -1,45 +1,7 @@
-# Workspaces and Tenant Context
+# Moved: Switch workspaces and check access
 
-Use workspaces to keep businesses separated and avoid cross-tenant mistakes.
+This historical source is excluded from Featurebase imports. Use [Switch workspaces and check access](../../../app-docs/feature_overview/switch-workspaces.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Switch workspaces and check access](https://drx.featurebase.app/en/help/articles/4735029).
 
-Explains how to confirm and switch workspace context safely.
-
-## Who can use it
-
-Owner, Manager (based on access)
-
-## Before you start
-
-- Ensure your account is mapped to the expected business workspaces.
-
-## Step-by-step
-
-1. Open `Workspaces`.
-2. Confirm current active workspace.
-3. Switch workspace before editing inventory, sales, or settings.
-4. Re-check page headers/context after switching.
-
-## What happens next
-
-All data operations apply to the active workspace only.
-
-## Tips
-
-- Make context checks routine before high-impact actions.
-
-## Common mistakes
-
-- Updating settings in the wrong workspace during multi-business shifts.
-
-## Troubleshooting
-
-- If data looks “missing,” verify you’re in the right workspace first.
-
-## Related articles
-
-- `getting-started-first-week.md`
-- `settings-and-aliases.md`
-- `reports-and-insights.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.

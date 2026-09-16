@@ -683,7 +683,7 @@ export default function SettingsPage() {
                 disabled={saving}
               />
               <p className="text-sm text-muted-foreground">
-                {pinDirty && !posManagerPin ? "The PIN will be removed when you save." : pinConfigured ? "A PIN is set. Leave this field unchanged to keep it." : "Set a PIN to require verification when exiting Quick Sale."}
+                {pinDirty && !posManagerPin ? "The PIN will be removed when you save." : pinConfigured ? "A PIN is set. Leave this field unchanged to keep it." : "Set a PIN to require verification when exiting New sale."}
               </p>
               {pinConfigured && <Button type="button" variant="outline" onClick={() => { setPosManagerPin(""); setPinDirty(true); }} disabled={saving}>Remove PIN</Button>}
             </div>

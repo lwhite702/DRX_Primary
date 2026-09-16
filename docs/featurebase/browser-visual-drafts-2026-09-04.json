@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "issue": "WRE-92",
+  "createdAt": "2026-09-05T02:54:59.646Z",
+  "method": "authenticated-browser-editor",
+  "phase": "drafts",
+  "helpCenterId": "l4o5pamx855mr65p",
+  "contentHash": "193ab5ef3a297d1136b7efe4a88075603feecd8511ae004c8b6912c2d41a2918",
+  "canonicalArticleCount": 19,
+  "visualArticleCount": 16,
+  "assetCount": 20,
+  "placementCount": 23,
+  "allCurrentHeadingIdsPreserved": true,
+  "allPlacementsVerified": true,
+  "allDraftsSavedAfterReload": true,
+  "unrelatedDraftIdsLeftUntouched": ["0023434", "6969477", "4502473"],
+  "articles": [
+    {
+      "id": "1633388",
+      "title": "Get started with DRX",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "getting-started-header",
+          "attachmentIdentity": "01a06f61-7d09-7dde-828b-8eb0e1c00d0d",
+          "alt": "A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "2502678",
+      "title": "Dashboard and reports",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "dashboard-reports-screen",
+          "attachmentIdentity": "01a06f65-71eb-72cf-92c7-678f27503739",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "2070517",
+      "title": "Help and support",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "safe-support-screenshot",
+          "attachmentIdentity": "01a06f66-97bf-72a5-915e-52157f9fbb71",
+          "alt": "Four steps for replacing private data, cropping, checking, and privately sharing a support screenshot.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "3489602",
+      "title": "Troubleshoot dashboard and reports",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "dashboard-reports-screen",
+          "attachmentIdentity": "01a06f67-2fb8-75b0-91a2-00e11f51b426",
+          "alt": "Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "6417807",
+      "title": "Privacy and minimal data",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "privacy-header",
+          "attachmentIdentity": "01a06f67-d4f4-7ea2-8add-e9483606106d",
+          "alt": "Three retention choices lead to a clear permanent-deletion boundary.",
+          "caption": null
+        },
+        {
+          "id": "privacy-retention-timeline",
+          "attachmentIdentity": "01a06f69-3852-7505-a8d8-c4061cf404b1",
+          "alt": "Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.",
+          "caption": null
+        },
+        {
+          "id": "privacy-settings-screen",
+          "attachmentIdentity": "01a06f69-b0a9-7bc9-9868-a766b03f6a6c",
+          "alt": "Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "3948745",
+      "title": "Troubleshoot workspaces and access",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "workspace-access-recovery",
+          "attachmentIdentity": "01a06f6a-6b1e-78d6-a928-8dce2e286c56",
+          "alt": "Access recovery checks the invited account, active business, and permission before contacting the owner or private support.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "4735029",
+      "title": "Switch workspaces and check access",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "workspace-access-header",
+          "attachmentIdentity": "01a06f6b-1a52-72b5-a59c-b5103dd16c06",
+          "alt": "Two workspaces connect to separate groups of scoped team access.",
+          "caption": null
+        },
+        {
+          "id": "workspace-team-screen",
+          "attachmentIdentity": "01a06f6b-b1c0-7f5f-82f1-5b74647bac80",
+          "alt": "Illustrative workspace selector and Manage Team panels with fictional business and member names.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "1831819",
+      "title": "Customers and store credit",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "customers-credit-header",
+          "attachmentIdentity": "01a06f6c-8ae8-7d36-8b47-1fc8081f4baa",
+          "alt": "A customer alias card connects to a purchase and received-payment ledger.",
+          "caption": null
+        },
+        {
+          "id": "customers-credit-screen",
+          "attachmentIdentity": "01a06f6d-05e0-72fa-b24b-cfbda4ebe203",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "9156766",
+      "title": "Troubleshoot customers and credit",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "customers-credit-screen",
+          "attachmentIdentity": "01a06f6d-a655-781b-bd2e-785d663e464e",
+          "alt": "Illustrative customer and Record Payment forms using a fictional alias and balance.",
+          "caption": "Illustrative screen with fictional data."
+        },
+        {
+          "id": "uncertain-checkout-payment",
+          "attachmentIdentity": "01a06f6e-1e37-7e2c-be38-3792858ecd05",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "6300641",
+      "title": "Inventory intake and adjustments",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "inventory-intake-header",
+          "attachmentIdentity": "01a06f6e-d6f1-79e5-b1bf-4300d6d326f7",
+          "alt": "Generic boxed goods move from intake into an organized and verified Inventory count.",
+          "caption": null
+        },
+        {
+          "id": "inventory-intake-screen",
+          "attachmentIdentity": "01a06f6f-4d10-7349-868d-6a6e58979fa4",
+          "alt": "Illustrative DRX Inventory page with fictional products, counts, and an Add inventory action.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "0272622",
+      "title": "Troubleshoot inventory and audit",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "inventory-save-and-count",
+          "attachmentIdentity": "01a06f70-0f3f-7bd5-93c0-b5378ac82cfb",
+          "alt": "Inventory troubleshooting checks the business, item, saved movement, and current count before another change.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "0236106",
+      "title": "Quick Sale checkout",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "quick-sale-header",
+          "attachmentIdentity": "01a06f70-bdc7-7b72-8768-43610edd0f3c",
+          "alt": "Neutral boxed goods move through a basket to a saved receipt record.",
+          "caption": null
+        },
+        {
+          "id": "quick-sale-screen",
+          "attachmentIdentity": "01a06f71-4b8a-71d8-b7d3-c85a38a2fb25",
+          "alt": "Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "5281725",
+      "title": "Sales history and receipts",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "sales-history-screen",
+          "attachmentIdentity": "01a06f72-c8ad-7782-82ee-2c11834f0d92",
+          "alt": "Illustrative Orders and Receipts page showing fictional Sale Details.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "3230948",
+      "title": "Troubleshoot checkout and payments",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "uncertain-checkout-payment",
+          "attachmentIdentity": "01a06f73-bfae-7cf7-95c0-21323668628b",
+          "alt": "For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.",
+          "caption": null
+        }
+      ]
+    },
+    {
+      "id": "7723456",
+      "title": "Sales and deliveries (beta)",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "deliveries-screen",
+          "attachmentIdentity": "01a06f74-cbe4-7e11-bdbd-4c6ed2277f3d",
+          "alt": "Illustrative completed sale linked to fictional delivery details.",
+          "caption": "Illustrative screen with fictional data."
+        }
+      ]
+    },
+    {
+      "id": "2709969",
+      "title": "Connect barcode scanners",
+      "headingIdsPreserved": true,
+      "placementsVerified": true,
+      "savedAfterReload": true,
+      "noUnexpectedImages": true,
+      "visuals": [
+        {
+          "id": "barcode-keyboard-path",
+          "attachmentIdentity": "01a06f5a-73c8-76fd-97e7-00f8e6294c8f",
+          "alt": "A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.",
+          "caption": null
+        }
+      ]
+    }
+  ]
+}

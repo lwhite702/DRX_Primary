@@ -1,47 +1,7 @@
-# Settings and Aliases: Keep Workflows Clean
+# Moved: Inventory intake and adjustments
 
-Settings is where you lock in business config, team setup, and fast product lookup behavior.
+This historical source is excluded from Featurebase imports. Use [Inventory intake and adjustments](../../../app-docs/feature_overview/inventory-intake-and-adjustments.md) for the current guide.
 
-## What this does
+The existing Help Center article is [Inventory intake and adjustments](https://drx.featurebase.app/en/help/articles/6300641).
 
-Covers key settings routes and alias management.
-
-## Who can use it
-
-Owner, Manager
-
-## Before you start
-
-- Confirm you’re in the correct workspace/business context.
-
-## Step-by-step
-
-1. Open `Settings` for overview.
-2. Update account/business details in `Settings > Profile`.
-3. Manage team in `Settings > Team`.
-4. Set item aliases in `Settings > Inventory > Aliases`.
-5. Test alias behavior in `Quick Sale`.
-
-## What happens next
-
-Cleaner aliases and settings reduce checkout friction and product confusion.
-
-## Tips
-
-- Use alias patterns staff actually type.
-- Keep one naming convention across top sellers.
-
-## Common mistakes
-
-- Creating overlapping aliases for different products.
-
-## Troubleshooting
-
-- If alias lookup is wrong, remove collisions and retest.
-
-## Related articles
-
-- `quick-pos-run-sale.md`
-- `inventory-manage-stock.md`
-- `roles-permissions-staff-access.md`
-
+Original content remains in Git at `d1ccc93e1ae18c616b3982036f79aa7122f43ca8`. This file preserves repository references; it is not an HTTP redirect.
