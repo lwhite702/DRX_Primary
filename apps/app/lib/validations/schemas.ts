@@ -50,6 +50,8 @@ export const inventorySchema = z.object({
   reorder_level: z.number().int().min(0).default(10),
   unit_cost: z.number().nonnegative().optional(),
   selling_price: z.number().nonnegative().optional(),
+  location: z.string().max(100).optional(),
+  is_taxable: z.boolean().default(true).optional(),
   supplier_id: z.string().uuid().optional(),
   commerce_config: newProductCommerceSchema.optional(),
 });

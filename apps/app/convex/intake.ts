@@ -10,6 +10,9 @@ export const recordIntake = mutation({
     totalWeightGrams: v.number(),
     supplier: v.optional(v.string()),
     deliveryCostCents: v.optional(v.number()),
+    lotNumber: v.optional(v.string()),
+    expirationDate: v.optional(v.number()),
+    location: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
@@ -26,6 +29,8 @@ export const recordIntake = mutation({
     }
 
     const calculatedCostPerGramCents = args.totalCostCents / args.totalWeightGrams;
+    const lotNumber = args.lotNumber?.trim() || undefined;
+    const location = args.location?.trim() || undefined;
 
     // 1. Create Inventory Intake record
     const intakeId = await ctx.db.insert("inventoryIntakes", {
@@ -36,6 +41,9 @@ export const recordIntake = mutation({
       calculatedCostPerGramCents,
       deliveryCostCents: args.deliveryCostCents || 0,
       supplier: args.supplier,
+      lotNumber,
+      expirationDate: args.expirationDate,
+      location,
       status: "approved",
       createdBy: auth.userId,
       createdAt: now,
@@ -50,6 +58,9 @@ export const recordIntake = mutation({
       remainingQuantityGrams: args.totalWeightGrams,
       unitCostPerGramCents: calculatedCostPerGramCents,
       supplier: args.supplier,
+      lotNumber,
+      expirationDate: args.expirationDate,
+      location,
       receivedAt: now,
       createdBy: auth.userId,
       createdAt: now,
@@ -142,6 +153,7 @@ async function applyCanonicalIntake(ctx: MutationCtx, row: Doc<"inventoryIntakes
     businessId: row.businessId, productId: row.productId, intakeId: row._id,
     originalQuantityGrams: row.totalWeightGrams, remainingQuantityGrams: row.totalWeightGrams,
     unitCostPerGramCents: row.calculatedCostPerGramCents, supplier: row.supplier,
+    lotNumber: row.lotNumber, expirationDate: row.expirationDate, location: row.location,
     receivedAt: now, createdBy: actor, createdAt: now, updatedAt: now,
   });
   await ctx.db.patch(product._id, { quantityOnHandGrams: newStock,
@@ -150,14 +162,15 @@ async function applyCanonicalIntake(ctx: MutationCtx, row: Doc<"inventoryIntakes
   await ctx.db.insert("auditEvents", {
     businessId: row.businessId, userId: actor, action: "INVENTORY_INTAKE_RECORDED",
     entityType: "inventoryIntake", entityId: row._id,
-    metadata: JSON.stringify({ productId: product._id, batchId, weightGrams: row.totalWeightGrams, totalCostCents: row.totalCostCents }), timestamp: now,
+    metadata: JSON.stringify({ productId: product._id, batchId, weightGrams: row.totalWeightGrams, totalCostCents: row.totalCostCents, lotNumber: row.lotNumber, location: row.location }), timestamp: now,
   });
   return newStock;
 }
 
 export const submitIntake = mutation({
   args: { businessId: v.string(), productId: v.id("products"), idempotencyKey: v.string(),
-    totalCostCents: v.number(), totalWeightGrams: v.number(), deliveryCostCents: v.optional(v.number()), supplier: v.optional(v.string()) },
+    totalCostCents: v.number(), totalWeightGrams: v.number(), deliveryCostCents: v.optional(v.number()), supplier: v.optional(v.string()),
+    lotNumber: v.optional(v.string()), expirationDate: v.optional(v.number()), location: v.optional(v.string()) },
   returns: resultValidator,
   handler: async (ctx, args) => {
     const auth = await intakeAuth(ctx, args.businessId);
@@ -166,7 +179,8 @@ export const submitIntake = mutation({
     const product = await ctx.db.get(args.productId);
     if (!product || product.businessId !== auth.businessId || !product.isActive) throw new Error("NOT_FOUND: Product unavailable");
     const values = { productId: args.productId, totalCostCents: args.totalCostCents, totalWeightGrams: args.totalWeightGrams,
-      deliveryCostCents: args.deliveryCostCents ?? 0, supplier: args.supplier?.trim() || "" };
+      deliveryCostCents: args.deliveryCostCents ?? 0, supplier: args.supplier?.trim() || "",
+      lotNumber: args.lotNumber?.trim() || undefined, expirationDate: args.expirationDate, location: args.location?.trim() || undefined };
     const fingerprint = JSON.stringify(values);
     const key = `inventory-intake:${args.idempotencyKey}`;
     const existing = await ctx.db.query("idempotencyKeys").withIndex("by_businessId_and_key", q => q.eq("businessId", auth.businessId).eq("key", key)).unique();
@@ -188,6 +202,7 @@ export const submitIntake = mutation({
       businessId: auth.businessId, productId: product._id, totalCostCents: values.totalCostCents,
       totalWeightGrams: values.totalWeightGrams, calculatedCostPerGramCents: unitCost,
       deliveryCostCents: values.deliveryCostCents, supplier: values.supplier || undefined,
+      lotNumber: values.lotNumber, expirationDate: values.expirationDate, location: values.location,
       status: "pending", requiresApproval, createdBy: auth.userId, createdAt: Date.now(),
     });
     const row = (await ctx.db.get(intakeId))!;
@@ -204,7 +219,11 @@ export const submitIntake = mutation({
 
 export const decideIntake = mutation({
   args: { businessId: v.string(), intakeId: v.id("inventoryIntakes"), action: v.union(v.literal("approve"), v.literal("reject")),
-    rejectionReason: v.optional(v.string()), overrides: v.optional(v.object({ totalCostCents: v.optional(v.number()), totalWeightGrams: v.optional(v.number()), deliveryCostCents: v.optional(v.number()), supplier: v.optional(v.string()) })) },
+    rejectionReason: v.optional(v.string()), overrides: v.optional(v.object({
+      totalCostCents: v.optional(v.number()), totalWeightGrams: v.optional(v.number()),
+      deliveryCostCents: v.optional(v.number()), supplier: v.optional(v.string()),
+      lotNumber: v.optional(v.string()), expirationDate: v.optional(v.number()), location: v.optional(v.string())
+    })) },
   returns: v.object({ status: v.string(), replayed: v.boolean() }),
   handler: async (ctx, args) => {
     const auth = await intakeAuth(ctx, args.businessId);
@@ -221,7 +240,10 @@ export const decideIntake = mutation({
       const values = { totalCostCents: args.overrides?.totalCostCents ?? row.totalCostCents,
         totalWeightGrams: args.overrides?.totalWeightGrams ?? row.totalWeightGrams,
         deliveryCostCents: args.overrides?.deliveryCostCents ?? row.deliveryCostCents,
-        supplier: args.overrides?.supplier?.trim() ?? row.supplier };
+        supplier: args.overrides?.supplier?.trim() ?? row.supplier,
+        lotNumber: args.overrides?.lotNumber?.trim() ?? row.lotNumber,
+        expirationDate: args.overrides?.expirationDate ?? row.expirationDate,
+        location: args.overrides?.location?.trim() ?? row.location };
       validateValues(values);
       await ctx.db.patch(row._id, { ...values, calculatedCostPerGramCents: values.totalCostCents / values.totalWeightGrams });
       row = (await ctx.db.get(row._id))!;
@@ -237,7 +259,8 @@ export const decideIntake = mutation({
 
 const intakeRow = v.object({ id: v.id("inventoryIntakes"), inventory_id: v.id("products"), product_name: v.string(), sku: v.string(),
   unit_of_measure: v.string(), total_cost: v.number(), total_weight_grams: v.number(), calculated_cost_per_gram: v.number(),
-  delivery_cost: v.number(), supplier: v.string(), created_at: v.string(), created_by_email: v.string(), status: v.string() });
+  delivery_cost: v.number(), supplier: v.string(), lotNumber: v.optional(v.string()), expirationDate: v.optional(v.number()), location: v.optional(v.string()),
+  created_at: v.string(), created_by_email: v.string(), status: v.string() });
 export const listIntakes = query({
   args: { businessId: v.string(), status: intakeStatus, paginationOpts: paginationOptsValidator },
   returns: v.object({ page: v.array(intakeRow), continueCursor: v.string(), isDone: v.boolean() }),
@@ -251,9 +274,59 @@ export const listIntakes = query({
       return { id: row._id, inventory_id: row.productId, product_name: owned?.productName ?? "Unavailable product", sku: owned?.sku ?? "",
         unit_of_measure: owned?.sellingUnit ?? "g", total_cost: row.totalCostCents / 100, total_weight_grams: row.totalWeightGrams,
         calculated_cost_per_gram: row.calculatedCostPerGramCents / 100, delivery_cost: row.deliveryCostCents / 100,
-        supplier: row.supplier ?? "", created_at: new Date(row.createdAt).toISOString(), created_by_email: "Business staff", status: row.status };
+        supplier: row.supplier ?? "", lotNumber: row.lotNumber, expirationDate: row.expirationDate, location: row.location,
+        created_at: new Date(row.createdAt).toISOString(), created_by_email: "Business staff", status: row.status };
     }));
     return { page, continueCursor: result.continueCursor, isDone: result.isDone };
+  },
+});
+
+export const listExpiringBatches = query({
+  args: {
+    maxExpirationDate: v.number(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(v.object({
+    _id: v.id("inventoryBatches"),
+    productId: v.id("products"),
+    productName: v.string(),
+    sku: v.string(),
+    lotNumber: v.optional(v.string()),
+    expirationDate: v.optional(v.number()),
+    location: v.optional(v.string()),
+    remainingQuantityGrams: v.number(),
+    unitCostPerGramCents: v.number(),
+    receivedAt: v.number(),
+  })),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    const limit = args.limit ? Math.min(args.limit, 100) : 50;
+    const batches = await ctx.db
+      .query("inventoryBatches")
+      .withIndex("by_businessId_and_expirationDate", (q) =>
+        q.eq("businessId", auth.businessId).lte("expirationDate", args.maxExpirationDate)
+      )
+      .take(limit);
+
+    const result = [];
+    for (const batch of batches) {
+      if (batch.remainingQuantityGrams <= 0) continue;
+      const product = await ctx.db.get(batch.productId);
+      if (!product || product.businessId !== auth.businessId) continue;
+      result.push({
+        _id: batch._id,
+        productId: batch.productId,
+        productName: product.productName,
+        sku: product.sku,
+        lotNumber: batch.lotNumber,
+        expirationDate: batch.expirationDate,
+        location: batch.location,
+        remainingQuantityGrams: batch.remainingQuantityGrams,
+        unitCostPerGramCents: batch.unitCostPerGramCents,
+        receivedAt: batch.receivedAt,
+      });
+    }
+    return result;
   },
 });
 
