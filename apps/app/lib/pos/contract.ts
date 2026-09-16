@@ -172,15 +172,15 @@ export const quickPosBootstrapItemSchema = z.object({
 });
 
 export const quickPosBootstrapResponseSchema = z.object({
-  favorites: z.array(quickPosBootstrapItemSchema),
-  recentlySold: z.array(quickPosBootstrapItemSchema),
+  favorites: z.array(quickPosBootstrapItemSchema).default([]),
+  recentlySold: z.array(quickPosBootstrapItemSchema).default([]),
   creditPolicy: z.object({
     enabled: z.boolean(),
-  }),
+  }).optional(),
   deliveryPolicy: z.object({
     feeTaxable: z.boolean(),
-    dispatchSlaMinutes: z.number().int().positive(),
-  }),
+    dispatchSlaMinutes: z.number().int().positive().optional(),
+  }).optional(),
 });
 
 export type PosMode = z.infer<typeof posModeSchema>;

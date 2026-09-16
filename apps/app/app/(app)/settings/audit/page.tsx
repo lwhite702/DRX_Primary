@@ -12,7 +12,7 @@ export default function BusinessAuditPage() {
     setResult(null); setError(false);
     if (!business?.id) return;
     const businessId = business.id;
-    fetch(`/api/admin/audit-logs?business_id=${encodeURIComponent(businessId)}`, {
+    fetch(`/api/admin/audit-logs?business_id=${encodeURIComponent(businessId)}&limit=50`, {
       headers: { "x-business-id": businessId }, cache: "no-store", signal: controller.signal,
     }).then(async response => {
       if (!response.ok) throw new Error("Audit unavailable");

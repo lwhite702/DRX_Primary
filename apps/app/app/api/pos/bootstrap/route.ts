@@ -20,7 +20,10 @@ export async function GET(request?: NextRequest) {
     const quantities = new Map<Id<"products">, number>();
     const recent = new Set<Id<"products">>();
     const through = Date.now(); let cursor: string | null = null;
+    let pageCount = 0;
+    const maxSalesPages = 40;
     do {
+      if (pageCount++ >= maxSalesPages) break;
       const page: FunctionReturnType<typeof api.posBootstrap.salesPage> = await client.query(api.posBootstrap.salesPage, { businessId, through, paginationOpts: { cursor, numItems: 25 } });
       for (const group of page.groups) {
         const add = (lines: typeof group.lines) => {
@@ -32,7 +35,10 @@ export async function GET(request?: NextRequest) {
         };
         if (!group.needsPaging) { add(group.lines); continue; }
         let lineCursor: string | null = null;
+        let linePageCount = 0;
+        const maxLinePages = 10;
         do {
+          if (linePageCount++ >= maxLinePages) break;
           const linePage: FunctionReturnType<typeof api.posBootstrap.saleLinesPage> = await client.query(api.posBootstrap.saleLinesPage, { businessId, saleId: group.saleId, paginationOpts: { cursor: lineCursor, numItems: 200 } });
           add(linePage.lines);
           if (linePage.isDone) break;

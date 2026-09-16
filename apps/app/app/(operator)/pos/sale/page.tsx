@@ -10,6 +10,7 @@ import { CustomerInline } from "@/components/quick-pos/customer-inline";
 import { StatusFeedback } from "@/components/quick-pos/status-feedback";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import type { QuickPosBootstrapResponse } from "@/lib/quick-pos/types";
+import { quickPosBootstrapResponseSchema } from "@/lib/pos/contract";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FractionalEntryDialog } from "@/components/quick-pos/fractional-entry-dialog";
 import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
@@ -52,7 +53,14 @@ export default function QuickPosSalePage() {
           return;
         }
 
-        const data = (await res.json()) as QuickPosBootstrapResponse;
+        const json = await res.json();
+        const parsed = quickPosBootstrapResponseSchema.safeParse(json);
+        if (!parsed.success) {
+          setError("Unable to load POS");
+          return;
+        }
+
+        const data = parsed.data;
         setBootstrap(data);
         setCreditPolicy(Boolean(data.creditPolicy?.enabled));
         setDeliveryFeeTaxable(Boolean(data.deliveryPolicy?.feeTaxable));
@@ -71,7 +79,7 @@ export default function QuickPosSalePage() {
     const timer = window.setTimeout(() => {
       setSuccess(null);
     }, 2500);
-    return () => { window.clearTimeout(timer); setSuccess(null); };
+    return () => { window.clearTimeout(timer); };
   }, [state.ui.successMessage, setSuccess]);
 
   useEffect(() => {
@@ -220,21 +228,34 @@ export default function QuickPosSalePage() {
   };
 
   const handleClearCart = () => {
-    state.cartItems.forEach((item) => removeItem(item.id));
-    setSuccess("Cart cleared");
+    try {
+      state.cartItems.forEach((item) => removeItem(item.id));
+      setSuccess("Cart cleared");
+    } catch {
+      setError("Failed to clear cart");
+    }
   };
 
   const handleRemoveItem = (id: string) => {
-    const item = state.cartItems.find((ci) => ci.id === id);
-    removeItem(id);
-    if (item) {
-      setSuccess(`Removed ${item.name} from cart`);
+    try {
+      const item = state.cartItems.find((ci) => ci.id === id);
+      removeItem(id);
+      if (item) {
+        setSuccess(`Removed ${item.name} from cart`);
+      }
+    } catch {
+      setError("Failed to remove item");
     }
   };
 
   const subtotal = useMemo(
     () =>
       state.cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0),
+    [state.cartItems],
+  );
+
+  const totalCartItems = useMemo(
+    () => state.cartItems.reduce((sum, item) => sum + item.qty, 0),
     [state.cartItems],
   );
 
@@ -301,14 +322,18 @@ export default function QuickPosSalePage() {
 
         <CustomerInline
           attached={state.customer}
-          onAttach={(customer) =>
-            setCustomer({
-              id: customer.id,
-              phone: customer.phone,
-              alias: customer.alias,
-              remainingCredit: customer.remainingCredit,
-            })
-          }
+          onAttach={(customer) => {
+            try {
+              setCustomer({
+                id: customer.id,
+                phone: customer.phone,
+                alias: customer.alias,
+                remainingCredit: customer.remainingCredit,
+              });
+            } catch {
+              setError("Failed to attach customer");
+            }
+          }}
         />
 
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
@@ -342,7 +367,7 @@ export default function QuickPosSalePage() {
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">
-                {state.cartItems.reduce((sum, item) => sum + item.qty, 0)} items in cart
+                {totalCartItems} items in cart
               </p>
               <p className="text-lg font-bold font-mono text-accent">
                 ${total.toFixed(2)}

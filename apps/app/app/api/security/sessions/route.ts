@@ -35,7 +35,8 @@ export async function GET() {
 
     return NextResponse.json({ sessions });
   } catch (error) {
-    console.error("[security/sessions]", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[security/sessions] Session fetch failed:", message);
     return NextResponse.json(
       { error: "Failed to fetch sessions" },
       { status: 500 },

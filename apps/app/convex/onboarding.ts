@@ -189,12 +189,20 @@ async function provisionBusiness(ctx: MutationCtx, args: Infer<typeof createOnbo
     });
 
     if (setup) {
+      const pin = setup.managerPin ? setup.managerPin.trim() : undefined;
       await ctx.db.insert("businessSettings", {
-        businessId, createdAt: now, updatedAt: now,
+        businessId,
+        posManagerPin: pin || undefined,
+        createdAt: now,
+        updatedAt: now,
         settingsData: JSON.stringify({
-          onboarding_completed: true, default_unit: setup.defaultUnit,
-          quick_quantities: setup.quickQuantities, inventory_reasons: setup.inventoryReasons,
-          nicknames: setup.nicknames, owner_name: setup.ownerName,
+          onboarding_completed: true,
+          default_unit: setup.defaultUnit,
+          quick_quantities: setup.quickQuantities,
+          inventory_reasons: setup.inventoryReasons,
+          nicknames: setup.nicknames,
+          owner_name: setup.ownerName,
+          pos_manager_pin: pin || undefined,
         }),
       });
     }

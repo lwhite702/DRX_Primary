@@ -20,21 +20,36 @@ export async function GET(request: NextRequest) {
     if (requested && requested !== businessId) return errorResponse("FORBIDDEN", "Business access denied", 403);
     const userId = query.get("userId");
     const resourceId = query.get("resource_id");
+    const rawLimit = Number(query.get("limit") || "50");
+    const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 50;
+    const cursor = query.get("cursor");
+
     let items;
     if (query.get("resource_type") === "inventory") {
       if (!resourceId) return errorResponse("BAD_REQUEST", "Missing resource_id", 400);
       items = await db.inventoryLog.findMany({
-        where: { inventoryId: resourceId, inventory: { businessId } },
+        where: {
+          inventoryId: resourceId,
+          inventory: { businessId },
+          ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+        },
         include: { inventory: { select: { businessId: true } } },
-        orderBy: { createdAt: "desc" }, take: 100,
+        orderBy: { createdAt: "desc" },
+        take: limit,
       });
     } else {
       items = await db.systemAuditLog.findMany({
-        where: { businessId, ...(userId ? { entityId: userId } : {}) },
-        orderBy: { createdAt: "desc" }, take: 100,
+        where: {
+          businessId,
+          ...(userId ? { entityId: userId } : {}),
+          ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
       });
     }
-    return successResponse({ items, data: items, count: items.length });
+    const nextCursor = items.length === limit ? items[items.length - 1]?.createdAt.toISOString() : null;
+    return successResponse({ items, data: items, count: items.length, nextCursor });
   } catch {
     return errorResponse("INTERNAL_ERROR", "Audit records unavailable", 500);
   }

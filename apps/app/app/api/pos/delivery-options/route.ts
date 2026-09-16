@@ -14,7 +14,10 @@ export async function GET(request?: NextRequest) {
     if (!url) throw new Error("Unavailable");
     const client = new ConvexHttpClient(url); client.setAuth(token);
     const options = []; let cursor: string | null = null;
+    let pageCount = 0;
+    const maxPages = 100;
     do {
+      if (pageCount++ >= maxPages) break;
       const result: FunctionReturnType<typeof api.deliveryProfiles.list> = await client.query(api.deliveryProfiles.list, { businessId, paginationOpts: { cursor, numItems: 100 } });
       options.push(...result.page);
       if (result.isDone) break;

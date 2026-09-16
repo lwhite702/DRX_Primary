@@ -22,11 +22,11 @@ interface PriceOverrideModalProps {
   productName: string;
   currentPrice: number;
   unitCost?: number;
-  managerPin?: string;
+  managerPin?: string | null;
   onConfirm: (newPrice: number, reason?: string) => void;
 }
 
-type OverrideStep = "input" | "warning" | "auth";
+type OverrideStep = "input" | "warning" | "auth" | "unconfigured";
 
 export function PriceOverrideModal({
   open,
@@ -80,14 +80,16 @@ export function PriceOverrideModal({
     if (managerPin) {
       setStep("auth");
     } else {
-      // If no PIN configured, allow (or maybe block? defaulting to allow with warning for now if no PIN set)
-      // Implementation plan said "default 1234", so managerPin should likely be present.
-      // If purely not passed, we probably just proceed.
-      confirmOverride();
+      setStep("unconfigured");
     }
   };
 
   const handlePinSubmit = () => {
+    if (!managerPin) {
+      setError("Manager PIN not configured");
+      toast.error("Manager PIN not configured");
+      return;
+    }
     if (pin === managerPin) {
       confirmOverride();
     } else {
@@ -286,6 +288,37 @@ export function PriceOverrideModal({
               </Button>
               <Button onClick={handlePinSubmit} variant="default">
                 Authorize
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+
+        {step === "unconfigured" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <ShieldAlert className="h-5 w-5" />
+                Manager PIN Required
+              </DialogTitle>
+              <DialogDescription>
+                A manager PIN has not been configured for this store.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4 space-y-4">
+              <div className="p-4 bg-amber-50 text-amber-900 rounded-md text-sm border border-amber-200">
+                <p>
+                  Below-cost price overrides require manager authorization. Please configure a manager PIN in <strong>Business Settings</strong> or during onboarding before overriding prices below cost.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setStep("warning")}>
+                Back
+              </Button>
+              <Button variant="default" onClick={handleClose}>
+                Close
               </Button>
             </DialogFooter>
           </>

@@ -21,6 +21,7 @@ export type ConvexOnboardingSetup = {
   quickQuantities?: Array<{ label: string; value: number; unit: string }>;
   inventoryReasons?: Array<{ label: string; type: string }>;
   nicknames?: Array<{ slang: string; quantity: number; unit: string }>;
+  managerPin?: string;
 };
 
 export type ConvexOnboardingInput = {

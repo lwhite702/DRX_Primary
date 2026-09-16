@@ -19,7 +19,14 @@ it("forwards the exact signed bytes rather than reserializing JSON", async () =>
   expect((await POST(req)).status).toBe(200);
   expect(mocks.action.mock.calls[0][1]).toEqual({ body, svixId: "synthetic-event", svixTimestamp: timestamp, svixSignature: signature });
 });
-it("returns a retryable failure when canonical acceptance fails", async () => {
+it("returns a retryable failure with Retry-After when canonical acceptance fails", async () => {
   mocks.action.mockRejectedValue(new Error("Synthetic backend unavailable"));
-  expect((await POST(request().req)).status).toBe(503);
+  const res = await POST(request().req);
+  expect(res.status).toBe(503);
+  expect(res.headers.get("Retry-After")).toBe("60");
+});
+it("returns 400 for client invalid payload errors without retrying infinitely", async () => {
+  mocks.action.mockRejectedValue(new Error("INVALID_ARGUMENT: Bad payload"));
+  const res = await POST(request().req);
+  expect(res.status).toBe(400);
 });

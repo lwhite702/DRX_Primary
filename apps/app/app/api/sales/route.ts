@@ -99,11 +99,12 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    const status = error instanceof PosCheckoutError ? error.status : 500;
+    console.error("Sales checkout error:", error);
+    const isClientError = error instanceof PosCheckoutError;
+    const status = isClientError ? error.status : 500;
+    const clientMessage = isClientError ? error.message : "Internal Server Error";
     return NextResponse.json(
-      buildCheckoutFailure(
-        error instanceof Error ? error.message : "Internal Server Error",
-      ),
+      buildCheckoutFailure(clientMessage),
       { status },
     );
   }

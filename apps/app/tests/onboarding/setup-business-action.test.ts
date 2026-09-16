@@ -67,4 +67,32 @@ describe("setupBusinessAction", () => {
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
   });
+
+  it("forwards managerPin when configured during onboarding", async () => {
+    await setupBusinessAction({
+      businessName: "Secure POS Store",
+      businessType: "retail",
+      address: "123 Main St",
+      city: "Albany",
+      state: "NY",
+      zipCode: "12207",
+      ownerPhone: "5555550100",
+      defaultUnit: "g",
+      quickQuantities: [],
+      privacyPreset: "standard_mode",
+      inventoryReasons: [],
+      nicknames: [],
+      ownerName: "Store Owner",
+      managerPin: "4829",
+    });
+
+    expect(mocks.provisionBusinessInConvex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessName: "Secure POS Store",
+        setup: expect.objectContaining({
+          managerPin: "4829",
+        }),
+      }),
+    );
+  });
 });

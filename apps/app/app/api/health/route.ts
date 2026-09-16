@@ -40,6 +40,37 @@ function isAuthorizedProbe(request?: Request): boolean {
   return false;
 }
 
+function getValidConvexUrl(): string {
+  const rawUrl = (process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL)?.trim();
+  if (!rawUrl) {
+    throw new Error("Convex unavailable");
+  }
+
+  const parsed = new URL(rawUrl);
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" &&
+    (parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost");
+
+  if (!isLocalDev && parsed.protocol !== "https:") {
+    throw new Error("Convex URL must use HTTPS in production");
+  }
+
+  if (!isLocalDev && !parsed.hostname.includes(".")) {
+    throw new Error("Invalid Convex hostname");
+  }
+
+  return parsed.toString();
+}
+
+function createTimeoutSignal(ms: number): { signal: AbortSignal; cleanup: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return {
+    signal: controller.signal,
+    cleanup: () => clearTimeout(timer),
+  };
+}
+
 export async function GET(request?: Request) {
   if (!isAuthorizedProbe(request)) {
     return NextResponse.json(
@@ -57,13 +88,22 @@ export async function GET(request?: Request) {
     uptime: process.uptime(),
   };
   try {
-    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
-    if (!url) throw new Error("Convex unavailable");
-    const client = new ConvexHttpClient(url, {
-      logger: false,
-      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10000), cache: "no-store" }),
-    });
-    checks.database = (await client.query(api.health.readiness, {})) === true;
+    const url = getValidConvexUrl();
+    const { signal, cleanup } = createTimeoutSignal(10000);
+    try {
+      const client = new ConvexHttpClient(url, {
+        logger: false,
+        fetch: (input, init) =>
+          fetch(input, {
+            ...init,
+            signal,
+            cache: "no-store",
+          }),
+      });
+      checks.database = (await client.query(api.health.readiness, {})) === true;
+    } finally {
+      cleanup();
+    }
   } catch {
     // Readiness responses must not disclose backend URLs, errors or tenant data.
     checks.database = false;

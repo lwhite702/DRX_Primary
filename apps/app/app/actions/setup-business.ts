@@ -22,6 +22,7 @@ export type SetupBusinessData = {
   inventoryReasons: any[];
   nicknames: any[];
   ownerName: string;
+  managerPin?: string;
 };
 
 export async function setupBusinessAction(data: SetupBusinessData) {
@@ -46,6 +47,7 @@ export async function setupBusinessAction(data: SetupBusinessData) {
         defaultUnit: data.defaultUnit,
         privacyPreset: data.privacyPreset,
         privacyProtocolJson: JSON.stringify(privacyProtocol),
+        managerPin: data.managerPin,
         quickQuantities: data.quickQuantities.map(({ label, value, unit }) => ({
           label,
           value,

@@ -157,6 +157,7 @@ export function BusinessSetupWizard({
 
     // Staff Roles (active roles to create)
     enableManager: true,
+    managerPin: "",
     enableBudtender: true,
     enableInventoryStart: false,
 
@@ -208,6 +209,7 @@ export function BusinessSetupWizard({
         inventoryReasons: formData.inventoryReasons.filter((r) => r.enabled),
         nicknames: formData.nicknames.filter((n) => n.enabled),
         ownerName: formData.ownerName,
+        managerPin: formData.managerPin ? formData.managerPin.trim() : undefined,
       });
 
       if (error) throw new Error(error);

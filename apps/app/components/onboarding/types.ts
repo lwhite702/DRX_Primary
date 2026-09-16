@@ -44,6 +44,7 @@ export interface BusinessSetupFormData {
 
   // Staff Roles
   enableManager: boolean;
+  managerPin?: string;
   enableBudtender: boolean;
   enableInventoryStart: boolean;
 

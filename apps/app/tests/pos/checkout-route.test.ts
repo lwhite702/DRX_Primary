@@ -104,6 +104,12 @@ it("keeps checkout-enhanced on the same transaction and requires a stable reques
   const body = { idempotencyKey: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", lineItems: [{ inventory_id: productId, product_name: "Synthetic", quantity: 1, unit_price: 10 }], taxAmount: 1, paymentMethod: "cash" };
   expect((await enhanced(request(body))).status).toBe(200);
   expect((await enhanced(request({ ...body, idempotencyKey: undefined }))).status).toBe(400);
+
+  // Rejects NaN or invalid quantity with 400
+  const invalidQtyBody = { ...body, lineItems: [{ inventory_id: productId, product_name: "Synthetic", quantity: "abc", unit_price: 10 }] };
+  const invalidRes = await enhanced(request(invalidQtyBody));
+  expect(invalidRes.status).toBe(400);
+  expect(await invalidRes.json()).toEqual({ error: "Invalid quantity at line item 1" });
 });
 it("retains ordinary Quick POS checkout without importing the legacy writer", async () => { expect((await POST(request(payload({ mode: "quick" })))).status).toBe(201); });
 it("returns sanitized failures and rejects missing auth", async () => {

@@ -27,9 +27,13 @@ export function ReviewStep({ formData }: StepProps) {
             {formData.defaultUnit === "g" ? "Grams" : "Ounces"}
           </span>
         </div>
-        <div className="flex justify-between py-2">
+        <div className="flex justify-between py-2 border-b">
           <span className="text-muted-foreground">Owner</span>
           <span className="font-medium">{formData.ownerName || "Not set"}</span>
+        </div>
+        <div className="flex justify-between py-2">
+          <span className="text-muted-foreground">Manager PIN</span>
+          <span className="font-medium">{formData.managerPin ? "••••" : "Not set"}</span>
         </div>
       </div>
       <p className="text-sm text-muted-foreground">

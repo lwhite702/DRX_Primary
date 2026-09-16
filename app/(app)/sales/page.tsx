@@ -96,7 +96,7 @@ export default function SalesPage() {
   const [aliases, setAliases] = useState<any[]>([]);
   const { canOverridePrice } = useUserRole(business?.id);
   const [taxEnabled, setTaxEnabled] = useState(true);
-  const [managerPin, setManagerPin] = useState("1234"); // Default, will be overwritten by settings
+  const [managerPin, setManagerPin] = useState<string | null>(null);
 
   const supabase = getSupabaseClient();
 
@@ -179,6 +179,8 @@ checkRandomTrigger().catch(() => {}); // Trigger once on mount; avoid re-running
         setTaxEnabled(taxCollectionEnabled);
         if (data.pos_manager_pin) {
           setManagerPin(data.pos_manager_pin);
+        } else {
+          setManagerPin(null);
         }
         posEngine.setTaxEnabled(taxCollectionEnabled);
         setCart(posEngine.getCart());
@@ -1005,6 +1007,7 @@ checkRandomTrigger().catch(() => {}); // Trigger once on mount; avoid re-running
         onOpenChange={setShowPriceOverride}
         productName={selectedItemForOverride?.product_name || ""}
         currentPrice={selectedItemForOverride?.unit_price || 0}
+        managerPin={managerPin}
         onConfirm={handleConfirmPriceOverride}
       />
 

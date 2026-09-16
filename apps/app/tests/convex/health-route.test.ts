@@ -27,6 +27,23 @@ it("fails closed for missing configuration, backend errors and malformed results
   expect((await GET()).status).toBe(503);
 });
 
+it("prefers CONVEX_URL and rejects non-HTTPS URLs in production", async () => {
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  // Server-only CONVEX_URL works
+  vi.stubEnv("CONVEX_URL", "https://internal.convex.cloud");
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://public.convex.cloud");
+  const res = await GET();
+  expect(res.status).toBe(200);
+
+  // In production, non-HTTPS URLs are rejected
+  vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("CONVEX_URL", "http://insecure.convex.cloud");
+  const insecureRes = await GET();
+  expect(insecureRes.status).toBe(503);
+});
+
 it("enforces machine authorization when HEALTHCHECK_SECRET is configured", async () => {
   vi.stubEnv("HEALTHCHECK_SECRET", "super-secret-probe-token");
   const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });

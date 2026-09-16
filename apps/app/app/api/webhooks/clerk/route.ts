@@ -10,8 +10,14 @@ export async function POST(req: Request) {
     return new Response("", { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    if (message.includes("UNAUTHORIZED:")) return new Response("Invalid webhook signature", { status: 400 });
+    if (message.includes("UNAUTHORIZED:") || message.includes("INVALID_ARGUMENT:") || message.includes("FORBIDDEN:")) {
+      return new Response("Invalid webhook payload", { status: 400 });
+    }
     // Never acknowledge an unpersisted event or log the signed payload.
-    return new Response("Webhook processing unavailable", { status: 503 });
+    // Return 503 with Retry-After for transient failures so Clerk retries with backoff.
+    return new Response("Webhook processing unavailable", {
+      status: 503,
+      headers: { "Retry-After": "60" },
+    });
   }
 }

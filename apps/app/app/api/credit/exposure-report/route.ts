@@ -19,7 +19,6 @@ export async function GET(request: Request) {
       "INTERNAL_ERROR",
       "Failed to fetch report",
       500,
-      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

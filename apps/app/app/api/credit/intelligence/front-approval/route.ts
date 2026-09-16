@@ -72,10 +72,10 @@ export async function POST(request: Request) {
       generated_at: new Date().toISOString(),
     });
   } catch (error) {
+    console.error("Failed to evaluate front approval:", error);
     return NextResponse.json(
       {
         error: "Failed to evaluate front approval",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

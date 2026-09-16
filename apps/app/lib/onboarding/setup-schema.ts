@@ -17,5 +17,6 @@ export const setupBusinessSchema = z.object({
   privacyPreset: z.enum(["alias_mode", "standard_mode", "business_crm_mode"]),
   inventoryReasons: z.array(z.object({ label, type: label, enabled: z.boolean() }).strict()).max(100),
   nicknames: z.array(z.object({ slang: label, quantity, unit, enabled: z.boolean() }).strict()).max(100),
+  managerPin: z.string().trim().max(50).optional(),
 }).strict();
 export type SetupBusinessInput = z.infer<typeof setupBusinessSchema>;

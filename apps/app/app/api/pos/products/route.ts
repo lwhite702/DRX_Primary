@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
     const exact = request.nextUrl.searchParams.get("exact") === "1";
     const products: FunctionReturnType<typeof api.products.listCatalogPage>["page"] = [];
     let cursor: string | null = null;
+    let pageCount = 0;
+    const maxPages = 50;
     do {
+      if (pageCount++ >= maxPages) break;
       const result: FunctionReturnType<typeof api.products.listCatalogPage> = await client.query(api.products.listCatalogPage, { businessId, paginationOpts: { numItems: 200, cursor } });
       products.push(...result.page.filter(product => !search || (exact
         ? product.sku.toLowerCase() === search || product.productName.toLowerCase() === search

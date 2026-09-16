@@ -49,7 +49,6 @@ export async function POST(request: Request) {
       "INTERNAL_ERROR",
       "Failed to refresh credit limits",
       500,
-      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }
