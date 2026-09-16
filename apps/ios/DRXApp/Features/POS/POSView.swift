@@ -250,54 +250,56 @@ struct POSView: View {
                 ContentUnavailableView.search
             } else {
                 ScrollView {
-                    VStack(spacing: 12) {
-                        if let feedback = store.feedbackMessage {
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(DRXPalette.accent)
-                                Text(feedback)
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(DRXPalette.ink)
-                                    .lineLimit(2)
-                                Spacer()
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.15)) {
-                                        store.feedbackMessage = nil
-                                    }
-                                } label: {
-                                    Image(systemName: "xmark")
-                                        .font(.caption.bold())
-                                        .foregroundStyle(DRXPalette.muted)
-                                }
-                                .accessibilityLabel("Dismiss notification")
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(DRXPalette.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(DRXPalette.accent.opacity(0.4), lineWidth: 1)
-                            }
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                        }
-
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                            ForEach(store.filteredProducts) { product in
-                                let inCartQty = store.cartItems.first(where: { $0.product.id == product.id })?.quantityGrams
-                                ProductTile(product: product, inCartQuantity: inCartQty) {
-                                    if product.allowFractionalWeight || product.suggestedQuantityPresets != nil || product.suggestedDollarPresetsCents != nil {
-                                        selectedProduct = product
-                                    } else {
-                                        store.addToCart(product)
-                                    }
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+                        ForEach(store.filteredProducts) { product in
+                            let inCartQty = store.cartItems.first(where: { $0.product.id == product.id })?.quantityGrams
+                            ProductTile(product: product, inCartQuantity: inCartQty) {
+                                if product.allowFractionalWeight || product.suggestedQuantityPresets != nil || product.suggestedDollarPresetsCents != nil {
+                                    selectedProduct = product
+                                } else {
+                                    store.addToCart(product)
                                 }
                             }
                         }
                     }
                     .padding(16)
-                    .animation(.easeInOut(duration: 0.2), value: store.feedbackMessage)
                 }
+            }
+        }
+        .overlay(alignment: .top) {
+            if let feedback = store.feedbackMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(DRXPalette.accent)
+                    Text(feedback)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(DRXPalette.ink)
+                        .lineLimit(2)
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            store.feedbackMessage = nil
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.bold())
+                            .foregroundStyle(DRXPalette.muted)
+                    }
+                    .accessibilityLabel("Dismiss notification")
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(DRXPalette.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(DRXPalette.accent.opacity(0.4), lineWidth: 1)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.2), value: store.feedbackMessage)
             }
         }
     }
@@ -553,6 +555,7 @@ struct CartFooter: View {
 
 private struct CompactCartBar: View {
     @Bindable var store: POSStore
+    @State private var showClearConfirm = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -566,7 +569,7 @@ private struct CompactCartBar: View {
             }
             Spacer()
             Button(role: .destructive) {
-                store.clearCart()
+                showClearConfirm = true
             } label: {
                 Text("Clear")
                     .font(.subheadline)
@@ -575,6 +578,12 @@ private struct CompactCartBar: View {
                     .padding(.vertical, 8)
             }
             .accessibilityLabel("Clear cart")
+            .confirmationDialog("Clear Cart?", isPresented: $showClearConfirm, titleVisibility: .visible) {
+                Button("Clear All Items", role: .destructive) { store.clearCart() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will remove all items from the current sale.")
+            }
             Button {
                 store.showCheckout = true
             } label: {
