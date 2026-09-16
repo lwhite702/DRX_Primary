@@ -28,7 +28,7 @@ Updated: 2026-03-30T08:20:00.000Z
 - [ ] Analytics live mode validation
 - [x] Admin access validation (platform slug isolation verified in WRE-8 / WRE-87)
 - [x] Rate limiting confirmation (policy check)
-- [ ] Monitoring alerts active
+- [x] Monitoring alerts active (Sentry and PostHog verified in WRE-9)
 - [x] Rollback plan documented
 - [x] Hotfix procedure documented
 
