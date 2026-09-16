@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { Stack } from "expo-router";
@@ -55,10 +56,43 @@ type Delivery = {
   estimatedArrivalAt?: number;
   createdAt: number;
 };
+
+type DeliveryEvent = {
+  _id: string;
+  deliveryId: string;
+  businessId: string;
+  fromStatus?: DeliveryStatus;
+  toStatus: DeliveryStatus;
+  userId: string;
+  note?: string;
+  createdAt: number;
+};
+
+type DeliveryAdjustmentKind = "customer_fee_refund" | "vendor_credit" | "delivery_tax_refund";
+
+type DeliveryAdjustment = {
+  _id: string;
+  deliveryId: string;
+  businessId: string;
+  kind: DeliveryAdjustmentKind;
+  amountCents: number;
+  reason?: string;
+  notes?: string;
+  userId: string;
+  createdAt: number;
+};
+
+type DeliveryDetailResponse = {
+  delivery: Delivery;
+  events: DeliveryEvent[];
+  adjustments: DeliveryAdjustment[];
+};
+
 type MarkUberOrderedResult = {
   success: true;
   estimatedArrivalAt: number;
 };
+
 type DeliveryNotification = {
   _id: string;
   deliveryId: string;
@@ -75,11 +109,30 @@ const statusLabel: Record<DeliveryStatus, string> = {
   delivered: "DELIVERED",
   canceled: "CANCELED",
 };
+
+const adjustmentLabel: Record<DeliveryAdjustmentKind, string> = {
+  customer_fee_refund: "CUSTOMER FEE REFUND",
+  vendor_credit: "VENDOR CREDIT",
+  delivery_tax_refund: "DELIVERY TAX REFUND",
+};
+
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+const formatTime = (timestamp?: number) => {
+  if (!timestamp) return "—";
+  return new Date(timestamp).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
 
 export default function DeliveriesScreen() {
   usePreventScreenCapture("drx-deliveries");
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { businessId, userId, session } = useAuth();
   const { isOnline } = useOffline();
   const deliveries = useQuery(deliveryApi.listDeliveries, {}) as Delivery[] | undefined;
@@ -92,19 +145,32 @@ export default function DeliveriesScreen() {
   const markHandedOff = useMutation(deliveryApi.markHandedOff);
   const markDelivered = useMutation(deliveryApi.markDelivered);
   const cancelDelivery = useMutation(deliveryApi.cancelDelivery);
+  const recordFinancialAdjustment = useMutation(deliveryApi.recordFinancialAdjustment);
   const getDeliveryAddress = useMutation(deliveryApi.getDeliveryAddress);
   const acknowledgeNotification = useMutation(deliveryApi.acknowledgeNotification);
+
   const [selected, setSelected] = useState<Delivery | null>(null);
   const [waitMinutes, setWaitMinutes] = useState("15");
   const [working, setWorking] = useState(false);
   const [revealedAddress, setRevealedAddress] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
+  const [showAdjustmentForm, setShowAdjustmentForm] = useState(false);
+  const [adjustmentKind, setAdjustmentKind] = useState<DeliveryAdjustmentKind>("customer_fee_refund");
+  const [adjustmentAmount, setAdjustmentAmount] = useState("");
+  const [adjustmentReason, setAdjustmentReason] = useState("");
+
   const activeReminderKey = useRef<string | null>(null);
   const [notificationPump, setNotificationPump] = useState(0);
+
   const canCancel =
     session?.roles.some((role) => ["owner", "admin"].includes(role.toLowerCase())) === true;
   const canReassign =
     session?.roles.some((role) => ["owner", "admin", "manager"].includes(role.toLowerCase())) === true;
+
+  const deliveryDetail = useQuery(
+    deliveryApi.getDelivery,
+    selected ? { deliveryId: selected._id } : "skip",
+  ) as DeliveryDetailResponse | undefined;
 
   const sorted = useMemo(
     () =>
@@ -205,10 +271,10 @@ export default function DeliveriesScreen() {
       return;
     }
     await perform(async () => {
-      const result = await markUberOrdered({
+      const result = (await markUberOrdered({
         deliveryId: delivery._id,
         waitMinutes: minutes,
-      }) as MarkUberOrderedResult;
+      })) as MarkUberOrderedResult;
       if (businessId && userId) {
         const warning = await captureReminderPersistenceWarning(() =>
           replaceLocalDeliveryNotifications({
@@ -231,7 +297,7 @@ export default function DeliveriesScreen() {
 
   const assignToCurrentOperator = async (delivery: Delivery) => {
     await perform(async () => {
-      await assignDelivery({ deliveryId: delivery._id });
+      await assignDelivery({ deliveryId: delivery._id, assigneeUserId: userId });
       if (businessId && userId) {
         const warning = await captureReminderPersistenceWarning(() =>
           reconcileLocalDeliveryNotifications({
@@ -239,9 +305,10 @@ export default function DeliveriesScreen() {
             userId,
             deliveryId: delivery._id,
             orderNumber: delivery.orderNumber,
-            reminders: delivery.status === "uber_ordered" && delivery.estimatedArrivalAt
-              ? buildDeliveryReminderSchedule(delivery.estimatedArrivalAt)
-              : [],
+            reminders:
+              delivery.status === "uber_ordered" && delivery.estimatedArrivalAt
+                ? buildDeliveryReminderSchedule(delivery.estimatedArrivalAt)
+                : [],
           }),
         );
         if (warning) {
@@ -266,6 +333,41 @@ export default function DeliveriesScreen() {
     });
   };
 
+  const submitFinancialAdjustment = async (delivery: Delivery) => {
+    const amountCents = Math.round(Number(adjustmentAmount) * 100);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) {
+      Alert.alert("Valid amount required", "Enter an adjustment amount greater than zero.");
+      return;
+    }
+    const reason = adjustmentReason.trim();
+    if (reason.length < 3) {
+      Alert.alert("Reason required", "Enter a reason of at least 3 characters.");
+      return;
+    }
+    await perform(async () => {
+      await recordFinancialAdjustment({
+        deliveryId: delivery._id,
+        kind: adjustmentKind,
+        amountCents,
+        reason,
+        idempotencyKey: globalThis.crypto.randomUUID(),
+      });
+      setShowAdjustmentForm(false);
+      setAdjustmentAmount("");
+      setAdjustmentReason("");
+      Alert.alert("Adjustment recorded", `Recorded ${money(amountCents)} ${adjustmentKind.replace(/_/g, " ")}.`);
+    });
+  };
+
+  const resetSelection = () => {
+    setRevealedAddress(null);
+    setCancellationReason("");
+    setShowAdjustmentForm(false);
+    setAdjustmentAmount("");
+    setAdjustmentReason("");
+    setSelected(null);
+  };
+
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: true, title: "Deliveries" }} />
@@ -285,20 +387,30 @@ export default function DeliveriesScreen() {
         <FlatList
           data={sorted}
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, isTablet && styles.tabletList]}
           keyExtractor={(item) => item._id}
           ListEmptyComponent={<Text style={styles.empty}>No deliveries require attention.</Text>}
           renderItem={({ item }) => {
             const overdue = item.status === "ready_for_dispatch" && Date.now() > item.dispatchDueAt;
             return (
-              <TouchableOpacity style={[styles.card, overdue && styles.overdueCard]} onPress={() => {
-                setRevealedAddress(null);
-                setCancellationReason("");
-                setSelected(item);
-              }}>
+              <TouchableOpacity
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={`Delivery ${item.orderNumber}, status ${statusLabel[item.status]}, ${item.addressLabel}`}
+                accessibilityHint="Tap to inspect delivery details, audit events, and fulfillment actions"
+                style={[styles.card, overdue && styles.overdueCard]}
+                onPress={() => {
+                  setRevealedAddress(null);
+                  setCancellationReason("");
+                  setShowAdjustmentForm(false);
+                  setSelected(item);
+                }}
+              >
                 <View style={styles.cardHeading}>
                   <Text style={styles.order}>{item.orderNumber}</Text>
-                  <Text style={[styles.status, overdue && styles.overdueText]}>{statusLabel[item.status]}</Text>
+                  <Text style={[styles.status, overdue && styles.overdueText]}>
+                    {statusLabel[item.status]}
+                  </Text>
                 </View>
                 <Text style={styles.address}>{item.addressLabel}</Text>
                 <View style={styles.cardHeading}>
@@ -319,40 +431,95 @@ export default function DeliveriesScreen() {
         />
       )}
 
-      <Modal visible={selected !== null} transparent animationType="slide" onRequestClose={() => setSelected(null)}>
+      <Modal visible={selected !== null} transparent animationType="slide" onRequestClose={resetSelection}>
         <View style={styles.backdrop}>
-          <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent}>
+          <ScrollView
+            style={[styles.sheet, isTablet && styles.tabletSheet]}
+            contentContainerStyle={styles.sheetContent}
+          >
             {selected ? (
               <>
-                <Text style={styles.title}>{selected.orderNumber}</Text>
-                <Text style={styles.assignmentText}>
-                  {selected.assignedToUserId === userId
-                    ? "Assigned to you"
-                    : selected.assignedToUserId
-                      ? "Assigned to another operator"
-                      : "Unassigned"}
-                </Text>
-                <Text selectable style={styles.address}>{revealedAddress ?? selected.addressLabel}</Text>
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  disabled={working}
-                  onPress={() => {
-                    setWorking(true);
-                    void getDeliveryAddress({ deliveryId: selected._id })
-                      .then((result: { address: string }) => setRevealedAddress(result.address))
-                      .catch((error: unknown) =>
-                        Alert.alert("Address unavailable", error instanceof Error ? error.message : "Try again."),
-                      )
-                      .finally(() => setWorking(false));
-                  }}
-                >
-                  <Text style={styles.secondaryText}>VIEW DELIVERY ADDRESS</Text>
-                </TouchableOpacity>
+                <View style={styles.sheetHeader}>
+                  <View>
+                    <Text style={styles.title}>{selected.orderNumber}</Text>
+                    <Text style={styles.assignmentText}>
+                      {selected.assignedToUserId === userId
+                        ? "Assigned to you"
+                        : selected.assignedToUserId
+                          ? "Assigned to another operator"
+                          : "Unassigned"}
+                    </Text>
+                  </View>
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusBadgeText}>{statusLabel[selected.status]}</Text>
+                  </View>
+                </View>
+
+                {/* Fulfillment Timestamps */}
+                <View style={styles.infoCard}>
+                  <Text style={styles.sectionHeading}>FULFILLMENT TIMELINE</Text>
+                  <View style={styles.timestampRow}>
+                    <Text style={styles.timestampLabel}>Created:</Text>
+                    <Text style={styles.timestampValue}>{formatTime(selected.createdAt)}</Text>
+                  </View>
+                  <View style={styles.timestampRow}>
+                    <Text style={styles.timestampLabel}>Dispatch Due:</Text>
+                    <Text style={styles.timestampValue}>{formatTime(selected.dispatchDueAt)}</Text>
+                  </View>
+                  <View style={styles.timestampRow}>
+                    <Text style={styles.timestampLabel}>Courier ETA:</Text>
+                    <Text style={styles.timestampValue}>
+                      {selected.estimatedArrivalAt ? formatTime(selected.estimatedArrivalAt) : "Not dispatched"}
+                    </Text>
+                  </View>
+                  <View style={styles.timestampRow}>
+                    <Text style={styles.timestampLabel}>Vendor Fee:</Text>
+                    <Text style={styles.timestampValue}>{money(selected.vendorFeeCents)}</Text>
+                  </View>
+                  <View style={styles.timestampRow}>
+                    <Text style={styles.timestampLabel}>Customer Fee:</Text>
+                    <Text style={styles.timestampValue}>{money(selected.customerFeeCents)}</Text>
+                  </View>
+                </View>
+
+                {/* Address Section */}
+                <View style={styles.infoCard}>
+                  <Text style={styles.sectionHeading}>DESTINATION ADDRESS</Text>
+                  <Text selectable style={styles.address}>
+                    {revealedAddress ?? selected.addressLabel}
+                  </Text>
+                  {!revealedAddress ? (
+                    <TouchableOpacity
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel="Decrypt delivery address"
+                      accessibilityHint="Audited decryption of customer delivery address"
+                      style={styles.secondaryButton}
+                      disabled={working}
+                      onPress={() => {
+                        setWorking(true);
+                        void getDeliveryAddress({ deliveryId: selected._id })
+                          .then((result: { address: string }) => setRevealedAddress(result.address))
+                          .catch((error: unknown) =>
+                            Alert.alert("Address unavailable", error instanceof Error ? error.message : "Try again."),
+                          )
+                          .finally(() => setWorking(false));
+                      }}
+                    >
+                      <Text style={styles.secondaryText}>VIEW DELIVERY ADDRESS</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+
+                {/* Shift Assignment */}
                 {selected.status !== "delivered" &&
                 selected.status !== "canceled" &&
                 selected.assignedToUserId !== userId &&
                 (!selected.assignedToUserId || canReassign) ? (
                   <TouchableOpacity
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Assign delivery to current operator"
                     style={styles.secondaryButton}
                     disabled={working}
                     onPress={() => void assignToCurrentOperator(selected)}
@@ -362,9 +529,14 @@ export default function DeliveriesScreen() {
                     </Text>
                   </TouchableOpacity>
                 ) : null}
+
+                {/* Status Transitions */}
                 {selected.status === "ready_for_dispatch" && selected.assignedToUserId === userId ? (
-                  <>
+                  <View style={styles.actionCard}>
+                    <Text style={styles.sectionHeading}>DISPATCH COURIER</Text>
                     <TextInput
+                      accessible={true}
+                      accessibilityLabel="Courier wait time in minutes"
                       style={styles.waitInput}
                       value={waitMinutes}
                       onChangeText={setWaitMinutes}
@@ -374,18 +546,38 @@ export default function DeliveriesScreen() {
                     />
                     <View style={styles.presets}>
                       {[5, 10, 15, 20, 30].map((minutes) => (
-                        <TouchableOpacity key={minutes} style={styles.preset} onPress={() => setWaitMinutes(String(minutes))}>
+                        <TouchableOpacity
+                          key={minutes}
+                          accessible={true}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${minutes} minutes preset`}
+                          style={styles.preset}
+                          onPress={() => setWaitMinutes(String(minutes))}
+                        >
                           <Text style={styles.presetText}>{minutes}m</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
-                    <TouchableOpacity style={styles.primaryButton} disabled={working} onPress={() => void orderUber(selected)}>
+                    <TouchableOpacity
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel="Mark Uber ordered"
+                      accessibilityHint="Records courier dispatched and schedules offline reminders"
+                      style={styles.primaryButton}
+                      disabled={working}
+                      onPress={() => void orderUber(selected)}
+                    >
                       <Text style={styles.primaryText}>UBER ORDERED</Text>
                     </TouchableOpacity>
-                  </>
+                  </View>
                 ) : null}
+
                 {selected.status === "uber_ordered" && selected.assignedToUserId === userId ? (
                   <TouchableOpacity
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark package handed off"
+                    accessibilityHint="Confirms package handed off to courier"
                     style={styles.primaryButton}
                     disabled={working}
                     onPress={() => void completeStatus(selected, markHandedOff)}
@@ -393,8 +585,13 @@ export default function DeliveriesScreen() {
                     <Text style={styles.primaryText}>PACKAGE HANDED OFF</Text>
                   </TouchableOpacity>
                 ) : null}
+
                 {selected.status === "handed_off" && selected.assignedToUserId === userId ? (
                   <TouchableOpacity
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark delivery completed"
+                    accessibilityHint="Confirms customer received delivery"
                     style={styles.primaryButton}
                     disabled={working}
                     onPress={() => void completeStatus(selected, markDelivered)}
@@ -402,17 +599,25 @@ export default function DeliveriesScreen() {
                     <Text style={styles.primaryText}>MARK DELIVERED</Text>
                   </TouchableOpacity>
                 ) : null}
+
+                {/* Cancellation */}
                 {canCancel && selected.status !== "delivered" && selected.status !== "canceled" ? (
-                  <>
+                  <View style={styles.actionCard}>
+                    <Text style={styles.sectionHeading}>CANCEL DELIVERY</Text>
                     <TextInput
+                      accessible={true}
+                      accessibilityLabel="Cancellation reason"
                       style={styles.waitInput}
                       value={cancellationReason}
                       onChangeText={setCancellationReason}
-                      placeholder="Cancellation reason"
+                      placeholder="Cancellation reason (minimum 3 characters)"
                       placeholderTextColor={COLORS.textMuted}
                       multiline
                     />
                     <TouchableOpacity
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel="Confirm delivery cancellation"
                       style={styles.destructiveButton}
                       disabled={working || cancellationReason.trim().length < 3}
                       onPress={() =>
@@ -430,13 +635,144 @@ export default function DeliveriesScreen() {
                     >
                       <Text style={styles.destructiveText}>CANCEL DELIVERY</Text>
                     </TouchableOpacity>
-                  </>
+                  </View>
                 ) : null}
-                <TouchableOpacity style={styles.cancel} onPress={() => {
-                  setRevealedAddress(null);
-                  setCancellationReason("");
-                  setSelected(null);
-                }}>
+
+                {/* Audit Trail: Event History */}
+                <View style={styles.infoCard}>
+                  <Text style={styles.sectionHeading}>AUDIT TRAIL & EVENT LOG</Text>
+                  {deliveryDetail === undefined ? (
+                    <ActivityIndicator size="small" color={COLORS.accent} />
+                  ) : deliveryDetail.events.length === 0 ? (
+                    <Text style={styles.emptySmall}>No audit events recorded yet.</Text>
+                  ) : (
+                    deliveryDetail.events.map((event) => (
+                      <View key={event._id} style={styles.timelineItem}>
+                        <View style={styles.timelineHeader}>
+                          <Text style={styles.timelineTransition}>
+                            {event.fromStatus ? `${statusLabel[event.fromStatus]} → ` : ""}
+                            {statusLabel[event.toStatus]}
+                          </Text>
+                          <Text style={styles.timelineTime}>{formatTime(event.createdAt)}</Text>
+                        </View>
+                        {event.note ? <Text style={styles.timelineNote}>{event.note}</Text> : null}
+                      </View>
+                    ))
+                  )}
+                </View>
+
+                {/* Financial Adjustments Section */}
+                <View style={styles.infoCard}>
+                  <View style={styles.sectionHeadingRow}>
+                    <Text style={styles.sectionHeading}>FINANCIAL ADJUSTMENTS</Text>
+                    {canReassign || canCancel ? (
+                      <TouchableOpacity
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel="Toggle financial adjustment form"
+                        onPress={() => setShowAdjustmentForm((current) => !current)}
+                      >
+                        <Text style={styles.toggleText}>
+                          {showAdjustmentForm ? "Cancel" : "+ Add Adjustment"}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+
+                  {/* Financial Adjustments Form */}
+                  {showAdjustmentForm ? (
+                    <View style={styles.adjustmentForm}>
+                      <Text style={styles.formSublabel}>Adjustment Type:</Text>
+                      <View style={styles.kindSelector}>
+                        {(
+                          [
+                            "customer_fee_refund",
+                            "vendor_credit",
+                            "delivery_tax_refund",
+                          ] as DeliveryAdjustmentKind[]
+                        ).map((kind) => (
+                          <TouchableOpacity
+                            key={kind}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={adjustmentLabel[kind]}
+                            style={[
+                              styles.kindButton,
+                              adjustmentKind === kind && styles.kindButtonActive,
+                            ]}
+                            onPress={() => setAdjustmentKind(kind)}
+                          >
+                            <Text
+                              style={[
+                                styles.kindButtonText,
+                                adjustmentKind === kind && styles.kindButtonTextActive,
+                              ]}
+                            >
+                              {adjustmentLabel[kind]}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                      <TextInput
+                        accessible={true}
+                        accessibilityLabel="Adjustment amount in dollars"
+                        style={styles.waitInput}
+                        value={adjustmentAmount}
+                        onChangeText={setAdjustmentAmount}
+                        keyboardType="decimal-pad"
+                        placeholder="Amount in dollars (e.g. 5.00)"
+                        placeholderTextColor={COLORS.textMuted}
+                      />
+                      <TextInput
+                        accessible={true}
+                        accessibilityLabel="Adjustment reason"
+                        style={styles.waitInput}
+                        value={adjustmentReason}
+                        onChangeText={setAdjustmentReason}
+                        placeholder="Reason for financial adjustment"
+                        placeholderTextColor={COLORS.textMuted}
+                      />
+                      <TouchableOpacity
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel="Submit financial adjustment"
+                        style={styles.primaryButton}
+                        disabled={working || !adjustmentAmount.trim() || adjustmentReason.trim().length < 3}
+                        onPress={() => void submitFinancialAdjustment(selected)}
+                      >
+                        <Text style={styles.primaryText}>RECORD ADJUSTMENT</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  {deliveryDetail === undefined ? (
+                    <ActivityIndicator size="small" color={COLORS.accent} />
+                  ) : deliveryDetail.adjustments.length === 0 ? (
+                    <Text style={styles.emptySmall}>No financial adjustments recorded.</Text>
+                  ) : (
+                    deliveryDetail.adjustments.map((adj) => (
+                      <View key={adj._id} style={styles.adjustmentItem}>
+                        <View style={styles.timelineHeader}>
+                          <Text style={styles.adjustmentKind}>
+                            {adjustmentLabel[adj.kind] ?? adj.kind}
+                          </Text>
+                          <Text style={styles.adjustmentAmount}>{money(adj.amountCents)}</Text>
+                        </View>
+                        <Text style={styles.timelineNote}>{adj.reason ?? adj.notes ?? ""}</Text>
+                        <Text style={styles.timelineTime}>{formatTime(adj.createdAt)}</Text>
+                      </View>
+                    ))
+                  )}
+                </View>
+
+                {/* Close Button */}
+                <TouchableOpacity
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close delivery details"
+                  style={styles.cancel}
+                  onPress={resetSelection}
+                >
                   <Text style={styles.cancelText}>Close</Text>
                 </TouchableOpacity>
               </>
@@ -458,8 +794,17 @@ const styles = StyleSheet.create({
   offline: { color: COLORS.warning },
   loading: { flex: 1 },
   list: { gap: SPACING.sm, padding: SPACING.md, paddingBottom: 120 },
+  tabletList: { alignSelf: "center", maxWidth: 840, width: "100%" },
   empty: { color: COLORS.textMuted, padding: SPACING.xl, textAlign: "center" },
-  card: { backgroundColor: COLORS.surface, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.lg, borderWidth: 1, gap: SPACING.sm, padding: SPACING.md },
+  emptySmall: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs, paddingVertical: SPACING.sm },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    gap: SPACING.sm,
+    padding: SPACING.md,
+  },
   overdueCard: { borderColor: COLORS.warning },
   cardHeading: { flexDirection: "row", gap: SPACING.sm, justifyContent: "space-between" },
   order: { color: COLORS.text, fontSize: FONT_SIZES.md, fontWeight: "800" },
@@ -468,17 +813,135 @@ const styles = StyleSheet.create({
   address: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm },
   meta: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs },
   backdrop: { backgroundColor: "rgba(0,0,0,0.72)", flex: 1, justifyContent: "flex-end" },
-  sheet: { backgroundColor: COLORS.surface, borderTopLeftRadius: BORDER_RADIUS.xl, borderTopRightRadius: BORDER_RADIUS.xl, maxHeight: "82%" },
+  sheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
+    maxHeight: "90%",
+  },
+  tabletSheet: {
+    alignSelf: "center",
+    borderRadius: BORDER_RADIUS.xl,
+    marginBottom: SPACING.xl,
+    maxWidth: 680,
+    width: "92%",
+  },
   sheetContent: { gap: SPACING.md, padding: SPACING.lg, paddingBottom: 36 },
-  waitInput: { backgroundColor: COLORS.surfaceLight, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.md, borderWidth: 1, color: COLORS.text, padding: SPACING.md },
+  sheetHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  statusBadge: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.accent,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+  },
+  statusBadgeText: { color: COLORS.accent, fontSize: 10, fontWeight: "900" },
+  infoCard: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    gap: SPACING.sm,
+    padding: SPACING.md,
+  },
+  actionCard: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    gap: SPACING.sm,
+    padding: SPACING.md,
+  },
+  sectionHeading: { color: COLORS.accent, fontSize: FONT_SIZES.xs, fontWeight: "800", letterSpacing: 0.8 },
+  sectionHeadingRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  toggleText: { color: COLORS.accent, fontSize: FONT_SIZES.xs, fontWeight: "700" },
+  timestampRow: { flexDirection: "row", justifyContent: "space-between" },
+  timestampLabel: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs },
+  timestampValue: { color: COLORS.text, fontSize: FONT_SIZES.xs, fontWeight: "600" },
+  timelineItem: {
+    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1,
+    gap: 2,
+    paddingVertical: SPACING.sm,
+  },
+  timelineHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  timelineTransition: { color: COLORS.text, fontSize: FONT_SIZES.xs, fontWeight: "700" },
+  timelineTime: { color: COLORS.textMuted, fontSize: 10 },
+  timelineNote: { color: COLORS.textSecondary, fontSize: FONT_SIZES.xs, marginTop: 2 },
+  adjustmentItem: {
+    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1,
+    gap: 2,
+    paddingVertical: SPACING.sm,
+  },
+  adjustmentKind: { color: COLORS.accent, fontSize: FONT_SIZES.xs, fontWeight: "700" },
+  adjustmentAmount: { color: COLORS.text, fontSize: FONT_SIZES.xs, fontWeight: "800" },
+  adjustmentForm: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    gap: SPACING.sm,
+    marginTop: SPACING.xs,
+    padding: SPACING.sm,
+  },
+  formSublabel: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs },
+  kindSelector: { flexDirection: "row", flexWrap: "wrap", gap: SPACING.xs },
+  kindButton: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.sm,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  kindButtonActive: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+  },
+  kindButtonText: { color: COLORS.textSecondary, fontSize: 10, fontWeight: "700" },
+  kindButtonTextActive: { color: COLORS.background, fontWeight: "900" },
+  waitInput: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    color: COLORS.text,
+    padding: SPACING.md,
+  },
   presets: { flexDirection: "row", flexWrap: "wrap", gap: SPACING.sm },
-  preset: { backgroundColor: COLORS.surfaceLight, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.full, borderWidth: 1, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm },
+  preset: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+  },
   presetText: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm },
-  primaryButton: { alignItems: "center", backgroundColor: COLORS.accent, borderRadius: BORDER_RADIUS.md, padding: SPACING.md },
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: COLORS.accent,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+  },
   primaryText: { color: COLORS.background, fontSize: FONT_SIZES.sm, fontWeight: "900" },
-  secondaryButton: { alignItems: "center", borderColor: COLORS.accent, borderRadius: BORDER_RADIUS.md, borderWidth: 1, padding: SPACING.md },
+  secondaryButton: {
+    alignItems: "center",
+    borderColor: COLORS.accent,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    padding: SPACING.md,
+  },
   secondaryText: { color: COLORS.accent, fontSize: FONT_SIZES.sm, fontWeight: "900" },
-  destructiveButton: { alignItems: "center", borderColor: COLORS.error, borderRadius: BORDER_RADIUS.md, borderWidth: 1, padding: SPACING.md },
+  destructiveButton: {
+    alignItems: "center",
+    borderColor: COLORS.error,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    padding: SPACING.md,
+  },
   destructiveText: { color: COLORS.error, fontSize: FONT_SIZES.sm, fontWeight: "900" },
   cancel: { alignItems: "center", padding: SPACING.md },
   cancelText: { color: COLORS.textSecondary },
