@@ -17,16 +17,10 @@
   },
   "appearance": {
     "default": "dark",
-    "strict": true
+    "strict": false
   },
   "fonts": {
-    "heading": {
-      "family": "Plus Jakarta Sans",
-      "weight": 800
-    },
-    "body": {
-      "family": "Inter"
-    }
+    "family": "Plus Jakarta Sans"
   },
   "icons": {
     "library": "lucide"
