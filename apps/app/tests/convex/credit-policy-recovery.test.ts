@@ -49,7 +49,7 @@ it.each(["policy", "recommendation"] as const)("%s cancellation is immutable, re
   const { t, customerId, args, execute, cancel, customer } = await setup(kind);
   const original = await customer();
   const cancelled = await cancel();
-  expect(cancelled).toMatchObject({ status: "cancelled", requestKey: args.requestKey, ...(kind === "policy" ? { customerId } : { recommendationId: args.recommendationId }) });
+  expect(cancelled).toMatchObject({ status: "cancelled", requestKey: args.requestKey, ...(kind === "policy" ? { customerId } : { recommendationId: (args as { recommendationId: string }).recommendationId }) });
   expect(await customer()).toEqual(original);
   await t.run(ctx => ctx.db.patch(customerId, { isActive: false, creditLimitCents: 900, creditPolicyRevision: 7 }));
   vi.mocked(Date.now).mockReturnValue(Date.now() + 86400000);
