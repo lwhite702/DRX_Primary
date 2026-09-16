@@ -132,5 +132,12 @@
     { "source": "/drx-privacy-protexion-protocol", "destination": "/privacy/privacy-and-minimal-data" },
     { "source": "/failsafe-and-self-destruct", "destination": "/start/help-and-support" },
     { "source": "/fixing-issues", "destination": "/start/help-and-support" }
-  ]
+  ],
+  "integrations": {
+    "posthog": {
+      "apiKey": "phc_strT20fm2PLluS1tQXxntvtn7fgJ9PbTBwJbljXDJya",
+      "apiHost": "https://us.i.posthog.com",
+      "sessionRecording": true
+    }
+  }
 }
