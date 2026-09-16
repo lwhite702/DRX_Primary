@@ -475,8 +475,47 @@ struct DRXDelivery: Decodable, Identifiable, Sendable {
 struct DeliveryIdArgs: Encodable, Sendable { let deliveryId: String }
 struct AssignDeliveryArgs: Encodable, Sendable {
     let deliveryId: String
-    let operatorId: String?
+    let assigneeUserId: String?
 }
+
+struct DRXDeliveryEvent: Decodable, Identifiable, Sendable {
+    let id: String
+    let deliveryId: String
+    let actorUserId: String
+    let type: String
+    let fromStatus: String?
+    let toStatus: String?
+    let metadata: String
+    let createdAt: Double
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case deliveryId, actorUserId, type, fromStatus, toStatus, metadata, createdAt
+    }
+}
+
+struct DRXDeliveryAdjustment: Decodable, Identifiable, Sendable {
+    let id: String
+    let deliveryId: String
+    let saleId: String
+    let kind: String
+    let amountCents: Int
+    let reason: String
+    let createdBy: String
+    let createdAt: Double
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case deliveryId, saleId, kind, amountCents, reason, createdBy, createdAt
+    }
+}
+
+struct DRXDeliveryDetailResponse: Decodable, Sendable {
+    let delivery: DRXDelivery
+    let events: [DRXDeliveryEvent]
+    let adjustments: [DRXDeliveryAdjustment]
+}
+
 struct MarkUberOrderedArgs: Encodable, Sendable {
     let deliveryId: String
     let waitMinutes: Int

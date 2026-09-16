@@ -330,4 +330,74 @@ struct CheckoutMathTests {
         // next unread query, so refresh/restart advances without memory state.
         #expect(DeliveryNotificationQueue.next(notifications: [second])?.id == second.id)
     }
+
+    @Test
+    func assignDeliveryArgsEncodesAssigneeUserId() throws {
+        let args = AssignDeliveryArgs(deliveryId: "del_123", assigneeUserId: "user_456")
+        let data = try JSONEncoder().encode(args)
+        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["deliveryId"] as? String == "del_123")
+        #expect(json["assigneeUserId"] as? String == "user_456")
+    }
+
+    @Test
+    func deliveryDetailResponseDecodesEventsAndAdjustments() throws {
+        let payload: [String: Any] = [
+            "delivery": [
+                "_id": "del_1",
+                "saleId": "sale_1",
+                "orderNumber": "ORD-100",
+                "status": "ready_for_dispatch",
+                "addressLabel": "123 Main St",
+                "vendorFeeCents": 1500,
+                "customerFeeCents": 1500,
+                "createdAt": 1000.0,
+                "dispatchDueAt": 2000.0,
+            ],
+            "events": [
+                [
+                    "_id": "event_1",
+                    "deliveryId": "del_1",
+                    "actorUserId": "user_1",
+                    "type": "created",
+                    "metadata": "{}",
+                    "createdAt": 1000.0,
+                ],
+                [
+                    "_id": "event_2",
+                    "deliveryId": "del_1",
+                    "actorUserId": "user_1",
+                    "type": "status_changed",
+                    "fromStatus": "ready_for_dispatch",
+                    "toStatus": "uber_ordered",
+                    "metadata": "{\"waitMinutes\":15}",
+                    "createdAt": 1100.0,
+                ],
+            ],
+            "adjustments": [
+                [
+                    "_id": "adj_1",
+                    "deliveryId": "del_1",
+                    "saleId": "sale_1",
+                    "kind": "vendor_credit",
+                    "amountCents": 500,
+                    "reason": "Late courier refund",
+                    "createdBy": "user_1",
+                    "createdAt": 1200.0,
+                ],
+            ],
+        ]
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        let response = try JSONDecoder().decode(DRXDeliveryDetailResponse.self, from: data)
+        #expect(response.delivery.id == "del_1")
+        #expect(response.delivery.orderNumber == "ORD-100")
+        #expect(response.events.count == 2)
+        #expect(response.events[0].type == "created")
+        #expect(response.events[1].fromStatus == "ready_for_dispatch")
+        #expect(response.events[1].toStatus == "uber_ordered")
+        #expect(response.adjustments.count == 1)
+        #expect(response.adjustments[0].amountCents == 500)
+        #expect(response.adjustments[0].reason == "Late courier refund")
+    }
 }
+
