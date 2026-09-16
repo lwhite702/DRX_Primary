@@ -17,16 +17,22 @@
   },
   "appearance": {
     "default": "dark",
-    "strict": false
+    "strict": true
   },
   "fonts": {
-    "family": "Plus Jakarta Sans"
+    "heading": {
+      "family": "Plus Jakarta Sans",
+      "weight": 800
+    },
+    "body": {
+      "family": "Inter"
+    }
   },
   "icons": {
     "library": "lucide"
   },
   "styling": {
-    "eyebrows": "breadcrumbs",
+    "eyebrows": "section",
     "codeblocks": "system"
   },
   "favicon": "/images/favicon.png",
@@ -193,6 +199,9 @@
       "view",
       "download-pdf"
     ],
-    "display": "header"
+    "display": "toc"
+  },
+  "markdown": {
+    "schema": false
   }
 }
