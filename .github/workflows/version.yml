@@ -11,8 +11,13 @@ on:
   push:
     branches: [main, development, staging]
 
+concurrency:
+  group: version-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version-check:
+    timeout-minutes: 5
     name: Check Release Integrity
     runs-on: ubuntu-latest
 
@@ -30,7 +35,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.15.9
+          version: 10.17.1
 
       - name: Check release integrity
         id: version_check

@@ -1,50 +1,30 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const mocks = vi.hoisted(() => ({
-  findOwnedBusiness: vi.fn(),
-  findUserRole: vi.fn(),
-}));
-
-vi.mock("@/lib/adapters/auth/server", () => ({
-  auth: vi.fn(),
-  isAuthBypassEnabled: vi.fn(() => false),
-}));
-
-vi.mock("@/lib/db", () => ({
-  db: {
-    businessProfile: { findFirst: mocks.findOwnedBusiness },
-    userRole: { findFirst: mocks.findUserRole },
-  },
-}));
-
+import { beforeEach, expect, it, vi } from "vitest";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as onboarding from "../../convex/onboarding";
+import * as session from "../../convex/session";
+import * as generatedApi from "../../convex/_generated/api";
+const mocks = vi.hoisted(() => ({ token: vi.fn(), query: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Tenant guards must not import Prisma"); });
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; } }));
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
-
-describe("hasBusinessPermission", () => {
-  beforeEach(() => {
-    mocks.findOwnedBusiness.mockReset();
-    mocks.findUserRole.mockReset();
-  });
-
-  it("allows the business owner", async () => {
-    mocks.findOwnedBusiness.mockResolvedValue({ id: "business-1" });
-    await expect(
-      hasBusinessPermission("user-1", "business-1", "audit.view"),
-    ).resolves.toBe(true);
-  });
-
-  it("uses canonical role permissions when explicit permissions are empty", async () => {
-    mocks.findOwnedBusiness.mockResolvedValue(null);
-    mocks.findUserRole.mockResolvedValue({ role: "manager", permissions: {} });
-    await expect(
-      hasBusinessPermission("user-1", "business-1", "inventory.manage"),
-    ).resolves.toBe(true);
-  });
-
-  it("denies a cashier an inventory management mutation", async () => {
-    mocks.findOwnedBusiness.mockResolvedValue(null);
-    mocks.findUserRole.mockResolvedValue({ role: "cashier", permissions: {} });
-    await expect(
-      hasBusinessPermission("user-1", "business-1", "inventory.manage"),
-    ).resolves.toBe(false);
-  });
+const modules = { "_generated/api.js": async () => generatedApi, "onboarding.ts": async () => onboarding, "session.ts": async () => session };
+beforeEach(() => { vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.token.mockResolvedValue("synthetic-token"); });
+it.each([["OWNER", true], ["manager", true], ["cashier", false]] as const)("uses Convex authority for %s inventory access", async (role, allowed) => {
+  const t = convexTest(schema, modules);
+  const owner = t.withIdentity({ subject: "guard-owner", email: "owner@example.invalid" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { name: "Owner", businessName: "Synthetic guard", taxRateBps: 0 });
+  await t.run(async ctx => { const user = await ctx.db.query("users").first(); await ctx.db.patch(user!._id, { role }); });
+  mocks.query.mockImplementation((ref, args) => owner.query(ref, args));
+  expect(await hasBusinessPermission("guard-owner", businessId, "inventory.manage")).toBe(allowed);
+  expect(await hasBusinessPermission("different-actor", businessId, "inventory.manage")).toBe(false);
+  expect(await hasBusinessPermission("guard-owner", "foreign", "inventory.manage")).toBe(false);
+  expect(await hasBusinessPermission("guard-owner", businessId, "users.manage_all")).toBe(false);
+});
+it("denies access when authentication or permission service is unavailable", async () => {
+  mocks.token.mockRejectedValue(new Error("Private provider error"));
+  expect(await hasBusinessPermission("actor", "business", "audit.view")).toBe(false);
+  expect(mocks.query).not.toHaveBeenCalled();
 });

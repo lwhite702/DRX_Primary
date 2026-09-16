@@ -27,6 +27,7 @@ test.describe("AI Features E2E", () => {
       data: {
         business_id: "fake-id",
         inventory_id: "fake-id",
+        request_id: "synthetic-protection-check",
         product_name: "Test Product",
         sku: "TEST-SKU-123",
       },

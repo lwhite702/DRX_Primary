@@ -6,37 +6,37 @@ import * as Clerk from "@clerk/nextjs";
 
 const LazyClerkProvider = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.ClerkProvider),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazySignIn = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.SignIn),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazySignUp = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.SignUp),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazyWaitlist = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.Waitlist),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazyOrganizationSwitcher = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.OrganizationSwitcher),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazySignOutButton = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.SignOutButton),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LazyUserButton = dynamic(
   () => import("@clerk/nextjs").then((mod) => mod.UserButton),
-  { ssr: false }
+  { ssr: false },
 );
 import { createContext, useContext } from "react";
 
@@ -59,17 +59,24 @@ const unauthenticatedState = {
   user: null,
 };
 
-function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) {
+function BypassAuthCard({
+  mode,
+}: {
+  mode: "sign-in" | "sign-up" | "waitlist";
+}) {
   const title =
-    mode === "sign-up" ? "Auth Bypass Enabled (Sign Up Disabled)" :
-    mode === "waitlist" ? "Auth Bypass Enabled" :
-    "Auth Bypass Enabled (Sign In Disabled)";
+    mode === "sign-up"
+      ? "Auth Bypass Enabled (Sign Up Disabled)"
+      : mode === "waitlist"
+        ? "Auth Bypass Enabled"
+        : "Auth Bypass Enabled (Sign In Disabled)";
 
-	    return (
-	    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+  return (
+    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-amber-50/90">
-        Local testing bypass is enabled. Clerk auth UI is skipped so you can test app flows.
+        Local testing bypass is enabled. Clerk auth UI is skipped so you can
+        test app flows.
       </p>
       <div className="mt-4 flex gap-2">
         <a
@@ -82,15 +89,23 @@ function BypassAuthCard({ mode }: { mode: "sign-in" | "sign-up" | "waitlist" }) 
           href="/pos/sale"
           className="inline-flex items-center rounded-md border border-amber-200/40 px-3 py-2 text-xs font-bold text-amber-50"
         >
-          Open Quick Sale
+          Open New sale
         </a>
       </div>
     </div>
   );
 }
 
-export function ClerkProvider({ isBypassActive = false, bypassUserId, bypassOrgId, children, ...props }: any) {
-  const active = isBypassActive || (typeof window !== "undefined" && (window as any).__BYPASS_ACTIVE__);
+export function ClerkProvider({
+  isBypassActive = false,
+  bypassUserId,
+  bypassOrgId,
+  children,
+  ...props
+}: any) {
+  const active =
+    isBypassActive ||
+    (typeof window !== "undefined" && (window as any).__BYPASS_ACTIVE__);
 
   if (typeof window !== "undefined" && isBypassActive) {
     (window as any).__BYPASS_ACTIVE__ = true;
@@ -98,33 +113,54 @@ export function ClerkProvider({ isBypassActive = false, bypassUserId, bypassOrgI
     (window as any).__BYPASS_ORG_ID__ = bypassOrgId;
   }
 
-  const userId = bypassUserId || (typeof window !== "undefined" ? (window as any).__BYPASS_USER_ID__ : undefined);
-  const orgId = bypassOrgId || (typeof window !== "undefined" ? (window as any).__BYPASS_ORG_ID__ : undefined);
+  const userId =
+    bypassUserId ||
+    (typeof window !== "undefined"
+      ? (window as any).__BYPASS_USER_ID__
+      : undefined);
+  const orgId =
+    bypassOrgId ||
+    (typeof window !== "undefined"
+      ? (window as any).__BYPASS_ORG_ID__
+      : undefined);
 
   const shouldStub = active || shouldStubClerkGlobal;
 
   return (
-    <BypassContext.Provider value={{ isBypassActive: active, bypassUserId: userId, bypassOrgId: orgId }}>
-      {shouldStub ? <>{children}</> : <LazyClerkProvider {...props}>{children}</LazyClerkProvider>}
+    <BypassContext.Provider
+      value={{
+        isBypassActive: active,
+        bypassUserId: userId,
+        bypassOrgId: orgId,
+      }}
+    >
+      {shouldStub ? (
+        <>{children}</>
+      ) : (
+        <LazyClerkProvider {...props}>{children}</LazyClerkProvider>
+      )}
     </BypassContext.Provider>
   );
 }
 
 export function SignIn(props: any) {
   const isBypassActive = useIsBypassActive();
-  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="sign-in" />;
+  if (isBypassActive || shouldStubClerkGlobal)
+    return <BypassAuthCard mode="sign-in" />;
   return <LazySignIn {...props} />;
 }
 
 export function SignUp(props: any) {
   const isBypassActive = useIsBypassActive();
-  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="sign-up" />;
+  if (isBypassActive || shouldStubClerkGlobal)
+    return <BypassAuthCard mode="sign-up" />;
   return <LazySignUp {...props} />;
 }
 
 export function Waitlist(props: any) {
   const isBypassActive = useIsBypassActive();
-  if (isBypassActive || shouldStubClerkGlobal) return <BypassAuthCard mode="waitlist" />;
+  if (isBypassActive || shouldStubClerkGlobal)
+    return <BypassAuthCard mode="waitlist" />;
   return <LazyWaitlist {...props} />;
 }
 
@@ -150,7 +186,8 @@ export function useUser() {
 }
 
 export function useAuth() {
-  const { isBypassActive, bypassUserId, bypassOrgId } = useContext(BypassContext);
+  const { isBypassActive, bypassUserId, bypassOrgId } =
+    useContext(BypassContext);
   if (isBypassActive) {
     return {
       isLoaded: true,
@@ -272,7 +309,8 @@ function BypassSignOutButton({ children, redirectUrl, afterSignOutUrl }: any) {
 
 export const SignOutButton = ((props: any) => {
   const isBypassActive = useIsBypassActive();
-  if (isBypassActive || shouldStubClerkGlobal) return <BypassSignOutButton {...props} />;
+  if (isBypassActive || shouldStubClerkGlobal)
+    return <BypassSignOutButton {...props} />;
   return <LazySignOutButton {...props} />;
 }) as any;
 

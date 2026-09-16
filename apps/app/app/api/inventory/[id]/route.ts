@@ -1,122 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
-import { db } from "@/lib/db";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { errorResponse } from "@/lib/api/response";
-import { hasBusinessPermission } from "@/lib/auth/server-guards";
-
-const RouteParamsSchema = z.object({ id: z.string().min(1) });
-const InventoryUpdateSchema = z
-  .object({
-    product_name: z.string().min(1).optional(),
-    sku: z.string().min(1).optional(),
-    description: z.string().optional(),
-    category: z.string().optional(),
-    unit_of_measure: z.enum(["g", "oz", "lb", "L", "ml"]).optional(),
-    quantity_on_hand: z.number().int().nonnegative().optional(),
-    reorder_level: z.number().int().nonnegative().optional(),
-    unit_cost: z.number().nonnegative().optional(),
-    selling_price: z.number().nonnegative().optional(),
-    supplier_id: z.string().uuid().optional(),
-    business_id: z.string().uuid().optional(),
-    id: z.string().uuid().optional(),
-  })
-  .strict();
-
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { intakeClient, intakeFailure, IntakeRequestError, moneyCents } from "@/lib/inventory/convex-intake";
+import { catalogResponse } from "@/lib/inventory/catalog-response";
+const updateSchema = z.object({
+  product_name: z.string().min(1).optional(), sku: z.string().min(1).optional(), description: z.string().optional(),
+  category: z.string().optional(), unit_of_measure: z.string().min(1).max(40).optional(),
+  location: z.string().optional(), is_taxable: z.boolean().optional(),
+  quantity_on_hand: z.number().finite().nonnegative().optional(), reorder_level: z.number().finite().nonnegative().optional(),
+  unit_cost: z.number().nonnegative().optional(), selling_price: z.number().nonnegative().optional(),
+  business_id: z.string().optional(), id: z.string().optional(),
+}).strict();
 type RouteContext = { params: Promise<{ id: string }> | { id: string } };
-
-async function resolveInventory(
-  request: NextRequest,
-  context: RouteContext,
-  permission: "catalog.view" | "inventory.manage",
-) {
-  const rawParams = await Promise.resolve(context.params);
-  const parsedParams = RouteParamsSchema.safeParse(rawParams);
-  if (!parsedParams.success) return { error: "invalid" as const };
-
-  const { userId, businessId } = await resolveAuthContext(request);
-  if (!userId || !businessId) return { error: "unauthorized" as const };
-  if (!(await hasBusinessPermission(userId, businessId, permission))) {
-    return { error: "forbidden" as const };
-  }
-
-  const item = await db.inventory.findFirst({
-    where: { id: parsedParams.data.id, businessId },
-  });
-  if (!item) return { error: "missing" as const };
-  return { item, userId, businessId };
-}
-
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const resolved = await resolveInventory(request, context, "catalog.view");
-    if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
-    if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
-    if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
-    return NextResponse.json({ data: resolved.item });
-  } catch (error) {
-    console.error("Inventory item lookup error", error);
-    return errorResponse("INTERNAL_ERROR", "Internal Server Error", 500);
-  }
+    const { client, businessId } = await intakeClient(request);
+    const { id } = await context.params;
+    const product = await client.query(api.products.getCatalogProduct, { businessId, productId: id as Id<"products"> });
+    return NextResponse.json({ data: catalogResponse(product) }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return intakeFailure(error); }
 }
-
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const resolved = await resolveInventory(request, context, "inventory.manage");
-    if (resolved.error === "invalid") return errorResponse("VALIDATION_ERROR", "Invalid inventory id", 400);
-    if (resolved.error === "unauthorized") return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    if (resolved.error === "forbidden") return errorResponse("FORBIDDEN", "Forbidden", 403);
-    if (resolved.error === "missing") return errorResponse("NOT_FOUND", "Item not found", 404);
-
-    const payload = InventoryUpdateSchema.safeParse(await request.json());
-    if (!payload.success) {
-      return errorResponse("VALIDATION_ERROR", "Invalid inventory update payload", 400, payload.error.flatten());
-    }
-
-    const input = payload.data;
-    const quantityChanged =
-      input.quantity_on_hand !== undefined &&
-      input.quantity_on_hand !== resolved.item.quantityOnHand;
-
-    const updatedItem = await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      const updated = await tx.inventory.update({
-        where: { id: resolved.item.id },
-        data: {
-          ...(input.product_name !== undefined ? { productName: input.product_name } : {}),
-          ...(input.sku !== undefined ? { sku: input.sku } : {}),
-          ...(input.description !== undefined ? { description: input.description } : {}),
-          ...(input.category !== undefined ? { category: input.category } : {}),
-          ...(input.unit_of_measure !== undefined ? { baseUnit: input.unit_of_measure } : {}),
-          ...(input.quantity_on_hand !== undefined ? { quantityOnHand: input.quantity_on_hand } : {}),
-          ...(input.reorder_level !== undefined ? { reorderLevel: input.reorder_level } : {}),
-          ...(input.unit_cost !== undefined ? { unitCost: input.unit_cost } : {}),
-          ...(input.selling_price !== undefined ? { sellingPrice: input.selling_price } : {}),
-          ...(input.supplier_id !== undefined ? { supplierId: input.supplier_id } : {}),
-        },
-      });
-
-      if (quantityChanged) {
-        await tx.inventoryLog.create({
-          data: {
-            inventoryId: resolved.item.id,
-            transactionType: "adjustment",
-            quantityChange: input.quantity_on_hand! - resolved.item.quantityOnHand,
-            reason: "Inventory update via /api/inventory/[id]",
-            createdBy: resolved.userId,
-          },
-        });
-      }
-      return updated;
+    const { client, businessId } = await intakeClient(request);
+    const { id } = await context.params;
+    const input = updateSchema.safeParse(await request.json());
+    if (!input.success) throw new IntakeRequestError("Check the product details");
+    const body = input.data;
+    if ((body.id && body.id !== id) || (body.business_id && body.business_id !== businessId)) throw new IntakeRequestError("Product or business changed; refresh before saving", 409);
+    await client.mutation(api.inventory.updateProduct, { businessId, productId: id as Id<"products">,
+      productName: body.product_name, sku: body.sku, description: body.description, category: body.category,
+      sellingUnit: body.unit_of_measure, location: body.location, isTaxable: body.is_taxable,
+      quantity: body.quantity_on_hand, reorderLevel: body.reorder_level,
+      unitCostCents: body.unit_cost === undefined ? undefined : moneyCents(body.unit_cost, "unit cost", true),
+      sellingPriceCents: body.selling_price === undefined ? undefined : moneyCents(body.selling_price, "selling price", true),
     });
-
-    return NextResponse.json({ data: updatedItem });
-  } catch (error: unknown) {
-    console.error("Inventory item update error", error);
-    if (typeof error === "object" && error && "code" in error && error.code === "P2002") {
-      return errorResponse("BAD_REQUEST", "SKU already exists for this business", 409);
-    }
-    return errorResponse("INTERNAL_ERROR", "Failed to update item", 500);
-  }
+    const product = await client.query(api.products.getCatalogProduct, { businessId, productId: id as Id<"products"> });
+    return NextResponse.json({ data: catalogResponse(product) });
+  } catch (error) { return intakeFailure(error); }
 }

@@ -55,8 +55,8 @@ This changelog tracks updates to DRX store documentation and guides.
 
 - Rewrote documentation to match live app screens and navigation items.
 - Documented alias-first customer profiles and privacy controls.
-- Added dedicated Quick Sale runbook for fast counter lanes.
-- Updated terminology to match Operations Insights and store settings.
+- Added dedicated New sale runbook for fast counter lanes.
+- Updated terminology to match Trends and store settings.
 - Added shift opening/closing checklists and troubleshooting steps for store teams.
 
 ## [Product Version 0.4.12] - 2026-02-13
@@ -82,5 +82,5 @@ This changelog tracks updates to DRX store documentation and guides.
 ### Summary
 
 - Established initial customer-facing documentation structure with operator runbooks.
-- Documented core checkout, inventory receiving, customer profiles, and store credit tracking.
+- Documented core checkout, stock receiving, customer profiles, and balance due tracking.
 - Added store safety, privacy, and legal disclaimer pages.

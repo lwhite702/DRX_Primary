@@ -151,15 +151,14 @@ describe("quick POS quote route", () => {
     expect(payload).toMatchObject({
       success: true,
       quote: {
-        loyaltyDiscountAmount: 4,
-        taxAmount: 2.97,
-        total: 38.97,
+        loyaltyDiscountAmount: 1,
+        taxAmount: 0.9,
+        total: 9.9,
       },
     });
-    expect(mocks.getAuthoritativeQuote).toHaveBeenCalledWith(
+    expect(mocks.quoteCanonicalCommerce).toHaveBeenCalledWith(
       expect.objectContaining({
         businessId: "11111111-1111-4111-8111-111111111111",
-        mode: "quick",
         customerId: "44444444-4444-4444-8444-444444444444",
         items: [
           expect.objectContaining({

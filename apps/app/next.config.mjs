@@ -7,12 +7,39 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: false,
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [{
+      urlPattern: ({ url }) => /^\/(control|admin)(\/|$)/.test(url.pathname) || url.pathname.startsWith("/api/admin/"),
+      handler: "NetworkOnly",
+    }],
+  },
 });
+
+const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+const hasBypassConfigured =
+  process.env.DANGEROUS_BYPASS_AUTH_FOR_TESTING_ONLY === "true" ||
+  process.env.BYPASS_AUTH_FOR_TESTING === "true" ||
+  process.env.NEXT_PUBLIC_BYPASS_AUTH_FOR_TESTING === "true";
+
+if (isProd && hasBypassConfigured) {
+  throw new Error(
+    "FATAL CONFIG ERROR: Auth bypass flags (DANGEROUS_BYPASS_AUTH_FOR_TESTING_ONLY or BYPASS_AUTH_FOR_TESTING) must never be enabled in production."
+  );
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [{ source: "/control/:path*", headers: [
+      { key: "Cache-Control", value: "private, no-store" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Referrer-Policy", value: "no-referrer" },
+    ] }];
+  },
   output: "standalone",
   transpilePackages: [
+    "@deelrx/content",
     "@wrelik/auth",
     "@wrelik/db",
     "@wrelik/storage",

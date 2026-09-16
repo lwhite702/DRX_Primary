@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,13 @@ import {
 import { AIIntelligenceDashboard } from "@/components/ai/ai-intelligence-dashboard";
 import { PricingRecommendationCard } from "@/components/ai/pricing-recommendation-card";
 import { InventoryForecastCard } from "@/components/ai/inventory-forecast-card";
+import { useAuth } from "@/lib/adapters/auth/ui";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
 import { RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import type { AIPricingRecommendation, InventoryForecast } from "@/lib/validations/schemas";
+import type { PricingRecommendation } from "@/lib/utils/pricing-recommendation";
+import type { InventoryForecastResult } from "@/lib/utils/inventory-forecast";
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
 import {
@@ -30,8 +32,12 @@ import {
 } from "@/lib/ai/intelligence-normalizers";
 
 interface AIRecommendations {
-  pricing: AIPricingRecommendation | null;
-  forecast: InventoryForecast | null;
+  pricing: PricingRecommendation | null;
+  pricingRecommendationId?: string;
+  forecast: InventoryForecastResult | null;
+  forecastId?: string;
+  alerts?: Array<{ id: string }>;
+  scope?: string;
 }
 
 type AIInventoryItem = Record<string, unknown> & {
@@ -43,6 +49,10 @@ type AIInventoryItem = Record<string, unknown> & {
 
 export default function AIIntelligencePage() {
   const { business, loading: businessLoading } = useBusiness();
+  const { userId } = useAuth();
+  const scope = `${userId ?? ""}:${business?.id ?? ""}`;
+  const currentScope = useRef(scope); currentScope.current = scope;
+  const attempts = useRef(new Map<string, string>());
   const {
     inventory,
     loading: inventoryLoading,
@@ -53,6 +63,7 @@ export default function AIIntelligencePage() {
     new Map()
   );
   const [loading, setLoading] = useState(false);
+  useEffect(() => { setRecommendations(new Map()); setLoading(false); }, [scope]);
   const [searchTerm, setSearchTerm] = useState("");
   const normalizedSearch = searchTerm.toLowerCase();
   const safeInventory = Array.isArray(inventory) ? inventory : [];
@@ -70,6 +81,9 @@ export default function AIIntelligencePage() {
       return;
     }
 
+    const attemptKey = `${scope}:${inventoryItem.id}`;
+    const requestId = attempts.current.get(attemptKey) ?? crypto.randomUUID();
+    attempts.current.set(attemptKey, requestId);
     setLoading(true);
     try {
       const response = await fetch("/api/ai/product-intelligence", {
@@ -78,6 +92,7 @@ export default function AIIntelligencePage() {
         body: JSON.stringify({
           business_id: business.id,
           inventory_id: inventoryItem.id,
+          request_id: requestId,
           product_name: inventoryText(inventoryItem.product_name ?? inventoryItem.productName),
           sku: inventoryText(inventoryItem.sku),
           cost: inventoryNumber(inventoryItem, "unit_cost", "unitCost"),
@@ -95,21 +110,28 @@ export default function AIIntelligencePage() {
 
       const result = await response.json();
       const data = unwrapApiData<AIRecommendations>(result);
-      if (!data) throw new Error("Analysis returned an invalid response");
+      if (!data || !data.pricing || !data.forecast) throw new Error("Analysis returned an invalid response");
+      if (currentScope.current !== scope) return;
+      attempts.current.delete(attemptKey);
       const productName = inventoryText(inventoryItem.product_name ?? inventoryItem.productName);
       toast.success(`Analysis complete for ${productName || "product"}`);
 
       // Store recommendations
       const newRecs = new Map(recommendations);
       newRecs.set(inventoryItem.id, {
+        pricingRecommendationId: data.pricingRecommendationId,
         pricing: data.pricing ?? null,
         forecast: data.forecast ?? null,
+        forecastId: data.forecastId,
+        alerts: Array.isArray(data.alerts) ? data.alerts.filter(alert => typeof alert?.id === "string" && alert.id.trim()) : [],
+        scope,
       });
       setRecommendations(newRecs);
     } catch (error) {
+      if (currentScope.current !== scope) return;
       toast.error(error instanceof Error ? error.message : "Analysis failed");
     } finally {
-      setLoading(false);
+      if (currentScope.current === scope) setLoading(false);
     }
   };
 
@@ -119,6 +141,9 @@ export default function AIIntelligencePage() {
       return;
     }
 
+    const attemptKey = `${scope}:batch`;
+    const requestId = attempts.current.get(attemptKey) ?? crypto.randomUUID();
+    attempts.current.set(attemptKey, requestId);
     setLoading(true);
     try {
       const response = await fetch("/api/ai/analyze", {
@@ -127,6 +152,7 @@ export default function AIIntelligencePage() {
         body: JSON.stringify({
           business_id: business.id,
           analysis_type: "all",
+          request_id: requestId,
         }),
       });
 
@@ -135,13 +161,17 @@ export default function AIIntelligencePage() {
       }
 
       const result = await response.json();
+      if (currentScope.current !== scope) return;
+      if (!Number.isSafeInteger(result?.summary?.processed_count)) throw new Error("Invalid analysis receipt");
+      attempts.current.delete(attemptKey);
       toast.success(
         `Batch analysis complete: ${processedCount(result)} items processed`
       );
     } catch (error) {
+      if (currentScope.current !== scope) return;
       toast.error(error instanceof Error ? error.message : "Batch analysis failed");
     } finally {
-      setLoading(false);
+      if (currentScope.current === scope) setLoading(false);
     }
   };
 
@@ -332,20 +362,15 @@ export default function AIIntelligencePage() {
           <h2 className="text-xl font-bold">AI Recommendations</h2>
           {Array.from(recommendations.entries()).map(([inventoryId, recs]) => {
             const item = safeInventory.find((i) => i.id === inventoryId);
-            if (!item) return null;
+            if (!item || recs.scope !== scope) return null;
 
             return (
               <div key={inventoryId} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {recs.pricing && (
                   <PricingRecommendationCard
-                    recommendation={{
-                      recommendedPrice: recs.pricing.recommended_price,
-                      recommendedRangeMin: recs.pricing.recommended_range_min,
-                      recommendedRangeMax: recs.pricing.recommended_range_max,
-                      confidenceScore: recs.pricing.confidence_score ?? 0,
-                      reasoning: recs.pricing.reasoning,
-                      factors: recs.pricing.factors || {},
-                    }}
+                    recommendation={recs.pricing}
+                    recommendationId={recs.pricingRecommendationId}
+                    onApplied={() => { void refreshInventory(); }}
                     currentPrice={inventoryNumber(item, "selling_price", "sellingPrice")}
                     productName={item.product_name}
                     sku={item.sku}
@@ -355,22 +380,10 @@ export default function AIIntelligencePage() {
                 )}
                 {recs.forecast && (
                   <InventoryForecastCard
-                    forecast={{
-                      projectedStockoutDate:
-                        recs.forecast.projected_stockout_date || null,
-                      daysUntilStockout:
-                        recs.forecast.days_until_stockout ?? null,
-                      recommendedRestockQuantity:
-                        recs.forecast.recommended_restock_quantity ?? 0,
-                      restockUrgency: recs.forecast.restock_urgency || "low",
-                      inventoryRiskLevel:
-                        recs.forecast.inventory_risk_level || "low",
-                      reasoning:
-                        recs.forecast.reasoning || "No forecast reasoning provided.",
-                      confidenceScore: recs.forecast.confidence_score ?? 0,
-                      factors: recs.forecast.forecast_factors || {},
-                      velocityTrend: recs.forecast.velocity_trend || "stable",
-                    }}
+                    forecast={recs.forecast}
+                    forecastId={recs.forecastId}
+                    alertIds={recs.alerts?.map(alert => alert.id)}
+                    contextKey={scope}
                     currentStock={item.quantity_on_hand}
                     reorderLevel={item.reorder_level}
                     productName={item.product_name}

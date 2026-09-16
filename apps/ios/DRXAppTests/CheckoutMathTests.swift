@@ -3,6 +3,33 @@ import Testing
 @testable import DRXApp
 
 struct CheckoutMathTests {
+    @Test
+    func newProductRulesPreserveFractionalMinimumAndIncrement() throws {
+        let config = try #require(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10, 20", quantities: "0.1, 0.35, 0.6"))
+        #expect(config.minimumSaleQuantity == 0.1)
+        #expect(config.quantityIncrement == 0.25)
+        #expect(config.suggestedDollarAmounts == [10, 20])
+        let payload = try JSONSerialization.jsonObject(with: JSONEncoder().encode(config)) as? [String: Any]
+        #expect(payload?["decimalPrecision"] as? Int == 2)
+        #expect(payload?["suggestedQuantities"] as? [Double] == [0.1, 0.35, 0.6])
+    }
+
+    @Test
+    func newProductRulesRejectMalformedOrMisalignedPresets() {
+        for quantities in ["0.25", "0.1, bad", "0.1,", "0.1, 0.1001"] {
+            #expect(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10", quantities: quantities) == nil)
+        }
+        #expect(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10.001", quantities: "") == nil)
+    }
+
+    @Test
+    func wholeProductRulesDoNotEnableFractionalSelling() throws {
+        let config = try #require(NewProductCommerceConfig.make(fractional: false, unit: "unit", precision: 2, minimum: "0.01", increment: "0.01", dollars: "", quantities: "1, 2"))
+        #expect(config.decimalPrecision == 0)
+        #expect(config.minimumSaleQuantity == 1)
+        #expect(config.quantityIncrement == 1)
+    }
+
     private func product(
         price: Int = 1_000,
         precision: Int = 2,
@@ -63,6 +90,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: nil,
             totalCreditUsedCents: Int.max,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,
@@ -73,6 +101,15 @@ struct CheckoutMathTests {
 
         #expect(customer.hasUnlimitedStoreAccount)
         #expect(customer.canChargeStoreAccount(CurrencyInput.maximumTransactionCents))
+    }
+
+    @Test
+    func disabledCreditNeverBecomesUnlimitedAtZeroLimit() {
+        let customer = DRXCustomer(id: "disabled", firstName: nil, lastName: nil, phoneNumber: nil, email: nil, totalPurchasesCents: 0, loyaltyEligibleSpendCents: nil, totalCreditUsedCents: 100, creditLimitCents: 0, creditEnabled: false, purchaseCount: 0, loyaltyTier: "standard", discountRateBps: 0, isActive: true, createdAt: 0, updatedAt: 0)
+        #expect(!customer.hasUnlimitedStoreAccount)
+        #expect(customer.creditAvailableCents == 0)
+        #expect(!customer.canChargeStoreAccount(1))
+        #expect(customer.totalCreditUsedCents == 100)
     }
 
     @Test
@@ -87,6 +124,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: nil,
             totalCreditUsedCents: 0,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,
@@ -104,6 +142,7 @@ struct CheckoutMathTests {
             loyaltyEligibleSpendCents: 10_000,
             totalCreditUsedCents: 0,
             creditLimitCents: 0,
+            creditEnabled: nil,
             purchaseCount: 0,
             loyaltyTier: "standard",
             discountRateBps: 0,
@@ -291,4 +330,74 @@ struct CheckoutMathTests {
         // next unread query, so refresh/restart advances without memory state.
         #expect(DeliveryNotificationQueue.next(notifications: [second])?.id == second.id)
     }
+
+    @Test
+    func assignDeliveryArgsEncodesAssigneeUserId() throws {
+        let args = AssignDeliveryArgs(deliveryId: "del_123", assigneeUserId: "user_456")
+        let data = try JSONEncoder().encode(args)
+        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["deliveryId"] as? String == "del_123")
+        #expect(json["assigneeUserId"] as? String == "user_456")
+    }
+
+    @Test
+    func deliveryDetailResponseDecodesEventsAndAdjustments() throws {
+        let payload: [String: Any] = [
+            "delivery": [
+                "_id": "del_1",
+                "saleId": "sale_1",
+                "orderNumber": "ORD-100",
+                "status": "ready_for_dispatch",
+                "addressLabel": "123 Main St",
+                "vendorFeeCents": 1500,
+                "customerFeeCents": 1500,
+                "createdAt": 1000.0,
+                "dispatchDueAt": 2000.0,
+            ],
+            "events": [
+                [
+                    "_id": "event_1",
+                    "deliveryId": "del_1",
+                    "actorUserId": "user_1",
+                    "type": "created",
+                    "metadata": "{}",
+                    "createdAt": 1000.0,
+                ],
+                [
+                    "_id": "event_2",
+                    "deliveryId": "del_1",
+                    "actorUserId": "user_1",
+                    "type": "status_changed",
+                    "fromStatus": "ready_for_dispatch",
+                    "toStatus": "uber_ordered",
+                    "metadata": "{\"waitMinutes\":15}",
+                    "createdAt": 1100.0,
+                ],
+            ],
+            "adjustments": [
+                [
+                    "_id": "adj_1",
+                    "deliveryId": "del_1",
+                    "saleId": "sale_1",
+                    "kind": "vendor_credit",
+                    "amountCents": 500,
+                    "reason": "Late courier refund",
+                    "createdBy": "user_1",
+                    "createdAt": 1200.0,
+                ],
+            ],
+        ]
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        let response = try JSONDecoder().decode(DRXDeliveryDetailResponse.self, from: data)
+        #expect(response.delivery.id == "del_1")
+        #expect(response.delivery.orderNumber == "ORD-100")
+        #expect(response.events.count == 2)
+        #expect(response.events[0].type == "created")
+        #expect(response.events[1].fromStatus == "ready_for_dispatch")
+        #expect(response.events[1].toStatus == "uber_ordered")
+        #expect(response.adjustments.count == 1)
+        #expect(response.adjustments[0].amountCents == 500)
+        #expect(response.adjustments[0].reason == "Late courier refund")
+    }
 }
+

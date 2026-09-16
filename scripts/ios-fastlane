@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+brew_prefix="${HOMEBREW_PREFIX:-$(dirname "$(dirname "$(command -v brew)")")}"
+ruby_prefix="$brew_prefix/opt/ruby"
+fastlane_prefix="$brew_prefix/opt/fastlane"
+export PATH="$ruby_prefix/bin:$PATH"
+ruby_api="$(ruby -rrbconfig -e 'print RbConfig::CONFIG.fetch("ruby_version")')"
+export GEM_HOME="${FASTLANE_GEM_HOME:-$HOME/.local/share/fastlane/$ruby_api}"
+export GEM_PATH="$GEM_HOME:$fastlane_prefix/libexec"
+export BUNDLE_GEMFILE="$repo_root/Gemfile"
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export FASTLANE_SKIP_UPDATE_CHECK=1
+export FASTLANE_SKIP_DOCS=1
+export FASTLANE_HIDE_GITHUB_ISSUES=1
+export FASTLANE_OPT_OUT_USAGE=1
+export FASTLANE_PROJECT_ROOT="$repo_root"
+export SENTRY_DISABLE_AUTO_UPLOAD=true
+export GYM_BUILDLOG_PATH="$repo_root/build/fastlane/runner-logs"
+export GYM_XCODEBUILD_FORMATTER=""
+export GYM_DERIVED_DATA_PATH="$repo_root/build/fastlane/RunnerDerivedData"
+export CLANG_MODULE_CACHE_PATH="$repo_root/build/fastlane/ModuleCache"
+export SWIFT_MODULE_CACHE_PATH="$repo_root/build/fastlane/ModuleCache"
+mkdir -p "$repo_root/build/fastlane/tmp"
+export TMPDIR="$repo_root/build/fastlane/tmp/"
+cd "$repo_root"
+if [[ "${1:-}" == "install" ]]; then
+  bundle install
+  exec bundle exec ruby scripts/fastlane-bootstrap.rb
+fi
+export BUNDLE_FROZEN=true
+bundle check >/dev/null || { echo "Run ./scripts/ios-fastlane install first." >&2; exit 1; }
+if [[ ! -d fastlane/swift ]]; then
+  bundle exec ruby scripts/fastlane-bootstrap.rb
+fi
+# The Swift bridge shells its lane arguments; escape values once for that boundary.
+if [[ "${1:-}" != "action" && "${1:-}" != "run" && "${1:-}" != "init" && "${1:-}" != "lanes" ]]; then
+  forwarded=()
+  for argument in "$@"; do
+    if [[ "$argument" == *:* ]]; then
+      key="${argument%%:*}"
+      value="${argument#*:}"
+      escaped="$(ruby -rshellwords -e 'print Shellwords.escape(ARGV.fetch(0))' "$value")"
+      forwarded+=("$key:$escaped")
+    else
+      forwarded+=("$argument")
+    fi
+  done
+  exec bundle exec ruby "$repo_root/scripts/fastlane-cli.rb" "${forwarded[@]}" --swift_server_port "${FASTLANE_SWIFT_PORT:-2116}"
+fi
+exec bundle exec ruby "$repo_root/scripts/fastlane-cli.rb" "$@"

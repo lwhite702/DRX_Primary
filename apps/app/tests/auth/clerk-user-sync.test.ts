@@ -1,207 +1,87 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const mocks = vi.hoisted(() => ({
-  db: {
-    $transaction: vi.fn(),
-    businessProfile: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-    },
-    invite: {
-      findFirst: vi.fn(),
-      updateMany: vi.fn(),
-    },
-    systemAuditLog: {
-      create: vi.fn(),
-    },
-    user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-      create: vi.fn(),
-    },
-    userRole: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-    },
-  },
-}));
-
-vi.mock("@/lib/db", () => ({ db: mocks.db }));
-
-import { syncCreatedClerkUser } from "@/lib/auth/clerk-user-sync";
-
-function createdUser(
-  metadata: Record<string, unknown> | null = {
-    drxBusinessId: "business-1",
-    drxInviteToken: "token-1",
-  },
-) {
-  return {
-    id: "clerk-user-1",
-    email_addresses: [{ email_address: " Staff@Example.com " }],
-    first_name: "Store",
-    last_name: "Operator",
-    public_metadata: metadata,
-  };
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { Webhook } from "svix";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as webhooks from "../../convex/clerkWebhooks";
+import * as identityEvents from "../../convex/clerkIdentityEvents";
+import * as events from "../../convex/clerkMembershipEvents";
+import * as members from "../../convex/members";
+import * as onboarding from "../../convex/onboarding";
+import * as generatedApi from "../../convex/_generated/api";
+const modules = { "clerkIdentityEvents.ts": async () => identityEvents, "clerkWebhooks.ts": async () => webhooks, "clerkMembershipEvents.ts": async () => events, "members.ts": async () => members, "onboarding.ts": async () => onboarding, "_generated/api.js": async () => generatedApi };
+const secret = "whsec_" + Buffer.from("synthetic-test-signing-key-only").toString("base64");
+beforeEach(() => { vi.stubEnv("CLERK_WEBHOOK_SECRET", secret); });
+afterEach(() => { vi.unstubAllEnvs(); });
+function envelope(data: Record<string, unknown>) {
+  const body = JSON.stringify({ type: "user.created", data }), now = new Date();
+  return { body, svixId: "synthetic-event", svixTimestamp: Math.floor(now.getTime() / 1000).toString(), svixSignature: new Webhook(secret).sign("synthetic-event", now, body) };
 }
+async function fixture() {
+  const t = convexTest(schema, modules), owner = t.withIdentity({ subject: "owner" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic webhook tenant" });
+  const invite = await owner.mutation(api.members.inviteMember, { email: "staff@example.invalid", role: "cashier" });
+  const data = { id: "recipient", primary_email_address_id: "email-1", email_addresses: [{ id: "email-1", email_address: "staff@example.invalid", verification: { status: "verified" } }], public_metadata: { drxBusinessId: businessId, drxInviteToken: invite.token, drxRole: "OWNER" } };
+  return { t, businessId, invite, data };
+}
+it("accepts a verified signed invitation using its stored role and ignores replay", async () => {
+  const { t, data, businessId } = await fixture(); const signed = envelope(data);
+  expect(await t.action(api.clerkWebhooks.userCreated, signed)).toBe("accepted");
+  expect(await t.action(api.clerkWebhooks.userCreated, signed)).toBe("already_accepted");
+  const rows = await t.run(ctx => ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", "recipient")).collect());
+  expect(rows).toHaveLength(1); expect(rows[0]).toMatchObject({ businessId, role: "cashier", status: "ACTIVE" });
+  expect(await t.run(ctx => ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "accept_team_invitation")).collect())).toHaveLength(1);
+});
+it("does not grant access for tampered signatures, unverified email, or a different recipient", async () => {
+  const { t, data } = await fixture();
+  await expect(t.action(api.clerkWebhooks.userCreated, { ...envelope(data), body: JSON.stringify({ type: "user.created", data: { ...data, id: "attacker" } }) })).rejects.toThrow(/UNAUTHORIZED/);
+  await expect(t.action(api.clerkWebhooks.userCreated, envelope({ ...data, email_addresses: [{ ...data.email_addresses[0], verification: { status: "unverified" } }] }))).rejects.toThrow(/FORBIDDEN/);
+  await expect(t.action(api.clerkWebhooks.userCreated, envelope({ ...data, email_addresses: [{ ...data.email_addresses[0], email_address: "other@example.invalid" }] }))).rejects.toThrow(/NOT_FOUND/);
+  expect(await t.run(ctx => ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", "recipient")).first())).toBeNull();
+});
+it("expires stale invitations without provisioning a member", async () => {
+  const { t, data, invite } = await fixture();
+  await t.run(ctx => ctx.db.patch(invite.inviteId, { expiresAt: 0 }));
+  expect(await t.action(api.clerkWebhooks.userCreated, envelope(data))).toBe("expired");
+  expect(await t.run(ctx => ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", "recipient")).first())).toBeNull();
+});
+it("leaves ordinary signup to canonical onboarding and refuses partial invitation metadata", async () => {
+  const { t, data } = await fixture();
+  expect(await t.action(api.clerkWebhooks.userCreated, envelope({ ...data, public_metadata: {} }))).toBe("awaiting_onboarding");
+  await expect(t.action(api.clerkWebhooks.userCreated, envelope({ ...data, public_metadata: { drxBusinessId: data.public_metadata.drxBusinessId } }))).rejects.toThrow(/INVALID_ARGUMENT/);
+  expect(await t.run(ctx => ctx.db.query("businesses").collect())).toHaveLength(1);
+});
+it("allows webhook replay after authenticated acceptance without duplicating membership", async () => {
+  const { t, data, invite, businessId } = await fixture();
+  await t.withIdentity({ subject: "recipient", email: "staff@example.invalid", emailVerified: true }).mutation(api.members.acceptInvitation, { token: invite.token, businessId });
+  expect(await t.action(api.clerkWebhooks.userCreated, envelope(data))).toBe("already_accepted");
+});
 
-describe("Clerk user synchronization", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.db.$transaction.mockImplementation(async (callback) =>
-      callback(mocks.db),
-    );
-    mocks.db.invite.findFirst.mockResolvedValue({
-      id: "invite-1",
-      status: "PENDING",
-      role: "cashier",
-      expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-      invitedBy: "owner-1",
-    });
-    mocks.db.invite.updateMany.mockResolvedValue({ count: 1 });
-    mocks.db.businessProfile.findUnique.mockResolvedValue({
-      id: "business-1",
-      isActive: true,
-    });
-    mocks.db.user.findUnique.mockResolvedValue(null);
-    mocks.db.user.create.mockResolvedValue({ id: "user-row-1" });
-    mocks.db.user.update.mockResolvedValue({});
-    mocks.db.userRole.findFirst.mockResolvedValue(null);
-    mocks.db.userRole.create.mockResolvedValue({ id: "membership-1" });
-    mocks.db.systemAuditLog.create.mockResolvedValue({ id: "audit-1" });
-  });
+it("converges overlapping webhook deliveries on one membership and acceptance audit", async () => {
+  const { t, data } = await fixture(); const signed = envelope(data);
+  const results = await Promise.all([t.action(api.clerkWebhooks.userCreated, signed), t.action(api.clerkWebhooks.userCreated, signed)]);
+  expect(results.sort()).toEqual(["accepted", "already_accepted"]);
+  expect(await t.run(ctx => ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "accept_team_invitation")).collect())).toHaveLength(1);
+});
 
-  it("claims a pending invitation and attaches the new identity to that business", async () => {
-    const result = await syncCreatedClerkUser(createdUser());
 
-    expect(result).toBe("invitation_accepted");
-    expect(mocks.db.invite.findFirst).toHaveBeenCalledWith({
-      where: {
-        token: "token-1",
-        tenantId: "business-1",
-        email: "staff@example.com",
-      },
-      select: expect.any(Object),
-    });
-    expect(mocks.db.invite.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "invite-1",
-        status: "PENDING",
-        expiresAt: { gt: expect.any(Date) },
-      },
-      data: { status: "ACCEPTED" },
-    });
-    expect(mocks.db.user.create).toHaveBeenCalledWith({
-      data: {
-        clerkUserId: "clerk-user-1",
-        email: "staff@example.com",
-        name: "Store Operator",
-        role: "CASHIER",
-        status: "ACTIVE",
-        tenantId: "business-1",
-      },
-    });
-    expect(mocks.db.userRole.create).toHaveBeenCalledWith({
-      data: {
-        businessId: "business-1",
-        userId: "clerk-user-1",
-        role: "cashier",
-        permissions: {},
-      },
-    });
-    expect(mocks.db.systemAuditLog.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        action: "accept_team_invitation",
-        businessId: "business-1",
-        entityId: "clerk-user-1",
-        userId: "clerk-user-1",
-        newValues: {
-          role: "cashier",
-          invitedBy: "owner-1",
-        },
-      }),
-    });
-    expect(mocks.db.businessProfile.create).not.toHaveBeenCalled();
-  });
-
-  it("does not duplicate membership when the invitation was already accepted", async () => {
-    mocks.db.invite.findFirst.mockResolvedValue({
-      id: "invite-1",
-      status: "ACCEPTED",
-      role: "cashier",
-      expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-      invitedBy: "owner-1",
-    });
-
-    const result = await syncCreatedClerkUser(createdUser());
-
-    expect(result).toBe("invitation_already_processed");
-    expect(mocks.db.$transaction).not.toHaveBeenCalled();
-    expect(mocks.db.userRole.create).not.toHaveBeenCalled();
-  });
-
-  it("treats a lost concurrent invitation claim as already processed", async () => {
-    mocks.db.invite.updateMany.mockResolvedValue({ count: 0 });
-
-    const result = await syncCreatedClerkUser(createdUser());
-
-    expect(result).toBe("invitation_already_processed");
-    expect(mocks.db.user.create).not.toHaveBeenCalled();
-    expect(mocks.db.userRole.create).not.toHaveBeenCalled();
-  });
-
-  it("expires a stale invitation without provisioning access", async () => {
-    mocks.db.invite.findFirst.mockResolvedValue({
-      id: "invite-1",
-      status: "PENDING",
-      role: "cashier",
-      expiresAt: new Date("2020-01-01T00:00:00.000Z"),
-      invitedBy: "owner-1",
-    });
-
-    const result = await syncCreatedClerkUser(createdUser());
-
-    expect(result).toBe("invitation_expired");
-    expect(mocks.db.invite.updateMany).toHaveBeenCalledWith({
-      where: { id: "invite-1", status: "PENDING" },
-      data: { status: "EXPIRED" },
-    });
-    expect(mocks.db.userRole.create).not.toHaveBeenCalled();
-  });
-
-  it("keeps ordinary registration on the personal-workspace path", async () => {
-    mocks.db.businessProfile.findUnique.mockResolvedValue(null);
-    mocks.db.businessProfile.create.mockResolvedValue({ id: "personal-1" });
-
-    const result = await syncCreatedClerkUser(createdUser(null));
-
-    expect(result).toBe("personal_workspace_created");
-    expect(mocks.db.businessProfile.create).toHaveBeenCalledWith({
-      data: {
-        businessName: "Store Operator's Workspace",
-        ownerId: "clerk-user-1",
-        clerkOrgId: "personal_clerk-user-1",
-      },
-      select: { id: true },
-    });
-    expect(mocks.db.user.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        clerkUserId: "clerk-user-1",
-        tenantId: "personal-1",
-        role: "OWNER",
-      }),
-    });
-    expect(mocks.db.userRole.create).not.toHaveBeenCalled();
-  });
-
-  it("rejects incomplete invitation metadata instead of granting a personal workspace", async () => {
-    await expect(
-      syncCreatedClerkUser(
-        createdUser({ drxBusinessId: "business-1" }),
-      ),
-    ).rejects.toThrow("metadata is incomplete");
-
-    expect(mocks.db.$transaction).not.toHaveBeenCalled();
-    expect(mocks.db.businessProfile.create).not.toHaveBeenCalled();
-  });
+it("records signed session events once without storing arbitrary payloads or granting access", async () => {
+  const { t } = await fixture();
+  const body = JSON.stringify({ type: "session.created", timestamp: 123, data: { id: "session-a", user_id: "recipient", latest_activity: { city: "Synthetic", device_type: "desktop" }, arbitrarySecret: "must-not-store" } });
+  const now = new Date(); const signed = { body, svixId: "session-event", svixTimestamp: Math.floor(now.getTime() / 1000).toString(), svixSignature: new Webhook(secret).sign("session-event", now, body) };
+  expect(await t.action(api.clerkWebhooks.handle, signed)).toBe("recorded");
+  expect(await t.action(api.clerkWebhooks.handle, signed)).toBe("already_recorded");
+  const records = await t.run(ctx => ctx.db.query("authSessionEvents").collect());
+  expect(records).toHaveLength(1); expect(records[0]).toMatchObject({ userId: "recipient", sessionId: "session-a", city: "Synthetic", occurredAt: 123 });
+  expect(JSON.stringify(records)).not.toContain("must-not-store");
+  expect(await t.run(ctx => ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", "recipient")).first())).toBeNull();
+});
+it("records organization identity once and leaves business provisioning to onboarding", async () => {
+  const { t } = await fixture(); const now = new Date();
+  const body = JSON.stringify({ type: "organization.created", data: { id: "org-synthetic", name: "Synthetic org", created_by: "recipient" } });
+  const signed = { body, svixId: "org-event", svixTimestamp: Math.floor(now.getTime() / 1000).toString(), svixSignature: new Webhook(secret).sign("org-event", now, body) };
+  expect(await t.action(api.clerkWebhooks.handle, signed)).toBe("recorded");
+  expect(await t.action(api.clerkWebhooks.handle, signed)).toBe("already_recorded");
+  expect(await t.run(ctx => ctx.db.query("clerkOrganizations").collect())).toHaveLength(1);
+  expect(await t.run(ctx => ctx.db.query("businesses").collect())).toHaveLength(1);
 });

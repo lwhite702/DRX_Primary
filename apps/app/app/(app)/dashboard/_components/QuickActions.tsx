@@ -73,32 +73,32 @@ export function QuickActions({
       ? [
           {
             icon: PackagePlus,
-            title: "Receive Stock",
-            description: "Inventory intake",
+            title: "Add stock",
+            description: "Add what came in",
             href: "/inventory/intake",
             color: "text-blue-500",
             bgColor: "bg-blue-500/10",
           },
           {
             icon: SlidersHorizontal,
-            title: "Adjust Stock",
-            description: "Correct on-hand counts",
+            title: "Fix count",
+            description: "Correct what’s on hand",
             href: "/inventory/adjust",
             color: "text-warning",
             bgColor: "bg-warning/10",
           },
           {
             icon: ClipboardCheck,
-            title: "Inventory Audit",
-            description: "Review stock events",
+            title: "Check stock",
+            description: "Review stock history",
             href: "/inventory/audit",
             color: "text-success",
             bgColor: "bg-success/10",
           },
           {
             icon: PackageSearch,
-            title: "Find Product",
-            description: "Search inventory",
+            title: "Find product",
+            description: "Search products",
             href: "/inventory",
             color: "text-accent",
             bgColor: "bg-accent/10",
@@ -108,23 +108,23 @@ export function QuickActions({
         ? [
             {
               icon: ShoppingCart,
-              title: "Start Sale",
-              description: "New transaction",
+              title: "New sale",
+              description: "Add a sale",
               href: "/pos/sale",
               color: "text-accent",
               bgColor: "bg-accent/10",
             },
             {
               icon: UserPlus,
-              title: "Add Customer",
-              description: "New customer record",
+              title: "Add customer",
+              description: "Save a customer",
               href: "/customers",
               color: "text-info",
               bgColor: "bg-info/10",
             },
             {
               icon: Receipt,
-              title: "Record Payment",
+              title: "Record payment",
               description: "Settle a balance",
               href: "/credit",
               color: "text-success",
@@ -132,8 +132,8 @@ export function QuickActions({
             },
             {
               icon: FileText,
-              title: "Sales Reports",
-              description: "Review completed sales",
+              title: "Reports",
+              description: "Check saved sales",
               href: "/reports",
               color: "text-gray-400",
               bgColor: "bg-gray-400/10",
@@ -142,31 +142,31 @@ export function QuickActions({
         : [
             {
               icon: ShoppingCart,
-              title: "Start Sale",
-              description: "New transaction",
+              title: "New sale",
+              description: "Add a sale",
               href: "/pos/sale",
               color: "text-accent",
               bgColor: "bg-accent/10",
             },
             {
               icon: PackagePlus,
-              title: "Receive Stock",
-              description: "Inventory intake",
+              title: "Add stock",
+              description: "Add what came in",
               href: "/inventory/intake",
               color: "text-blue-500",
               bgColor: "bg-blue-500/10",
             },
             {
               icon: UserPlus,
-              title: "Add Customer",
-              description: "New customer record",
+              title: "Add customer",
+              description: "Save a customer",
               href: "/customers",
               color: "text-info",
               bgColor: "bg-info/10",
             },
             {
               icon: CreditCard,
-              title: "Manage Credit",
+              title: "Payments",
               description: "Balances and payments",
               href: "/credit",
               color: "text-warning",
@@ -185,7 +185,11 @@ export function QuickActions({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map((action) => (
-          <ActionCard key={action.href + action.title} {...action} compact={compact} />
+          <ActionCard
+            key={action.href + action.title}
+            {...action}
+            compact={compact}
+          />
         ))}
       </div>
     </section>

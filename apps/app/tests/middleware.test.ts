@@ -50,6 +50,47 @@ async function runMiddleware(req: ReturnType<typeof makeRequest>, authResult: Au
 }
 
 describe("proxy auth and routing", () => {
+  it.each(["/admin", "/admin/users", "/admin/approvals"])("retires %s without disclosing a replacement", async path => {
+    const res = await runMiddleware(makeRequest(path, "deelrxcrm.app"), { userId: "owner" });
+    expect(res.status).toBe(404);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("does not require business onboarding for the configured platform entry", async () => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}`, "deelrxcrm.app"), { userId: "platform-user" });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+      expect(res.headers.get("cache-control")).toBe("private, no-store");
+      expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    } finally { vi.unstubAllEnvs(); }
+  });
+
+  it("returns 404 for guessed platform entry without redirecting", async () => {
+    const res = await runMiddleware(makeRequest("/control/admin", "deelrxcrm.app"), { userId: "owner" });
+    expect(res.status).toBe(404);
+    expect(res.headers.get("location")).toBeNull();
+  });
+  it("sends a signed-out private bookmark to its private sign-in page", async () => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}`, "deelrxcrm.app"), { userId: null });
+      expect(res.headers.get("location")).toBe(`https://deelrxcrm.app/control/${key}/sign-in`);
+      expect(res.headers.get("cache-control")).toBe("private, no-store");
+      expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    } finally { vi.unstubAllEnvs(); }
+  });
+  it.each(["", "/factor-one", "/sso-callback"])("allows only the configured private sign-in step %s before login", async suffix => {
+    const key = "a".repeat(32);
+    vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    try {
+      const res = await runMiddleware(makeRequest(`/control/${key}/sign-in${suffix}`, "deelrxcrm.app"), { userId: null });
+      expect(res.headers.get("x-middleware-next")).toBe("1");
+      expect(res.headers.get("location")).toBeNull();
+    } finally { vi.unstubAllEnvs(); }
+  });
   beforeEach(() => {
     process.env.NEXT_PUBLIC_APP_URL = "https://deelrxcrm.app";
   });
@@ -75,13 +116,13 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
-  it("redirects signed in users away from login to the dashboard when onboarding is complete", async () => {
+  it("routes signed-in users with only legacy claims through canonical onboarding verification", async () => {
     const req = makeRequest("/login", "deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/onboarding");
   });
 
   it("redirects signed in users to onboarding for protected routes until onboarding is complete", async () => {
@@ -107,13 +148,13 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it("redirects signed in users from onboarding to the dashboard when onboarding is complete", async () => {
+  it("lets onboarding verify the current Convex tenant even with legacy completion claims", async () => {
     const req = makeRequest("/onboarding", "deelrxcrm.app");
     const res = await runMiddleware(req, {
       userId: "u_123",
       sessionClaims: { metadata: { onboardingComplete: true } },
     });
-    expect(res.headers.get("location")).toBe("https://deelrxcrm.app/dashboard");
+    expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
   it("redirects signed out users to login with redirect_url for non-api routes", async () => {
@@ -157,6 +198,12 @@ describe("proxy auth and routing", () => {
 
   it("passes through /api/public routes without auth redirect", async () => {
     const req = makeRequest("/api/public/health", "deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("passes through /api/health probe without auth redirect or 401 in middleware", async () => {
+    const req = makeRequest("/api/health", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });

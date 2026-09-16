@@ -20,7 +20,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
                 DRX
               </div>
               <div className="inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80">
-                Quick Sale
+                New sale
               </div>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -29,7 +29,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
               </h1>
               <p className="text-xs text-white/60 md:text-sm">
                 {bypassMode
-                  ? "Bypass mode active: no PIN required to exit Quick Sale."
+                  ? "PIN bypass is on. You can leave New sale without a PIN."
                   : "Use the manager PIN when one is configured in Settings > POS Controls."}
               </p>
             </div>
@@ -40,7 +40,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
             className="h-11 shrink-0 rounded-md border border-accent/30 bg-accent/10 px-4 text-sm font-semibold text-accent hover:bg-accent/15 md:text-base"
             onClick={() => setExitOpen(true)}
           >
-            Exit Quick Sale
+            Exit New sale
           </button>
         </div>
         <div className="mx-auto max-w-[1600px] px-4 pb-3 md:px-6">
@@ -48,7 +48,9 @@ export function PosShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1600px] p-4 md:p-6">{children}</main>
+      <main className="mx-auto w-full max-w-[1600px] p-4 md:p-6">
+        {children}
+      </main>
 
       <ExitPosDialog
         open={state.ui.exitDialogOpen}

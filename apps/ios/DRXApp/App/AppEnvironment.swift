@@ -1,4 +1,5 @@
 import Foundation
+import ClerkKit
 import Observation
 
 enum RootApplicationState: Hashable {
@@ -58,14 +59,13 @@ protocol ProvisioningClient: Sendable {
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse
 }
 
-private struct ConvexBusinessOnboardingPayload: Encodable, Sendable {
-    let name: String?
-    let businessName: String
-    let businessType: String?
-    let currency: String?
-    let timezone: String?
-    let collectTax: Bool?
-    let taxRateBps: Int?
+private struct ConvexCompleteOnboardingArgs: Encodable, Sendable {
+    let expectedUserId: String
+    let payload: String
+}
+
+private struct CompleteOnboardingResponse: Decodable, Sendable {
+    let businessId: String
 }
 
 struct LiveProvisioningClient: ProvisioningClient {
@@ -80,16 +80,35 @@ struct LiveProvisioningClient: ProvisioningClient {
     }
 
     func createBusiness(_ input: BusinessOnboardingInput) async throws -> BusinessOnboardingResponse {
-        let sanitizedInput = ConvexBusinessOnboardingPayload(
-            name: input.name,
-            businessName: input.businessName,
-            businessType: input.businessType,
-            currency: input.currency,
-            timezone: input.timezone,
-            collectTax: input.collectTax,
-            taxRateBps: input.taxRateBps,
+        let payloadDict: [String: Any] = [
+            "businessName": input.businessName,
+            "ownerName": input.name,
+            "businessType": input.businessType,
+            "currency": input.currency,
+            "timezone": input.timezone,
+            "taxEnabled": input.collectTax,
+            "taxRateBps": input.taxRateBps,
+            "inventoryEnabled": input.tracksInventory,
+            "locationName": input.locationName,
+            "city": input.city ?? "",
+            "region": input.region ?? "",
+            "country": input.country,
+            "dashboardPreset": input.tracksInventory ? "inventory" : "operations"
+        ]
+        
+        let payloadData = try JSONSerialization.data(withJSONObject: payloadDict, options: [])
+        let payloadString = String(data: payloadData, encoding: .utf8)!
+        
+        let args = ConvexCompleteOnboardingArgs(
+            expectedUserId: await Clerk.shared.user?.id ?? "",
+            payload: payloadString
         )
-        return try await client.mutation("onboarding:createBusinessOnboarding", args: sanitizedInput)
+        _ = try await client.mutation("onboarding:completeBusinessOnboarding", args: args)
+        let statusResp = try await self.status()
+        return BusinessOnboardingResponse(
+            status: "ONBOARDING_SUCCESS",
+            session: statusResp.session
+        )
     }
 }
 
@@ -233,7 +252,7 @@ final class AppEnvironment {
                 rootState = .loadingWorkspace
                 guard let operatorSession = response.session else {
                     showRecovery(
-                        "We couldn't read your workspace details. Please try again.",
+                        "We couldn’t read your business details. Try again.",
                         failure: .invalidResponse
                     )
                     return
@@ -248,7 +267,7 @@ final class AppEnvironment {
                 )
             case .businessMissing:
                 showRecovery(
-                    "Your workspace needs attention. Contact support or try again.",
+                    "We couldn’t open your business. Try again or contact support.",
                     failure: .missingBusiness
                 )
             }
@@ -364,11 +383,11 @@ final class AppEnvironment {
         case .authentication:
             "We couldn't verify your session. Sign out, then sign in again."
         case .network:
-            "We couldn't reach your workspace. Check your connection and try again."
+            "We couldn’t reach your business. Check your connection and try again."
         case .invalidResponse:
-            "We couldn't read your workspace details. Please try again."
+            "We couldn’t read your business details. Try again."
         default:
-            "We couldn't confirm your workspace. Please try again."
+            "We couldn’t confirm your business. Try again."
         }
     }
 

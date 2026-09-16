@@ -14,7 +14,7 @@ export async function allocateFifoInventoryBatches(
   productId: Id<"products">,
   requestedGrams: number
 ): Promise<BatchAllocationResult[]> {
-  if (requestedGrams <= 0) {
+  if (!Number.isFinite(requestedGrams) || requestedGrams <= 0) {
     throw new Error("INVALID_ARGUMENT: Requested allocation quantity must be positive");
   }
 
@@ -25,19 +25,27 @@ export async function allocateFifoInventoryBatches(
       q.eq("productId", productId)
     )
     .filter((q) => q.gt(q.field("remainingQuantityGrams"), 0))
-    .collect();
+    .take(4097);
 
-  // Filter for tenant businessId
-  const tenantBatches = activeBatches.filter((b) => b.businessId === businessId);
+  // A bounded read must not silently skip corrupt ownership or malformed stock.
+  // Depleted history is excluded by the query; the cap applies to active batches.
+  const tenantBatches = activeBatches.slice(0, 4096);
+  for (const batch of tenantBatches) {
+    if (batch.businessId !== businessId || !Number.isFinite(batch.remainingQuantityGrams) || batch.remainingQuantityGrams <= 0 || !Number.isFinite(batch.unitCostPerGramCents) || batch.unitCostPerGramCents < 0) throw new Error("INVALID_STATE: Inventory batches require reconciliation");
+  }
 
   let remainingToAllocate = requestedGrams;
+  const tolerance = Math.min(1e-9, requestedGrams * 1e-9);
+  let totalCostCents = 0;
   const allocations: BatchAllocationResult[] = [];
 
   for (const batch of tenantBatches) {
-    if (remainingToAllocate <= 0) break;
+    if (remainingToAllocate <= tolerance) break;
 
     const allocatable = Math.min(batch.remainingQuantityGrams, remainingToAllocate);
     const extendedCostCents = Math.round(allocatable * batch.unitCostPerGramCents);
+    totalCostCents += extendedCostCents;
+    if (!Number.isSafeInteger(extendedCostCents) || !Number.isSafeInteger(totalCostCents)) throw new Error("INVALID_STATE: Inventory cost exceeds supported precision");
 
     allocations.push({
       batchId: batch._id,
@@ -56,7 +64,8 @@ export async function allocateFifoInventoryBatches(
     remainingToAllocate -= allocatable;
   }
 
-  if (remainingToAllocate > 0) {
+  if (remainingToAllocate > tolerance) {
+    if (activeBatches.length > 4096) throw new Error("INVALID_STATE: Active FIFO history exceeds the supported transaction bound");
     throw new Error(
       `INSUFFICIENT_STOCK: Required ${requestedGrams}g, but only ${requestedGrams - remainingToAllocate}g available in active batches`
     );

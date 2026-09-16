@@ -12,7 +12,7 @@ const PUBLIC_APP_PREFIXES = [
   "/brand",
 ] as const;
 
-const PUBLIC_APP_EXACT = new Set(["/privacy", "/terms"]);
+const PUBLIC_APP_EXACT = new Set(["/privacy", "/terms", "/api/health"]);
 const AUTH_ENTRY_PREFIXES = ["/login", "/register", "/sign-in", "/sign-up", "/sso-callback"] as const;
 const CLERK_UI_PREFIXES = [...AUTH_ENTRY_PREFIXES, "/onboarding"] as const;
 const OPERATOR_MARKETING_REDIRECT_PREFIXES = [

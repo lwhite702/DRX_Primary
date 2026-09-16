@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,8 @@ export default function InventoryAdjustPage() {
     syncStatus,
     refresh: refreshInventory,
   } = useRealtimeInventory(business?.id || null);
+  const pending = useRef<{ fingerprint: string; key: string } | null>(null);
+  const inFlight = useRef(false);
   const [processing, setProcessing] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -38,7 +40,8 @@ export default function InventoryAdjustPage() {
   const selectedProduct = inventory.find((p) => p.id === selectedProductId);
 
   const handleAdjust = async () => {
-    if (!selectedProductId || !value || !reason) {
+    if (inFlight.current) return;
+    if (!business?.id || !selectedProductId || !value || !reason) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -60,11 +63,14 @@ export default function InventoryAdjustPage() {
     }
     // "add" is default positive delta
 
+    const fingerprint = JSON.stringify([business.id, selectedProductId, apiType, apiValue, reason]);
+    if (pending.current?.fingerprint !== fingerprint) pending.current = { fingerprint, key: crypto.randomUUID() };
+    inFlight.current = true;
     setProcessing(true);
     try {
       const res = await fetch("/api/inventory/adjust", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": business.id, "idempotency-key": pending.current.key },
         body: JSON.stringify({
           inventory_id: selectedProductId,
           type: apiType,
@@ -76,7 +82,9 @@ export default function InventoryAdjustPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to adjust");
 
-      toast.success("Inventory adjusted successfully");
+      pending.current = null;
+      await refreshInventory();
+      toast.success("Stock count fixed.");
       // Reset form
       setValue("");
       setReason("");
@@ -84,6 +92,7 @@ export default function InventoryAdjustPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to adjust");
     } finally {
+      inFlight.current = false;
       setProcessing(false);
     }
   };
@@ -99,14 +108,15 @@ export default function InventoryAdjustPage() {
         <div className="noise-overlay" />
         <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
           <div>
-          <h1 className="text-3xl font-bold">
-            Adjust inventory
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Correct a count and record the reason
-          </p>
+            <h1 className="text-3xl font-bold">Adjust inventory</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Correct a count and record the reason
+            </p>
           </div>
-          <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
+          <DataSyncStatus
+            status={syncStatus}
+            onRefresh={() => void refreshInventory()}
+          />
         </div>
 
         <div className="max-w-2xl luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
@@ -184,7 +194,7 @@ export default function InventoryAdjustPage() {
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="e.g. Broken jar, Spillage, Inventory Count Correction"
+                placeholder="Example: Broken jar, spill, or count was wrong"
               />
             </div>
 

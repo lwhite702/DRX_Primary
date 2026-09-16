@@ -42,6 +42,14 @@ import {
   PrivacyPreset,
 } from "@/lib/utils/privacy";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
+import {
+  getDefaultPrivacyProtocol,
+  canWritePrivacyField,
+  PRIVACY_PROFILE_OPTIONS,
+} from "@/lib/privacy/profiles";
+import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
+import { ShieldAlert } from "lucide-react";
+import { ProgressiveSection } from "@/components/ui/progressive-section";
 
 type CustomerRecord = Customer & {
   id: string;
@@ -81,6 +89,29 @@ export default function CustomersPage() {
   const [lifecycleCustomerId, setLifecycleCustomerId] = useState<string | null>(
     null,
   );
+  const [privacyProtocol, setPrivacyProtocol] =
+    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+
+  useEffect(() => {
+    fetch("/api/business/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((settingsData) => {
+        if (!settingsData) return;
+        setPrivacyProtocol(
+          settingsData.privacy_protocol ||
+            settingsData.privacyProtocol ||
+            getDefaultPrivacyProtocol(),
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to load business privacy settings:", error);
+      });
+  }, []);
+
+  const canWriteAddress = canWritePrivacyField(privacyProtocol, "address");
+  const currentProfileOption =
+    PRIVACY_PROFILE_OPTIONS.find((opt) => opt.id === privacyProtocol.profile) ||
+    PRIVACY_PROFILE_OPTIONS.find((opt) => opt.id === "standard_mode");
 
   const canManageCustomers =
     !permissionLoading && hasPermission("customers.manage");
@@ -128,6 +159,31 @@ export default function CustomersPage() {
       return;
     }
 
+    const payload: Record<string, unknown> = {
+      ...data,
+      business_id: business.id,
+    };
+
+    if (!canWriteAddress) {
+      delete payload.address;
+      delete payload.city;
+      delete payload.state;
+      delete payload.zip_code;
+    } else {
+      if (!data.address?.trim()) delete payload.address;
+      if (!data.city?.trim()) delete payload.city;
+      if (!data.state?.trim()) delete payload.state;
+      if (!data.zip_code?.trim()) delete payload.zip_code;
+    }
+
+    if (privacyProtocol.alias_only_mode) {
+      delete payload.first_name;
+      delete payload.last_name;
+      delete payload.phone_number;
+      delete payload.email;
+      delete payload.notes;
+    }
+
     const promise = async () => {
       const url = editingCustomer?.id
         ? `/api/customers/${editingCustomer.id}`
@@ -137,10 +193,7 @@ export default function CustomersPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          business_id: business.id,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -153,9 +206,7 @@ export default function CustomersPage() {
         await loadArchived();
       }
 
-      return editingCustomer?.id
-        ? "Customer updated successfully"
-        : "Customer added successfully";
+      return editingCustomer?.id ? "Customer updated." : "Customer added.";
     };
 
     const savePromise = promise();
@@ -238,18 +289,21 @@ export default function CustomersPage() {
 
   const displayedCustomers =
     viewStatus === "active"
-      ? (Array.isArray(customers) ? customers : []) as CustomerRecord[]
+      ? ((Array.isArray(customers) ? customers : []) as CustomerRecord[])
       : archivedCustomers;
   const normalizedSearch = searchTerm.toLowerCase();
-  const filteredCustomers = displayedCustomers.filter(
-    (customer) =>
-      [
-        customer?.first_name,
-        customer?.last_name,
-        customer?.alias,
-        customer?.phone_number,
-        customer?.email,
-      ].some((value) => String(value ?? "").toLowerCase().includes(normalizedSearch)),
+  const filteredCustomers = displayedCustomers.filter((customer) =>
+    [
+      customer?.first_name,
+      customer?.last_name,
+      customer?.alias,
+      customer?.phone_number,
+      customer?.email,
+    ].some((value) =>
+      String(value ?? "")
+        .toLowerCase()
+        .includes(normalizedSearch),
+    ),
   );
 
   if (businessLoading || customersLoading) {
@@ -287,11 +341,10 @@ export default function CustomersPage() {
       <div className="noise-overlay" />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
         <div>
-          <h1 className="text-3xl font-bold">
-            Customers
-          </h1>
+          <h1 className="text-3xl font-bold">Customers</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filteredCustomers.length} customer {filteredCustomers.length === 1 ? "profile" : "profiles"}
+            {filteredCustomers.length} customer{" "}
+            {filteredCustomers.length === 1 ? "profile" : "profiles"}
           </p>
         </div>
         <DataSyncStatus status={syncStatus} onRefresh={() => void refresh()} />
@@ -391,47 +444,68 @@ export default function CustomersPage() {
                 business needs.
               </p>
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" {...register("address")} />
-              </div>
+              <ProgressiveSection
+                title="Additional Details & Custom Pricing"
+                description="Address, customer type, and price overrides"
+                defaultOpen={false}
+              >
+                {canWriteAddress ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Address</Label>
+                      <Input id="address" {...register("address")} />
+                    </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" {...register("city")} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input id="state" {...register("state")} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip_code">Zip Code</Label>
-                  <Input id="zip_code" {...register("zip_code")} />
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" {...register("city")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input id="state" {...register("state")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="zip_code">Zip Code</Label>
+                        <Input id="zip_code" {...register("zip_code")} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-md border border-white/10 bg-muted/30 p-3 text-xs text-muted-foreground flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4 text-accent shrink-0" />
+                    <span>
+                      Address collection is disabled under your{" "}
+                      <strong className="text-foreground font-semibold">
+                        {currentProfileOption?.label || "current"}
+                      </strong>{" "}
+                      privacy policy. To store customer addresses, switch to &quot;Keep details&quot; in Business Settings.
+                    </span>
+                  </div>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="customer_type">
-                  Customer Type
-                  <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
-                </Label>
-                <Input id="customer_type" {...register("customer_type")} />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="customer_type">
+                    Customer Type
+                    <HelpTooltip content="Categorize customers for reporting (e.g., Medical, Recreational)." />
+                  </Label>
+                  <Input id="customer_type" {...register("customer_type")} />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="fixed_price_per_gram">
-                  Fixed Price / Gram ($)
-                  <HelpTooltip content="Override base price for weight-based products for this customer." />
-                </Label>
-                <Input
-                  id="fixed_price_per_gram"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register("fixed_price_per_gram")}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fixed_price_per_gram">
+                    Fixed Price / Gram ($)
+                    <HelpTooltip content="Override base price for weight-based products for this customer." />
+                  </Label>
+                  <Input
+                    id="fixed_price_per_gram"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...register("fixed_price_per_gram")}
+                  />
+                </div>
+              </ProgressiveSection>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
@@ -623,18 +697,20 @@ export default function CustomersPage() {
                             {Number(customer.total_credit_used || 0).toFixed(2)}
                           </p>
                         </div>
-                        <div className="col-span-2">
-                          <p className="text-xs text-muted-foreground">
-                            Address
-                          </p>
-                          <p className="text-sm text-foreground break-words">
-                            {customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${
-                                  customer.state || ""
-                                }`
-                              : "-"}
-                          </p>
-                        </div>
+                        {canWriteAddress ? (
+                          <div className="col-span-2">
+                            <p className="text-xs text-muted-foreground">
+                              Address
+                            </p>
+                            <p className="text-sm text-foreground break-words">
+                              {customer.address
+                                ? `${customer.address}, ${customer.city || ""} ${
+                                    customer.state || ""
+                                  }`
+                                : "-"}
+                            </p>
+                          </div>
+                        ) : null}
                       </div>
                     </CardContent>
                   </div>
@@ -655,9 +731,11 @@ export default function CustomersPage() {
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Email
                       </TableHead>
-                      <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Address
-                      </TableHead>
+                      {canWriteAddress ? (
+                        <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Address
+                        </TableHead>
+                      ) : null}
                       <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Purchases
                       </TableHead>
@@ -707,16 +785,18 @@ export default function CustomersPage() {
                             settings?.privacy_preset as PrivacyPreset,
                           )}
                         </TableCell>
-                        <TableCell>
-                          {settings?.privacy_preset === "max_secure" ||
-                          settings?.privacy_preset === "private"
-                            ? "*** Redacted ***"
-                            : customer.address
-                              ? `${customer.address}, ${customer.city || ""} ${
-                                  customer.state || ""
-                                }`
-                              : "-"}
-                        </TableCell>
+                        {canWriteAddress ? (
+                          <TableCell>
+                            {settings?.privacy_preset === "max_secure" ||
+                            settings?.privacy_preset === "private"
+                              ? "*** Redacted ***"
+                              : customer.address
+                                ? `${customer.address}, ${customer.city || ""} ${
+                                    customer.state || ""
+                                  }`
+                                : "-"}
+                          </TableCell>
+                        ) : null}
                         <TableCell>
                           ${Number(customer.total_purchases || 0).toFixed(2)}
                         </TableCell>

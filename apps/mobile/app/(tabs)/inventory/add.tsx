@@ -13,7 +13,13 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../../../src/contexts/AuthContext";
+import { useMutation } from "convex/react";
+import { api } from "@drx-convex/_generated/api";
+import { FractionalProductFields } from "../../../src/components/fractional-product-fields";
+import {
+  creationCommerceDefaults,
+  newProductCommerceSchema,
+} from "../../../../app/lib/commerce/product-creation";
 import {
   COLORS,
   SPACING,
@@ -21,13 +27,13 @@ import {
   BORDER_RADIUS,
   WEIGHT_TIERS,
 } from "../../../src/constants/theme";
-import { createProduct } from "../../../src/services/apiClient";
 import { BulkPricingTier } from "../../../src/lib/types";
 
 export default function AddProductScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { legacyBusinessId, getToken } = useAuth();
+  const createProduct = useMutation(api.products.createProduct);
+  const [commerce, setCommerce] = useState(() => creationCommerceDefaults("g"));
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -53,7 +59,12 @@ export default function AddProductScreen() {
   const [bulkWeight, setBulkWeight] = useState("");
   const [bulkRetail, setBulkRetail] = useState("");
 
-  const calculatePerGram = (costVal: string, weightVal: string, target: "cost" | "retail" | "both", retailVal?: string) => {
+  const calculatePerGram = (
+    costVal: string,
+    weightVal: string,
+    target: "cost" | "retail" | "both",
+    retailVal?: string,
+  ) => {
     const w = parseFloat(weightVal);
     if (!w || isNaN(w) || w <= 0) return;
 
@@ -77,16 +88,30 @@ export default function AddProductScreen() {
     Alert.alert(title, message, [{ text: "Got it" }]);
   };
 
-  const renderLabel = (text: string, required = false, helpTitle?: string, helpText?: string) => (
-    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-      <Text style={styles.label}>{text}{required ? " *" : ""}</Text>
+  const renderLabel = (
+    text: string,
+    required = false,
+    helpTitle?: string,
+    helpText?: string,
+  ) => (
+    <View
+      style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}
+    >
+      <Text style={styles.label}>
+        {text}
+        {required ? " *" : ""}
+      </Text>
       {helpTitle && helpText && (
         <TouchableOpacity
           onPress={() => showHelp(helpTitle, helpText)}
           style={{ paddingHorizontal: 6, paddingVertical: 2 }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="information-circle-outline" size={14} color={COLORS.textSecondary} />
+          <Ionicons
+            name="information-circle-outline"
+            size={14}
+            color={COLORS.textSecondary}
+          />
         </TouchableOpacity>
       )}
     </View>
@@ -96,8 +121,10 @@ export default function AddProductScreen() {
   const parsedCost = parseFloat(costPrice) || 0;
   const parsedPrice = parseFloat(sellingPrice) || 0;
   const calculatedProfit = parsedPrice - parsedCost;
-  const calculatedMargin = parsedPrice > 0 ? (calculatedProfit / parsedPrice) * 100 : 0;
-  const calculatedMarkup = parsedCost > 0 ? (calculatedProfit / parsedCost) * 100 : 0;
+  const calculatedMargin =
+    parsedPrice > 0 ? (calculatedProfit / parsedPrice) * 100 : 0;
+  const calculatedMarkup =
+    parsedCost > 0 ? (calculatedProfit / parsedCost) * 100 : 0;
 
   const handleAddTier = () => {
     setTiers([
@@ -123,56 +150,70 @@ export default function AddProductScreen() {
   };
 
   const handleSave = async () => {
-    if (!productName || !sellingPrice || !costPrice) {
+    if (!productName.trim() || !sku.trim() || !sellingPrice || !costPrice) {
       Alert.alert(
         "Error",
-        "Please fill in all required fields (Name, Cost, Price)",
+        "Please fill in all required fields (Name, SKU, Cost, Price)",
       );
-      return;
-    }
-
-    if (!legacyBusinessId) {
-      Alert.alert("Error", "Business ID not found");
       return;
     }
 
     setSaving(true);
     try {
-      const token = await getToken();
-
-      const payload = {
-        business_id: legacyBusinessId,
-        product_name: productName,
-        sku: sku || null,
-        category: category,
-        description: description || null,
-        base_unit: unitOfMeasure,
-        unit_of_measure: unitOfMeasure,
-        quantity_unit: unitOfMeasure === "g" ? "grams" : "units",
-        quantity_on_hand:
-          unitOfMeasure === "unit" ? parseFloat(stockQuantity || "0") : 0,
-        inventory_in_grams:
-          unitOfMeasure === "g" ? parseFloat(stockQuantity || "0") : 0,
-        cost_price: parseFloat(costPrice),
-        selling_price: parseFloat(sellingPrice),
-        items_per_unit: 1,
-        reorder_level: parseFloat(minStock),
-        low_stock_threshold: parseFloat(minStock),
-        ai_pricing_enabled: false,
-        // Include tiers if you want the backend to handle them, otherwise we might need a separate API call
-        // bulk_pricing_rules: unitOfMeasure === "g" ? tiers : [],
+      const parsed = newProductCommerceSchema.safeParse({
+        ...commerce,
+        sellingUnit: unitOfMeasure,
+      });
+      if (!parsed.success)
+        throw new Error(
+          parsed.error.issues[0]?.message || "Check the selling rules",
+        );
+      const price = Number(sellingPrice),
+        cost = Number(costPrice);
+      if (
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isFinite(cost) ||
+        cost < 0 ||
+        [price, cost].some(
+          (amount) => Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-6,
+        )
+      )
+        throw new Error("Enter valid prices with at most two decimal places");
+      const {
+        fractionalEnabled,
+        sellingUnit,
+        decimalPrecision,
+        minimumSaleQuantity,
+        quantityIncrement,
+        suggestedDollarAmounts,
+        suggestedQuantities,
+      } = parsed.data;
+      const commerceConfig = {
+        sellingUnit,
+        decimalPrecision,
+        minimumSaleQuantity,
+        quantityIncrement,
+        suggestedDollarAmounts,
+        suggestedQuantities,
       };
+      await createProduct({
+        sku: sku.trim(),
+        productName: productName.trim(),
+        category,
+        description: description || undefined,
+        sellingPriceCents: Math.round(price * 100),
+        unitCostCents: Math.round(cost * 100),
+        reorderLevelGrams: Number(minStock),
+        allowFractionalWeight: fractionalEnabled,
+        commerceConfig,
+        initialQuantity: Number(stockQuantity || "0"),
+      });
 
-      await createProduct(payload, token);
-
-      // Note: Tiers insertion logic is currently disabled as we migrated to single API call.
-      // If backend supports tiers in the same payload, uncomment above.
-
-      Alert.alert("Success", "Product added successfully", [
+      Alert.alert("Product added", "Your stock list is up to date.", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      console.error(error);
       Alert.alert("Error", error.message || "Failed to add product");
     } finally {
       setSaving(false);
@@ -257,11 +298,14 @@ export default function AddProductScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.content}
+        >
           {/* Web Onboarding Recommendation Tip */}
           <View
             accessible={true}
-            accessibilityLabel="First Time Setup suggestion card. For a step-by-step guided onboarding experience to configure your first product, we recommend using the web dashboard."
+            accessibilityLabel="First product help. Use DRX on the web for guided setup."
             style={{
               backgroundColor: "rgba(139, 92, 246, 0.08)",
               padding: SPACING.md,
@@ -271,14 +315,30 @@ export default function AddProductScreen() {
               marginBottom: SPACING.md,
               flexDirection: "row",
               alignItems: "center",
-              gap: 12
+              gap: 12,
             }}
           >
             <Ionicons name="desktop-outline" size={20} color="#8B5CF6" />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: COLORS.text, fontSize: 13, fontWeight: "600", marginBottom: 2 }}>First Time Setup?</Text>
-              <Text style={{ color: COLORS.textSecondary, fontSize: 11, lineHeight: 15 }}>
-                For a step-by-step guided onboarding experience to configure your first product, we recommend using the web dashboard.
+              <Text
+                style={{
+                  color: COLORS.text,
+                  fontSize: 13,
+                  fontWeight: "600",
+                  marginBottom: 2,
+                }}
+              >
+                First Time Setup?
+              </Text>
+              <Text
+                style={{
+                  color: COLORS.textSecondary,
+                  fontSize: 11,
+                  lineHeight: 15,
+                }}
+              >
+                For a step-by-step guided onboarding experience to configure
+                your first product, we recommend using the web dashboard.
               </Text>
             </View>
           </View>
@@ -291,7 +351,7 @@ export default function AddProductScreen() {
               "Product Name",
               true,
               "Product Name",
-              "The name displayed on customer menus, receipts, and order screens."
+              "The name displayed on customer menus, receipts, and order screens.",
             )}
             <TextInput
               style={styles.input}
@@ -305,38 +365,55 @@ export default function AddProductScreen() {
               "Category",
               false,
               "Category",
-              "Categorizing products makes them easier to find and automatically assigns correct measuring units."
+              "Categorizing products makes them easier to find and automatically assigns correct measuring units.",
             )}
             <View style={styles.categoryRow}>
-              {["Flower", "Edible", "Concentrate", "Pre-roll", "Vape", "Tincture", "Topical", "Accessory", "Beverage", "Pills", "Crystals", "Powder"].map((cat) => ( // copy-lint-disable
-                <TouchableOpacity
-                  key={cat}
-                  style={[
-                    styles.categoryChip,
-                    category === cat && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setCategory(cat)}
-                  accessibilityLabel={`Select category ${cat}`}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: category === cat }}
-                >
-                  <Text
+              {[
+                "Flower",
+                "Edible",
+                "Concentrate",
+                "Pre-roll",
+                "Vape",
+                "Tincture",
+                "Topical",
+                "Accessory",
+                "Beverage",
+                "Pills",
+                "Crystals",
+                "Powder",
+              ].map(
+                (
+                  cat, // copy-lint-disable
+                ) => (
+                  <TouchableOpacity
+                    key={cat}
                     style={[
-                      styles.categoryText,
-                      category === cat && styles.categoryTextActive,
+                      styles.categoryChip,
+                      category === cat && styles.categoryChipActive,
                     ]}
+                    onPress={() => setCategory(cat)}
+                    accessibilityLabel={`Select category ${cat}`}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: category === cat }}
                   >
-                    {cat}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        category === cat && styles.categoryTextActive,
+                      ]}
+                    >
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                ),
+              )}
             </View>
 
             {renderLabel(
-              "SKU (Optional)",
-              false,
               "SKU",
-              "Stock Keeping Unit - a unique barcode or code ID. Tap to type or scan a barcode to assign."
+              true,
+              "SKU",
+              "Stock Keeping Unit - a unique barcode or code ID. Tap to type or scan a barcode to assign.",
             )}
             <TextInput
               style={styles.input}
@@ -357,7 +434,7 @@ export default function AddProductScreen() {
                   "Unit Type",
                   false,
                   "Unit Type",
-                  "Choose Weight (grams) for items sold in bulk flower/concentrates. Choose Unit (each) for pre-packaged goods."
+                  "Choose Weight (grams) for items sold in bulk flower/concentrates. Choose Unit (each) for pre-packaged goods.",
                 )}
                 <View style={styles.segmentControl}>
                   <TouchableOpacity
@@ -402,24 +479,28 @@ export default function AddProductScreen() {
               </View>
 
               <View style={{ flex: 1 }}>
-                {renderLabel(
-                  `Initial Stock (${unitOfMeasure})`,
-                  false,
-                  "Initial Stock",
-                  "The initial quantity currently available in physical inventory to start selling."
-                )}
+                {renderLabel(`Initial Stock (${unitOfMeasure})`)}
                 <TextInput
+                  accessibilityLabel="Initial stock"
                   style={styles.input}
-                  placeholder="0.00"
                   keyboardType="decimal-pad"
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textMuted}
                   value={stockQuantity}
                   onChangeText={setStockQuantity}
-                  placeholderTextColor={COLORS.textMuted}
                 />
+                <Text style={{ color: COLORS.textSecondary }}>
+                  Starting stock is recorded with the unit cost above. Receive
+                  later stock through inventory intake.
+                </Text>
               </View>
             </View>
           </View>
 
+          <FractionalProductFields
+            value={{ ...commerce, sellingUnit: unitOfMeasure }}
+            onChange={setCommerce}
+          />
           {/* Pricing */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
@@ -441,7 +522,7 @@ export default function AddProductScreen() {
                   "Cost Price ($/g)",
                   true,
                   "Cost Price",
-                  "What you paid to acquire this product per gram. Crucial for calculating your actual profit margins."
+                  "What you paid to acquire this product per gram. Crucial for calculating your actual profit margins.",
                 )}
                 <TextInput
                   style={styles.input}
@@ -460,7 +541,7 @@ export default function AddProductScreen() {
                   "Base Price ($/g)",
                   true,
                   "Base Price",
-                  "The base retail price you charge customers per gram. Click 'AI Suggest' for markup recommendations."
+                  "The base retail price you charge customers per gram. Click 'AI Suggest' for markup recommendations.",
                 )}
                 <TextInput
                   style={[styles.input, { borderColor: COLORS.accent }]}
@@ -478,22 +559,49 @@ export default function AddProductScreen() {
 
             {/* Bulk Cost & Price Calculator */}
             {unitOfMeasure === "g" && (
-              <View style={{
-                backgroundColor: "rgba(204, 255, 0, 0.04)",
-                padding: SPACING.sm + 2,
-                borderRadius: BORDER_RADIUS.sm,
-                borderWidth: 1,
-                borderColor: "rgba(204, 255, 0, 0.15)",
-                marginBottom: SPACING.md
-              }}>
-                <Text style={{ fontSize: 11, color: COLORS.accent, fontWeight: "700", marginBottom: 6, textTransform: "uppercase" }}>
+              <View
+                style={{
+                  backgroundColor: "rgba(204, 255, 0, 0.04)",
+                  padding: SPACING.sm + 2,
+                  borderRadius: BORDER_RADIUS.sm,
+                  borderWidth: 1,
+                  borderColor: "rgba(204, 255, 0, 0.15)",
+                  marginBottom: SPACING.md,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: COLORS.accent,
+                    fontWeight: "700",
+                    marginBottom: 6,
+                    textTransform: "uppercase",
+                  }}
+                >
                   Bulk Calculator Helper
                 </Text>
                 <View style={{ flexDirection: "row", gap: 8 }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 9, color: COLORS.textSecondary, marginBottom: 2 }}>Bulk Cost ($)</Text>
+                    <Text
+                      style={{
+                        fontSize: 9,
+                        color: COLORS.textSecondary,
+                        marginBottom: 2,
+                      }}
+                    >
+                      Bulk Cost ($)
+                    </Text>
                     <TextInput
-                      style={[styles.input, { marginBottom: 0, paddingVertical: 4, paddingHorizontal: 6, fontSize: 12, height: 32 }]}
+                      style={[
+                        styles.input,
+                        {
+                          marginBottom: 0,
+                          paddingVertical: 4,
+                          paddingHorizontal: 6,
+                          fontSize: 12,
+                          height: 32,
+                        },
+                      ]}
                       placeholder="e.g. 150"
                       keyboardType="decimal-pad"
                       value={bulkCost}
@@ -505,9 +613,26 @@ export default function AddProductScreen() {
                     />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 9, color: COLORS.textSecondary, marginBottom: 2 }}>Bulk Weight (g)</Text>
+                    <Text
+                      style={{
+                        fontSize: 9,
+                        color: COLORS.textSecondary,
+                        marginBottom: 2,
+                      }}
+                    >
+                      Bulk Weight (g)
+                    </Text>
                     <TextInput
-                      style={[styles.input, { marginBottom: 0, paddingVertical: 4, paddingHorizontal: 6, fontSize: 12, height: 32 }]}
+                      style={[
+                        styles.input,
+                        {
+                          marginBottom: 0,
+                          paddingVertical: 4,
+                          paddingHorizontal: 6,
+                          fontSize: 12,
+                          height: 32,
+                        },
+                      ]}
                       placeholder="e.g. 28"
                       keyboardType="decimal-pad"
                       value={bulkWeight}
@@ -519,9 +644,26 @@ export default function AddProductScreen() {
                     />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 9, color: COLORS.textSecondary, marginBottom: 2 }}>Bulk Retail ($)</Text>
+                    <Text
+                      style={{
+                        fontSize: 9,
+                        color: COLORS.textSecondary,
+                        marginBottom: 2,
+                      }}
+                    >
+                      Bulk Retail ($)
+                    </Text>
                     <TextInput
-                      style={[styles.input, { marginBottom: 0, paddingVertical: 4, paddingHorizontal: 6, fontSize: 12, height: 32 }]}
+                      style={[
+                        styles.input,
+                        {
+                          marginBottom: 0,
+                          paddingVertical: 4,
+                          paddingHorizontal: 6,
+                          fontSize: 12,
+                          height: 32,
+                        },
+                      ]}
                       placeholder="e.g. 450"
                       keyboardType="decimal-pad"
                       value={bulkRetail}
@@ -537,35 +679,106 @@ export default function AddProductScreen() {
             )}
 
             {/* Dynamic Profit & Margin Stats */}
-            <View style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              padding: SPACING.sm + 4,
-              borderRadius: BORDER_RADIUS.sm,
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              marginTop: 4,
-              marginBottom: SPACING.md
-            }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-                <Text style={{ fontSize: 11, color: COLORS.textSecondary, fontWeight: "600" }}>Live Margin Breakdown</Text>
-                <Text style={{ fontSize: 10, color: COLORS.accent, fontWeight: "700" }}>CALCULATOR</Text>
+            <View
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                padding: SPACING.sm + 4,
+                borderRadius: BORDER_RADIUS.sm,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                marginTop: 4,
+                marginBottom: SPACING.md,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: COLORS.textSecondary,
+                    fontWeight: "600",
+                  }}
+                >
+                  Live Margin Breakdown
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    color: COLORS.accent,
+                    fontWeight: "700",
+                  }}
+                >
+                  CALCULATOR
+                </Text>
               </View>
-              <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+              <View
+                style={{ flexDirection: "row", justifyContent: "space-around" }}
+              >
                 <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 9, color: COLORS.textMuted, textTransform: "uppercase" }}>Profit</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: calculatedProfit >= 0 ? COLORS.success : COLORS.error }}>
+                  <Text
+                    style={{
+                      fontSize: 9,
+                      color: COLORS.textMuted,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Profit
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color:
+                        calculatedProfit >= 0 ? COLORS.success : COLORS.error,
+                    }}
+                  >
                     ${calculatedProfit.toFixed(2)}
                   </Text>
                 </View>
                 <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 9, color: COLORS.textMuted, textTransform: "uppercase" }}>Markup</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: calculatedMarkup >= 0 ? COLORS.accent : COLORS.error }}>
+                  <Text
+                    style={{
+                      fontSize: 9,
+                      color: COLORS.textMuted,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Markup
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color:
+                        calculatedMarkup >= 0 ? COLORS.accent : COLORS.error,
+                    }}
+                  >
                     {calculatedMarkup.toFixed(1)}%
                   </Text>
                 </View>
                 <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 9, color: COLORS.textMuted, textTransform: "uppercase" }}>Gross Margin</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: calculatedMargin >= 0 ? COLORS.success : COLORS.error }}>
+                  <Text
+                    style={{
+                      fontSize: 9,
+                      color: COLORS.textMuted,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Gross Margin
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color:
+                        calculatedMargin >= 0 ? COLORS.success : COLORS.error,
+                    }}
+                  >
                     {calculatedMargin.toFixed(1)}%
                   </Text>
                 </View>
@@ -576,17 +789,26 @@ export default function AddProductScreen() {
               <View style={{ marginTop: SPACING.md }}>
                 <View style={[styles.tierHeader, { marginBottom: 8 }]}>
                   {renderLabel(
-                    "Tiered Pricing (Bulk)",
+                    "Bulk pricing preview — not saved here",
                     false,
                     "Tiered Pricing",
-                    "Add discount tiers for larger weight purchases. E.g., setting 3.5g at a lower $/g rate encourages customers to buy more."
+                    "Add discount tiers for larger weight purchases. E.g., setting 3.5g at a lower $/g rate encourages customers to buy more.",
                   )}
                 </View>
 
                 {/* Predefined weight unit selectors - Non-freeform */}
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    gap: 6,
+                    marginBottom: 12,
+                  }}
+                >
                   {WEIGHT_TIERS.map((wt) => {
-                    const alreadyAdded = tiers.some(t => t.min_weight_grams === wt.grams);
+                    const alreadyAdded = tiers.some(
+                      (t) => t.min_weight_grams === wt.grams,
+                    );
                     return (
                       <TouchableOpacity
                         key={wt.label}
@@ -594,22 +816,42 @@ export default function AddProductScreen() {
                         onPress={() => {
                           setTiers([
                             ...tiers,
-                            { min_weight_grams: wt.grams, price_per_gram: 0, tier_name: wt.label }
+                            {
+                              min_weight_grams: wt.grams,
+                              price_per_gram: 0,
+                              tier_name: wt.label,
+                            },
                           ]);
                         }}
-                        accessibilityLabel={alreadyAdded ? `${wt.label} tier already added` : `Add ${wt.label} tier`}
+                        accessibilityLabel={
+                          alreadyAdded
+                            ? `${wt.label} tier already added`
+                            : `Add ${wt.label} tier`
+                        }
                         accessibilityRole="button"
                         style={{
                           paddingHorizontal: 12,
                           paddingVertical: 8, // Larger tap targets
                           borderRadius: BORDER_RADIUS.sm,
-                          backgroundColor: alreadyAdded ? COLORS.surface : "rgba(204, 255, 0, 0.08)",
+                          backgroundColor: alreadyAdded
+                            ? COLORS.surface
+                            : "rgba(204, 255, 0, 0.08)",
                           borderWidth: 1,
-                          borderColor: alreadyAdded ? COLORS.border : COLORS.accent,
-                          opacity: alreadyAdded ? 0.4 : 1
+                          borderColor: alreadyAdded
+                            ? COLORS.border
+                            : COLORS.accent,
+                          opacity: alreadyAdded ? 0.4 : 1,
                         }}
                       >
-                        <Text style={{ fontSize: 11, color: alreadyAdded ? COLORS.textMuted : COLORS.accent, fontWeight: "600" }}>
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            color: alreadyAdded
+                              ? COLORS.textMuted
+                              : COLORS.accent,
+                            fontWeight: "600",
+                          }}
+                        >
                           + {wt.label}
                         </Text>
                       </TouchableOpacity>
@@ -619,26 +861,75 @@ export default function AddProductScreen() {
 
                 {/* Clearly labeled columns */}
                 {tiers.length > 0 && (
-                  <View style={{ flexDirection: "row", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: COLORS.border, marginBottom: 8 }}>
-                    <Text style={{ flex: 2, fontSize: 11, fontWeight: "600", color: COLORS.textSecondary }}>Weight Tier (Unit)</Text>
-                    <Text style={{ flex: 1.5, fontSize: 11, fontWeight: "600", color: COLORS.textSecondary }}>Price ($/g)</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      paddingVertical: 6,
+                      borderBottomWidth: 1,
+                      borderBottomColor: COLORS.border,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        flex: 2,
+                        fontSize: 11,
+                        fontWeight: "600",
+                        color: COLORS.textSecondary,
+                      }}
+                    >
+                      Weight Tier (Unit)
+                    </Text>
+                    <Text
+                      style={{
+                        flex: 1.5,
+                        fontSize: 11,
+                        fontWeight: "600",
+                        color: COLORS.textSecondary,
+                      }}
+                    >
+                      Price ($/g)
+                    </Text>
                     <View style={{ width: 28 }} />
                   </View>
                 )}
 
                 {tiers.map((tier, index) => (
-                  <View key={index} style={[styles.tierRow, { marginBottom: 8, alignItems: "center" }]}>
+                  <View
+                    key={index}
+                    style={[
+                      styles.tierRow,
+                      { marginBottom: 8, alignItems: "center" },
+                    ]}
+                  >
                     <View style={{ flex: 2, justifyContent: "center" }}>
-                      <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: "500" }}>
+                      <Text
+                        style={{
+                          color: COLORS.text,
+                          fontSize: 14,
+                          fontWeight: "500",
+                        }}
+                      >
                         {tier.tier_name} ({tier.min_weight_grams}g)
                       </Text>
                     </View>
                     <TextInput
-                      style={[styles.input, { flex: 1.5, marginRight: 8, marginBottom: 0, paddingVertical: 4, height: 36 }]}
+                      style={[
+                        styles.input,
+                        {
+                          flex: 1.5,
+                          marginRight: 8,
+                          marginBottom: 0,
+                          paddingVertical: 4,
+                          height: 36,
+                        },
+                      ]}
                       placeholder="0.00"
                       keyboardType="decimal-pad"
                       value={String(tier.price_per_gram || "")}
-                      onChangeText={(v) => updateTier(index, "price_per_gram", v)}
+                      onChangeText={(v) =>
+                        updateTier(index, "price_per_gram", v)
+                      }
                     />
                     <TouchableOpacity
                       onPress={() => removeTier(index)}
@@ -662,7 +953,8 @@ export default function AddProductScreen() {
                       fontStyle: "italic",
                     }}
                   >
-                    No specific tiers defined. Base price will apply to all weights.
+                    No specific tiers defined. Base price will apply to all
+                    weights.
                   </Text>
                 )}
               </View>
@@ -676,7 +968,9 @@ export default function AddProductScreen() {
           style={styles.saveButton}
           onPress={handleSave}
           disabled={saving}
-          accessibilityLabel={saving ? "Saving product details" : "Create product and save"}
+          accessibilityLabel={
+            saving ? "Saving product details" : "Create product and save"
+          }
           accessibilityRole="button"
         >
           <Text style={styles.saveButtonText}>
@@ -699,7 +993,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backButton: { padding: 8, minHeight: 40, minWidth: 40, justifyContent: "center" },
+  backButton: {
+    padding: 8,
+    minHeight: 40,
+    minWidth: 40,
+    justifyContent: "center",
+  },
   title: { fontSize: FONT_SIZES.xl, fontWeight: "700", color: COLORS.text },
   content: { padding: SPACING.md, paddingBottom: 100 },
   section: {
@@ -803,7 +1102,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tierRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  removeBtn: { padding: 10, minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" }, // Accessible button tap target (44x44)
+  removeBtn: {
+    padding: 10,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  }, // Accessible button tap target (44x44)
 
   footer: {
     padding: SPACING.md,

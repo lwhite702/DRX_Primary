@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { randomBytes } from "crypto";
-import { auth, clerkClient } from "@/lib/adapters/auth/server";
+import { clerkClient } from "@/lib/adapters/auth/server";
 import { db } from "@/lib/db";
-import { hasPermission } from "@/lib/auth/server-guards";
+import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { MANAGEABLE_TEAM_ROLES } from "@/lib/team/roles";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
@@ -10,21 +11,15 @@ import { ensureServerFlag } from "@/lib/posthog/server-flags";
 const AdminUserCreateSchema = z.object({
   username: z.string().min(1),
   email: z.string().email(),
-  role: z.string().min(1).optional(),
+  role: z.enum(MANAGEABLE_TEAM_ROLES).optional(),
+  businessId: z.string().min(1),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId: actorId } = await auth();
-
-    if (!actorId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const canManageUsers = await hasPermission("users.manage_all");
-    if (!canManageUsers) {
-      return errorResponse("FORBIDDEN", "Forbidden", 403);
-    }
+    const admin = await getPlatformAdmin();
+    if (!admin) return errorResponse("FORBIDDEN", "Forbidden", 403);
+    const actorId = admin.userId;
 
     const featureEnabled = await ensureServerFlag("feat_admin_user_management", {
       distinctId: actorId,
@@ -47,7 +42,9 @@ export async function POST(request: NextRequest) {
         payload.error.flatten(),
       );
     }
-    const { username, email, role } = payload.data;
+    const { username, email, role, businessId } = payload.data;
+    const business = await db.businessProfile.findUnique({ where: { id: businessId }, select: { id: true } });
+    if (!business) return errorResponse("NOT_FOUND", "Business not found", 404);
 
     // 1. Create User in Clerk
     const client = await clerkClient();
@@ -67,22 +64,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Assign Role (via user_roles)
-    // Find business owner's business? The legacy code fetched via 'owner_id = user.id' (actor).
-    // So if the actor is an owner, we use their business.
-    const business = await db.businessProfile.findFirst({
-      where: { ownerId: actorId },
-      select: { id: true },
-    });
-
-    const businessId = business?.id;
-
     if (businessId) {
       await db.userRole.create({
         data: {
           userId: newUser.id,
           businessId: businessId,
-          role: role || "employee",
+          role: role || "staff",
           permissions: { all: false },
         },
       });
@@ -95,7 +82,8 @@ export async function POST(request: NextRequest) {
         entityType: "user",
         action: "create_user",
         userId: actorId,
-        newValues: { username, email, role },
+        newValues: { role },
+        businessId,
         // businessId: businessId
       },
     });

@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { docsHubUrl } from "@/lib/docs-links";
+import { drxContent } from "@deelrx/content";
 
 export type NavItem = {
   href: string;
@@ -22,15 +23,24 @@ export type NavItem = {
 };
 
 export const primaryNav: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/sales", label: "Orders & Receipts", icon: ShoppingCart },
-  { href: "/pos/sale", label: "Point of Sale", icon: ScanLine },
-  { href: "/deliveries", label: "Deliveries", icon: Truck },
-  { href: "/inventory", label: "Inventory", icon: Package },
-  { href: "/customers", label: "Customers", icon: Users },
-  { href: "/credit", label: "Store Credit", icon: Wallet },
-  { href: "/insights", label: "Insights", icon: LineChart },
-  { href: "/reports", label: "Reports", icon: BarChart2 },
-  { href: docsHubUrl, label: "Help", icon: HelpCircle, external: true },
-  { href: "/settings", label: "Settings", icon: Settings },
+  {
+    href: "/dashboard",
+    label: drxContent.navigation.home,
+    icon: LayoutDashboard,
+  },
+  { href: "/sales", label: drxContent.navigation.sales, icon: ShoppingCart },
+  { href: "/pos/sale", label: drxContent.navigation.newSale, icon: ScanLine },
+  { href: "/deliveries", label: drxContent.navigation.deliveries, icon: Truck },
+  { href: "/inventory", label: drxContent.navigation.products, icon: Package },
+  { href: "/customers", label: drxContent.navigation.customers, icon: Users },
+  { href: "/credit", label: drxContent.navigation.payments, icon: Wallet },
+  { href: "/insights", label: drxContent.navigation.trends, icon: LineChart },
+  { href: "/reports", label: drxContent.navigation.reports, icon: BarChart2 },
+  {
+    href: docsHubUrl,
+    label: drxContent.navigation.help,
+    icon: HelpCircle,
+    external: true,
+  },
+  { href: "/settings", label: drxContent.navigation.settings, icon: Settings },
 ];

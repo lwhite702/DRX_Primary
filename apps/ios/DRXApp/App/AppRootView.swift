@@ -188,21 +188,21 @@ private struct SignedOutWelcomeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 190, height: 100)
-                    .accessibilityLabel("Deelrx CRM")
+                    .accessibilityLabel(DRXContent.Brand.formalName)
                 VStack(spacing: DRXSpacing.sm) {
-                    Text("Your workspace starts here")
+                    Text("Keep the business straight")
                         .font(.largeTitle.bold())
                         .foregroundStyle(DRXPalette.ink)
                         .multilineTextAlignment(.center)
-                    Text("Create an operator account or sign in to continue to your private business workspace.")
+                    Text("Create an account or sign in to track customers, stock, sales, and money.")
                         .foregroundStyle(DRXPalette.muted)
                         .multilineTextAlignment(.center)
                 }
                 VStack(spacing: DRXSpacing.md) {
-                    Button("Create Account", action: onCreateAccount)
+                    Button("Create account", action: onCreateAccount)
                         .buttonStyle(.drxPrimaryFullWidth)
                         .accessibilityIdentifier("createAccountButton")
-                    Button("Sign In", action: onSignIn)
+                    Button("Sign in", action: onSignIn)
                         .buttonStyle(.bordered)
                         .tint(DRXPalette.ink)
                         .accessibilityIdentifier("signInButton")
@@ -228,19 +228,19 @@ private struct SessionBootstrapView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 184, height: 96)
-                    .accessibilityLabel("Deelrx CRM")
+                    .accessibilityLabel(DRXContent.Brand.formalName)
 
                 VStack(spacing: 8) {
-                    Text("Opening Deelrx CRM")
+                    Text("Opening \(DRXContent.Brand.formalName)")
                         .font(.title2.bold())
                         .foregroundStyle(DRXPalette.ink)
 
-                    Text("Confirming your operator access")
+                    Text("Checking your account")
                         .font(.subheadline)
                         .foregroundStyle(DRXPalette.muted)
                 }
 
-                ProgressView("Loading your workspace…")
+                ProgressView("Loading your business…")
                         .tint(DRXPalette.accent)
                         .foregroundStyle(DRXPalette.muted)
                         .accessibilityIdentifier("sessionLoadingIndicator")
@@ -267,21 +267,17 @@ private struct ProvisioningRecoveryView: View {
     var body: some View {
         VStack(spacing: 18) {
             Image(systemName: "exclamationmark.triangle.fill").font(.largeTitle).foregroundStyle(DRXPalette.danger)
-            Text("Workspace Unavailable").font(.title2.bold())
-            Text(environment.provisioningMessage ?? "We couldn't open your workspace.")
+            Text("Business unavailable").font(.title2.bold())
+            Text(environment.provisioningMessage ?? "We couldn’t open your business.")
                 .multilineTextAlignment(.center).foregroundStyle(DRXPalette.muted)
                 .accessibilityIdentifier("provisioningErrorMessage")
-            Button("Retry") { Task { await environment.checkProvisioning() } }
+            Button(DRXContent.Actions.tryAgain) { Task { await environment.checkProvisioning() } }
                 .buttonStyle(.drxPrimary).accessibilityIdentifier("retryProvisioningButton")
             Button("Sign Out", role: .destructive) {
                 Task {
-                    do {
-                        await PushNotificationCoordinator.shared.unregister()
-                        try await clerk.auth.signOut()
-                        await environment.clerkSignedOut()
-                    } catch {
-                        signOutError = "We couldn't sign you out. Check your connection and try again."
-                    }
+                    await PushNotificationCoordinator.shared.unregister()
+                    try? await clerk.auth.signOut()
+                    await environment.signOut()
                 }
             }
             if let requestID = environment.supportRequestID {
@@ -314,25 +310,25 @@ private struct OperatorTabView: View {
             NavigationStack {
                 DashboardView()
             }
-                .tabItem { Label("Dashboard", systemImage: "gauge.with.dots.needle.67percent") }
+                .tabItem { Label(DRXContent.Navigation.home, systemImage: "gauge.with.dots.needle.67percent") }
                 .tag(WorkspaceTab.dashboard)
 
             NavigationStack {
                 POSView()
             }
-                .tabItem { Label("POS", systemImage: "cart.fill") }
+                .tabItem { Label(DRXContent.Navigation.newSale, systemImage: "cart.fill") }
                 .tag(WorkspaceTab.pos)
 
             NavigationStack {
                 InventoryView()
             }
-                .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+                .tabItem { Label(DRXContent.Navigation.products, systemImage: "shippingbox.fill") }
                 .tag(WorkspaceTab.inventory)
 
             NavigationStack {
                 CustomersView()
             }
-                .tabItem { Label("Customers", systemImage: "person.2.fill") }
+                .tabItem { Label(DRXContent.Navigation.customers, systemImage: "person.2.fill") }
                 .tag(WorkspaceTab.customers)
 
             NavigationStack {
@@ -341,54 +337,50 @@ private struct OperatorTabView: View {
                         NavigationLink {
                             CreditView()
                         } label: {
-                            Label("Credit", systemImage: "creditcard.fill")
+                            Label(DRXContent.Navigation.payments, systemImage: "creditcard.fill")
                         }
                         .accessibilityIdentifier("module_credit")
 
                         NavigationLink {
                             DeliveryQueueView()
                         } label: {
-                            Label("Deliveries", systemImage: "car.side.fill")
+                            Label(DRXContent.Navigation.deliveries, systemImage: "car.side.fill")
                         }
                         .accessibilityIdentifier("module_deliveries")
 
                         NavigationLink {
                             ReportsView()
                         } label: {
-                            Label("Reports", systemImage: "chart.bar.doc.horizontal.fill")
+                            Label(DRXContent.Navigation.reports, systemImage: "chart.bar.doc.horizontal.fill")
                         }
                         .accessibilityIdentifier("module_reports")
 
                         NavigationLink {
                             WorkspacesView()
                         } label: {
-                            Label("Workspaces", systemImage: "building.2.fill")
+                            Label(DRXContent.Terms.business, systemImage: "building.2.fill")
                         }
                         .accessibilityIdentifier("module_workspaces")
 
                         NavigationLink {
                             AIIntelligenceView()
                         } label: {
-                            Label("AI Intelligence", systemImage: "sparkles")
+                            Label(DRXContent.Navigation.trends, systemImage: "sparkles")
                         }
                         .accessibilityIdentifier("module_ai_intelligence")
                     }
 
                     Section("Session") {
                         if let session = environment.session.operatorSession {
-                            LabeledContent("Operator", value: session.displayName)
-                            LabeledContent("Business", value: session.businessName)
+                            LabeledContent(DRXContent.Terms.teamMember, value: session.displayName)
+                            LabeledContent(DRXContent.Terms.business, value: session.businessName)
                         }
 
                         Button("Sign Out", role: .destructive) {
                             Task {
-                                do {
-                                    await PushNotificationCoordinator.shared.unregister()
-                                    try await clerk.auth.signOut()
-                                    await environment.signOut()
-                                } catch {
-                                    signOutError = "We couldn't sign you out. Check your connection and try again."
-                                }
+                                await PushNotificationCoordinator.shared.unregister()
+                                try? await clerk.auth.signOut()
+                                await environment.signOut()
                             }
                         }
                         .accessibilityIdentifier("signOutButton")
@@ -542,10 +534,6 @@ private final class DeliveryQueueStore {
         }
     }
 
-    func assignToMe(_ delivery: DRXDelivery) async {
-        await mutate("deliveries:assignDelivery", args: DeliveryIdArgs(deliveryId: delivery.id))
-    }
-
     func markUberOrdered(_ delivery: DRXDelivery, waitMinutes: Int) async {
         error = nil
         localWarning = nil
@@ -594,6 +582,21 @@ private final class DeliveryQueueStore {
         ) {
             DeliveryReminderScheduler.cancel(deliveryID: delivery.id)
         }
+    }
+
+    func assignToMe(_ delivery: DRXDelivery) async {
+        await mutate("deliveries:assignDelivery", args: AssignDeliveryArgs(deliveryId: delivery.id, assigneeUserId: currentOperatorID))
+    }
+
+    func assign(_ delivery: DRXDelivery, to assigneeUserId: String) async {
+        await mutate("deliveries:assignDelivery", args: AssignDeliveryArgs(deliveryId: delivery.id, assigneeUserId: assigneeUserId))
+    }
+
+    func fetchDetails(for delivery: DRXDelivery) async throws -> DRXDeliveryDetailResponse {
+        try await ConvexClient.shared.query(
+            "deliveries:getDelivery",
+            args: DeliveryIdArgs(deliveryId: delivery.id)
+        )
     }
 
     func address(for delivery: DRXDelivery) async throws -> String {
@@ -756,6 +759,7 @@ private struct DeliveryQueueView: View {
     @State private var store = DeliveryQueueStore()
     @State private var deliveryForUber: DRXDelivery?
     @State private var deliveryForCancellation: DRXDelivery?
+    @State private var deliveryForDetails: DRXDelivery?
 
     private var operatorID: String? { environment.session.operatorSession?.operatorID }
     private var isManager: Bool {
@@ -789,6 +793,7 @@ private struct DeliveryQueueView: View {
                         onHandOff: { Task { await store.markHandedOff(delivery) } },
                         onDeliver: { Task { await store.markDelivered(delivery) } },
                         onCancel: { deliveryForCancellation = delivery },
+                        onInspect: { deliveryForDetails = delivery },
                         onRevealAddress: { try await store.address(for: delivery) },
                         currentOperatorID: operatorID,
                         canReassign: isManager,
@@ -824,6 +829,9 @@ private struct DeliveryQueueView: View {
             DeliveryCancellationSheet(delivery: delivery) { reason in
                 Task { await store.cancel(delivery, reason: reason) }
             }
+        }
+        .sheet(item: $deliveryForDetails) { delivery in
+            DeliveryDetailSheet(delivery: delivery, store: store)
         }
         .alert("Delivery update failed", isPresented: .init(
             get: { store.error != nil && !store.deliveries.isEmpty },
@@ -862,6 +870,7 @@ private struct DeliveryQueueRow: View {
     let onHandOff: () -> Void
     let onDeliver: () -> Void
     let onCancel: () -> Void
+    let onInspect: () -> Void
     let onRevealAddress: () async throws -> String
     let currentOperatorID: String?
     let canReassign: Bool
@@ -881,8 +890,19 @@ private struct DeliveryQueueRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(delivery.orderNumber)
-                    .font(.headline.monospaced())
+                Button(action: onInspect) {
+                    HStack(spacing: 6) {
+                        Text(delivery.orderNumber)
+                            .font(.headline.monospaced())
+                            .foregroundStyle(DRXPalette.ink)
+                        Image(systemName: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(DRXPalette.accent)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("View details and audit history for \(delivery.orderNumber)")
+
                 Spacer()
                 Text(isDispatchOverdue ? "ORDER UBER NOW" : delivery.status.label.uppercased())
                     .font(.caption2.bold())
@@ -1034,6 +1054,118 @@ private struct DeliveryCancellationSheet: View {
                     }
                     .disabled(reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+            }
+        }
+    }
+}
+
+private struct DeliveryDetailSheet: View {
+    let delivery: DRXDelivery
+    let store: DeliveryQueueStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var details: DRXDeliveryDetailResponse?
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if isLoading {
+                    ProgressView("Loading delivery audit log…")
+                } else if let errorMessage {
+                    ContentUnavailableView(
+                        "Audit details unavailable",
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(errorMessage)
+                    )
+                } else if let details {
+                    List {
+                        Section("Fulfillment Summary") {
+                            LabeledContent("Order", value: details.delivery.orderNumber)
+                            LabeledContent("Status", value: details.delivery.status.label)
+                            LabeledContent("Vendor Expense", value: formatDeliveryCents(details.delivery.vendorFeeCents))
+                            LabeledContent("Customer Fee", value: formatDeliveryCents(details.delivery.customerFeeCents))
+                            if let dispatchDueAt = details.delivery.dispatchDueAt {
+                                LabeledContent("Dispatch Due", value: Date(timeIntervalSince1970: dispatchDueAt / 1000).formatted(date: .abbreviated, time: .shortened))
+                            }
+                            if let eta = details.delivery.estimatedArrivalAt {
+                                LabeledContent("Courier ETA", value: Date(timeIntervalSince1970: eta / 1000).formatted(date: .abbreviated, time: .shortened))
+                            }
+                            if let handedOffAt = details.delivery.handedOffAt {
+                                LabeledContent("Handed Off", value: Date(timeIntervalSince1970: handedOffAt / 1000).formatted(date: .abbreviated, time: .shortened))
+                            }
+                            if let deliveredAt = details.delivery.deliveredAt {
+                                LabeledContent("Delivered", value: Date(timeIntervalSince1970: deliveredAt / 1000).formatted(date: .abbreviated, time: .shortened))
+                            }
+                        }
+
+                        if !details.events.isEmpty {
+                            Section("Audit Events") {
+                                ForEach(details.events) { event in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text(event.type.replacingOccurrences(of: "_", with: " ").capitalized)
+                                                .font(.subheadline.bold())
+                                                .foregroundStyle(DRXPalette.ink)
+                                            Spacer()
+                                            Text(Date(timeIntervalSince1970: event.createdAt / 1000).formatted(date: .omitted, time: .shortened))
+                                                .font(.caption2)
+                                                .foregroundStyle(DRXPalette.muted)
+                                        }
+                                        if let from = event.fromStatus, let to = event.toStatus {
+                                            Text("\(from) → \(to)")
+                                                .font(.caption)
+                                                .foregroundStyle(DRXPalette.accent)
+                                        }
+                                        if !event.metadata.isEmpty && event.metadata != "{}" {
+                                            Text(event.metadata)
+                                                .font(.caption2.monospaced())
+                                                .foregroundStyle(DRXPalette.muted)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
+                                }
+                            }
+                        }
+
+                        if !details.adjustments.isEmpty {
+                            Section("Financial Adjustments") {
+                                ForEach(details.adjustments) { adj in
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(adj.kind.replacingOccurrences(of: "_", with: " ").capitalized)
+                                                .font(.subheadline.bold())
+                                            Text(adj.reason)
+                                                .font(.caption)
+                                                .foregroundStyle(DRXPalette.muted)
+                                        }
+                                        Spacer()
+                                        Text(formatDeliveryCents(adj.amountCents))
+                                            .font(.subheadline.monospacedDigit())
+                                            .foregroundStyle(DRXPalette.warning)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
+            }
+            .navigationTitle("Audit Log")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .task {
+                do {
+                    details = try await store.fetchDetails(for: delivery)
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+                isLoading = false
             }
         }
     }

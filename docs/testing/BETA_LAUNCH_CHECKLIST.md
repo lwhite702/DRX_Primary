@@ -20,15 +20,15 @@ Updated: 2026-03-30T08:20:00.000Z
 ## Release Controls
 - [x] Feature freeze confirmation
 - [x] Environment parity validation (policy and workflow contracts updated)
-- [ ] Secrets validation (pending CI/prod run owner confirmation)
-- [ ] Production env var audit (pending owner confirmation)
+- [x] Secrets validation (production & staging environment secrets audited in WRE-8)
+- [x] Production env var audit (verified against contract in WRE-8)
 - [ ] DNS validation
 - [ ] SSL validation
 - [ ] Payment live key validation
 - [ ] Analytics live mode validation
-- [ ] Admin access validation
+- [x] Admin access validation (platform slug isolation verified in WRE-8 / WRE-87)
 - [x] Rate limiting confirmation (policy check)
-- [ ] Monitoring alerts active
+- [x] Monitoring alerts active (Sentry and PostHog verified in WRE-9)
 - [x] Rollback plan documented
 - [x] Hotfix procedure documented
 

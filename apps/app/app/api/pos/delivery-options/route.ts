@@ -1,27 +1,29 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import type { FunctionReturnType } from "convex/server";
+import { ConvexHttpClient } from "convex/browser";
+import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-
-export async function GET() {
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
+import { checkoutFailure } from "@/app/api/pos/_lib/full-checkout";
+export async function GET(request?: NextRequest) {
   try {
-    const { businessId } = await resolveAuthContext();
-    if (!businessId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Since there is no specific RPC for delivery options yet (it was a direct table select),
-    // we use Prisma to fetch from the table.
-    const options = await db.deliveryManagement.findMany({
-      where: {
-        businessId,
-        isActive: true,
-      },
-    });
-
-    return NextResponse.json(options);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Delivery Options Error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+    const { businessId } = await resolveAuthContext(request);
+    const token = await getConvexAuthToken();
+    if (!businessId || !token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!url) throw new Error("Unavailable");
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    const options = []; let cursor: string | null = null;
+    let pageCount = 0;
+    const maxPages = 100;
+    do {
+      if (pageCount++ >= maxPages) break;
+      const result: FunctionReturnType<typeof api.deliveryProfiles.list> = await client.query(api.deliveryProfiles.list, { businessId, paginationOpts: { cursor, numItems: 100 } });
+      options.push(...result.page);
+      if (result.isDone) break;
+      if (result.continueCursor === cursor) throw new Error("Pagination did not advance");
+      cursor = result.continueCursor;
+    } while (true);
+    return NextResponse.json(options, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return checkoutFailure(error); }
 }

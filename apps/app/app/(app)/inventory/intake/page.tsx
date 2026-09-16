@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useRealtimeInventory } from "@/lib/hooks/use-realtime";
+import { useIntakeProducts } from "@/lib/hooks/use-intake-products";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { AlertTriangle, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
@@ -29,7 +29,9 @@ import { Badge } from "@/components/ui/badge";
 import { PermissionGuard } from "@/components/auth/role-guard";
 import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { getUnitLabel, type UnitOfMeasure } from "@/lib/utils/units";
+import { formatAmount, formatQuantity } from "@/lib/number-format";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
+import { ProgressiveSection } from "@/components/ui/progressive-section";
 
 interface IntakeFormData {
   inventory_id: string;
@@ -39,6 +41,9 @@ interface IntakeFormData {
   total_weight_grams: string;
   delivery_cost: string;
   supplier: string;
+  lot_number: string;
+  expiration_date: string;
+  location: string;
 }
 
 export default function InventoryIntakePage() {
@@ -47,8 +52,9 @@ export default function InventoryIntakePage() {
     inventory: inventoryItems,
     loading: inventoryLoading,
     syncStatus,
+    error: inventoryError,
     refresh: refreshInventory,
-  } = useRealtimeInventory(business?.id || null);
+  } = useIntakeProducts(business?.id || null);
   const [processing, setProcessing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const idempotencyKey = useRef(crypto.randomUUID());
@@ -60,7 +66,19 @@ export default function InventoryIntakePage() {
     total_weight_grams: "",
     delivery_cost: "0",
     supplier: "",
+    lot_number: "",
+    expiration_date: "",
+    location: "",
   });
+
+  const inFlight = useRef(false);
+  const activeBusiness = useRef(business?.id);
+  activeBusiness.current = business?.id;
+  useEffect(() => {
+    idempotencyKey.current = crypto.randomUUID();
+    setShowConfirmModal(false);
+    setFormData(current => ({ ...current, inventory_id: "", product_name: "" }));
+  }, [business?.id]);
 
   // Calculate cost per gram
   const costPerUnit =
@@ -117,24 +135,31 @@ export default function InventoryIntakePage() {
       return;
     }
 
+    if (inFlight.current) return;
+    inFlight.current = true;
+    const submittedBusiness = business.id;
     setProcessing(true);
     setShowConfirmModal(false);
 
     try {
       const response = await fetch("/api/inventory/intake", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-business-id": submittedBusiness },
         body: JSON.stringify({
           inventory_id: formData.inventory_id,
           total_cost: parseFloat(formData.total_cost),
           total_weight_grams: parseFloat(formData.total_weight_grams),
           delivery_cost: parseFloat(formData.delivery_cost || "0"),
           supplier: formData.supplier || undefined,
+          lot_number: formData.lot_number || undefined,
+          expiration_date: formData.expiration_date ? new Date(formData.expiration_date).getTime() : undefined,
+          location: formData.location || undefined,
           idempotency_key: idempotencyKey.current,
         }),
       });
 
       const result = await response.json();
+      if (activeBusiness.current !== submittedBusiness) return;
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to process intake");
@@ -158,13 +183,19 @@ export default function InventoryIntakePage() {
         total_weight_grams: "",
         delivery_cost: "0",
         supplier: "",
+        lot_number: "",
+        expiration_date: "",
+        location: "",
       });
       idempotencyKey.current = crypto.randomUUID();
+      void refreshInventory();
     } catch (error) {
+      if (activeBusiness.current !== submittedBusiness) return;
       toast.error(
         error instanceof Error ? error.message : "Failed to process intake",
       );
     } finally {
+      inFlight.current = false;
       setProcessing(false);
     }
   };
@@ -210,6 +241,8 @@ export default function InventoryIntakePage() {
           <DataSyncStatus status={syncStatus} onRefresh={() => void refreshInventory()} />
         </div>
 
+        {inventoryError && <Alert variant="destructive"><AlertTitle>Products unavailable</AlertTitle><AlertDescription>{inventoryError}</AlertDescription></Alert>}
+        {!inventoryError && inventoryItems.length === 0 && <Alert><AlertTitle>No products available</AlertTitle><AlertDescription>Your stock catalog needs to be set up before receiving inventory.</AlertDescription></Alert>}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
           {/* Intake Form */}
           <div className="lg:col-span-2 luminosity-card rounded-xl bg-card/50 backdrop-blur-sm border-border">
@@ -234,24 +267,11 @@ export default function InventoryIntakePage() {
                     {inventoryItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.product_name} (SKU: {item.sku}, Stock:{" "}
-                        {item.quantity_on_hand}g)
+                        {formatQuantity(item.quantity_on_hand)}g)
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              {/* Supplier */}
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier (Optional)</Label>
-                <Input
-                  id="supplier"
-                  placeholder="Supplier name"
-                  value={formData.supplier}
-                  onChange={(e) =>
-                    setFormData({ ...formData, supplier: e.target.value })
-                  }
-                />
               </div>
 
               <div className="border-t pt-4 space-y-4">
@@ -316,8 +336,8 @@ export default function InventoryIntakePage() {
                     <Input
                       value={
                         costPerUnit > 0
-                          ? `$${costPerUnit.toFixed(6)}/${formData.unit_of_measure}`
-                          : `$0.000000/${formData.unit_of_measure}`
+                          ? `$${formatAmount(costPerUnit)}/${formData.unit_of_measure}`
+                          : `$0.00/${formData.unit_of_measure}`
                       }
                       readOnly
                       className="bg-muted"
@@ -331,8 +351,67 @@ export default function InventoryIntakePage() {
                     {formData.unit_of_measure})
                   </p>
                 </div>
+              </div>
 
-                {/* Delivery Cost */}
+              {/* Progressive Reveal for Additional / Logistics Fields */}
+              <ProgressiveSection
+                title="Additional Batch & Logistics Details"
+                description="Lot #, expiration date, storage location, supplier, delivery cost"
+                defaultOpen={false}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lot_number">Lot / Batch Number</Label>
+                    <Input
+                      id="lot_number"
+                      placeholder="e.g. LOT-2026-001"
+                      value={formData.lot_number}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lot_number: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="expiration_date">Expiration Date</Label>
+                    <Input
+                      id="expiration_date"
+                      type="date"
+                      value={formData.expiration_date}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expiration_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Storage Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="e.g. Shelf A-3, Vault"
+                      value={formData.location}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="supplier">Supplier (Optional)</Label>
+                    <Input
+                      id="supplier"
+                      placeholder="Supplier name"
+                      value={formData.supplier}
+                      onChange={(e) =>
+                        setFormData({ ...formData, supplier: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="delivery_cost">
                     Delivery / Shipping Cost ($) (Optional)
@@ -355,7 +434,7 @@ export default function InventoryIntakePage() {
                     Separate delivery cost - NOT included in cost-per-gram
                   </p>
                 </div>
-              </div>
+              </ProgressiveSection>
 
               <Button
                 onClick={handleOpenConfirmModal}
@@ -388,20 +467,20 @@ export default function InventoryIntakePage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams || "0"}
+                    {formatQuantity(Number(formData.total_weight_grams || "0"))}
                     {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Product Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.total_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.total_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.delivery_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between border-t pt-3">
@@ -409,7 +488,7 @@ export default function InventoryIntakePage() {
                     Total Intake Cost:
                   </span>
                   <span className="font-bold text-lg">
-                    ${totalIntakeCost.toFixed(2)}
+                    ${formatAmount(totalIntakeCost)}
                   </span>
                 </div>
                 {costPerUnit > 0 && (
@@ -423,7 +502,7 @@ export default function InventoryIntakePage() {
                       :
                     </span>
                     <span className="font-mono font-bold text-primary">
-                      ${costPerUnit.toFixed(6)}
+                      ${formatAmount(costPerUnit)}
                     </span>
                   </div>
                 )}
@@ -454,29 +533,47 @@ export default function InventoryIntakePage() {
                     {formData.supplier || "N/A"}
                   </span>
                 </div>
+                {formData.lot_number ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Lot / Batch:</span>
+                    <span className="font-medium font-mono">{formData.lot_number}</span>
+                  </div>
+                ) : null}
+                {formData.expiration_date ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Expiration Date:</span>
+                    <span className="font-medium">{formData.expiration_date}</span>
+                  </div>
+                ) : null}
+                {formData.location ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Storage Location:</span>
+                    <span className="font-medium">{formData.location}</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">
-                    {formData.total_weight_grams}
+                    {formatQuantity(Number(formData.total_weight_grams))}
                     {formData.unit_of_measure}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Product Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.total_cost).toFixed(2)}
+                    ${formatAmount(parseFloat(formData.total_cost))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Delivery Cost:</span>
                   <span className="font-medium">
-                    ${parseFloat(formData.delivery_cost || "0").toFixed(2)}
+                    ${formatAmount(parseFloat(formData.delivery_cost || "0"))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm border-t pt-2">
                   <span className="font-semibold">Total Cost:</span>
                   <span className="font-bold">
-                    ${totalIntakeCost.toFixed(2)}
+                    ${formatAmount(totalIntakeCost)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm bg-primary/10 p-2 rounded">
@@ -489,7 +586,7 @@ export default function InventoryIntakePage() {
                     :
                   </span>
                   <span className="font-mono font-bold text-primary">
-                    ${costPerUnit.toFixed(6)}/{formData.unit_of_measure}
+                    ${formatAmount(costPerUnit)}/{formData.unit_of_measure}
                   </span>
                 </div>
               </div>

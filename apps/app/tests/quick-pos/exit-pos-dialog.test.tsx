@@ -21,11 +21,9 @@ describe("ExitPosDialog", () => {
       json: async () => ({ allowed: true }),
     });
 
-    render(
-      <ExitPosDialog open onClose={vi.fn()} onSuccess={onSuccess} />,
-    );
+    render(<ExitPosDialog open onClose={vi.fn()} onSuccess={onSuccess} />);
 
-    const confirm = screen.getByRole("button", { name: "Confirm Exit" });
+    const confirm = screen.getByRole("button", { name: "Confirm exit" });
     expect(confirm).not.toBeDisabled();
     fireEvent.click(confirm);
 
@@ -45,14 +43,14 @@ describe("ExitPosDialog", () => {
       json: async () => ({ allowed: false }),
     });
 
-    render(
-      <ExitPosDialog open onClose={vi.fn()} onSuccess={vi.fn()} />,
-    );
+    render(<ExitPosDialog open onClose={vi.fn()} onSuccess={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Confirm Exit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm exit" }));
 
     expect(
-      await screen.findByText("Enter the configured manager PIN and try again."),
+      await screen.findByText(
+        "Enter the configured manager PIN and try again.",
+      ),
     ).toBeVisible();
   });
 });

@@ -1,5 +1,5 @@
 # Dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -97,5 +97,22 @@ credentials.json
 # Native iOS telemetry values generated from Doppler/Xcode Cloud.
 apps/ios/Configuration/Telemetry.generated.xcconfig
 
+# Fastlane local dependencies, artifacts and private signing material
+/.bundle/
+/vendor/bundle/
+/build/fastlane/
+/fastlane/report.xml
+/fastlane/README.md
+/fastlane/.env*
+/fastlane/screenshots/
+/fastlane/test_output/
+*.p8
+*.p12
+*.mobileprovision
+/fastlane/swift/
+
+/fastlane/FastlaneRunner
+
 # Local Help Center exports and render previews; never commit raw API responses.
 .featurebase/
+/out/

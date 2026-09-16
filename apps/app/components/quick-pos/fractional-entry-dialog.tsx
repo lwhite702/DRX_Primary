@@ -1,5 +1,6 @@
 "use client";
 
+import { formatQuantity } from "@/lib/number-format";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,10 +109,10 @@ export function FractionalEntryDialog({
           <div className="rounded-lg border border-accent/20 bg-accent/5 p-4" aria-live="polite">
             <div className="flex items-center justify-between">
               <span>{config?.fractionalEnabled ? "Suggested serving" : "Suggested quantity"}</span>
-              <strong>{line.quantity} {line.sellingUnit}</strong>
+              <strong>{formatQuantity(line.quantity)} {line.sellingUnit}</strong>
             </div>
             <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
-              <span>{line.bulkTier?.label ?? "Standard price"} · ${line.unitPrice.toFixed(4)}/{line.sellingUnit}</span>
+              <span>{line.bulkTier?.label ?? "Standard price"} · ${line.unitPrice.toFixed(2)}/{line.sellingUnit}</span>
               <span>${line.lineTotal.toFixed(2)}</span>
             </div>
             {"belowMinimum" in line && line.belowMinimum ? (

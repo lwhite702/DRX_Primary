@@ -19,8 +19,6 @@ import {
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
 import { toast } from "sonner";
 import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
-import { getDefaultPrivacyProtocol } from "@/lib/privacy/profiles";
-import type { PrivacyProtocolSettings } from "@/lib/privacy/types";
 import {
   maskAlias,
   maskSensitiveText,
@@ -34,6 +32,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Link from "next/link";
+import { usePrivacyContext } from "@/lib/privacy/use-privacy-context";
 
 interface CustomerTransaction {
   id: string;
@@ -90,25 +89,27 @@ export default function CustomerDetailPage() {
     business?.id,
   );
   const [customer, setCustomer] = useState<any>(null);
+  const [customerScope, setCustomerScope] = useState<string | null>(null);
+  const scope = JSON.stringify([business?.id, customerId]);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [privacyProtocol, setPrivacyProtocol] =
-    useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
-  const [manualScreenPrivacyEnabled, setManualScreenPrivacyEnabled] =
-    useState(false);
+  const privacy = usePrivacyContext();
   const [lifecyclePending, setLifecyclePending] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true); setCustomer(null); setMetrics(null);
     if (!business?.id) return;
 
     const fetchData = async () => {
       try {
         // Fetch customer details via API
-        const res = await fetch(`/api/customers/${customerId}`);
+        const res = await fetch(`/api/customers/${customerId}`, { headers: { "X-Business-Id": String(business.id) } });
         if (!res.ok) throw new Error("Failed to load customer");
         const data = await res.json();
 
-        setCustomer(data);
+        if (cancelled) return;
+        setCustomer(data); setCustomerScope(scope);
 
         if (data.metrics) {
           setMetrics({
@@ -127,32 +128,18 @@ export default function CustomerDetailPage() {
           });
         }
 
-        const [settingsRes, preferenceRes] = await Promise.all([
-          fetch("/api/business/settings"),
-          fetch("/api/privacy/protexion/preferences"),
-        ]);
-        if (settingsRes.ok) {
-          const settingsData = await settingsRes.json();
-          setPrivacyProtocol(
-            settingsData.privacy_protocol ||
-              settingsData.privacyProtocol ||
-              getDefaultPrivacyProtocol(),
-          );
-        }
-        if (preferenceRes.ok) {
-          const preferenceData = await preferenceRes.json();
-          setManualScreenPrivacyEnabled(!!preferenceData?.manual_enabled);
-        }
       } catch (error) {
+        if (cancelled) return;
         toast.error("Failed to load customer details");
         console.error(error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchData();
-  }, [business?.id, customerId]);
+    return () => { cancelled = true; };
+  }, [business?.id, customerId, scope]);
 
   const can_apply_changes =
     !permissionLoading && hasPermission("customers.manage");
@@ -194,7 +181,7 @@ export default function CustomerDetailPage() {
     }
   };
 
-  if (businessLoading || loading) {
+  if (businessLoading || loading || (customer && customerScope !== scope)) {
     return <CustomerDetailSkeleton />;
   }
 
@@ -202,11 +189,9 @@ export default function CustomerDetailPage() {
     return <div className="p-4 md:p-8">Customer not found</div>;
   }
 
-  const shouldMask = shouldMaskFromProtocol(
-    privacyProtocol,
-    manualScreenPrivacyEnabled,
-    false,
-  );
+  if (!privacy.protocol) return <div className="p-4 md:p-8" role="status"><p>{privacy.error ?? "Loading customer privacy settings…"}</p>{privacy.error && <Button onClick={privacy.retry}>Retry privacy settings</Button>}</div>;
+  const privacyProtocol = privacy.protocol;
+  const shouldMask = shouldMaskFromProtocol(privacyProtocol, privacy.manualEnabled, false);
 
   const displayName =
     customer.alias ||
@@ -259,22 +244,7 @@ export default function CustomerDetailPage() {
               <div className="p-4 overflow-y-auto">
                 <AICreditPanel
                   customer_id={customer.id}
-                  current_limit={Number(
-                    customer.creditLimit || customer.credit_limit || 0,
-                  )}
-                  ai_recommended_limit={Number(
-                    customer.creditLimitAiRecommended ||
-                      customer.credit_limit_ai_recommended ||
-                      0,
-                  )}
-                  risk_score={Number(
-                    customer.creditRiskScore || customer.credit_risk_score || 0,
-                  )}
-                  last_reviewed_at={
-                    customer.creditLimitLastReviewedAt ||
-                    customer.credit_limit_last_reviewed_at
-                  }
-                  can_apply={can_apply_changes}
+            can_apply={can_apply_changes}
                 />
               </div>
             </SheetContent>
@@ -391,7 +361,9 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Sales</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Total Sales
+                  </p>
                   <p className="text-xl font-bold font-mono text-white mt-1">
                     $
                     {(
@@ -423,7 +395,9 @@ export default function CustomerDetailPage() {
                   </p>
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On-Time Ratio</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    On-Time Ratio
+                  </p>
                   <p className="text-xl font-bold font-mono text-[#4ADE80] mt-1">
                     {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
                     %
@@ -457,7 +431,7 @@ export default function CustomerDetailPage() {
                           href={`/sales/${transaction.id}`}
                           className="font-medium hover:underline"
                         >
-                          {transaction.order_number || "Transaction"}
+                          {transaction.order_number || "Sale"}
                         </Link>
                         <p className="text-xs text-muted-foreground">
                           {new Intl.DateTimeFormat(undefined, {
@@ -508,21 +482,6 @@ export default function CustomerDetailPage() {
         <div className="hidden lg:block">
           <AICreditPanel
             customer_id={customer.id}
-            current_limit={Number(
-              customer.creditLimit || customer.credit_limit || 0,
-            )}
-            ai_recommended_limit={Number(
-              customer.creditLimitAiRecommended ||
-                customer.credit_limit_ai_recommended ||
-                0,
-            )}
-            risk_score={Number(
-              customer.creditRiskScore || customer.credit_risk_score || 0,
-            )}
-            last_reviewed_at={
-              customer.creditLimitLastReviewedAt ||
-              customer.credit_limit_last_reviewed_at
-            }
             can_apply={can_apply_changes}
           />
         </div>

@@ -1,30 +1,30 @@
 ---
-title: "Payments and Customer Credit"
-description: "Accepting cash, cards, electronic transfers, split tenders, and managing store credit balances."
+title: "Payments and Balances Due"
+description: "Accepting payments and keeping track of customer balances due."
 icon: "credit-card"
 ---
 
-This guide explains how to accept different payment methods at checkout, handle electronic transfers, and manage customer store credit accounts.
+This guide explains how to accept different payment methods and keep customer balances clear.
 
 ## What this page is for
 
-Use this guide to ensure payment accuracy, prevent double-charges at checkout, manage customer credit balances, and close out shift cash drawers.
+Use this guide to check payments, avoid duplicate charges, manage balances due, and close a shift.
 
 ## Before you start
 
 - **Recommended role**:
   - Cashier: Ring up sales, calculate cash change, and accept card/transfer payments.
-  - Supervisor or Manager: Extend credit limits, receive credit balance payments, and void transactions.
+  - Supervisor or Manager: Set balance limits, record payments, and void sales.
 - **Key screens**:
   - **Payment Screen** (`/pos/payment`): Select customer tender during checkout.
-  - **Credit Center** (`/credit`): View customer balances, credit limits, and payment logs.
+  - **Payments** (`/credit`): View customer balances, balance limits, and payment logs.
   - **Sales History** (`/sales`): Review past receipts and payment breakdowns.
 - **Supported payment methods**:
   - **Cash**: Instant change calculation with \$10, \$20, \$50, \$100 quick buttons.
-  - **Card**: Credit or debit terminal processing.
-  - **Store Credit**: Deducts directly from an attached customer's approved credit line.
+  - **Card**: Card-terminal processing.
+  - **Balance due**: Adds the unpaid amount to the attached customer's balance.
   - **Zelle / Bank Transfer**: Digital payments requiring a confirmation reference note.
-  - **Split Tender**: Combine cash and card (or credit) on a single purchase.
+  - **Split Tender**: Combine cash and card (or balance) on a single purchase.
 
 ## Fast path
 
@@ -37,35 +37,35 @@ Use this guide to ensure payment accuracy, prevent double-charges at checkout, m
    - Confirm subtotal, tax, delivery fee, and change due.
 4. **Complete the sale**:
    - Tap **Complete Order** once. Hand the customer their receipt and change.
-5. **Managing store credit in the Credit Center** (`/credit`):
-   - **Extend Credit**: Select a customer to grant or increase their credit limit.
-   - **Log Credit Payment**: When a customer comes in to pay down their tab, select their profile, enter the cash/card amount, and tap **Record Payment**.
-   - The customer's balance updates instantly.
+5. **Manage balances due in Payments** (`/credit`):
+   - **Set balance limit**: Choose a customer and enter the maximum balance allowed.
+   - **Record payment**: Choose the customer, enter the amount paid, and tap **Record Payment**.
+   - Refresh the page to confirm the updated balance.
 6. **Shift closeout spot-check**:
-   - Compare your end-of-shift drawer cash against the cash total reported in **Operations Insights**.
+   - Compare your end-of-shift drawer cash against the cash total reported in **Trends**.
 
 ## If blocked
 
 - **"Select a Payment Method" prompt appears**:
-  - Tap a tender button (Cash, Card, Credit, etc.) before tapping Complete Order.
-- **Store Credit option is disabled**:
-  - Attach a customer profile to the cart and verify that they have an active credit line with available balance.
+  - Tap a payment method before tapping Complete Order.
+- **Balance due option is disabled**:
+  - Attach a customer profile to the cart and verify that they have an active balance line with available balance.
 - **Zelle transfer will not submit**:
   - Type the customer's transfer confirmation note into the reference field.
 - **Screen froze while processing card payment**:
   - Do not immediately swipe the card again. Check the **Sales** list to see if the receipt was generated to avoid double-charging the customer.
-- **Customer's credit balance looks incorrect**:
-  - Open the **Credit Center** (`/credit`) and review the customer's payment history and recent credit transactions.
+- **A customer balance looks incorrect**:
+  - Open **Payments** (`/credit`) and review the customer's recent activity.
 
 ## What is beta here
 
 - Integrated gift card barcode redemption and automated recurring billing schedules are in preview testing.
-- Cash, card, Zelle, split tender, and customer store credit tracking are fully live.
+- Cash, card, transfer, split payment, and balances due are available in early access.
 
 ## Related docs
 
 - [How sales work](/how-sales-work)
-- [Quick Sale runbook](/quick-sale-runbook)
+- [New sale runbook](/quick-sale-runbook)
 - [Your customers](/your-customers)
 - [Numbers that matter](/numbers-that-matter)
 - [Fixing issues](/fixing-issues)
@@ -75,4 +75,4 @@ Use this guide to ensure payment accuracy, prevent double-charges at checkout, m
 - **Cash**: Always count change out to the customer or use the quick cash calculator.
 - **Cards**: Wait for the reader's confirmation sound before handing the customer their items.
 - **Transfers (Zelle)**: Check your store's banking app to verify funds have arrived before completing the order.
-- **Store Credit**: Make sure the person standing at the counter matches the authorized customer on file.
+- **Balance due**: Make sure the person standing at the counter matches the authorized customer on file.

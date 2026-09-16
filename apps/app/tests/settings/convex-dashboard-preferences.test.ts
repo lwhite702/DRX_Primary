@@ -1,0 +1,32 @@
+import { expect, it } from "vitest";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as onboarding from "../../convex/onboarding";
+import * as preferences from "../../convex/businessPreferences";
+import * as generatedApi from "../../convex/_generated/api";
+const modules = { "onboarding.ts": async () => onboarding, "businessPreferences.ts": async () => preferences, "_generated/api.js": async () => generatedApi };
+it("reads the onboarding preset and isolates a colleague's personal changes", async () => {
+  const t = convexTest(schema, modules);
+  const owner = t.withIdentity({ subject: "synthetic-owner" });
+  const colleague = t.withIdentity({ subject: "synthetic-colleague" });
+  const input = { businessName: "Synthetic", ownerName: "Synthetic owner", businessType: "retail", currency: "USD", timezone: "UTC", taxEnabled: false, taxRateBps: 0, inventoryEnabled: true, locationName: "", city: "", region: "", country: "", dashboardPreset: "checkout" };
+  const { businessId } = await owner.mutation(api.onboarding.completeBusinessOnboarding, { payload: JSON.stringify(input), expectedUserId: "synthetic-owner" });
+  expect(await owner.query(api.businessPreferences.getDashboardPreferences, { businessId })).toMatchObject({ preset: "checkout" });
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "synthetic-colleague", email: "synthetic@example.invalid", role: "CASHIER", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  expect(await colleague.query(api.businessPreferences.getDashboardPreferences, { businessId })).toMatchObject({ preset: "operations" });
+  await colleague.mutation(api.businessPreferences.updateDashboardPreferences, { businessId, preset: "inventory", pinnedItemIds: ["inventory"] });
+  expect(await owner.query(api.businessPreferences.getDashboardPreferences, { businessId })).toMatchObject({ preset: "checkout" });
+  expect(await colleague.query(api.businessPreferences.getDashboardPreferences, { businessId })).toMatchObject({ preset: "inventory", pinnedItemIds: ["inventory"] });
+  await expect(colleague.mutation(api.businessPreferences.updateDashboardPreferences, { businessId, expectedUserId: "synthetic-owner", preset: "checkout" })).rejects.toThrow(/FORBIDDEN/);
+  const other = t.withIdentity({ subject: "other-owner" });
+  const otherBusiness = await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other synthetic" });
+  await expect(colleague.query(api.businessPreferences.getDashboardPreferences, { businessId: otherBusiness.businessId })).rejects.toThrow(/FORBIDDEN/);
+});
+it("rejects invalid panels and leaves persisted preferences intact", async () => {
+  const t = convexTest(schema, modules); const actor = t.withIdentity({ subject: "synthetic-owner" });
+  const { businessId } = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic" });
+  const saved = await actor.mutation(api.businessPreferences.updateDashboardPreferences, { businessId, preset: "inventory", pinnedItemIds: ["inventory"] });
+  for (const pinnedItemIds of [["secret-admin"], ["inventory", "inventory"]]) await expect(actor.mutation(api.businessPreferences.updateDashboardPreferences, { businessId, pinnedItemIds })).rejects.toThrow(/INVALID_ARGUMENT/);
+  expect(await actor.mutation(api.businessPreferences.updateDashboardPreferences, { businessId, preset: "inventory", pinnedItemIds: ["inventory"] })).toEqual(saved);
+});

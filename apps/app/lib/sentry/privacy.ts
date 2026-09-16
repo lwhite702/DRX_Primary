@@ -1,4 +1,4 @@
-import type { ErrorEvent, EventHint } from "@sentry/nextjs";
+import type { ErrorEvent, EventHint } from "@/lib/adapters/errors";
 
 const SENSITIVE_KEY = /password|passcode|token|secret|authorization|cookie|payment|card|customer|phone|address|request_body|form/i;
 

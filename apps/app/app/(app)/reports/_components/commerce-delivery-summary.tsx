@@ -27,6 +27,7 @@ const rows = [
   ["Gross collected", "grossCollectedCents", "money"],
   ["Net cash activity", "netCashActivityCents", "money"],
   ["Merchandise revenue", "merchandiseRevenueCents", "money"],
+  ["Other fee revenue", "feeRevenueCents", "money"],
   ["Delivery revenue", "deliveryRevenueCents", "money"],
   ["Vendor delivery expense", "vendorDeliveryExpenseCents", "money"],
   ["Delivery tax", "deliveryTaxCents", "money"],
@@ -119,7 +120,9 @@ export function CommerceDeliverySummary({
               <TableHead>Metric</TableHead>
               <TableHead className="text-right">Canonical</TableHead>
               <TableHead className="text-right">Legacy web</TableHead>
-              <TableHead className="text-right">Combined</TableHead>
+              <TableHead className="text-right">
+                {summary.canonical.available === false || summary.legacyWeb.available === false ? "Partial total" : "Combined"}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,18 +134,18 @@ export function CommerceDeliverySummary({
                     : label}
                 </TableCell>
                 <TableCell className="text-right">
-                  {unit === "money"
-                    ? money(summary.canonical.totals[field])
+                  {summary.canonical.available === false ? "Unavailable" : unit === "money"
+                    ? money(summary.canonical.totals[field] ?? 0)
                     : summary.canonical.totals[field]}
                 </TableCell>
                 <TableCell className="text-right">
-                  {unit === "money"
-                    ? money(summary.legacyWeb.totals[field])
+                  {summary.legacyWeb.available === false ? "Unavailable" : unit === "money"
+                    ? money(summary.legacyWeb.totals[field] ?? 0)
                     : summary.legacyWeb.totals[field]}
                 </TableCell>
                 <TableCell className="text-right font-semibold">
                   {unit === "money"
-                    ? money(summary.combined[field])
+                    ? money(summary.combined[field] ?? 0)
                     : summary.combined[field]}
                 </TableCell>
               </TableRow>

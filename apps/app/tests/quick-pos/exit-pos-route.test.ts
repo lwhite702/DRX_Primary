@@ -1,122 +1,43 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-
-const mocks = vi.hoisted(() => ({
-  resolveAuthContext: vi.fn(),
-  isAuthBypassEnabledServer: vi.fn(),
-  ensureServerFlag: vi.fn(),
-  findBusinessSettings: vi.fn(),
-}));
-
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  resolveAuthContext: mocks.resolveAuthContext,
-}));
-
-vi.mock("@/lib/auth/bypass", () => ({
-  isAuthBypassEnabledServer: mocks.isAuthBypassEnabledServer,
-}));
-
-vi.mock("@/lib/posthog/server-flags", () => ({
-  ensureServerFlag: mocks.ensureServerFlag,
-}));
-
-vi.mock("@/lib/db", () => ({
-  db: {
-    businessSettings: {
-      findFirst: mocks.findBusinessSettings,
-    },
-  },
-}));
-
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as session from "../../convex/session";
+import * as onboarding from "../../convex/onboarding";
+import * as preferences from "../../convex/businessPreferences";
+import * as generatedApi from "../../convex/_generated/api";
+const mocks = vi.hoisted(() => ({ token: vi.fn(), query: vi.fn(), bypass: vi.fn(), flag: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("PIN verification must not load Prisma"); });
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("@/lib/auth/bypass", () => ({ isAuthBypassEnabledServer: mocks.bypass }));
+vi.mock("@/lib/posthog/server-flags", () => ({ ensureServerFlag: mocks.flag }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; } }));
 import { GET, POST } from "@/app/api/pos/exit/verify/route";
-
-function makePostRequest(pin = "") {
-  return new NextRequest("http://localhost/api/pos/exit/verify", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ pin }),
-  });
+const modules = { "_generated/api.js": async () => generatedApi, "session.ts": async () => session, "onboarding.ts": async () => onboarding, "businessPreferences.ts": async () => preferences };
+function getRequest() { return new NextRequest("https://example.invalid/api/pos/exit/verify"); }
+function postRequest(pin = "") { return new NextRequest("https://example.invalid/api/pos/exit/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pin }) }); }
+async function setup(pin?: string) {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "pin-operator" });
+  const { businessId } = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic PIN" });
+  if (pin) await actor.mutation(api.businessPreferences.saveSettings, { businessId, posManagerPin: pin });
+  mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
+  return { t, actor, businessId };
 }
-
-describe("GET & POST /api/pos/exit/verify", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.isAuthBypassEnabledServer.mockReturnValue(false);
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user_123",
-      businessId: "business_123",
-    });
-    mocks.ensureServerFlag.mockResolvedValue(true);
-    mocks.findBusinessSettings.mockResolvedValue({
-      posManagerPin: "2468",
-      settingsData: null,
-    });
-  });
-
-  it("GET returns hasPinConfigured false when no PIN is set", async () => {
-    mocks.findBusinessSettings.mockResolvedValue({
-      posManagerPin: null,
-      settingsData: null,
-    });
-
-    const response = await GET();
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
-  });
-
-  it("GET returns hasPinConfigured true when a manager PIN is configured", async () => {
-    const response = await GET();
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: false, hasPinConfigured: true });
-  });
-
-  it("POST allows an authenticated operator to exit when no PIN is configured", async () => {
-    mocks.findBusinessSettings.mockResolvedValue({
-      posManagerPin: null,
-      settingsData: null,
-    });
-
-    const response = await POST(makePostRequest());
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
-  });
-
-  it("POST continues to reject an incorrect configured PIN", async () => {
-    const response = await POST(makePostRequest("0000"));
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: false, hasPinConfigured: true });
-  });
-
-  it("POST allows the configured manager PIN", async () => {
-    const response = await POST(makePostRequest("2468"));
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: true });
-  });
-
-  it("does not query settings when local auth bypass is active", async () => {
-    mocks.isAuthBypassEnabledServer.mockReturnValue(true);
-
-    const response = await POST(makePostRequest());
-
-    await expect(response.json()).resolves.toEqual({ allowed: true, hasPinConfigured: false });
-    expect(mocks.resolveAuthContext).not.toHaveBeenCalled();
-    expect(mocks.findBusinessSettings).not.toHaveBeenCalled();
-  });
-
-  it("rejects an unauthenticated request", async () => {
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: null,
-      businessId: null,
-    });
-
-    const response = await POST(makePostRequest());
-
-    expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+describe("Convex Quick Sale exit PIN", () => {
+  beforeEach(() => { vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.token.mockResolvedValue("synthetic"); mocks.bypass.mockReturnValue(false); mocks.flag.mockResolvedValue(true); });
+  it("GET allows exit without a PIN", async () => { await setup(); expect(await (await GET(getRequest())).json()).toEqual({ allowed: true, hasPinConfigured: false }); });
+  it("GET requires configured PIN verification", async () => { await setup("2468"); expect(await (await GET(getRequest())).json()).toEqual({ allowed: false, hasPinConfigured: true }); });
+  it("POST allows exit without a PIN", async () => { await setup(); expect(await (await POST(postRequest())).json()).toEqual({ allowed: true, hasPinConfigured: false }); });
+  it("rejects the wrong PIN", async () => { await setup("2468"); expect(await (await POST(postRequest("0000"))).json()).toEqual({ allowed: false, hasPinConfigured: true }); });
+  it("accepts the configured PIN", async () => { await setup("2468"); expect(await (await POST(postRequest("2468"))).json()).toEqual({ allowed: true, hasPinConfigured: true }); });
+  it("preserves explicit local bypass without querying a database", async () => { mocks.bypass.mockReturnValue(true); expect(await (await POST(postRequest())).json()).toEqual({ allowed: true, hasPinConfigured: false }); expect(mocks.query).not.toHaveBeenCalled(); });
+  it("rejects signed-out requests", async () => { mocks.token.mockResolvedValue(null); expect((await POST(postRequest())).status).toBe(401); });
+  it("preserves the enforcement flag and never exposes a PIN or provider error", async () => {
+    await setup("2468"); mocks.flag.mockResolvedValue(false);
+    expect(await (await POST(postRequest())).json()).toEqual({ allowed: true, hasPinConfigured: false });
+    mocks.flag.mockResolvedValue(true); mocks.query.mockRejectedValue(new Error("private-provider-payload"));
+    const failed = await POST(postRequest()); expect(failed.status).toBe(503); expect(await failed.text()).not.toContain("private-provider-payload");
   });
 });

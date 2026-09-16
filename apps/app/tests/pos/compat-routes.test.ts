@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => {
     setAmountPaid: vi.fn(),
     setDelivery: vi.fn(),
     checkout: vi.fn(),
+    performFullCheckout: vi.fn(),
     salesFindFirst: vi.fn(),
     PosCheckoutError,
   };
@@ -41,6 +42,11 @@ vi.mock("@/lib/pos/core", () => ({
   setAmountPaid: mocks.setAmountPaid,
   setDelivery: mocks.setDelivery,
   checkout: mocks.checkout,
+}));
+
+vi.mock("@/app/api/pos/_lib/full-checkout", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/api/pos/_lib/full-checkout")>()),
+  performFullCheckout: mocks.performFullCheckout,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -110,6 +116,7 @@ describe("POS compatibility routes", () => {
       total: 15,
       changeAmount: 0,
     });
+    mocks.performFullCheckout.mockResolvedValue({ saleId: "sale_123", orderNumber: "POS-123", total: 15, changeAmount: 0 });
     mocks.salesFindFirst.mockResolvedValue({
       id: "sale_123",
       orderNumber: "POS-123",
@@ -120,6 +127,7 @@ describe("POS compatibility routes", () => {
   it("maps checkout-enhanced payloads to the canonical service", async () => {
     const res = await postCheckoutEnhanced(
       makeRequest("http://localhost/api/pos/checkout-enhanced", {
+        idempotencyKey: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
         customerId: "11111111-1111-4111-8111-111111111111",
         paymentMethod: "card",
         lineItems: [
@@ -151,16 +159,16 @@ describe("POS compatibility routes", () => {
       },
       errors: [],
     });
-    expect(mocks.createCart).toHaveBeenCalledWith({
-      businessId: "business_123",
-      userId: "user_123",
-      mode: "full",
-      source: "checkout-enhanced",
+    expect(mocks.performFullCheckout).toHaveBeenCalledWith(expect.objectContaining({
+      mode: "full", source: "checkout-enhanced",
       customerId: "11111111-1111-4111-8111-111111111111",
-    });
+      idempotencyKey: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      items: [expect.objectContaining({ weightGrams: 3.5, qty: 1, unitPrice: 28 })],
+    }), "business_123");
+    expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
-  it("maps /api/sales payloads to the canonical service and returns the saved sale", async () => {
+  it("preserves the remaining legacy /api/sales writer contract until its conversion", async () => {
     const res = await postSales(
       makeRequest("http://localhost/api/sales", {
         customer_id: "11111111-1111-4111-8111-111111111111",

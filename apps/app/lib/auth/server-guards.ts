@@ -1,106 +1,32 @@
-import { auth, isAuthBypassEnabled } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
-import { Permission, Role, ROLE_PERMISSIONS } from "./permissions";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "./convex-token";
+import type { Permission, Role } from "./permissions";
 import { redirect } from "next/navigation";
 
-export async function getCurrentUserRole(
-  businessId?: string,
-): Promise<Role | null> {
-  if (isAuthBypassEnabled()) {
-    return "super_admin" as Role;
-  }
-
-  const { userId } = await auth();
-
-  if (!userId) return null;
-
-  // Query role from Prisma
-  // If businessId is provided, filter by it.
-  const userRole = await db.userRole.findFirst({
-    where: {
-      userId: userId,
-      ...(businessId ? { businessId } : {}),
-    },
-    select: { role: true },
-  });
-
-  if (userRole?.role) {
-    return userRole.role as Role;
-  }
-
-  // Fallback: Check if user is owner of an active business
-  const ownedBusiness = await db.businessProfile.findFirst({
-    where: {
-      ownerId: userId,
-      ...(businessId ? { id: businessId } : {}),
-      isActive: true,
-    },
-    select: { id: true },
-  });
-
-  if (ownedBusiness) {
-    return "owner";
-  }
-
-  return null;
+async function check(permission: Permission, businessId?: string, userId?: string) {
+  try {
+    const token = await getConvexAuthToken();
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!token || !url) return null;
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    return await client.query(api.session.permission, { permission, businessId, userId });
+  } catch { return null; }
 }
-
-export async function hasPermission(
-  permission: Permission,
-  businessId?: string,
-): Promise<boolean> {
-  if (isAuthBypassEnabled()) {
-    return true;
-  }
-
-  const { userId } = await auth();
-
-  if (!userId) return false;
-
-  // Fetch full role with permissions
-  const userRole = await db.userRole.findFirst({
-    where: {
-      userId: userId,
-      ...(businessId ? { businessId } : {}),
-    },
-    select: { permissions: true, role: true },
-  });
-
-  if (!userRole) return false;
-
-  // Super admin bypass
-  if (userRole.role === "super_admin") return true;
-
-  // Assuming permissions is a JSON object like { "inventory:read": true }
-  const perms = userRole.permissions as Record<string, boolean>;
-
-  return !!perms?.[permission];
+export async function getCurrentUserRole(businessId?: string): Promise<Role | null> {
+  const result = await check("catalog.view", businessId);
+  return result?.role ? result.role as Role : null;
 }
-
-export async function hasBusinessPermission(
-  userId: string,
-  businessId: string,
-  permission: Permission,
-): Promise<boolean> {
-  if (isAuthBypassEnabled()) return true;
-
-  const ownedBusiness = await db.businessProfile.findFirst({
-    where: { id: businessId, ownerId: userId },
-    select: { id: true },
-  });
-  if (ownedBusiness) return true;
-
-  const userRole = await db.userRole.findFirst({
-    where: { userId, businessId },
-    select: { permissions: true, role: true },
-  });
-  if (!userRole) return false;
-
-  const explicitPermissions = userRole.permissions as Record<string, boolean> | null;
-  if (explicitPermissions?.[permission]) return true;
-
-  const role = userRole.role as Role | null;
-  return role ? (ROLE_PERMISSIONS[role] ?? []).includes(permission) : false;
+export async function hasPermission(permission: Permission, businessId?: string): Promise<boolean> {
+  if (permission === "users.manage_all") {
+    const { getPlatformAdmin } = await import("./platform-admin");
+    return Boolean(await getPlatformAdmin());
+  }
+  return (await check(permission, businessId))?.allowed ?? false;
+}
+export async function hasBusinessPermission(userId: string, businessId: string, permission: Permission): Promise<boolean> {
+  if (permission === "users.manage_all") return false;
+  return (await check(permission, businessId, userId))?.allowed ?? false;
 }
 
 // These guard helpers are kept as route-level building blocks even when

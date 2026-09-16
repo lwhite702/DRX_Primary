@@ -17,7 +17,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.9
+          version: 10.17.1
 
       - uses: actions/setup-node@v4
         with:
@@ -29,38 +29,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate production deployment configuration
-        id: config
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID_PRODUCTION: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
-        run: |
-          set -euo pipefail
-          for variable in \
-            VERCEL_TOKEN \
-            VERCEL_ORG_ID \
-            VERCEL_PROJECT_ID_PRODUCTION \
-            VERCEL_SCOPE
-          do
-            if [ -z "${!variable:-}" ]; then
-              echo "Missing required production configuration: $variable" >&2
-              exit 1
-            fi
-          done
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ -z "${CONVEX_DEPLOY_KEY:-}" ]; then
-            echo "Missing required production configuration: CONVEX_DEPLOY_KEY" >&2
-            exit 1
-          fi
-          if [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
-            echo "has_convex_key=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_convex_key=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: node scripts/release/deploy-preflight.mjs --environment production
 
       - name: Deploy Convex functions to Production
-        if: ${{ github.event_name != 'workflow_dispatch' || steps.config.outputs.has_convex_key == 'true' }}
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         working-directory: ./apps/app
@@ -91,6 +68,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PRODUCTION }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+          HEALTHCHECK_SECRET: ${{ secrets.HEALTHCHECK_SECRET }}
         run: |
           set -euo pipefail
           HEALTH_URL="${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
@@ -98,11 +76,26 @@ jobs:
             if [[ "$HEALTH_URL" != http://* && "$HEALTH_URL" != https://* ]]; then
               HEALTH_URL="https://$HEALTH_URL"
             fi
-            HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
+            if [ -n "$HEALTHCHECK_SECRET" ]; then
+              HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL" -H "Authorization: Bearer $HEALTHCHECK_SECRET")
+            else
+              HEALTH_RESPONSE=$(curl -fsSL "$HEALTH_URL")
+            fi
           else
-            HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
-              --deployment "${{ steps.vercel.outputs.preview-url }}" \
-              --yes)
+            if [ -n "$HEALTHCHECK_SECRET" ]; then
+              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+                --deployment "${{ steps.vercel.outputs.preview-url }}" \
+                --yes \
+                --token "$VERCEL_TOKEN" \
+                --scope "$VERCEL_SCOPE" \
+                -- --header "Authorization: Bearer $HEALTHCHECK_SECRET")
+            else
+              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+                --deployment "${{ steps.vercel.outputs.preview-url }}" \
+                --yes \
+                --token "$VERCEL_TOKEN" \
+                --scope "$VERCEL_SCOPE")
+            fi
           fi
           HEALTH_RESPONSE="$HEALTH_RESPONSE" node -e '
             const response = JSON.parse(process.env.HEALTH_RESPONSE);

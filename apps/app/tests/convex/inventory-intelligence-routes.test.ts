@@ -1,0 +1,132 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as intelligence from "../../convex/inventoryIntelligence";
+import * as onboarding from "../../convex/onboarding";
+import * as generatedApi from "../../convex/_generated/api";
+const mocks = vi.hoisted(() => ({ user: vi.fn(), token: vi.fn(), query: vi.fn(), mutation: vi.fn(), action: vi.fn() }));
+vi.mock("@/lib/adapters/auth", () => ({ getCurrentUser: mocks.user }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; mutation = mocks.mutation; action = mocks.action; } }));
+import { POST as product, GET as dashboard } from "../../app/api/ai/product-intelligence/route";
+import { GET as posPrices } from "../../app/api/pos/ai-pricing/route";
+import { POST as posApply } from "../../app/api/pos/apply-pricing/route";
+import { POST as applyPrice } from "../../app/api/ai/apply-pricing/route";
+import { POST as analyze } from "../../app/api/ai/analyze/route";
+import { GET as alerts, POST as acknowledge } from "../../app/api/ai/alerts/route";
+const request = (path: string, body?: unknown) => new NextRequest(`https://example.invalid/api/ai/${path}`, body === undefined ? {} : { method: "POST", body: JSON.stringify(body) });
+beforeEach(() => { vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud"; mocks.user.mockResolvedValue({ id: "owner" }); mocks.token.mockResolvedValue("synthetic-token"); });
+async function setup() {
+  const t = convexTest(schema, { "inventoryIntelligence.ts": async () => intelligence, "onboarding.ts": async () => onboarding, "_generated/api.js": async () => generatedApi }), owner = t.withIdentity({ subject: "owner" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic" });
+  const productId = await t.run(ctx => ctx.db.insert("products", { businessId, legacyPrismaId: "legacy-product", sku: "fixture", productName: "Synthetic", unitCostCents: 100, sellingPriceCents: 150, quantityOnHandGrams: 1.25, reorderLevelGrams: 10, allowFractionalWeight: true, isActive: true, createdAt: 1, updatedAt: 1 }));
+  mocks.query.mockImplementation(owner.query.bind(owner)); mocks.mutation.mockImplementation(owner.mutation.bind(owner)); mocks.action.mockImplementation(owner.action.bind(owner));
+  return { t, owner, businessId, productId };
+}
+it("uses canonical product values and stable receipts, then reads and acknowledges the same alerts", async () => {
+  const { t, businessId } = await setup();
+  const body = { business_id: businessId, inventory_id: "legacy-product", request_id: "one", cost: 999999, current_stock: 999999, expectedUserId: "attacker" };
+  const response = await product(request("product-intelligence", body)); expect(response.status).toBe(200);
+  const data = (await response.json()).data; expect(data.forecast.factors.current_stock).toBe(1.25);
+  expect((await product(request("product-intelligence", body))).status).toBe(200);
+  expect(await t.run(ctx => ctx.db.query("inventoryAnalyses").collect())).toHaveLength(1);
+  const list = await alerts(request(`alerts?business_id=${businessId}&severity=high`)); expect(list.status).toBe(200);
+  const [alert] = (await list.json()).data; expect(alert).toBeTruthy();
+  const ack = { business_id: businessId, action: "acknowledge", alert_id: alert.id, user_id: "attacker" };
+  expect((await acknowledge(request("alerts", ack))).status).toBe(200);
+  expect((await acknowledge(request("alerts", ack))).status).toBe(200);
+  const audit = await t.run(ctx => ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "acknowledge_inventory_alert")).collect());
+  expect(audit).toHaveLength(1); expect(audit[0].userId).toBe("owner");
+  const summary = await dashboard(request(`product-intelligence?business_id=${businessId}`)); expect(summary.status).toBe(200);
+  expect((await summary.json()).data.counts.pricingRecommendations).toBe(1);
+  expect(summary.headers.get("Cache-Control")).toBe("private, no-store");
+});
+it("resumes a fixed batch product list without duplicate results", async () => {
+  const { t, businessId, productId } = await setup();
+  const body = { business_id: businessId, analysis_type: "all", request_id: "batch-one" };
+  const first = await analyze(request("analyze", body)); expect(first.status).toBe(200);
+  expect((await first.json()).summary.processed_count).toBe(1);
+  await t.run(async ctx => { const row = await ctx.db.get(productId); if (!row) throw new Error("Missing fixture"); const { _id, _creationTime, ...values } = row; await ctx.db.insert("products", { ...values, legacyPrismaId: undefined, sku: "later" }); });
+  const second = await analyze(request("analyze", body)); expect((await second.json()).summary.processed_count).toBe(1);
+  expect(await t.run(ctx => ctx.db.query("inventoryAnalyses").collect())).toHaveLength(1);
+  expect(await t.run(ctx => ctx.db.query("inventoryAnalysisRuns").collect())).toHaveLength(1);
+});
+it("denies foreign alert access, missing authentication and malformed retry requests", async () => {
+  const { t, businessId, productId } = await setup();
+  await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "one" }));
+  const [alert] = (await (await alerts(request(`alerts?business_id=${businessId}`))).json()).data;
+  const foreign = t.withIdentity({ subject: "foreign" });
+  const other = await foreign.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
+  mocks.user.mockResolvedValue({ id: "foreign" }); mocks.query.mockImplementation(foreign.query.bind(foreign)); mocks.mutation.mockImplementation(foreign.mutation.bind(foreign));
+  expect((await alerts(request(`alerts?business_id=${businessId}`))).status).toBe(403);
+  expect((await acknowledge(request("alerts", { business_id: other.businessId, action: "acknowledge", alert_id: alert.id }))).status).toBe(404);
+  expect((await t.run(ctx => { const id = ctx.db.normalizeId("inventoryIntelligenceAlerts", alert.id); if (!id) throw new Error("Invalid fixture ID"); return ctx.db.get(id); }))?.isRead).toBe(false);
+  expect((await product(request("product-intelligence", { business_id: businessId, inventory_id: productId }))).status).toBe(400);
+  mocks.user.mockResolvedValue(null); expect((await dashboard(request(`product-intelligence?business_id=${businessId}`))).status).toBe(401);
+});
+
+it("applies the saved price once, excludes it from pending counts, and rejects stale recommendations", async () => {
+  const { t, businessId, productId } = await setup();
+  const first = await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "price-one" }));
+  const data = (await first.json()).data;
+  const body = { business_id: businessId, recommendation_id: data.pricingRecommendationId, newPrice: 99999 };
+  const applied = await applyPrice(request("apply-pricing", body)); expect(applied.status).toBe(200);
+  const receipt = await applied.json(); expect(receipt.newPrice).toBe(data.pricing.recommendedPrice);
+  await t.run(ctx => ctx.db.patch(productId, { sellingPriceCents: 999 }));
+  expect((await (await applyPrice(request("apply-pricing", body))).json()).newPrice).toBe(receipt.newPrice);
+  expect((await t.run(ctx => ctx.db.get(productId)))?.sellingPriceCents).toBe(999);
+  const audit = await t.run(ctx => ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "apply_inventory_pricing")).collect()); expect(audit).toHaveLength(1);
+  const summary = await dashboard(request(`product-intelligence?business_id=${businessId}`)); expect((await summary.json()).data.counts.pricingRecommendations).toBe(0);
+  const second = await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "price-two" }));
+  const secondId = (await second.json()).data.pricingRecommendationId;
+  await t.run(ctx => ctx.db.patch(productId, { sellingPriceCents: 1000 }));
+  expect((await applyPrice(request("apply-pricing", { ...body, recommendation_id: secondId }))).status).toBe(409);
+});
+it("reports a partially committed batch as failure and resumes it without duplicate analysis", async () => {
+  const { t, businessId, productId } = await setup();
+  const secondId = await t.run(async ctx => { const row = await ctx.db.get(productId); if (!row) throw new Error("Missing fixture"); const { _id, _creationTime, ...values } = row; return ctx.db.insert("products", { ...values, legacyPrismaId: undefined, sku: "broken", unitCostCents: 1.5 }); });
+  const body = { business_id: businessId, request_id: "resume" };
+  expect((await analyze(request("analyze", body))).status).toBe(503);
+  expect(await t.run(ctx => ctx.db.query("inventoryAnalyses").collect())).toHaveLength(1);
+  await t.run(ctx => ctx.db.patch(secondId, { unitCostCents: 100 }));
+  const resumed = await analyze(request("analyze", body)); expect(resumed.status).toBe(200); expect((await resumed.json()).summary.processed_count).toBe(2);
+  expect(await t.run(ctx => ctx.db.query("inventoryAnalyses").collect())).toHaveLength(2);
+});
+
+it("POS lists and applies the same canonical recommendation, omitting applied and stale prices", async () => {
+  const { t, businessId, productId } = await setup();
+  await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "pos-one" }));
+  const list = await posPrices(request(`../pos/ai-pricing?businessId=${businessId}&limit=1`)); expect(list.status).toBe(200);
+  const body = await list.json(); expect(body.items).toHaveLength(1); expect(body.data).toEqual(body.items);
+  const row = body.items[0]; expect(row.id).toBe(row.recommendation_id); expect(row.inventory_id).toBe(productId);
+  const applyBody = { businessId, recommendationId: row.id };
+  expect((await posApply(request("../pos/apply-pricing", applyBody))).status).toBe(200);
+  expect((await (await posPrices(request(`../pos/ai-pricing?businessId=${businessId}`))).json()).items).toEqual([]);
+  expect((await posApply(request("../pos/apply-pricing", applyBody))).status).toBe(200);
+  await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "pos-two" }));
+  await t.run(ctx => ctx.db.patch(productId, { sellingPriceCents: 12345 }));
+  expect((await (await posPrices(request(`../pos/ai-pricing?businessId=${businessId}`))).json()).items).toEqual([]);
+  expect((await posPrices(request(`../pos/ai-pricing?businessId=${businessId}&limit=1.5`))).status).toBe(400);
+  expect((await posApply(request("../pos/apply-pricing", { recommendationId: row.id }))).status).toBe(400);
+});
+it("uses null for zero-base percentage and respects pricing-only member grants", async () => {
+  const { t, businessId, productId } = await setup();
+  await t.run(ctx => ctx.db.patch(productId, { sellingPriceCents: 0 }));
+  expect((await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "zero-base" }))).status).toBe(200);
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "pricer", email: "pricer@example.invalid", role: "MEMBER", permissions: { "pricing.manage": true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  const pricer = t.withIdentity({ subject: "pricer" }); mocks.user.mockResolvedValue({ id: "pricer" }); mocks.query.mockImplementation(pricer.query.bind(pricer)); mocks.mutation.mockImplementation(pricer.mutation.bind(pricer));
+  const response = await posPrices(request(`../pos/ai-pricing?businessId=${businessId}`)); expect(response.status).toBe(200);
+  const [row] = (await response.json()).items; expect(row.price_change_percentage).toBeNull();
+  expect((await posApply(request("../pos/apply-pricing", { businessId, recommendationId: row.id }))).status).toBe(200);
+  expect((await alerts(request(`alerts?business_id=${businessId}`))).status).toBe(403);
+});
+it("honors validated product analysis options and binds them to the HTTP retry ID", async () => {
+  const { businessId, productId } = await setup();
+  const body = { business_id: businessId, inventory_id: productId, request_id: "configured", min_price: 2, max_price: 2, margin_requirement: 0.5, supplier_lead_time_days: 4 };
+  const response = await product(request("product-intelligence", body)); expect(response.status).toBe(200);
+  expect((await response.json()).data.pricing.recommendedPrice).toBe(2);
+  expect((await product(request("product-intelligence", { ...body, margin_requirement: 0.6 }))).status).toBe(409);
+  expect((await product(request("product-intelligence", { ...body, request_id: "invalid", supplier_lead_time_days: -1 }))).status).toBe(400);
+});

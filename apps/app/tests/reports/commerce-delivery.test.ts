@@ -237,3 +237,10 @@ describe("combined commerce and delivery reporting", () => {
     expect(result.warnings.join(" ")).toContain("83.33% complete");
   });
 });
+
+it("keeps historical miscellaneous fees visible in reconciliation revenue", async () => {
+  mocks.findSales.mockResolvedValue([{ id: "synthetic-fee-sale", orderNumber: "POS-SYNTHETIC-FEE", subtotal: 10, taxAmount: 1, totalAmount: 13, deliveryPrice: 0, deliveryManagementId: null, deliveryAddress: null, fees: [{ type: "Service", amount: 2 }] }]);
+  mocks.groupAllocations.mockResolvedValue([{ saleId: "synthetic-fee-sale", _sum: { extendedCost: 3 } }]);
+  const result = await getLegacyWebCommerceSummary("synthetic-business", { from: new Date(0), to: new Date(1) }, []);
+  expect(result.summary.totals).toMatchObject({ merchandiseRevenueCents: 1000, feeRevenueCents: 200, netRevenueCents: 1200, grossProfitCents: 900 });
+});

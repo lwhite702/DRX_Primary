@@ -21,8 +21,8 @@ export function TopNav() {
   const { hasPermission, loading } = usePermission(business?.id);
   const { role } = useUserRole(business?.id);
 
-  const showAdminConsole =
-    hasPermission("system.manage") || hasPermission("users.manage_all");
+  const showBusinessSettings =
+    hasPermission("settings.configure_pos");
   // Default to true while loading to prevent layout shifts
   const canQuickSale = loading || hasPermission("sales.create");
   const showDashboardViewSwitcher =
@@ -39,14 +39,14 @@ export function TopNav() {
 
       {/* Brand Logo & Beta badge on Mobile */}
       <div className="flex min-w-0 items-center gap-2">
-        <Link href="/dashboard" className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="max-w-[140px] sm:max-w-[200px] min-w-0">
-            <AppLogo showTagline={false} />
+            <AppLogo href="/dashboard" showTagline={false} />
           </div>
           <div className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/20">
             BETA
           </div>
-        </Link>
+        </div>
       </div>
 
       {/* Desktop search */}
@@ -68,7 +68,7 @@ export function TopNav() {
           <Link href="/pos/sale" className="hidden md:block">
             <Button className="bg-accent hover:bg-accent/90 text-black font-semibold">
               <ScanLine className="mr-2 h-4 w-4" />
-              Quick Sale
+              New sale
             </Button>
           </Link>
         ) : null}
@@ -80,7 +80,7 @@ export function TopNav() {
           <BusinessSwitcher />
           {role && (
             <span className="hidden md:block text-xs font-medium capitalize text-muted-foreground border px-2 py-0.5 rounded-full">
-              {role.replace("_", " ")}
+              {role === "super_admin" ? "Business admin (legacy)" : `Business ${role.replace("_", " ")}`}
             </span>
           )}
 
@@ -92,12 +92,12 @@ export function TopNav() {
               },
             }}
           >
-            {showAdminConsole && (
+            {showBusinessSettings && (
               <UserButton.MenuItems>
                 <UserButton.Action
-                  label="Administration"
+                  label="Business settings"
                   labelIcon={<Settings className="w-4 h-4" />}
-                  onClick={() => router.push("/admin")}
+                  onClick={() => router.push("/settings")}
                 />
               </UserButton.MenuItems>
             )}
@@ -107,4 +107,3 @@ export function TopNav() {
     </header>
   );
 }
-

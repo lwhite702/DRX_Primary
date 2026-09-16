@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { useAuth } from "@/lib/adapters/auth/ui";
+import { formatCount } from "@/lib/number-format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { processedCount } from "@/lib/ai/intelligence-normalizers";
 
@@ -24,66 +25,41 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
     opportunitiesCount: 0,
   });
 
-  const supabase = createAppClient();
+  const { userId } = useAuth();
+  const scope = `${userId ?? ""}:${businessId}`;
+  const currentScope = useRef(scope); currentScope.current = scope;
+  const attempts = useRef(new Map<string, string>());
+  const loadVersion = useRef(0);
 
   useEffect(() => {
+    setAnalyzing(false);
     fetchDashboardData();
-  }, [businessId]);
+  }, [businessId, userId]);
 
   const fetchDashboardData = async () => {
-    if (!supabase) {
-      setError("Intelligence data is unavailable in this environment.");
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const results = await Promise.allSettled([
-        supabase
-          .from("ai_pricing_recommendations")
-          .select("count", { count: "exact" })
-          .eq("business_id", businessId)
-          .eq("status", "pending"),
-        supabase
-          .from("inventory_alerts")
-          .select("count", { count: "exact" })
-          .eq("business_id", businessId)
-          .eq("acknowledged", false)
-          .in("severity", ["high", "critical"]),
-        supabase
-          .from("inventory_forecasts")
-          .select("count", { count: "exact" })
-          .eq("business_id", businessId)
-          .in("restock_urgency", ["high", "critical"]),
-      ]);
-
-      const counts = results.map((result) => {
-        if (result.status === "rejected") return 0;
-        const value = Number(result.value?.count ?? 0);
-        return Number.isFinite(value) ? value : 0;
-      });
-      const [pricingRecommendations, criticalAlerts, urgentRestocks] = counts;
-      setData({
-        pricingRecommendations,
-        criticalAlerts,
-        urgentRestocks,
-        opportunitiesCount: pricingRecommendations + urgentRestocks,
-      });
-      if (results.some((result) => result.status === "rejected")) {
-        setError("Some intelligence totals could not be loaded. Try again to refresh them.");
-      }
+      const version = ++loadVersion.current;
+      const response = await fetch(`/api/ai/product-intelligence?business_id=${encodeURIComponent(businessId)}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Intelligence unavailable");
+      const result = await response.json(), counts = result?.data?.counts;
+      if (!counts || !["pricingRecommendations", "criticalAlerts", "urgentRestocks", "opportunitiesCount"].every(key => Number.isSafeInteger(counts[key]) && counts[key] >= 0)) throw new Error("Invalid intelligence totals");
+      if (currentScope.current !== scope || version !== loadVersion.current) return;
+      setData(counts);
     } catch (caught) {
-      console.error("Error fetching dashboard data:", caught);
+      if (currentScope.current !== scope) return;
       toast.error("Failed to load AI intelligence data");
       setError("Intelligence data could not be loaded.");
     } finally {
-      setLoading(false);
+      if (currentScope.current === scope) setLoading(false);
     }
   };
 
   const handleRunAnalysis = async () => {
+    if (!userId) return;
+    const requestId = attempts.current.get(scope) ?? crypto.randomUUID();
+    attempts.current.set(scope, requestId);
     setAnalyzing(true);
     try {
       const response = await fetch("/api/ai/analyze", {
@@ -92,18 +68,22 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
         body: JSON.stringify({
           business_id: businessId,
           analysis_type: "all",
+          request_id: requestId,
         }),
       });
 
       if (!response.ok) throw new Error("Analysis failed");
 
       const result = await response.json();
+      if (currentScope.current !== scope) return;
+      if (!Number.isSafeInteger(result?.summary?.processed_count)) throw new Error("Invalid analysis receipt");
+      attempts.current.delete(scope);
       toast.success(`Analysis complete: ${processedCount(result)} items analyzed`);
       await fetchDashboardData();
     } catch {
-      toast.error("Failed to run analysis");
+      if (currentScope.current === scope) toast.error("Analysis was not confirmed. Run again to retry the same request.");
     } finally {
-      setAnalyzing(false);
+      if (currentScope.current === scope) setAnalyzing(false);
     }
   };
 
@@ -122,7 +102,7 @@ export function AIIntelligenceDashboard({ businessId }: AIIntelligenceDashboardP
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
+          <p className="text-2xl font-bold mt-1">{formatCount(value)}</p>
         </div>
         <div className="opacity-50">{Icon}</div>
       </div>

@@ -1,5 +1,5 @@
 ---
-title: "Quick Sale Runbook"
+title: "New sale Runbook"
 description: "High-speed counter register flow for rapid walk-in checkout and barcode scanning."
 icon: "bolt"
 ---
@@ -16,17 +16,17 @@ Use this page for training new cashiers, morning shift huddles, and lane trouble
 
 - **Recommended role**: Cashier or above.
 - **Register state**:
-  - Device is signed into the correct store workspace.
+  - The correct business is open on the device.
   - Barcode scanner or camera is connected and ready.
-  - Sellable items are active in inventory.
-- **Credit customer rule**:
-  - If a customer is paying with store credit, attach their profile before tapping Pay.
+  - Sellable items are active in stock.
+- **Balance due rule**:
+  - If a customer is paying with balance due, attach their profile before tapping Pay.
 - **Lane caution**:
   - Never press the charge button repeatedly if a payment terminal is processing. Confirm payment status first to avoid charging a customer twice.
 
 ## Fast path
 
-1. **Open Quick Sale** (`/pos/sale`):
+1. **Open New sale** (`/pos/sale`):
    - Access the fast register from the main menu or bottom navigation bar.
 2. **Add products to the active cart**:
    - Scan barcodes with your handheld scanner or device camera.
@@ -36,12 +36,12 @@ Use this page for training new cashiers, morning shift huddles, and lane trouble
    - Tap an item in the cart to increment quantity or adjust weight.
    - Swipe or tap delete on unwanted items before moving to payment.
 4. **Attach customer (optional)**:
-   - Tap **Add Customer** if they are redeeming loyalty rewards or using store credit.
+   - Tap **Add Customer** if they are redeeming loyalty rewards or using balance due.
    - Skip for standard cash or card walk-ins.
 5. **Proceed to Payment** (`/pos/payment`):
    - Tap the bright green **Pay** button at the bottom of the cart.
 6. **Choose payment method**:
-   - Select **Cash**, **Card**, **Store Credit**, **Zelle**, or **Split**.
+   - Select **Cash**, **Card**, **Balance due**, **Zelle**, or **Split**.
    - For cash, select quick bills ($10, $20, $50, $100) to see exact change due.
 7. **Complete order & print receipt**:
    - Tap **Complete Order**.
@@ -52,22 +52,22 @@ Use this page for training new cashiers, morning shift huddles, and lane trouble
 
 - **Barcode scan does not find product**:
   - Type the item name or SKU into search.
-  - If still missing, verify with a manager that the item is listed in **Inventory** with available stock.
+  - If still missing, verify with a manager that the item is listed in **Products** with available stock.
 - **Item shows "Out of Stock"**:
   - Do not ring up an alternative SKU without manager approval.
   - Open **Receive Stock** (`/inventory/intake`) or **Adjust Stock** (`/inventory/adjust`) to correct shelf counts.
 - **Cannot tap the Pay button**:
   - Ensure there is at least one item in the cart.
   - If an item requires manual weight or price input, make sure a value was entered.
-- **Store Credit option unavailable**:
-  - Attach the customer's profile to the order and verify their approved credit balance.
+- **Balance due option unavailable**:
+  - Attach the customer to the sale and check their balance limit.
 - **Screen reset quickly after tapping complete**:
   - This is expected behavior! The register resets automatically after showing the confirmation badge so you can immediately scan the next customer's items.
 
 ## What is beta here
 
 - Pairing with custom multi-terminal kitchen/prep ticket displays is in preview testing.
-- Core fast barcode scanning, quick cash tender calculation, card terminal triggers, and instant cart resets are fully live.
+- Core fast barcode scanning, quick cash tender calculation, card terminal triggers, and instant cart resets are available in early access.
 
 ## Related docs
 

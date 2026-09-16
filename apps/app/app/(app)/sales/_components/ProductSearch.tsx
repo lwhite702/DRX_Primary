@@ -21,8 +21,12 @@ export function ProductSearch({
   const normalizedSearch = searchTerm.toLowerCase();
   const filteredInventory = (Array.isArray(inventory) ? inventory : []).filter(
     (item) =>
-      String(item?.product_name ?? "").toLowerCase().includes(normalizedSearch) ||
-      String(item?.sku ?? "").toLowerCase().includes(normalizedSearch),
+      String(item?.product_name ?? "")
+        .toLowerCase()
+        .includes(normalizedSearch) ||
+      String(item?.sku ?? "")
+        .toLowerCase()
+        .includes(normalizedSearch),
   );
 
   return (
@@ -48,7 +52,7 @@ export function ProductSearch({
               title="NO ITEMS FOUND"
               description={
                 inventory.length === 0
-                  ? "Inventory is empty."
+                  ? "No products yet."
                   : "No matching items found."
               }
               className="py-12 border-dashed border-white/10 bg-transparent"

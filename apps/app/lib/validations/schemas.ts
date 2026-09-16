@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { newProductCommerceSchema } from "@/lib/commerce/product-creation";
 
 // Business Profile Schemas
 export const businessProfileSchema = z.object({
@@ -44,12 +45,15 @@ export const inventorySchema = z.object({
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
-  unit_of_measure: z.enum(["g", "oz", "lb", "L", "ml"]).default("g"),
+  unit_of_measure: z.enum(["unit", "g", "oz", "lb", "L", "ml"]).default("g"),
   quantity_on_hand: z.number().int().min(0).default(0),
   reorder_level: z.number().int().min(0).default(10),
   unit_cost: z.number().nonnegative().optional(),
   selling_price: z.number().nonnegative().optional(),
+  location: z.string().max(100).optional(),
+  is_taxable: z.boolean().default(true).optional(),
   supplier_id: z.string().uuid().optional(),
+  commerce_config: newProductCommerceSchema.optional(),
 });
 
 export type Inventory = z.infer<typeof inventorySchema>;

@@ -22,8 +22,8 @@ settings:
     DEVELOPMENT_TEAM: L8R42BJ54K
     CODE_SIGN_STYLE: Automatic
     VERSIONING_SYSTEM: apple-generic
-    CURRENT_PROJECT_VERSION: 43
-    MARKETING_VERSION: 0.6.14
+    CURRENT_PROJECT_VERSION: 45
+    MARKETING_VERSION: 0.9.1
 targets:
   DRXApp:
     type: application
@@ -91,3 +91,27 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: DRXApp
+
+  DRXAppScreenshotTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ../../fastlane/ScreenshotTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wrelik.drx.screenshots
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: DRXApp
+        SWIFT_VERSION: "5.0"
+    dependencies:
+      - target: DRXApp
+schemes:
+  DRXAppScreenshots:
+    build:
+      targets:
+        DRXApp: all
+        DRXAppScreenshotTests: [test]
+    test:
+      config: Debug
+      targets:
+        - DRXAppScreenshotTests

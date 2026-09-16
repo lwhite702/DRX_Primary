@@ -16,7 +16,9 @@ export function ExitPosDialog({
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [hasPinConfigured, setHasPinConfigured] = useState<boolean | null>(null);
+  const [hasPinConfigured, setHasPinConfigured] = useState<boolean | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!open || bypassMode) return;
@@ -75,13 +77,13 @@ export function ExitPosDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="w-full max-w-sm rounded-xl border border-white/10 bg-[#0A0A0A] p-5 shadow-2xl">
-        <h2 className="text-2xl font-bold text-white">Exit Quick Sale</h2>
+        <h2 className="text-2xl font-bold text-white">Exit New sale</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {bypassMode
             ? "Bypass mode is active. You can exit without a PIN."
             : hasPinConfigured === false
-              ? "No manager PIN is configured for this workspace. You can exit to your workspace anytime."
-              : "Enter the manager PIN to return to your workspace."}
+              ? "No manager PIN is set for this business. You can return to Home anytime."
+              : "Enter the manager PIN to return to Home."}
         </p>
 
         {bypassMode ? (
@@ -90,7 +92,8 @@ export function ExitPosDialog({
           </div>
         ) : hasPinConfigured === false ? (
           <div className="mt-3 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
-            No PIN required. Exit enabled. You can set up a Manager PIN later in Settings → POS Controls.
+            No PIN required. Exit enabled. You can set up a Manager PIN later in
+            Settings → POS Controls.
           </div>
         ) : (
           <p className="mt-1 text-xs text-white/60">
@@ -110,7 +113,9 @@ export function ExitPosDialog({
           />
         ) : null}
 
-        {error ? <p className="mt-2 text-sm font-semibold text-red-400">{error}</p> : null}
+        {error ? (
+          <p className="mt-2 text-sm font-semibold text-red-400">{error}</p>
+        ) : null}
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <button
@@ -127,7 +132,11 @@ export function ExitPosDialog({
             onClick={verify}
             disabled={processing}
           >
-            {processing ? "Checking..." : requiresPin ? "Confirm Exit" : "Exit to Workspace"}
+            {processing
+              ? "Checking…"
+              : requiresPin
+                ? "Confirm exit"
+                : "Exit to Home"}
           </button>
         </div>
       </div>

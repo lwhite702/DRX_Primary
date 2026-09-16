@@ -32,7 +32,7 @@ export function LoyaltyBadge({
       <span className="capitalize">{tier} Member</span>
       {discount_rate > 0 && (
         <span className="text-xs opacity-75">
-          {(discount_rate * 100).toFixed(0)}% off
+          {(discount_rate * 100).toFixed(1)}% off
         </span>
       )}
     </div>

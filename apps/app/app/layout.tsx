@@ -3,8 +3,7 @@ import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
-import { PostHogProvider } from "@/components/providers/posthog-provider";
-import { FeaturebaseProvider } from "@/components/providers/featurebase-provider";
+import dynamic from "next/dynamic";
 import ClerkProviderWrapper from "./_components/clerk-provider-wrapper";
 import ConvexClientProvider from "./ConvexClientProvider";
 import {
@@ -12,6 +11,22 @@ import {
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
+
+const PostHogProvider = dynamic(
+  () =>
+    import("@/components/providers/posthog-provider").then(
+      (mod) => mod.PostHogProvider,
+    ),
+  { ssr: false },
+);
+
+const FeaturebaseProvider = dynamic(
+  () =>
+    import("@/components/providers/featurebase-provider").then(
+      (mod) => mod.FeaturebaseProvider,
+    ),
+  { ssr: false },
+);
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -30,26 +45,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app",
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+      "https://deelrxcrm.app",
   ),
   alternates: {
     canonical: "/",
   },
-  title:
-    isAuthBypassEnabledServer()
-      ? "[BYPASS] Deelrx CRM - POS and inventory for retail"
-      : "Deelrx CRM - POS and inventory for retail",
+  title: isAuthBypassEnabledServer()
+    ? "[BYPASS] Deelrx CRM - Sales, Stock, and Customers"
+    : "Deelrx CRM - Sales, Stock, and Customers",
   description:
-    "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
+    "Keep customers, products, stock, sales, payments, and balances due straight.",
   icons: {
     icon: "/brand/favicon-32.png",
 
     apple: "/brand/apple-touch-icon-180.png",
   },
   openGraph: {
-    title: "Deelrx CRM - POS and inventory for retail",
+    title: "Deelrx CRM - Sales, Stock, and Customers",
     description:
-      "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
+      "Keep customers, products, stock, sales, payments, and balances due straight.",
     type: "website",
     locale: "en_US",
     url: "/",
@@ -57,9 +72,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deelrx CRM - POS and inventory for retail",
+    title: "Deelrx CRM - Sales, Stock, and Customers",
     description:
-      "Fast checkout, inventory visibility, customer records, and role-based control for independent retail.",
+      "Keep customers, products, stock, sales, payments, and balances due straight.",
     images: ["/brand/opengraph-image.png"],
   },
   robots: {
@@ -88,7 +103,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const shouldEnableMeticulous =
-    process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
+    process.env.NODE_ENV === "development" ||
+    process.env.VERCEL_ENV === "preview";
 
   /*
     Justification for NEXT_PUBLIC_METICULOUS_TOKEN: This token is a public recording key

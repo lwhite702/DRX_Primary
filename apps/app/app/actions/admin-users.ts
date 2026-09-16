@@ -1,8 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/adapters/auth/server";
+import { getPlatformAdmin, requirePlatformAdmin } from "@/lib/auth/platform-admin";
 import { db } from "@/lib/db";
-import { Role } from "@/lib/auth/permissions";
+import type { PrismaClient } from "@prisma/client";
 
 export type AdminUserItem = {
   id: string; // role record id
@@ -18,23 +18,19 @@ export async function fetchAdminUsers(): Promise<{
   error?: string;
 }> {
   try {
-    const { userId: actorId } = await auth();
-    if (!actorId) return { error: "Unauthorized", data: [] };
+    await requirePlatformAdmin();
 
-    // Verify admin/manager access?
-    // For now, let's just return all roles. The page usually filters or restricts viewing.
-    // Ideally we check the actor's role.
-
-    const roles = await db.userRole.findMany({
+    const roles = await (db as PrismaClient).userRole.findMany({
       include: {
         business: {
           select: { businessName: true, id: true },
         },
       },
       orderBy: { createdAt: "desc" },
+      take: 100,
     });
 
-    const formatted = roles.map((r: any) => ({
+    const formatted = roles.map((r) => ({
       id: r.id,
       user_id: r.userId,
       role: r.role,
@@ -44,20 +40,11 @@ export async function fetchAdminUsers(): Promise<{
     }));
 
     return { data: formatted };
-  } catch (error) {
-    console.error("Fetch users error:", error);
+  } catch {
     return { error: "Failed to fetch users", data: [] };
   }
 }
 
 export async function fetchMyRole(): Promise<string | null> {
-  const { userId } = await auth();
-  if (!userId) return null;
-
-  // Simplistic: First role found.
-  const role = await db.userRole.findFirst({
-    where: { userId },
-    select: { role: true },
-  });
-  return role?.role || null;
+  return (await getPlatformAdmin()) ? "super_admin" : null;
 }

@@ -16,7 +16,11 @@ This repository is a **pnpm monorepo**. Product ownership is explicit:
 ### Node Version Policy
 
 - **Required Node.js:** `22.23.1` (exact)
-- **Package manager:** `pnpm@9.15.9`
+- **Package manager:** `pnpm@10.17.1`
+- Use `fnm use` (or `nvm use`) to select the checked-in Node version, then
+  `corepack enable` so pnpm follows the repository pin.
+- Dependency install scripts are explicitly allowed in `pnpm-workspace.yaml`;
+  review new scripts before adding a package to that list.
 - CI and local policy are aligned (`.nvmrc`, `.node-version`, package `engines`)
 
 If you are using `nvm`:
@@ -150,7 +154,7 @@ Canonical source:
 ### Prerequisites
 
 - Node.js 22.23.1
-- pnpm 9.15.9
+- pnpm 10.17.1
 - Supabase CLI
 
 ### Installation

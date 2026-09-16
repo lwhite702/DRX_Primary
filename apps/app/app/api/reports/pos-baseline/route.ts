@@ -40,7 +40,6 @@ export async function GET(request: NextRequest) {
       "INTERNAL_ERROR",
       "Failed to generate POS baseline report",
       500,
-      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

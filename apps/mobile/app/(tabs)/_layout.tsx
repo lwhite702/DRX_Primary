@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform, StyleSheet, View } from "react-native";
 import { COLORS } from "../../src/constants/theme";
+import { drxContent } from "@deelrx/content";
 
 export default function TabLayout() {
   return (
@@ -19,10 +20,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="customers"
         options={{
-          title: "Customers",
+          title: drxContent.navigation.customers,
           tabBarIcon: ({ color, size, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "people" : "people-outline"} size={22} color={color} />
+              <Ionicons
+                name={focused ? "people" : "people-outline"}
+                size={22}
+                color={color}
+              />
               {focused && <View style={styles.activeDot} />}
             </View>
           ),
@@ -31,10 +36,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: "More",
+          title: drxContent.navigation.more,
           tabBarIcon: ({ color, size, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "menu" : "menu-outline"} size={22} color={color} />
+              <Ionicons
+                name={focused ? "menu" : "menu-outline"}
+                size={22}
+                color={color}
+              />
               {focused && <View style={styles.activeDot} />}
             </View>
           ),
@@ -43,14 +52,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "POS",
+          title: drxContent.navigation.newSale,
           tabBarIcon: ({ focused }) => (
             <View
               style={[
                 styles.posIconContainer,
                 focused && styles.posIconContainerFocused,
               ]}
-              accessibilityLabel="POS Cart"
+              accessibilityLabel="New sale cart"
             >
               <Ionicons
                 name={focused ? "cart" : "cart-outline"}
@@ -64,10 +73,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="credits"
         options={{
-          title: "Credit",
+          title: drxContent.navigation.payments,
           tabBarIcon: ({ color, size, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "wallet" : "wallet-outline"} size={22} color={color} />
+              <Ionicons
+                name={focused ? "wallet" : "wallet-outline"}
+                size={22}
+                color={color}
+              />
               {focused && <View style={styles.activeDot} />}
             </View>
           ),
@@ -76,10 +89,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="inventory"
         options={{
-          title: "Inventory",
+          title: drxContent.navigation.products,
           tabBarIcon: ({ color, size, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "cube" : "cube-outline"} size={22} color={color} />
+              <Ionicons
+                name={focused ? "cube" : "cube-outline"}
+                size={22}
+                color={color}
+              />
               {focused && <View style={styles.activeDot} />}
             </View>
           ),

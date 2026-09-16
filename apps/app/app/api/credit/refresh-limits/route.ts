@@ -41,10 +41,7 @@ export async function POST(request: Request) {
     console.log("Starting scheduled credit limit refresh");
     await scheduleNightlyRefresh();
 
-    return successResponse(
-      { message: "Credit limit refresh completed successfully" },
-      200,
-    );
+    return successResponse({ message: "Balance limits updated." }, 200);
   } catch (error) {
     console.error("Error in credit limit refresh:", error);
 
@@ -52,7 +49,6 @@ export async function POST(request: Request) {
       "INTERNAL_ERROR",
       "Failed to refresh credit limits",
       500,
-      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

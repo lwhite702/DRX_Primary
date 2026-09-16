@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUserAndBusiness } from "./helpers/auth";
@@ -11,8 +12,9 @@ import {
   normalizeProductCommerceConfig,
 } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
+import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
 
-const productRecord = v.object({
+export const productRecord = v.object({
   _id: v.id("products"),
   _creationTime: v.number(),
   businessId: v.id("businesses"),
@@ -24,6 +26,7 @@ const productRecord = v.object({
   sellingPriceCents: v.number(),
   unitCostCents: v.number(),
   isTaxable: v.optional(v.boolean()),
+  location: v.optional(v.string()),
   quantityOnHandGrams: v.number(),
   reorderLevelGrams: v.number(),
   allowFractionalWeight: v.boolean(),
@@ -373,6 +376,7 @@ export const suggestQuantityForDollarAmount = query({
 
 export const createProduct = mutation({
   args: {
+    selectedBusinessId: v.optional(v.string()),
     sku: v.string(),
     productName: v.string(),
     description: v.optional(v.string()),
@@ -380,12 +384,26 @@ export const createProduct = mutation({
     sellingPriceCents: v.number(),
     unitCostCents: v.number(),
     isTaxable: v.optional(v.boolean()),
+    location: v.optional(v.string()),
     allowFractionalWeight: v.optional(v.boolean()),
     reorderLevelGrams: v.optional(v.number()),
+    commerceConfig: v.optional(v.object({
+      sellingUnit: v.string(),
+      decimalPrecision: v.number(),
+      minimumSaleQuantity: v.number(),
+      quantityIncrement: v.number(),
+      suggestedDollarAmounts: v.array(v.number()),
+      suggestedQuantities: v.array(v.number()),
+    })),
+    initialQuantity: v.optional(v.number()),
   },
   returns: v.id("products"),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
+    if (args.selectedBusinessId && args.selectedBusinessId !== auth.businessId &&
+        args.selectedBusinessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
     requirePermission(auth.userRecord, "MANAGE_INVENTORY");
     const now = Date.now();
 
@@ -405,6 +423,28 @@ export const createProduct = mutation({
 
     const allowFractionalWeight = args.allowFractionalWeight ?? true;
     const commerceDefaults = defaultCommerceConfig(allowFractionalWeight);
+    const creationCommerce = args.commerceConfig ? canonicalCreationCommerce({
+      ...args.commerceConfig,
+      fractionalEnabled: allowFractionalWeight,
+      bulkPriceTiers: [],
+    }) : undefined;
+    if ((
+      !Number.isSafeInteger(args.sellingPriceCents) || args.sellingPriceCents <= 0 ||
+      !Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0 ||
+      !Number.isFinite(args.reorderLevelGrams ?? 10) || (args.reorderLevelGrams ?? 10) < 0
+    )) throw new Error("INVALID_ARGUMENT: Enter valid integer-cent prices and a nonnegative reorder level");
+    const initialQuantity = args.initialQuantity ?? 0;
+    const scale = 10 ** (creationCommerce?.quantityPrecision ?? commerceDefaults.quantityPrecision);
+    if (!Number.isFinite(initialQuantity) || initialQuantity < 0 ||
+        !Number.isSafeInteger(Math.round(initialQuantity * scale)) ||
+        Math.abs(initialQuantity * scale - Math.round(initialQuantity * scale)) > 1e-6 ||
+        (!allowFractionalWeight && !Number.isInteger(initialQuantity))) {
+      throw new Error("INVALID_ARGUMENT: Starting stock must fit the product quantity precision");
+    }
+    if (initialQuantity > 0 && (!Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0)) {
+      throw new Error("INVALID_ARGUMENT: Starting stock requires a nonnegative integer-cent unit cost");
+    }
+    const location = args.location?.trim() || undefined;
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
       sku: args.sku,
@@ -414,17 +454,34 @@ export const createProduct = mutation({
       sellingPriceCents: args.sellingPriceCents,
       unitCostCents: args.unitCostCents,
       isTaxable: args.isTaxable ?? true,
-      quantityOnHandGrams: 0,
-      reorderLevelGrams: args.reorderLevelGrams || 10,
+      location,
+      quantityOnHandGrams: initialQuantity,
+      reorderLevelGrams: args.reorderLevelGrams ?? 10,
       allowFractionalWeight,
       ...commerceDefaults,
       suggestedQuantityPresets: [],
       suggestedDollarPresetsCents: [],
       bulkPriceTiers: [],
+      ...creationCommerce,
       isActive: true,
       createdAt: now,
       updatedAt: now,
     });
+
+    if (initialQuantity > 0) {
+      await ctx.db.insert("inventoryBatches", {
+        businessId: auth.businessId,
+        productId,
+        originalQuantityGrams: initialQuantity,
+        remainingQuantityGrams: initialQuantity,
+        unitCostPerGramCents: args.unitCostCents,
+        location,
+        receivedAt: now,
+        createdBy: auth.userId,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
 
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,
@@ -432,7 +489,7 @@ export const createProduct = mutation({
       action: "PRODUCT_CREATED",
       entityType: "product",
       entityId: productId,
-      metadata: JSON.stringify({ sku: args.sku, name: args.productName }),
+      metadata: JSON.stringify({ sku: args.sku, name: args.productName, delta: initialQuantity, reason: "Product created" }),
       timestamp: now,
     });
 
@@ -440,17 +497,67 @@ export const createProduct = mutation({
   },
 });
 
-export const listProducts = query({
-  args: {},
-  returns: v.array(productRecord),
-  handler: async (ctx) => {
+export const archiveProduct = mutation({
+  args: { productId: v.id("products") },
+  returns: v.object({ success: v.literal(true) }),
+  handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_businessId_and_isActive", (q) =>
-        q.eq("businessId", auth.businessId).eq("isActive", true),
-      )
-      .take(500);
+    requirePermission(auth.userRecord, "MANAGE_INVENTORY");
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId) {
+      throw new Error(`NOT_FOUND: Product '${args.productId}' not found`);
+    }
+    const now = Date.now();
+    await ctx.db.patch(args.productId, { isActive: false, updatedAt: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "PRODUCT_ARCHIVED",
+      entityType: "product",
+      entityId: args.productId,
+      metadata: JSON.stringify({ sku: product.sku, name: product.productName }),
+      timestamp: now,
+    });
+    return { success: true as const };
+  },
+});
+
+export const reactivateProduct = mutation({
+  args: { productId: v.id("products") },
+  returns: v.object({ success: v.literal(true) }),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_INVENTORY");
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId) {
+      throw new Error(`NOT_FOUND: Product '${args.productId}' not found`);
+    }
+    const now = Date.now();
+    await ctx.db.patch(args.productId, { isActive: true, updatedAt: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "PRODUCT_REACTIVATED",
+      entityType: "product",
+      entityId: args.productId,
+      metadata: JSON.stringify({ sku: product.sku, name: product.productName }),
+      timestamp: now,
+    });
+    return { success: true as const };
+  },
+});
+
+export const listProducts = query({
+  args: { includeArchived: v.optional(v.boolean()) },
+  returns: v.array(productRecord),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    const queryBuilder = args?.includeArchived
+      ? ctx.db.query("products").withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
+      : ctx.db.query("products").withIndex("by_businessId_and_isActive", (q) =>
+          q.eq("businessId", auth.businessId).eq("isActive", true),
+        );
+    const products = await queryBuilder.take(500);
 
     return products.map((product) => ({
       ...product,
@@ -523,5 +630,40 @@ export const upsertManualLinePolicy = mutation({
       timestamp: now,
     });
     return { policyId };
+  },
+});
+
+// Selected legacy business identifiers are accepted only through an explicit
+// tenant mapping. Product identities and stock always come from Convex.
+export const listCatalogPage = query({
+  args: { businessId: v.string(), paginationOpts: paginationOptsValidator },
+  returns: v.object({ page: v.array(productRecord), isDone: v.boolean(), continueCursor: v.string() }),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    if (args.businessId !== auth.businessId && args.businessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
+    if (!Number.isInteger(args.paginationOpts.numItems) || args.paginationOpts.numItems < 1 || args.paginationOpts.numItems > 200) {
+      throw new Error("INVALID_ARGUMENT: Page size must be between 1 and 200");
+    }
+    const result = await ctx.db.query("products")
+      .withIndex("by_businessId_and_isActive", q => q.eq("businessId", auth.businessId).eq("isActive", true))
+      .order("desc").paginate(args.paginationOpts);
+    return { page: result.page.map(product => ({ ...product, ...normalizeProductCommerceConfig(product) })),
+      isDone: result.isDone, continueCursor: result.continueCursor };
+  },
+});
+
+export const getCatalogProduct = query({
+  args: { businessId: v.string(), productId: v.id("products") },
+  returns: productRecord,
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    if (args.businessId !== auth.businessId && args.businessId !== auth.businessRecord.legacyPrismaBusinessId) {
+      throw new Error("FORBIDDEN: Selected business does not match membership");
+    }
+    const product = await ctx.db.get(args.productId);
+    if (!product || product.businessId !== auth.businessId || !product.isActive) throw new Error("NOT_FOUND: Product unavailable");
+    return { ...product, ...normalizeProductCommerceConfig(product) };
   },
 });

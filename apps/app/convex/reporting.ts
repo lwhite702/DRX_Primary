@@ -27,8 +27,10 @@ const aggregateRecord = v.object({
   totalSubtotalCents: v.number(),
   averageOrderValueCents: v.number(),
   merchandiseRevenueCents: v.number(),
+  feeRevenueCents: v.optional(v.number()),
   deliveryRevenueCents: v.number(),
   vendorDeliveryExpenseCents: v.number(),
+  unknownVendorExpenseOrderCount: v.optional(v.number()),
   deliveryTaxCents: v.number(),
   deliveryTaxRefundCents: v.number(),
   discountCents: v.number(),
@@ -100,6 +102,7 @@ async function aggregatePeriod(
   let saleTaxCents = 0;
   let totalSubtotalCents = 0;
   let merchandiseRevenueCents = 0;
+  let feeRevenueCents = 0;
   let deliveryRevenueCents = 0;
   let vendorDeliveryExpenseCents = 0;
   let saleDeliveryTaxCents = 0;
@@ -142,6 +145,7 @@ async function aggregatePeriod(
     grossCollectedCents += sale.totalAmountCents;
     saleTaxCents += sale.taxAmountCents;
     totalSubtotalCents += sale.subtotalCents;
+    feeRevenueCents += sale.feeRevenueCents ?? 0;
     merchandiseRevenueCents +=
       sale.merchandiseRevenueCents ?? sale.subtotalCents;
     deliveryRevenueCents += sale.deliveryRevenueCents ?? 0;
@@ -209,7 +213,7 @@ async function aggregatePeriod(
         );
   const manualCostComplete = unknownCostLineCount === 0;
   const grossProfitComplete =
-    coverageBps === 10_000 && manualCostComplete;
+    coverageBps === 10_000 && manualCostComplete && sales.every(sale => sale.vendorDeliveryExpenseKnown !== false);
 
   let customerFeeRefundCents = 0;
   let vendorCreditsCents = 0;
@@ -227,7 +231,7 @@ async function aggregatePeriod(
   const netCashActivityCents =
     grossCollectedCents - customerFeeRefundCents - deliveryTaxRefundCents;
   const netRevenueCents =
-    merchandiseRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
+    merchandiseRevenueCents + feeRevenueCents + deliveryRevenueCents - customerFeeRefundCents;
   const grossProfitCents =
     netRevenueCents -
     cogsCents -
@@ -256,8 +260,10 @@ async function aggregatePeriod(
     averageOrderValueCents:
       orderCount > 0 ? Math.round(grossCollectedCents / orderCount) : 0,
     merchandiseRevenueCents,
+    ...(feeRevenueCents ? { feeRevenueCents } : {}),
     deliveryRevenueCents,
     vendorDeliveryExpenseCents,
+    ...(sales.some(sale => sale.vendorDeliveryExpenseKnown === false) ? { unknownVendorExpenseOrderCount: sales.filter(sale => sale.vendorDeliveryExpenseKnown === false).length } : {}),
     deliveryTaxCents: saleDeliveryTaxCents - deliveryTaxRefundCents,
     deliveryTaxRefundCents,
     discountCents,
@@ -314,5 +320,125 @@ export const getDailySalesAggregate = query({
       now.getUTCDate(),
     );
     return aggregatePeriod(ctx, auth.businessId, startAt, startAt + DAY_MS);
+  },
+});
+
+const LOSS_TYPES = new Set(["shrinkage", "spill", "damage"]);
+
+export const getFinancialReport = query({
+  args: {
+    startDate: v.optional(v.number()),
+    endDate: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "VIEW_FINANCIALS");
+    const startDate = args.startDate ?? 0;
+    const endDate = args.endDate ?? Date.now();
+    if (
+      !Number.isFinite(startDate) ||
+      !Number.isFinite(endDate) ||
+      endDate < startDate
+    ) {
+      throw new Error(
+        "INVALID_ARGUMENT: Financial report date range is invalid",
+      );
+    }
+
+    const allSales = await ctx.db
+      .query("sales")
+      .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
+      .collect();
+    const completedSales = allSales.filter(
+      (sale) =>
+        sale.orderStatus === "completed" &&
+        sale.createdAt >= startDate &&
+        sale.createdAt <= endDate,
+    );
+
+    let totalRevenueCents = 0;
+    let totalTaxCents = 0;
+    let totalSubtotalCents = 0;
+    let totalDeliveryFeesCents = 0;
+    let totalDiscountsCents = 0;
+    let costOfGoodsSoldCents = 0;
+
+    for (const sale of completedSales) {
+      totalRevenueCents += sale.totalAmountCents;
+      totalTaxCents += sale.taxAmountCents;
+      totalSubtotalCents += sale.subtotalCents;
+      totalDeliveryFeesCents += sale.deliveryFeeCents ?? 0;
+      totalDiscountsCents += sale.discountAmountCents ?? 0;
+
+      const allocations = await ctx.db
+        .query("salesAllocations")
+        .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+        .collect();
+      costOfGoodsSoldCents += allocations.reduce(
+        (total, allocation) => total + allocation.extendedCostCents,
+        0,
+      );
+    }
+
+    const stockAdjustments = await ctx.db
+      .query("stockAdjustments")
+      .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
+      .collect();
+    const inventoryLossCents = stockAdjustments
+      .filter(
+        (adjustment) =>
+          adjustment.createdAt >= startDate &&
+          adjustment.createdAt <= endDate &&
+          adjustment.direction === "decrease" &&
+          LOSS_TYPES.has(adjustment.adjustmentType),
+      )
+      .reduce((total, adjustment) => total + adjustment.costLossCents, 0);
+
+    let refundedScrapLossCents = 0;
+    const scrapRefunds = allSales.filter(
+      (sale) =>
+        sale.orderStatus === "refunded" &&
+        sale.refundDisposition === "scrap" &&
+        (sale.refundedAt ?? 0) >= startDate &&
+        (sale.refundedAt ?? 0) <= endDate,
+    );
+    for (const sale of scrapRefunds) {
+      const allocations = await ctx.db
+        .query("salesAllocations")
+        .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+        .collect();
+      refundedScrapLossCents += allocations.reduce(
+        (total, allocation) => total + allocation.extendedCostCents,
+        0,
+      );
+    }
+
+    const orderCount = completedSales.length;
+    const netRevenueCents = totalRevenueCents - totalTaxCents;
+    const grossProfitCents = netRevenueCents - costOfGoodsSoldCents;
+    const grossProfitMarginPercent =
+      netRevenueCents > 0
+        ? Math.round((grossProfitCents / netRevenueCents) * 10_000) / 100
+        : 0;
+
+    return {
+      startDate,
+      endDate,
+      orderCount,
+      totalRevenueCents,
+      totalTaxCents,
+      totalSubtotalCents,
+      totalDeliveryFeesCents,
+      totalDiscountsCents,
+      netRevenueCents,
+      costOfGoodsSoldCents,
+      grossProfitCents,
+      grossProfitMarginPercent,
+      inventoryLossCents,
+      refundedScrapLossCents,
+      shrinkLossCents: inventoryLossCents + refundedScrapLossCents,
+      averageOrderValueCents:
+        orderCount > 0 ? Math.round(totalRevenueCents / orderCount) : 0,
+    };
   },
 });

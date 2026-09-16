@@ -18,59 +18,72 @@ import {
 } from "lucide-react";
 
 import { appLoginUrl, appWaitlistUrl } from "@/lib/app-links";
-import { drxPrivacyProtexion, marketingFeatureSections } from "@/lib/feature-canon";
+import { drxPrivacy, marketingFeatureSections } from "@/lib/feature-canon";
 import { marketingContent } from "@/lib/marketing-content";
 
-const canonicalPoints = (id: (typeof marketingFeatureSections)[number]["id"], limit = 3) =>
-  marketingFeatureSections.find((section) => section.id === id)?.bullets.slice(0, limit).map((bullet) => bullet.text) ?? [];
+const canonicalPoints = (
+  id: (typeof marketingFeatureSections)[number]["id"],
+  limit = 3,
+) =>
+  marketingFeatureSections
+    .find((section) => section.id === id)
+    ?.bullets.slice(0, limit)
+    .map((bullet) => bullet.text) ?? [];
 
-const canonicalPoint = (id: (typeof marketingFeatureSections)[number]["id"], text: string) =>
-  marketingFeatureSections.find((section) => section.id === id)?.bullets.find((bullet) => bullet.text === text)?.text;
+const canonicalPoint = (
+  id: (typeof marketingFeatureSections)[number]["id"],
+  text: string,
+) =>
+  marketingFeatureSections
+    .find((section) => section.id === id)
+    ?.bullets.find((bullet) => bullet.text === text)?.text;
 
 const strongEncryptionPoints =
-  drxPrivacyProtexion.blocks.find((block) => block.id === "strong-encryption")?.bullets.slice(0, 1) ?? [];
+  drxPrivacy.blocks
+    .find((block) => block.id === "strong-encryption")
+    ?.bullets.slice(0, 1) ?? [];
 
 const capabilities = [
   {
     icon: Zap,
-    kicker: "Quick POS",
+    kicker: "New sale",
     title: "Keep the line moving.",
-    body: "Search or scan, adjust quantity, choose a tender, and finish the sale without a ten-screen detour.",
+    body: "Search or scan, check the amount, choose a payment type, and save the sale.",
     points: canonicalPoints("quick-pos"),
   },
   {
     icon: ReceiptText,
-    kicker: "Transactions",
-    title: "Every sale accounted for.",
-    body: "Review sale history, controlled discounts, refund actions, receipts, and the activity context attached to supported adjustments.",
+    kicker: "Sales",
+    title: "Keep every sale straight.",
+    body: "Check sales, discounts, refunds, receipts, and who made supported changes.",
     points: canonicalPoints("fast-pos"),
   },
   {
     icon: PackageCheck,
-    kicker: "Inventory",
-    title: "Know what is on deck.",
-    body: "See stock counts, low-stock warnings, SKU and barcode context, intake activity, and logged inventory adjustments.",
+    kicker: "Products",
+    title: "Know what’s left.",
+    body: "See stock counts, low-stock warnings, product codes, and stock history.",
     points: canonicalPoints("inventory"),
   },
   {
     icon: UsersRound,
     kicker: "Roles",
     title: "Access stays tight.",
-    body: "Operators get the tools they need. Admin controls stay protected. Sensitive actions keep an attributable record.",
+    body: "Give each team member the access they need. Keep a record of important changes.",
     points: canonicalPoints("team-control"),
   },
   {
     icon: BarChart3,
-    kicker: "Reporting",
-    title: "Numbers that run the shift.",
-    body: "Review sales windows, best sellers, category context, revenue, and low-stock signals without reporting theater.",
+    kicker: "Reports",
+    title: "Check your numbers.",
+    body: "See sales, best sellers, what you made, and what is running low.",
     points: canonicalPoints("reports"),
   },
   {
     icon: ShieldCheck,
     kicker: "Security",
     title: "Your operation stays yours.",
-    body: "Secure login, controlled privileges, activity logs, and encrypted sensitive fields support a disciplined operating model.",
+    body: "Secure sign-in, team access, history, and encryption help protect what you add.",
     points: [
       canonicalPoint("team-control", "Secure login system"),
       canonicalPoint("team-control", "Activity logs by user"),
@@ -82,7 +95,14 @@ const capabilities = [
 function BrandLockup() {
   return (
     <span className="inline-flex items-center gap-3">
-      <Image src="/brand/drx-wordmark.svg" alt="DRX" width={92} height={64} className="h-9 w-auto" priority />
+      <Image
+        src="/brand/drx-wordmark.svg"
+        alt="DRX"
+        width={92}
+        height={64}
+        className="h-9 w-auto"
+        priority
+      />
       <span className="hidden border-l border-white/15 pl-3 font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-white/70 sm:block">
         Deelrx CRM
       </span>
@@ -90,7 +110,13 @@ function BrandLockup() {
   );
 }
 
-function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
+function PrimaryLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -101,7 +127,13 @@ function PrimaryLink({ href, children }: { href: string; children: React.ReactNo
   );
 }
 
-function SecondaryLink({ href, children }: { href: string; children: React.ReactNode }) {
+function SecondaryLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -116,12 +148,25 @@ function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-[1280px] items-center justify-between gap-5 px-5 md:px-8">
-        <Link href="/" aria-label="Deelrx CRM home"><BrandLockup /></Link>
-        <nav aria-label="Primary navigation" className="hidden items-center gap-7 text-sm text-white/65 md:flex">
-          <Link href="#product" className="hover:text-white">Product</Link>
-          <Link href="#control" className="hover:text-white">Control</Link>
-          <Link href="#security" className="hover:text-white">Security</Link>
-          <Link href={appLoginUrl} className="hover:text-white">Operator login</Link>
+        <Link href="/" aria-label="Deelrx CRM home">
+          <BrandLockup />
+        </Link>
+        <nav
+          aria-label="Primary navigation"
+          className="hidden items-center gap-7 text-sm text-white/65 md:flex"
+        >
+          <Link href="#product" className="hover:text-white">
+            Product
+          </Link>
+          <Link href="#control" className="hover:text-white">
+            Control
+          </Link>
+          <Link href="#security" className="hover:text-white">
+            Security
+          </Link>
+          <Link href={appLoginUrl} className="hover:text-white">
+            Operator login
+          </Link>
         </nav>
         <PrimaryLink href={appWaitlistUrl}>Join the Beta</PrimaryLink>
       </div>
@@ -131,14 +176,23 @@ function Header() {
 
 function QuickSaleProof() {
   return (
-    <div id="demo" className="scroll-mt-24 overflow-hidden rounded-[14px] border border-white/15 bg-[#121212] shadow-[0_28px_70px_rgba(0,0,0,0.45)]" aria-label="Deterministic Quick Sale product preview">
+    <div
+      id="demo"
+      className="scroll-mt-24 overflow-hidden rounded-[14px] border border-white/15 bg-[#121212] shadow-[0_28px_70px_rgba(0,0,0,0.45)]"
+      aria-label="New sale preview"
+    >
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-black">Product preview</span>
-          <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/55">Quick Sale</span>
+          <span className="rounded bg-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-black">
+            Product preview
+          </span>
+          <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/55">
+            New sale
+          </span>
         </div>
         <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-400">
-          <span className="size-1.5 rounded-full bg-emerald-400" /> Register ready
+          <span className="size-1.5 rounded-full bg-emerald-400" /> Register
+          ready
         </span>
       </div>
 
@@ -155,12 +209,29 @@ function QuickSaleProof() {
               ["CAP-GRN", "Operator Cap", "$28.00", "8 in stock"],
               ["BAG-BLK", "Utility Bag", "$46.00", "Low: 3 left"],
             ].map(([sku, name, price, stock], index) => (
-              <button key={sku} className="min-h-32 rounded-lg border border-white/10 bg-[#1A1A1A] p-3 text-left transition hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/45">{sku}</span>
-                <span className="mt-6 block text-sm font-bold text-white">{name}</span>
+              <button
+                key={sku}
+                className="min-h-32 rounded-lg border border-white/10 bg-[#1A1A1A] p-3 text-left transition hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/45">
+                  {sku}
+                </span>
+                <span className="mt-6 block text-sm font-bold text-white">
+                  {name}
+                </span>
                 <span className="mt-2 flex items-center justify-between gap-2">
-                  <span className="font-mono text-sm font-bold text-accent">{price}</span>
-                  <span className={index === 3 ? "text-[10px] text-amber-400" : "text-[10px] text-white/45"}>{stock}</span>
+                  <span className="font-mono text-sm font-bold text-accent">
+                    {price}
+                  </span>
+                  <span
+                    className={
+                      index === 3
+                        ? "text-[10px] text-amber-400"
+                        : "text-[10px] text-white/45"
+                    }
+                  >
+                    {stock}
+                  </span>
                 </span>
               </button>
             ))}
@@ -170,7 +241,9 @@ function QuickSaleProof() {
         <div className="flex flex-col bg-[#0D0D0D]">
           <div className="flex items-center justify-between border-b border-white/10 p-4">
             <span className="text-sm font-bold text-white">Current order</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">2 items</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">
+              2 items
+            </span>
           </div>
           <div className="flex-1 space-y-3 p-4">
             <div className="rounded-md border border-white/10 bg-[#171717] p-3">
@@ -184,8 +257,12 @@ function QuickSaleProof() {
           </div>
           <div className="border-t border-white/10 p-4">
             <div className="flex items-end justify-between">
-              <span className="text-xs uppercase tracking-[0.12em] text-white/50">Total</span>
-              <span className="font-mono text-2xl font-bold text-white">$96.00</span>
+              <span className="text-xs uppercase tracking-[0.12em] text-white/50">
+                Total
+              </span>
+              <span className="font-mono text-2xl font-bold text-white">
+                $96.00
+              </span>
             </div>
             <button className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-accent text-sm font-black uppercase tracking-[0.1em] text-black">
               Charge <ChevronRight className="size-4" aria-hidden />
@@ -193,7 +270,9 @@ function QuickSaleProof() {
           </div>
         </div>
       </div>
-      <p className="border-t border-white/10 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">Illustrative product data · real DRX workflow</p>
+      <p className="border-t border-white/10 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">
+        Illustrative product data · real DRX workflow
+      </p>
     </div>
   );
 }
@@ -204,20 +283,33 @@ function Hero() {
       <div className="operator-grid absolute inset-0 opacity-50" aria-hidden />
       <div className="relative mx-auto grid max-w-[1280px] gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-28">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{marketingContent.hero.preheadline}</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            {marketingContent.hero.preheadline}
+          </p>
           <h1 className="mt-5 max-w-[740px] text-[clamp(3.2rem,7vw,6.7rem)] font-extrabold leading-[0.91] tracking-[-0.06em] text-white">
-            {marketingContent.hero.headlineLead}<br /><span className="text-accent">{marketingContent.hero.headlineAccent}</span>
+            {marketingContent.hero.headlineLead}
+            <br />
+            <span className="text-accent">
+              {marketingContent.hero.headlineAccent}
+            </span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-8 text-white/65">
             {marketingContent.hero.subheadline}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink href={appWaitlistUrl}>{marketingContent.hero.primaryCta.label} <ArrowRight className="size-4" /></PrimaryLink>
-            <SecondaryLink href="#product">{marketingContent.hero.secondaryCta.label}</SecondaryLink>
+            <PrimaryLink href={appWaitlistUrl}>
+              {marketingContent.hero.primaryCta.label}{" "}
+              <ArrowRight className="size-4" />
+            </PrimaryLink>
+            <SecondaryLink href="#product">
+              {marketingContent.hero.secondaryCta.label}
+            </SecondaryLink>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/45">
             {marketingContent.hero.proofLabels.map((label) => (
-              <span key={label} className="inline-flex items-center gap-2"><Check className="size-3.5 text-accent" /> {label}</span>
+              <span key={label} className="inline-flex items-center gap-2">
+                <Check className="size-3.5 text-accent" /> {label}
+              </span>
             ))}
           </div>
         </div>
@@ -235,16 +327,22 @@ function OperatorStrip() {
     access: LockKeyhole,
   } as const;
   return (
-    <section aria-label="Operator benefits" className="border-b border-white/10 bg-[#0D0D0D]">
+    <section
+      aria-label="Operator benefits"
+      className="border-b border-white/10 bg-[#0D0D0D]"
+    >
       <div className="mx-auto grid max-w-[1280px] md:grid-cols-2 lg:grid-cols-4">
         {marketingContent.benefits.map(({ id, title, body }) => {
           const Icon = icons[id];
           return (
-          <div key={title} className="border-white/10 px-5 py-8 md:px-8 lg:border-r last:border-r-0">
-            <Icon className="size-5 text-accent" aria-hidden />
-            <h2 className="mt-4 text-base font-bold text-white">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">{body}</p>
-          </div>
+            <div
+              key={title}
+              className="border-white/10 px-5 py-8 md:px-8 lg:border-r last:border-r-0"
+            >
+              <Icon className="size-5 text-accent" aria-hidden />
+              <h2 className="mt-4 text-base font-bold text-white">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-white/50">{body}</p>
+            </div>
           );
         })}
       </div>
@@ -254,30 +352,63 @@ function OperatorStrip() {
 
 function Capabilities() {
   return (
-    <section id="product" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+    <section
+      id="product"
+      className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28"
+    >
       <div className="grid gap-10 border-b border-white/10 pb-12 lg:grid-cols-2 lg:items-end">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">What Deelrx actually does</p>
-          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">One system for the work independent retail cannot put off.</h2>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            What Deelrx actually does
+          </p>
+          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">
+            One system for the work independent retail cannot put off.
+          </h2>
         </div>
-        <p className="max-w-xl text-base leading-7 text-white/55 lg:justify-self-end">Desktop stays information-dense. Mobile stays task-focused. The terminology, priorities, states, and controls stay familiar wherever the shift takes you.</p>
+        <p className="max-w-xl text-base leading-7 text-white/55 lg:justify-self-end">
+          Desktop stays information-dense. Mobile stays task-focused. The
+          terminology, priorities, states, and controls stay familiar wherever
+          the shift takes you.
+        </p>
       </div>
 
       <div id="control" className="grid md:grid-cols-2 lg:grid-cols-3">
-        {capabilities.map(({ icon: Icon, kicker, title, body, points }, index) => (
-          <article key={title} id={kicker === "Security" ? "security" : undefined} className="border-b border-white/10 px-0 py-10 md:px-7 lg:min-h-[360px] lg:border-r lg:nth-[3n]:border-r-0">
-            <div className="flex items-center justify-between">
-              <span className="flex size-11 items-center justify-center rounded-md border border-accent/25 bg-accent/10 text-accent"><Icon className="size-5" aria-hidden /></span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/30">0{index + 1}</span>
-            </div>
-            <p className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">{kicker}</p>
-            <h3 className="mt-3 text-2xl font-bold tracking-[-0.02em] text-white">{title}</h3>
-            <p className="mt-4 text-sm leading-6 text-white/55">{body}</p>
-            <ul className="mt-6 space-y-2">
-              {points.map((point) => <li key={point} className="flex items-center gap-2 text-xs text-white/65"><Check className="size-3.5 text-accent" aria-hidden />{point}</li>)}
-            </ul>
-          </article>
-        ))}
+        {capabilities.map(
+          ({ icon: Icon, kicker, title, body, points }, index) => (
+            <article
+              key={title}
+              id={kicker === "Security" ? "security" : undefined}
+              className="border-b border-white/10 px-0 py-10 md:px-7 lg:min-h-[360px] lg:border-r lg:nth-[3n]:border-r-0"
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex size-11 items-center justify-center rounded-md border border-accent/25 bg-accent/10 text-accent">
+                  <Icon className="size-5" aria-hidden />
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/30">
+                  0{index + 1}
+                </span>
+              </div>
+              <p className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">
+                {kicker}
+              </p>
+              <h3 className="mt-3 text-2xl font-bold tracking-[-0.02em] text-white">
+                {title}
+              </h3>
+              <p className="mt-4 text-sm leading-6 text-white/55">{body}</p>
+              <ul className="mt-6 space-y-2">
+                {points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex items-center gap-2 text-xs text-white/65"
+                  >
+                    <Check className="size-3.5 text-accent" aria-hidden />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ),
+        )}
       </div>
     </section>
   );
@@ -287,10 +418,19 @@ function Manifesto() {
   return (
     <section className="border-y border-white/10 bg-[#121212]">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[0.7fr_1.3fr]">
-        <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Why Deelrx</p>
+        <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+          Why Deelrx
+        </p>
         <div>
-          <h2 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.04em] text-white md:text-6xl">You are building something, scaling something, and protecting something.</h2>
-          <p className="mt-7 max-w-3xl text-lg leading-8 text-white/60">You need speed, control, clean numbers, and inventory discipline. Deelrx is built for independent retail—clear enough for the counter and disciplined enough for the back office. No corporate fluff.</p>
+          <h2 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.04em] text-white md:text-6xl">
+            You are building something, scaling something, and protecting
+            something.
+          </h2>
+          <p className="mt-7 max-w-3xl text-lg leading-8 text-white/60">
+            You need speed, control, clean numbers, and inventory discipline.
+            Deelrx is built for independent retail—clear enough for the counter
+            and disciplined enough for the back office. No corporate fluff.
+          </p>
         </div>
       </div>
     </section>
@@ -299,12 +439,21 @@ function Manifesto() {
 
 function Faq() {
   return (
-    <section id="faq" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+    <section
+      id="faq"
+      className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28"
+    >
       <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Straight answers</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">No fine-print theater.</h2>
-          <p className="mt-5 max-w-md text-sm leading-6 text-white/55">What DRX is, who it is for, and where the current boundaries sit.</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            Straight answers
+          </p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">
+            No fine-print theater.
+          </h2>
+          <p className="mt-5 max-w-md text-sm leading-6 text-white/55">
+            What DRX is, who it is for, and where the current boundaries sit.
+          </p>
         </div>
         <div className="divide-y divide-white/10 border-y border-white/10">
           {marketingContent.faq.map((item) => (
@@ -312,7 +461,9 @@ function Faq() {
               <summary className="cursor-pointer list-none pr-8 text-base font-bold text-white marker:hidden">
                 {item.question}
               </summary>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">{item.answer}</p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
+                {item.answer}
+              </p>
             </details>
           ))}
         </div>
@@ -323,13 +474,28 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section id="beta-access" className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+    <section
+      id="beta-access"
+      className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28"
+    >
       <div className="relative overflow-hidden rounded-[14px] border border-accent/25 bg-[#151515] px-6 py-14 md:px-12 md:py-20">
         <div className="relative z-10 max-w-3xl">
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Deelrx CRM beta</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">{marketingContent.betaAccess.title}</h2>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">{marketingContent.betaAccess.lead}</p>
-          <div className="mt-8 flex flex-wrap gap-3"><PrimaryLink href={appWaitlistUrl}>{marketingContent.betaAccess.cta.label} <ArrowRight className="size-4" /></PrimaryLink><SecondaryLink href={appLoginUrl}>Operator login</SecondaryLink></div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            Deelrx CRM beta
+          </p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white md:text-6xl">
+            {marketingContent.betaAccess.title}
+          </h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
+            {marketingContent.betaAccess.lead}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <PrimaryLink href={appWaitlistUrl}>
+              {marketingContent.betaAccess.cta.label}{" "}
+              <ArrowRight className="size-4" />
+            </PrimaryLink>
+            <SecondaryLink href={appLoginUrl}>Operator login</SecondaryLink>
+          </div>
         </div>
       </div>
     </section>
@@ -340,13 +506,48 @@ function Footer() {
   return (
     <footer className="border-t border-white/10">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-8 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
-        <div><BrandLockup /><p className="mt-3 max-w-md text-xs leading-5 text-white/40">Operator-first POS, inventory, customer records, and reporting for independent retail. Currently in beta.</p></div>
-        <div className="flex flex-wrap gap-x-5 gap-y-3 text-xs text-white/50"><Link href="/legal/privacy" className="hover:text-white">Privacy</Link><Link href="/legal/terms" className="hover:text-white">Terms</Link><Link href="/legal/regulatory-disclaimer" className="hover:text-white">Regulatory disclaimer</Link></div>
+        <div>
+          <BrandLockup />
+          <p className="mt-3 max-w-md text-xs leading-5 text-white/40">
+            Operator-first POS, inventory, customer records, and reporting for
+            independent retail. Currently in beta.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-3 text-xs text-white/50">
+          <Link href="/legal/privacy" className="hover:text-white">
+            Privacy
+          </Link>
+          <Link href="/legal/terms" className="hover:text-white">
+            Terms
+          </Link>
+          <Link
+            href="/legal/regulatory-disclaimer"
+            className="hover:text-white"
+          >
+            Regulatory disclaimer
+          </Link>
+        </div>
       </div>
     </footer>
   );
 }
 
-export function LandingPageSections({ operatorShowcase }: { operatorShowcase?: ReactNode }) {
-  return <><Header /><Hero /><OperatorStrip />{operatorShowcase}<Capabilities /><Manifesto /><Faq /><FinalCta /><Footer /></>;
+export function LandingPageSections({
+  operatorShowcase,
+}: {
+  operatorShowcase?: ReactNode;
+}) {
+  return (
+    <>
+      <Header />
+      <Hero />
+      <OperatorStrip />
+      {operatorShowcase}
+      <Capabilities />
+      <Manifesto />
+      <Faq />
+      <FinalCta />
+      <Footer />
+    </>
+  );
 }

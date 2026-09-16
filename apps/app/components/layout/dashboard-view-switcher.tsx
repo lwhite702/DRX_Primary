@@ -18,9 +18,10 @@ import {
 import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
 
 export function DashboardViewSwitcher() {
-  const { preferences, setPreset, saving, error } = useDashboardPreferences();
+  const { preferences, setPreset, saving, error, status } = useDashboardPreferences();
 
-  const currentLabel = dashboardPresetLabels[preferences.preset] ?? "Operations";
+  const currentLabel =
+    dashboardPresetLabels[preferences.preset] ?? "Operations";
 
   return (
     <DropdownMenu>
@@ -28,7 +29,8 @@ export function DashboardViewSwitcher() {
         <Button
           variant="outline"
           role="combobox"
-          aria-label="Select dashboard view"
+          disabled={saving || status === "loading"}
+          aria-label="Choose Home view"
           className="hidden w-[180px] justify-between md:flex"
         >
           <span className="flex min-w-0 items-center gap-2">
@@ -38,12 +40,12 @@ export function DashboardViewSwitcher() {
           {saving ? (
             <span className="text-[10px] text-muted-foreground">Saving</span>
           ) : error ? (
-            <span className="text-[10px] text-warning">Local only</span>
+            <span className="text-[10px] text-warning">Not saved</span>
           ) : null}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[220px]">
-        <DropdownMenuLabel>Dashboard View</DropdownMenuLabel>
+        <DropdownMenuLabel>Home view</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
           value={preferences.preset}

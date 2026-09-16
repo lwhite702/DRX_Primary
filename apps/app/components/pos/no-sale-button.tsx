@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
+import { recordDrawerEvent } from "@/lib/pos/drawer-client";
 import { toast } from "sonner";
 import { DollarSign } from "lucide-react";
 
@@ -13,28 +13,35 @@ interface NoSaleButtonProps {
 
 export function NoSaleButton({ businessId, onSuccess }: NoSaleButtonProps) {
   const [processing, setProcessing] = useState(false);
+  const pending = useRef(new Map<string, string>());
+  const busy = useRef(false);
+  const currentBusiness = useRef(businessId); currentBusiness.current = businessId;
 
   const handleNoSale = async () => {
-    setProcessing(true);
+    if (busy.current || !businessId) return;
+    busy.current = true; setProcessing(true);
+    const targetBusiness = businessId;
+    const requestId = pending.current.get(targetBusiness) ?? crypto.randomUUID();
+    pending.current.set(targetBusiness, requestId);
 
     try {
-      const result = await posWeightEngine.recordDrawerEvent(
-        businessId,
+      const result = await recordDrawerEvent(
+        targetBusiness,
         "no_sale",
-        "Drawer opened - no sale recorded"
+        "Drawer opened - no sale recorded",
+        requestId
       );
 
       if (result.success) {
+        pending.current.delete(targetBusiness);
+        if (currentBusiness.current !== targetBusiness) return;
         toast.success("No sale event recorded");
         onSuccess?.();
-      } else {
-        toast.error(result.error || "Failed to record no sale event");
       }
     } catch (error) {
-      console.error("Error recording no sale:", error);
-      toast.error("Failed to record no sale event");
+      if (currentBusiness.current === targetBusiness) toast.error("No sale event could not be confirmed. Retry to finish the same event.");
     } finally {
-      setProcessing(false);
+      busy.current = false; setProcessing(false);
     }
   };
 

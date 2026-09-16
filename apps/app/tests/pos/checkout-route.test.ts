@@ -1,346 +1,119 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const mocks = vi.hoisted(() => {
-  class PosCheckoutError extends Error {
-    status: number;
-
-    constructor(message: string, status = 400) {
-      super(message);
-      this.status = status;
-    }
-  }
-
-  return {
-    resolveAuthContext: vi.fn(),
-    createCart: vi.fn(),
-    addItem: vi.fn(),
-    setPayment: vi.fn(),
-    setTaxAmount: vi.fn(),
-    setFees: vi.fn(),
-    setPaymentRef: vi.fn(),
-    setAmountPaid: vi.fn(),
-    setDelivery: vi.fn(),
-    checkout: vi.fn(),
-    checkoutCanonicalCommerce: vi.fn(),
-    shouldUseCanonicalCommerce: vi.fn(),
-    hasConfiguredCanonicalCommerce: vi.fn(),
-    PosCheckoutError,
-  };
-});
-
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  resolveAuthContext: mocks.resolveAuthContext,
-}));
-
-vi.mock("@/app/api/pos/_lib/convex-commerce", () => ({
-  checkoutCanonicalCommerce: mocks.checkoutCanonicalCommerce,
-  shouldUseCanonicalCommerce: mocks.shouldUseCanonicalCommerce,
-}));
-
-vi.mock("@/app/api/pos/_lib/commerce-routing", () => ({
-  hasConfiguredCanonicalCommerce: mocks.hasConfiguredCanonicalCommerce,
-}));
-
-vi.mock("@/lib/pos/core", () => ({
-  PosCheckoutError: mocks.PosCheckoutError,
-  createCart: mocks.createCart,
-  addItem: mocks.addItem,
-  setPayment: mocks.setPayment,
-  setTaxAmount: mocks.setTaxAmount,
-  setFees: mocks.setFees,
-  setPaymentRef: mocks.setPaymentRef,
-  setAmountPaid: mocks.setAmountPaid,
-  setDelivery: mocks.setDelivery,
-  checkout: mocks.checkout,
-}));
-
+import { beforeEach, afterEach, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { getFunctionName } from "convex/server";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as generatedApi from "../../convex/_generated/api";
+import * as onboarding from "../../convex/onboarding";
+import * as products from "../../convex/products";
+import * as checkout from "../../convex/checkout";
+import * as commerceIdentity from "../../convex/commerceIdentity";
+import * as deliveryProfiles from "../../convex/deliveryProfiles";
+import * as reporting from "../../convex/reporting";
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), query: vi.fn(), mutation: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Checkout must not import Prisma"); });
+vi.mock("@/lib/pos/core", () => { throw new Error("Checkout must not import the legacy writer"); });
+vi.mock("@/app/api/pos/_lib/server", () => ({ resolveAuthContext: mocks.auth }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: async () => "synthetic" }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; mutation = mocks.mutation; } }));
 import { POST } from "@/app/api/pos/checkout/route";
+import { POST as quote } from "@/app/api/pos/quote/route";
+import { POST as enhanced } from "@/app/api/pos/checkout-enhanced/route";
+const modules = { "_generated/api.js": async () => generatedApi, "onboarding.ts": async () => onboarding, "products.ts": async () => products, "checkout.ts": async () => checkout, "commerceIdentity.ts": async () => commerceIdentity, "deliveryProfiles.ts": async () => deliveryProfiles, "reporting.ts": async () => reporting };
+const createTest = () => convexTest(schema, modules);
+let t: ReturnType<typeof createTest>;
+let businessId: string;
+let productId: string;
+function request(body: unknown) { return new NextRequest("http://localhost/api/pos/checkout", { method: "POST", headers: { "x-business-id": businessId }, body: JSON.stringify(body) }); }
+function payload(extra: Record<string, unknown> = {}) { return { mode: "full", idempotencyKey: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", items: [{ id: productId, inventoryId: productId, source: "inventory", name: "Synthetic", unitPrice: 10, qty: 1 }], payment: { method: "cash", receipt: "print" }, taxAmount: 1, ...extra }; }
+beforeEach(async () => {
+  vi.clearAllMocks(); vi.useFakeTimers();
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud");
+  vi.stubEnv("DRX_PII_KEY_CURRENT_B64", Buffer.alloc(32, 7).toString("base64"));
+  t = createTest();
+  const owner = t.withIdentity({ subject: "web-full-owner", email: "owner@example.invalid" });
+  ({ businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic full checkout", collectTax: true, taxRateBps: 1000 }));
+  productId = await owner.mutation(api.products.createProduct, { sku: "FULL", productName: "Synthetic", sellingPriceCents: 1000, unitCostCents: 200, initialQuantity: 10 });
+  mocks.auth.mockResolvedValue({ businessId, userId: "web-full-owner" });
+  mocks.query.mockImplementation((name, args) => owner.query(name, args));
+  mocks.mutation.mockImplementation((name, args) => owner.mutation(name, args));
+});
+afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllEnvs(); });
+it("settles full checkout fees and payment references in the canonical ledger", async () => {
+  const response = await POST(request(payload({ payment: { method: "zelle", receipt: "print" }, fees: [{ type: "Service", amount: 2 }], paymentRef: "SYNTHETIC-REF", expectedTotal: 13 })));
+  expect(response.status).toBe(201);
+  const result = await response.json();
+  expect(result).toMatchObject({ success: true, total: 13, receipt: { receipt: "print" } });
+  const sale = await t.run(ctx => ctx.db.get(ctx.db.normalizeId("sales", result.saleId)!));
+  expect(sale).toMatchObject({ feeRevenueCents: 200, paymentReference: "SYNTHETIC-REF", paymentMethod: "zelle" });
+});
+it("quotes authorized overrides and stores their reason with the sold line", async () => {
+  const body = payload({ items: [{ id: productId, inventoryId: productId, source: "inventory", name: "Synthetic", unitPrice: 8, qty: 1, originalPrice: 10, overrideReason: "Synthetic price correction" }], expectedTotal: 8.8 });
+  const quoted = await quote(request(body));
+  expect(await quoted.json()).toMatchObject({ success: true, quote: { total: 8.8 } });
+  expect((await POST(request(body))).status).toBe(201);
+  const line = await t.run(ctx => ctx.db.query("salesLineItems").first());
+  expect(line).toMatchObject({ unitPriceCents: 800, priceOverrideReason: "Synthetic price correction", catalogUnitPriceCents: 1000 });
+});
+it("denies price overrides without the pricing permission", async () => {
+  await t.run(async ctx => { const user = await ctx.db.query("users").first(); await ctx.db.patch(user!._id, { role: "cashier" }); });
+  const response = await POST(request(payload({ items: [{ id: productId, inventoryId: productId, source: "inventory", name: "Synthetic", unitPrice: 8, qty: 1, overrideReason: "Synthetic" }] })));
+  expect(response.status).toBe(403);
+  expect(await t.run(ctx => ctx.db.query("sales").collect())).toHaveLength(0);
+});
+it("rejects stale displayed totals and does not trust client tax or catalog prices", async () => {
+  const response = await POST(request(payload({ taxAmount: 0, expectedTotal: 10 })));
+  expect(response.status).toBe(409);
+  expect(await t.run(ctx => ctx.db.query("sales").collect())).toHaveLength(0);
+});
+it("retries an identical sale after price changes without a new quote or stock deduction", async () => {
+  const body = payload({ expectedTotal: 11 });
+  const first = await (await POST(request(body))).json();
+  await t.run(ctx => ctx.db.patch(ctx.db.normalizeId("products", productId)!, { sellingPriceCents: 2000 }));
+  const second = await (await POST(request(body))).json();
+  expect(second.saleId).toBe(first.saleId);
+  expect((await t.run(ctx => ctx.db.get(ctx.db.normalizeId("products", productId)!)))?.quantityOnHandGrams).toBe(9);
+  expect(mocks.query.mock.calls.some(([name]) => getFunctionName(name).includes("quoteCheckout"))).toBe(false);
+});
+it("preserves independent delivery charges and encrypted addresses", async () => {
+  const profileId = await mocks.mutation(api.deliveryProfiles.save, { name: "Synthetic courier", basePriceCents: 500, vendorFeeCents: 300, allowPriceOverride: false, isActive: true });
+  const body = payload({ deliveryManagementId: profileId, deliveryAddress: "123 Synthetic Street", deliveryPrice: 5, expectedTotal: 16 });
+  expect((await POST(request(body))).status).toBe(201);
+  const data = await t.run(async ctx => ({ sale: await ctx.db.query("sales").first(), delivery: await ctx.db.query("deliveries").first() }));
+  expect(data.sale).toMatchObject({ deliveryRevenueCents: 500, vendorDeliveryExpenseCents: 300, vendorDeliveryExpenseKnown: true });
+  expect(data.delivery).toMatchObject({ profileId, customerFeeCents: 500, vendorFeeCents: 300 });
+  expect(data.delivery?.addressEncrypted).not.toContain("Synthetic Street");
+});
+it("marks ad hoc delivery vendor costs as unknown instead of claiming complete profit", async () => {
+  expect((await POST(request(payload({ deliveryAddress: "123 Synthetic Street", deliveryPrice: 0, expectedTotal: 11 })))).status).toBe(201);
+  const sale = await t.run(ctx => ctx.db.query("sales").first());
+  const report = await mocks.query(api.reporting.getSalesAggregate, { startAt: sale!.createdAt, endAt: sale!.createdAt + 1, timezone: "UTC" });
+  expect(report.grossProfitComplete).toBe(false);
+  expect(report.unknownVendorExpenseOrderCount).toBe(1);
+});
+it("enforces delivery profile charges and tenant ownership", async () => {
+  const profileId = await mocks.mutation(api.deliveryProfiles.save, { name: "Courier", basePriceCents: 500, vendorFeeCents: 300, allowPriceOverride: false, isActive: true });
+  expect((await POST(request(payload({ deliveryManagementId: profileId, deliveryAddress: "123 Synthetic Street", deliveryPrice: 2 })))).status).toBe(409);
+  const other = t.withIdentity({ subject: "other-owner", email: "other@example.invalid" });
+  const otherBusiness = await other.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other", collectTax: false });
+  await t.run(ctx => ctx.db.patch(profileId, { businessId: otherBusiness.businessId }));
+  expect((await POST(request(payload({ deliveryManagementId: profileId, deliveryAddress: "123 Synthetic Street", deliveryPrice: 5 })))).status).toBe(400);
+});
+it("keeps checkout-enhanced on the same transaction and requires a stable request key", async () => {
+  const body = { idempotencyKey: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", lineItems: [{ inventory_id: productId, product_name: "Synthetic", quantity: 1, unit_price: 10 }], taxAmount: 1, paymentMethod: "cash" };
+  expect((await enhanced(request(body))).status).toBe(200);
+  expect((await enhanced(request({ ...body, idempotencyKey: undefined }))).status).toBe(400);
 
-const QUICK_CUSTOMER_ID = "11111111-1111-4111-8111-111111111111";
-const INVENTORY_ID = "22222222-2222-4222-8222-222222222222";
-
-function makeQuickPayload(overrides?: Record<string, unknown>) {
-  return {
-    mode: "quick",
-    idempotencyKey: "33333333-3333-4333-8333-333333333333",
-    customerId: QUICK_CUSTOMER_ID,
-    payment: {
-      method: "cash",
-      receipt: "sms",
-      creditConfirmed: false,
-    },
-    items: [
-      {
-        id: "line-1",
-        inventoryId: INVENTORY_ID,
-        name: "Item 1",
-        unitPrice: 10,
-        qty: 1,
-        source: "inventory",
-      },
-    ],
-    ...overrides,
-  };
-}
-
-function makeFullPayload(overrides?: Record<string, unknown>) {
-  return {
-    mode: "full",
-    idempotencyKey: "44444444-4444-4444-8444-444444444444",
-    customerId: null,
-    payment: {
-      method: "mixed",
-      receipt: "print",
-      creditConfirmed: false,
-    },
-    items: [
-      {
-        id: "line-1",
-        inventoryId: INVENTORY_ID,
-        name: "Inventory Item",
-        unitPrice: 20,
-        qty: 2,
-        source: "inventory",
-      },
-    ],
-    taxAmount: 1.5,
-    fees: [{ type: "service", amount: 2.5 }],
-    ...overrides,
-  };
-}
-
-function makeRequest(body: unknown) {
-  return new Request("http://localhost/api/pos/checkout", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-}
-
-describe("POST /api/pos/checkout", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user_123",
-      businessId: "business_123",
-    });
-    mocks.createCart.mockImplementation((params) => ({
-      ...params,
-      items: [],
-      payment: null,
-      fees: [],
-      taxAmount: 0,
-    }));
-    mocks.addItem.mockImplementation((cart, item) => ({
-      ...cart,
-      items: [...cart.items, item],
-    }));
-    mocks.setPayment.mockImplementation((cart, payment) => ({
-      ...cart,
-      payment,
-    }));
-    mocks.setTaxAmount.mockImplementation((cart, taxAmount) => ({
-      ...cart,
-      taxAmount,
-    }));
-    mocks.setFees.mockImplementation((cart, fees) => ({
-      ...cart,
-      fees,
-    }));
-    mocks.setPaymentRef.mockImplementation((cart, paymentRef) => ({
-      ...cart,
-      paymentRef,
-    }));
-    mocks.setAmountPaid.mockImplementation((cart, amountPaid) => ({
-      ...cart,
-      amountPaid,
-    }));
-    mocks.setDelivery.mockImplementation((cart, delivery) => ({
-      ...cart,
-      ...delivery,
-    }));
-    mocks.checkout.mockResolvedValue({
-      saleId: "sale_123",
-      orderNumber: "POS-33333333-3333-4333-8333-333333333333",
-      total: 15,
-      changeAmount: 0,
-    });
-    mocks.shouldUseCanonicalCommerce.mockReturnValue(false);
-    mocks.hasConfiguredCanonicalCommerce.mockResolvedValue(false);
-    mocks.checkoutCanonicalCommerce.mockResolvedValue({
-      saleId: "convex_sale_123",
-      orderNumber: "WEB-33333333-3333-4333-8333-333333333333",
-      total: 20,
-      changeAmount: 0,
-    });
-  });
-
-  it("routes delivery checkout through the atomic canonical sale and delivery mutation", async () => {
-    mocks.shouldUseCanonicalCommerce.mockReturnValue(true);
-    const payload = makeQuickPayload({
-      delivery: {
-        enabled: true,
-        address: "123 Synthetic Test Street",
-        vendorFeeCents: 500,
-        feeAllocation: "absorb",
-        feeTaxable: false,
-      },
-    });
-
-    const res = await POST(makeRequest(payload) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(201);
-    expect(data).toMatchObject({
-      success: true,
-      saleId: "convex_sale_123",
-      total: 20,
-    });
-    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalledWith(
-      expect.objectContaining({
-        businessId: "business_123",
-        idempotencyKey: payload.idempotencyKey,
-        delivery: expect.objectContaining({
-          vendorFeeCents: 500,
-          feeAllocation: "absorb",
-        }),
-      }),
-    );
-    expect(mocks.checkout).not.toHaveBeenCalled();
-  });
-
-  it("returns 401 when auth context is missing", async () => {
-    mocks.resolveAuthContext.mockResolvedValue({ userId: null, businessId: null });
-    const res = await POST(makeRequest(makeQuickPayload()) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(401);
-    expect(data).toEqual({
-      success: false,
-      error: "Unauthorized",
-    });
-  });
-
-  it("routes a whole-unit bulk-priced checkout through canonical commerce", async () => {
-    mocks.hasConfiguredCanonicalCommerce.mockResolvedValue(true);
-    const payload = makeQuickPayload({
-      customerId: null,
-      items: [
-        {
-          id: "line-bulk",
-          inventoryId: INVENTORY_ID,
-          name: "Whole case",
-          unitPrice: 10,
-          qty: 12,
-          source: "inventory",
-        },
-      ],
-    });
-
-    const res = await POST(makeRequest(payload) as any);
-
-    expect(res.status).toBe(201);
-    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalled();
-    expect(mocks.checkout).not.toHaveBeenCalled();
-  });
-
-  it("returns 400 for invalid payload", async () => {
-    const res = await POST(makeRequest({ mode: "quick" }) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(400);
-    expect(data).toEqual({
-      success: false,
-      error: "Invalid checkout payload",
-    });
-    expect(mocks.checkout).not.toHaveBeenCalled();
-  });
-
-  it("processes quick mode checkout and forwards idempotency key", async () => {
-    const payload = makeQuickPayload();
-    const res = await POST(makeRequest(payload) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(201);
-    expect(data).toEqual({
-      success: true,
-      saleId: "sale_123",
-      orderNumber: "POS-33333333-3333-4333-8333-333333333333",
-      totals: {
-        total: 15,
-        changeAmount: 0,
-      },
-      errors: [],
-      total: 15,
-      changeAmount: 0,
-      receipt: {
-        saleId: "sale_123",
-        total: 15,
-        receipt: "sms",
-        channels: [{ type: "receipt", value: "sms" }],
-      },
-    });
-    expect(mocks.createCart).toHaveBeenCalledWith({
-      businessId: "business_123",
-      userId: "user_123",
-      mode: "quick",
-      source: "quick-pos",
-      customerId: QUICK_CUSTOMER_ID,
-    });
-    expect(mocks.setFees).toHaveBeenCalledWith(
-      expect.any(Object),
-      [{ type: "receipt", value: "sms" }],
-    );
-    expect(mocks.checkout).toHaveBeenCalledWith(expect.any(Object), payload.idempotencyKey);
-  });
-
-  it("processes full mode checkout with tax and fees", async () => {
-    const payload = makeFullPayload();
-    const res = await POST(makeRequest(payload) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(201);
-    expect(data.success).toBe(true);
-    expect(mocks.setTaxAmount).toHaveBeenCalledWith(expect.any(Object), 1.5);
-    expect(mocks.setFees).toHaveBeenCalledWith(expect.any(Object), [
-      { type: "service", amount: 2.5 },
-    ]);
-  });
-
-  it("maps full mode delivery and payment metadata into the canonical cart", async () => {
-    const payload = makeFullPayload({
-      paymentRef: "ZELLE-123",
-      amountPaid: 25,
-      deliveryManagementId: "55555555-5555-4555-8555-555555555555",
-      deliveryAddress: "123 Main St",
-      deliveryPrice: 4.5,
-    });
-
-    const res = await POST(makeRequest(payload) as any);
-    expect(res.status).toBe(201);
-    expect(mocks.setPaymentRef).toHaveBeenCalledWith(expect.any(Object), "ZELLE-123");
-    expect(mocks.setAmountPaid).toHaveBeenCalledWith(expect.any(Object), 25);
-    expect(mocks.setDelivery).toHaveBeenCalledWith(expect.any(Object), {
-      deliveryManagementId: "55555555-5555-4555-8555-555555555555",
-      deliveryAddress: "123 Main St",
-      deliveryPrice: 4.5,
-    });
-  });
-
-  it("returns 409 for duplicate idempotency keys", async () => {
-    mocks.checkout.mockRejectedValue(new mocks.PosCheckoutError("Duplicate idempotency key", 409));
-
-    const res = await POST(makeRequest(makeQuickPayload()) as any);
-    const data = await res.json();
-
-    expect(res.status).toBe(409);
-    expect(data).toEqual({
-      success: false,
-      saleId: null,
-      orderNumber: null,
-      totals: null,
-      errors: ["Duplicate idempotency key"],
-      error: "Duplicate idempotency key",
-    });
-  });
+  // Rejects NaN or invalid quantity with 400
+  const invalidQtyBody = { ...body, lineItems: [{ inventory_id: productId, product_name: "Synthetic", quantity: "abc", unit_price: 10 }] };
+  const invalidRes = await enhanced(request(invalidQtyBody));
+  expect(invalidRes.status).toBe(400);
+  expect(await invalidRes.json()).toEqual({ error: "Invalid quantity at line item 1" });
+});
+it("retains ordinary Quick POS checkout without importing the legacy writer", async () => { expect((await POST(request(payload({ mode: "quick" })))).status).toBe(201); });
+it("returns sanitized failures and rejects missing auth", async () => {
+  mocks.mutation.mockRejectedValue(new Error("private provider payload"));
+  const response = await POST(request(payload())); expect(response.status).toBe(503); expect(await response.text()).not.toContain("private provider");
+  mocks.auth.mockResolvedValue({ businessId: null, userId: null }); expect((await POST(request(payload()))).status).toBe(401);
 });

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { type InventoryForecastResult } from "@/lib/utils/inventory-engine";
-import { createAppClient } from "@/lib/data/client/supabase-client";
+import { type InventoryForecastResult } from "@/lib/utils/inventory-forecast";
+import { formatCount, formatPercentage, formatQuantity } from "@/lib/number-format";
 
 interface InventoryForecastCardProps {
   forecast: InventoryForecastResult | null;
@@ -17,6 +17,8 @@ interface InventoryForecastCardProps {
   inventoryId: string;
   businessId: string;
   forecastId?: string;
+  alertIds?: string[];
+  contextKey: string;
   onRestock?: (quantity: number) => void;
 }
 
@@ -29,10 +31,19 @@ export function InventoryForecastCard({
   inventoryId,
   businessId,
   forecastId,
-  onRestock,
+  alertIds = [],
+  contextKey,
 }: InventoryForecastCardProps) {
-  const [acknowledging, setAcknowledging] = useState(false);
-  const supabase = createAppClient();
+  const [, refreshAcknowledgement] = useState(0);
+  const ids = [...new Set(alertIds.filter(id => typeof id === "string" && id.trim()))].sort();
+  const key = JSON.stringify([contextKey, businessId, inventoryId, forecastId, ids]);
+  const operation = useRef({ key, busy: false, confirmed: new Set<string>() });
+  if (operation.current.key !== key) operation.current = { key, busy: false, confirmed: new Set<string>() };
+  const current = operation.current;
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const acknowledging = current.busy;
+  const acknowledged = ids.length > 0 && ids.every(id => current.confirmed.has(id));
 
   if (!forecast) {
     return null;
@@ -53,20 +64,36 @@ export function InventoryForecastCard({
   };
 
   const handleAcknowledgeAlert = async () => {
-    if (!supabase) {
-      toast.error("Unable to acknowledge");
-      return;
-    }
-
-    setAcknowledging(true);
+    if (current.busy || acknowledged || !ids.length) return;
+    const active = () => mounted.current && operation.current === current;
+    current.busy = true;
+    refreshAcknowledgement(value => value + 1);
     try {
-      // In a real scenario, we'd acknowledge specific alerts
-      // For now, just log the acknowledgment
-      toast.success("Alert acknowledged");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to acknowledge");
+      for (const id of ids) {
+        if (!active()) return;
+        if (current.confirmed.has(id)) continue;
+        const response = await fetch("/api/ai/alerts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ business_id: businessId, action: "acknowledge", alert_id: id }),
+        });
+        const receipt = await response.json();
+        if (!active()) return;
+        if (!response.ok || receipt?.success !== true || receipt?.status !== "acknowledged") {
+          throw new Error("Acknowledgement was not confirmed");
+        }
+        current.confirmed.add(id);
+      }
+      if (active()) toast.success("Alerts acknowledged");
+    } catch {
+      if (active()) toast.error(current.confirmed.size
+        ? "Some alerts were acknowledged. Retry to finish acknowledging the remaining alerts."
+        : "Alert acknowledgement was not confirmed. Retry to confirm.");
     } finally {
-      setAcknowledging(false);
+      if (active()) {
+        current.busy = false;
+        refreshAcknowledgement(value => value + 1);
+      }
     }
   };
 
@@ -106,16 +133,16 @@ export function InventoryForecastCard({
         <div className="grid grid-cols-3 gap-3">
           <div>
             <p className="text-xs text-muted-foreground">Current</p>
-            <p className="text-lg font-semibold">{currentStock} units</p>
+            <p className="text-lg font-semibold">{formatQuantity(currentStock)} units</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Reorder Level</p>
-            <p className="text-lg font-semibold">{reorderLevel} units</p>
+            <p className="text-lg font-semibold">{formatQuantity(reorderLevel)} units</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Recommended</p>
             <p className="text-lg font-semibold text-blue-600">
-              {forecast.recommendedRestockQuantity} units
+              {formatQuantity(forecast.recommendedRestockQuantity)} units
             </p>
           </div>
         </div>
@@ -128,7 +155,7 @@ export function InventoryForecastCard({
               <p className="text-sm font-semibold">
                 {forecast.daysUntilStockout === Infinity
                   ? "No immediate risk"
-                  : `${forecast.daysUntilStockout} days`}
+                  : `${formatCount(forecast.daysUntilStockout)} days`}
               </p>
               {forecast.projectedStockoutDate && (
                 <p className="text-xs text-muted-foreground">
@@ -143,11 +170,11 @@ export function InventoryForecastCard({
         <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded text-xs">
           <div>
             <p className="text-muted-foreground">7d Velocity</p>
-            <p className="font-semibold">{forecast.factors.velocity_7d?.toFixed(1) || "0"} units/day</p>
+            <p className="font-semibold">{formatQuantity(forecast.factors.velocity_7d ?? 0)} units/day</p>
           </div>
           <div>
             <p className="text-muted-foreground">30d Velocity</p>
-            <p className="font-semibold">{forecast.factors.velocity_30d?.toFixed(1) || "0"} units/day</p>
+            <p className="font-semibold">{formatQuantity(forecast.factors.velocity_30d ?? 0)} units/day</p>
           </div>
           <div>
             <p className="text-muted-foreground">Trend</p>
@@ -170,7 +197,7 @@ export function InventoryForecastCard({
             </div>
             <div>
               <p className="text-muted-foreground">Confidence</p>
-              <p className="font-semibold">{forecast.confidenceScore.toFixed(0)}%</p>
+              <p className="font-semibold">{formatPercentage(forecast.confidenceScore)}%</p>
             </div>
           </div>
         </div>
@@ -179,12 +206,12 @@ export function InventoryForecastCard({
         <div className="flex gap-2 pt-2">
           <Button
             onClick={handleAcknowledgeAlert}
-            disabled={acknowledging}
+            disabled={acknowledging || acknowledged || !ids.length}
             variant="default"
             size="sm"
             className="flex-1"
           >
-            {acknowledging ? "Acknowledging..." : "Acknowledge"}
+            {acknowledging ? "Acknowledging..." : acknowledged ? "Acknowledged" : !ids.length ? "No alerts to acknowledge" : "Acknowledge"}
           </Button>
           <Button variant="outline" size="sm" className="flex-1">
             View Details

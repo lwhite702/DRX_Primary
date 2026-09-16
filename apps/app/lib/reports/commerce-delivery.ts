@@ -7,6 +7,7 @@ export interface CommerceDeliveryTotals {
   grossCollectedCents: number;
   netCashActivityCents: number;
   merchandiseRevenueCents: number;
+  feeRevenueCents?: number;
   deliveryRevenueCents: number;
   vendorDeliveryExpenseCents: number;
   deliveryTaxCents: number;
@@ -22,6 +23,8 @@ export interface CommerceDeliveryTotals {
 
 export interface CommerceDeliverySourceSummary {
   source: "canonical" | "legacy_web";
+  /** False means this source could not be read, not that it had zero sales. */
+  available?: boolean;
   totals: CommerceDeliveryTotals;
   orderNumbers: string[];
   unallocatedCogsOrderCount: number;
@@ -61,6 +64,7 @@ export interface CombinedCommerceDeliverySummary {
 }
 
 export interface CanonicalCommerceAggregate {
+  unknownVendorExpenseOrderCount?: number;
   orderNumbers: string[];
   orderCount: number;
   totalRevenueCents: number;
@@ -69,6 +73,7 @@ export interface CanonicalCommerceAggregate {
   netRevenueCents: number;
   totalTaxCents: number;
   merchandiseRevenueCents: number;
+  feeRevenueCents?: number;
   deliveryRevenueCents: number;
   vendorDeliveryExpenseCents: number;
   deliveryTaxCents: number;
@@ -88,6 +93,7 @@ export const emptyCommerceDeliveryTotals = (): CommerceDeliveryTotals => ({
   grossCollectedCents: 0,
   netCashActivityCents: 0,
   merchandiseRevenueCents: 0,
+  feeRevenueCents: 0,
   deliveryRevenueCents: 0,
   vendorDeliveryExpenseCents: 0,
   deliveryTaxCents: 0,
@@ -133,6 +139,7 @@ export function canonicalSourceSummaryFromAggregate(
       grossCollectedCents: aggregate.grossCollectedCents,
       netCashActivityCents: aggregate.netCashActivityCents,
       merchandiseRevenueCents: aggregate.merchandiseRevenueCents,
+      feeRevenueCents: aggregate.feeRevenueCents ?? 0,
       deliveryRevenueCents: aggregate.deliveryRevenueCents,
       vendorDeliveryExpenseCents: aggregate.vendorDeliveryExpenseCents,
       deliveryTaxCents: aggregate.deliveryTaxCents,
@@ -150,7 +157,7 @@ export function canonicalSourceSummaryFromAggregate(
     },
     orderNumbers: aggregate.orderNumbers,
     unallocatedCogsOrderCount: 0,
-    untrackedVendorExpenseOrderCount: 0,
+    untrackedVendorExpenseOrderCount: aggregate.unknownVendorExpenseOrderCount ?? 0,
     cogsAllocationCoverage: aggregate.cogsAllocationCoverage,
     manualCostCoverage: aggregate.manualCostCoverage,
     grossProfitComplete: aggregate.grossProfitComplete,
@@ -162,10 +169,10 @@ function addTotals(
   right: CommerceDeliveryTotals,
 ): CommerceDeliveryTotals {
   return Object.fromEntries(
-    Object.keys(left).map((key) => [
+    Array.from(new Set([...Object.keys(left), ...Object.keys(right)])).map((key) => [
       key,
-      left[key as keyof CommerceDeliveryTotals] +
-        right[key as keyof CommerceDeliveryTotals],
+      (left[key as keyof CommerceDeliveryTotals] ?? 0) +
+        (right[key as keyof CommerceDeliveryTotals] ?? 0),
     ]),
   ) as unknown as CommerceDeliveryTotals;
 }
@@ -178,6 +185,13 @@ export function combineCommerceDeliverySummaries(input: {
 }) {
   const duplicateOrdersExcluded = input.duplicateOrdersExcluded ?? 0;
   const warnings: string[] = [];
+  if (input.canonical.untrackedVendorExpenseOrderCount > 0) warnings.push(`${input.canonical.untrackedVendorExpenseOrderCount} canonical order(s) have unknown vendor delivery costs; known gross profit excludes those costs.`);
+  if (input.canonical.available === false) {
+    warnings.push("Canonical ledger is unavailable. These are partial totals from legacy web sales only; canonical sales and costs are not included.");
+  }
+  if (input.legacyWeb.available === false) {
+    warnings.push("Legacy web ledger is unavailable. These are partial totals from canonical sales only; legacy web sales and costs are not included.");
+  }
   if (input.legacyWeb.unallocatedCogsOrderCount > 0) {
     warnings.push(
       `${input.legacyWeb.unallocatedCogsOrderCount} legacy web order(s) have no FIFO allocation, so known gross profit excludes their missing COGS.`,
@@ -225,6 +239,8 @@ export function combineCommerceDeliverySummaries(input: {
     combined: addTotals(input.canonical.totals, input.legacyWeb.totals),
     duplicateOrdersExcluded,
     grossProfitComplete:
+      input.canonical.available !== false &&
+      input.legacyWeb.available !== false &&
       input.legacyWeb.unallocatedCogsOrderCount === 0 &&
       input.legacyWeb.untrackedVendorExpenseOrderCount === 0 &&
       input.canonical.grossProfitComplete &&
@@ -325,9 +341,10 @@ export async function getLegacyWebCommerceSummary(
     totals.unclassifiedTaxCents += taxCents;
     totals.discountCents += discountCents;
     totals.cogsCents += cogsCents;
-    totals.netRevenueCents += merchandiseRevenueCents + deliveryRevenueCents;
+    totals.feeRevenueCents = (totals.feeRevenueCents ?? 0) + miscFeeCents;
+    totals.netRevenueCents += merchandiseRevenueCents + miscFeeCents + deliveryRevenueCents;
     totals.grossProfitCents +=
-      merchandiseRevenueCents + deliveryRevenueCents - cogsCents;
+      merchandiseRevenueCents + miscFeeCents + deliveryRevenueCents - cogsCents;
     const hasLegacyDeliveryMarker = Boolean(
       deliveryRevenueCents > 0 ||
         sale.deliveryManagementId ||

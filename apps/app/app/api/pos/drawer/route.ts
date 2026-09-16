@@ -1,54 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveAuthContext } from "@/app/api/pos/_lib/server";
-import { posWeightEngine } from "@/lib/utils/pos-weight-engine";
 import { z } from "zod";
-import { errorResponse } from "@/lib/api/response";
-
-const DrawerEventSchema = z.object({
-  eventType: z.enum(["no_sale", "cash_drop", "payout", "audit", "refund"]).default("no_sale"),
-  note: z.string().max(500).default("Drawer opened via API"),
-});
-
+import { api } from "@/convex/_generated/api";
+import { businessClient } from "@/lib/business/convex-server";
+const schema = z.object({ requestId: z.string().uuid(), eventType: z.enum(["no_sale", "cash_drop", "payout", "audit", "refund"]).default("no_sale"), note: z.string().max(500).default("Drawer opened via API") });
 export async function POST(request: NextRequest) {
+  const headers = { "Cache-Control": "private, no-store" };
   try {
-    const { userId, businessId } = await resolveAuthContext(request);
-    if (!userId || !businessId) {
-      return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
-    }
-
-    const body = await request.json();
-    const payload = DrawerEventSchema.safeParse(body);
-    if (!payload.success) {
-      return errorResponse(
-        "VALIDATION_ERROR",
-        "Invalid drawer event payload",
-        400,
-        payload.error.flatten(),
-      );
-    }
-
-    const result = await posWeightEngine.recordDrawerEvent(
-      businessId,
-      payload.data.eventType,
-      payload.data.note
-    );
-
-    if (!result.success) {
-      return errorResponse(
-        "BAD_REQUEST",
-        result.error || "Failed to record drawer event",
-        400,
-      );
-    }
-
-    return NextResponse.json(result, { status: 201 });
+    const { client, ...context } = await businessClient(request);
+    const payload = schema.safeParse(await request.json().catch(() => null));
+    if (!payload.success) return NextResponse.json({ success: false, error: "Invalid drawer event" }, { status: 400, headers });
+    return NextResponse.json(await client.mutation(api.drawer.record, { ...context, ...payload.data }), { status: 201, headers });
   } catch (error) {
-    console.error("Drawer event error:", error);
-    return errorResponse(
-      "INTERNAL_ERROR",
-      "Internal Server Error",
-      500,
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    const message = error instanceof Error ? error.message : "";
+    const status = message.includes("UNAUTHORIZED:") ? 401 : message.includes("FORBIDDEN:") ? 403 : message.includes("CONFLICT:") ? 409 : 503;
+    return NextResponse.json({ success: false, error: status === 409 ? "Drawer event changed. Retry the original request." : status === 401 ? "Unauthorized" : status === 403 ? "Checkout permission is required" : "Drawer event could not be confirmed. Retry the same request." }, { status, headers });
   }
 }

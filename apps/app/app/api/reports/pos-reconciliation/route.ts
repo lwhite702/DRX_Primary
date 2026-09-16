@@ -57,13 +57,17 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(report);
   } catch (error: unknown) {
-    console.error("POS reconciliation report error:", error);
+    console.error(
+      JSON.stringify({
+        level: "error",
+        route: "/api/reports/pos-reconciliation",
+        message: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      }),
+    );
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate POS reconciliation report",
+        error: "Failed to generate POS reconciliation report",
       },
       { status: 500 },
     );

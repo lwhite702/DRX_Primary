@@ -20,13 +20,18 @@ export default function QuickPosCompletePage() {
     }, 2200);
 
     return () => window.clearTimeout(timer);
-  }, [router, resetForNextSale, state.session.lastCompletedAt, state.session.lastSaleId]);
+  }, [
+    router,
+    resetForNextSale,
+    state.session.lastCompletedAt,
+    state.session.lastSaleId,
+  ]);
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <div className="w-full max-w-xl rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/15 via-black to-black px-6 py-6 text-center shadow-2xl">
         <div className="mx-auto mb-3 inline-flex items-center rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-200">
-          Quick Sale
+          New sale
         </div>
         <p className="text-4xl font-bold text-emerald-200">Sale Complete</p>
         <p className="mt-2 text-sm text-emerald-100/80">

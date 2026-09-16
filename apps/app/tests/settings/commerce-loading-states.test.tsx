@@ -50,10 +50,7 @@ const payload = {
 };
 const empty: never[] = [];
 const directory = { members: [] };
-let settings = {
-  business: { legacyPrismaBusinessId: "business-a" },
-  settings: null as null,
-};
+let settings = { businessId: "business-a", userId: "owner", role: "OWNER" };
 let canonicalPending = false;
 const response = (status: number, body: unknown) => ({
   ok: status === 200,
@@ -79,15 +76,12 @@ describe("commerce settings load recovery", () => {
     vi.clearAllMocks();
     fetchMock.mockReset();
     canonicalPending = false;
-    settings = {
-      business: { legacyPrismaBusinessId: "business-a" },
-      settings: null,
-    };
+    settings = { businessId: "business-a", userId: "owner", role: "OWNER" };
     vi.stubGlobal("fetch", fetchMock);
     mocks.query.mockImplementation((reference) => {
       if (canonicalPending) return undefined;
       switch (getFunctionName(reference)) {
-        case "settings:getBusinessSettings":
+        case "session:currentBusiness":
           return settings;
         case "members:listMembers":
           return directory;
@@ -171,10 +165,7 @@ describe("commerce settings load recovery", () => {
     );
     const { rerender } = render(<CommerceSettingsPage />);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    settings = {
-      business: { legacyPrismaBusinessId: "business-a" },
-      settings: null,
-    };
+    settings = { businessId: "business-a", userId: "owner", role: "OWNER" };
     fetchMock.mockResolvedValue(response(403, { error: "Forbidden" }));
     rerender(<CommerceSettingsPage />);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
@@ -187,15 +178,12 @@ describe("commerce settings load recovery", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("does not combine settings from different web and mobile businesses", async () => {
-    settings = {
-      business: { legacyPrismaBusinessId: "business-b" },
-      settings: null,
-    };
+  it("rejects settings returned for a different business", async () => {
+    settings = { businessId: "business-b", userId: "owner", role: "OWNER" };
     fetchMock.mockResolvedValue(response(200, payload));
     render(<CommerceSettingsPage />);
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "does not match the linked mobile business",
+      "do not match the selected business",
     );
     expect(
       screen.queryByLabelText("Allow fractional sales"),
@@ -213,7 +201,7 @@ describe("commerce settings load recovery", () => {
     );
   });
 
-  it("rechecks access before saving merchant settings and stops before any mutation on failure", async () => {
+  it("saves through the authenticated server mutation without a second client write", async () => {
     fetchMock.mockResolvedValue(response(200, payload));
     render(<CommerceSettingsPage />);
     await screen.findByLabelText("Allow fractional sales");
@@ -225,10 +213,10 @@ describe("commerce settings load recovery", () => {
         name: /Save.*loyalty|Save.*delivery|Save.*policy/i,
       }),
     );
-    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(2));
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(1));
     expect(mocks.mutation).not.toHaveBeenCalled();
     expect(
       fetchMock.mock.calls.some(([, options]) => options?.method === "PATCH"),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

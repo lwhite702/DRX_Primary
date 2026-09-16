@@ -42,6 +42,7 @@ const metricRows = [
   ["gross_collected", "Gross collected", "cents", "grossCollectedCents"],
   ["net_cash_activity", "Net cash activity", "cents", "netCashActivityCents"],
   ["merchandise_revenue", "Merchandise revenue", "cents", "merchandiseRevenueCents"],
+  ["fee_revenue", "Other fee revenue", "cents", "feeRevenueCents"],
   ["delivery_revenue", "Delivery revenue", "cents", "deliveryRevenueCents"],
   ["vendor_delivery_expense", "Vendor delivery expense", "cents", "vendorDeliveryExpenseCents"],
   ["delivery_tax", "Delivery tax", "cents", "deliveryTaxCents"],
@@ -66,6 +67,7 @@ function toCsv(report: CombinedCommerceDeliverySummary) {
     ["metadata", "period_start", "Period start (inclusive)", "utc_iso", "", "", "", report.period.from],
     ["metadata", "period_end", "Period end (exclusive)", "utc_iso", "", "", "", report.period.to],
     ["metadata", "profit_coverage", "Gross profit coverage", "status", "", "", "", report.grossProfitComplete ? "complete" : "known_costs_only"],
+    ["metadata", "source_availability", "Ledger availability", "status", report.canonical.available === false ? "unavailable" : "available", report.legacyWeb.available === false ? "unavailable" : "available", "", "Unavailable source columns are blank, not zero"],
     ["metadata", "duplicates_excluded", "Mirrored orders excluded", "count", "", "", report.duplicateOrdersExcluded, "Matched by stable checkout idempotency reference"],
   ];
   if (report.canonical.cogsAllocationCoverage) {
@@ -97,8 +99,8 @@ function toCsv(report: CombinedCommerceDeliverySummary) {
       key,
       label,
       unit,
-      report.canonical.totals[field],
-      report.legacyWeb.totals[field],
+      report.canonical.available === false ? "" : report.canonical.totals[field],
+      report.legacyWeb.available === false ? "" : report.legacyWeb.totals[field],
       report.combined[field],
       key === "gross_profit" && !report.grossProfitComplete
         ? "Known gross profit only; see warnings"
@@ -111,6 +113,20 @@ function toCsv(report: CombinedCommerceDeliverySummary) {
   return rows.map((row) => row.map(csvCell).join(",")).join("\n");
 }
 
+function unavailableSource(source: CommerceDeliverySourceSummary["source"]): CommerceDeliverySourceSummary {
+  return {
+    source,
+    available: false,
+    totals: emptyCommerceDeliveryTotals(),
+    orderNumbers: [],
+    unallocatedCogsOrderCount: 0,
+    untrackedVendorExpenseOrderCount: 0,
+    cogsAllocationCoverage: null,
+    manualCostCoverage: null,
+    grossProfitComplete: false,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { businessId, userId } = await resolveAuthContext();
@@ -119,7 +135,8 @@ export async function GET(request: NextRequest) {
     }
     const { startAt, endAt } = parsePeriod(request);
 
-    let canonicalSummary: CommerceDeliverySourceSummary;
+    let canonicalSummary = unavailableSource("canonical");
+    let legacySummary = unavailableSource("legacy_web");
     let duplicateOrdersExcluded = 0;
 
     try {
@@ -129,30 +146,31 @@ export async function GET(request: NextRequest) {
         endAt,
       });
       canonicalSummary = canonicalSourceSummaryFromAggregate(canonicalAggregate);
-    } catch (canonicalErr) {
-      console.warn("Canonical ledger unavailable, querying primary local ledger:", canonicalErr);
+    } catch {
+      // Do not log provider errors: they can contain tenant or connection data.
+      console.warn("Commerce report: canonical ledger unavailable");
+    }
+
+    // Ordinary web checkout still writes here. Read it even when Convex is
+    // healthy, excluding mirrored orders by their stable checkout references.
+    try {
       const local = await getLegacyWebCommerceSummary(
         businessId,
         { from: new Date(startAt), to: new Date(endAt) },
-        [],
+        canonicalSummary.orderNumbers,
       );
-      canonicalSummary = {
-        ...local.summary,
-        source: "canonical",
-      };
+      legacySummary = local.summary;
       duplicateOrdersExcluded = local.duplicateOrdersExcluded;
+    } catch {
+      console.warn("Commerce report: legacy web ledger unavailable");
     }
 
-    const emptyLegacy: CommerceDeliverySourceSummary = {
-      source: "legacy_web",
-      totals: emptyCommerceDeliveryTotals(),
-      orderNumbers: [],
-      unallocatedCogsOrderCount: 0,
-      untrackedVendorExpenseOrderCount: 0,
-      cogsAllocationCoverage: null,
-      manualCostCoverage: null,
-      grossProfitComplete: true,
-    };
+    if (canonicalSummary.available === false && legacySummary.available === false) {
+      return NextResponse.json(
+        { error: "Commerce reporting is temporarily unavailable. No sales ledger could be read. Please retry." },
+        { status: 503 },
+      );
+    }
 
     const report = combineCommerceDeliverySummaries({
       period: {
@@ -160,7 +178,7 @@ export async function GET(request: NextRequest) {
         to: new Date(endAt).toISOString(),
       },
       canonical: canonicalSummary,
-      legacyWeb: emptyLegacy,
+      legacyWeb: legacySummary,
       duplicateOrdersExcluded,
     });
 
@@ -177,13 +195,10 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error && error.message === "INVALID_PERIOD") {
       return NextResponse.json({ error: "Invalid reporting period" }, { status: 400 });
     }
-    console.error("Commerce reporting error", error);
+    console.error("Commerce reporting failed");
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate commerce and delivery report",
+        error: "Failed to generate commerce and delivery report",
       },
       { status: 500 },
     );

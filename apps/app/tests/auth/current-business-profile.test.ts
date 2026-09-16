@@ -1,0 +1,54 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { convexTest } from "convex-test";
+import schema from "../../convex/schema";
+import { api } from "../../convex/_generated/api";
+import * as session from "../../convex/session";
+import * as onboarding from "../../convex/onboarding";
+import * as generatedApi from "../../convex/_generated/api";
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), token: vi.fn(), query: vi.fn() }));
+vi.mock("@/lib/db", () => { throw new Error("Business profiles must not load Prisma"); });
+vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth, isAuthBypassEnabled: () => false }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: mocks.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = mocks.query; } }));
+import { getCurrentBusinessProfile } from "../../app/actions/get-current-business";
+const modules = { "_generated/api.js": async () => generatedApi, "session.ts": async () => session, "onboarding.ts": async () => onboarding };
+beforeEach(() => {
+  vi.resetAllMocks();
+  process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
+  mocks.auth.mockResolvedValue({ userId: "operator", orgId: "org-one" });
+  mocks.token.mockResolvedValue("synthetic-token");
+});
+it("loads the selected Convex profile through the server action and preserves Date fields", async () => {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "operator", o: { id: "org-one", rol: "admin" } });
+  const created = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic Store" });
+  mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
+  expect(await getCurrentBusinessProfile()).toMatchObject({ id: created.businessId, businessName: "Synthetic Store", clerkOrgId: "org-one", address: null, createdAt: expect.any(Date), updatedAt: expect.any(Date) });
+  mocks.auth.mockResolvedValue({ userId: "operator", orgId: "org-other" });
+  await expect(getCurrentBusinessProfile()).rejects.toThrow("We could not load your business");
+  mocks.auth.mockResolvedValue({ userId: "other-operator", orgId: "org-one" });
+  await expect(getCurrentBusinessProfile()).rejects.toThrow("We could not load your business");
+});
+it("returns empty only for signed-out or genuinely unprovisioned identities", async () => {
+  mocks.auth.mockResolvedValue({ userId: null });
+  expect(await getCurrentBusinessProfile()).toBeNull();
+  expect(mocks.token).not.toHaveBeenCalled();
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "operator" });
+  mocks.auth.mockResolvedValue({ userId: "operator", orgId: null });
+  mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
+  expect(await getCurrentBusinessProfile()).toBeNull();
+});
+it("does not present provider failures or inactive membership as onboarding and sanitizes errors", async () => {
+  mocks.query.mockRejectedValue(new Error("provider-private-payload"));
+  await expect(getCurrentBusinessProfile()).rejects.toThrow(/^We could not load your business. Please try again.$/);
+  mocks.token.mockResolvedValue(null);
+  await expect(getCurrentBusinessProfile()).rejects.toThrow("We could not load your business");
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "operator", org_id: "org-one", org_role: "org:admin" });
+  const created = await actor.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Synthetic" });
+  await t.run(ctx => ctx.db.patch(created.userId, { status: "SUSPENDED" }));
+  mocks.token.mockResolvedValue("synthetic-token");
+  mocks.query.mockImplementation((ref, args) => actor.query(ref, args));
+  await expect(getCurrentBusinessProfile()).rejects.toThrow("We could not load your business");
+});

@@ -7,8 +7,8 @@ import {
   type PrivacyProtocolSettings,
   type ScreenPrivacyMode,
   type PrivacyRetentionSettings,
-} from "@/lib/privacy/types";
-import { drxCopy } from "@/lib/copy/drx";
+} from "./types";
+import { drxCopy } from "../copy/drx";
 
 const DEFAULT_RETENTION: Omit<PrivacyRetentionSettings, "days"> = {
   enabled: true,
@@ -317,10 +317,11 @@ export function canWritePrivacyField(
   settings: PrivacyProtocolSettings,
   field: PrivacyField,
 ): boolean {
+  if (!settings) return false;
   if (settings.alias_only_mode && field !== "alias") {
     return false;
   }
-  return settings.fields[field]?.visible ?? false;
+  return settings.fields?.[field]?.visible ?? false;
 }
 
 export function getRecommendedPrivacyFields(

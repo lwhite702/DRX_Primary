@@ -16,6 +16,8 @@ final class POSStore {
     var selectedCustomer: DRXCustomer?
     var showCheckout = false
     var searchText = ""
+    var feedbackMessage: String?
+    private var feedbackTask: Task<Void, Never>?
 
     struct CartItem: Identifiable {
         let id = UUID()
@@ -89,18 +91,43 @@ final class POSStore {
 
     var cartIsEmpty: Bool { cartItems.isEmpty }
 
+    func triggerFeedback(_ message: String, style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+        feedbackMessage = message
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+        feedbackTask?.cancel()
+        feedbackTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            if !Task.isCancelled && feedbackMessage == message {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    feedbackMessage = nil
+                }
+            }
+        }
+    }
+
     func addToCart(_ product: DRXProduct, grams: Double? = nil) {
         let quantity = grams ?? product.saleIncrement
+        let previousQuantity = cartItems.first(where: { $0.product.id == product.id })?.quantityGrams ?? 0
+        let newQuantity: Double
         if let idx = cartItems.firstIndex(where: { $0.product.id == product.id }) {
-            cartItems[idx].quantityGrams = CheckoutMath.normalizeQuantity(
+            newQuantity = CheckoutMath.normalizeQuantity(
                 product: product,
                 quantity: cartItems[idx].quantityGrams + quantity
             )
+            cartItems[idx].quantityGrams = newQuantity
         } else {
+            newQuantity = CheckoutMath.normalizeQuantity(product: product, quantity: quantity)
             cartItems.append(CartItem(
                 product: product,
-                quantityGrams: CheckoutMath.normalizeQuantity(product: product, quantity: quantity)
+                quantityGrams: newQuantity
             ))
+        }
+        let formatted = formatQuantity(product, newQuantity)
+        let deltaFormatted = formatQuantity(product, quantity)
+        if previousQuantity > 0 {
+            triggerFeedback("Updated \(product.productName) · \(formatted) in cart (+\(deltaFormatted))")
+        } else {
+            triggerFeedback("Added \(product.productName) · \(formatted) to cart")
         }
     }
 
@@ -112,28 +139,35 @@ final class POSStore {
         } else {
             cartItems.append(CartItem(product: product, quantityGrams: normalized))
         }
+        triggerFeedback("Set \(product.productName) to \(formatQuantity(product, normalized))")
     }
 
     func removeFromCart(_ item: CartItem) {
         cartItems.removeAll { $0.id == item.id }
+        triggerFeedback("Removed \(item.product.productName) from cart", style: .light)
     }
 
     func adjustQuantity(_ item: CartItem, delta: Double) {
         guard let idx = cartItems.firstIndex(where: { $0.id == item.id }) else { return }
         let newQty = cartItems[idx].quantityGrams + delta
         if newQty <= 0 {
+            let name = cartItems[idx].product.productName
             cartItems.remove(at: idx)
+            triggerFeedback("Removed \(name) from cart", style: .light)
         } else {
-            cartItems[idx].quantityGrams = CheckoutMath.normalizeQuantity(
+            let normalized = CheckoutMath.normalizeQuantity(
                 product: cartItems[idx].product,
                 quantity: newQty
             )
+            cartItems[idx].quantityGrams = normalized
+            triggerFeedback("Updated \(item.product.productName) · \(formatQuantity(item.product, normalized)) in cart")
         }
     }
 
     func clearCart() {
         cartItems = []
         selectedCustomer = nil
+        triggerFeedback("Cart cleared", style: .light)
     }
 
     func load() async {
@@ -181,7 +215,7 @@ struct POSView: View {
                 CompactCartBar(store: store)
             }
         }
-        .navigationTitle("POS")
+        .navigationTitle(DRXContent.Navigation.newSale)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { cartButton }
         .sheet(isPresented: $store.showCheckout) {
@@ -218,7 +252,8 @@ struct POSView: View {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
                         ForEach(store.filteredProducts) { product in
-                            ProductTile(product: product) {
+                            let inCartQty = store.cartItems.first(where: { $0.product.id == product.id })?.quantityGrams
+                            ProductTile(product: product, inCartQuantity: inCartQty) {
                                 if product.allowFractionalWeight || product.suggestedQuantityPresets != nil || product.suggestedDollarPresetsCents != nil {
                                     selectedProduct = product
                                 } else {
@@ -231,16 +266,77 @@ struct POSView: View {
                 }
             }
         }
+        .overlay(alignment: .top) {
+            if let feedback = store.feedbackMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(DRXPalette.accent)
+                    Text(feedback)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(DRXPalette.ink)
+                        .lineLimit(2)
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            store.feedbackMessage = nil
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.bold())
+                            .foregroundStyle(DRXPalette.muted)
+                    }
+                    .accessibilityLabel("Dismiss notification")
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(DRXPalette.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(DRXPalette.accent.opacity(0.4), lineWidth: 1)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.2), value: store.feedbackMessage)
+            }
+        }
     }
 
     // MARK: - Cart Panel (iPad landscape)
 
+    @State private var showClearCartConfirmation = false
+
     private var cartPanel: some View {
         VStack(spacing: 0) {
-            Text("Cart")
-                .font(.headline)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text("Cart")
+                    .font(.headline)
+                Spacer()
+                if !store.cartIsEmpty {
+                    Button(role: .destructive) {
+                        showClearCartConfirmation = true
+                    } label: {
+                        Text("Clear")
+                            .font(.subheadline)
+                            .foregroundStyle(DRXPalette.danger)
+                    }
+                    .confirmationDialog(
+                        "Clear Cart?",
+                        isPresented: $showClearCartConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Clear All Items", role: .destructive) {
+                            store.clearCart()
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will remove all items from the current sale.")
+                    }
+                }
+            }
+            .padding()
             Divider()
             CartItemsList(store: store)
             Divider()
@@ -273,6 +369,7 @@ struct POSView: View {
 
 private struct ProductTile: View {
     let product: DRXProduct
+    var inCartQuantity: Double? = nil
     let onTap: () -> Void
 
     var body: some View {
@@ -283,7 +380,7 @@ private struct ProductTile: View {
                         .font(.caption2.monospaced())
                         .foregroundStyle(DRXPalette.muted)
                     Spacer()
-                    stockBadge
+                    badges
                 }
                 Spacer()
                 Text(product.productName)
@@ -303,9 +400,15 @@ private struct ProductTile: View {
             }
             .padding(12)
             .frame(minHeight: 110)
-            .background(product.isOutOfStock ? DRXPalette.surface : DRXPalette.card)
+            .background(product.isOutOfStock ? DRXPalette.surface : (inCartQuantity != nil ? DRXPalette.card.opacity(0.9) : DRXPalette.card))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        inCartQuantity != nil ? DRXPalette.accent.opacity(0.6) : DRXPalette.border,
+                        lineWidth: inCartQuantity != nil ? 1.5 : 1
+                    )
+            }
             .opacity(product.isOutOfStock ? 0.5 : 1)
         }
         .disabled(product.isOutOfStock)
@@ -313,15 +416,25 @@ private struct ProductTile: View {
     }
 
     @ViewBuilder
-    private var stockBadge: some View {
-        if product.isOutOfStock {
-            Text("Out").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
-                .background(DRXPalette.danger.opacity(0.15), in: Capsule())
-                .foregroundStyle(DRXPalette.danger)
-        } else if product.isLowStock {
-            Text("Low").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
-                .background(DRXPalette.warning.opacity(0.15), in: Capsule())
-                .foregroundStyle(DRXPalette.warning)
+    private var badges: some View {
+        HStack(spacing: 4) {
+            if let inCart = inCartQuantity, inCart > 0 {
+                Text("✓ \(formatQuantity(product, inCart))")
+                    .font(.caption2.bold())
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(DRXPalette.accent.opacity(0.2), in: Capsule())
+                    .foregroundStyle(DRXPalette.accent)
+            }
+            if product.isOutOfStock {
+                Text("Out").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
+                    .background(DRXPalette.danger.opacity(0.15), in: Capsule())
+                    .foregroundStyle(DRXPalette.danger)
+            } else if product.isLowStock {
+                Text("Low").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
+                    .background(DRXPalette.warning.opacity(0.15), in: Capsule())
+                    .foregroundStyle(DRXPalette.warning)
+            }
         }
     }
 }
@@ -370,6 +483,16 @@ struct CartItemsList: View {
                             }
                         }
                     }
+                    Button(role: .destructive) {
+                        store.removeFromCart(item)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.subheadline)
+                            .foregroundStyle(DRXPalette.danger)
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Remove \(item.product.productName) from cart")
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) { store.removeFromCart(item) } label: {
@@ -432,6 +555,7 @@ struct CartFooter: View {
 
 private struct CompactCartBar: View {
     @Bindable var store: POSStore
+    @State private var showClearConfirm = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -444,6 +568,22 @@ private struct CompactCartBar: View {
                     .foregroundStyle(DRXPalette.ink)
             }
             Spacer()
+            Button(role: .destructive) {
+                showClearConfirm = true
+            } label: {
+                Text("Clear")
+                    .font(.subheadline)
+                    .foregroundStyle(DRXPalette.danger)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
+            }
+            .accessibilityLabel("Clear cart")
+            .confirmationDialog("Clear Cart?", isPresented: $showClearConfirm, titleVisibility: .visible) {
+                Button("Clear All Items", role: .destructive) { store.clearCart() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will remove all items from the current sale.")
+            }
             Button {
                 store.showCheckout = true
             } label: {
@@ -550,7 +690,7 @@ private struct SaleAmountSheet: View {
                         policy: loyaltyPolicy
                     )))
                     if enteredQuantity >= product.quantityOnHandGrams {
-                        Text("Quantity is limited to current available inventory.")
+                        Text("You can’t sell more than the stock on hand.")
                             .font(.footnote)
                             .foregroundStyle(DRXPalette.warning)
                     }
@@ -592,9 +732,9 @@ private func formatCents(_ cents: Int) -> String {
 }
 
 private func formatGrams(_ grams: Double) -> String {
-    grams == grams.rounded() ? String(format: "%.0fg", grams) : String(format: "%.1fg", grams)
+    String(format: "%.2fg", grams)
 }
 
 private func formatQuantity(_ product: DRXProduct, _ quantity: Double) -> String {
-    String(format: "%.*f%@", product.salePrecision, quantity, product.saleUnit)
+    String(format: "%.2f%@", quantity, product.saleUnit)
 }
