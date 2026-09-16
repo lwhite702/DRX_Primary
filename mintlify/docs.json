@@ -81,6 +81,19 @@
             "href": "https://www.deelrxcrm.com/resources/mobile-testing"
           }
         ]
+      },
+      {
+        "header": "Product",
+        "items": [
+          {
+            "label": "Sign-up",
+            "href": "https://www.deelrxcrm.app/register"
+          },
+          {
+            "label": "Login ",
+            "href": "https://www.deelrxcrm.app/login"
+          }
+        ]
       }
     ]
   },
