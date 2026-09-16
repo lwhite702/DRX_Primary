@@ -53,19 +53,61 @@
     },
     "links": [
       {
+        "header": "Product",
+        "items": [
+          {
+            "label": "Product overview",
+            "href": "https://deelrxcrm.com/product"
+          },
+          {
+            "label": "Open DRX",
+            "href": "https://deelrxcrm.app"
+          },
+          {
+            "label": "Sign in",
+            "href": "https://deelrxcrm.app/login"
+          }
+        ]
+      },
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "Guides",
+            "href": "/start/get-started-with-drx"
+          },
+          {
+            "label": "Feedback",
+            "href": "https://drx.featurebase.app"
+          },
+          {
+            "label": "Roadmap",
+            "href": "https://drx.featurebase.app/roadmap"
+          },
+          {
+            "label": "Changelog",
+            "href": "https://drx.featurebase.app/changelog"
+          }
+        ]
+      },
+      {
         "header": "Legal",
         "items": [
           {
-            "label": "Hub",
-            "href": "https://www.deelrxcrm.com/legal"
+            "label": "Legal hub",
+            "href": "https://deelrxcrm.com/legal"
           },
           {
             "label": "Privacy Policy",
-            "href": "https://www.deelrxcrm.com/legal/privacy"
+            "href": "https://deelrxcrm.com/legal/privacy"
           },
           {
             "label": "Terms of Use",
-            "href": "https://www.deelrxcrm.com/legal/terms"
+            "href": "https://deelrxcrm.com/legal/terms"
+          },
+          {
+            "label": "Lawful use",
+            "href": "https://deelrxcrm.com/legal/lawful-use"
           }
         ]
       },
@@ -74,24 +116,11 @@
         "items": [
           {
             "label": "Beta Terms",
-            "href": "https://www.deelrxcrm.com/beta"
+            "href": "https://deelrxcrm.com/beta"
           },
           {
             "label": "Testing Guide",
-            "href": "https://www.deelrxcrm.com/resources/mobile-testing"
-          }
-        ]
-      },
-      {
-        "header": "Product",
-        "items": [
-          {
-            "label": "Sign-up",
-            "href": "https://www.deelrxcrm.app/register"
-          },
-          {
-            "label": "Login ",
-            "href": "https://www.deelrxcrm.app/login"
+            "href": "https://deelrxcrm.com/resources/mobile-testing"
           }
         ]
       }

@@ -17,6 +17,21 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+#topbar-cta-button:hover,
+#topbar-cta-button:active,
+#topbar-cta-button:focus,
+#topbar-cta-button:focus-visible {
+  background: var(--drx-lime-soft);
+  box-shadow: none !important;
+  filter: none !important;
+  outline: 2px solid var(--drx-lime-soft);
+  outline-offset: 2px;
+  text-shadow: none !important;
 }
 
 #page-title {
