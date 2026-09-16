@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Configurable Manager PIN and onboarding setup**: Replaced hardcoded POS manager PIN with configurable tenant settings and an optional onboarding setup step with authorization prompts.
+- **Production readiness and error boundary resilience**: Added route-level POS sale error boundaries, Sentry exception reporting on root error recovery, structured JSON logging for reporting endpoints, and strict payload schemas for inventory adjustments and checkout calculations.
 - **POS cart removal and explicit add-to-cart feedback (WRE-122)**: Operators can now remove individual items from the cart via a visible trash button and clear the entire cart with a confirmation prompt. Adding a product shows an immediate feedback banner with an auto-dismiss after 2.5 seconds; mobile shows haptic feedback alongside the banner. In-cart quantity badges appear on catalog product tiles when items are already in the cart. Applies to web Quick POS and mobile React Native POS.
 
 - **Saved Convex recommendations (WRE-115, unreleased)**: Added internal recommendation recording and atomic policy application with canonical-history checks, exact source/settings revisions, expiry and immutable retry receipts. Zero recommendations freeze credit while retaining the configured limit. Provider generation, customer panels and scheduled refresh integration remain pending.
