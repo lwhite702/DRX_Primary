@@ -1,86 +1,96 @@
 ---
-title: "Documentation Changelog"
-description: "History of updates to DRX customer-facing documentation, runbooks, and guides."
-icon: "clock-rotate-left"
+title: "What's new in DRX"
+description: "Customer-facing release notes for DRX."
+icon: "sparkles"
 ---
 
-This changelog tracks updates to DRX store documentation and guides.
+This page highlights changes that affect day-to-day work in DRX. Release notes use the verified release records in the repository. Work still marked **Unreleased** stays out of this page.
 
-## Current release notes
+DRX is in early access, so a feature may be available on web, mobile web, or a native app at different times.
 
-## [Product Version 0.6.9] - 2026-08-25
+## 2026-08-30 — v0.6.12
 
-### Pages affected
+### New
 
-- /index
-- /native-mobile-apps
-- /delivery-fulfillment
-- /fractional-and-bulk-pricing
-- /legal-disclaimer
-- /CHANGELOG
+- **DRX Help Center:** Guides for deliveries, fractional and bulk pricing, mobile use, and store runbooks now live in one documentation hub.
 
-### Summary
+### Improved
 
-- Added native mobile applications guide for iPhone, iPad, and Android handheld POS devices with offline selling and driver arrival alerts.
-- Added delivery fulfillment guide covering order packaging, courier dispatch (Uber Direct / in-house), and tracking.
-- Added fractional selling and bulk pricing guide covering scale weight entry, dollar presets (\$10, \$20, \$35, \$50), bulk volume tiers, and loyalty redemption.
-- Complete overhaul of all documentation pages to ensure 100% operator-focused, plain-English guidance.
-- Updated brand identity, logo assets, and theme styling.
+- **More consistent checkout and reports:** Completed sales and reporting use one source of transaction data. This reduces duplicate or missing totals when a sale moves through checkout.
+- **Mobile and PWA navigation:** Touch targets and update handling are more dependable on smaller screens.
+- **Support routing:** Help and email support paths are clearer across the web, mobile, and iOS surfaces.
 
-## [Product Version 0.5.3] - 2026-03-04
+## 2026-08-24 — v0.6.8
 
-### Pages affected
+### Improved
 
-- /index
-- /getting-started
-- /store-setup
-- /how-sales-work
-- /quick-sale-runbook
-- /your-products
-- /your-customers
-- /payments-and-plans
-- /numbers-that-matter
-- /staying-compliant
-- /team-access
-- /keeping-your-data-safe
-- /drx-privacy-protexion-protocol
-- /failsafe-and-self-destruct
-- /fixing-issues
-- /beta-access-and-use
-- /legal-disclaimer
-- /glossary
-- /CHANGELOG
+- **Quick Sale keeps its place:** Your cart and register state stay in place when you move between the sale and payment screens.
+- **Checkout totals are easier to trust:** Tax, delivery, fee, and discount details continue to render when an optional value is not present.
+- **Smoother navigation:** Quick Sale and other navigation items no longer flash into view while access checks finish.
+- **Payments screens are easier to read:** Dark-theme cards and labels have clearer contrast.
 
-### Summary
+### Fixed
 
-- Rewrote documentation to match live app screens and navigation items.
-- Documented alias-first customer profiles and privacy controls.
-- Added dedicated New sale runbook for fast counter lanes.
-- Updated terminology to match Trends and store settings.
-- Added shift opening/closing checklists and troubleshooting steps for store teams.
+- Quick Sale now has a clear access-denied state instead of sending an authorized operator into a loading loop.
 
-## [Product Version 0.4.12] - 2026-02-13
+## 2026-08-23 — v0.6.6
 
-### Pages affected
+### Improved
 
-- /getting-started
-- /how-sales-work
-- /your-products
-- /staying-compliant
-- /your-customers
-- /numbers-that-matter
-- /team-access
-- /store-setup
-- /payments-and-plans
-- /keeping-your-data-safe
-- /failsafe-and-self-destruct
-- /fixing-issues
-- /beta-access-and-use
-- /legal-disclaimer
-- /glossary
+- **Sign-in fields are easier to see:** Email and password fields have clearer boundaries and a brighter cursor across web, mobile, and iOS sign-in screens.
 
-### Summary
+## 2026-08-23 — v0.6.1
 
-- Established initial customer-facing documentation structure with operator runbooks.
-- Documented core checkout, stock receiving, customer profiles, and balance due tracking.
-- Added store safety, privacy, and legal disclaimer pages.
+### Improved
+
+- **Offline recovery:** DRX can recover more safely when a browser loses its local database connection during offline work.
+- **Cleaner error reporting:** Browser-extension disconnect noise is filtered so real issues are easier to spot.
+
+## 2026-08-23 — v0.6.0
+
+### New
+
+- **Fractional and value-based selling:** Stores can sell by quantity or spend, use suggested dollar presets, set bulk-price tiers, and configure loyalty benefits.
+- **Delivery fulfillment:** Delivery orders can carry an encrypted address, vendor costs, tax details, assignment, status updates, reminders, and a manager escalation path.
+- **Quick Sale recovery:** Completed sales use a retry-safe checkout path, and operators can exit when no manager PIN is configured.
+- **Help when feedback is unavailable:** In-app bug-report links open the DRX Help Center when the feedback form cannot load.
+
+### Improved
+
+- Dashboard, Payments, customer, Inventory, and reporting screens handle incomplete or delayed data more clearly.
+- DRX keeps customer details and delivery information minimized in error and analytics paths.
+
+## 2026-07-22 — v0.5.7
+
+### Fixed
+
+- **Onboarding finishes cleanly:** After you complete onboarding, DRX takes you to the dashboard instead of leaving you on the setup screen.
+
+## 2026-05-31 — v0.5.5
+
+### New
+
+- **Privacy-first customer profiles:** Stores can use short-lived customer details and a cleanup queue that removes qualifying records according to the selected privacy setting.
+- **Safer Inventory updates:** Stock changes use a transaction and audit trail designed to keep counts and intake batches together.
+
+## 2026-03-11 — v0.5.4
+
+### Improved
+
+- **More reliable sign-in and Help Center access:** The app's authentication and help routes were corrected so production builds can load the right screen.
+
+## 2026-02-14 — v0.5.1
+
+### New
+
+- **Branded waitlist:** People joining early access now stay on the DRX app's branded waitlist page.
+- **Onboarding access checks:** Signed-in operators are guided through setup before they enter the main app.
+
+## 2026-02-14 — v0.5.0
+
+### New
+
+- **Quick Sale:** A focused counter flow for adding products, taking payment, and completing a sale.
+- **Quick Sale controls:** Product search, customer lookup or quick creation, checkout, and manager exit checks are available in the POS flow.
+
+If you need technical release detail or help with a specific workflow, [contact support](mailto:support@deelrxcrm.com).
