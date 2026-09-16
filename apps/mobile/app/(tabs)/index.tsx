@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Ionicons } from "@expo/vector-icons";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePreventScreenCapture } from "expo-screen-capture";
@@ -30,6 +32,7 @@ import {
   minimumSaleQuantity,
   normalizeQuantity,
   pricedLineTotalCents,
+  quantityIncrement,
   resolveLoyaltyEligibleSpendCents,
   resolveLoyaltyRateBps,
   suggestedQuantityForDollars,
@@ -108,6 +111,22 @@ export default function POSScreen() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutOrderNumber, setCheckoutOrderNumber] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerFeedback = useCallback((message: string) => {
+    setFeedback(message);
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = setTimeout(() => {
+      setFeedback(null);
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    };
+  }, []);
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [vendorFee, setVendorFee] = useState("");
@@ -232,32 +251,112 @@ export default function POSScreen() {
   const isTablet = width >= 800;
 
   const addProduct = (product: Product) => {
-    if (product.quantityOnHandGrams <= 0)
+    if (product.quantityOnHandGrams <= 0) {
       return Alert.alert(
         "Out of stock",
         `${product.productName} has no available inventory.`,
       );
+    }
     setCheckoutOrderNumber(null);
-    setCart((current) => {
-      const initialQuantity = Math.min(
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const existing = cart.find((line) => line.product._id === product._id);
+    const initialQuantity = Math.min(
+      product.quantityOnHandGrams,
+      Math.max(minimumSaleQuantity(pricing(product)), 1),
+    );
+    const increment = quantityIncrement(pricing(product));
+
+    if (!existing) {
+      setCart((current) => [...current, { product, quantityGrams: initialQuantity }]);
+      triggerFeedback(`Added ${product.productName} (${formatQuantity(pricing(product), initialQuantity)}) to cart`);
+    } else {
+      const nextQty = Math.min(
         product.quantityOnHandGrams,
-        Math.max(minimumSaleQuantity(pricing(product)), 1),
+        existing.quantityGrams + increment,
       );
-      const increment = minimumSaleQuantity(pricing(product));
-      const existing = current.find((line) => line.product._id === product._id);
-      if (!existing) return [...current, { product, quantityGrams: initialQuantity }];
-      return current.map((line) =>
-        line.product._id === product._id
-          ? {
-              ...line,
-              quantityGrams: Math.min(
-                product.quantityOnHandGrams,
-                line.quantityGrams + increment,
-              ),
-            }
-          : line,
+      if (nextQty === existing.quantityGrams) {
+        triggerFeedback(`Max stock reached for ${product.productName} (${formatQuantity(pricing(product), nextQty)})`);
+        return;
+      }
+      setCart((current) =>
+        current.map((line) =>
+          line.product._id === product._id
+            ? {
+                ...line,
+                quantityGrams: nextQty,
+              }
+            : line,
+        ),
       );
-    });
+      triggerFeedback(`Updated ${product.productName} to ${formatQuantity(pricing(product), nextQty)}`);
+    }
+  };
+
+  const removeProduct = (productId: Id<"products">) => {
+    setCheckoutOrderNumber(null);
+    const removedLine = cart.find((line) => line.product._id === productId);
+    setCart((current) => current.filter((line) => line.product._id !== productId));
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (removedLine) {
+      triggerFeedback(`Removed ${removedLine.product.productName} from cart`);
+    }
+  };
+
+  const clearCart = () => {
+    if (cart.length === 0) return;
+    Alert.alert("Clear current sale?", "All items in the cart will be removed.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Clear",
+        style: "destructive",
+        onPress: () => {
+          setCheckoutOrderNumber(null);
+          setCart([]);
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          triggerFeedback("Cart cleared");
+        },
+      },
+    ]);
+  };
+
+  const adjustLineQuantity = (productId: Id<"products">, delta: 1 | -1) => {
+    setCheckoutOrderNumber(null);
+    const line = cart.find((l) => l.product._id === productId);
+    if (!line) return;
+    const step = quantityIncrement(pricing(line.product));
+    const minQty = minimumSaleQuantity(pricing(line.product));
+    const maxQty = line.product.quantityOnHandGrams;
+
+    if (delta === -1) {
+      const targetQty = line.quantityGrams - step;
+      if (targetQty < minQty - 1e-9) {
+        removeProduct(productId);
+        return;
+      }
+      const normalized = normalizeQuantity(pricing(line.product), targetQty, maxQty);
+      setCart((current) =>
+        current.map((l) =>
+          l.product._id === productId ? { ...l, quantityGrams: normalized } : l,
+        ),
+      );
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      triggerFeedback(`${line.product.productName}: ${formatQuantity(pricing(line.product), normalized)}`);
+    } else {
+      const targetQty = line.quantityGrams + step;
+      const normalized = normalizeQuantity(pricing(line.product), targetQty, maxQty);
+      if (normalized === line.quantityGrams) {
+        triggerFeedback(`Max stock reached for ${line.product.productName}`);
+        return;
+      }
+      setCart((current) =>
+        current.map((l) =>
+          l.product._id === productId ? { ...l, quantityGrams: normalized } : l,
+        ),
+      );
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      triggerFeedback(`${line.product.productName}: ${formatQuantity(pricing(line.product), normalized)}`);
+    }
   };
   const updateQuantity = (productId: Id<"products">, raw: string) => {
     setCheckoutOrderNumber(null);
@@ -474,29 +573,74 @@ export default function POSScreen() {
         key={isTablet ? "tablet" : "phone"}
         contentContainerStyle={styles.productGrid}
         columnWrapperStyle={styles.productRow}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.productCard}
-            onPress={() => addProduct(item)}
-          >
-            <Text style={styles.productName} numberOfLines={2}>
-              {item.productName}
-            </Text>
-            <Text style={styles.productMeta}>
-              {item.sku} · {item.quantityOnHandGrams.toFixed(2)}g
-            </Text>
-            <Text style={styles.productPrice}>
-              {money(item.sellingPriceCents)}/{pricing(item).sellingUnit ?? "g"}
-            </Text>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const inCartLine = cart.find((line) => line.product._id === item._id);
+          return (
+            <TouchableOpacity
+              style={[styles.productCard, inCartLine && styles.productCardInCart]}
+              onPress={() => addProduct(item)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.productName}, ${money(item.sellingPriceCents)} per ${pricing(item).sellingUnit ?? "g"}${inCartLine ? `, ${formatQuantity(pricing(item), inCartLine.quantityGrams)} in cart` : ""}`}
+              accessibilityHint="Tap to add to cart or increase quantity"
+            >
+              <View style={styles.productCardHeader}>
+                <Text style={styles.productName} numberOfLines={2}>
+                  {item.productName}
+                </Text>
+                {inCartLine ? (
+                  <View style={styles.inCartBadge}>
+                    <Ionicons name="checkmark-circle" size={12} color={COLORS.accent} />
+                    <Text style={styles.inCartBadgeText}>
+                      {formatQuantity(pricing(item), inCartLine.quantityGrams)}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text style={styles.productMeta}>
+                {item.sku} · {item.quantityOnHandGrams.toFixed(2)}g
+              </Text>
+              <Text style={styles.productPrice}>
+                {money(item.sellingPriceCents)}/{pricing(item).sellingUnit ?? "g"}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
 
   const basket = (
     <View style={[styles.basket, isTablet && styles.basketTablet]}>
-      <Text style={styles.title}>Current sale</Text>
+      <View style={styles.basketHeaderRow}>
+        <Text style={styles.title}>Current sale</Text>
+        {cart.length > 0 ? (
+          <TouchableOpacity
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Clear cart"
+            accessibilityHint="Removes all items from the current draft sale"
+            onPress={clearCart}
+            style={styles.clearCartButton}
+          >
+            <Ionicons name="trash-outline" size={14} color={COLORS.error} />
+            <Text style={styles.clearCartText}>Clear</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      {feedback ? (
+        <View
+          style={styles.feedbackBanner}
+          accessible={true}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
+          <Ionicons name="cart-outline" size={14} color={COLORS.accent} />
+          <Text style={styles.feedbackBannerText} numberOfLines={1}>
+            {feedback}
+          </Text>
+        </View>
+      ) : null}
       <ScrollView
         style={styles.lines}
         contentInsetAdjustmentBehavior="automatic"
@@ -530,17 +674,47 @@ export default function POSScreen() {
                   <Text style={styles.quantitySummary}>
                     {formatQuantity(pricing(line.product), line.quantityGrams)}
                   </Text>
+                  <TouchableOpacity
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${line.product.productName} from cart`}
+                    accessibilityHint="Deletes this product line from the cart"
+                    style={styles.removeButton}
+                    onPress={() => removeProduct(line.product._id)}
+                  >
+                    <Ionicons name="trash-outline" size={16} color={COLORS.error} />
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.entryRow}>
                   <View style={styles.entryField}>
                     <Text style={styles.entryLabel}>QUANTITY</Text>
-                    <TextInput
-                      style={styles.quantity}
-                      value={String(line.quantityGrams)}
-                      onChangeText={(value) => updateQuantity(line.product._id, value)}
-                      keyboardType="decimal-pad"
-                      accessibilityLabel={`${line.product.productName} quantity in ${pricing(line.product).sellingUnit ?? "grams"}`}
-                    />
+                    <View style={styles.stepperContainer}>
+                      <TouchableOpacity
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Decrease ${line.product.productName} quantity`}
+                        style={styles.stepperButton}
+                        onPress={() => adjustLineQuantity(line.product._id, -1)}
+                      >
+                        <Ionicons name="remove" size={14} color={COLORS.text} />
+                      </TouchableOpacity>
+                      <TextInput
+                        style={styles.stepperInput}
+                        value={String(line.quantityGrams)}
+                        onChangeText={(value) => updateQuantity(line.product._id, value)}
+                        keyboardType="decimal-pad"
+                        accessibilityLabel={`${line.product.productName} quantity in ${pricing(line.product).sellingUnit ?? "grams"}`}
+                      />
+                      <TouchableOpacity
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Increase ${line.product.productName} quantity`}
+                        style={styles.stepperButton}
+                        onPress={() => adjustLineQuantity(line.product._id, 1)}
+                      >
+                        <Ionicons name="add" size={14} color={COLORS.text} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                   <View style={styles.entryField}>
                     <Text style={styles.entryLabel}>DOLLARS</Text>
@@ -864,6 +1038,97 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: SPACING.sm,
     padding: SPACING.md,
+  },
+  productCardInCart: {
+    borderColor: COLORS.accent,
+    backgroundColor: COLORS.surfaceLight,
+  },
+  productCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: SPACING.xs,
+  },
+  inCartBadge: {
+    backgroundColor: COLORS.accent + "22",
+    borderColor: COLORS.accent,
+    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  inCartBadgeText: {
+    color: COLORS.accent,
+    fontSize: 10,
+    fontWeight: "800",
+  },
+  feedbackBanner: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.accent,
+    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.xs,
+    marginBottom: SPACING.xs,
+  },
+  feedbackBannerText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "700",
+    flex: 1,
+  },
+  basketHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: SPACING.xs,
+  },
+  clearCartButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.error + "18",
+  },
+  clearCartText: {
+    color: COLORS.error,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "700",
+  },
+  removeButton: {
+    padding: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.error + "15",
+    marginLeft: SPACING.xs,
+  },
+  stepperContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.surfaceLight,
+    borderRadius: BORDER_RADIUS.sm,
+    overflow: "hidden",
+  },
+  stepperButton: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.surface,
+  },
+  stepperInput: {
+    color: COLORS.text,
+    minWidth: 44,
+    paddingVertical: SPACING.sm,
+    textAlign: "center",
+    flex: 1,
   },
   productName: {
     color: COLORS.text,

@@ -32,6 +32,14 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
     reorder_level: Number(item.reorder_level ?? item.reorderLevel ?? 10),
     unit_cost: unitCost != null ? Number(unitCost) : undefined,
     selling_price: sellingPrice != null ? Number(sellingPrice) : undefined,
+    location:
+      typeof (item.location ?? item.location) === "string"
+        ? (item.location as string)
+        : undefined,
+    is_taxable:
+      typeof (item.is_taxable ?? item.isTaxable) === "boolean"
+        ? Boolean(item.is_taxable ?? item.isTaxable)
+        : true,
     supplier_id:
       typeof (item.supplier_id ?? item.supplierId) === "string"
         ? String(item.supplier_id ?? item.supplierId)

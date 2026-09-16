@@ -5,7 +5,9 @@ import { inventorySchema, type Inventory } from "@/lib/validations/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
+import { ProgressiveSection } from "@/components/ui/progressive-section";
 import { getUnitForCategory } from "@/lib/utils/units";
 import { FractionalProductFields } from "@/components/inventory/fractional-product-fields";
 import {
@@ -64,6 +66,8 @@ export function InventoryForm({
       quantity_on_hand: 0,
       reorder_level: 10,
       unit_of_measure: "g", // Default
+      is_taxable: initialData?.is_taxable ?? true,
+      location: initialData?.location ?? "",
       ...initialData,
       ...(!initialData?.id
         ? {
@@ -104,6 +108,7 @@ export function InventoryForm({
   const category = watch("category");
   const unitCost = watch("unit_cost");
   const sellingPrice = watch("selling_price");
+  const isTaxable = watch("is_taxable");
   const commerceConfig = watch("commerce_config");
   const invalidCommerce =
     commerceConfig &&
@@ -119,8 +124,6 @@ export function InventoryForm({
 
   // Auto-set unit based on category
   React.useEffect(() => {
-    // Only set unit if we aren't editing an existing item (to avoid overwriting user choice).
-    // usage: If initialData has an ID, it's an existing item. If not (or null), it's new.
     const isExistingItem =
       initialData &&
       "id" in initialData &&
@@ -131,7 +134,7 @@ export function InventoryForm({
       setValue("unit_of_measure", unit);
       if (commerceConfig) setValue("commerce_config.sellingUnit", unit);
     }
-  }, [category, initialData, setValue]);
+  }, [category, initialData, setValue, commerceConfig]);
 
   return (
     <form onSubmit={handleSubmit(onSuccess)} className="space-y-6 text-left">
@@ -157,8 +160,8 @@ export function InventoryForm({
         </div>
       )}
 
-      {/* SECTION 1: Product Identity */}
-      {(!isGuided || wizardStep === 0) && (
+      {/* GUIDED MODE - STEP 0: Product Identity */}
+      {isGuided && wizardStep === 0 && (
         <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-4">
           <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
@@ -259,8 +262,8 @@ export function InventoryForm({
         </div>
       )}
 
-      {/* SECTION 2: Stock & Inventory Levels */}
-      {(!isGuided || wizardStep === 1) && (
+      {/* GUIDED MODE - STEP 1: Stock & Thresholds */}
+      {isGuided && wizardStep === 1 && (
         <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-4">
           <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
@@ -313,11 +316,23 @@ export function InventoryForm({
               )}
             </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="location" className="flex items-center gap-1">
+              Storage Location
+              <HelpTooltip content="Physical location in your store or warehouse (e.g. Shelf A-3, Vault, Backroom)." />
+            </Label>
+            <Input
+              id="location"
+              placeholder="e.g. Shelf A-3, Vault"
+              className="bg-black/50 border-white/10"
+              {...register("location")}
+            />
+          </div>
         </div>
       )}
 
-      {/* SECTION 3: Pricing Strategy */}
-      {(!isGuided || wizardStep === 2) && (
+      {/* GUIDED MODE - STEP 2: Pricing Strategy */}
+      {isGuided && wizardStep === 2 && (
         <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-4">
           <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -437,6 +452,301 @@ export function InventoryForm({
             </div>
           </div>
         </div>
+      )}
+
+      {/* STANDARD (NON-GUIDED) FORM: Primary essential fields + Progressive reveal */}
+      {!isGuided && (
+        <>
+          {/* PRIMARY SECTION: Core Identity & Core Numbers */}
+          <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Primary Details
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="product_name" className="flex items-center gap-1">
+                  Product Name *
+                  <HelpTooltip content="The user-facing name that shows up on customer receipts, quick menus, and reports." />
+                </Label>
+                <Input
+                  id="product_name"
+                  placeholder="e.g. Blue Dream Flower"
+                  className="bg-black/50 border-white/10"
+                  {...register("product_name")}
+                />
+                {errors.product_name && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {errors.product_name.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category" className="flex items-center gap-1">
+                  Category
+                  <HelpTooltip content="Categories map products to correct tax rates and measuring units." />
+                </Label>
+                <Select
+                  value={selectedCategoryType}
+                  onValueChange={(val) => {
+                    setSelectedCategoryType(val);
+                    if (val !== "Other") {
+                      setValue("category", val);
+                    } else {
+                      setValue("category", "");
+                    }
+                  }}
+                >
+                  <SelectTrigger className="bg-black/50 border-white/10">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-white/10 text-foreground">
+                    {CATEGORIES_LIST.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="Other">Other (Custom)...</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {selectedCategoryType === "Other" && (
+                  <Input
+                    id="category"
+                    placeholder="Enter custom category name"
+                    className="bg-black/50 border-white/10 mt-2"
+                    {...register("category")}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="selling_price" className="flex items-center gap-1">
+                  Selling Retail Price ($) *
+                  <HelpTooltip content="The base retail price customers pay per unit or gram at checkout." />
+                </Label>
+                <Input
+                  id="selling_price"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="bg-black/50 border-accent/30 focus:border-accent"
+                  {...register("selling_price", { valueAsNumber: true })}
+                />
+                {errors.selling_price && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {errors.selling_price.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="unit_cost" className="flex items-center gap-1">
+                  Acquisition Unit Cost ($)
+                  <HelpTooltip content="What you paid per unit or gram. DRX uses it to work out profit." />
+                </Label>
+                <Input
+                  id="unit_cost"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="bg-black/50 border-white/10"
+                  {...register("unit_cost", { valueAsNumber: true })}
+                />
+                {errors.unit_cost && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {errors.unit_cost.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="quantity_on_hand" className="flex items-center gap-1">
+                Current Stock ({commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}) *
+                <HelpTooltip content="The current physical amount on hand." />
+              </Label>
+              <Input
+                id="quantity_on_hand"
+                type="number"
+                placeholder="0"
+                className="bg-black/50 border-white/10"
+                {...register("quantity_on_hand", { valueAsNumber: true })}
+              />
+              {errors.quantity_on_hand && (
+                <p className="text-sm text-destructive" role="alert">
+                  {errors.quantity_on_hand.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* PROGRESSIVE DISCLOSURE: Additional / Advanced Options */}
+          <ProgressiveSection
+            title="Additional Details & Advanced Rules"
+            description="SKU, location, tax, reorder alerts, strain notes, presets"
+            defaultOpen={false}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sku" className="flex items-center gap-1">
+                  SKU *
+                  <HelpTooltip content="Stock Keeping Unit - a unique identifier used to scan and track the item." />
+                </Label>
+                <Input
+                  id="sku"
+                  placeholder="e.g. FLWR-BD-01"
+                  className="bg-black/50 border-white/10"
+                  {...register("sku")}
+                />
+                {errors.sku && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {errors.sku.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location" className="flex items-center gap-1">
+                  Storage Location
+                  <HelpTooltip content="Shelf, safe, drawer, or room where this product is kept." />
+                </Label>
+                <Input
+                  id="location"
+                  placeholder="e.g. Shelf A-3, Vault"
+                  className="bg-black/50 border-white/10"
+                  {...register("location")}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reorder_level" className="flex items-center gap-1">
+                  Reorder Alert Threshold
+                  <HelpTooltip content="Shows a low-stock alert when the quantity falls below this level." />
+                </Label>
+                <Input
+                  id="reorder_level"
+                  type="number"
+                  placeholder="10"
+                  className="bg-black/50 border-white/10"
+                  {...register("reorder_level", { valueAsNumber: true })}
+                />
+                {errors.reorder_level && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {errors.reorder_level.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-white/5 bg-black/40 p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="is_taxable" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Tax Status
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Subject to sales tax
+                  </p>
+                </div>
+                <Switch
+                  id="is_taxable"
+                  aria-label="Subject to sales tax"
+                  checked={isTaxable ?? true}
+                  onCheckedChange={(checked) =>
+                    setValue("is_taxable", checked, { shouldDirty: true })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="flex items-center gap-1">
+                Description / Strain Notes
+                <HelpTooltip content="Detailed product specs, strain information, effects, or sourcing notes." />
+              </Label>
+              <Input
+                id="description"
+                placeholder="e.g. Sativa-dominant hybrid, citrus terpene profile"
+                className="bg-black/50 border-white/10"
+                {...register("description")}
+              />
+            </div>
+
+            {!initialData?.id && commerceConfig && (
+              <>
+                <FractionalProductFields
+                  value={commerceConfig}
+                  onChange={(config) => {
+                    setValue("commerce_config", config, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                    setValue(
+                      "unit_of_measure",
+                      config.sellingUnit as Inventory["unit_of_measure"],
+                    );
+                  }}
+                />
+                {(errors.commerce_config || invalidCommerce) && (
+                  <p role="alert" className="text-sm text-destructive">
+                    Check your selling rules: use positive quantities that fit the
+                    decimal places, and presets aligned to the minimum plus
+                    increments.
+                  </p>
+                )}
+              </>
+            )}
+
+            {/* Dynamic Margin Calculator Widget */}
+            <div className="p-3 bg-black/60 rounded-lg border border-white/5 space-y-2 text-xs">
+              <div className="flex justify-between text-muted-foreground font-mono">
+                <span>Profit Margin Calculator</span>
+                <span className="text-[10px] text-accent/80 font-sans uppercase">
+                  Live Feedback
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                <div className="p-2 rounded bg-white/5">
+                  <p className="text-[10px] text-muted-foreground uppercase">
+                    Net profit
+                  </p>
+                  <p
+                    className={`text-sm font-semibold font-mono ${profit >= 0 ? "text-emerald-400" : "text-destructive"}`}
+                  >
+                    ${profit.toFixed(2)}
+                  </p>
+                </div>
+                <div className="p-2 rounded bg-white/5">
+                  <p className="text-[10px] text-muted-foreground uppercase">
+                    Markup
+                  </p>
+                  <p
+                    className={`text-sm font-semibold font-mono ${markupPercentage >= 0 ? "text-accent" : "text-destructive"}`}
+                  >
+                    {markupPercentage.toFixed(1)}%
+                  </p>
+                </div>
+                <div className="p-2 rounded bg-white/5">
+                  <p className="text-[10px] text-muted-foreground uppercase">
+                    Gross Margin
+                  </p>
+                  <p
+                    className={`text-sm font-semibold font-mono ${marginPercentage >= 0 ? "text-emerald-400" : "text-destructive"}`}
+                  >
+                    {marginPercentage.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </ProgressiveSection>
+        </>
       )}
 
       {/* Conditionally Render Footer Buttons based on isGuided */}

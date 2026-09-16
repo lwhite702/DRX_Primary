@@ -26,17 +26,26 @@ export function NotificationsPopover() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchNotifications = async () => {
+    setIsLoading(true);
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications || []);
         setUnreadCount(data.notifications?.length || 0);
+        setHasError(false);
+      } else {
+        setHasError(true);
       }
     } catch (error) {
       console.error("Failed to fetch notifications", error);
+      setHasError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,7 +81,7 @@ export function NotificationsPopover() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 ring-2 ring-background" />
@@ -94,7 +103,20 @@ export function NotificationsPopover() {
           )}
         </div>
         <ScrollArea className="h-[300px]">
-          {notifications.length === 0 ? (
+          {hasError ? (
+            <div className="p-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
+              <span>Unable to load notifications</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => fetchNotifications()}
+                disabled={isLoading}
+              >
+                {isLoading ? "Retrying..." : "Retry"}
+              </Button>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">
               No new notifications
             </div>

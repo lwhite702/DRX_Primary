@@ -199,6 +199,7 @@ export default defineSchema({
     sellingPriceCents: v.number(), // Integer cents
     unitCostCents: v.number(), // Integer cents
     isTaxable: v.optional(v.boolean()),
+    location: v.optional(v.string()),
     quantityOnHandGrams: v.number(), // Weight in grams or unit count
     reorderLevelGrams: v.number(),
     allowFractionalWeight: v.boolean(),
@@ -249,6 +250,9 @@ export default defineSchema({
     calculatedCostPerGramCents: v.number(), // Scaled integer or integer cents
     deliveryCostCents: v.number(),
     supplier: v.optional(v.string()),
+    lotNumber: v.optional(v.string()),
+    expirationDate: v.optional(v.number()),
+    location: v.optional(v.string()),
     status: v.string(), // "approved" | "pending" | "rejected"
     requiresApproval: v.optional(v.boolean()),
     approvedBy: v.optional(v.string()),
@@ -274,6 +278,9 @@ export default defineSchema({
     remainingQuantityGrams: v.number(),
     unitCostPerGramCents: v.number(),
     supplier: v.optional(v.string()),
+    lotNumber: v.optional(v.string()),
+    expirationDate: v.optional(v.number()),
+    location: v.optional(v.string()),
     receivedAt: v.number(),
     createdBy: v.string(),
     createdAt: v.number(),
@@ -281,7 +288,10 @@ export default defineSchema({
   })
     .index("by_businessId", ["businessId"])
     .index("by_productId", ["productId"])
-    .index("by_productId_and_receivedAt", ["productId", "receivedAt"]),
+    .index("by_productId_and_receivedAt", ["productId", "receivedAt"])
+    .index("by_businessId_and_lotNumber", ["businessId", "lotNumber"])
+    .index("by_businessId_and_location", ["businessId", "location"])
+    .index("by_businessId_and_expirationDate", ["businessId", "expirationDate"]),
 
   // Customers
   customers: defineTable({

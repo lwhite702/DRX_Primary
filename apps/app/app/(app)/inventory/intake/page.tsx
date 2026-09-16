@@ -31,6 +31,7 @@ import { SalesSkeleton } from "@/components/skeletons/sales-skeleton";
 import { getUnitLabel, type UnitOfMeasure } from "@/lib/utils/units";
 import { formatAmount, formatQuantity } from "@/lib/number-format";
 import { DataSyncStatus } from "@/components/ui/data-sync-status";
+import { ProgressiveSection } from "@/components/ui/progressive-section";
 
 interface IntakeFormData {
   inventory_id: string;
@@ -40,6 +41,9 @@ interface IntakeFormData {
   total_weight_grams: string;
   delivery_cost: string;
   supplier: string;
+  lot_number: string;
+  expiration_date: string;
+  location: string;
 }
 
 export default function InventoryIntakePage() {
@@ -62,6 +66,9 @@ export default function InventoryIntakePage() {
     total_weight_grams: "",
     delivery_cost: "0",
     supplier: "",
+    lot_number: "",
+    expiration_date: "",
+    location: "",
   });
 
   const inFlight = useRef(false);
@@ -144,6 +151,9 @@ export default function InventoryIntakePage() {
           total_weight_grams: parseFloat(formData.total_weight_grams),
           delivery_cost: parseFloat(formData.delivery_cost || "0"),
           supplier: formData.supplier || undefined,
+          lot_number: formData.lot_number || undefined,
+          expiration_date: formData.expiration_date ? new Date(formData.expiration_date).getTime() : undefined,
+          location: formData.location || undefined,
           idempotency_key: idempotencyKey.current,
         }),
       });
@@ -173,6 +183,9 @@ export default function InventoryIntakePage() {
         total_weight_grams: "",
         delivery_cost: "0",
         supplier: "",
+        lot_number: "",
+        expiration_date: "",
+        location: "",
       });
       idempotencyKey.current = crypto.randomUUID();
       void refreshInventory();
@@ -261,19 +274,6 @@ export default function InventoryIntakePage() {
                 </Select>
               </div>
 
-              {/* Supplier */}
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier (Optional)</Label>
-                <Input
-                  id="supplier"
-                  placeholder="Supplier name"
-                  value={formData.supplier}
-                  onChange={(e) =>
-                    setFormData({ ...formData, supplier: e.target.value })
-                  }
-                />
-              </div>
-
               <div className="border-t pt-4 space-y-4">
                 <h3 className="font-semibold text-sm text-muted-foreground">
                   Cost Structure
@@ -351,8 +351,67 @@ export default function InventoryIntakePage() {
                     {formData.unit_of_measure})
                   </p>
                 </div>
+              </div>
 
-                {/* Delivery Cost */}
+              {/* Progressive Reveal for Additional / Logistics Fields */}
+              <ProgressiveSection
+                title="Additional Batch & Logistics Details"
+                description="Lot #, expiration date, storage location, supplier, delivery cost"
+                defaultOpen={false}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lot_number">Lot / Batch Number</Label>
+                    <Input
+                      id="lot_number"
+                      placeholder="e.g. LOT-2026-001"
+                      value={formData.lot_number}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lot_number: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="expiration_date">Expiration Date</Label>
+                    <Input
+                      id="expiration_date"
+                      type="date"
+                      value={formData.expiration_date}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expiration_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Storage Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="e.g. Shelf A-3, Vault"
+                      value={formData.location}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="supplier">Supplier (Optional)</Label>
+                    <Input
+                      id="supplier"
+                      placeholder="Supplier name"
+                      value={formData.supplier}
+                      onChange={(e) =>
+                        setFormData({ ...formData, supplier: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="delivery_cost">
                     Delivery / Shipping Cost ($) (Optional)
@@ -375,7 +434,7 @@ export default function InventoryIntakePage() {
                     Separate delivery cost - NOT included in cost-per-gram
                   </p>
                 </div>
-              </div>
+              </ProgressiveSection>
 
               <Button
                 onClick={handleOpenConfirmModal}
@@ -474,6 +533,24 @@ export default function InventoryIntakePage() {
                     {formData.supplier || "N/A"}
                   </span>
                 </div>
+                {formData.lot_number ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Lot / Batch:</span>
+                    <span className="font-medium font-mono">{formData.lot_number}</span>
+                  </div>
+                ) : null}
+                {formData.expiration_date ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Expiration Date:</span>
+                    <span className="font-medium">{formData.expiration_date}</span>
+                  </div>
+                ) : null}
+                {formData.location ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Storage Location:</span>
+                    <span className="font-medium">{formData.location}</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Weight:</span>
                   <span className="font-medium">

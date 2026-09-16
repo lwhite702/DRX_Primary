@@ -57,6 +57,8 @@ export async function POST(request: NextRequest) {
     const id = await client.mutation(api.products.createProduct, {
       selectedBusinessId: businessId, sku: body.sku.trim(), productName: body.product_name.trim(),
       description: body.description || undefined, category: body.category || undefined,
+      location: typeof body.location === "string" ? body.location.trim() || undefined : undefined,
+      isTaxable: typeof body.is_taxable === "boolean" ? body.is_taxable : undefined,
       sellingPriceCents: moneyCents(body.selling_price, "selling price"),
       unitCostCents: moneyCents(body.unit_cost ?? 0, "unit cost", true),
       initialQuantity: body.quantity_on_hand ?? 0, reorderLevelGrams: body.reorder_level ?? 10,

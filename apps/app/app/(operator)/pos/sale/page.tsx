@@ -28,6 +28,7 @@ export default function QuickPosSalePage() {
     setCreditPolicy,
     setDeliveryFeeTaxable,
     setError,
+    setSuccess,
     total,
   } = useQuickPosStore();
 
@@ -64,6 +65,14 @@ export default function QuickPosSalePage() {
 
     load();
   }, [setCreditPolicy, setDeliveryFeeTaxable, setError]);
+
+  useEffect(() => {
+    if (!state.ui.successMessage) return;
+    const timer = window.setTimeout(() => {
+      setSuccess(null);
+    }, 2500);
+    return () => { window.clearTimeout(timer); setSuccess(null); };
+  }, [state.ui.successMessage, setSuccess]);
 
   useEffect(() => {
     const search = state.ui.search.trim().toLowerCase();
@@ -160,6 +169,9 @@ export default function QuickPosSalePage() {
       return;
     }
 
+    const existing = state.cartItems.find((ci) => ci.id === `inv:${item.id}`);
+    const newQty = (existing?.qty ?? 0) + 1;
+
     addItem({
       id: `inv:${item.id}`,
       inventoryId: item.id,
@@ -169,6 +181,11 @@ export default function QuickPosSalePage() {
       source: "inventory",
     });
     setError(null);
+    setSuccess(
+      newQty > 1
+        ? `${item.name} quantity updated (${newQty})`
+        : `Added ${item.name} to cart`
+    );
   };
 
   const selectInventoryItem = (item: QuickPosBootstrapItem) => {
@@ -199,6 +216,20 @@ export default function QuickPosSalePage() {
     });
     setManualPrice("");
     setError(null);
+    setSuccess(`Added Manual Item ($${value.toFixed(2)}) to cart`);
+  };
+
+  const handleClearCart = () => {
+    state.cartItems.forEach((item) => removeItem(item.id));
+    setSuccess("Cart cleared");
+  };
+
+  const handleRemoveItem = (id: string) => {
+    const item = state.cartItems.find((ci) => ci.id === id);
+    removeItem(id);
+    if (item) {
+      setSuccess(`Removed ${item.name} from cart`);
+    }
   };
 
   const subtotal = useMemo(
@@ -239,12 +270,14 @@ export default function QuickPosSalePage() {
         <QuickGrid
           title="Favorite Items"
           items={bootstrap?.favorites || []}
+          cartItems={state.cartItems}
           onAdd={selectInventoryItem}
         />
 
         <QuickGrid
           title="Recently Sold"
           items={bootstrap?.recentlySold || []}
+          cartItems={state.cartItems}
           onAdd={selectInventoryItem}
         />
 
@@ -260,6 +293,8 @@ export default function QuickPosSalePage() {
           items={state.cartItems}
           onTap={incrementItem}
           onLongPressRemove={removeItem}
+          onRemove={handleRemoveItem}
+          onClear={handleClearCart}
           subtotal={subtotal}
           total={total}
         />
