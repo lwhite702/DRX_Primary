@@ -139,5 +139,16 @@
       "apiHost": "https://us.i.posthog.com",
       "sessionRecording": true
     }
+  },
+  "seo": {
+    "indexing": "navigable"
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "download-pdf"
+    ],
+    "display": "header"
   }
 }
