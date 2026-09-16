@@ -49,9 +49,40 @@
   },
   "footer": {
     "socials": {
-      "website": "https://deelrxcrm.com",
-      "github": "https://github.com/lwhite702/DRX_Primary"
-    }
+      "website": "https://deelrxcrm.com"
+    },
+    "links": [
+      {
+        "header": "Legal",
+        "items": [
+          {
+            "label": "Hub",
+            "href": "https://www.deelrxcrm.com/legal"
+          },
+          {
+            "label": "Privacy Policy",
+            "href": "https://www.deelrxcrm.com/legal/privacy"
+          },
+          {
+            "label": "Terms of Use",
+            "href": "https://www.deelrxcrm.com/legal/terms"
+          }
+        ]
+      },
+      {
+        "header": "Beta",
+        "items": [
+          {
+            "label": "Beta Terms",
+            "href": "https://www.deelrxcrm.com/beta"
+          },
+          {
+            "label": "Testing Guide",
+            "href": "https://www.deelrxcrm.com/resources/mobile-testing"
+          }
+        ]
+      }
+    ]
   },
   "navigation": {
     "groups": [
