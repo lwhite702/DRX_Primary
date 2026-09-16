@@ -35,6 +35,8 @@ Updated 2026-09-16 on `codex/WRE-92-featurebase-help-overhaul` for PR #171 and W
 | Desktop dark/light preview | Pass; DRX logo, lime accent, image captions, and article hierarchy checked |
 | 390px mobile preview | Pass; article content and navigation drawer checked |
 
+GitHub checks for commit `431bed40c` were not started because the repository's Actions budget is preventing further use. Their failure annotations report the budget gate, not a test failure; the same commands pass locally as listed above.
+
 ## Publication status
 
 The repository is ready to supply Mintlify from the `mintlify/` directory. Featurebase remains the feedback and roadmap surface during the transition. No Featurebase API key was used, and no public domain or help-link cutover is claimed here.
