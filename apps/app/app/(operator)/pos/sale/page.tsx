@@ -71,7 +71,7 @@ export default function QuickPosSalePage() {
     const timer = window.setTimeout(() => {
       setSuccess(null);
     }, 2500);
-    return () => window.clearTimeout(timer);
+    return () => { window.clearTimeout(timer); setSuccess(null); };
   }, [state.ui.successMessage, setSuccess]);
 
   useEffect(() => {
