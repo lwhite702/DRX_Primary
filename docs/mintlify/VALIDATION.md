@@ -39,9 +39,9 @@ GitHub checks for commit `431bed40c` were not started because the repository's A
 
 ## Publication status
 
-The repository is ready to supply Mintlify from the `mintlify/` directory. Featurebase remains the feedback and roadmap surface during the transition. No Featurebase API key was used, and no public domain or help-link cutover is claimed here.
+The repository is ready to supply Mintlify from the `mintlify/` directory. The existing Mintlify project was verified in its Git settings: GitHub organization `lwhite702`, repository `drx_primary`, branch `main`, with the docs subdirectory enabled and set to `mintlify`. Featurebase remains the feedback and roadmap surface during the transition. No Featurebase API key was used, and no public domain or help-link cutover is claimed here.
 
-Live Mintlify deployment, the DRX-owned docs domain, and public application-link cutover remain unverified. The final publication gate is to connect the correct Mintlify project to this repository, deploy the `mintlify/` directory, recheck the hosted pages, and then update PR #171 and WRE-123 with the live URL and commit evidence.
+The hosted site still points at the previous `main` content. The final publication gate is to merge PR #171 (which will trigger the connected Mintlify deployment), recheck the hosted pages, and then update PR #171 and WRE-123 with the live URL and commit evidence. That merge/public deployment remains intentionally pending approval.
 
 ## Remaining gaps
 
