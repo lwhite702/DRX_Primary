@@ -202,6 +202,12 @@ describe("proxy auth and routing", () => {
     expect(res.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("passes through /api/health probe without auth redirect or 401 in middleware", async () => {
+    const req = makeRequest("/api/health", "deelrxcrm.app");
+    const res = await runMiddleware(req, { userId: null });
+    expect(res.headers.get("x-middleware-next")).toBe("1");
+  });
+
   it("passes through Next.js internal assets", async () => {
     const req = makeRequest("/_next/static/chunks/main.js", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });

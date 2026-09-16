@@ -32,6 +32,7 @@ describe("route classification", () => {
     expect(isPublicAppPath("/api/webhooks/clerk")).toBe(true);
     expect(isPublicAppPath("/_next/static/chunks/app.js")).toBe(true);
     expect(isPublicAppPath("/privacy")).toBe(true);
+    expect(isPublicAppPath("/api/health")).toBe(true);
     expect(isPublicAppPath("/dashboard")).toBe(false);
   });
 

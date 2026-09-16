@@ -56,7 +56,4 @@ export async function provisionBusinessInConvex(input: ConvexOnboardingInput) {
   return client.mutation(api.onboarding.createBusinessOnboarding, input);
 }
 
-export async function getBusinessProfileFromConvex() {
-  const client = await authenticatedConvexClient();
-  return client.query(api.onboarding.getCurrentBusinessProfile, {});
-}
+
