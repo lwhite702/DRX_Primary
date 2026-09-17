@@ -103,7 +103,7 @@ struct LiveProvisioningClient: ProvisioningClient {
             expectedUserId: await Clerk.shared.user?.id ?? "",
             payload: payloadString
         )
-        _ = try await client.mutation("onboarding:completeBusinessOnboarding", args: args)
+        let _: CompleteOnboardingResponse = try await client.mutation("onboarding:completeBusinessOnboarding", args: args)
         let statusResp = try await self.status()
         return BusinessOnboardingResponse(
             status: "ONBOARDING_SUCCESS",
