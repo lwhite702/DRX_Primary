@@ -130,7 +130,7 @@ export function BusinessSetupWizard({
   const [formData, setFormData] = useState<BusinessSetupFormData>({
     // Business Details
     businessName: "",
-    businessType: "",
+    businessType: "dispensary",
     address: "",
     city: "",
     state: "",
@@ -182,6 +182,15 @@ export function BusinessSetupWizard({
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
+      const stepId = STEPS[currentStep].id;
+      if (stepId === "details" && !formData.businessName.trim()) {
+        toast.error("Please enter a business name before continuing.");
+        return;
+      }
+      if (stepId === "owner" && !formData.ownerName.trim()) {
+        toast.error("Please enter the owner's name before continuing.");
+        return;
+      }
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -193,26 +202,34 @@ export function BusinessSetupWizard({
   };
 
   const handleFinish = async () => {
+    if (!formData.businessName.trim()) {
+      toast.error("Please enter a business name.");
+      return;
+    }
+    if (!formData.ownerName.trim()) {
+      toast.error("Please enter the owner's name.");
+      return;
+    }
     setLoading(true);
     try {
-      const { success, error } = await setupBusinessAction({
-        businessName: formData.businessName,
-        businessType: formData.businessType,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zipCode: formData.zipCode,
-        ownerPhone: formData.ownerPhone,
+      const result = await setupBusinessAction({
+        businessName: formData.businessName.trim(),
+        businessType: formData.businessType.trim() || "dispensary",
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zipCode: formData.zipCode.trim(),
+        ownerPhone: formData.ownerPhone.trim(),
         defaultUnit: formData.defaultUnit,
         quickQuantities: formData.quickQuantities.filter((q) => q.enabled),
         privacyPreset: formData.privacyPreset,
         inventoryReasons: formData.inventoryReasons.filter((r) => r.enabled),
         nicknames: formData.nicknames.filter((n) => n.enabled),
-        ownerName: formData.ownerName,
+        ownerName: formData.ownerName.trim(),
         managerPin: formData.managerPin ? formData.managerPin.trim() : undefined,
       });
 
-      if (error) throw new Error(error);
+      if (result.error) throw new Error(result.error);
 
       toast.success(drxCopy.onboarding.wizard.setupComplete);
 
@@ -224,6 +241,7 @@ export function BusinessSetupWizard({
       setLoading(false);
     }
   };
+
 
   const StepComponent = STEPS[currentStep].component;
 

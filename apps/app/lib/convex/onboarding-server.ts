@@ -25,6 +25,8 @@ export type ConvexOnboardingSetup = {
 };
 
 export type ConvexOnboardingInput = {
+  expectedUserId?: string;
+  expectedOrganizationId?: string | null;
   name?: string;
   businessName: string;
   businessType?: string;
@@ -33,6 +35,7 @@ export type ConvexOnboardingInput = {
   timezone?: string;
   collectTax?: boolean;
   taxRateBps?: number;
+  setupJson?: string;
   setup?: ConvexOnboardingSetup;
 };
 
@@ -54,7 +57,48 @@ async function authenticatedConvexClient() {
 
 export async function provisionBusinessInConvex(input: ConvexOnboardingInput) {
   const client = await authenticatedConvexClient();
-  return client.mutation(api.onboarding.createBusinessOnboarding, input);
+  const { setup, setupJson, ...rest } = input;
+  let resolvedSetupJson = setupJson;
+
+  if (!resolvedSetupJson && setup) {
+    resolvedSetupJson = JSON.stringify({
+      businessName: input.businessName.trim(),
+      businessType: input.businessType?.trim() || "Retail POS",
+      address: setup.address?.trim() || "",
+      city: setup.city?.trim() || "",
+      state: (setup.region ?? "").trim(),
+      zipCode: (setup.postalCode ?? "").trim(),
+      ownerPhone: setup.ownerPhone?.trim() || "",
+      ownerName: input.name?.trim() || "DRX Operator",
+      defaultUnit: setup.defaultUnit || "g",
+      quickQuantities: (setup.quickQuantities || []).map((q) => ({
+        label: q.label,
+        value: q.value,
+        unit: q.unit,
+        enabled: true,
+      })),
+      privacyPreset: setup.privacyPreset || "standard_mode",
+      inventoryReasons: (setup.inventoryReasons || []).map((r) => ({
+        label: r.label,
+        type: r.type,
+        enabled: true,
+      })),
+      nicknames: (setup.nicknames || []).map((n) => ({
+        slang: n.slang,
+        quantity: n.quantity,
+        unit: n.unit,
+        enabled: true,
+      })),
+      managerPin: setup.managerPin?.trim() || undefined,
+    });
+  }
+
+  const mutationArgs = {
+    ...rest,
+    ...(resolvedSetupJson ? { setupJson: resolvedSetupJson } : {}),
+  };
+
+  return client.mutation(api.onboarding.createBusinessOnboarding, mutationArgs);
 }
 
 

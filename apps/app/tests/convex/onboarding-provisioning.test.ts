@@ -121,3 +121,52 @@ it("supports explicit personal sessions and verified v2 organization claims", as
   expect((await personal.query(api.onboarding.getCurrentOnboardingStatus, { expectedOrganizationId: null })).status).toBe("READY");
   expect((await organization.query(api.onboarding.getCurrentOnboardingStatus, { expectedOrganizationId: "org-b" })).status).toBe("READY");
 });
+
+it("successfully processes the wizard payload with all fields configured", async () => {
+  const t = convexTest(schema, modules);
+  const actor = t.withIdentity({ subject: "wizard-e2e-owner", email: "e2e@example.com" });
+  const setup = {
+    businessName: "Green Room POS",
+    businessType: "dispensary",
+    address: "456 Market St",
+    city: "Denver",
+    state: "CO",
+    zipCode: "80202",
+    ownerPhone: "555-0199",
+    ownerName: "Denver Owner",
+    defaultUnit: "g",
+    privacyPreset: "standard_mode" as const,
+    quickQuantities: [
+      { label: "1g", value: 1, unit: "g", enabled: true },
+      { label: "3.5g", value: 3.5, unit: "g", enabled: true },
+    ],
+    inventoryReasons: [
+      { label: "Restock", type: "positive", enabled: true },
+    ],
+    nicknames: [
+      { slang: "Eighth", quantity: 3.5, unit: "g", enabled: true },
+    ],
+    managerPin: "1234",
+  };
+  const args = {
+    name: setup.ownerName,
+    businessName: setup.businessName,
+    businessType: setup.businessType,
+    collectTax: false,
+    taxRateBps: 0,
+    setupJson: JSON.stringify(setup),
+  };
+  const res = await actor.mutation(api.onboarding.createBusinessOnboarding, args);
+  expect(res.status).toBe("ONBOARDING_SUCCESS");
+  expect(res.businessId).toBeDefined();
+
+  const savedSettings = await t.run(async (ctx) =>
+    ctx.db.query("businessSettings").withIndex("by_businessId", (q) => q.eq("businessId", res.businessId)).first()
+  );
+  expect(savedSettings?.posManagerPin).toBe("1234");
+  const parsedData = JSON.parse(savedSettings?.settingsData || "{}");
+  expect(parsedData.owner_name).toBe("Denver Owner");
+  expect(parsedData.default_unit).toBe("g");
+  expect(parsedData.onboarding_completed).toBe(true);
+});
+
