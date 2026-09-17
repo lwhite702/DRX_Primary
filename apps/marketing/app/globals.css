@@ -24,6 +24,9 @@
   --color-text-secondary: #a3a3a3;
   --color-text-muted: #858585;
 
+  --color-primary: var(--drx-color-accent);
+  --color-primary-foreground: #000000;
+
   --color-border: var(--drx-color-border);
   --color-input: rgba(255, 255, 255, 0.14);
   --color-ring: var(--drx-color-accent);

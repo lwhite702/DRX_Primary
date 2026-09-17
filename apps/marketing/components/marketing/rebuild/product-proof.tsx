@@ -305,12 +305,12 @@ export function MarketingProductProof() {
               $84.00 · 3 items
             </span>
           </div>
-          <button
-            type="button"
-            className="rounded-[12px] bg-[#ccff00] px-3 py-1.5 text-[9.5px] font-bold text-[#0a0a0a] hover:opacity-95"
+          <div
+            aria-hidden="true"
+            className="rounded-[12px] bg-[#ccff00] px-3 py-1.5 text-[9.5px] font-bold text-[#0a0a0a] select-none pointer-events-none"
           >
             Review sale
-          </button>
+          </div>
         </div>
       </div>
     </div>

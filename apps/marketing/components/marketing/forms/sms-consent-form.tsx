@@ -65,9 +65,9 @@ export function SmsConsentForm() {
         hasBusinessName: Boolean(formData.businessName.trim()),
       });
 
-      // Optional API post to record consent
+      // API post to record consent
       try {
-        await fetch("/api/sms-consent", {
+        const response = await fetch("/api/sms-consent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -80,8 +80,21 @@ export function SmsConsentForm() {
             timestamp: new Date().toISOString(),
           }),
         });
-      } catch {
-        // Fallback gracefully on static builds
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(
+            errorData?.error || "Failed to submit SMS consent. Please verify your details and try again."
+          );
+        }
+      } catch (submitErr) {
+        setError(
+          submitErr instanceof Error
+            ? submitErr.message
+            : "Network error submitting SMS consent. Please check your connection and try again."
+        );
+        setLoading(false);
+        return;
       }
 
       setSubmitted(true);
