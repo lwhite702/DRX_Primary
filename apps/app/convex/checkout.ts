@@ -340,11 +340,25 @@ export const quoteCheckout = query({
     delivery: v.optional(
       v.object(deliveryTerms),
     ),
+    deliveryFeeCents: v.optional(v.number()),
+    discountAmountCents: v.optional(v.number()),
   },
   returns: quoteResult,
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
+    if (args.deliveryFeeCents !== undefined) {
+      requireNonnegativeSafeInteger(args.deliveryFeeCents, "deliveryFeeCents");
+    }
+    if (args.discountAmountCents !== undefined) {
+      requireNonnegativeSafeInteger(args.discountAmountCents, "discountAmountCents");
+    }
+    if (
+      (args.deliveryFeeCents !== undefined && args.deliveryFeeCents > 0) ||
+      (args.discountAmountCents !== undefined && args.discountAmountCents > 0)
+    ) {
+      requirePermission(auth.userRecord, "APPLY_CHECKOUT_OVERRIDE");
+    }
     const feeRevenueCents = totalFees(normalizeFees(args.fees));
     const items = normalizeItems(args.items);
     const overrides = normalizeOverrides(auth.userRecord, items, args.priceOverrides);
@@ -469,29 +483,52 @@ export const quoteCheckout = query({
     );
     const taxableMerchandiseCents =
       pricing.taxableMerchandiseCents + manualTaxableCents;
-    const merchandiseTaxCents = calculateTaxCents(
-      taxableMerchandiseCents,
-      taxRateBps,
-    );
-    const deliveryRevenueCents = args.delivery?.customerFeeCents ?? (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0);
+
+    const baseMerchandiseTotalCents =
+      pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
+    const baseDiscountCents = pricing.discountCents + manualDiscountCents;
+    const additionalDiscountCents = args.discountAmountCents ?? 0;
+    const discountCents = baseDiscountCents + additionalDiscountCents;
+    const discountedSubtotalCents = Math.max(0, baseMerchandiseTotalCents - additionalDiscountCents);
+
+    const deliveryRevenueCents =
+      args.delivery?.customerFeeCents ??
+      (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0) +
+        (args.deliveryFeeCents ?? 0);
     const deliveryTaxCents =
       args.delivery?.chargeCustomer && settings?.deliveryFeeTaxable
         ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
         : 0;
+
+    let merchandiseTaxCents = 0;
+    let taxableSubtotalCents = 0;
+    if (args.discountAmountCents !== undefined || args.deliveryFeeCents !== undefined) {
+      merchandiseTaxCents = auth.businessRecord.collectTax
+        ? calculateTaxCents(discountedSubtotalCents, taxRateBps)
+        : 0;
+      taxableSubtotalCents = discountedSubtotalCents + (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
+    } else {
+      merchandiseTaxCents = calculateTaxCents(
+        taxableMerchandiseCents,
+        taxRateBps,
+      );
+      taxableSubtotalCents =
+        taxableMerchandiseCents +
+        (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
+    }
+
     const taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
-    const totalAmountCents = pricing.merchandiseTotalCents + manualMerchandiseTotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+    const totalAmountCents =
+      discountedSubtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
     requireNonnegativeSafeInteger(totalAmountCents, "totalAmountCents");
     return {
       lines: [...inventoryLines, ...manualLines],
       ...(feeRevenueCents ? { feeRevenueCents } : {}),
       merchandiseSubtotalCents:
         pricing.merchandiseSubtotalCents + manualMerchandiseSubtotalCents,
-      discountCents: pricing.discountCents + manualDiscountCents,
-      subtotalCents:
-        pricing.merchandiseTotalCents + manualMerchandiseTotalCents,
-      taxableSubtotalCents:
-        taxableMerchandiseCents +
-        (deliveryTaxCents > 0 ? deliveryRevenueCents : 0),
+      discountCents,
+      subtotalCents: baseMerchandiseTotalCents,
+      taxableSubtotalCents,
       merchandiseTaxCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents: args.delivery?.vendorFeeCents ?? 0,

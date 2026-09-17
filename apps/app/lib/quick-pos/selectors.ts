@@ -8,8 +8,14 @@ export function getTax(_state: QuickPosState): number {
   return 0;
 }
 
+export function getDiscount(state: QuickPosState): number {
+  return (state.discount?.amountCents ?? 0) / 100;
+}
+
 export function getTotal(state: QuickPosState): number {
-  return getSubtotal(state) + getTax(state);
+  const subtotal = getSubtotal(state);
+  const discount = getDiscount(state);
+  return Math.max(0, subtotal - discount) + getTax(state);
 }
 
 export function canUseCredit(state: QuickPosState): boolean {

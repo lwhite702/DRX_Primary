@@ -18,6 +18,7 @@ struct CheckoutSheet: View {
     @State private var deliveryAddress = ""
     @State private var vendorFeeString = ""
     @State private var chargeDeliveryToCustomer = true
+    @State private var discountString = ""
     @State private var quote: CheckoutQuoteResponse?
     @State private var isQuoting = false
     @State private var quoteError: String?
@@ -35,6 +36,7 @@ struct CheckoutSheet: View {
     }
 
     var amountTenderedCents: Int { CurrencyInput.cents(from: amountTenderedString) ?? 0 }
+    var discountAmountCents: Int { CurrencyInput.cents(from: discountString) ?? 0 }
     var vendorFeeCents: Int { CurrencyInput.cents(from: vendorFeeString) ?? 0 }
     var deliveryRevenueCents: Int { deliveryEnabled && chargeDeliveryToCustomer ? vendorFeeCents : 0 }
     var deliveryTaxCents: Int {
@@ -47,7 +49,7 @@ struct CheckoutSheet: View {
             taxRateBps: business.taxRateBps
         )
     }
-    var localPreviewTotalCents: Int { store.cartTotalCents + deliveryRevenueCents + deliveryTaxCents }
+    var localPreviewTotalCents: Int { max(0, store.cartTotalCents - discountAmountCents) + deliveryRevenueCents + deliveryTaxCents }
     var displayedTotalCents: Int { quote?.totalAmountCents ?? localPreviewTotalCents }
     var deliveryIsValid: Bool {
         !deliveryEnabled || (
@@ -60,6 +62,7 @@ struct CheckoutSheet: View {
         CheckoutQuoteArgs(
             customerId: store.selectedCustomer?.id,
             items: store.cartItems.map { CheckoutItem(productId: $0.product.id, quantityGrams: $0.quantityGrams) },
+            discountAmountCents: discountAmountCents > 0 ? discountAmountCents : nil,
             delivery: deliveryEnabled ? CheckoutQuoteDelivery(
                 vendorFeeCents: vendorFeeCents,
                 chargeCustomer: chargeDeliveryToCustomer
@@ -71,6 +74,7 @@ struct CheckoutSheet: View {
         return [
             store.selectedCustomer?.id ?? "guest",
             itemKey,
+            "discount:\(discountAmountCents)",
             deliveryEnabled ? "delivery:\(vendorFeeCents):\(chargeDeliveryToCustomer)" : "pickup",
             deliveryIsValid.description,
         ].joined(separator: "#")
@@ -115,6 +119,9 @@ struct CheckoutSheet: View {
                 customerSection
 
                 deliverySection
+
+                // Discount
+                discountSection
 
                 // Payment method
                 paymentMethodSection
@@ -205,6 +212,13 @@ struct CheckoutSheet: View {
                         Text("Discounts")
                         Spacer()
                         Text("−\(formatCents(quote.discountCents))")
+                            .foregroundStyle(.green)
+                    }
+                } else if discountAmountCents > 0 {
+                    HStack {
+                        Text("Discount preview")
+                        Spacer()
+                        Text("−\(formatCents(discountAmountCents))")
                             .foregroundStyle(.green)
                     }
                 }
@@ -392,6 +406,91 @@ struct CheckoutSheet: View {
             }
         }
         .padding(.horizontal)
+    }
+
+    private var discountSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Discount", systemImage: "tag")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(DRXPalette.muted)
+                Spacer()
+                if discountAmountCents > 0 {
+                    Button("Remove") {
+                        discountString = ""
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(DRXPalette.danger)
+                }
+            }
+            .padding(.horizontal)
+
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    ForEach([5_00, 10_00, 15_00], id: \.self) { amount in
+                        Button("$\(amount / 100)") {
+                            discountString = CurrencyInput.string(fromCents: amount)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(DRXPalette.surface)
+                        .clipShape(Capsule())
+                        .overlay { Capsule().stroke(DRXPalette.border, lineWidth: 1) }
+                        .foregroundStyle(DRXPalette.ink)
+                    }
+
+                    if store.cartSubtotalCents > 0 {
+                        Button("10%") {
+                            let cents = Int(Double(store.cartSubtotalCents) * 0.10)
+                            discountString = CurrencyInput.string(fromCents: cents)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(DRXPalette.surface)
+                        .clipShape(Capsule())
+                        .overlay { Capsule().stroke(DRXPalette.border, lineWidth: 1) }
+                        .foregroundStyle(DRXPalette.ink)
+
+                        Button("20%") {
+                            let cents = Int(Double(store.cartSubtotalCents) * 0.20)
+                            discountString = CurrencyInput.string(fromCents: cents)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(DRXPalette.surface)
+                        .clipShape(Capsule())
+                        .overlay { Capsule().stroke(DRXPalette.border, lineWidth: 1) }
+                        .foregroundStyle(DRXPalette.ink)
+                    }
+                }
+                .padding(.horizontal)
+
+                TextField("Custom discount ($0.00)", text: $discountString)
+                    .keyboardType(.decimalPad)
+                    .font(.body.monospacedDigit())
+                    .padding(12)
+                    .background(DRXPalette.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+                    .padding(.horizontal)
+
+                if discountAmountCents > 0 {
+                    HStack {
+                        Text("Discount Applied")
+                            .font(.subheadline)
+                            .foregroundStyle(DRXPalette.muted)
+                        Spacer()
+                        Text("−\(formatCents(discountAmountCents))")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.green)
+                    }
+                    .padding(.horizontal)
+                }
+            }
+        }
     }
 
     private var amountTenderedSection: some View {
@@ -595,9 +694,11 @@ struct CheckoutSheet: View {
             vendorFeeCents: vendorFeeCents,
             chargeCustomer: chargeDeliveryToCustomer
         ) : nil
+        let requestedDiscountAmountCents = discountAmountCents > 0 ? discountAmountCents : nil
         let requestedQuote = CheckoutQuoteArgs(
             customerId: customerId,
             items: items,
+            discountAmountCents: requestedDiscountAmountCents,
             delivery: quotedDelivery
         )
         let submittedDelivery = deliveryEnabled ? CheckoutDelivery(
@@ -630,6 +731,7 @@ struct CheckoutSheet: View {
                 items: items,
                 paymentMethod: requestedPaymentMethod.rawValue,
                 amountPaidCents: tendered,
+                discountAmountCents: requestedDiscountAmountCents,
                 delivery: submittedDelivery
             )
             let response: CheckoutResponse = try await ConvexClient.shared.mutation("checkout:processCheckout", args: args)

@@ -28,6 +28,8 @@ export default function QuickPosSalePage() {
     setSearch,
     setCreditPolicy,
     setDeliveryFeeTaxable,
+    setDiscount,
+    clearDiscount,
     setError,
     setSuccess,
     total,
@@ -318,6 +320,10 @@ export default function QuickPosSalePage() {
           onClear={handleClearCart}
           subtotal={subtotal}
           total={total}
+          discountAmountCents={state.discount.amountCents}
+          discountReason={state.discount.reason}
+          onSetDiscount={setDiscount}
+          onClearDiscount={clearDiscount}
         />
 
         <CustomerInline

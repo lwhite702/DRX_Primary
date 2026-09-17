@@ -58,12 +58,14 @@ type CheckoutRequest = {
   items: { productId: Id<"products">; quantityGrams: number }[];
   paymentMethod: Tender;
   amountPaidCents: number;
+  discountAmountCents?: number;
   delivery?: { address: string; vendorFeeCents: number; chargeCustomer: boolean };
 };
 type CheckoutResult = { orderNumber: string; totalAmountCents: number; deliveryId?: string };
 type CheckoutQuoteRequest = {
   customerId?: Id<"customers">;
   items: { productId: Id<"products">; quantityGrams: number }[];
+  discountAmountCents?: number;
   delivery?: { vendorFeeCents: number; chargeCustomer: boolean };
 };
 type CommerceSettings = {
@@ -72,7 +74,7 @@ type CommerceSettings = {
   deliveryFeeTaxable?: boolean;
 };
 function useProducts() {
-  return useQuery(api.products.listProducts);
+  return useQuery(api.products.listProducts, {});
 }
 function useCustomers() {
   return useQuery(api.customers.listCustomers);
@@ -106,6 +108,7 @@ export default function POSScreen() {
     useOffline();
   const [cart, setCart] = useState<CartLine[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [discountDollars, setDiscountDollars] = useState("");
   const [tender, setTender] = useState<Tender>("cash");
   const [cashReceived, setCashReceived] = useState("");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -203,6 +206,14 @@ export default function POSScreen() {
       ),
     [cart, loyaltyPolicy, loyaltyRateBps, pricingForCheckout],
   );
+  const discountAmountCents = useMemo(() => {
+    const parsed = Number(discountDollars);
+    if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+    return Math.min(subtotalCents, Math.round(parsed * 100));
+  }, [discountDollars, subtotalCents]);
+  const discountedSubtotalCents = Math.max(0, subtotalCents - discountAmountCents);
+  const discountRatio = subtotalCents > 0 ? discountedSubtotalCents / subtotalCents : 1;
+  const discountedTaxableSubtotalCents = Math.round(taxableSubtotalCents * discountRatio);
   const collectTax = isOnline
     ? businessSettings?.business.collectTax
     : authorization?.collectTax;
@@ -210,7 +221,7 @@ export default function POSScreen() {
     ? businessSettings?.business.taxRateBps
     : authorization?.taxRateBps;
   const merchandiseTaxCents = collectTax
-    ? Math.round((taxableSubtotalCents * (taxRateBps ?? 0)) / 10_000)
+    ? Math.round((discountedTaxableSubtotalCents * (taxRateBps ?? 0)) / 10_000)
     : 0;
   const vendorFeeCents = Math.max(0, Math.round(Number(vendorFee || 0) * 100));
   const deliveryRevenueCents =
@@ -222,7 +233,7 @@ export default function POSScreen() {
       ? Math.round((deliveryRevenueCents * (taxRateBps ?? 0)) / 10_000)
       : 0;
   const taxCents = merchandiseTaxCents + deliveryTaxCents;
-  const estimatedTotalCents = subtotalCents + deliveryRevenueCents + taxCents;
+  const estimatedTotalCents = discountedSubtotalCents + deliveryRevenueCents + taxCents;
   const deliveryDetailsValid = !deliveryEnabled || (
     deliveryAddress.trim().length > 0 &&
     vendorFee.trim().length > 0 &&
@@ -236,10 +247,11 @@ export default function POSScreen() {
       productId: line.product._id,
       quantityGrams: line.quantityGrams,
     })),
+    ...(discountAmountCents > 0 ? { discountAmountCents } : {}),
     ...(deliveryEnabled
       ? { delivery: { vendorFeeCents, chargeCustomer: chargeDeliveryToCustomer } }
       : {}),
-  }), [cart, chargeDeliveryToCustomer, customer, deliveryEnabled, vendorFeeCents]);
+  }), [cart, chargeDeliveryToCustomer, customer, deliveryEnabled, discountAmountCents, vendorFeeCents]);
   const checkoutQuote = useQuery(
     api.checkout.quoteCheckout,
     isOnline && cart.length > 0 && deliveryDetailsValid ? quoteArgs : "skip",
@@ -313,6 +325,7 @@ export default function POSScreen() {
         onPress: () => {
           setCheckoutOrderNumber(null);
           setCart([]);
+          setDiscountDollars("");
           void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           triggerFeedback("Cart cleared");
         },
@@ -461,6 +474,7 @@ export default function POSScreen() {
           })),
           paymentMethod: tender,
           amountPaidCents,
+          discountAmountCents: discountAmountCents > 0 ? discountAmountCents : undefined,
           delivery: deliveryEnabled
             ? {
                 address: deliveryAddress.trim(),
@@ -521,6 +535,7 @@ export default function POSScreen() {
       }
       setCart([]);
       setCustomer(null);
+      setDiscountDollars("");
       setCashReceived("");
       setCheckoutOpen(false);
       setDeliveryEnabled(false);
@@ -768,6 +783,12 @@ export default function POSScreen() {
             : "Select customer or checkout"}
         </Text>
       </TouchableOpacity>
+      {discountAmountCents > 0 ? (
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryDiscountLabel}>Discount</Text>
+          <Text style={styles.summaryDiscountValue}>−{money(discountAmountCents)}</Text>
+        </View>
+      ) : null}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>{isOnline && !checkoutQuote ? "Preview" : "Total"}</Text>
         <Text style={styles.total}>{money(displayedTotalCents)}</Text>
@@ -850,6 +871,82 @@ export default function POSScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+            <View style={styles.discountSection}>
+              <View style={styles.discountHeaderRow}>
+                <Text style={styles.modalLabel}>Discount</Text>
+                {discountAmountCents > 0 ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setDiscountDollars("");
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Text style={styles.clearDiscountText}>Remove</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              <View style={styles.discountPresets}>
+                {[5, 10, 15].map((amt) => (
+                  <TouchableOpacity
+                    key={amt}
+                    style={[
+                      styles.discountPresetBtn,
+                      discountDollars === String(amt) && styles.discountPresetBtnActive,
+                    ]}
+                    onPress={() => {
+                      setDiscountDollars(String(amt));
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Text style={styles.discountPresetText}>${amt}</Text>
+                  </TouchableOpacity>
+                ))}
+                {subtotalCents > 0 ? (
+                  <>
+                    <TouchableOpacity
+                      style={[
+                        styles.discountPresetBtn,
+                        discountDollars === (subtotalCents * 0.1 / 100).toFixed(2) &&
+                          styles.discountPresetBtnActive,
+                      ]}
+                      onPress={() => {
+                        setDiscountDollars((subtotalCents * 0.1 / 100).toFixed(2));
+                        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }}
+                    >
+                      <Text style={styles.discountPresetText}>10%</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.discountPresetBtn,
+                        discountDollars === (subtotalCents * 0.2 / 100).toFixed(2) &&
+                          styles.discountPresetBtnActive,
+                      ]}
+                      onPress={() => {
+                        setDiscountDollars((subtotalCents * 0.2 / 100).toFixed(2));
+                        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }}
+                    >
+                      <Text style={styles.discountPresetText}>20%</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : null}
+              </View>
+              <TextInput
+                style={styles.discountInput}
+                value={discountDollars}
+                onChangeText={setDiscountDollars}
+                placeholder="Custom discount ($)"
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="decimal-pad"
+                accessibilityLabel="Discount amount in dollars"
+              />
+              {discountAmountCents > 0 ? (
+                <Text style={styles.discountAppliedNotice}>
+                  −{money(discountAmountCents)} applied to order
+                </Text>
+              ) : null}
+            </View>
             <Text style={styles.modalLabel}>Payment</Text>
             {customer ? (
               <Text style={styles.loyaltyNotice}>
@@ -1326,6 +1423,73 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.xs,
     lineHeight: 18,
     marginBottom: SPACING.md,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: SPACING.xs,
+  },
+  summaryDiscountLabel: {
+    color: COLORS.success,
+    fontSize: FONT_SIZES.sm,
+    fontWeight: "600",
+  },
+  summaryDiscountValue: {
+    color: COLORS.success,
+    fontSize: FONT_SIZES.sm,
+    fontWeight: "700",
+  },
+  discountSection: {
+    marginBottom: SPACING.md,
+  },
+  discountHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  clearDiscountText: {
+    color: COLORS.error,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "700",
+    marginTop: SPACING.lg,
+  },
+  discountPresets: {
+    flexDirection: "row",
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm,
+  },
+  discountPresetBtn: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.sm,
+    paddingVertical: SPACING.sm,
+  },
+  discountPresetBtnActive: {
+    borderColor: COLORS.accent,
+    backgroundColor: COLORS.accent + "20",
+  },
+  discountPresetText: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "700",
+  },
+  discountInput: {
+    backgroundColor: COLORS.surfaceLight,
+    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    color: COLORS.text,
+    minHeight: 44,
+    padding: SPACING.md,
+  },
+  discountAppliedNotice: {
+    color: COLORS.success,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: "600",
+    marginTop: SPACING.xs,
   },
   cancel: { alignItems: "center", paddingTop: SPACING.md },
   cancelText: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm },

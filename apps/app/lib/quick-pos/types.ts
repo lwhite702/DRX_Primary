@@ -51,11 +51,17 @@ export interface QuickPosSessionState {
   lastReceipt: QuickPosReceiptOption | null;
 }
 
+export interface QuickPosDiscountState {
+  amountCents: number;
+  reason?: string;
+}
+
 export interface QuickPosState {
   cartItems: QuickPosCartItem[];
   customer: QuickPosCustomer;
   payment: QuickPosPaymentState;
   delivery: QuickPosDeliveryState;
+  discount: QuickPosDiscountState;
   ui: QuickPosUiState;
   session: QuickPosSessionState;
   creditPolicyEnabled: boolean;
@@ -75,6 +81,8 @@ export interface QuickPosCheckoutRequest {
     creditConfirmed: boolean;
   };
   delivery?: QuickPosDeliveryState;
+  discountAmountCents?: number;
+  discountReason?: string;
   items: QuickPosCartItem[];
 }
 

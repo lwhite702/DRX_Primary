@@ -42,6 +42,10 @@ const initialState: QuickPosState = {
     feeAllocation: "charge_customer",
     feeTaxable: false,
   },
+  discount: {
+    amountCents: 0,
+    reason: undefined,
+  },
   ui: {
     search: "",
     exitDialogOpen: false,
@@ -72,6 +76,8 @@ type Action =
   | { type: "set_credit_confirmed"; payload: boolean }
   | { type: "set_delivery"; payload: QuickPosDeliveryState }
   | { type: "set_delivery_fee_taxable"; payload: boolean }
+  | { type: "set_discount"; payload: { amountCents: number; reason?: string } }
+  | { type: "clear_discount" }
   | { type: "set_processing"; payload: boolean }
   | { type: "set_error"; payload: string | null }
   | { type: "set_success"; payload: string | null }
@@ -93,6 +99,7 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
         customer: { ...initialState.customer, ...action.payload.customer },
         payment: { ...initialState.payment, ...action.payload.payment },
         delivery: { ...initialState.delivery, ...action.payload.delivery },
+        discount: { ...initialState.discount, ...action.payload.discount },
         ui: { ...initialState.ui, ...action.payload.ui },
         session: { ...initialState.session, ...action.payload.session },
       };
@@ -162,6 +169,16 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
         ...state,
         delivery: { ...state.delivery, feeTaxable: action.payload },
       };
+    case "set_discount":
+      return {
+        ...state,
+        discount: action.payload,
+      };
+    case "clear_discount":
+      return {
+        ...state,
+        discount: { amountCents: 0, reason: undefined },
+      };
     case "set_processing":
       return { ...state, ui: { ...state.ui, processing: action.payload } };
     case "set_error":
@@ -225,6 +242,8 @@ interface QuickPosStore {
   setCreditConfirmed: (value: boolean) => void;
   setDelivery: (delivery: QuickPosDeliveryState) => void;
   setDeliveryFeeTaxable: (feeTaxable: boolean) => void;
+  setDiscount: (amountCents: number, reason?: string) => void;
+  clearDiscount: () => void;
   setProcessing: (value: boolean) => void;
   setError: (value: string | null) => void;
   setSuccess: (value: string | null) => void;
@@ -278,6 +297,15 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       dispatch({ type: "set_delivery_fee_taxable", payload: feeTaxable }),
     [],
   );
+  const setDiscount = useCallback(
+    (amountCents: number, reason?: string) =>
+      dispatch({ type: "set_discount", payload: { amountCents, reason } }),
+    [],
+  );
+  const clearDiscount = useCallback(
+    () => dispatch({ type: "clear_discount" }),
+    [],
+  );
   const setProcessing = useCallback((value: boolean) => dispatch({ type: "set_processing", payload: value }), []);
   const setError = useCallback((value: string | null) => dispatch({ type: "set_error", payload: value }), []);
   const setSuccess = useCallback((value: string | null) => dispatch({ type: "set_success", payload: value }), []);
@@ -316,6 +344,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setCreditConfirmed,
       setDelivery,
       setDeliveryFeeTaxable,
+      setDiscount,
+      clearDiscount,
       setProcessing,
       setError,
       setSuccess,
@@ -342,6 +372,8 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       setCreditConfirmed,
       setDelivery,
       setDeliveryFeeTaxable,
+      setDiscount,
+      clearDiscount,
       setProcessing,
       setError,
       setSuccess,

@@ -16,6 +16,9 @@ const baseState: QuickPosState = {
     feeAllocation: "charge_customer",
     feeTaxable: false,
   },
+  discount: {
+    amountCents: 0,
+  },
   ui: { search: "", exitDialogOpen: false, processing: false, hardError: null, successMessage: null },
   session: {
     lastSaleId: null,
@@ -31,6 +34,20 @@ describe("quick pos selectors", () => {
   it("calculates totals", () => {
     expect(getSubtotal(baseState)).toBe(13);
     expect(getTotal(baseState)).toBe(13);
+  });
+
+  it("applies discounts to total", () => {
+    const discounted = {
+      ...baseState,
+      discount: { amountCents: 300 }, // $3.00 off $13.00
+    };
+    expect(getTotal(discounted)).toBe(10);
+
+    const clamped = {
+      ...baseState,
+      discount: { amountCents: 2000 }, // $20.00 off $13.00 -> 0
+    };
+    expect(getTotal(clamped)).toBe(0);
   });
 
   it("enforces credit eligibility", () => {

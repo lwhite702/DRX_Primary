@@ -21,7 +21,7 @@ import {
 export default function InventoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const products = useQuery(api.products.listProducts);
+  const products = useQuery(api.products.listProducts, {});
   const low = (products ?? []).filter(
     (p) =>
       p.quantityOnHandGrams > 0 && p.quantityOnHandGrams <= p.reorderLevelGrams,

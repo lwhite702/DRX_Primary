@@ -752,6 +752,15 @@ function WorkspaceReady({
 }: {
   summary: import("../_actions").OnboardingSummary;
 }) {
+  useEffect(() => {
+    try {
+      window.localStorage?.setItem("drx_onboarding_complete", "true");
+      window.localStorage?.removeItem(ONBOARDING_DRAFT_KEY);
+    } catch {
+      /* Browser storage unavailable or blocked */
+    }
+  }, []);
+
   const service = summary.businessType === "service";
   const actions = service
     ? [
@@ -827,12 +836,15 @@ function WorkspaceReady({
         </a>
         <a
           href={actions[1].href}
-          className="rounded-full border border-white/20 px-6 py-3 text-center font-semibold text-white"
+          className="rounded-full border border-white/20 px-6 py-3 text-center font-semibold text-white transition-colors hover:bg-white/10"
         >
           {actions[1].label}
         </a>
-        <a href="/dashboard" className="px-5 py-3 text-center text-white">
-          Go to Home
+        <a
+          href="/dashboard"
+          className="rounded-full border border-accent/40 bg-accent/10 px-6 py-3 text-center font-semibold text-accent transition-colors hover:bg-accent/20"
+        >
+          Proceed to Dashboard
         </a>
       </div>
     </section>

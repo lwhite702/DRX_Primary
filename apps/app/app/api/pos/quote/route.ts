@@ -14,7 +14,14 @@ export async function POST(request: NextRequest) {
     }
     const parsed = quickPosQuotePayloadSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ success: false, error: "Invalid quote payload" }, { status: 400 });
-    const quote = await quoteCanonicalCommerce({ businessId, customerId: parsed.data.customerId, items: parsed.data.items, delivery: parsed.data.delivery });
+    const quote = await quoteCanonicalCommerce({
+      businessId,
+      customerId: parsed.data.customerId,
+      items: parsed.data.items,
+      delivery: parsed.data.delivery,
+      discountAmountCents: parsed.data.discountAmountCents,
+      discountReason: parsed.data.discountReason,
+    });
     return NextResponse.json({ success: true, quote }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return checkoutFailure(error); }
 }

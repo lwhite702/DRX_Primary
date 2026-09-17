@@ -387,4 +387,55 @@ describe("authoritative Convex checkout", () => {
       purchaseCount: 0,
     });
   });
+
+  it("applies checkout discounts across quote and settlement with tax recalculation", async () => {
+    const { owner } = await setupStore({ collectTax: true, taxRateBps: 1000 }); // 10% tax
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "DISC-1",
+      productName: "Discountable Item",
+      sellingPriceCents: 2000,
+      unitCostCents: 800,
+      isTaxable: true,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId,
+      totalWeightGrams: 5,
+      totalCostCents: 4000,
+    });
+
+    // 1 item = $20.00 base. With $5.00 discount (500 cents):
+    // discounted subtotal = $15.00 (1500 cents)
+    // 10% tax on $15.00 = $1.50 (150 cents)
+    // total = $16.50 (1650 cents)
+    const quote = await owner.query(api.checkout.quoteCheckout, {
+      items: [{ productId, quantityGrams: 1 }],
+      discountAmountCents: 500,
+    });
+
+    expect(quote.discountCents).toBe(500);
+    expect(quote.subtotalCents).toBe(2000);
+    expect(quote.taxAmountCents).toBe(150);
+    expect(quote.totalAmountCents).toBe(1650);
+
+    // Negative discount is rejected
+    await expect(
+      owner.query(api.checkout.quoteCheckout, {
+        items: [{ productId, quantityGrams: 1 }],
+        discountAmountCents: -100,
+      }),
+    ).rejects.toThrow();
+
+    // Process checkout with same discount succeeds with exact payment
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "DISCOUNTED-ORDER-1",
+      items: [{ productId, quantityGrams: 1 }],
+      discountAmountCents: 500,
+      paymentMethod: "cash",
+      amountPaidCents: 1650,
+    });
+
+    expect(checkoutResult.totalAmountCents).toBe(1650);
+    expect(checkoutResult.subtotalCents).toBe(2000);
+    expect(checkoutResult.taxAmountCents).toBe(150);
+  });
 });

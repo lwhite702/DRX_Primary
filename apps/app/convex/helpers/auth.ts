@@ -45,10 +45,12 @@ export async function findCurrentMembership(ctx: QueryCtx | MutationCtx, identit
   const preferred = await ctx.db.query("users")
     .withIndex("by_clerkUserId_and_isDefaultMembership", q => q.eq("clerkUserId", identity.subject).eq("isDefaultMembership", true)).unique();
   if (preferred) return preferred;
-  // Compatibility for existing single-business identities. Never guess after migration.
+  // Compatibility for existing single-business identities or unflagged defaults.
   const memberships = await ctx.db.query("users")
     .withIndex("by_clerkUserId", q => q.eq("clerkUserId", identity.subject)).take(2);
-  if (memberships.length > 1) throw new Error("FORBIDDEN: Select a business before continuing");
+  if (memberships.length > 1) {
+    throw new Error("FORBIDDEN: Select a business before continuing");
+  }
   return memberships[0] ?? null;
 }
 
