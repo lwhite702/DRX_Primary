@@ -15,7 +15,6 @@ import { EvidenceItem } from "./evidence-item";
 import { FaqAccordion } from "./faq-accordion";
 import { MarketingCtaBand } from "./cta-band";
 import { MarketingFooter } from "./footer";
-import { IphoneRender, BrowserRender } from "./device-renders";
 import { appWaitlistUrl } from "@/lib/app-links";
 
 const faqItems = [
@@ -266,115 +265,67 @@ export function RebuiltMarketingSections() {
           </div>
         </section>
 
-        {/* 06 Platform Availability Section with Realistic Device Renders */}
+        {/* 06 Platform Availability Section */}
         <section
           id="apps"
-          className="relative w-full py-16 md:py-20 lg:py-24 border-b border-border/40 overflow-hidden"
+          className="w-full py-16 md:py-20 lg:py-24 border-b border-border/40"
           aria-labelledby="apps-heading"
         >
-          {/* Subtle ambient lime glow */}
-          <div
-            aria-hidden="true"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[450px] bg-[radial-gradient(ellipse_at_center,rgba(204,255,0,0.06)_0%,transparent_70%)] blur-[44px] pointer-events-none"
-          />
-
-          <div className="relative z-10 mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 text-left">
+          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 text-left">
             <div className="max-w-[820px] mb-12">
               <p className="text-[14px] font-mono uppercase tracking-[0.16em] text-accent mb-2">
-                Multi-Surface Experience
+                Multi-Surface Availability
               </p>
               <h2
                 id="apps-heading"
                 className="font-display text-[28px] md:text-[34px] lg:text-[40px] font-bold leading-[36px] md:leading-[42px] lg:leading-[48px] tracking-[-0.5px] text-text-primary mb-3"
               >
-                One operation. <span className="text-accent">Whichever device you use.</span>
+                One operation. <span className="text-accent">Whichever phone you use.</span>
               </h2>
               <p className="text-[16px] md:text-[18px] font-normal leading-[28px] text-muted-foreground">
-                The same inventory, permissions, and sync state follow you across every supported iPhone, mobile browser, and desktop web surface.
+                The same business, permissions, and sync state follow you across
+                every supported mobile surface.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* Card 1: Native iOS App on iPhone */}
-              <div className="flex flex-col border border-border/70 rounded-[14px] bg-surface-elevated p-6 text-left transition-all duration-300 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
-                    Apple iOS
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded bg-accent/15 border border-accent/30 px-2 py-0.5 text-[10px] font-mono text-accent">
-                    Native App
-                  </span>
-                </div>
-                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-9">
+              <div className="border-t border-border pt-5 text-left transition-colors duration-200 hover:border-accent/40">
+                <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
+                  Apple iOS
+                </span>
+                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mt-2 mb-3">
                   Native iOS app
                 </h3>
-                <p className="text-[14px] font-normal leading-[22px] text-muted-foreground mb-6">
-                  Fast, one-handed daily work on iPhone with biometrics, camera barcode scanning, and offline interruption recovery.
+                <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
+                  Fast, one-handed daily work with biometrics, camera barcode tools, and
+                  offline interruption recovery.
                 </p>
-                <div className="mt-auto flex justify-center pt-2">
-                  <div className="w-[200px] sm:w-[220px]">
-                    <IphoneRender
-                      src="/screenshots/iphone-pos-sale.png"
-                      alt="DRX Native iOS App on iPhone"
-                      badge={{ label: "iOS Native", active: true }}
-                    />
-                  </div>
-                </div>
               </div>
 
-              {/* Card 2: Mobile Web + PWA */}
-              <div className="flex flex-col border border-border/70 rounded-[14px] bg-surface-elevated p-6 text-left transition-all duration-300 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
-                    Mobile Web
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded bg-white/10 border border-white/20 px-2 py-0.5 text-[10px] font-mono text-text-secondary">
-                    PWA Ready
-                  </span>
-                </div>
-                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mb-2">
-                  Mobile web &amp; PWA
+              <div className="border-t border-border pt-5 text-left transition-colors duration-200 hover:border-accent/40">
+                <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
+                  Google Android
+                </span>
+                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mt-2 mb-3">
+                  Android app
                 </h3>
-                <p className="text-[14px] font-normal leading-[22px] text-muted-foreground mb-6">
-                  Install directly from Safari or Chrome, or work without installation. Full operator tools anywhere you have a mobile browser.
+                <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
+                  Material-aware controls and the same complete operating
+                  workflow from start to finish.
                 </p>
-                <div className="mt-auto flex justify-center pt-2">
-                  <div className="w-[200px] sm:w-[220px]">
-                    <IphoneRender
-                      src="/screenshots/iphone-dashboard.png"
-                      alt="DRX Mobile Web & PWA on iPhone"
-                      badge={{ label: "PWA · Sync", active: true }}
-                    />
-                  </div>
-                </div>
               </div>
 
-              {/* Card 3: Desktop Web Interface */}
-              <div className="flex flex-col border border-border/70 rounded-[14px] bg-surface-elevated p-6 text-left transition-all duration-300 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
-                    Desktop Web
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded bg-accent/15 border border-accent/30 px-2 py-0.5 text-[10px] font-mono text-accent">
-                    Full Suite
-                  </span>
-                </div>
-                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mb-2">
-                  Desktop web interface
+              <div className="border-t border-border pt-5 text-left transition-colors duration-200 hover:border-accent/40">
+                <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-accent font-semibold">
+                  Web &amp; PWA
+                </span>
+                <h3 className="font-display text-[22px] font-semibold leading-[28px] tracking-[-0.1px] text-text-primary mt-2 mb-3">
+                  Mobile web + PWA
                 </h3>
-                <p className="text-[14px] font-normal leading-[22px] text-muted-foreground mb-6">
-                  High-density backroom overview, batch catalog intake, sales reporting, and multi-location tenant governance.
+                <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
+                  Install from the browser or keep working there. The app
+                  suggestion stays optional and dismissible.
                 </p>
-                <div className="mt-auto flex justify-center pt-2">
-                  <div className="w-full">
-                    <BrowserRender
-                      src="/screenshots/web-dashboard.png"
-                      alt="DRX Desktop Web Interface Dashboard"
-                      url="drx.deelrx.com/dashboard"
-                      badge={{ label: "Desktop Web", active: true }}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
