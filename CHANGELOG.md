@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-09-17
 ### Fixed
 
 - **Onboarding wizard save error and Convex schema alignment (WRE-127)**: Aligned `setupBusinessAction` and `provisionBusinessInConvex` with Convex mutation `createBusinessOnboarding` and `setupBusinessSchema` by serializing `setupJson` conforming strictly to `setupBusinessSchema` (`businessName`, `businessType`, `ownerName`, `state`, `zipCode`, enabled arrays) instead of passing an unrecognized `setup` object. Added validation in the onboarding wizard to prevent advancing with empty required fields, and surfaced actionable, sanitized error messages on failure.
