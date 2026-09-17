@@ -31,7 +31,7 @@ export function AuthShell({
   footer,
 }: AuthShellProps) {
   return (
-    <main className="relative min-h-dvh overflow-x-hidden bg-background font-sans text-foreground">
+    <main id="main-content" role="main" className="relative min-h-dvh overflow-x-hidden bg-background font-sans text-foreground">
       <div
         className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:32px_32px]"
         aria-hidden="true"

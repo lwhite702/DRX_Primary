@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Replay QA sign-in form mounting and prefetch waterfall (WRE-125)**: Corrected Clerk appearance configuration in `.app` by removing invalid `theme: shadcn` and setting standard `layout` options, fixing Clerk UI initialization and eliminating eager theme chunk bundling. Removed the redundant "Join the beta" footer link on `/login`, eliminating the serialized `/waitlist` RSC prefetch.
+- **Accessibility landmarks and consistent navigation (WRE-125)**: Added explicit `role="main"` and `id="main-content"` landmarks to `AuthShell` (WCAG 1.3.1 / 2.4.1). Standardized Terms of Use links for "Privacy Policy" and "Resources" across marketing pages (WCAG 3.2.4).
+- **Document security headers (WRE-125)**: Configured global document response security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Content-Security-Policy`) in Next.js configuration for `deelrxcrm.app`.
+
 ### Added
 
 - **Configurable Manager PIN and onboarding setup**: Replaced hardcoded POS manager PIN with configurable tenant settings and an optional onboarding setup step with authorization prompts.

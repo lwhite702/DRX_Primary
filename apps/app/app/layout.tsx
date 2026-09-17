@@ -3,30 +3,14 @@ import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { GlobalErrorBoundary } from "@/components/ui/global-error-boundary";
-import dynamic from "next/dynamic";
 import ClerkProviderWrapper from "./_components/clerk-provider-wrapper";
 import ConvexClientProvider from "./ConvexClientProvider";
+import { TelemetryProviders } from "@/components/providers/telemetry-providers";
 import {
   isAuthBypassEnabledServer,
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
-
-const PostHogProvider = dynamic(
-  () =>
-    import("@/components/providers/posthog-provider").then(
-      (mod) => mod.PostHogProvider,
-    ),
-  { ssr: false },
-);
-
-const FeaturebaseProvider = dynamic(
-  () =>
-    import("@/components/providers/featurebase-provider").then(
-      (mod) => mod.FeaturebaseProvider,
-    ),
-  { ssr: false },
-);
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -146,11 +130,10 @@ export default function RootLayout({
         >
           <ConvexClientProvider>
             <GlobalErrorBoundary>
-              <PostHogProvider>
-                <FeaturebaseProvider />
+              <TelemetryProviders>
                 {children}
                 <Toaster position="top-right" />
-              </PostHogProvider>
+              </TelemetryProviders>
             </GlobalErrorBoundary>
           </ConvexClientProvider>
         </ClerkProviderWrapper>
