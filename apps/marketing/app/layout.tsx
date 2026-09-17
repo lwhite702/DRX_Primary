@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -72,7 +77,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${plusJakarta.variable} ${geistMono.variable} font-sans bg-background text-foreground antialiased`}
+        className={`${inter.variable} ${plusJakarta.variable} ${geistMono.variable} font-sans bg-background text-foreground antialiased`}
       >
         <div className="min-h-screen flex flex-col">
           <div className="flex-1">{children}</div>

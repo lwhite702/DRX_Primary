@@ -3,6 +3,7 @@ export type MarketingEventName =
   | "click_primary_cta"
   | "click_secondary_cta"
   | "submit_waitlist"
+  | "submit_sms_consent"
   | "open_legal_page"
   | "click_product_detail"
   | "click_guide";

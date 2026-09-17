@@ -6,8 +6,8 @@ import { SectionBlock } from "@/components/marketing/site/section-block";
 import { LegalPageView } from "@/components/marketing/site/legal-page-view";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | Deelrx CRM",
-  description: "Terms governing access to Wrelik services and DRX / Deelrx CRM.",
+  title: "Terms of Service | Deelrx CRM",
+  description: "Terms governing access to Wrelik services, DRX / Deelrx CRM, and SMS communications.",
   alternates: { canonical: "/legal/terms" },
 };
 
@@ -21,13 +21,14 @@ export default function LegalTermsPage() {
       <p className="font-mono text-xs uppercase tracking-[0.22em] text-neon-lime">
         Wrelik Brands LLC
       </p>
-      <h1 className="mt-3 text-4xl font-bold text-white">Terms of Use</h1>
+      <h1 className="mt-3 text-4xl font-bold text-white">Terms of Service</h1>
       <p className="mt-4 text-sm text-text-secondary">
-        Effective August 2, 2026 · Last updated August 4, 2026
+        Effective August 2, 2026 · Last updated September 17, 2026
       </p>
       <p className="mt-3 text-sm text-text-secondary">
-        These Terms include the DRX / Deelrx CRM Terms Addendum below. The addendum forms part of
-        these Terms and controls if it conflicts with a general section.
+        These Terms of Service (also referred to as &quot;Terms &amp; Conditions&quot; or &quot;Terms of Use&quot;)
+        include the SMS Terms and the DRX / Deelrx CRM Terms Addendum below. The addendum and SMS terms
+        form part of these Terms and control if they conflict with a general section.
       </p>
 
       <SectionBlock title="1. Agreement and scope" className={sectionClassName}>
@@ -295,6 +296,58 @@ export default function LegalTermsPage() {
           Electronic notices and acceptance satisfy writing requirements to the extent permitted by
           law.
         </p>
+      </SectionBlock>
+
+      <div id="sms-terms" className="scroll-mt-24" />
+      <SectionBlock title="SMS Terms" className={sectionClassName}>
+        <p>
+          These SMS Terms govern the text messaging services operated by Wrelik Brands LLC
+          (&quot;Wrelik,&quot; &quot;we,&quot; or &quot;us&quot;) for DRX (also presented as Deelrx CRM).
+          By providing your mobile phone number and submitting your consent, you agree to these SMS Terms.
+        </p>
+        <ul className={listClassName}>
+          <li>
+            <strong className="text-white">Program Description &amp; Relevant Communications:</strong>{" "}
+            Wrelik Brands LLC and DRX (Deelrx CRM) send text messages (SMS) to operators and authorized users
+            who have opted in. Message types include relevant communications such as account verification codes,
+            operational notices, shift and balance notifications, service updates, and customer support follow-ups.
+          </li>
+          <li>
+            <strong className="text-white">Cost &amp; Rate Disclosure:</strong>{" "}
+            As with all mobile messaging, message and data rates may apply for any messages sent to you from us
+            and to us from you. Depending on your text plan, you may be charged by your wireless carrier.
+          </li>
+          <li>
+            <strong className="text-white">Message Frequency:</strong>{" "}
+            Message frequency varies based on your account activity, system alerts, and interactions with support.
+          </li>
+          <li>
+            <strong className="text-white">Cancellation &amp; Opt-Out (STOP):</strong>{" "}
+            You can cancel the SMS service at any time. Simply text <strong className="text-white">STOP</strong> to
+            opt out. After you send the SMS message STOP to us, we will send you an SMS message to confirm that you
+            have been unsubscribed. After this, you will no longer receive SMS messages from us. If you wish to join
+            again, sign up as you did the first time, and we will resume sending SMS messages to you.
+          </li>
+          <li>
+            <strong className="text-white">Support &amp; Help (HELP):</strong>{" "}
+            If you are experiencing issues with the messaging program you can reply with the keyword{" "}
+            <strong className="text-white">HELP</strong> for more assistance, or contact us directly at{" "}
+            <a className="text-neon-lime hover:underline" href="mailto:support@deelrxcrm.com">
+              support@deelrxcrm.com
+            </a>.
+          </li>
+          <li>
+            <strong className="text-white">Carrier Disclaimer:</strong>{" "}
+            Carriers and wireless service providers are not liable for delayed or undelivered messages.
+          </li>
+          <li>
+            <strong className="text-white">Privacy:</strong>{" "}
+            We respect your privacy. As stated in our{" "}
+            <Link className="text-neon-lime hover:underline" href="/legal/privacy">
+              Privacy Policy
+            </Link>, we do not sell or share your SMS opt-in data or personal information with third parties for marketing purposes.
+          </li>
+        </ul>
       </SectionBlock>
 
       <SectionBlock title="19. Contact" className={sectionClassName}>
