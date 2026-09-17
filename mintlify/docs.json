@@ -38,8 +38,8 @@
   "navbar": {
     "links": [
       { "label": "Product", "href": "https://deelrxcrm.com" },
-      { "label": "Feedback", "href": "https://drx.featurebase.app" },
-      { "label": "Roadmap", "href": "https://drx.featurebase.app/roadmap" }
+      { "label": "Help & Support", "href": "/start/help-and-support" },
+      { "label": "Changelog", "href": "/CHANGELOG" }
     ],
     "primary": {
       "type": "button",
@@ -77,16 +77,16 @@
             "href": "/start/get-started-with-drx"
           },
           {
-            "label": "Feedback",
-            "href": "https://drx.featurebase.app"
-          },
-          {
-            "label": "Roadmap",
-            "href": "https://drx.featurebase.app/roadmap"
+            "label": "Help & Support",
+            "href": "/start/help-and-support"
           },
           {
             "label": "Changelog",
-            "href": "https://drx.featurebase.app/changelog"
+            "href": "/CHANGELOG"
+          },
+          {
+            "label": "Waitlist",
+            "href": "https://deelrxcrm.com/waitlist"
           }
         ]
       },

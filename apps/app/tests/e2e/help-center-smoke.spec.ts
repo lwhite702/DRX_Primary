@@ -67,7 +67,7 @@ test.describe("Help center smoke", () => {
 
     await page.goto("/help/library?topic=start", { waitUntil: "domcontentloaded" });
     await expectRouteShell(page);
-    await expect(page.getByTestId("featurebase-help-embed")).toBeVisible();
+    await expect(page.getByTestId("docs-library-embed")).toBeVisible();
 
     await page.goto("/feedback?topic=sell", { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/help\/library(?:\?|$)/);

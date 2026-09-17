@@ -1,3 +1,12 @@
-export const featurebaseHelpdeskUrl = "https://drx.featurebase.app/en/help";
-export const featurebaseChangelogUrl = "https://drx.featurebase.app/changelog";
-export const featurebaseRoadmapUrl = "https://drx.featurebase.app/roadmap";
+export const docsHubUrl = "https://docs.deelrxcrm.com";
+export const docsHelpdeskUrl = "https://docs.deelrxcrm.com/start/help-and-support";
+export const docsChangelogUrl = "https://docs.deelrxcrm.com/CHANGELOG";
+export const docsRoadmapUrl = "https://docs.deelrxcrm.com/CHANGELOG";
+
+/** @deprecated Use docsHelpdeskUrl */
+export const featurebaseHelpdeskUrl = docsHelpdeskUrl;
+/** @deprecated Use docsChangelogUrl */
+export const featurebaseChangelogUrl = docsChangelogUrl;
+/** @deprecated Use docsRoadmapUrl */
+export const featurebaseRoadmapUrl = docsRoadmapUrl;
+

@@ -1,53 +1,39 @@
 "use client";
 
 import { useEffect } from "react";
-
-type SentryFeedback = {
-  createWidget: () => void;
-};
-
-type SentryBrowserClient = {
-  getFeedback?: () => SentryFeedback | null;
-};
-
-function getSentryFeedback(): SentryFeedback | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  const sentry = (window as Window & { Sentry?: SentryBrowserClient }).Sentry;
-  return sentry?.getFeedback?.() ?? null;
-}
+import {
+  getSentryFeedbackClient,
+  openSentryFeedbackDialog,
+  type SentryFeedbackFormOptions,
+} from "@/lib/sentry/feedback";
 
 /**
  * Feedback Widget
  *
  * Provides a user-friendly bug reporting interface that integrates
- * with error tracking via @wrelik/errors
+ * with Sentry error and feedback tracking.
  */
 export function SentryFeedbackWidget() {
   useEffect(() => {
-    // Initialize feedback widget
-    const feedback = getSentryFeedback();
-
-    if (feedback) {
-      console.log("✅ Feedback widget initialized");
+    const feedback = getSentryFeedbackClient();
+    if (feedback && process.env.NODE_ENV !== "production") {
+      console.log("[feedback] Sentry feedback client ready");
     }
   }, []);
 
-  return null; // This component doesn't render anything
+  return null;
 }
 
 /**
  * Hook to trigger the feedback dialog
  */
 export function useSentryFeedback() {
-  const openFeedback = () => {
-    const feedback = getSentryFeedback();
-    if (feedback) {
-      feedback.createWidget();
-    } else {
-      console.warn("Feedback widget not available");
+  const openFeedback = async (options?: SentryFeedbackFormOptions) => {
+    const opened = await openSentryFeedbackDialog(options);
+    if (!opened) {
+      console.warn("[feedback] Sentry feedback widget not available");
     }
+    return opened;
   };
 
   return { openFeedback };

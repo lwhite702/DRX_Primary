@@ -11,19 +11,6 @@ const PostHogProvider = dynamic(
   { ssr: false },
 );
 
-const FeaturebaseProvider = dynamic(
-  () =>
-    import("@/components/providers/featurebase-provider").then(
-      (mod) => mod.FeaturebaseProvider,
-    ),
-  { ssr: false },
-);
-
 export function TelemetryProviders({ children }: { children: React.ReactNode }) {
-  return (
-    <PostHogProvider>
-      <FeaturebaseProvider />
-      {children}
-    </PostHogProvider>
-  );
+  return <PostHogProvider>{children}</PostHogProvider>;
 }

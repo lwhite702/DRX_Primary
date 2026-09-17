@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { openFeedbackWithFallback } from "@/lib/feedback";
+import {
+  getSentryFeedbackClient,
+  openSentryFeedbackDialog,
+  type SentryFeedbackClient,
+} from "@/lib/sentry/feedback";
 
 interface FeedbackButtonProps {
   children: React.ReactNode;
@@ -12,25 +17,6 @@ interface FeedbackButtonProps {
   placeholder?: string;
 }
 
-type SentryFeedback = {
-  createForm: (options: {
-    messagePlaceholder?: string;
-    tags?: Record<string, string>;
-  }) => Promise<{ appendToDom: () => void; open: () => void }>;
-};
-
-type SentryBrowserClient = {
-  getFeedback?: () => SentryFeedback | null;
-};
-
-function getSentryFeedback(): SentryFeedback | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  const sentry = (window as Window & { Sentry?: SentryBrowserClient }).Sentry;
-  return sentry?.getFeedback?.() ?? null;
-}
-
 export function SentryFeedbackButton({
   children,
   asChild = false,
@@ -38,25 +24,22 @@ export function SentryFeedbackButton({
   source = "unknown",
   placeholder = "How can we improve your experience?",
 }: FeedbackButtonProps) {
-  const [feedback, setFeedback] = useState<SentryFeedback | null>(null);
+  const [feedback, setFeedback] = useState<SentryFeedbackClient | null>(null);
 
   useEffect(() => {
-    const fb = getSentryFeedback();
-    setFeedback(fb);
+    setFeedback(getSentryFeedbackClient());
   }, []);
 
   const handleClick = async () => {
-    const currentFeedback = feedback ?? getSentryFeedback();
+    const currentFeedback = feedback ?? getSentryFeedbackClient();
     await openFeedbackWithFallback(
       currentFeedback
         ? async () => {
-          const form = await currentFeedback.createForm({
-            messagePlaceholder: placeholder,
-            tags: { "feedback.source": source },
-          });
-          form.appendToDom();
-          form.open();
-        }
+            await openSentryFeedbackDialog({
+              messagePlaceholder: placeholder,
+              source,
+            });
+          }
         : null,
     );
   };

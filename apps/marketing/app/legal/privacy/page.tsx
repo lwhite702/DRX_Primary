@@ -149,9 +149,8 @@ export default function LegalPrivacyPage() {
           <li><strong className="text-white">Convex</strong> for the operational application backend and database;</li>
           <li><strong className="text-white">Vercel</strong> for web hosting and application delivery;</li>
           <li><strong className="text-white">Expo and Google</strong> for mobile build, distribution, device services, and push notifications;</li>
-          <li><strong className="text-white">PostHog</strong> for product analytics, with mobile session replay disabled;</li>
-          <li><strong className="text-white">Sentry</strong> for crash, error, and performance diagnostics; and</li>
-          <li><strong className="text-white">Featurebase</strong> when a user opens the feedback and roadmap experience.</li>
+          <li><strong className="text-white">PostHog</strong> for product analytics, with mobile session replay disabled; and</li>
+          <li><strong className="text-white">Sentry</strong> for crash, error, and performance diagnostics, as well as user-initiated in-app feedback.</li>
         </ul>
         <p>We may also disclose information:</p>
         <ul className={listClassName}>

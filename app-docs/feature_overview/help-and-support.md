@@ -16,7 +16,7 @@ Screenshots can expose names, addresses, balances, and other records. Crop and r
 
 ## Share product feedback
 
-Use [DRX feedback](https://drx.featurebase.app) for general ideas. Do not post account problems, customer records, private transaction details, or security reports there. Public roadmap entries are plans, not proof that a feature is available to your account.
+Use the in-app feedback trigger or email [DRX support](mailto:support@deelrxcrm.com) for ideas and suggestions. Do not share account credentials, customer records, private transaction details, or security reports in feedback submissions.
 
 ## Check device availability
 
