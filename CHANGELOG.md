@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Replay QA ownership verification (WRE-124)**: Serve the public nonce as plain text at the fixed well-known path without authentication or onboarding redirects.
+
 ### Added
 
 - **Mobile internal testing companion**: Added a private-index guided web checklist for authorized iOS and Android testers with made-up-data safeguards, a broad phone and tablet picker, a dedicated first-time onboarding test, step-by-step transaction help, responsive progress controls, automatic local save-and-return, and local-only copy/download reporting. Every tester is also guided through a required phone-browser parity pass on the same device. Refreshed the public Resources page around current app, testing, help, privacy, and terms destinations (WRE-49).

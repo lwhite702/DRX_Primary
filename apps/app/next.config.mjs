@@ -19,7 +19,10 @@ const withPWA = withPWAInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
-    return [{ source: "/control/:path*", headers: [
+    return [{
+      source: "/.well-known/replay-qa-security-nonce",
+      headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }],
+    }, { source: "/control/:path*", headers: [
       { key: "Cache-Control", value: "private, no-store" },
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
       { key: "Referrer-Policy", value: "no-referrer" },

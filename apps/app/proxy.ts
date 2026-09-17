@@ -256,7 +256,8 @@ export const proxy = (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlew
 export const config = {
   matcher: [
     "/(login|register|sign-in|sign-up|sso-callback)(.*)",
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Ownership verification must bypass Clerk and onboarding redirects entirely.
+    "/((?!\\.well-known/replay-qa-security-nonce$|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };
