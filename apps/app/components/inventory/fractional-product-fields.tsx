@@ -132,8 +132,9 @@ export function FractionalProductFields({
             value={dollars}
             onChange={(e) => {
               setDollars(e.target.value);
+              const parsed = parsePresetInput(e.target.value).filter((n) => !Number.isNaN(n));
               update({
-                suggestedDollarAmounts: parsePresetInput(e.target.value),
+                suggestedDollarAmounts: parsed,
               });
             }}
           />
@@ -174,7 +175,8 @@ export function FractionalProductFields({
             value={quantities}
             onChange={(e) => {
               setQuantities(e.target.value);
-              update({ suggestedQuantities: parsePresetInput(e.target.value) });
+              const parsed = parsePresetInput(e.target.value).filter((n) => !Number.isNaN(n));
+              update({ suggestedQuantities: parsed });
             }}
           />
           <div className="flex flex-wrap items-center gap-1.5 pt-1">

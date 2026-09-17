@@ -27,6 +27,8 @@ interface InventoryFormProps {
   businessId: string;
   onSuccess: (data: Inventory) => Promise<string | void>;
   onCancel: () => void;
+  onArchive?: (item: Inventory) => Promise<void> | void;
+  onReactivate?: (item: Inventory) => Promise<void> | void;
   isFirstProduct?: boolean;
 }
 
@@ -50,6 +52,8 @@ export function InventoryForm({
   businessId,
   onSuccess,
   onCancel,
+  onArchive,
+  onReactivate,
   isFirstProduct = false,
 }: InventoryFormProps) {
   const {
@@ -792,27 +796,56 @@ export function InventoryForm({
             )}
           </>
         ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              className="border-white/10 hover:bg-white/5"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-accent text-black hover:bg-accent/90"
-            >
-              {isSubmitting
-                ? "Saving..."
-                : initialData?.id
-                  ? "Update Product"
-                  : "Add Product"}
-            </Button>
-          </>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              {initialData?.id && (
+                initialData.is_active === false ? (
+                  onReactivate && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => onReactivate(initialData)}
+                      className="border-accent/30 text-accent hover:bg-accent/10"
+                    >
+                      Reactivate Product
+                    </Button>
+                  )
+                ) : (
+                  onArchive && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => onArchive(initialData)}
+                      className="border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
+                    >
+                      Archive Product
+                    </Button>
+                  )
+                )
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="border-white/10 hover:bg-white/5"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-accent text-black hover:bg-accent/90"
+              >
+                {isSubmitting
+                  ? "Saving..."
+                  : initialData?.id
+                    ? "Update Product"
+                    : "Add Product"}
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </form>

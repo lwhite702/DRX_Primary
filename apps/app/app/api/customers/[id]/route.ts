@@ -59,6 +59,7 @@ function providedCustomerFields(body: Record<string, unknown>): string[] {
       "fixed_price_per_gram",
       body.fixedPricePerGram ?? body.fixed_price_per_gram,
     ],
+    ["credit_limit", body.creditLimit ?? body.credit_limit],
     ["ephemeral", body.ephemeral],
     ["is_active", body.isActive ?? body.is_active],
   ] as const;
@@ -102,6 +103,7 @@ export async function GET(
 
     const customer = await db.customers.findFirst({
       where: { id: customerId, businessId },
+      include: { creditLimits: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
 
     if (!customer) {
@@ -241,6 +243,7 @@ async function handleUpdate(request: NextRequest, customerId: string) {
 
     const customer = await db.customers.findFirst({
       where: { id: customerId, businessId },
+      include: { creditLimits: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
 
     if (!customer) {
@@ -271,6 +274,11 @@ async function handleUpdate(request: NextRequest, customerId: string) {
     const incomingEphemeralDays = parseEphemeralRetentionDays(
       body.ephemeral_retention_days ?? body.ephemeralRetentionDays,
     );
+    const rawCreditLimit = body.creditLimit ?? body.credit_limit;
+    const incomingCreditLimit =
+      rawCreditLimit !== undefined && rawCreditLimit !== null && rawCreditLimit !== ""
+        ? parseNumeric(rawCreditLimit)
+        : undefined;
 
     if (blockedByPrivacy(privacyProtocol, "alias", incomingAlias)) {
       return NextResponse.json(
@@ -438,7 +446,28 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       changedFields: providedCustomerFields(body),
     });
 
-    return NextResponse.json(await mapResponse(updated));
+    // Persist credit limit change if operator supplied one
+    if (incomingCreditLimit !== undefined && Number.isFinite(incomingCreditLimit)) {
+      const existingLimit = customer.creditLimits?.[0];
+      if (existingLimit) {
+        await db.creditLimit.update({
+          where: { id: existingLimit.id },
+          data: { maxCreditLimit: incomingCreditLimit, updatedAt: new Date() },
+        });
+      } else {
+        await db.creditLimit.create({
+          data: { businessId, customerId, maxCreditLimit: incomingCreditLimit },
+        });
+      }
+    }
+
+    // Re-fetch with creditLimits so the normalizer returns the real max
+    const withCredit = await db.customers.findFirst({
+      where: { id: customerId },
+      include: { creditLimits: { orderBy: { createdAt: "desc" }, take: 1 } },
+    });
+
+    return NextResponse.json(await mapResponse(withCredit ?? updated));
   } catch (error) {
     if (error instanceof CustomerConflictError) {
       return NextResponse.json(

@@ -20,12 +20,13 @@ export async function GET(request: NextRequest) {
     let cursor: string | null = params.get("cursor");
     let skipped = 0;
     let isDone = false;
-    const data: ReturnType<typeof catalogResponse>[] = [];
+    const status = params.get("status") || undefined;
+    const data: Awaited<ReturnType<typeof catalogResponse>>[] = [];
     // Keep the existing offset/search contract while reading bounded Convex pages.
     // Cursor callers can continue without rereading earlier records.
     do {
       const result: FunctionReturnType<typeof api.products.listCatalogPage> = await client.query(api.products.listCatalogPage, {
-        businessId, paginationOpts: { numItems: Math.min(200, limit - data.length), cursor },
+        businessId, paginationOpts: { numItems: Math.min(200, limit - data.length), cursor }, status,
       });
       for (const product of result.page) {
         if (search && !product.productName.toLowerCase().includes(search) && !product.sku.toLowerCase().includes(search)) continue;

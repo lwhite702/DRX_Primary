@@ -160,6 +160,7 @@ export async function GET(request: NextRequest) {
                 : 50,
               skip: Number.isFinite(offset) ? Math.max(offset, 0) : 0,
               orderBy: { createdAt: "desc" },
+              include: { creditLimits: { orderBy: { createdAt: "desc" }, take: 1 } },
             });
 
             return Promise.all(

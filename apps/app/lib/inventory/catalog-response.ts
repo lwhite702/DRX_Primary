@@ -10,6 +10,8 @@ export function catalogResponse(product: FunctionReturnType<typeof api.products.
           unitCost: product.unitCostCents / 100, sellingPrice: product.sellingPriceCents / 100,
           unitOfMeasure: product.sellingUnit, baseUnit: product.sellingUnit,
           allowFractionalWeight: product.allowFractionalWeight,
+          isActive: product.isActive,
+          is_active: product.isActive,
           createdAt: new Date(product.createdAt).toISOString(), updatedAt: new Date(product.updatedAt).toISOString(),
   };
 }
