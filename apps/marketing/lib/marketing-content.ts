@@ -1,4 +1,4 @@
-import { drxAudience } from "@/lib/feature-canon";
+import { drxAudience } from "./feature-canon";
 import { drxContent } from "@deelrx/content";
 
 export type HeroContent = {
@@ -114,7 +114,7 @@ export const marketingContent = {
     resourceLinks: [
       { label: "Getting Started", href: "/resources/guides" },
       { label: "Product Updates", href: "/resources/changelog" },
-      { label: "Help", href: "/resources" },
+      { label: "Resources", href: "/resources" },
     ],
     contact: "support@deelrxcrm.com",
     legalLinks: [

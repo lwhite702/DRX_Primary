@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignIn } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
@@ -23,17 +22,6 @@ export default async function LoginPage() {
     <AuthShell
       eyebrow="Operator access"
       description="Sign in to open your business."
-      footer={
-        <p className="text-center text-sm leading-6 text-[#B8B8B8]">
-          New to Deelrx?{" "}
-          <Link
-            className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            href="/waitlist"
-          >
-            Join the beta
-          </Link>
-        </p>
-      }
     >
       {useVisualFixture ? (
         <AuthVisualFixture mode="sign-in" />

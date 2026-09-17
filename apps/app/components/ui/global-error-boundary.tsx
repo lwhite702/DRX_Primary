@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { openFeedbackWithFallback } from "@/lib/feedback";
+import { openSentryFeedbackDialog } from "@/lib/sentry/feedback";
 
 interface Props {
   children: React.ReactNode;
@@ -65,10 +66,15 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
   }
 
   handleReportBug = () => {
-    const feedback = getSentryClient()?.getFeedback?.();
-    void openFeedbackWithFallback(
-      feedback ? () => feedback.createWidget() : null,
-    );
+    void openFeedbackWithFallback(async () => {
+      const opened = await openSentryFeedbackDialog({
+        messagePlaceholder: "What happened when the error occurred?",
+        source: "global_error_boundary",
+      });
+      if (!opened) {
+        throw new Error("Sentry feedback not available");
+      }
+    });
   };
 
   handleReset = () => {

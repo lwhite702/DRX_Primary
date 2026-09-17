@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Replay QA sign-in form mounting and prefetch waterfall (WRE-125)**: Corrected Clerk appearance configuration in `.app` by removing invalid `theme: shadcn` and setting standard `layout` options, fixing Clerk UI initialization and eliminating eager theme chunk bundling. Removed the redundant "Join the beta" footer link on `/login`, eliminating the serialized `/waitlist` RSC prefetch.
+- **Accessibility landmarks and consistent navigation (WRE-125)**: Added explicit `role="main"` and `id="main-content"` landmarks to `AuthShell` (WCAG 1.3.1 / 2.4.1). Standardized Terms of Use links for "Privacy Policy" and "Resources" across marketing pages (WCAG 3.2.4).
+- **Document security headers (WRE-125)**: Configured global document response security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Content-Security-Policy`) in Next.js configuration for `deelrxcrm.app`.
+- **Featurebase SDK removal and Mintlify canonical documentation (WRE-126)**: Retired `FeaturebaseProvider` and external SDK scripts, replaced `/api/featurebase/auth` with `410 Gone`, and routed all documentation, roadmap, and changelog navigation to canonical Mintlify guides at `https://docs.deelrxcrm.com`.
+- **Sentry in-app User Feedback and client observability (WRE-126)**: Configured Sentry `feedbackSyncIntegration` with brand dark theme, screenshot support, and wired feedback dialog triggers across navigation and global error boundaries with Mintlify fallback.
+
 ### Added
+
+- **Replay QA ownership verification (WRE-124)**: Serve the public verification nonce as plain text at its fixed well-known path, exempting only that path from authentication and onboarding redirects.
 
 - **Configurable Manager PIN and onboarding setup**: Replaced hardcoded POS manager PIN with configurable tenant settings and an optional onboarding setup step with authorization prompts.
 - **Production readiness and error boundary resilience**: Added route-level POS sale error boundaries, Sentry exception reporting on root error recovery, structured JSON logging for reporting endpoints, and strict payload schemas for inventory adjustments and checkout calculations.

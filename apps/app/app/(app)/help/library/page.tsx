@@ -24,10 +24,10 @@ export default async function HelpLibraryPage({ searchParams }: HelpLibraryPageP
 
   return (
     <HelpPageShell
-      title="Knowledge Library"
-      description="Featurebase-powered long-form docs connected to your task context."
+      title="Documentation & Guides"
+      description="Comprehensive retail guides, procedures, and troubleshooting connected to your task context."
       topic={topic}
-      badge="Featurebase"
+      badge="Documentation"
     >
       <Card>
         <CardHeader>

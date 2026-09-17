@@ -100,4 +100,10 @@ describe("Clerk authentication appearance", () => {
     expect(focusRule).toContain("background-color: #2c2c2c !important;");
     expect(placeholderRule).toContain("color: #b3b3b3 !important;");
   });
+
+  it("defines standard layout options without invalid theme properties", () => {
+    expect("theme" in drxClerkAuthAppearance).toBe(false);
+    expect(drxClerkAuthAppearance.layout.socialButtonsPlacement).toBe("bottom");
+    expect(drxClerkAuthAppearance.layout.showOptionalFields).toBe(false);
+  });
 });

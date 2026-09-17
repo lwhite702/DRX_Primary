@@ -9,7 +9,7 @@ describe("Error and fallback states", () => {
       digest: "ERR_CONVEX_9981",
     });
     render(<GlobalError error={errorWithDigest} />);
-    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.getByText("This page could not load")).toBeInTheDocument();
     expect(screen.getByText("ERR_CONVEX_9981")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /reload page/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /return to dashboard/i })).toBeInTheDocument();

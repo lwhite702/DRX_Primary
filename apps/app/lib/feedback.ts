@@ -1,14 +1,17 @@
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHelpdeskUrl } from "@/lib/featurebase-links";
 
-export function openFeaturebaseHelpdesk(): boolean {
+export function openMintlifyHelp(): boolean {
   if (typeof window === "undefined") return false;
-  window.open(featurebaseHelpdeskUrl, "_blank", "noopener,noreferrer");
+  window.open(docsHelpdeskUrl, "_blank", "noopener,noreferrer");
   return true;
 }
 
+/** @deprecated Use openMintlifyHelp */
+export const openFeaturebaseHelpdesk = openMintlifyHelp;
+
 export async function openFeedbackWithFallback(
-  openSentryFeedback: (() => void | Promise<void>) | null | undefined,
-): Promise<"sentry" | "featurebase" | "unavailable"> {
+  openSentryFeedback: (() => unknown) | null | undefined,
+): Promise<"sentry" | "docs" | "unavailable"> {
   if (openSentryFeedback) {
     try {
       await openSentryFeedback();
@@ -18,5 +21,5 @@ export async function openFeedbackWithFallback(
     }
   }
 
-  return openFeaturebaseHelpdesk() ? "featurebase" : "unavailable";
+  return openMintlifyHelp() ? "docs" : "unavailable";
 }

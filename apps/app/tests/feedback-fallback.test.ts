@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { openFeedbackWithFallback } from "@/lib/feedback";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHelpdeskUrl } from "@/lib/featurebase-links";
 
 describe("feedback fallback", () => {
   afterEach(() => {
@@ -17,18 +17,18 @@ describe("feedback fallback", () => {
     expect(windowOpen).not.toHaveBeenCalled();
   });
 
-  it("opens Featurebase when Sentry is unavailable", async () => {
+  it("opens Mintlify docs when Sentry is unavailable", async () => {
     const windowOpen = vi.spyOn(window, "open").mockImplementation(() => null);
 
-    await expect(openFeedbackWithFallback(null)).resolves.toBe("featurebase");
+    await expect(openFeedbackWithFallback(null)).resolves.toBe("docs");
     expect(windowOpen).toHaveBeenCalledWith(
-      featurebaseHelpdeskUrl,
+      docsHelpdeskUrl,
       "_blank",
       "noopener,noreferrer",
     );
   });
 
-  it("opens Featurebase when Sentry throws", async () => {
+  it("opens Mintlify docs when Sentry throws", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     const windowOpen = vi.spyOn(window, "open").mockImplementation(() => null);
 
@@ -36,7 +36,7 @@ describe("feedback fallback", () => {
       openFeedbackWithFallback(() => {
         throw new Error("not loaded");
       }),
-    ).resolves.toBe("featurebase");
+    ).resolves.toBe("docs");
     expect(windowOpen).toHaveBeenCalledOnce();
   });
 });

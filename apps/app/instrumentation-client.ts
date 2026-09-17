@@ -33,7 +33,36 @@ if (dsn) {
       /^webkit-masked-url:\/\//i,
     ],
     beforeSend: scrubSentryEvent,
+    integrations: [
+      Sentry.feedbackSyncIntegration({
+        autoInject: false,
+        colorScheme: "dark",
+        isEmailRequired: false,
+        isNameRequired: false,
+        showEmail: true,
+        showName: true,
+        enableScreenshot: true,
+        useSentryUser: {
+          email: "email",
+          name: "username",
+        },
+        themeDark: {
+          background: "#0c0d0e",
+          foreground: "#f4f4f5",
+          accentBackground: "#a3e635",
+          accentForeground: "#000000",
+          inputBackground: "#18181b",
+          inputBorder: "#27272a",
+          submitBackground: "#a3e635",
+          submitForeground: "#000000",
+        },
+      }),
+    ],
   });
+
+  if (typeof window !== "undefined") {
+    (window as Window & { Sentry?: typeof Sentry }).Sentry = Sentry;
+  }
 }
 
 export const onRouterTransitionStart = () => {};

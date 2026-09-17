@@ -238,6 +238,28 @@ describe("proxy auth and routing", () => {
 });
 
 describe("middleware matcher", () => {
+  it.each(["", "?verification=1"])("skips the exact ownership path%s before Clerk runs", (query) => {
+    expect(unstable_doesMiddlewareMatch({
+      config,
+      nextConfig: {},
+      url: `https://www.deelrxcrm.app/.well-known/replay-qa-security-nonce${query}`,
+    })).toBe(false);
+  });
+
+  it.each([
+    "/.well-known/other",
+    "/.well-known/replay-qa-security-nonce-extra",
+    "/.well-known/replay-qa-security-nonce/private",
+    "/dashboard",
+    "/api/team",
+  ])("keeps auth middleware for %s", (pathname) => {
+    expect(unstable_doesMiddlewareMatch({
+      config,
+      nextConfig: {},
+      url: `https://www.deelrxcrm.app${pathname}`,
+    })).toBe(true);
+  });
+
   it.each([
     "/login/favicon.ico",
     "/register/logo.png",

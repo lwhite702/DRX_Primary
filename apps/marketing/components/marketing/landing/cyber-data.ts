@@ -32,7 +32,7 @@ import {
   marketingFeatureSections,
   whyDrxExists,
 } from "@/lib/feature-canon";
-import { featurebaseHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsChangelogUrl, docsHelpdeskUrl } from "@/lib/featurebase-links";
 
 export interface CyberNavItem {
   label: string;
@@ -219,9 +219,9 @@ export const cyberFooterColumns = [
     title: "Resources",
     links: [
       { label: "Guides", href: "/resources/guides" },
-      { label: "Help Desk", href: featurebaseHelpdeskUrl },
-      { label: "Changelog", href: "/updates/changelog" },
-      { label: "Roadmap", href: "/updates/roadmap" },
+      { label: "Help Desk", href: docsHelpdeskUrl },
+      { label: "Changelog", href: docsChangelogUrl },
+      { label: "Roadmap", href: "/updates" },
       { label: "Legal Hub", href: "/legal" },
     ],
   },

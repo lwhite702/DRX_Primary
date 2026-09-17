@@ -382,7 +382,7 @@ export default function LegalTermsPage() {
       </SectionBlock>
 
       <div className="mt-8 flex flex-wrap gap-3 text-sm">
-        <Link className="text-neon-lime hover:underline" href="/legal/privacy">Read the Privacy Policy</Link>
+        <Link className="text-neon-lime hover:underline" href="/legal/privacy">Privacy Policy</Link>
         <Link className="text-neon-lime hover:underline" href="/legal">Return to the legal hub</Link>
       </div>
     </PageFrame>
