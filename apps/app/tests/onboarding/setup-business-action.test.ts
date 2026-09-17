@@ -19,6 +19,7 @@ vi.mock("next/cache", () => ({
 }));
 
 import { setupBusinessAction } from "@/app/actions/setup-business";
+import { setupBusinessSchema } from "@/lib/onboarding/setup-schema";
 
 describe("setupBusinessAction", () => {
   beforeEach(() => {
@@ -58,13 +59,22 @@ describe("setupBusinessAction", () => {
         businessType: "retail",
         clerkOrgId: "org_123",
         name: "Store Owner",
-        setup: expect.objectContaining({
-          city: "Albany",
-          region: "NY",
-          defaultUnit: "g",
-        }),
+        setupJson: expect.any(String),
       }),
     );
+    const calledArgs = mocks.provisionBusinessInConvex.mock.calls[0][0];
+    expect(calledArgs.setup).toBeUndefined();
+    const parsedSetup = JSON.parse(calledArgs.setupJson);
+    expect(() => setupBusinessSchema.parse(parsedSetup)).not.toThrow();
+    expect(parsedSetup).toMatchObject({
+      businessName: "Convex Market",
+      businessType: "retail",
+      ownerName: "Store Owner",
+      city: "Albany",
+      state: "NY",
+      zipCode: "12207",
+      defaultUnit: "g",
+    });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
   });
 
@@ -89,10 +99,66 @@ describe("setupBusinessAction", () => {
     expect(mocks.provisionBusinessInConvex).toHaveBeenCalledWith(
       expect.objectContaining({
         businessName: "Secure POS Store",
-        setup: expect.objectContaining({
-          managerPin: "4829",
-        }),
+        setupJson: expect.any(String),
       }),
     );
+    const pinArgs = mocks.provisionBusinessInConvex.mock.calls[0][0];
+    const pinSetup = JSON.parse(pinArgs.setupJson);
+    expect(pinSetup.managerPin).toBe("4829");
+  });
+
+  it("surfaces sanitized Convex validation error messages", async () => {
+    mocks.provisionBusinessInConvex.mockRejectedValue(
+      new Error("INVALID_ARGUMENT: Conflicting business name"),
+    );
+
+    const result = await setupBusinessAction({
+      businessName: "Mismatch Store",
+      businessType: "retail",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      ownerPhone: "",
+      defaultUnit: "g",
+      quickQuantities: [],
+      privacyPreset: "standard_mode",
+      inventoryReasons: [],
+      nicknames: [],
+      ownerName: "Owner",
+    });
+
+    expect(result).toEqual({
+      error: "Conflicting business name",
+    });
+  });
+
+  it("handles BUSINESS_MISSING status response", async () => {
+    mocks.provisionBusinessInConvex.mockResolvedValue({
+      businessId: "convex_business_123",
+      status: "BUSINESS_MISSING",
+    });
+
+    const result = await setupBusinessAction({
+      businessName: "Missing Store",
+      businessType: "retail",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      ownerPhone: "",
+      defaultUnit: "g",
+      quickQuantities: [],
+      privacyPreset: "standard_mode",
+      inventoryReasons: [],
+      nicknames: [],
+      ownerName: "Owner",
+    });
+
+    expect(result).toEqual({
+      error: "Business configuration could not be verified. Please reload and try again.",
+    });
   });
 });
+
+
