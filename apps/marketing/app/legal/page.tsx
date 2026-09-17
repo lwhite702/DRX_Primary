@@ -28,8 +28,9 @@ export default function LegalHubPage() {
 
       <SectionBlock title="Proof from live product behavior" className="mt-6">
         <div className="grid gap-3 md:grid-cols-2">
-          <Link href="/legal/privacy" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Privacy</Link>
-          <Link href="/legal/terms" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Terms</Link>
+          <Link href="/legal/privacy" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Privacy Policy</Link>
+          <Link href="/legal/terms" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Terms of Service</Link>
+          <Link href="/sms-consent" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">SMS Consent Form</Link>
           <Link href="/legal/lawful-use" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Lawful use</Link>
           <Link href="/legal/regulatory-disclaimer" className="rounded-xl border border-border p-4 hover:border-neon-lime/40">Regulatory disclaimer</Link>
         </div>

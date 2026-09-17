@@ -119,7 +119,8 @@ export const marketingContent = {
     contact: "support@deelrxcrm.com",
     legalLinks: [
       { label: "Privacy Policy", href: "/legal/privacy" },
-      { label: "Terms of Use", href: "/legal/terms" },
+      { label: "Terms of Service", href: "/legal/terms" },
+      { label: "SMS Consent", href: "/sms-consent" },
     ],
     socialLinks: [
       { label: "Twitter / X", href: "https://x.com" },

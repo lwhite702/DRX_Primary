@@ -89,8 +89,10 @@ export default function LegalPrivacyPage() {
             location.
           </li>
           <li>
-            <strong className="text-white">Communications:</strong> support requests,
-            feedback, and other messages a user chooses to send.
+            <strong className="text-white">Communications and SMS details:</strong>{" "}
+            support requests, feedback, contact details (including mobile phone numbers),
+            communication preferences, and text messaging consent records when you opt
+            in to receive SMS or other communications.
           </li>
         </ul>
         <p>
@@ -117,7 +119,11 @@ export default function LegalPrivacyPage() {
           <li>authenticate users and enforce business, tenant, role, and permission boundaries;</li>
           <li>process inventory, sales, balances, deliveries, reports, and user-directed workflows;</li>
           <li>support encrypted offline operation and reconcile approved offline transactions;</li>
-          <li>send requested service and delivery notifications;</li>
+          <li>
+            send requested service and delivery notifications, account security alerts,
+            operational notices, and relevant communications (including text messages where you
+            have opted in);
+          </li>
           <li>measure feature use, diagnose failures, prevent abuse, and secure the service;</li>
           <li>respond to support, privacy, and account requests;</li>
           <li>comply with law, enforce agreements, and protect legal rights; and</li>
@@ -166,6 +172,18 @@ export default function LegalPrivacyPage() {
           process information only to provide contracted services or as otherwise
           permitted by their agreements and applicable law.
         </p>
+
+        <div className="mt-4 rounded-xl border border-neon-lime/30 bg-neon-lime/5 p-4 text-white">
+          <p className="font-semibold text-neon-lime">
+            SMS Opt-In and Text Messaging Privacy
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            Wrelik Brands LLC (operating DRX, also presented as Deelrx CRM) is committed to protecting consumer and operator privacy. We do not sell or share your SMS opt-in data or personal information with third parties for marketing purposes.
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            Text messaging originator opt-in data and consent are strictly excluded from any sharing with third parties, affiliates, or external partners for marketing or promotional purposes. Any mobile phone numbers collected through our SMS consent forms, applications, or support workflows are used solely to deliver the relevant operational communications, account alerts, and customer support you specifically requested.
+          </p>
+        </div>
       </SectionBlock>
 
       <SectionBlock title="7. Analytics, diagnostics, and AI" className={sectionClassName}>
