@@ -1,6 +1,6 @@
 ---
 name: release-integrity
-description: Enforce DRX release truth when product behavior or plans change, or when work touches versions, changelogs, roadmap status, release notes, tags, deployments, TestFlight, Play, or Featurebase publication.
+description: Enforce DRX release truth when product behavior or plans change, or when work touches versions, changelogs, roadmap status, release notes, tags, deployments, or TestFlight publication.
 ---
 
 # Release integrity
@@ -42,7 +42,7 @@ The repository gate deterministically flags high-risk structural diffs, includin
 4. Run `pnpm release:integrity`. For release preparation also run `pnpm release:preflight`; for a release claim run `pnpm release:verify`.
 5. Report the evidence state, exact version/SHA, checks run, external evidence, and remaining gates. Keep the issue out of Done while required external evidence is missing.
 
-Read [references/artifact-map.md](references/artifact-map.md) when selecting artifacts, preparing or verifying a release, or publishing to Featurebase.
+Read [references/artifact-map.md](references/artifact-map.md) when selecting artifacts, preparing or verifying a release, or publishing documentation updates.
 
 ## Boundaries
 

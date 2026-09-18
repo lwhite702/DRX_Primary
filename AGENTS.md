@@ -21,6 +21,8 @@ A nested `AGENTS.md` may add stricter instructions for its subtree. It may not w
 - Google Drive holds approved product requirements, policies, brand standards, and official documents.
 - Linear holds engineering work, defects, implementation decisions, dependencies, release gates, and verification evidence.
 - GitHub holds source code, repository-local instructions, reviews, version history, and automation.
+- Mintlify (`docs.deelrxcrm.com`) holds canonical user documentation, Help Center guides, customer changelog, and public roadmap.
+- Help Scout (`support@deelrxcrm.com`) holds customer support communication and inquiry handling.
 - ClickUp holds portfolio visibility, operational planning, launch coordination, and non-engineering work.
 - ClickUp Docs and Notion hold working knowledge, research, drafts, and evolving notes.
 
@@ -39,6 +41,7 @@ Link to authoritative records instead of copying full documents between systems.
 9. Add concise verification evidence to Linear without secrets, personal data, customer content, or unrestricted production payloads.
 10. Use In Review when human judgment, external approval, deployment, or release remains. Use Done only when all acceptance criteria are verified.
 11. Update the official Google Drive document when an approved product, policy, brand, or operating decision changes. Working notes alone do not amend official direction.
+12. Update user documentation in Mintlify (and source in `app-docs/`), the customer changelog, and the public roadmap whenever system changes modify operator workflows, UI screens, settings, or retail calculations. Follow `.agents/skills/documentation-management/SKILL.md`.
 
 Pure read-only exploration may occur before an issue exists. Once work becomes a proposed deliverable or mutation, issue-first tracking is mandatory.
 
@@ -88,7 +91,7 @@ Do not treat access to a tool or credential as approval for a broader action.
 
 ## Release integrity gate
 
-For every product-behavior change or any version, changelog, roadmap, release-note, tag, deployment, TestFlight, Play, or Featurebase task, read and follow `.agents/skills/release-integrity/SKILL.md`. Run `pnpm release:integrity`; affected work cannot be reported complete while this gate fails. Pushing or publishing product changes to `main` automatically deploys and releases the change with a distinct version and release number. Documentation changes do not require a version change.
+For every product-behavior change or any version, changelog, roadmap, release-note, tag, deployment, or TestFlight task, read and follow `.agents/skills/release-integrity/SKILL.md` and `.agents/skills/documentation-management/SKILL.md`. Run `pnpm release:integrity` and `pnpm test:docs:mintlify`; affected work cannot be reported complete while these gates fail. Pushing or publishing product changes to `main` automatically deploys and releases the change with a distinct version and release number. Documentation changes do not require a version change.
 
 ## Definition of done
 
@@ -99,7 +102,7 @@ Work is complete only when:
 - relevant automated checks pass
 - required live or real-device evidence is recorded
 - security and privacy impact has been assessed
-- documentation is updated in the correct system
+- documentation is updated in the correct system (including Mintlify user guides, customer changelog, and roadmap for user-visible changes)
 - remaining risks, follow-ups, and manual steps are explicit
 - no secret, sensitive content, or unrelated change is included
 
