@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BrandMark } from "./brand-mark";
 import { appLoginUrl } from "@/lib/app-links";
 
-import { docsHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHelpdeskUrl } from "@/lib/docs-links";
 
 const footerLinks = [
   { label: "Product", href: "/product" },

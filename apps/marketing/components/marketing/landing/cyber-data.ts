@@ -32,7 +32,7 @@ import {
   marketingFeatureSections,
   whyDrxExists,
 } from "@/lib/feature-canon";
-import { docsChangelogUrl, docsHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsChangelogUrl, docsHelpdeskUrl } from "@/lib/docs-links";
 
 export interface CyberNavItem {
   label: string;

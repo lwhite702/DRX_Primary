@@ -8,14 +8,17 @@ import {
   docsChangelogUrl,
   docsHelpdeskUrl,
   docsHubUrl,
-} from "@/lib/featurebase-links";
+  docsRoadmapUrl,
+  supportEmail,
+  supportMailto,
+} from "@/lib/docs-links";
 
 type UpdatesView = "changelog" | "roadmap" | "support";
 
 const tabConfig: Array<{ id: UpdatesView; label: string }> = [
   { id: "changelog", label: "Changelog" },
   { id: "roadmap", label: "Planned Focus" },
-  { id: "support", label: "Help & Feedback" },
+  { id: "support", label: "Help & Support" },
 ];
 
 const changelogEntries = [
@@ -66,7 +69,7 @@ const roadmapEntries = [
   },
 ];
 
-export function FeaturebaseHub() {
+export function MintlifyHub() {
   const [activeView, setActiveView] = useState<UpdatesView>("changelog");
 
   return (
@@ -158,7 +161,15 @@ export function FeaturebaseHub() {
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-sm font-semibold text-white/90">Upcoming Capabilities</span>
-                <span className="text-xs text-white/50">Early Access Roadmap</span>
+                <Link
+                  href={docsRoadmapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-neon-lime hover:underline"
+                >
+                  <span>View Full Roadmap on Mintlify</span>
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -184,7 +195,7 @@ export function FeaturebaseHub() {
           {activeView === "support" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="text-sm font-semibold text-white/90">Operator Help & Feedback</span>
+                <span className="text-sm font-semibold text-white/90">Help Scout & Mintlify Support</span>
                 <Link
                   href={docsHelpdeskUrl}
                   target="_blank"
@@ -196,17 +207,22 @@ export function FeaturebaseHub() {
                 </Link>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
                   <div className="flex items-center gap-2 text-neon-lime">
                     <Sparkles className="h-4 w-4" />
-                    <h3 className="font-semibold text-white text-sm">In-App User Feedback</h3>
+                    <h3 className="font-semibold text-white text-sm">Help Scout Support</h3>
                   </div>
                   <p className="text-xs leading-relaxed text-white/60">
-                    Logged-in operators can report bugs, suggest features, or submit feedback
-                    directly from any screen via the in-app Sentry feedback trigger. Screenshots
-                    can be annotated before submitting.
+                    Direct operator support handled through our dedicated Help Scout inbox. Reach our operations team directly with any setup or technical question.
                   </p>
+                  <a
+                    href={supportMailto}
+                    className="inline-flex items-center gap-1 text-xs text-neon-lime hover:underline"
+                  >
+                    <span>{supportEmail}</span>
+                    <ArrowUpRight className="h-3 w-3" />
+                  </a>
                 </div>
 
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
@@ -216,7 +232,7 @@ export function FeaturebaseHub() {
                   </div>
                   <p className="text-xs leading-relaxed text-white/60">
                     Step-by-step guides for inventory intake, quick sale checkout, customer accounts,
-                    and offline operation are published in the DRX Help Center.
+                    and offline operation are published in the Mintlify docs.
                   </p>
                   <Link
                     href={docsHubUrl}
@@ -228,13 +244,24 @@ export function FeaturebaseHub() {
                     <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-neon-lime">
+                    <Sparkles className="h-4 w-4" />
+                    <h3 className="font-semibold text-white text-sm">In-App User Feedback</h3>
+                  </div>
+                  <p className="text-xs leading-relaxed text-white/60">
+                    Logged-in operators can report bugs, suggest features, or submit feedback
+                    directly from any screen via the in-app Sentry feedback trigger.
+                  </p>
+                </div>
               </div>
             </div>
           )}
         </div>
 
         <p className="mt-4 text-xs text-white/50">
-          Canonical documentation:
+          Canonical documentation on Mintlify:
           <Link
             href={docsHubUrl}
             target="_blank"
