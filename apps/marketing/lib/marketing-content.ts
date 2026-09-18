@@ -123,6 +123,7 @@ export const marketingContent = {
       { label: "Terms of Service", href: "/legal/terms" },
       { label: "Lawful Use", href: "/legal/lawful-use" },
       { label: "Regulatory Disclaimer", href: "/legal/regulatory-disclaimer" },
+      { label: "Beta Terms", href: "/beta" },
       { label: "SMS Consent", href: "/sms-consent" },
     ],
     socialLinks: [

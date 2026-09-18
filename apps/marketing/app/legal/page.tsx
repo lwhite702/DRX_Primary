@@ -27,25 +27,58 @@ export default function LegalHubPage() {
       <SectionBlock title="Policies and Agreements">
         <div className="grid gap-4 md:grid-cols-2">
           <Link
-            href="/legal/privacy"
-            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
-          >
-            <h2 className="text-lg font-bold text-white">Privacy Policy</h2>
-            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-              How Wrelik Brands LLC collects, uses, protects, and retains operator and customer data. Includes our strict zero-third-party SMS marketing data sharing commitment.
-            </p>
-            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Privacy Policy →</span>
-          </Link>
-
-          <Link
             href="/legal/terms"
             className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
           >
             <h2 className="text-lg font-bold text-white">Terms of Service</h2>
             <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-              Terms of Use governing platform access, including the complete SMS Terms, carrier disclosures, STOP/HELP keywords, and the DRX commercial addendum.
+              Binding terms of use governing platform access, enterprise customer obligations, complete SMS carrier rules, and the DRX commercial operating addendum.
             </p>
             <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Terms of Service →</span>
+          </Link>
+
+          <Link
+            href="/legal/privacy"
+            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
+          >
+            <h2 className="text-lg font-bold text-white">Privacy Policy</h2>
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+              How Wrelik Brands LLC encrypts, protects, and retains operator and customer records. Details our encryption architecture, law enforcement response policy, and zero third-party SMS sharing commitment.
+            </p>
+            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Privacy Policy →</span>
+          </Link>
+
+          <Link
+            href="/legal/lawful-use"
+            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
+          >
+            <h2 className="text-lg font-bold text-white">Lawful Commercial Use Policy</h2>
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+              Mandatory commercial retail compliance, strict prohibitions against illicit sales, age-verification obligations, and actionable operator tips to keep your retail store legally compliant.
+            </p>
+            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Lawful Use Policy →</span>
+          </Link>
+
+          <Link
+            href="/legal/regulatory-disclaimer"
+            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
+          >
+            <h2 className="text-lg font-bold text-white">Regulatory &amp; Operational Disclaimer</h2>
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+              Statutory non-advice boundaries, strict pharmacy and healthcare disclaimers, sales tax calculation limits, and distinction between operational logs and certified financial audits.
+            </p>
+            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Regulatory Disclaimer →</span>
+          </Link>
+
+          <Link
+            href="/beta"
+            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
+          >
+            <h2 className="text-lg font-bold text-white">Beta Software Agreement &amp; Disclaimer</h2>
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+              Terms governing participation in early access previews, Apple TestFlight builds, and Android pilot programs. Covers &quot;AS-IS&quot; disclaimers, merchant backup mandates, and fictional test data rules.
+            </p>
+            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Beta Software Terms →</span>
           </Link>
 
           <Link
@@ -54,40 +87,28 @@ export default function LegalHubPage() {
           >
             <h2 className="text-lg font-bold text-white">SMS Communication Consent</h2>
             <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-              Opt-in submission form for receiving relevant operational notices, security alerts, and customer support follow-ups via text messaging.
+              Verifiable opt-in submission form for receiving operational system notices, critical delivery updates, and customer support follow-ups via text messaging.
             </p>
             <span className="mt-4 inline-block text-xs font-semibold text-accent">View SMS Consent Form →</span>
-          </Link>
-
-          <Link
-            href="/legal/lawful-use"
-            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40"
-          >
-            <h2 className="text-lg font-bold text-white">Lawful Use Policy</h2>
-            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-              Permitted operations and non-negotiable prohibitions. Ensures DRX is used exclusively for lawful, compliant retail and commercial activity.
-            </p>
-            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Lawful Use Policy →</span>
-          </Link>
-
-          <Link
-            href="/legal/regulatory-disclaimer"
-            className="rounded-xl border border-border bg-surface-elevated/40 p-5 transition-all hover:border-accent/40 md:col-span-2"
-          >
-            <h2 className="text-lg font-bold text-white">Regulatory Disclaimer</h2>
-            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-              Clarifies legal, tax, and licensing boundaries. DRX is an operational operating system and does not provide legal, tax, financial, or healthcare advice.
-            </p>
-            <span className="mt-4 inline-block text-xs font-semibold text-accent">Read Regulatory Disclaimer →</span>
           </Link>
         </div>
       </SectionBlock>
 
-      <SectionBlock title="Beta & Early Access Terms" className="mt-8">
+      <SectionBlock title="Data Protection & Operator Governance" className="mt-8">
         <p className="text-sm text-text-secondary leading-relaxed">
-          During early access and preview periods, features evolve continuously. Subscribing businesses maintain responsibility for local compliance, record exports, and tax reporting.
+          DRX is built on a privacy-first, minimal-data architectural foundation with TLS 1.3 encryption in transit, AES-256 encryption at rest, field-level encryption for sensitive identifiers, and automated data retention cleanup. Store operators retain full control over customer data retention parameters and daily reconciliation exports.
         </p>
-        <CtaRow location="legal_hub" secondaryLabel="Read beta terms" secondaryHref="/beta" />
+        <div className="mt-6 flex flex-wrap gap-4 text-sm">
+          <Link className="text-neon-lime hover:underline" href="/legal/privacy#privacy-rights">
+            Exercise Privacy Rights
+          </Link>
+          <a className="text-neon-lime hover:underline" href="mailto:legal@wrelik.com">
+            Contact Wrelik Legal
+          </a>
+          <a className="text-neon-lime hover:underline" href="mailto:support@deelrxcrm.com">
+            Contact Customer Support
+          </a>
+        </div>
       </SectionBlock>
     </PageFrame>
   );
