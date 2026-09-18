@@ -488,8 +488,18 @@ export const quoteCheckout = query({
       pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
     const baseDiscountCents = pricing.discountCents + manualDiscountCents;
     const additionalDiscountCents = args.discountAmountCents ?? 0;
+    if (additionalDiscountCents > baseMerchandiseTotalCents) {
+      throw new Error("INVALID_ARGUMENT: Discount cannot exceed subtotal");
+    }
     const discountCents = baseDiscountCents + additionalDiscountCents;
     const discountedSubtotalCents = Math.max(0, baseMerchandiseTotalCents - additionalDiscountCents);
+    const discountRatio =
+      baseMerchandiseTotalCents > 0
+        ? discountedSubtotalCents / baseMerchandiseTotalCents
+        : 1;
+    const discountedTaxableMerchandiseCents = Math.round(
+      taxableMerchandiseCents * discountRatio,
+    );
 
     const deliveryRevenueCents =
       args.delivery?.customerFeeCents ??
@@ -500,22 +510,13 @@ export const quoteCheckout = query({
         ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
         : 0;
 
-    let merchandiseTaxCents = 0;
-    let taxableSubtotalCents = 0;
-    if (args.discountAmountCents !== undefined || args.deliveryFeeCents !== undefined) {
-      merchandiseTaxCents = auth.businessRecord.collectTax
-        ? calculateTaxCents(discountedSubtotalCents, taxRateBps)
-        : 0;
-      taxableSubtotalCents = discountedSubtotalCents + (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
-    } else {
-      merchandiseTaxCents = calculateTaxCents(
-        taxableMerchandiseCents,
-        taxRateBps,
-      );
-      taxableSubtotalCents =
-        taxableMerchandiseCents +
-        (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
-    }
+    const merchandiseTaxCents = calculateTaxCents(
+      discountedTaxableMerchandiseCents,
+      taxRateBps,
+    );
+    const taxableSubtotalCents =
+      discountedTaxableMerchandiseCents +
+      (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
 
     const taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
     const totalAmountCents =
@@ -859,6 +860,22 @@ export const processCheckout = mutation({
       throw new Error("INVALID_ARGUMENT: taxRateBps cannot exceed 10000");
     }
 
+    const baseTaxableMerchandiseCents =
+      pricing.taxableMerchandiseCents + manualTaxableCents;
+    const additionalDiscountCents = args.discountAmountCents ?? 0;
+    if (additionalDiscountCents > subtotalCents) {
+      throw new Error("INVALID_ARGUMENT: Discount cannot exceed subtotal");
+    }
+    const discountedSubtotalCents = Math.max(
+      0,
+      subtotalCents - additionalDiscountCents,
+    );
+    const discountRatio =
+      subtotalCents > 0 ? discountedSubtotalCents / subtotalCents : 1;
+    const discountedTaxableMerchandiseCents = Math.round(
+      baseTaxableMerchandiseCents * discountRatio,
+    );
+
     let merchandiseTaxCents = 0;
     let deliveryTaxCents = 0;
     let taxableSubtotalCents = 0;
@@ -871,38 +888,26 @@ export const processCheckout = mutation({
       merchandiseTaxCents = 0;
       deliveryTaxCents = 0;
       taxableSubtotalCents = 0;
-    } else if (args.discountAmountCents !== undefined || args.deliveryFeeCents !== undefined) {
-      const discountedSubtotalCents = Math.max(0, subtotalCents - (args.discountAmountCents ?? 0));
-      merchandiseTaxCents = auth.businessRecord.collectTax
-        ? calculateTaxCents(discountedSubtotalCents, taxRateBps)
-        : 0;
+    } else {
       deliveryTaxCents =
         args.delivery &&
         args.delivery.chargeCustomer &&
         commerceSettings?.deliveryFeeTaxable
           ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
           : 0;
-      taxableSubtotalCents = discountedSubtotalCents + (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
-      taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
-      totalAmountCents = discountedSubtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
-    } else {
       merchandiseTaxCents = calculateTaxCents(
-        pricing.taxableMerchandiseCents + manualTaxableCents,
+        discountedTaxableMerchandiseCents,
         taxRateBps,
       );
-      deliveryTaxCents =
-        args.delivery &&
-        args.delivery.chargeCustomer &&
-        commerceSettings?.deliveryFeeTaxable
-          ? calculateTaxCents(deliveryRevenueCents, taxRateBps)
-          : 0;
       taxableSubtotalCents =
-        pricing.taxableMerchandiseCents +
-        manualTaxableCents +
+        discountedTaxableMerchandiseCents +
         (deliveryTaxCents > 0 ? deliveryRevenueCents : 0);
       taxAmountCents = merchandiseTaxCents + deliveryTaxCents;
       totalAmountCents =
-        subtotalCents + feeRevenueCents + deliveryRevenueCents + taxAmountCents;
+        discountedSubtotalCents +
+        feeRevenueCents +
+        deliveryRevenueCents +
+        taxAmountCents;
     }
     if (!Number.isSafeInteger(totalAmountCents)) {
       throw new Error(
@@ -939,13 +944,13 @@ export const processCheckout = mutation({
       subtotalCents,
       merchandiseSubtotalCents,
       discountCents,
-      merchandiseRevenueCents: subtotalCents,
+      merchandiseRevenueCents: discountedSubtotalCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents,
       ...(args.delivery?.vendorExpenseKnown === undefined ? {} : { vendorDeliveryExpenseKnown: args.delivery.vendorExpenseKnown }),
       deliveryTaxCents,
       merchandiseTaxCents,
-      loyaltyEligibleSpendCents: subtotalCents,
+      loyaltyEligibleSpendCents: discountedSubtotalCents,
       cogsCents: 0,
       taxableSubtotalCents,
       taxAmountCents,

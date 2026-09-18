@@ -45,6 +45,9 @@ function seedState(overrides?: Partial<QuickPosState>) {
       feeAllocation: "charge_customer",
       feeTaxable: false,
     },
+    discount: {
+      amountCents: 0,
+    },
     ui: {
       search: "",
       exitDialogOpen: false,

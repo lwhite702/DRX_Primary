@@ -438,4 +438,127 @@ describe("authoritative Convex checkout", () => {
     expect(checkoutResult.subtotalCents).toBe(2000);
     expect(checkoutResult.taxAmountCents).toBe(150);
   });
+
+  it("does not tax non-taxable merchandise when a discount is applied", async () => {
+    const { owner } = await setupStore({ collectTax: true, taxRateBps: 1000 }); // 10% tax
+    const nonTaxableId = await owner.mutation(api.products.createProduct, {
+      sku: "NON-TAX-1",
+      productName: "Non-Taxable Merchandise",
+      sellingPriceCents: 2000,
+      unitCostCents: 800,
+      isTaxable: false,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: nonTaxableId,
+      totalWeightGrams: 5,
+      totalCostCents: 4000,
+    });
+
+    // 1 non-taxable item = $20.00. With $5.00 discount (500 cents):
+    // discounted subtotal = $15.00 (1500 cents)
+    // tax must be $0.00 (0 cents)
+    // total = $15.00 (1500 cents)
+    const quote = await owner.query(api.checkout.quoteCheckout, {
+      items: [{ productId: nonTaxableId, quantityGrams: 1 }],
+      discountAmountCents: 500,
+    });
+
+    expect(quote.discountCents).toBe(500);
+    expect(quote.subtotalCents).toBe(2000);
+    expect(quote.taxAmountCents).toBe(0);
+    expect(quote.merchandiseTaxCents).toBe(0);
+    expect(quote.totalAmountCents).toBe(1500);
+
+    // Settlement must also have zero tax
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "NON-TAX-DISCOUNTED-ORDER",
+      items: [{ productId: nonTaxableId, quantityGrams: 1 }],
+      discountAmountCents: 500,
+      paymentMethod: "cash",
+      amountPaidCents: 1500,
+    });
+
+    expect(checkoutResult.totalAmountCents).toBe(1500);
+    expect(checkoutResult.subtotalCents).toBe(2000);
+    expect(checkoutResult.taxAmountCents).toBe(0);
+    expect(checkoutResult.merchandiseTaxCents).toBe(0);
+  });
+
+  it("proportionally taxes only the taxable portion in a mixed discounted cart and rejects excess discounts", async () => {
+    const { owner } = await setupStore({ collectTax: true, taxRateBps: 1000 }); // 10% tax
+    const taxableId = await owner.mutation(api.products.createProduct, {
+      sku: "TAX-MIX-1",
+      productName: "Taxable Item",
+      sellingPriceCents: 2000,
+      unitCostCents: 800,
+      isTaxable: true,
+    });
+    const nonTaxableId = await owner.mutation(api.products.createProduct, {
+      sku: "NON-TAX-MIX-1",
+      productName: "Non-Taxable Item",
+      sellingPriceCents: 2000,
+      unitCostCents: 800,
+      isTaxable: false,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: taxableId,
+      totalWeightGrams: 5,
+      totalCostCents: 4000,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: nonTaxableId,
+      totalWeightGrams: 5,
+      totalCostCents: 4000,
+    });
+
+    // Subtotal: $40.00 (2000 + 2000). Discount: $10.00 (1000 cents).
+    // Discounted subtotal: $30.00 (3000 cents). Ratio: 3000 / 4000 = 0.75.
+    // Discounted taxable merchandise: 2000 * 0.75 = 1500 cents ($15.00).
+    // 10% tax on $15.00 = 150 cents ($1.50). Total = $31.50 (3150 cents).
+    const quote = await owner.query(api.checkout.quoteCheckout, {
+      items: [
+        { productId: taxableId, quantityGrams: 1 },
+        { productId: nonTaxableId, quantityGrams: 1 },
+      ],
+      discountAmountCents: 1000,
+    });
+
+    expect(quote.discountCents).toBe(1000);
+    expect(quote.subtotalCents).toBe(4000);
+    expect(quote.taxAmountCents).toBe(150);
+    expect(quote.totalAmountCents).toBe(3150);
+
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "MIXED-DISCOUNTED-ORDER",
+      items: [
+        { productId: taxableId, quantityGrams: 1 },
+        { productId: nonTaxableId, quantityGrams: 1 },
+      ],
+      discountAmountCents: 1000,
+      paymentMethod: "cash",
+      amountPaidCents: 3150,
+    });
+
+    expect(checkoutResult.totalAmountCents).toBe(3150);
+    expect(checkoutResult.subtotalCents).toBe(4000);
+    expect(checkoutResult.taxAmountCents).toBe(150);
+
+    // Excess discount exceeding merchandise subtotal is rejected
+    await expect(
+      owner.query(api.checkout.quoteCheckout, {
+        items: [{ productId: taxableId, quantityGrams: 1 }],
+        discountAmountCents: 2500, // subtotal is 2000
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Discount cannot exceed subtotal");
+
+    await expect(
+      owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "EXCESS-DISCOUNT-ORDER",
+        items: [{ productId: taxableId, quantityGrams: 1 }],
+        discountAmountCents: 2500,
+        paymentMethod: "cash",
+        amountPaidCents: 0,
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Discount cannot exceed subtotal");
+  });
 });

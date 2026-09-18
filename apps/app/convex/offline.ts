@@ -131,6 +131,12 @@ function requirePositiveInteger(value: number, field: string) {
   }
 }
 
+function requireNonnegativeSafeInteger(value: number, field: string) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`INVALID_ARGUMENT: ${field} must be a non-negative integer`);
+  }
+}
+
 export const configurePolicy = mutation({
   args: policyFields,
   returns: policyReturn,
@@ -384,6 +390,7 @@ export const syncSale = mutation({
         unitPriceCents: v.number(),
       }),
     ),
+    discountAmountCents: v.optional(v.number()),
     paymentMethod,
     amountPaidCents: v.number(),
   },
@@ -539,6 +546,26 @@ export const syncSale = mutation({
       }
     }
 
+    const additionalDiscountCents = args.discountAmountCents ?? 0;
+    if (args.discountAmountCents !== undefined) {
+      requireNonnegativeSafeInteger(
+        args.discountAmountCents,
+        "discountAmountCents",
+      );
+      if (args.discountAmountCents > subtotalCents) {
+        throw new Error("INVALID_ARGUMENT: Discount cannot exceed subtotal");
+      }
+    }
+    const discountedSubtotalCents = Math.max(
+      0,
+      subtotalCents - additionalDiscountCents,
+    );
+    const discountRatio =
+      subtotalCents > 0 ? discountedSubtotalCents / subtotalCents : 1;
+    const discountedTaxableSubtotalCents = Math.round(
+      taxableSubtotalCents * discountRatio,
+    );
+
     const authorization = await ctx.db.get(args.authorizationId);
     if (authorization && authorization.businessId !== auth.businessId) {
       throw new Error(
@@ -546,10 +573,10 @@ export const syncSale = mutation({
       );
     }
     const taxAmountCents = calculateTaxCents(
-      taxableSubtotalCents,
+      discountedTaxableSubtotalCents,
       authorization?.collectTax ? authorization.taxRateBps : 0,
     );
-    const totalAmountCents = subtotalCents + taxAmountCents;
+    const totalAmountCents = discountedSubtotalCents + taxAmountCents;
     if (permanentValidationReason) {
       const submissionId = await quarantine(ctx, {
         businessId: auth.businessId,
@@ -703,9 +730,15 @@ export const syncSale = mutation({
       orderStatus: "completed",
       subtotalCents,
       merchandiseSubtotalCents: subtotalCents,
-      merchandiseRevenueCents: subtotalCents,
-      loyaltyEligibleSpendCents: subtotalCents,
-      taxableSubtotalCents,
+      ...(additionalDiscountCents > 0
+        ? {
+            discountCents: additionalDiscountCents,
+            discountAmountCents: additionalDiscountCents,
+          }
+        : {}),
+      merchandiseRevenueCents: discountedSubtotalCents,
+      loyaltyEligibleSpendCents: discountedSubtotalCents,
+      taxableSubtotalCents: discountedTaxableSubtotalCents,
       taxAmountCents,
       totalAmountCents,
       amountPaidCents: args.paymentMethod === "cash" ? args.amountPaidCents : 0,

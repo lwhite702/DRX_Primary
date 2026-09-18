@@ -33,6 +33,7 @@ export interface OfflineSaleEnvelope {
   customerId?: string;
   customerCreditAvailableCents?: number;
   items: OfflineSaleItem[];
+  discountAmountCents?: number;
   paymentMethod: OfflinePaymentMethod;
   amountPaidCents: number;
   totalAmountCents: number;

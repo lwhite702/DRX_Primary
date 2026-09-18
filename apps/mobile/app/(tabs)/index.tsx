@@ -524,6 +524,7 @@ export default function POSScreen() {
             quantityGrams: line.quantityGrams,
             unitPriceCents: line.product.sellingPriceCents,
           })),
+          discountAmountCents: discountAmountCents > 0 ? discountAmountCents : undefined,
           paymentMethod: tender as "cash" | "credit",
           amountPaidCents,
           totalAmountCents: estimatedTotalCents,
