@@ -1,20 +1,30 @@
 "use client";
 
 import React from "react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { StepperInput } from "@/components/ui/stepper-input";
+import { Plus, X } from "lucide-react";
 import type { ProductCommerceConfig } from "@/lib/commerce/config";
-import {
-  creationCommerceDefaults,
-  parsePresetInput,
-} from "@/lib/commerce/product-creation";
+import { creationCommerceDefaults } from "@/lib/commerce/product-creation";
 import {
   ALL_UNIT_OPTIONS,
   unitLabel,
   unitSymbol,
   type DRXUnit,
 } from "@/lib/units/convert";
+
+/** Friendly label for quantities (e.g. 0.125 oz -> ⅛ oz) */
+function formatPresetLabel(val: number, unit: string): string {
+  if (unit === "oz" || unit === "lb") {
+    if (val === 0.125) return `⅛ ${unit}`;
+    if (val === 0.25) return `¼ ${unit}`;
+    if (val === 0.375) return `⅜ ${unit}`;
+    if (val === 0.5) return `½ ${unit}`;
+    if (val === 0.75) return `¾ ${unit}`;
+  }
+  return `${val} ${unit}`;
+}
 
 export function FractionalProductFields({
   value,
@@ -23,29 +33,128 @@ export function FractionalProductFields({
   value: ProductCommerceConfig;
   onChange: (value: ProductCommerceConfig) => void;
 }) {
-  const [dollars, setDollars] = React.useState(
-    value.suggestedDollarAmounts.join(", "),
-  );
-  const [quantities, setQuantities] = React.useState(
-    value.suggestedQuantities.join(", "),
-  );
   const update = (patch: Partial<ProductCommerceConfig>) =>
     onChange({ ...value, ...patch });
+
   const currentUnit = (value.sellingUnit || "unit") as DRXUnit;
 
-  return (
-    <fieldset className="space-y-4 rounded-xl border border-white/20 p-4">
-      <legend className="px-2 font-semibold">How this product is sold</legend>
+  // State for single-value custom adders
+  const [showCustomDollar, setShowCustomDollar] = React.useState(false);
+  const [customDollar, setCustomDollar] = React.useState<number>(25);
+  const [showCustomQty, setShowCustomQty] = React.useState(false);
+  const [customQty, setCustomQty] = React.useState<number>(
+    value.minimumSaleQuantity || 1
+  );
 
+  // Dollar Preset Packs
+  const DOLLAR_PACKS: Array<{ label: string; values: number[] }> = [
+    { label: "$10, $20, $50", values: [10, 20, 50] },
+    { label: "$15, $30, $60", values: [15, 30, 60] },
+    { label: "$20, $40, $80", values: [20, 40, 80] },
+    { label: "$5, $10, $20", values: [5, 10, 20] },
+  ];
+
+  // Unit-aware Quantity Preset Packs
+  const getQuantityPacks = (): Array<{ label: string; values: number[] }> => {
+    if (currentUnit === "g") {
+      return [
+        { label: "1g, 3.5g (⅛), 7g (¼), 14g (½), 28g (1oz)", values: [1, 3.5, 7, 14, 28] },
+        { label: "0.5g, 1g, 2g", values: [0.5, 1, 2] },
+        { label: "1g, 2g, 5g, 10g", values: [1, 2, 5, 10] },
+      ];
+    }
+    if (currentUnit === "oz") {
+      return [
+        { label: "⅛ oz, ¼ oz, ½ oz, 1 oz", values: [0.125, 0.25, 0.5, 1] },
+        { label: "¼ oz, ½ oz, 1 oz, 2 oz", values: [0.25, 0.5, 1, 2] },
+        { label: "½ oz, 1 oz, 2 oz", values: [0.5, 1, 2] },
+      ];
+    }
+    if (currentUnit === "lb") {
+      return [
+        { label: "¼ lb, ½ lb, 1 lb", values: [0.25, 0.5, 1] },
+        { label: "½ lb, 1 lb, 2 lb", values: [0.5, 1, 2] },
+        { label: "1 lb, 2 lb, 5 lb", values: [1, 2, 5] },
+      ];
+    }
+    return [
+      { label: "1, 2, 5, 10 units", values: [1, 2, 5, 10] },
+      { label: "1, 3, 6, 12 units", values: [1, 3, 6, 12] },
+      { label: "2, 4, 8 units", values: [2, 4, 8] },
+    ];
+  };
+
+  const handleSelectDollarPack = (packValues: number[]) => {
+    update({ suggestedDollarAmounts: packValues });
+  };
+
+  const handleToggleDollar = (amount: number) => {
+    const existing = value.suggestedDollarAmounts || [];
+    if (existing.includes(amount)) {
+      update({ suggestedDollarAmounts: existing.filter((a) => a !== amount) });
+    } else {
+      update({ suggestedDollarAmounts: [...existing, amount].sort((a, b) => a - b) });
+    }
+  };
+
+  const handleAddCustomDollar = () => {
+    if (customDollar > 0) {
+      const existing = value.suggestedDollarAmounts || [];
+      if (!existing.includes(customDollar)) {
+        update({ suggestedDollarAmounts: [...existing, customDollar].sort((a, b) => a - b) });
+      }
+      setShowCustomDollar(false);
+    }
+  };
+
+  const handleSelectQuantityPack = (packValues: number[]) => {
+    update({ suggestedQuantities: packValues });
+  };
+
+  const handleToggleQuantity = (qty: number) => {
+    const existing = value.suggestedQuantities || [];
+    if (existing.includes(qty)) {
+      update({ suggestedQuantities: existing.filter((q) => q !== qty) });
+    } else {
+      update({ suggestedQuantities: [...existing, qty].sort((a, b) => a - b) });
+    }
+  };
+
+  const handleAddCustomQuantity = () => {
+    if (customQty > 0) {
+      const existing = value.suggestedQuantities || [];
+      if (!existing.includes(customQty)) {
+        update({ suggestedQuantities: [...existing, customQty].sort((a, b) => a - b) });
+      }
+      setShowCustomQty(false);
+    }
+  };
+
+  return (
+    <fieldset className="space-y-5 rounded-xl border border-white/20 bg-black/30 p-4">
+      <legend className="px-2 font-semibold text-white">How This Product Is Sold</legend>
+
+      {/* Selling Unit Selection */}
       <div className="space-y-2">
-        <Label htmlFor="create-selling-unit">Selling unit</Label>
+        <Label htmlFor="create-selling-unit" className="text-white font-medium">
+          Selling Unit
+        </Label>
         <select
           id="create-selling-unit"
-          className="input w-full rounded-md border bg-background p-2"
+          className="h-11 w-full rounded-lg border border-white/30 bg-[#222] px-3.5 py-2 text-base text-white shadow-xs outline-none transition-colors hover:border-white/50 focus:border-accent focus:ring-2 focus:ring-accent/40 md:text-sm"
           value={value.sellingUnit}
           onChange={(event) => {
-            const nextUnit = event.target.value;
-            update({ sellingUnit: nextUnit });
+            const nextUnit = event.target.value as DRXUnit;
+            // When switching unit, choose sensible initial quantity pack
+            let defaultPack: number[] = [1, 2, 5];
+            if (nextUnit === "g") defaultPack = [1, 3.5, 7, 14, 28];
+            if (nextUnit === "oz") defaultPack = [0.125, 0.25, 0.5, 1];
+            if (nextUnit === "lb") defaultPack = [0.25, 0.5, 1];
+
+            update({
+              sellingUnit: nextUnit,
+              suggestedQuantities: defaultPack,
+            });
           }}
         >
           {ALL_UNIT_OPTIONS.map((opt) => (
@@ -54,179 +163,266 @@ export function FractionalProductFields({
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground">
-          Stock counts, reorder thresholds, and register pricing will all be measured in {unitLabel(currentUnit, true)}.
+        <p className="text-xs text-text-secondary">
+          Stock counts, low stock alerts, and checkout amounts will be measured in {unitLabel(currentUnit, true)}.
         </p>
       </div>
 
-      <div className="flex items-center gap-3 pt-2">
+      {/* Fractional / Weight Toggle */}
+      <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] p-3">
+        <div className="space-y-0.5 pr-4">
+          <Label htmlFor="create-fractional" className="text-sm font-medium text-white cursor-pointer">
+            Sell by weight or fractional amounts
+          </Label>
+          <p className="text-xs text-text-secondary">
+            Allow selling parts of a {unitLabel(currentUnit)} (e.g. 0.5 {unitSymbol(currentUnit)} or ⅛ {unitSymbol(currentUnit)}). Turn off for discrete whole items.
+          </p>
+        </div>
         <Switch
           id="create-fractional"
           checked={value.fractionalEnabled}
           onCheckedChange={(enabled) => {
             onChange({
               ...creationCommerceDefaults(value.sellingUnit, enabled),
-              suggestedDollarAmounts: value.suggestedDollarAmounts,
+              suggestedDollarAmounts: value.suggestedDollarAmounts.length > 0 ? value.suggestedDollarAmounts : [10, 20, 50],
+              suggestedQuantities: enabled
+                ? (currentUnit === "oz" ? [0.125, 0.25, 0.5, 1] : currentUnit === "g" ? [1, 3.5, 7, 14, 28] : [0.5, 1, 2])
+                : [1, 2, 5],
             });
-            setQuantities("");
           }}
         />
-        <Label htmlFor="create-fractional">Allow fractional sales</Label>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Sell partial amounts of a {unitLabel(currentUnit)} (e.g. 0.5 {unitSymbol(currentUnit)}).
-        The selling price and cost above are for one full {unitLabel(currentUnit)}.
-      </p>
+
+      {/* Steppers for Fractional Precision & Increments */}
       {value.fractionalEnabled && (
-        <>
+        <div className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="create-precision">Decimal places</Label>
-              <Input
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-white">Decimal Precision</Label>
+              <StepperInput
                 id="create-precision"
-                type="number"
                 min={1}
                 max={6}
                 step={1}
                 value={value.decimalPrecision}
-                onChange={(e) =>
-                  update({ decimalPrecision: Number(e.target.value) })
-                }
+                onChange={(val) => update({ decimalPrecision: val })}
+                aria-label="Decimal places"
               />
+              <span className="text-[11px] text-text-secondary">e.g. 2 for 0.25</span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-minimum">Minimum sale quantity</Label>
-              <Input
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-white">Smallest Sale Amount</Label>
+              <StepperInput
                 id="create-minimum"
-                type="number"
-                min={0}
-                step="any"
+                min={0.0001}
+                step={value.quantityIncrement || (currentUnit === "oz" ? 0.125 : 0.5)}
+                unit={unitSymbol(currentUnit)}
                 value={value.minimumSaleQuantity}
-                onChange={(e) =>
-                  update({ minimumSaleQuantity: Number(e.target.value) })
-                }
+                onChange={(val) => update({ minimumSaleQuantity: val })}
+                aria-label="Minimum sale amount"
               />
+              <span className="text-[11px] text-text-secondary">Minimum customer can buy</span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-increment">Quantity increment</Label>
-              <Input
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-white">Step Size</Label>
+              <StepperInput
                 id="create-increment"
-                type="number"
-                min={0}
-                step="any"
+                min={0.0001}
+                step={value.quantityIncrement || (currentUnit === "oz" ? 0.125 : 0.5)}
+                unit={unitSymbol(currentUnit)}
                 value={value.quantityIncrement}
-                onChange={(e) =>
-                  update({ quantityIncrement: Number(e.target.value) })
-                }
+                onChange={(val) => update({ quantityIncrement: val })}
+                aria-label="Step size increment"
               />
+              <span className="text-[11px] text-text-secondary">Increment between options</span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Start at the minimum, then add increments. For example, a 0.5
-            minimum and 0.25 increment allow 0.5, 0.75, and 1{" "}
-            {value.sellingUnit}.
-          </p>
-        </>
+        </div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
+
+      {/* Quick-Tap Register Presets Section */}
+      <div className="space-y-4 pt-1">
+        <div>
+          <h4 className="text-sm font-semibold text-white">Quick-Tap Register Buttons</h4>
+          <p className="text-xs text-text-secondary">
+            Pre-configured one-tap buttons on your checkout register so staff don&apos;t have to type common amounts.
+          </p>
+        </div>
+
+        {/* 1. Suggested Dollar Presets */}
+        <div className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
           <div className="flex items-center justify-between">
-            <Label htmlFor="create-dollar-presets">
-              Suggested dollar amounts
+            <Label className="text-xs font-medium uppercase tracking-wider text-accent">
+              Quick Dollar Amounts ($)
             </Label>
+            <button
+              type="button"
+              onClick={() => setShowCustomDollar(!showCustomDollar)}
+              className="flex items-center gap-1 text-xs text-accent hover:underline"
+            >
+              <Plus className="h-3 w-3" />
+              {showCustomDollar ? "Cancel" : "Add custom $"}
+            </button>
           </div>
-          <Input
-            id="create-dollar-presets"
-            placeholder="e.g. 10, 20, 50"
-            value={dollars}
-            onChange={(e) => {
-              setDollars(e.target.value);
-              const parsed = parsePresetInput(e.target.value).filter((n) => !Number.isNaN(n));
-              update({
-                suggestedDollarAmounts: parsed,
-              });
-            }}
-          />
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[11px] text-muted-foreground">Quick presets:</span>
-            {[
-              [10, 20, 50],
-              [15, 30, 60],
-              [20, 40, 80],
-            ].map((presetGroup, idx) => {
-              const label = `$${presetGroup.join(", $")}`;
+
+          {/* Preset Pack Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-text-secondary">Packs:</span>
+            {DOLLAR_PACKS.map((pack, idx) => {
+              const isSelected =
+                value.suggestedDollarAmounts &&
+                value.suggestedDollarAmounts.length === pack.values.length &&
+                pack.values.every((v) => value.suggestedDollarAmounts.includes(v));
               return (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => {
-                    const str = presetGroup.join(", ");
-                    setDollars(str);
-                    update({ suggestedDollarAmounts: presetGroup });
-                  }}
-                  className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+                  onClick={() => handleSelectDollarPack(pack.values)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-accent text-black font-semibold ring-2 ring-accent"
+                      : "border border-white/15 bg-white/5 text-white/90 hover:bg-white/15"
+                  }`}
                 >
-                  {label}
+                  {pack.label}
                 </button>
               );
             })}
           </div>
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="create-quantity-presets">
-              Suggested quantities
-            </Label>
-          </div>
-          <Input
-            id="create-quantity-presets"
-            placeholder={value.fractionalEnabled ? "e.g. 0.5, 1, 3.5" : "e.g. 1, 2, 3"}
-            value={quantities}
-            onChange={(e) => {
-              setQuantities(e.target.value);
-              const parsed = parsePresetInput(e.target.value).filter((n) => !Number.isNaN(n));
-              update({ suggestedQuantities: parsed });
-            }}
-          />
+
+          {/* Active Selected Dollar Chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[11px] text-muted-foreground">Common:</span>
-            {(() => {
-              const unit = value.sellingUnit;
-              let groups: number[][];
-              if (value.fractionalEnabled && unit === "g") {
-                groups = [[1, 3.5, 7], [0.5, 1, 2], [3.5, 7, 14, 28]];
-              } else if (value.fractionalEnabled && unit === "oz") {
-                // 1/8 oz, 1/4 oz, 1/2 oz, 1 oz
-                groups = [[0.125, 0.25, 0.5], [0.25, 0.5, 1], [0.5, 1, 2]];
-              } else if (value.fractionalEnabled && unit === "lb") {
-                groups = [[0.25, 0.5, 1], [0.5, 1, 2], [1, 2, 5]];
-              } else {
-                groups = [[1, 2, 5], [1, 3, 6], [2, 4, 8]];
-              }
-              return groups.map((presetGroup, idx) => {
-                const label = presetGroup.join(", ") + ` ${unit}`;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      const str = presetGroup.join(", ");
-                      setQuantities(str);
-                      update({ suggestedQuantities: presetGroup });
-                    }}
-                    className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
-                  >
-                    {label}
-                  </button>
-                );
-              });
-            })()}
+            <span className="text-xs text-text-secondary">Active buttons:</span>
+            {(!value.suggestedDollarAmounts || value.suggestedDollarAmounts.length === 0) ? (
+              <span className="text-xs italic text-muted-foreground">None selected</span>
+            ) : (
+              value.suggestedDollarAmounts.map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => handleToggleDollar(amt)}
+                  className="group flex items-center gap-1 rounded-md border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent hover:bg-destructive/20 hover:border-destructive/40 hover:text-destructive"
+                  title="Click to remove"
+                >
+                  <span>${amt}</span>
+                  <X className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </button>
+              ))
+            )}
           </div>
-          </div>
+
+          {/* Custom Dollar Adder */}
+          {showCustomDollar && (
+            <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+              <span className="text-xs text-white">Amount ($):</span>
+              <div className="w-36">
+                <StepperInput
+                  min={1}
+                  step={5}
+                  value={customDollar}
+                  onChange={setCustomDollar}
+                  unit="$"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddCustomDollar}
+                className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-black hover:bg-accent/90"
+              >
+                Add ${customDollar}
+              </button>
+            </div>
+          )}
         </div>
-      <p className="text-xs text-muted-foreground">
-        Quick-tap buttons created here will appear on your checkout register so staff can tap popular amounts with one touch.
-      </p>
+
+        {/* 2. Suggested Quantity Presets */}
+        <div className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-medium uppercase tracking-wider text-accent">
+              Quick Quantities ({unitSymbol(currentUnit)})
+            </Label>
+            <button
+              type="button"
+              onClick={() => setShowCustomQty(!showCustomQty)}
+              className="flex items-center gap-1 text-xs text-accent hover:underline"
+            >
+              <Plus className="h-3 w-3" />
+              {showCustomQty ? "Cancel" : "Add custom quantity"}
+            </button>
+          </div>
+
+          {/* Preset Pack Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-text-secondary">Packs:</span>
+            {getQuantityPacks().map((pack, idx) => {
+              const isSelected =
+                value.suggestedQuantities &&
+                value.suggestedQuantities.length === pack.values.length &&
+                pack.values.every((v) => value.suggestedQuantities.includes(v));
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectQuantityPack(pack.values)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-accent text-black font-semibold ring-2 ring-accent"
+                      : "border border-white/15 bg-white/5 text-white/90 hover:bg-white/15"
+                  }`}
+                >
+                  {pack.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Selected Quantity Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-xs text-text-secondary">Active buttons:</span>
+            {(!value.suggestedQuantities || value.suggestedQuantities.length === 0) ? (
+              <span className="text-xs italic text-muted-foreground">None selected</span>
+            ) : (
+              value.suggestedQuantities.map((qty) => (
+                <button
+                  key={qty}
+                  type="button"
+                  onClick={() => handleToggleQuantity(qty)}
+                  className="group flex items-center gap-1 rounded-md border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent hover:bg-destructive/20 hover:border-destructive/40 hover:text-destructive"
+                  title="Click to remove"
+                >
+                  <span>{formatPresetLabel(qty, unitSymbol(currentUnit))}</span>
+                  <X className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Custom Quantity Adder */}
+          {showCustomQty && (
+            <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+              <span className="text-xs text-white">Quantity:</span>
+              <div className="w-36">
+                <StepperInput
+                  min={0.01}
+                  step={value.quantityIncrement || 0.5}
+                  value={customQty}
+                  onChange={setCustomQty}
+                  unit={unitSymbol(currentUnit)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddCustomQuantity}
+                className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-black hover:bg-accent/90"
+              >
+                Add {customQty} {unitSymbol(currentUnit)}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </fieldset>
   );
 }

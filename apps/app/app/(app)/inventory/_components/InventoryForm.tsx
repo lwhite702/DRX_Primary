@@ -14,13 +14,8 @@ import {
   creationCommerceDefaults,
   newProductCommerceSchema,
 } from "@/lib/commerce/product-creation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+import { StepperInput } from "@/components/ui/stepper-input";
 
 interface InventoryFormProps {
   initialData?: Inventory | null;
@@ -70,6 +65,7 @@ export function InventoryForm({
       quantity_on_hand: 0,
       reorder_level: 10,
       unit_of_measure: "g", // Default
+      category: initialData?.category || "Flower",
       is_taxable: initialData?.is_taxable ?? true,
       location: initialData?.location ?? "",
       ...initialData,
@@ -102,7 +98,7 @@ export function InventoryForm({
 
   const [selectedCategoryType, setSelectedCategoryType] =
     React.useState<string>(() => {
-      if (!initialData?.category) return "";
+      if (!initialData?.category) return "Flower";
       return CATEGORIES_LIST.includes(initialData.category)
         ? initialData.category
         : "Other";
@@ -218,9 +214,11 @@ export function InventoryForm({
                 Category
                 <HelpTooltip content="Categories map products to correct tax rates and measuring types (e.g. solids vs liquids)." />
               </Label>
-              <Select
+              <select
+                id="category"
                 value={selectedCategoryType}
-                onValueChange={(val) => {
+                onChange={(e) => {
+                  const val = e.target.value;
                   setSelectedCategoryType(val);
                   if (val !== "Other") {
                     setValue("category", val);
@@ -228,19 +226,15 @@ export function InventoryForm({
                     setValue("category", "");
                   }
                 }}
+                className="h-11 w-full rounded-lg border border-white/30 bg-[#222] px-3.5 py-2 text-base text-white shadow-xs outline-none transition-colors hover:border-white/50 focus:border-accent focus:ring-2 focus:ring-accent/40 md:text-sm"
               >
-                <SelectTrigger className="bg-black/50 border-white/10">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/10 text-foreground">
-                  {CATEGORIES_LIST.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="Other">Other (Custom)...</SelectItem>
-                </SelectContent>
-              </Select>
+                {CATEGORIES_LIST.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+                <option value="Other">Other (Custom)...</option>
+              </select>
 
               {selectedCategoryType === "Other" && (
                 <Input
@@ -281,17 +275,19 @@ export function InventoryForm({
             <div className="space-y-2">
               <Label
                 htmlFor="quantity_on_hand"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-white font-medium"
               >
-                Initial Quantity On Hand ({commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}) *
-                <HelpTooltip content="The current physical amount in stock. Measured in your chosen selling unit (e.g. grams or units)." />
+                Initial Stock Count ({commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}) *
+                <HelpTooltip content="The current physical amount in stock. Measured in your chosen selling unit." />
               </Label>
-              <Input
+              <StepperInput
                 id="quantity_on_hand"
-                type="number"
-                placeholder="0"
-                className="bg-black/50 border-white/10"
-                {...register("quantity_on_hand", { valueAsNumber: true })}
+                min={0}
+                step={1}
+                unit={commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}
+                value={watch("quantity_on_hand")}
+                onChange={(val) => setValue("quantity_on_hand", val, { shouldValidate: true })}
+                aria-label="Initial stock count"
               />
               {errors.quantity_on_hand && (
                 <p className="text-sm text-destructive" role="alert">
@@ -302,17 +298,19 @@ export function InventoryForm({
             <div className="space-y-2">
               <Label
                 htmlFor="reorder_level"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-white font-medium"
               >
-                Reorder Alert Level *
-                <HelpTooltip content="Shows a low-stock alert on Home when the count falls below this number." />
+                Low Stock Alert Level *
+                <HelpTooltip content="We'll notify you on the dashboard when inventory drops to or below this number." />
               </Label>
-              <Input
+              <StepperInput
                 id="reorder_level"
-                type="number"
-                placeholder="10"
-                className="bg-black/50 border-white/10"
-                {...register("reorder_level", { valueAsNumber: true })}
+                min={0}
+                step={5}
+                unit={commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}
+                value={watch("reorder_level")}
+                onChange={(val) => setValue("reorder_level", val, { shouldValidate: true })}
+                aria-label="Low stock alert level"
               />
               {errors.reorder_level && (
                 <p className="text-sm text-destructive" role="alert">
@@ -348,9 +346,9 @@ export function InventoryForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="unit_cost" className="flex items-center gap-1">
-                Acquisition Unit Cost ($)
-                <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses it to work out profit.`} />
+              <Label htmlFor="unit_cost" className="flex items-center gap-1 text-white font-medium">
+                Unit Cost ($)
+                <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses this to calculate profit.`} />
               </Label>
               <Input
                 id="unit_cost"
@@ -369,9 +367,9 @@ export function InventoryForm({
             <div className="space-y-2">
               <Label
                 htmlFor="selling_price"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-white font-medium"
               >
-                Selling Retail Price ($)
+                Retail Price ($) *
                 <HelpTooltip content={`The base retail price customers pay per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"} at checkout.`} />
               </Label>
               <Input
@@ -408,9 +406,7 @@ export function InventoryForm({
               />
               {(errors.commerce_config || invalidCommerce) && (
                 <p role="alert" className="text-sm text-destructive">
-                  Check your selling rules: use positive quantities that fit the
-                  decimal places, and presets aligned to the minimum plus
-                  increments.
+                  Please ensure your selling rules and quick-tap amounts match your step size.
                 </p>
               )}
             </>
@@ -492,13 +488,15 @@ export function InventoryForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="flex items-center gap-1">
+                <Label htmlFor="category" className="flex items-center gap-1 text-white font-medium">
                   Category
                   <HelpTooltip content="Categories map products to correct tax rates and measuring units." />
                 </Label>
-                <Select
+                <select
+                  id="category"
                   value={selectedCategoryType}
-                  onValueChange={(val) => {
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setSelectedCategoryType(val);
                     if (val !== "Other") {
                       setValue("category", val);
@@ -506,19 +504,15 @@ export function InventoryForm({
                       setValue("category", "");
                     }
                   }}
+                  className="h-11 w-full rounded-lg border border-white/30 bg-[#222] px-3.5 py-2 text-base text-white shadow-xs outline-none transition-colors hover:border-white/50 focus:border-accent focus:ring-2 focus:ring-accent/40 md:text-sm"
                 >
-                  <SelectTrigger className="bg-black/50 border-white/10">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-white/10 text-foreground">
-                    {CATEGORIES_LIST.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="Other">Other (Custom)...</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {CATEGORIES_LIST.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                  <option value="Other">Other (Custom)...</option>
+                </select>
 
                 {selectedCategoryType === "Other" && (
                   <Input
@@ -533,8 +527,8 @@ export function InventoryForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="selling_price" className="flex items-center gap-1">
-                  Selling Retail Price ($) *
+                <Label htmlFor="selling_price" className="flex items-center gap-1 text-white font-medium">
+                  Retail Price ($) *
                   <HelpTooltip content={`The base retail price customers pay per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"} at checkout.`} />
                 </Label>
                 <Input
@@ -553,9 +547,9 @@ export function InventoryForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="unit_cost" className="flex items-center gap-1">
-                  Acquisition Unit Cost ($)
-                  <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses it to work out profit.`} />
+                <Label htmlFor="unit_cost" className="flex items-center gap-1 text-white font-medium">
+                  Unit Cost ($)
+                  <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses this to calculate profit.`} />
                 </Label>
                 <Input
                   id="unit_cost"
@@ -574,16 +568,18 @@ export function InventoryForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity_on_hand" className="flex items-center gap-1">
+              <Label htmlFor="quantity_on_hand" className="flex items-center gap-1 text-white font-medium">
                 Current Stock ({commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}) *
                 <HelpTooltip content="The current physical amount on hand." />
               </Label>
-              <Input
+              <StepperInput
                 id="quantity_on_hand"
-                type="number"
-                placeholder="0"
-                className="bg-black/50 border-white/10"
-                {...register("quantity_on_hand", { valueAsNumber: true })}
+                min={0}
+                step={1}
+                unit={commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}
+                value={watch("quantity_on_hand")}
+                onChange={(val) => setValue("quantity_on_hand", val, { shouldValidate: true })}
+                aria-label="Current stock count"
               />
               {errors.quantity_on_hand && (
                 <p className="text-sm text-destructive" role="alert">
@@ -634,16 +630,18 @@ export function InventoryForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="reorder_level" className="flex items-center gap-1">
-                  Reorder Alert Threshold
-                  <HelpTooltip content="Shows a low-stock alert when the quantity falls below this level." />
+                <Label htmlFor="reorder_level" className="flex items-center gap-1 text-white font-medium">
+                  Low Stock Alert Threshold
+                  <HelpTooltip content="We'll notify you on the dashboard when inventory drops to or below this amount." />
                 </Label>
-                <Input
+                <StepperInput
                   id="reorder_level"
-                  type="number"
-                  placeholder="10"
-                  className="bg-black/50 border-white/10"
-                  {...register("reorder_level", { valueAsNumber: true })}
+                  min={0}
+                  step={5}
+                  unit={commerceConfig?.sellingUnit || watch("unit_of_measure") || "units"}
+                  value={watch("reorder_level")}
+                  onChange={(val) => setValue("reorder_level", val, { shouldValidate: true })}
+                  aria-label="Low stock alert threshold"
                 />
                 {errors.reorder_level && (
                   <p className="text-sm text-destructive" role="alert">
@@ -702,9 +700,7 @@ export function InventoryForm({
                 />
                 {(errors.commerce_config || invalidCommerce) && (
                   <p role="alert" className="text-sm text-destructive">
-                    Check your selling rules: use positive quantities that fit the
-                    decimal places, and presets aligned to the minimum plus
-                    increments.
+                    Please ensure your selling rules and quick-tap amounts match your step size.
                   </p>
                 )}
               </>
