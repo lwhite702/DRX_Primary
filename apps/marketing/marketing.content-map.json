@@ -34,7 +34,8 @@
     "/resources/guides/inventory-intake-and-adjustments",
     "/resources/guides/credit-and-payments",
     "/resources/guides/privacy-presets-and-team-roles",
-    "/resources/changelog",
+    "/updates",
+    "/sms-consent",
     "/beta",
     "/legal",
     "/legal/privacy",
@@ -48,6 +49,7 @@
     "/legal/terms",
     "/legal/lawful-use",
     "/legal/regulatory-disclaimer",
-    "/resources/changelog"
+    "/sms-consent",
+    "/updates"
   ]
 }

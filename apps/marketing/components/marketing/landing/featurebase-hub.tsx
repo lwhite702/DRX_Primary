@@ -20,49 +20,49 @@ const tabConfig: Array<{ id: UpdatesView; label: string }> = [
 
 const changelogEntries = [
   {
-    version: "v0.9.1",
+    version: "v0.9.4",
     tag: "Current Release",
-    title: "In-App User Feedback & Mintlify Knowledge Base",
+    title: "Point-of-Sale Discounts & Web Onboarding Alignments",
     summary:
-      "Integrated Sentry client user feedback widget with screenshot support. Migrated all documentation and help desk procedures to Mintlify.",
-    link: `${docsChangelogUrl}#0-9-1`,
+      "Added multi-surface POS percentage and flat-amount discounts with live totals calculation. Fixed iOS mutation type inference and onboarding wizard flows.",
+    link: `${docsChangelogUrl}#0-9-4`,
   },
   {
-    version: "v0.9.0",
-    tag: "Core Platform",
-    title: "Convex-First Realtime Migration & Offline SQLite Layer",
+    version: "v0.9.3",
+    tag: "Compliance & Design",
+    title: "10DLC SMS Compliance & Mobile-First Redesign",
     summary:
-      "Transitioned reactive app state, real-time inventory adjustments, and checkout reconciliation to Convex.",
-    link: `${docsChangelogUrl}#0-9-0`,
+      "Added dedicated SMS Communication Consent workflow with strict privacy protections, brand-aligned headers, and responsive operator proof layouts.",
+    link: `${docsChangelogUrl}#0-9-3`,
   },
   {
-    version: "v0.8.0",
-    tag: "Security",
-    title: "Zero-PII Privacy Enclaves & Automated Retention",
+    version: "v0.9.2",
+    tag: "Core Stability",
+    title: "In-App Feedback, Security Headers & Mintlify Docs",
     summary:
-      "Scheduled privacy retention pipelines that permanently wipe unneeded customer identifiers on configurable timelines.",
-    link: `${docsChangelogUrl}#0-8-0`,
+      "Configured Sentry user feedback with screenshot capture, strict Content-Security-Policy headers, and migrated full knowledge center to Mintlify.",
+    link: `${docsChangelogUrl}#0-9-2`,
   },
 ];
 
 const roadmapEntries = [
   {
     status: "Active Work",
-    title: "Store Credit & Ledger Rebalancing",
+    title: "Native Android POS & Hardware Integration",
     description:
-      "Fine-grained credit limit recommendations, balance auditing, and multi-tenant ledger verification.",
+      "Bluetooth thermal receipt printing, physical barcode scanner pairing, and local transaction caching with automatic reconciliation.",
   },
   {
     status: "Planned",
-    title: "Offline-First Mobile PWA & Native Sync",
+    title: "Multi-Store Inventory Balancing & Transfers",
     description:
-      "Encrypted device-local catalog caching with background sync reconciliation on network reconnect.",
+      "Inter-location transfers, multi-warehouse stock allocations, and consolidated chain-level sales and credit reporting.",
   },
   {
     status: "In Research",
-    title: "Multi-Store Inventory Balancing",
+    title: "Advanced Financial Reporting & Tax Exports",
     description:
-      "Inter-location transfers, multi-warehouse stock allocations, and consolidated reporting.",
+      "Automated sales tax summary exports, category-level margin breakdowns, and certified compliance audit journal generation.",
   },
 ];
 

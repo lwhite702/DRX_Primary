@@ -226,11 +226,13 @@ export const cyberFooterColumns = [
     ],
   },
   {
-    title: "Security",
+    title: "Security & Legal",
     links: [
-      { label: "Privacy", href: "/legal/privacy" },
-      { label: "Terms", href: "/legal/terms" },
+      { label: "Privacy Policy", href: "/legal/privacy" },
+      { label: "Terms of Service", href: "/legal/terms" },
       { label: "Lawful Use", href: "/legal/lawful-use" },
+      { label: "Regulatory Disclaimer", href: "/legal/regulatory-disclaimer" },
+      { label: "SMS Consent", href: "/sms-consent" },
     ],
   },
 ] as const;
