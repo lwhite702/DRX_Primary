@@ -20,7 +20,14 @@
     "strict": false
   },
   "fonts": {
-    "family": "Plus Jakarta Sans"
+    "heading": {
+      "family": "Plus Jakarta Sans",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 500
+    }
   },
   "icons": {
     "library": "lucide"
@@ -139,24 +146,6 @@
         ]
       },
       {
-        "group": "Privacy",
-        "pages": ["privacy/privacy-and-minimal-data"]
-      },
-      {
-        "group": "Team and access",
-        "pages": [
-          "access/switch-workspaces-and-check-access",
-          "access/troubleshoot-workspaces-and-access"
-        ]
-      },
-      {
-        "group": "Customers and balances",
-        "pages": [
-          "customers/customers-and-store-credit",
-          "customers/troubleshoot-customers-and-credit"
-        ]
-      },
-      {
         "group": "Inventory",
         "pages": [
           "inventory/inventory-intake-and-adjustments",
@@ -177,12 +166,32 @@
         ]
       },
       {
+        "group": "Customers and balances",
+        "pages": [
+          "customers/customers-and-store-credit",
+          "customers/troubleshoot-customers-and-credit"
+        ]
+      },
+      {
+        "group": "Team and access",
+        "pages": [
+          "access/switch-workspaces-and-check-access",
+          "access/troubleshoot-workspaces-and-access"
+        ]
+      },
+      {
+        "group": "Privacy",
+        "pages": [
+          "privacy/privacy-and-minimal-data"
+        ]
+      },
+      {
         "group": "Reference",
         "pages": [
           "beta-access-and-use",
+          "CHANGELOG",
           "glossary",
-          "legal-disclaimer",
-          "CHANGELOG"
+          "legal-disclaimer"
         ]
       }
     ]
