@@ -13,6 +13,7 @@ import {
 } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
+import { gramFactorForUnit, type DRXUnit } from "../lib/units/convert";
 
 export const productRecord = v.object({
   _id: v.id("products"),
@@ -31,6 +32,7 @@ export const productRecord = v.object({
   reorderLevelGrams: v.number(),
   allowFractionalWeight: v.boolean(),
   sellingUnit: v.string(),
+  gramFactor: v.optional(v.number()),
   quantityPrecision: v.number(),
   minimumSaleQuantity: v.number(),
   quantityIncrement: v.number(),
@@ -240,6 +242,7 @@ export const updateCommerceConfig = mutation({
         : {}),
       sellingPriceCents: baseUnitPriceCents,
       sellingUnit,
+      gramFactor: gramFactorForUnit(sellingUnit as DRXUnit),
       quantityPrecision: args.quantityPrecision,
       minimumSaleQuantity: args.minimumSaleQuantity,
       quantityIncrement: args.quantityIncrement,
@@ -445,6 +448,8 @@ export const createProduct = mutation({
       throw new Error("INVALID_ARGUMENT: Starting stock requires a nonnegative integer-cent unit cost");
     }
     const location = args.location?.trim() || undefined;
+    const effectiveSellingUnit = (creationCommerce?.sellingUnit ?? commerceDefaults.sellingUnit ?? "g") as DRXUnit;
+    const gramFactor = gramFactorForUnit(effectiveSellingUnit);
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
       sku: args.sku,
@@ -463,6 +468,7 @@ export const createProduct = mutation({
       suggestedDollarPresetsCents: [],
       bulkPriceTiers: [],
       ...creationCommerce,
+      gramFactor,
       isActive: true,
       createdAt: now,
       updatedAt: now,

@@ -125,15 +125,16 @@ export function InventoryForm({
   const profit = price - cost;
   const marginPercentage = price > 0 ? (profit / price) * 100 : 0;
   const markupPercentage = cost > 0 ? (profit / cost) * 100 : 0;
+  const userSelectedUnit = React.useRef(false);
 
-  // Auto-set unit based on category
+  // Auto-set unit based on category only if operator hasn't explicitly chosen a unit
   React.useEffect(() => {
     const isExistingItem =
       initialData &&
       "id" in initialData &&
       !!(initialData as { id?: string }).id;
 
-    if (category && !isExistingItem) {
+    if (category && !isExistingItem && !userSelectedUnit.current) {
       const unit = getUnitForCategory(category);
       setValue("unit_of_measure", unit);
       if (commerceConfig) setValue("commerce_config.sellingUnit", unit);
@@ -349,7 +350,7 @@ export function InventoryForm({
             <div className="space-y-2">
               <Label htmlFor="unit_cost" className="flex items-center gap-1">
                 Acquisition Unit Cost ($)
-                <HelpTooltip content="What you paid per unit or gram. DRX uses it to work out profit." />
+                <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses it to work out profit.`} />
               </Label>
               <Input
                 id="unit_cost"
@@ -371,7 +372,7 @@ export function InventoryForm({
                 className="flex items-center gap-1"
               >
                 Selling Retail Price ($)
-                <HelpTooltip content="The base retail price customers pay per unit or per gram at checkout." />
+                <HelpTooltip content={`The base retail price customers pay per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"} at checkout.`} />
               </Label>
               <Input
                 id="selling_price"
@@ -394,6 +395,7 @@ export function InventoryForm({
               <FractionalProductFields
                 value={commerceConfig}
                 onChange={(config) => {
+                  userSelectedUnit.current = true;
                   setValue("commerce_config", config, {
                     shouldValidate: true,
                     shouldDirty: true,
@@ -533,7 +535,7 @@ export function InventoryForm({
               <div className="space-y-2">
                 <Label htmlFor="selling_price" className="flex items-center gap-1">
                   Selling Retail Price ($) *
-                  <HelpTooltip content="The base retail price customers pay per unit or gram at checkout." />
+                  <HelpTooltip content={`The base retail price customers pay per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"} at checkout.`} />
                 </Label>
                 <Input
                   id="selling_price"
@@ -553,7 +555,7 @@ export function InventoryForm({
               <div className="space-y-2">
                 <Label htmlFor="unit_cost" className="flex items-center gap-1">
                   Acquisition Unit Cost ($)
-                  <HelpTooltip content="What you paid per unit or gram. DRX uses it to work out profit." />
+                  <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses it to work out profit.`} />
                 </Label>
                 <Input
                   id="unit_cost"

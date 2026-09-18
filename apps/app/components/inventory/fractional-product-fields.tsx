@@ -9,6 +9,12 @@ import {
   creationCommerceDefaults,
   parsePresetInput,
 } from "@/lib/commerce/product-creation";
+import {
+  ALL_UNIT_OPTIONS,
+  unitLabel,
+  unitSymbol,
+  type DRXUnit,
+} from "@/lib/units/convert";
 
 export function FractionalProductFields({
   value,
@@ -25,10 +31,35 @@ export function FractionalProductFields({
   );
   const update = (patch: Partial<ProductCommerceConfig>) =>
     onChange({ ...value, ...patch });
+  const currentUnit = (value.sellingUnit || "unit") as DRXUnit;
+
   return (
     <fieldset className="space-y-4 rounded-xl border border-white/20 p-4">
       <legend className="px-2 font-semibold">How this product is sold</legend>
-      <div className="flex items-center gap-3">
+
+      <div className="space-y-2">
+        <Label htmlFor="create-selling-unit">Selling unit</Label>
+        <select
+          id="create-selling-unit"
+          className="input w-full rounded-md border bg-background p-2"
+          value={value.sellingUnit}
+          onChange={(event) => {
+            const nextUnit = event.target.value;
+            update({ sellingUnit: nextUnit });
+          }}
+        >
+          {ALL_UNIT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Stock counts, reorder thresholds, and register pricing will all be measured in {unitLabel(currentUnit, true)}.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 pt-2">
         <Switch
           id="create-fractional"
           checked={value.fractionalEnabled}
@@ -43,31 +74,9 @@ export function FractionalProductFields({
         <Label htmlFor="create-fractional">Allow fractional sales</Label>
       </div>
       <p className="text-sm text-muted-foreground">
-        Sell part of a unit, such as 0.5 g. The selling price and cost above are
-        for one full selling unit. This applies only to this product.
+        Sell partial amounts of a {unitLabel(currentUnit)} (e.g. 0.5 {unitSymbol(currentUnit)}).
+        The selling price and cost above are for one full {unitLabel(currentUnit)}.
       </p>
-      <div className="space-y-2">
-        <Label htmlFor="create-selling-unit">Selling unit</Label>
-        <select
-          id="create-selling-unit"
-          className="input w-full rounded-md border bg-background p-2"
-          value={value.sellingUnit}
-          onChange={(event) => update({ sellingUnit: event.target.value })}
-        >
-          {[
-            ["unit", "Unit"],
-            ["g", "Gram (g)"],
-            ["oz", "Ounce (oz)"],
-            ["lb", "Pound (lb)"],
-            ["ml", "Milliliter (ml)"],
-            ["L", "Liter (L)"],
-          ].map(([unit, label]) => (
-            <option key={unit} value={unit}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
       {value.fractionalEnabled && (
         <>
           <div className="grid gap-4 sm:grid-cols-3">

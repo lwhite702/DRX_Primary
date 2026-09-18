@@ -204,6 +204,7 @@ export default defineSchema({
     reorderLevelGrams: v.number(),
     allowFractionalWeight: v.boolean(),
     sellingUnit: v.optional(v.string()),
+    gramFactor: v.optional(v.number()), // Grams or ml per selling unit (NIST-traceable scale factor)
     quantityPrecision: v.optional(v.number()),
     minimumSaleQuantity: v.optional(v.number()),
     quantityIncrement: v.optional(v.number()),

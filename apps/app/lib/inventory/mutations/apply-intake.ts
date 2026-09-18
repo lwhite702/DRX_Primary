@@ -7,7 +7,10 @@ export function buildIntakeMutation(input: {
   idempotencyKey: string;
   quantityGrams: number;
   sourceRef: string;
+  gramFactor?: number;
 }) : InventoryMutationInput {
+  const factor = input.gramFactor ?? 1;
+  const quantityUnits = factor > 0 ? input.quantityGrams / factor : input.quantityGrams;
   return {
     event: {
       businessId: input.businessId,
@@ -17,13 +20,13 @@ export function buildIntakeMutation(input: {
       actorUserId: input.actorUserId,
       source: "inventory.intake",
       sourceRef: input.sourceRef,
-      quantityDeltaUnits: input.quantityGrams,
+      quantityDeltaUnits: quantityUnits,
       quantityDeltaGrams: input.quantityGrams,
     },
     stateDelta: {
       businessId: input.businessId,
       inventoryId: input.inventoryId,
-      quantityDeltaUnits: input.quantityGrams,
+      quantityDeltaUnits: quantityUnits,
       quantityDeltaGrams: input.quantityGrams,
     },
   };
