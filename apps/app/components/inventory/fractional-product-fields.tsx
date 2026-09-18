@@ -181,37 +181,40 @@ export function FractionalProductFields({
           />
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[11px] text-muted-foreground">Common:</span>
-            {(value.fractionalEnabled && value.sellingUnit === "g"
-              ? [
-                  [1, 3.5, 7],
-                  [0.5, 1, 2],
-                  [3.5, 7, 14, 28],
-                ]
-              : [
-                  [1, 2, 5],
-                  [1, 3, 6],
-                  [2, 4, 8],
-                ]
-            ).map((presetGroup, idx) => {
-              const label = presetGroup.join(", ") + ` ${value.sellingUnit}`;
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    const str = presetGroup.join(", ");
-                    setQuantities(str);
-                    update({ suggestedQuantities: presetGroup });
-                  }}
-                  className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
-                >
-                  {label}
-                </button>
-              );
-            })}
+            {(() => {
+              const unit = value.sellingUnit;
+              let groups: number[][];
+              if (value.fractionalEnabled && unit === "g") {
+                groups = [[1, 3.5, 7], [0.5, 1, 2], [3.5, 7, 14, 28]];
+              } else if (value.fractionalEnabled && unit === "oz") {
+                // 1/8 oz, 1/4 oz, 1/2 oz, 1 oz
+                groups = [[0.125, 0.25, 0.5], [0.25, 0.5, 1], [0.5, 1, 2]];
+              } else if (value.fractionalEnabled && unit === "lb") {
+                groups = [[0.25, 0.5, 1], [0.5, 1, 2], [1, 2, 5]];
+              } else {
+                groups = [[1, 2, 5], [1, 3, 6], [2, 4, 8]];
+              }
+              return groups.map((presetGroup, idx) => {
+                const label = presetGroup.join(", ") + ` ${unit}`;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      const str = presetGroup.join(", ");
+                      setQuantities(str);
+                      update({ suggestedQuantities: presetGroup });
+                    }}
+                    className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+                  >
+                    {label}
+                  </button>
+                );
+              });
+            })()}
+          </div>
           </div>
         </div>
-      </div>
       <p className="text-xs text-muted-foreground">
         Quick-tap buttons created here will appear on your checkout register so staff can tap popular amounts with one touch.
       </p>

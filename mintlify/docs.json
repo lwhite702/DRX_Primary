@@ -39,6 +39,7 @@
     "links": [
       { "label": "Product", "href": "https://deelrxcrm.com" },
       { "label": "Help & Support", "href": "/start/help-and-support" },
+      { "label": "Roadmap", "href": "/roadmap" },
       { "label": "Changelog", "href": "/CHANGELOG" }
     ],
     "primary": {
@@ -79,6 +80,10 @@
           {
             "label": "Help & Support",
             "href": "/start/help-and-support"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/roadmap"
           },
           {
             "label": "Changelog",
@@ -182,6 +187,7 @@
           "beta-access-and-use",
           "glossary",
           "legal-disclaimer",
+          "roadmap",
           "CHANGELOG"
         ]
       }

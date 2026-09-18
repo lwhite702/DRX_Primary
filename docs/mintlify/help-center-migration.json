@@ -27,11 +27,13 @@
     "/beta-access-and-use",
     "/legal-disclaimer",
     "/glossary",
+    "/roadmap",
     "/CHANGELOG"
   ],
   "transition": {
     "featurebaseHelpCenter": "Keep public during the transition because drx.featurebase.app URLs cannot be redirected by Mintlify.",
-    "featurebaseProducts": "Continue using Featurebase for feedback, roadmap, changelog, and in-app support.",
+    "mintlifyAuthority": "All support, help, changelogs, and roadmaps are owned by Mintlify as the authoritative publication surface.",
+    "featurebaseProducts": "Featurebase remains read-only during transition.",
     "cutoverGate": "Do not change public help links until the Mintlify deployment and DRX-owned docs domain pass live verification."
   }
 }
