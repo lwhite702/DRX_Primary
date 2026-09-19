@@ -12,6 +12,8 @@ export function fullCommerceInput(payload: Omit<FullPayload, "idempotencyKey">, 
   if (!Number.isSafeInteger(fee) || Math.abs(fee - (payload.deliveryPrice ?? 0) * 100) > 1e-6) throw new Error("INVALID_ARGUMENT: Invalid delivery charge");
   return {
     businessId, customerId: payload.customerId, fees: payload.fees, usePriceOverrides: true,
+    discountAmountCents: payload.discountAmountCents,
+    discountReason: payload.discountReason,
     items: payload.items.map(item => ({ ...item, unitPrice: item.overrideReason && item.weightGrams ? Math.round(item.unitPrice * 100 / item.weightGrams) / 100 : item.unitPrice })),
     fullDelivery: hasDelivery ? { profileId: payload.deliveryManagementId ?? undefined, address: payload.deliveryAddress!, customerFeeCents: fee } : undefined,
   };

@@ -6,8 +6,10 @@ import { z } from "zod";
 import { auth } from "@/lib/adapters/auth/server";
 import type { PrivacyProfile } from "@/lib/privacy/types";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { provisionBusinessInConvex } from "@/lib/convex/onboarding-server";
 import { setupBusinessSchema, type SetupBusinessInput } from "@/lib/onboarding/setup-schema";
+import { ONBOARDING_COMPLETION_COOKIE } from "@/lib/auth/onboarding-completion";
 
 export type SetupBusinessData = {
   businessName: string;
@@ -92,6 +94,19 @@ export async function setupBusinessAction(data: SetupBusinessData) {
 
     if (result.status === "BUSINESS_MISSING") {
       return { error: "Business configuration could not be verified. Please reload and try again." };
+    }
+
+    try {
+      const cookieStore = await cookies();
+      cookieStore.set(ONBOARDING_COMPLETION_COOKIE, "true", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60,
+      });
+    } catch (cookieError) {
+      console.warn("Could not set onboarding completion cookie:", cookieError);
     }
 
     revalidatePath("/");

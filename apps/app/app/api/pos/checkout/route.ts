@@ -12,7 +12,18 @@ export async function POST(request: NextRequest) {
     const parsed = posCheckoutSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ success: false, error: "Invalid checkout payload" }, { status: 400 });
     const payload = parsed.data;
-    const result = payload.mode === "full" ? await performFullCheckout(payload, businessId) : await checkoutCanonicalCommerce({ businessId, customerId: payload.customerId, items: payload.items, delivery: payload.delivery, idempotencyKey: payload.idempotencyKey, paymentMethod: payload.payment.method });
+    const result = payload.mode === "full"
+      ? await performFullCheckout(payload, businessId)
+      : await checkoutCanonicalCommerce({
+          businessId,
+          customerId: payload.customerId,
+          items: payload.items,
+          delivery: payload.delivery,
+          idempotencyKey: payload.idempotencyKey,
+          paymentMethod: payload.payment.method,
+          discountAmountCents: payload.discountAmountCents,
+          discountReason: payload.discountReason,
+        });
     return NextResponse.json({ ...buildCheckoutSuccess(result), total: result.total, changeAmount: result.changeAmount, receipt: { saleId: result.saleId, total: result.total, receipt: payload.payment.receipt, channels: payload.payment.receipt === "none" ? [] : [{ type: "receipt", value: payload.payment.receipt }] } }, { status: 201 });
   } catch (error) { return checkoutFailure(error); }
 }

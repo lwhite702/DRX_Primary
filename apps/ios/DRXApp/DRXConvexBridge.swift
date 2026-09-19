@@ -362,6 +362,7 @@ struct CheckoutArgs: Encodable, Sendable {
     let items: [CheckoutItem]
     let paymentMethod: String
     let amountPaidCents: Int
+    let discountAmountCents: Int?
     let delivery: CheckoutDelivery?
 }
 
@@ -379,6 +380,7 @@ struct CheckoutDelivery: Encodable, Sendable {
 struct CheckoutQuoteArgs: Encodable, Sendable {
     let customerId: String?
     let items: [CheckoutItem]
+    let discountAmountCents: Int?
     let delivery: CheckoutQuoteDelivery?
 }
 

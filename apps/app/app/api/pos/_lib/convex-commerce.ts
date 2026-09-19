@@ -26,6 +26,8 @@ type CanonicalInput = {
   items: CanonicalCartItem[];
   delivery?: QuickPosDeliveryState;
   fullDelivery?: { profileId?: string; address: string; customerFeeCents: number };
+  discountAmountCents?: number;
+  discountReason?: string;
   fees?: Array<{ type: string; amount?: number; value?: string }>;
   usePriceOverrides?: boolean;
 };
@@ -143,6 +145,7 @@ function toWebQuote(quote: {
   return {
     subtotal: quote.merchandiseSubtotalCents / 100,
     subtotalAfterDiscount: quote.subtotalCents / 100,
+    discountAmount: quote.discountCents / 100,
     loyaltyDiscountAmount: quote.discountCents / 100,
     loyaltyDiscountRate: 0,
     taxAmount:
@@ -161,6 +164,7 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,
     items: canonical.items,
+    ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
     ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
     ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
@@ -188,6 +192,7 @@ export async function checkoutCanonicalCommerce(
   const quote = await canonical.client.query(api.checkout.quoteCheckout, {
     customerId: canonical.customerId,
     items: canonical.items,
+    ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
     ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
     ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
@@ -199,6 +204,7 @@ export async function checkoutCanonicalCommerce(
     customerId: canonical.customerId,
     orderNumber: `WEB-${input.idempotencyKey}`,
     items: canonical.items,
+    ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
     ...(canonical.priceOverrides.length ? { priceOverrides: canonical.priceOverrides } : {}),
     ...(canonical.fees?.length ? { fees: canonical.fees } : {}),
     ...(canonical.manualItems.length
@@ -231,6 +237,7 @@ export async function checkoutFullCanonicalCommerce(input: CanonicalInput & {
   const result = await canonical.client.mutation(api.checkout.processCheckout, {
     customerId: canonical.customerId, orderNumber: `WEB-${input.idempotencyKey}`,
     items: canonical.items, priceOverrides: canonical.priceOverrides, fees: canonical.fees,
+    ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
     paymentMethod: input.paymentMethod, paymentReference: input.paymentRef,
     expectedTotalCents,
     amountPaidCents: input.amountPaid === undefined ? (input.paymentMethod === "credit" ? 0 : expectedTotalCents) : checkedCents(input.amountPaid),

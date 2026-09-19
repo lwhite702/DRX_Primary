@@ -763,4 +763,115 @@ describe("Android offline checkout", () => {
     );
     expect(configuredProduct?.quantityOnHandGrams).toBe(4.75);
   });
+
+  it("syncs discounted offline sales, recalculates tax properly, and validates payment against discounted total", async () => {
+    const t = convexTest(schema, modules);
+    const owner = t.withIdentity({
+      subject: "android_owner_discount",
+      email: "owner_discount@example.test",
+    });
+    await owner.mutation(api.onboarding.createBusinessOnboarding, {
+      businessName: "Offline Discount Store",
+      collectTax: true,
+      taxRateBps: 1_000, // 10% tax
+    });
+    const customerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "Offline Discount Customer",
+      creditLimitCents: 0,
+    });
+    const taxableProduct = await owner.mutation(api.products.createProduct, {
+      sku: "OFF-TAX-1",
+      productName: "Offline Taxable Product",
+      sellingPriceCents: 2_000,
+      unitCostCents: 800,
+      isTaxable: true,
+    });
+    const nonTaxableProduct = await owner.mutation(api.products.createProduct, {
+      sku: "OFF-NON-TAX-1",
+      productName: "Offline Non-Taxable Product",
+      sellingPriceCents: 2_000,
+      unitCostCents: 800,
+      isTaxable: false,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: taxableProduct,
+      totalWeightGrams: 10,
+      totalCostCents: 8_000,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId: nonTaxableProduct,
+      totalWeightGrams: 10,
+      totalCostCents: 8_000,
+    });
+
+    await owner.mutation(api.offline.configurePolicy, {
+      enabled: true,
+      authorizationWindowMinutes: 60,
+      perSaleLimitCents: 10_000,
+      perDeviceSessionLimitCents: 50_000,
+      offlineCreditLimitCents: 10_000,
+      maxQueuedSales: 10,
+    });
+    const deviceId = "dev-discount-offline";
+    await owner.mutation(api.offline.registerDevice, {
+      deviceId,
+      appVersion: "0.1.0",
+    });
+    const authorization = await owner.mutation(api.offline.issueAuthorization, {
+      deviceId,
+    });
+
+    // Subtotal: 2000 + 2000 = 4000 cents ($40.00).
+    // Discount: 1000 cents ($10.00). Discounted subtotal: 3000 cents.
+    // Proportional taxable portion: 2000 * (3000/4000) = 1500 cents.
+    // 10% tax on 1500 = 150 cents. Total: 3150 cents.
+    const underpaidInput = {
+      authorizationId: authorization.authorizationId,
+      deviceId: "dev-discount-offline",
+      idempotencyKey: "offline-underpaid-discount",
+      sequence: 1,
+      occurredAt: authorization.issuedAt + 1,
+      customerId,
+      items: [
+        { productId: taxableProduct, quantityGrams: 1, unitPriceCents: 2_000 },
+        { productId: nonTaxableProduct, quantityGrams: 1, unitPriceCents: 2_000 },
+      ],
+      discountAmountCents: 1_000,
+      paymentMethod: "cash" as const,
+      amountPaidCents: 3_000, // less than 3150
+    };
+
+    await expect(
+      owner.mutation(api.offline.syncSale, underpaidInput),
+    ).rejects.toThrow("PAYMENT_ERROR: Offline cash received is below the sale total");
+
+    // Exact payment covers discounted total (3150)
+    const validDiscountedInput = {
+      ...underpaidInput,
+      idempotencyKey: "offline-valid-discount",
+      sequence: 2,
+      amountPaidCents: 3_150,
+    };
+
+    const result = await owner.mutation(api.offline.syncSale, validDiscountedInput);
+    expect(result.status).toBe("committed");
+    expect(result.saleId).toBeTruthy();
+    expect(result.totalAmountCents).toBe(3_150);
+
+    const persisted = await t.run(async (ctx) => ({
+      sale: result.saleId ? await ctx.db.get(result.saleId) : null,
+    }));
+    expect(persisted.sale).toMatchObject({
+      subtotalCents: 4_000,
+      discountCents: 1_000,
+      discountAmountCents: 1_000,
+      merchandiseRevenueCents: 3_000,
+      loyaltyEligibleSpendCents: 3_000,
+      taxableSubtotalCents: 1_500,
+      taxAmountCents: 150,
+      totalAmountCents: 3_150,
+      amountPaidCents: 3_150,
+      changeAmountCents: 0,
+    });
+  });
 });

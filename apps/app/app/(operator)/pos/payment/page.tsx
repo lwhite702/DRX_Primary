@@ -58,6 +58,8 @@ export default function QuickPosPaymentPage() {
             mode: "quick",
             customerId: state.customer.id,
             delivery: state.delivery.enabled ? state.delivery : undefined,
+            discountAmountCents: state.discount.amountCents || undefined,
+            discountReason: state.discount.reason,
             items: state.cartItems,
           }),
           signal: controller.signal,
@@ -87,7 +89,7 @@ export default function QuickPosPaymentPage() {
 
     void loadQuote();
     return () => controller.abort();
-  }, [state.cartItems, state.customer.id, state.delivery, setError]);
+  }, [state.cartItems, state.customer.id, state.delivery, state.discount, setError]);
 
   const allowCredit = canUseCredit(state);
 
@@ -141,6 +143,8 @@ export default function QuickPosPaymentPage() {
           customerId: state.customer.id,
           payment: state.payment,
           delivery: state.delivery.enabled ? state.delivery : undefined,
+          discountAmountCents: state.discount.amountCents || undefined,
+          discountReason: state.discount.reason,
           items: state.cartItems,
         }),
       });

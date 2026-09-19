@@ -8,7 +8,7 @@ import {
   type ScreenPrivacyMode,
   type PrivacyRetentionSettings,
 } from "./types";
-import { drxCopy } from "@/lib/copy/drx";
+import { drxCopy } from "../copy/drx";
 
 const DEFAULT_RETENTION: Omit<PrivacyRetentionSettings, "days"> = {
   enabled: true,

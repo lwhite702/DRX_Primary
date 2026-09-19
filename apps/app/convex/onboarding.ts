@@ -208,9 +208,13 @@ async function provisionBusiness(ctx: MutationCtx, args: Infer<typeof createOnbo
     }
 
     // 2. Create User as OWNER
+    const existingDefault = await ctx.db.query("users")
+      .withIndex("by_clerkUserId_and_isDefaultMembership", q => q.eq("clerkUserId", clerkUserId).eq("isDefaultMembership", true)).first();
+    const isDefault = !existingDefault || previousMemberships.length === 0;
+
     const userId = await ctx.db.insert("users", {
       clerkUserId,
-      isDefaultMembership: previousMemberships.length === 0,
+      isDefaultMembership: isDefault,
       email,
       name: setup?.ownerName ?? args.name,
       role: "OWNER",

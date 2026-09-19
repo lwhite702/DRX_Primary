@@ -148,6 +148,7 @@ const nextConfig = {
     }
     return config;
   },
+  productionBrowserSourceMaps: true,
   // turbopack: {},
 };
 
@@ -159,6 +160,7 @@ export default withSentryConfig(withPWA(nextConfig), {
   widenClientFileUpload: true,
   sourcemaps: {
     disable: !process.env.SENTRY_AUTH_TOKEN,
+    deleteSourcemapsAfterUpload: false,
   },
 });
 // export default nextConfig;

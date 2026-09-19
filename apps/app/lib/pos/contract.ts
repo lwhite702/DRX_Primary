@@ -111,6 +111,8 @@ export const quickCheckoutPayloadSchema = z.object({
   source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
   delivery: quickPosDeliverySchema.optional(),
+  discountAmountCents: z.number().int().nonnegative().optional(),
+  discountReason: z.string().min(1).max(100).optional(),
   items: z.array(cartLineItemSchema).min(1),
 });
 
@@ -118,6 +120,8 @@ export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
   mode: true,
   customerId: true,
   delivery: true,
+  discountAmountCents: true,
+  discountReason: true,
   items: true,
 });
 
@@ -136,6 +140,8 @@ export const fullCheckoutPayloadSchema = z.object({
       }),
     )
     .min(1),
+  discountAmountCents: z.number().int().nonnegative().optional(),
+  discountReason: z.string().min(1).max(100).optional(),
   expectedTotal: z.number().nonnegative().optional(),
   taxAmount: z.number().nonnegative().default(0),
   fees: z.array(posFeeSchema).optional().default([]),

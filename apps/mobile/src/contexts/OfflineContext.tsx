@@ -190,6 +190,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
               quantityGrams: item.quantityGrams,
               unitPriceCents: item.unitPriceCents,
             })),
+            discountAmountCents: envelope.discountAmountCents,
             paymentMethod: envelope.paymentMethod,
             amountPaidCents: envelope.amountPaidCents,
           });

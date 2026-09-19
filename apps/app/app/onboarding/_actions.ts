@@ -52,7 +52,7 @@ export async function completeOnboarding(
     await client.mutation(api.onboarding.completeBusinessOnboarding, { payload: JSON.stringify(parsed.data), expectedUserId: userId, expectedOrganizationId: orgId ?? null });
     const cookieStore = await cookies();
     cookieStore.set(ONBOARDING_COMPLETION_COOKIE, "true", {
-      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 10 * 60,
+      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 30 * 24 * 60 * 60,
     });
     const input = parsed.data;
     return { status: "success", error: null, summary: {

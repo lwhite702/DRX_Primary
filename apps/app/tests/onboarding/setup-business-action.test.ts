@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   provisionBusinessInConvex: vi.fn(),
   revalidatePath: vi.fn(),
+  cookieSet: vi.fn(),
 }));
 
 vi.mock("@/lib/adapters/auth/server", () => ({
@@ -16,6 +17,10 @@ vi.mock("@/lib/convex/onboarding-server", () => ({
 
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
+}));
+
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ set: mocks.cookieSet }),
 }));
 
 import { setupBusinessAction } from "@/app/actions/setup-business";
@@ -76,6 +81,11 @@ describe("setupBusinessAction", () => {
       defaultUnit: "g",
     });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.cookieSet).toHaveBeenCalledWith(
+      "drx_onboarding_complete",
+      "true",
+      expect.objectContaining({ maxAge: 30 * 24 * 60 * 60 }),
+    );
   });
 
   it("forwards managerPin when configured during onboarding", async () => {
