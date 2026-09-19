@@ -121,7 +121,12 @@ export default function CustomersPage() {
 
     setArchivedLoading(true);
     try {
-      const response = await fetch("/api/customers?status=archived");
+      const response = await fetch("/api/customers?status=archived", {
+        credentials: "same-origin",
+        headers: {
+          "X-Business-Id": business.id,
+        },
+      });
       if (!response.ok) {
         throw new Error("Failed to load archived customers");
       }
@@ -192,7 +197,11 @@ export default function CustomersPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Business-Id": business.id,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -258,7 +267,11 @@ export default function CustomersPage() {
     const promise = async () => {
       const response = await fetch(`/api/customers/${customer.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Business-Id": business?.id || "",
+        },
         body: JSON.stringify({ is_active: isActive }),
       });
       if (!response.ok) {
@@ -504,6 +517,25 @@ export default function CustomersPage() {
                     min="0"
                     {...register("fixed_price_per_gram")}
                   />
+                </div>
+
+                <div className="space-y-4 pt-2 border-t border-white/5">
+                  <div className="space-y-2">
+                    <Label htmlFor="credit_limit">
+                      Credit Limit ($)
+                      <HelpTooltip content="Set customer credit limit ($20 - $200). Leave blank or 0 for default." />
+                    </Label>
+                    <Input
+                      id="credit_limit"
+                      placeholder="e.g. 50.00"
+                      {...register("credit_limit")}
+                    />
+                    {errors.credit_limit && (
+                      <p className="text-sm text-destructive">
+                        {errors.credit_limit.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </ProgressiveSection>
 

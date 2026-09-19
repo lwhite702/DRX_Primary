@@ -24,6 +24,9 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Next
 
+- **Customer online ordering, operator confirmation, and peer-to-peer payment rails** (`planned`)
+  Privacy-first digital menu ordering accessible via branded operator links, custom subdomains, or short-code access gates. Customers build pickup or delivery orders with live inventory pricing and estimated totals without upfront charge. Operators review stock, confirm availability, place soft-reserved inventory holds, and issue binding totals to customer order tracking views. Customers confirm and settle via operator-configured peer rails (Cash App, Apple Pay, Zelle, or Cash) with custom instructions and payment verification before automated delivery queue dispatch or pickup release. Customers receive updates through both 10DLC SMS and live reactive web tracking.
+
 - **Reporting + insights depth** (`planned`)  
   More actionable reporting views for managers and owners without extra clicks.
 

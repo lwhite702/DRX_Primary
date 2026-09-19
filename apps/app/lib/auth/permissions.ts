@@ -5,7 +5,8 @@ export type Role =
   | "super_admin"
   | "owner"
   | "admin"
-  | "staff";
+  | "staff"
+  | "operator";
 
 export type Permission =
   // Sales
@@ -42,6 +43,8 @@ export const ROLES: Record<string, Role> = {
   SUPERVISOR: "supervisor",
   MANAGER: "manager",
   SUPER_ADMIN: "super_admin",
+  STAFF: "staff",
+  OPERATOR: "operator",
 };
 
 export const PERMISSIONS: Record<string, Permission> = {
@@ -172,5 +175,16 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "shift.view",
     "catalog.view",
     "customers.view",
+    "customers.manage",
+    "inventory.manage",
+  ],
+  operator: [
+    "sales.create",
+    "payments.process",
+    "shift.view",
+    "catalog.view",
+    "customers.view",
+    "customers.manage",
+    "inventory.manage",
   ],
 };

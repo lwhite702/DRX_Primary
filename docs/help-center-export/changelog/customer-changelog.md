@@ -4,6 +4,28 @@ This page highlights changes that affect day-to-day work in DRX. Release notes u
 
 DRX is in early access, so a feature may be available on web, mobile web, or a native app at different times.
 
+## 2026-09-17 — v0.9.4
+
+### Improved
+
+- **Smooth business setup on mobile:** Starting a new business account from an iPhone or iPad moves directly into your workspace without getting stuck during setup.
+- **Clearer order totals:** Point-of-sale discounts and adjustments calculate instantly so the final charge matches your receipt before you accept payment.
+
+## 2026-09-17 — v0.9.3
+
+### New
+
+- **Quick cart adjustments:** Remove an individual item from the register cart with a single tap, or clear the entire cart with a quick confirmation.
+- **Add-to-cart confirmation:** Adding a product shows an immediate, gentle confirmation banner so cashiers know an item was scanned or tapped without second-guessing.
+- **Cart badges on product cards:** Product tiles now display how many units are already sitting in the register cart.
+- **Dedicated text message consent:** Customers and staff can opt in to important store alerts and support text messages with clear privacy choices.
+
+### Improved
+
+- **Faster, more reliable sign-in:** The sign-in screen loads more quickly, with stronger field visibility and high-contrast styling so you can get right to work.
+- **In-app help and feedback:** Send feedback or report an issue directly from within DRX whenever you need assistance.
+- **Smoother setup wizard:** Setting up a new shop guides you step by step and alerts you clearly if any required detail was skipped.
+
 ## 2026-08-30 — v0.6.12
 
 ### New

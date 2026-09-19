@@ -17,28 +17,28 @@ export function BrandMark({
   const content =
     variant === "mark" ? (
       <span
-        className={`inline-flex items-center justify-center shrink-0 ${className || "size-8"}`}
+        className={`inline-flex items-center justify-center shrink-0 ${className || "size-9"}`}
         aria-label="DRX"
       >
         <Image
           src="/brand/drx-mark.svg"
           alt="DRX"
-          width={32}
-          height={32}
+          width={36}
+          height={36}
           className="size-full object-contain"
           priority={priority}
         />
       </span>
     ) : (
       <span
-        className={`inline-flex items-center justify-center shrink-0 ${className || "h-[25px] w-[60px]"}`}
+        className={`inline-flex items-center justify-center shrink-0 ${className || "h-[36px] md:h-[40px] w-auto"}`}
         aria-label="Deelrx CRM (DRX)"
       >
         <Image
           src="/brand/drx-wordmark.svg"
           alt="Deelrx CRM (DRX)"
-          width={60}
-          height={25}
+          width={100}
+          height={42}
           className="h-full w-auto object-contain"
           priority={priority}
         />

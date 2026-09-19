@@ -20,6 +20,7 @@
     "strict": false
   },
   "fonts": {
+    "family": "Plus Jakarta Sans",
     "heading": {
       "family": "Plus Jakarta Sans",
       "weight": 700
@@ -46,6 +47,7 @@
     "links": [
       { "label": "Product", "href": "https://deelrxcrm.com" },
       { "label": "Help & Support", "href": "/start/help-and-support" },
+      { "label": "Roadmap", "href": "/roadmap" },
       { "label": "Changelog", "href": "/CHANGELOG" }
     ],
     "primary": {
@@ -86,6 +88,10 @@
           {
             "label": "Help & Support",
             "href": "/start/help-and-support"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/roadmap"
           },
           {
             "label": "Changelog",
@@ -192,7 +198,8 @@
           "beta-access-and-use",
           "CHANGELOG",
           "glossary",
-          "legal-disclaimer"
+          "legal-disclaimer",
+          "roadmap"
         ]
       }
     ]

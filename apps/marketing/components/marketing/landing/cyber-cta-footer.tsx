@@ -62,7 +62,7 @@ export function CyberCtaFooter() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4 text-[11px]">
-          <span className="technical-label text-[10px] text-white/45">© 2026 DEELRX SYSTEMS</span>
+          <span className="technical-label text-[10px] text-white/45">© 2026 DRX · Wrelik Brands LLC</span>
           <div className="flex flex-wrap items-center gap-2">
             <span className="technical-label rounded-full border border-neon-lime/30 bg-neon-lime/10 px-2.5 py-1 text-[9px] text-neon-lime">
               PRIVACY CONTROLS ON

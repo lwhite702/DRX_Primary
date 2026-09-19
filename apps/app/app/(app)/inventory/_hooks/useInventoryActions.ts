@@ -40,6 +40,10 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
       typeof (item.is_taxable ?? item.isTaxable) === "boolean"
         ? Boolean(item.is_taxable ?? item.isTaxable)
         : true,
+    is_active:
+      typeof (item.is_active ?? item.isActive) === "boolean"
+        ? Boolean(item.is_active ?? item.isActive)
+        : true,
     supplier_id:
       typeof (item.supplier_id ?? item.supplierId) === "string"
         ? String(item.supplier_id ?? item.supplierId)
@@ -71,7 +75,9 @@ export function useInventoryActions(businessId: string | undefined) {
   const [refreshing, setRefreshing] = useState(false);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewStatus, setViewStatus] = useState<"active" | "archived">("active");
   const loadedBusinessId = useRef<string | undefined>(undefined);
+  const loadedViewStatus = useRef<string | undefined>(undefined);
   const requestController = useRef<AbortController | null>(null);
 
   const refreshInventory = useCallback(async () => {
@@ -82,12 +88,15 @@ export function useInventoryActions(businessId: string | undefined) {
       setRefreshing(false);
       setError(null);
       loadedBusinessId.current = undefined;
+      loadedViewStatus.current = undefined;
       return;
     }
 
     const controller = new AbortController();
     requestController.current = controller;
-    const hasCurrentData = loadedBusinessId.current === businessId;
+    const hasCurrentData =
+      loadedBusinessId.current === businessId &&
+      loadedViewStatus.current === viewStatus;
     if (!hasCurrentData) setInventory([]);
     setLoading(!hasCurrentData);
     setRefreshing(hasCurrentData);
@@ -95,7 +104,7 @@ export function useInventoryActions(businessId: string | undefined) {
 
     try {
       const response = await fetch(
-        `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}`,
+        `/api/inventory?limit=200&business_id=${encodeURIComponent(businessId)}&status=${viewStatus}`,
         {
           credentials: "same-origin",
           signal: controller.signal,
@@ -105,6 +114,7 @@ export function useInventoryActions(businessId: string | undefined) {
       if (controller.signal.aborted) return;
       const rows = Array.isArray(body.data) ? body.data : [];
       loadedBusinessId.current = businessId;
+      loadedViewStatus.current = viewStatus;
       setInventory(rows.map(normalizeInventoryItem));
     } catch (caught) {
       if (!controller.signal.aborted) {
@@ -123,7 +133,7 @@ export function useInventoryActions(businessId: string | undefined) {
         setRefreshing(false);
       }
     }
-  }, [businessId]);
+  }, [businessId, viewStatus]);
 
   React.useEffect(() => {
     void refreshInventory();
@@ -139,6 +149,7 @@ export function useInventoryActions(businessId: string | undefined) {
       quantity_on_hand: 0,
       reorder_level: 10,
       unit_of_measure: "g",
+      is_active: true,
     } as Inventory);
     setShowDialog(true);
   };
@@ -146,6 +157,58 @@ export function useInventoryActions(businessId: string | undefined) {
   const handleEdit = (item: Inventory) => {
     setEditingItem(item);
     setShowDialog(true);
+  };
+
+  const handleArchive = async (item: Inventory) => {
+    if (!item.id || !businessId) return;
+    setMutating(true);
+    try {
+      const response = await fetch(
+        `/api/inventory/${item.id}?business_id=${encodeURIComponent(businessId)}`,
+        {
+          method: "DELETE",
+          credentials: "same-origin",
+        },
+      );
+      await readApiResponse(response);
+      toast.success("Product archived.");
+      if (editingItem?.id === item.id) {
+        setShowDialog(false);
+        setEditingItem(null);
+      }
+      await refreshInventory();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to archive product",
+      );
+    } finally {
+      setMutating(false);
+    }
+  };
+
+  const handleReactivate = async (item: Inventory) => {
+    if (!item.id || !businessId) return;
+    setMutating(true);
+    try {
+      const response = await fetch(
+        `/api/inventory/${item.id}?business_id=${encodeURIComponent(businessId)}`,
+        {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_active: true }),
+        },
+      );
+      await readApiResponse(response);
+      toast.success("Product reactivated.");
+      await refreshInventory();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to reactivate product",
+      );
+    } finally {
+      setMutating(false);
+    }
   };
 
   const handleSave = async (data: Inventory) => {
@@ -205,6 +268,8 @@ export function useInventoryActions(businessId: string | undefined) {
     refreshing,
     mutating,
     error,
+    viewStatus,
+    setViewStatus,
     status: loading
       ? "loading"
       : error
@@ -223,6 +288,8 @@ export function useInventoryActions(businessId: string | undefined) {
     setSelectedProduct,
     handleAdd,
     handleEdit,
+    handleArchive,
+    handleReactivate,
     handleSave,
   };
 }

@@ -63,8 +63,13 @@ async function applyIntake(
   });
   if (alreadyApplied) return;
 
+  const inv = await tx.inventory.findUnique({
+    where: { id: intake.inventoryId },
+    select: { convertToGrams: true },
+  });
+  const factor = Number(inv?.convertToGrams ?? 1) || 1;
   const quantityGrams = Number(intake.totalWeightGrams);
-  const quantityUnits = Math.round(quantityGrams);
+  const quantityUnits = factor > 0 ? Math.round(quantityGrams / factor) : Math.round(quantityGrams);
   const costPerGram = Number(intake.calculatedCostPerGram);
 
   const existingBatch = await tx.inventoryBatch.findFirst({

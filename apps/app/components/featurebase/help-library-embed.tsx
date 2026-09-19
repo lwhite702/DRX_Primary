@@ -14,7 +14,7 @@ import {
   normalizeHelpTopic,
   type HelpTopicId,
 } from "@/lib/help/support-center";
-import { docsHubUrl } from "@/lib/featurebase-links";
+import { docsHubUrl } from "@/lib/docs-links";
 
 interface DocLink {
   title: string;
@@ -127,7 +127,6 @@ export function HelpLibraryEmbed() {
     <div
       className="space-y-4"
       data-testid="docs-library-embed"
-      data-featurebase-embed
     >
       <div className="rounded-xl border border-white/10 bg-muted/20 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
