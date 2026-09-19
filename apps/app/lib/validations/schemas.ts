@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { newProductCommerceSchema } from "@/lib/commerce/product-creation";
+import { parseCurrency, parseDecimal } from "@/lib/utils/number-formatting";
+import { formatPhoneNumber } from "@/lib/utils/format-phone";
 
 // Business Profile Schemas
 export const businessProfileSchema = z.object({
@@ -10,7 +12,20 @@ export const businessProfileSchema = z.object({
   city: z.string().max(100).optional(),
   state: z.string().max(50).optional(),
   zip_code: z.string().max(20).optional(),
-  phone_number: z.string().max(20).optional(),
+  phone_number: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      if (typeof val === "string") {
+        const digits = val.replace(/[^\d]/g, "");
+        if (digits.length === 10 || (digits.length === 11 && digits.startsWith("1"))) {
+          return formatPhoneNumber(val);
+        }
+        return val.trim();
+      }
+      return val;
+    },
+    z.string().max(25).optional(),
+  ),
   email: z.string().email().optional(),
   recovery_email: z.string().email().optional(),
   owner_id: z.string().uuid(),
@@ -39,20 +54,49 @@ export type BusinessSettings = z.infer<typeof businessSettingsSchema>;
 
 // Inventory Schemas
 export const inventorySchema = z.object({
-  id: z.string().uuid().optional(),
-  business_id: z.string().uuid(),
+  id: z.string().optional(),
+  business_id: z.string().min(1),
   sku: z.string().min(1).max(100),
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
   unit_of_measure: z.enum(["unit", "g", "oz", "lb", "L", "ml"]).default("g"),
-  quantity_on_hand: z.number().int().min(0).default(0),
-  reorder_level: z.number().int().min(0).default(10),
-  unit_cost: z.number().nonnegative().optional(),
-  selling_price: z.number().nonnegative().optional(),
+  quantity_on_hand: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return 0;
+      const parsed = parseDecimal(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().min(0).default(0),
+  ),
+  reorder_level: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return 10;
+      const parsed = parseDecimal(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().min(0).default(10),
+  ),
+  unit_cost: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const parsed = parseCurrency(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().nonnegative().optional(),
+  ),
+  selling_price: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const parsed = parseCurrency(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().nonnegative().optional(),
+  ),
   location: z.string().max(100).optional(),
   is_taxable: z.boolean().default(true).optional(),
-  supplier_id: z.string().uuid().optional(),
+  is_active: z.boolean().default(true).optional(),
+  supplier_id: z.string().optional(),
   commerce_config: newProductCommerceSchema.optional(),
 });
 
@@ -75,8 +119,18 @@ export const customerSchema = z.object({
     z.string().max(100).optional(),
   ),
   phone_number: z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
-    z.string().max(20).optional(),
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      if (typeof val === "string") {
+        const digits = val.replace(/[^\d]/g, "");
+        if (digits.length === 10 || (digits.length === 11 && digits.startsWith("1"))) {
+          return formatPhoneNumber(val);
+        }
+        return val.trim();
+      }
+      return val;
+    },
+    z.string().max(25).optional(),
   ),
   email: z.preprocess(
     (val) => (val === "" || val === null ? undefined : val),
@@ -106,7 +160,23 @@ export const customerSchema = z.object({
     (val) => (val === "" || val === null ? undefined : val),
     z.string().max(50).optional(),
   ),
-  fixed_price_per_gram: z.coerce.number().nonnegative().optional().nullable(),
+  fixed_price_per_gram: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return null;
+      const parsed = parseCurrency(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().nonnegative().optional().nullable(),
+  ),
+  credit_limit: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const parsed = parseCurrency(val);
+      return parsed !== undefined ? parsed : val;
+    },
+    z.number().nonnegative().optional().nullable(),
+  ),
+  credit_enabled: z.boolean().optional(),
   ephemeral: z.boolean().optional(),
   ephemeral_retention_days: z.union([z.literal(1), z.literal(7), z.literal(30)]).optional(),
   is_active: z.boolean().default(true),

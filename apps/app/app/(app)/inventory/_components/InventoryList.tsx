@@ -17,6 +17,9 @@ interface InventoryListProps {
   inventory: Inventory[];
   onEdit: (item: Inventory) => void;
   onAddItem: () => void;
+  onArchive?: (item: Inventory) => void;
+  onReactivate?: (item: Inventory) => void;
+  viewStatus?: "active" | "archived";
   searchTerm: string;
   onSearchChange: (value: string) => void;
 }
@@ -44,6 +47,9 @@ export function InventoryList({
   inventory,
   onEdit,
   onAddItem,
+  onArchive,
+  onReactivate,
+  viewStatus = "active",
   searchTerm,
   onSearchChange,
 }: InventoryListProps) {
@@ -75,10 +81,18 @@ export function InventoryList({
         <div className="py-12">
           <EmptyState
             icon={PackageOpen}
-            title={drxCopy.inventory.emptyTitle}
-            description={drxCopy.inventory.emptyBody}
-            actionLabel={drxCopy.inventory.addItem}
-            onAction={onAddItem}
+            title={
+              viewStatus === "archived"
+                ? "No archived products"
+                : drxCopy.inventory.emptyTitle
+            }
+            description={
+              viewStatus === "archived"
+                ? "Products you archive will appear here."
+                : drxCopy.inventory.emptyBody
+            }
+            actionLabel={viewStatus === "active" ? drxCopy.inventory.addItem : undefined}
+            onAction={viewStatus === "active" ? onAddItem : undefined}
             className="bg-transparent border-none"
           />
         </div>
@@ -88,40 +102,85 @@ export function InventoryList({
             {filteredInventory.map((item) => {
               const isLowStock = item.quantity_on_hand <= item.reorder_level;
               return (
-                <button
+                <div
                   key={item.id}
-                  onClick={() => onEdit(item)}
-                  className="w-full text-left group"
+                  className="bg-[#1a1a1a] border border-white/5 rounded-lg p-4 flex items-center justify-between hover:border-white/10 hover:bg-white/[0.02] transition-colors relative overflow-hidden"
                 >
-                  <div className="bg-[#1a1a1a] border border-white/5 rounded-lg p-4 flex items-center justify-between hover:border-white/10 hover:bg-white/[0.02] transition-colors relative overflow-hidden">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`h-10 w-10 rounded-lg ${getCategoryColor(item.category)} flex items-center justify-center`}
-                      >
-                        {getProductIcon(item.category)}
-                      </div>
-                      <div>
+                  <button
+                    type="button"
+                    onClick={() => onEdit(item)}
+                    className="flex items-center gap-4 flex-1 text-left"
+                  >
+                    <div
+                      className={`h-10 w-10 rounded-lg ${getCategoryColor(item.category)} flex items-center justify-center`}
+                    >
+                      {getProductIcon(item.category)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
                         <h4 className="font-semibold text-sm text-foreground">
                           {item.product_name}
                         </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                            {item.category || drxCopy.inventory.uncategorized}
+                        {item.is_active === false && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-muted/40 text-muted-foreground uppercase tracking-wide">
+                            Archived
                           </span>
-                          {isLowStock && (
-                            <span className="text-[10px] font-bold tracking-wider text-red-500 uppercase flex items-center gap-1">
-                              • {drxCopy.inventory.lowStock}
-                            </span>
-                          )}
-                          <span className="text-[10px] font-mono text-muted-foreground/60">
-                            {item.sku}
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                          {item.category || drxCopy.inventory.uncategorized}
+                        </span>
+                        {isLowStock && item.is_active !== false && (
+                          <span className="text-[10px] font-bold tracking-wider text-red-500 uppercase flex items-center gap-1">
+                            • {drxCopy.inventory.lowStock}
                           </span>
-                        </div>
+                        )}
+                        <span className="text-[10px] font-mono text-muted-foreground/60">
+                          {item.sku}
+                        </span>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {item.is_active === false ? (
+                      onReactivate && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onReactivate(item);
+                          }}
+                          className="text-xs px-2.5 py-1 rounded bg-accent/10 text-accent hover:bg-accent/20 transition-colors font-medium"
+                        >
+                          Reactivate
+                        </button>
+                      )
+                    ) : (
+                      onArchive && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onArchive(item);
+                          }}
+                          className="text-xs px-2.5 py-1 rounded border border-white/10 text-muted-foreground hover:text-red-400 hover:border-red-500/30 transition-colors font-medium"
+                        >
+                          Archive
+                        </button>
+                      )
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onEdit(item)}
+                      className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                      aria-label="Edit product"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

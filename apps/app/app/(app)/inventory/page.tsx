@@ -35,8 +35,12 @@ export default function InventoryPage() {
     showDialog,
     editingItem,
     setShowDialog,
+    viewStatus,
+    setViewStatus,
     handleAdd,
     handleEdit,
+    handleArchive,
+    handleReactivate,
     handleSave,
   } = useInventoryActions(business?.id);
 
@@ -101,11 +105,39 @@ export default function InventoryPage() {
         />
       </div>
 
+      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+        <button
+          type="button"
+          onClick={() => setViewStatus("active")}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+            viewStatus === "active"
+              ? "bg-accent text-black"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+          }`}
+        >
+          Active Products
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewStatus("archived")}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+            viewStatus === "archived"
+              ? "bg-accent text-black"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+          }`}
+        >
+          Archived Products
+        </button>
+      </div>
+
       <div id="tour-inventory-list">
         <InventoryList
           inventory={inventory}
           onAddItem={handleAdd}
           onEdit={handleEdit}
+          onArchive={handleArchive}
+          onReactivate={handleReactivate}
+          viewStatus={viewStatus}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
         />
@@ -126,6 +158,8 @@ export default function InventoryPage() {
               initialData={editingItem || undefined}
               onSuccess={handleSave}
               onCancel={() => setShowDialog(false)}
+              onArchive={handleArchive}
+              onReactivate={handleReactivate}
               businessId={business?.id || ""}
               isFirstProduct={inventory.length === 0}
             />

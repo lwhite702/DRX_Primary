@@ -46,7 +46,30 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "VIEW_FINANCIALS",
     "VIEW_AUDIT_LOGS",
   ],
-  MEMBER: ["PROCESS_CHECKOUT", "MANAGE_CUSTOMERS", "MANAGE_DELIVERIES"],
+  MEMBER: [
+    "PROCESS_CHECKOUT",
+    "MANAGE_CUSTOMERS",
+    "MANAGE_DELIVERIES",
+    "MANAGE_PRODUCTS",
+    "MANAGE_INVENTORY",
+    "APPLY_CHECKOUT_OVERRIDE",
+  ],
+  OPERATOR: [
+    "PROCESS_CHECKOUT",
+    "MANAGE_CUSTOMERS",
+    "MANAGE_DELIVERIES",
+    "MANAGE_PRODUCTS",
+    "MANAGE_INVENTORY",
+    "APPLY_CHECKOUT_OVERRIDE",
+  ],
+  STAFF: [
+    "PROCESS_CHECKOUT",
+    "MANAGE_CUSTOMERS",
+    "MANAGE_DELIVERIES",
+    "MANAGE_PRODUCTS",
+    "MANAGE_INVENTORY",
+    "APPLY_CHECKOUT_OVERRIDE",
+  ],
 };
 
 export function hasPermission(user: Doc<"users">, permission: Permission): boolean {

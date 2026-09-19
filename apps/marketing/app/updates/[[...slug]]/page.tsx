@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { CyberCtaFooter } from "@/components/marketing/landing/cyber-cta-footer";
 import { CyberNav } from "@/components/marketing/landing/cyber-nav";
-import { FeaturebaseHub } from "@/components/marketing/landing/featurebase-hub";
+import { MintlifyHub } from "@/components/marketing/landing/mintlify-hub";
 
 export const metadata: Metadata = {
   title: "Updates | DRX",
   description:
-    "Feedback board, changelog, and roadmap for DRX in one embedded workspace.",
+    "Product updates, release changelog, roadmap, and Help Scout support for DRX.",
 };
 
 export default function UpdatesPage() {
@@ -19,7 +19,7 @@ export default function UpdatesPage() {
       <CyberNav />
 
       <div className="relative z-10 pt-24">
-        <FeaturebaseHub />
+        <MintlifyHub />
         <CyberCtaFooter />
       </div>
     </main>

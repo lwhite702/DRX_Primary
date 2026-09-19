@@ -1,0 +1,6 @@
+interface:
+  display_name: Documentation Management
+  short_description: Maintain Mintlify user docs, roadmap, and changelogs on system changes
+  default_prompt: Review the requested system or workflow changes, update canonical user documentation in app-docs and mintlify, align customer and technical changelogs, update roadmap priorities, and verify through mintlify and release integrity gates.
+policy:
+  allow_implicit_invocation: true

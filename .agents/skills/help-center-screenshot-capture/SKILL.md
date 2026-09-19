@@ -33,11 +33,11 @@ Compare every visible page, button, field, tab, menu item, and status with the c
 ## Export and record
 
 - Export a tightly cropped PNG under 700 KB.
-- Keep text crisp at the Featurebase article width.
+- Keep text crisp at the Mintlify article width (around 760 px).
 - Add useful alt text that identifies the screen and the highlighted action; do not repeat the caption.
 - Record provenance, route, source commit, dimensions, checksum, and article placement in `docs/featurebase/help-center-visuals.json`.
 - Never include credentials, verification codes, customer records, addresses, real balances, payment details, or raw production payloads.
 
 ## Publication check
 
-After upload, inspect the draft at desktop and mobile widths. Confirm the image loads, zoom works when Featurebase enables it, alt text remains present, the caption is adjacent, and no signed attachment query is committed to Git.
+After publishing or compiling, inspect the pages at desktop and mobile widths. Confirm the image loads, alt text remains present, the caption is adjacent, and no signed attachment query is committed to Git.

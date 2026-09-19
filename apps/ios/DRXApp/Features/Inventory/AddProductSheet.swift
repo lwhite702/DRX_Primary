@@ -10,7 +10,7 @@ struct AddProductSheet: View {
     @State private var sku = ""
     @State private var productName = ""
     @State private var description = ""
-    @State private var category = ""
+    @State private var category = "Flower"
     @State private var sellingPriceString = ""
     @State private var unitCostString = ""
     @State private var reorderLevelString = "10"
@@ -21,8 +21,8 @@ struct AddProductSheet: View {
     @State private var decimalPrecision = 2
     @State private var minimumQuantity = "0.01"
     @State private var quantityIncrement = "0.01"
-    @State private var dollarPresets = ""
-    @State private var quantityPresets = ""
+    @State private var dollarPresets = "10, 20, 50"
+    @State private var quantityPresets = "1, 3.5, 7, 14, 28"
 
     private var sellingPriceCents: Int { CurrencyInput.cents(from: sellingPriceString) ?? 0 }
     private var unitCostCents: Int { CurrencyInput.cents(from: unitCostString) ?? 0 }
@@ -42,7 +42,18 @@ struct AddProductSheet: View {
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                     TextField("Product Name", text: $productName)
-                    TextField("Category (optional)", text: $category)
+                    Picker("Category", selection: $category) {
+                        Text("Flower").tag("Flower")
+                        Text("Edible").tag("Edible")
+                        Text("Concentrate").tag("Concentrate")
+                        Text("Pre-roll").tag("Pre-roll")
+                        Text("Vape").tag("Vape")
+                        Text("Tincture").tag("Tincture")
+                        Text("Topical").tag("Topical")
+                        Text("Beverage").tag("Beverage")
+                        Text("Accessory").tag("Accessory")
+                        Text("Other").tag("Other")
+                    }
                     TextField("Description (optional)", text: $description, axis: .vertical)
                         .lineLimit(3...5)
                 }
@@ -51,7 +62,7 @@ struct AddProductSheet: View {
                     HStack {
                         Text("$")
                             .foregroundStyle(DRXPalette.muted)
-                        TextField("Selling Price", text: $sellingPriceString)
+                        TextField("Retail Price", text: $sellingPriceString)
                             .keyboardType(.decimalPad)
                     }
                     HStack {
@@ -63,16 +74,17 @@ struct AddProductSheet: View {
                 }
 
                 Section("Stock Settings") {
-                    HStack {
-                        TextField("Reorder Level", text: $reorderLevelString)
-                            .keyboardType(.decimalPad)
-                        Text(sellingUnit)
-                            .foregroundStyle(DRXPalette.muted)
-                    }
+                    Stepper("Low stock alert: \(reorderLevelString) \(sellingUnit)", onIncrement: {
+                        let current = Int(reorderLevelString) ?? 10
+                        reorderLevelString = "\(current + 5)"
+                    }, onDecrement: {
+                        let current = Int(reorderLevelString) ?? 10
+                        if current > 0 { reorderLevelString = "\(max(0, current - 5))" }
+                    })
                 }
 
                 Section {
-                    Toggle("Allow fractional sales", isOn: $fractionalEnabled)
+                    Toggle("Sell by weight / fractions", isOn: $fractionalEnabled)
                         .accessibilityIdentifier("createProductFractional")
                     Picker("Selling unit", selection: $sellingUnit) {
                         Text("Unit").tag("unit")
@@ -82,19 +94,53 @@ struct AddProductSheet: View {
                         Text("Milliliter (ml)").tag("ml")
                         Text("Liter (L)").tag("L")
                     }
+                    .onChange(of: sellingUnit) { _, newUnit in
+                        if newUnit == "oz" {
+                            quantityPresets = "0.125, 0.25, 0.5, 1"
+                        } else if newUnit == "g" {
+                            quantityPresets = "1, 3.5, 7, 14, 28"
+                        } else {
+                            quantityPresets = "1, 2, 5, 10"
+                        }
+                    }
                     if fractionalEnabled {
                         Stepper("Decimal places: \(decimalPrecision)", value: $decimalPrecision, in: 1...6)
-                        labeledQuantity("Minimum sale quantity", text: $minimumQuantity)
-                        labeledQuantity("Quantity increment", text: $quantityIncrement)
+                        labeledQuantity("Smallest sale amount", text: $minimumQuantity)
+                        labeledQuantity("Step size", text: $quantityIncrement)
                     }
-                    TextField("Suggested dollar amounts, e.g. 10, 20, 50", text: $dollarPresets)
-                        .accessibilityLabel("Suggested dollar amounts")
-                    TextField("Suggested quantities, e.g. 0.5, 1, 3.5", text: $quantityPresets)
-                        .accessibilityLabel("Suggested quantities")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Quick Dollar Buttons")
+                            .font(.caption)
+                            .foregroundStyle(DRXPalette.muted)
+                        Picker("Quick Dollar Buttons", selection: $dollarPresets) {
+                            Text("$10, $20, $50").tag("10, 20, 50")
+                            Text("$15, $30, $60").tag("15, 30, 60")
+                            Text("$20, $40, $80").tag("20, 40, 80")
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Quick Quantity Buttons")
+                            .font(.caption)
+                            .foregroundStyle(DRXPalette.muted)
+                        Picker("Quick Quantity Buttons", selection: $quantityPresets) {
+                            if sellingUnit == "oz" {
+                                Text("⅛, ¼, ½, 1 oz").tag("0.125, 0.25, 0.5, 1")
+                                Text("¼, ½, 1, 2 oz").tag("0.25, 0.5, 1, 2")
+                            } else if sellingUnit == "g" {
+                                Text("1, 3.5, 7, 14, 28 g").tag("1, 3.5, 7, 14, 28")
+                                Text("0.5, 1, 2 g").tag("0.5, 1, 2")
+                            } else {
+                                Text("1, 2, 5, 10").tag("1, 2, 5, 10")
+                                Text("1, 3, 6, 12").tag("1, 3, 6, 12")
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
                 } header: {
                     Text("How this product is sold")
                 } footer: {
-                    Text("Price and cost are for one full selling unit. Turn on fractional sales to sell part of it, such as 0.5 g. Optional presets: up to eight comma-separated amounts. Quantities start at the minimum plus increments. Configure bulk tiers in Commerce & Delivery on the web.")
+                    Text("Preselected quick-tap buttons appear on the register for rapid checkout.")
                 }
 
                 if let error = saveError {
@@ -149,7 +195,7 @@ struct AddProductSheet: View {
             minimum: minimumQuantity, increment: quantityIncrement,
             dollars: dollarPresets, quantities: quantityPresets
         ) else {
-            saveError = "Check selling rules: use positive quantities that fit the decimal places, presets aligned to the minimum plus increments, and dollar amounts with at most two decimals."
+            saveError = "Please ensure your selling rules and quick-tap amounts match your step size."
             isSaving = false
             return
         }

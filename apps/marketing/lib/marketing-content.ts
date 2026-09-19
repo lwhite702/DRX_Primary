@@ -113,13 +113,17 @@ export const marketingContent = {
     ],
     resourceLinks: [
       { label: "Getting Started", href: "/resources/guides" },
-      { label: "Product Updates", href: "/resources/changelog" },
+      { label: "Product Updates", href: "/updates" },
+      { label: "Help & Support", href: "https://docs.deelrxcrm.com/start/help-and-support" },
       { label: "Resources", href: "/resources" },
     ],
     contact: "support@deelrxcrm.com",
     legalLinks: [
       { label: "Privacy Policy", href: "/legal/privacy" },
       { label: "Terms of Service", href: "/legal/terms" },
+      { label: "Lawful Use", href: "/legal/lawful-use" },
+      { label: "Regulatory Disclaimer", href: "/legal/regulatory-disclaimer" },
+      { label: "Beta Terms", href: "/beta" },
       { label: "SMS Consent", href: "/sms-consent" },
     ],
     socialLinks: [

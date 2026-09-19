@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { openFeedbackWithFallback } from "@/lib/feedback";
-import { docsHelpdeskUrl } from "@/lib/featurebase-links";
+import { docsHelpdeskUrl } from "@/lib/docs-links";
 
 describe("feedback fallback", () => {
   afterEach(() => {

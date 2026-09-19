@@ -1,4 +1,5 @@
 import type { Doc } from "../_generated/dataModel";
+import { gramFactorForUnit, type DRXUnit } from "../../lib/units/convert";
 
 export const FRACTIONAL_COMMERCE_DEFAULTS = {
   sellingUnit: "unit",
@@ -25,6 +26,7 @@ export function normalizeProductCommerceConfig(
     Doc<"products">,
     | "allowFractionalWeight"
     | "sellingUnit"
+    | "gramFactor"
     | "quantityPrecision"
     | "minimumSaleQuantity"
     | "quantityIncrement"
@@ -34,12 +36,14 @@ export function normalizeProductCommerceConfig(
   >,
 ) {
   const defaults = defaultCommerceConfig(product.allowFractionalWeight);
+  const effectiveSellingUnit = (product.sellingUnit ?? defaults.sellingUnit) as DRXUnit;
   const hasCompleteQuantityConfig =
     product.quantityPrecision !== undefined &&
     product.minimumSaleQuantity !== undefined &&
     product.quantityIncrement !== undefined;
   return {
-    sellingUnit: product.sellingUnit ?? defaults.sellingUnit,
+    sellingUnit: effectiveSellingUnit,
+    gramFactor: product.gramFactor ?? gramFactorForUnit(effectiveSellingUnit),
     quantityPrecision: hasCompleteQuantityConfig
       ? product.quantityPrecision!
       : defaults.quantityPrecision,

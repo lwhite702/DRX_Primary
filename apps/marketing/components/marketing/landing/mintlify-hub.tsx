@@ -8,65 +8,68 @@ import {
   docsChangelogUrl,
   docsHelpdeskUrl,
   docsHubUrl,
-} from "@/lib/featurebase-links";
+  docsRoadmapUrl,
+  supportEmail,
+  supportMailto,
+} from "@/lib/docs-links";
 
 type UpdatesView = "changelog" | "roadmap" | "support";
 
 const tabConfig: Array<{ id: UpdatesView; label: string }> = [
   { id: "changelog", label: "Changelog" },
   { id: "roadmap", label: "Planned Focus" },
-  { id: "support", label: "Help & Feedback" },
+  { id: "support", label: "Help & Support" },
 ];
 
 const changelogEntries = [
   {
-    version: "v0.9.1",
+    version: "v0.9.4",
     tag: "Current Release",
-    title: "In-App User Feedback & Mintlify Knowledge Base",
+    title: "Point-of-Sale Discounts & Web Onboarding Alignments",
     summary:
-      "Integrated Sentry client user feedback widget with screenshot support. Migrated all documentation and help desk procedures to Mintlify.",
-    link: `${docsChangelogUrl}#0-9-1`,
+      "Added multi-surface POS percentage and flat-amount discounts with live totals calculation. Fixed iOS mutation type inference and onboarding wizard flows.",
+    link: `${docsChangelogUrl}#0-9-4`,
   },
   {
-    version: "v0.9.0",
-    tag: "Core Platform",
-    title: "Convex-First Realtime Migration & Offline SQLite Layer",
+    version: "v0.9.3",
+    tag: "Compliance & Design",
+    title: "10DLC SMS Compliance & Mobile-First Redesign",
     summary:
-      "Transitioned reactive app state, real-time inventory adjustments, and checkout reconciliation to Convex.",
-    link: `${docsChangelogUrl}#0-9-0`,
+      "Added dedicated SMS Communication Consent workflow with strict privacy protections, brand-aligned headers, and responsive operator proof layouts.",
+    link: `${docsChangelogUrl}#0-9-3`,
   },
   {
-    version: "v0.8.0",
-    tag: "Security",
-    title: "Zero-PII Privacy Enclaves & Automated Retention",
+    version: "v0.9.2",
+    tag: "Core Stability",
+    title: "In-App Feedback, Security Headers & Mintlify Docs",
     summary:
-      "Scheduled privacy retention pipelines that permanently wipe unneeded customer identifiers on configurable timelines.",
-    link: `${docsChangelogUrl}#0-8-0`,
+      "Configured Sentry user feedback with screenshot capture, strict Content-Security-Policy headers, and migrated full knowledge center to Mintlify.",
+    link: `${docsChangelogUrl}#0-9-2`,
   },
 ];
 
 const roadmapEntries = [
   {
     status: "Active Work",
-    title: "Store Credit & Ledger Rebalancing",
+    title: "Native Android POS & Hardware Integration",
     description:
-      "Fine-grained credit limit recommendations, balance auditing, and multi-tenant ledger verification.",
+      "Bluetooth thermal receipt printing, physical barcode scanner pairing, and local transaction caching with automatic reconciliation.",
   },
   {
     status: "Planned",
-    title: "Offline-First Mobile PWA & Native Sync",
+    title: "Multi-Store Inventory Balancing & Transfers",
     description:
-      "Encrypted device-local catalog caching with background sync reconciliation on network reconnect.",
+      "Inter-location transfers, multi-warehouse stock allocations, and consolidated chain-level sales and credit reporting.",
   },
   {
     status: "In Research",
-    title: "Multi-Store Inventory Balancing",
+    title: "Advanced Financial Reporting & Tax Exports",
     description:
-      "Inter-location transfers, multi-warehouse stock allocations, and consolidated reporting.",
+      "Automated sales tax summary exports, category-level margin breakdowns, and certified compliance audit journal generation.",
   },
 ];
 
-export function FeaturebaseHub() {
+export function MintlifyHub() {
   const [activeView, setActiveView] = useState<UpdatesView>("changelog");
 
   return (
@@ -158,7 +161,15 @@ export function FeaturebaseHub() {
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-sm font-semibold text-white/90">Upcoming Capabilities</span>
-                <span className="text-xs text-white/50">Early Access Roadmap</span>
+                <Link
+                  href={docsRoadmapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-neon-lime hover:underline"
+                >
+                  <span>View Full Roadmap on Mintlify</span>
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -184,7 +195,7 @@ export function FeaturebaseHub() {
           {activeView === "support" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="text-sm font-semibold text-white/90">Operator Help & Feedback</span>
+                <span className="text-sm font-semibold text-white/90">Help Scout & Mintlify Support</span>
                 <Link
                   href={docsHelpdeskUrl}
                   target="_blank"
@@ -196,17 +207,22 @@ export function FeaturebaseHub() {
                 </Link>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
                   <div className="flex items-center gap-2 text-neon-lime">
                     <Sparkles className="h-4 w-4" />
-                    <h3 className="font-semibold text-white text-sm">In-App User Feedback</h3>
+                    <h3 className="font-semibold text-white text-sm">Help Scout Support</h3>
                   </div>
                   <p className="text-xs leading-relaxed text-white/60">
-                    Logged-in operators can report bugs, suggest features, or submit feedback
-                    directly from any screen via the in-app Sentry feedback trigger. Screenshots
-                    can be annotated before submitting.
+                    Direct operator support handled through our dedicated Help Scout inbox. Reach our operations team directly with any setup or technical question.
                   </p>
+                  <a
+                    href={supportMailto}
+                    className="inline-flex items-center gap-1 text-xs text-neon-lime hover:underline"
+                  >
+                    <span>{supportEmail}</span>
+                    <ArrowUpRight className="h-3 w-3" />
+                  </a>
                 </div>
 
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
@@ -216,7 +232,7 @@ export function FeaturebaseHub() {
                   </div>
                   <p className="text-xs leading-relaxed text-white/60">
                     Step-by-step guides for inventory intake, quick sale checkout, customer accounts,
-                    and offline operation are published in the DRX Help Center.
+                    and offline operation are published in the Mintlify docs.
                   </p>
                   <Link
                     href={docsHubUrl}
@@ -228,13 +244,24 @@ export function FeaturebaseHub() {
                     <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-neon-lime">
+                    <Sparkles className="h-4 w-4" />
+                    <h3 className="font-semibold text-white text-sm">In-App User Feedback</h3>
+                  </div>
+                  <p className="text-xs leading-relaxed text-white/60">
+                    Logged-in operators can report bugs, suggest features, or submit feedback
+                    directly from any screen via the in-app Sentry feedback trigger.
+                  </p>
+                </div>
               </div>
             </div>
           )}
         </div>
 
         <p className="mt-4 text-xs text-white/50">
-          Canonical documentation:
+          Canonical documentation on Mintlify:
           <Link
             href={docsHubUrl}
             target="_blank"

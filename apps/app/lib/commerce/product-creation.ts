@@ -76,7 +76,10 @@ export function parsePresetInput(value: string): number[] {
   if (!value.trim()) return [];
   return value
     .split(",")
-    .map((part) => (part.trim() ? Number(part.trim()) : NaN));
+    .map((part) => {
+      const cleaned = part.replace(/[$ ]/g, "");
+      return cleaned ? Number(cleaned) : NaN;
+    });
 }
 
 export function canonicalCreationCommerce(config: ProductCommerceConfig) {

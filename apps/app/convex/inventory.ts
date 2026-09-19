@@ -5,6 +5,7 @@ import type { Doc } from "./_generated/dataModel";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
 import { normalizeProductCommerceConfig } from "./helpers/productCommerce";
+import { gramFactorForUnit, type DRXUnit } from "../lib/units/convert";
 
 async function stockAuth(ctx: MutationCtx, businessId: string) {
   const auth = await requireUserAndBusiness(ctx);
@@ -101,7 +102,11 @@ export const updateProduct = mutation({
     if (args.sku !== undefined) patch.sku = args.sku.trim();
     if (args.description !== undefined) patch.description = args.description;
     if (args.category !== undefined) patch.category = args.category;
-    if (args.sellingUnit !== undefined) patch.sellingUnit = args.sellingUnit.trim();
+    if (args.sellingUnit !== undefined) {
+      const trimmedUnit = args.sellingUnit.trim();
+      patch.sellingUnit = trimmedUnit;
+      patch.gramFactor = gramFactorForUnit(trimmedUnit as DRXUnit);
+    }
     if (args.location !== undefined) patch.location = args.location.trim() || undefined;
     if (args.isTaxable !== undefined) patch.isTaxable = args.isTaxable;
     if (args.reorderLevel !== undefined) patch.reorderLevelGrams = args.reorderLevel;

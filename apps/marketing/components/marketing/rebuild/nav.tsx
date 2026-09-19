@@ -30,7 +30,7 @@ export function MarketingNav() {
       <div className="mx-auto flex h-[64px] md:h-[72px] max-w-[1200px] items-center justify-between px-5 md:px-12 lg:px-0">
         {/* Canonical Brand Mark */}
         <div className="flex items-center">
-          <BrandMark variant="wordmark" priority />
+          <BrandMark variant="wordmark" className="h-[38px] md:h-[44px] w-auto" priority />
         </div>
 
         {/* Desktop & Tablet Navigation */}

@@ -96,7 +96,11 @@ export function mapCustomerToOperationalModel(
       customer.fixedPricePerGram !== null && customer.fixedPricePerGram !== undefined
         ? toNumberSafe(customer.fixedPricePerGram)
         : null,
-    credit_limit: 0,
+    credit_limit: (() => {
+      const limitRecord = Array.isArray(customer.creditLimits) ? customer.creditLimits[0] : undefined;
+      if (limitRecord?.maxCreditLimit != null) return toNumberSafe(limitRecord.maxCreditLimit);
+      return 0;
+    })(),
     is_active: customer.isActive,
     ephemeral: !!customer.ephemeral,
     ephemeral_expires_at: customer.ephemeralExpiresAt || null,

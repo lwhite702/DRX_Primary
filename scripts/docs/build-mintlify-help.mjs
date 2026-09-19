@@ -11,10 +11,10 @@ const migrationPath = path.join(root, "docs/mintlify/help-center-migration.json"
 const mintlifyRoot = path.join(root, "mintlify");
 
 const articleConfig = {
-  "1633388": { route: "start/get-started-with-drx", icon: "flag" },
+  "1633388": { route: "start/get-started-with-drx", icon: "flag", mode: "wide" },
   "2502678": { route: "start/dashboard-and-reports", icon: "chart-no-axes-combined" },
-  "2070517": { route: "start/help-and-support", icon: "life-buoy" },
-  "3489602": { route: "start/troubleshoot-dashboard-and-reports", icon: "chart-no-axes-combined" },
+  "2070517": { route: "start/help-and-support", icon: "life-buoy", mode: "wide" },
+  "3489602": { route: "start/troubleshoot-dashboard-and-reports", icon: "chart-no-axes-combined", mode: "wide" },
   "6417807": { route: "privacy/privacy-and-minimal-data", icon: "eye-off" },
   "3948745": { route: "access/troubleshoot-workspaces-and-access", icon: "key-round" },
   "4735029": { route: "access/switch-workspaces-and-check-access", icon: "building-2" },
@@ -94,7 +94,8 @@ function build() {
     if (parsed.title !== article.title || parsed.description !== article.description) {
       throw new Error(`Manifest frontmatter mismatch: ${article.sourcePath}`);
     }
-    const content = `---\ntitle: "${escapeFrontmatter(parsed.title)}"\ndescription: "${escapeFrontmatter(parsed.description)}"\nicon: "${config.icon}"\n---\n\n${transformBody(parsed.body, articleRoutes)}`;
+    const modeLine = config.mode ? `\nmode: "${config.mode}"` : "";
+    const content = `---\ntitle: "${escapeFrontmatter(parsed.title)}"\ndescription: "${escapeFrontmatter(parsed.description)}"\nicon: "${config.icon}"${modeLine}\n---\n\n${transformBody(parsed.body, articleRoutes)}`;
     const outputPath = path.join(mintlifyRoot, `${config.route}.mdx`);
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, content);

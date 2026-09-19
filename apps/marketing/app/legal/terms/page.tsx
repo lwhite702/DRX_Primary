@@ -169,6 +169,15 @@ export default function LegalTermsPage() {
           features. When reasonably practicable, we will provide notice before a change that
           materially reduces a paid Service.
         </p>
+        <p>
+          Your participation in early access, preview programs, and TestFlight builds is additionally
+          governed by our{" "}
+          <Link className="text-neon-lime hover:underline" href="/beta">
+            Beta Software Agreement &amp; Disclaimer
+          </Link>
+          , which forms part of these Terms and controls in the event of a conflict regarding beta
+          services.
+        </p>
       </SectionBlock>
 
       <SectionBlock title="10. Intellectual property and feedback" className={sectionClassName}>
@@ -394,6 +403,17 @@ export default function LegalTermsPage() {
           record retention, recalls, and other rules that apply to its products and locations. DRX
           does not determine whether a proposed transaction is lawful.
         </p>
+        <p>
+          The business and all operators must strictly adhere to our{" "}
+          <Link className="text-neon-lime hover:underline" href="/legal/lawful-use">
+            Lawful Commercial Use Policy
+          </Link>{" "}
+          and acknowledge our{" "}
+          <Link className="text-neon-lime hover:underline" href="/legal/regulatory-disclaimer">
+            Regulatory &amp; Operational Disclaimer
+          </Link>
+          , which are expressly incorporated into these Terms.
+        </p>
       </SectionBlock>
 
       <SectionBlock title="4. Customer and employee data" className={sectionClassName}>
@@ -435,8 +455,21 @@ export default function LegalTermsPage() {
       </SectionBlock>
 
       <div className="mt-8 flex flex-wrap gap-3 text-sm">
-        <Link className="text-neon-lime hover:underline" href="/legal/privacy">Privacy Policy</Link>
-        <Link className="text-neon-lime hover:underline" href="/legal">Return to the legal hub</Link>
+        <Link className="text-neon-lime hover:underline" href="/legal/privacy">
+          Privacy Policy
+        </Link>
+        <Link className="text-neon-lime hover:underline" href="/legal/lawful-use">
+          Lawful Commercial Use Policy
+        </Link>
+        <Link className="text-neon-lime hover:underline" href="/legal/regulatory-disclaimer">
+          Regulatory Disclaimer
+        </Link>
+        <Link className="text-neon-lime hover:underline" href="/beta">
+          Beta Software Agreement
+        </Link>
+        <Link className="text-neon-lime hover:underline" href="/legal">
+          Return to Legal Hub
+        </Link>
       </div>
     </PageFrame>
   );

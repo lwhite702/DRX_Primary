@@ -1,6 +1,6 @@
 ---
 name: help-center-visuals
-description: Create, place, and review DRX Help Center headers and instructional diagrams. Use when a Featurebase article needs a visual, when generating documentation art, or when changing the visual manifest or image renderer.
+description: Create, place, and review DRX Help Center headers and instructional diagrams. Use when a Mintlify article needs a visual, when generating documentation art, or when changing the visual manifest or image renderer.
 ---
 
 # DRX Help Center visuals
@@ -37,7 +37,7 @@ Generate one distinct asset per call. Inspect the result at full size. Regenerat
 
 ## Build diagrams
 
-Create editable SVG with real text and simple shapes. Export a 1400x800 PNG for Featurebase. Use arrows only for actual direction. Use semantic colors only when they convey a documented state. Do not imply a guarantee with a lock, shield, checkmark, or permanence symbol.
+Create editable SVG with real text and simple shapes. Export a 1400x800 PNG for the Mintlify Help Center. Use arrows only for actual direction. Use semantic colors only when they convey a documented state. Do not imply a guarantee with a lock, shield, checkmark, or permanence symbol.
 
 ## Place and record
 
@@ -46,7 +46,7 @@ Create editable SVG with real text and simple shapes. Export a 1400x800 PNG for 
 - Use a standalone Markdown image block. Keep its relative path and alt text identical to the manifest.
 - Put headers after frontmatter. Put screenshots immediately before the procedure they clarify. Put diagrams before the decision or consequence they summarize.
 - Add a plain caption after fixture screenshots: `Illustrative screen with fictional data.`
-- Never commit a signed Featurebase URL or a browser-local path.
+- Never commit an external attachment URL or a browser-local path.
 
 ## Review
 

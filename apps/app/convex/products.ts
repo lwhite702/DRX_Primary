@@ -13,6 +13,7 @@ import {
 } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
+import { gramFactorForUnit, type DRXUnit } from "../lib/units/convert";
 
 export const productRecord = v.object({
   _id: v.id("products"),
@@ -31,6 +32,7 @@ export const productRecord = v.object({
   reorderLevelGrams: v.number(),
   allowFractionalWeight: v.boolean(),
   sellingUnit: v.string(),
+  gramFactor: v.optional(v.number()),
   quantityPrecision: v.number(),
   minimumSaleQuantity: v.number(),
   quantityIncrement: v.number(),
@@ -240,6 +242,7 @@ export const updateCommerceConfig = mutation({
         : {}),
       sellingPriceCents: baseUnitPriceCents,
       sellingUnit,
+      gramFactor: gramFactorForUnit(sellingUnit as DRXUnit),
       quantityPrecision: args.quantityPrecision,
       minimumSaleQuantity: args.minimumSaleQuantity,
       quantityIncrement: args.quantityIncrement,
@@ -445,6 +448,8 @@ export const createProduct = mutation({
       throw new Error("INVALID_ARGUMENT: Starting stock requires a nonnegative integer-cent unit cost");
     }
     const location = args.location?.trim() || undefined;
+    const effectiveSellingUnit = (creationCommerce?.sellingUnit ?? commerceDefaults.sellingUnit ?? "g") as DRXUnit;
+    const gramFactor = gramFactorForUnit(effectiveSellingUnit);
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
       sku: args.sku,
@@ -463,6 +468,7 @@ export const createProduct = mutation({
       suggestedDollarPresetsCents: [],
       bulkPriceTiers: [],
       ...creationCommerce,
+      gramFactor,
       isActive: true,
       createdAt: now,
       updatedAt: now,
@@ -636,7 +642,7 @@ export const upsertManualLinePolicy = mutation({
 // Selected legacy business identifiers are accepted only through an explicit
 // tenant mapping. Product identities and stock always come from Convex.
 export const listCatalogPage = query({
-  args: { businessId: v.string(), paginationOpts: paginationOptsValidator },
+  args: { businessId: v.string(), paginationOpts: paginationOptsValidator, status: v.optional(v.string()) },
   returns: v.object({ page: v.array(productRecord), isDone: v.boolean(), continueCursor: v.string() }),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
@@ -646,8 +652,9 @@ export const listCatalogPage = query({
     if (!Number.isInteger(args.paginationOpts.numItems) || args.paginationOpts.numItems < 1 || args.paginationOpts.numItems > 200) {
       throw new Error("INVALID_ARGUMENT: Page size must be between 1 and 200");
     }
+    const isActive = args.status === "archived" ? false : true;
     const result = await ctx.db.query("products")
-      .withIndex("by_businessId_and_isActive", q => q.eq("businessId", auth.businessId).eq("isActive", true))
+      .withIndex("by_businessId_and_isActive", q => q.eq("businessId", auth.businessId).eq("isActive", isActive))
       .order("desc").paginate(args.paginationOpts);
     return { page: result.page.map(product => ({ ...product, ...normalizeProductCommerceConfig(product) })),
       isDone: result.isDone, continueCursor: result.continueCursor };
