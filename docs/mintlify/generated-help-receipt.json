@@ -10,7 +10,7 @@
       "mintlifyPath": "mintlify/start/get-started-with-drx.mdx",
       "route": "/start/get-started-with-drx",
       "sourceSha256": "b764e19dc6ba476c313b90c853d929bb6cfe469bd42c88716f01288e9ad386ae",
-      "outputSha256": "de168336b4b136416fadf82e8c111514d7710cc63c40224cdf16af7e3f9e6edc"
+      "outputSha256": "dda76da03510647d37935d702aa49c2001bcd9d4f7644ba2e9955f37aa25d580"
     },
     {
       "articleId": "2502678",
@@ -28,7 +28,7 @@
       "mintlifyPath": "mintlify/start/help-and-support.mdx",
       "route": "/start/help-and-support",
       "sourceSha256": "09bb1eb22a812fe3b39f3a6b7991727e3b35384d91388728cf8320626280f13c",
-      "outputSha256": "ae5b9be97d44013a22abce5e0ba26b565aebe152b20d4968f75ffda6c9350b04"
+      "outputSha256": "573c057dc1997894bc3f0d01f4fa885f22262178574a11b4c7c9ca1ada5ff0de"
     },
     {
       "articleId": "3489602",
@@ -37,7 +37,7 @@
       "mintlifyPath": "mintlify/start/troubleshoot-dashboard-and-reports.mdx",
       "route": "/start/troubleshoot-dashboard-and-reports",
       "sourceSha256": "9aecd45df6764a649d145b4a4cedaaf99e38c140a822d5566de24052588cb2ac",
-      "outputSha256": "d84b3f012ad18e9608bf4439e0b315b5696fcf4dd9936a80291cd32435d97d84"
+      "outputSha256": "06a7a78b2fd80fa671ba0686a8224b27879ab6b98fc1821bf2a268f41f23f483"
     },
     {
       "articleId": "6417807",

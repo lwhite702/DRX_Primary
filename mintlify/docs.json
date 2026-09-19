@@ -20,7 +20,15 @@
     "strict": false
   },
   "fonts": {
-    "family": "Plus Jakarta Sans"
+    "family": "Plus Jakarta Sans",
+    "heading": {
+      "family": "Plus Jakarta Sans",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 500
+    }
   },
   "icons": {
     "library": "lucide"
@@ -141,25 +149,8 @@
           "start/dashboard-and-reports",
           "start/help-and-support",
           "start/troubleshoot-dashboard-and-reports"
-        ]
-      },
-      {
-        "group": "Privacy",
-        "pages": ["privacy/privacy-and-minimal-data"]
-      },
-      {
-        "group": "Team and access",
-        "pages": [
-          "access/switch-workspaces-and-check-access",
-          "access/troubleshoot-workspaces-and-access"
-        ]
-      },
-      {
-        "group": "Customers and balances",
-        "pages": [
-          "customers/customers-and-store-credit",
-          "customers/troubleshoot-customers-and-credit"
-        ]
+        ],
+        "expanded": true
       },
       {
         "group": "Inventory",
@@ -182,13 +173,33 @@
         ]
       },
       {
+        "group": "Customers and balances",
+        "pages": [
+          "customers/customers-and-store-credit",
+          "customers/troubleshoot-customers-and-credit"
+        ]
+      },
+      {
+        "group": "Team and access",
+        "pages": [
+          "access/switch-workspaces-and-check-access",
+          "access/troubleshoot-workspaces-and-access"
+        ]
+      },
+      {
+        "group": "Privacy",
+        "pages": [
+          "privacy/privacy-and-minimal-data"
+        ]
+      },
+      {
         "group": "Reference",
         "pages": [
           "beta-access-and-use",
+          "CHANGELOG",
           "glossary",
           "legal-disclaimer",
-          "roadmap",
-          "CHANGELOG"
+          "roadmap"
         ]
       }
     ]
