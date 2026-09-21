@@ -8,9 +8,6 @@ const footerLinks = [
   { label: "Product", href: "/product" },
   { label: "Updates", href: "/updates" },
   { label: "Help & Support", href: docsHelpdeskUrl },
-  { label: "Privacy", href: "/legal/privacy" },
-  { label: "Terms", href: "/legal/terms" },
-  { label: "Lawful Use", href: "/legal/lawful-use" },
   { label: "FAQ", href: "#faq" },
   { label: "Sign in", href: appLoginUrl },
 ];
@@ -22,9 +19,15 @@ export function MarketingFooter() {
       aria-label="Site Footer"
     >
       <div className="flex flex-col gap-6">
-        {/* Top row: Brand & Destinations */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <BrandMark variant="wordmark" />
+        {/* Top row: About & Destinations */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-md">
+            <BrandMark variant="wordmark" />
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              DRX is a privacy-first operating system for independent retail operators. It keeps products,
+              stock, sales, payments, and customer balances in one clear workflow.
+            </p>
+          </div>
 
           <nav
             className="flex flex-wrap items-center gap-1 sm:gap-2 -ml-2 sm:ml-0"

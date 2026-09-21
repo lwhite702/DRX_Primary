@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
@@ -20,11 +20,11 @@ export default function Header({ title, subtitle, showBack, onBack, rightAction 
       <View style={styles.content}>
         <View style={styles.left}>
           {showBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <TouchableOpacity onPress={onBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
               <Ionicons name="chevron-back" size={24} color={COLORS.text} />
             </TouchableOpacity>
           )}
-          <View>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.title}>{title}</Text>
             {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
           </View>
@@ -55,7 +55,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: SPACING.sm,
-    padding: SPACING.xs,
+    minWidth: 48,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     color: COLORS.text,

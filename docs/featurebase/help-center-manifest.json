@@ -821,7 +821,7 @@
       "publicUrl": "https://drx.featurebase.app/en/help/articles/0236106-quick-sale-checkout",
       "parentId": "4883754",
       "publicOrder": 1,
-      "previousTitle": "Quick Sale checkout",
+      "previousTitle": "New sale checkout",
       "previousHeadings": [
         {
           "level": "H2",
@@ -865,8 +865,8 @@
         }
       ],
       "baselineBodySha256": "83ffabea24fa4191385fea2bfdcc9f92bf889c0532a84ef94f4b0085ae159ac0",
-      "title": "Quick Sale checkout",
-      "description": "Record a sale through Point of Sale and confirm the saved order before starting another.",
+      "title": "New sale checkout",
+      "description": "Record a new sale and confirm the saved order before starting another.",
       "action": "update",
       "publicSlug": "0236106-quick-sale-checkout",
       "baselinePublicFingerprint": "6fd03eeb99fe2f8f9c8942a5214ca373f3441362de1c40be76c58aec1c48b731"

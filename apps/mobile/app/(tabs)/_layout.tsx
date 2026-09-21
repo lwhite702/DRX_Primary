@@ -1,16 +1,21 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { COLORS } from "../../src/constants/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { drxContent } from "@deelrx/content";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { height: 72 + Math.max(insets.bottom, 8) + Math.max(0, fontScale - 1) * 24, paddingBottom: Math.max(insets.bottom, 8) }],
+        tabBarHideOnKeyboard: true,
+        tabBarLabelPosition: "below-icon",
         tabBarActiveTintColor: COLORS.accent,
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarLabelStyle: styles.tabBarLabel,
@@ -21,7 +26,7 @@ export default function TabLayout() {
         name="customers"
         options={{
           title: drxContent.navigation.customers,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
               <Ionicons
                 name={focused ? "people" : "people-outline"}
@@ -37,7 +42,7 @@ export default function TabLayout() {
         name="more"
         options={{
           title: drxContent.navigation.more,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
               <Ionicons
                 name={focused ? "menu" : "menu-outline"}
@@ -74,7 +79,7 @@ export default function TabLayout() {
         name="credits"
         options={{
           title: drxContent.navigation.payments,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
               <Ionicons
                 name={focused ? "wallet" : "wallet-outline"}
@@ -90,7 +95,7 @@ export default function TabLayout() {
         name="inventory"
         options={{
           title: drxContent.navigation.products,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
               <Ionicons
                 name={focused ? "cube" : "cube-outline"}
@@ -115,29 +120,16 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    position: "absolute",
-    bottom: Platform.OS === "ios" ? 24 : 16,
-    left: 16,
-    right: 16,
-    height: 72,
-    borderRadius: 24,
-    backgroundColor: "rgba(12, 12, 12, 0.96)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.08)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
     paddingTop: 8,
-    paddingBottom: 8,
+    elevation: 0,
   },
   tabBarLabel: {
-    fontSize: 10,
-    fontWeight: "700",
+    fontSize: 11,
+    fontWeight: "500",
     marginTop: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   tabBarIcon: {
     marginBottom: 0,
@@ -162,12 +154,12 @@ const styles = StyleSheet.create({
   posIconContainer: {
     backgroundColor: COLORS.accent,
     width: 48,
-    height: 48,
-    borderRadius: 24,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -22, // Pops out above tab bar
-    borderWidth: 3,
+    marginTop: 0,
+    borderWidth: 0,
     borderColor: "#0c0c0c",
     shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
@@ -180,6 +172,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 10,
-    transform: [{ scale: 1.05 }],
+
   },
 });

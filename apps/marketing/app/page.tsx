@@ -32,12 +32,6 @@ const jsonLd = {
       alternateName: ["Deelrx CRM", "DRX"],
       applicationCategory: "BusinessApplication",
       operatingSystem: "iOS, Android, Web",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-        availability: "https://schema.org/OnlineOnly",
-      },
       description:
         "Privacy-first operating system for independent retail operators to track products, stock, sales, and customer store accounts without clutter.",
       publisher: {
@@ -49,13 +43,13 @@ const jsonLd = {
 
 export default function LandingPage() {
   return (
-    <main className="relative min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PageViewTracker />
       <RebuiltMarketingSections />
-    </main>
+    </div>
   );
 }

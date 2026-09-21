@@ -1,6 +1,6 @@
 ---
-title: "Quick Sale checkout"
-description: "Record a sale through Point of Sale and confirm the saved order before starting another."
+title: "New sale checkout"
+description: "Record a new sale and confirm the saved order before starting another."
 ---
 
 ![Neutral boxed goods move through a basket to a saved receipt record.](../_assets/help-center/headers/quick-sale.webp)
@@ -17,7 +17,7 @@ Illustrative screen with fictional data.
 
 ## Build the sale
 
-1. Open **Point of Sale** from web navigation.
+1. Open **New sale** from web navigation.
 2. Use **Scan SKU / barcode or search products** or the available product choices to add items.
 3. Check each product, quantity, unit, and price. Review any displayed discount before continuing.
 4. If needed, use **Customer (Optional)**, enter an existing **Alias** or permitted **Phone number**, choose **Lookup**, and select the correct record. Confirm **Attached:**. Credit needs an eligible customer.
@@ -33,7 +33,7 @@ Illustrative screen with fictional data.
 
 ## What happens next
 
-Confirm the order reference and total on the completion screen. Check the saved order in **Orders & Receipts** if anything is unclear. Verify printing or delivery separately if your shop uses a receipt service.
+Confirm the order reference and total on the completion screen. Check the saved order in **Sales** if anything is unclear. Verify printing or delivery separately if your shop uses a receipt service.
 
 If the result is uncertain, do not start another checkout or request payment again until the saved sale and actual payment have been checked.
 

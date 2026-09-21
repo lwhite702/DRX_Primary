@@ -1,3 +1,4 @@
+import { FormSheet } from "../../src/components/FormSheet";
 import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -365,17 +366,10 @@ export default function Credits() {
       </View>
 
       {/* Payment Modal */}
-      <Modal visible={paymentModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalContent,
-              { paddingBottom: insets.bottom + SPACING.md },
-            ]}
-          >
+      <FormSheet visible={paymentModalVisible} onClose={() => setPaymentModalVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Record Payment</Text>
-              <TouchableOpacity onPress={() => setPaymentModalVisible(false)}>
+              <TouchableOpacity accessibilityLabel="Close payment" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setPaymentModalVisible(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>
             </View>
@@ -437,22 +431,13 @@ export default function Credits() {
                 <Text style={styles.confirmBtnText}>Record Payment</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
+      </FormSheet>
 
       {/* Add-to-balance modal */}
-      <Modal visible={extensionModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalContent,
-              { paddingBottom: insets.bottom + SPACING.md },
-            ]}
-          >
+      <FormSheet visible={extensionModalVisible} onClose={() => setExtensionModalVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add to balance</Text>
-              <TouchableOpacity onPress={() => setExtensionModalVisible(false)}>
+              <TouchableOpacity accessibilityLabel="Close balance" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setExtensionModalVisible(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>
             </View>
@@ -527,13 +512,12 @@ export default function Credits() {
                 <Text style={styles.confirmBtnText}>Add to balance</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
+      </FormSheet>
 
       {/* Customer Selection Modal */}
       <Modal
         visible={customerSelectionModalVisible}
+        onRequestClose={() => setCustomerSelectionModalVisible(false)}
         animationType="slide"
         presentationStyle="pageSheet"
       >
