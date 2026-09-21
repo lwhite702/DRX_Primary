@@ -69,7 +69,6 @@ const nextConfig = {
   transpilePackages: [
     "@deelrx/content",
     "@wrelik/auth",
-    "@wrelik/db",
     "@wrelik/storage",
     "@wrelik/analytics",
     "@wrelik/errors",
@@ -88,7 +87,6 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@wrelik/auth$": path.resolve(process.cwd(), "node_modules/@wrelik/auth"),
-      "@wrelik/db$": path.resolve(process.cwd(), "node_modules/@wrelik/db"),
       "@wrelik/storage$": path.resolve(process.cwd(), "node_modules/@wrelik/storage"),
       "@wrelik/analytics$": path.resolve(process.cwd(), "node_modules/@wrelik/analytics"),
       "@wrelik/errors$": path.resolve(process.cwd(), "node_modules/@wrelik/errors"),
