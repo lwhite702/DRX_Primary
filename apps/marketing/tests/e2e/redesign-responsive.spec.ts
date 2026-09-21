@@ -26,11 +26,11 @@ for (const width of [320, 375, 768, 1024, 1440]) {
       await page.keyboard.press("Escape");
       await expect(toggle).toBeFocused();
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
+      await expect(toggle).toHaveAttribute("aria-label");
     }
     const question = page.locator("#faq details").first();
     await question.locator("summary").click();
     await expect(question).toHaveAttribute("open", "");
     await expect(page.getByRole("link", { name: "Join early access" }).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /menu|close/i }).first()).toHaveAttribute("aria-label");
   });
 }

@@ -24,6 +24,7 @@ export function TopNav() {
     hasPermission("settings.configure_pos");
   // Default to true while loading to prevent layout shifts
   const canQuickSale = loading || hasPermission("sales.create");
+  const canFindProduct = loading || hasPermission("catalog.view");
   const showDashboardViewSwitcher =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
@@ -48,10 +49,12 @@ export function TopNav() {
         </div>
       </div>
 
-      <Link href="/inventory" className="hidden min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent xl:inline-flex">
-        <Search className="size-4" aria-hidden="true" />
-        Find product
-      </Link>
+      {canFindProduct ? (
+        <Link href="/inventory" className="hidden min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent xl:inline-flex">
+          <Search className="size-4" aria-hidden="true" />
+          Find product
+        </Link>
+      ) : null}
 
       {/* Right controls */}
       <div className="flex min-w-0 flex-wrap items-center gap-1.5 md:gap-3">
