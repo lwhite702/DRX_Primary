@@ -108,7 +108,6 @@ export const marketingContent = {
     menuLinks: [
       { label: "Home", href: "/" },
       { label: "Product", href: "/#product" },
-      { label: "Demo", href: "/#demo" },
       { label: "Resources", href: "/resources" },
     ],
     resourceLinks: [
