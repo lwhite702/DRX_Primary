@@ -132,7 +132,7 @@ const requiredImports: Array<{ file: string; contains: string[] }> = [
   },
   {
     file: "apps/marketing/lib/marketing-content.ts",
-    contains: ['from "@/lib/feature-canon"', "drxAudience"],
+    contains: ['from "./feature-canon"', "drxAudience"],
   },
   {
     file: "apps/marketing/app/product/page.tsx",

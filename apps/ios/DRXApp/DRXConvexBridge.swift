@@ -346,6 +346,7 @@ struct DRXDailySalesAggregate: Decodable, Sendable {
     let averageOrderValueCents: Int
 
     var totalRevenueFormatted: String { formatCents(totalRevenueCents) }
+    var totalSubtotalFormatted: String { formatCents(totalSubtotalCents) }
     var totalTaxFormatted: String { formatCents(totalTaxCents) }
     var averageOrderFormatted: String { formatCents(averageOrderValueCents) }
 }

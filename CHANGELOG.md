@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Cross-platform presentation (WRE-136, in progress)**: Normalize web navigation, typography, cards, focus and touch targets; improve native summary cards and inventory accessibility; reuse keyboard-aware Expo form sheets and add a recoverable daily-summary error state. Routes, permissions, checkout calculations and stored data remain unchanged. Native device and authenticated workflow verification remain required before release.
+- **Early-access marketing (WRE-136)**: Use canonical positioning and a readable fictional sale illustration; narrow unverified offline and platform claims, and improve responsive navigation and keyboard dismissal.
+
+
 ## [0.9.4] - 2026-09-17
 ### Fixed
 

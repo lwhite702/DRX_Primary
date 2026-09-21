@@ -7,6 +7,7 @@ import ClerkKit
 struct DashboardView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var recentSales: [DRXSale] = []
     @State private var isLoading = true
@@ -36,6 +37,7 @@ struct DashboardView: View {
                         .font(.system(size: 20))
                         .foregroundStyle(DRXPalette.ink)
                 }
+                .accessibilityLabel("Account details")
                 .accessibilityIdentifier("dashboardIdentityButton")
             }
         }
@@ -61,18 +63,18 @@ struct DashboardView: View {
                     .padding(.horizontal, DRXSpacing.lg)
                     .padding(.top, DRXSpacing.lg)
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DRXSpacing.md) {
+                LazyVGrid(columns: dynamicTypeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible()), GridItem(.flexible())], spacing: DRXSpacing.md) {
                     KPICard(title: DRXContent.Navigation.sales, value: "\(agg.orderCount)", symbol: "cart.fill", color: DRXPalette.info)
                     KPICard(title: "Average sale", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
                     KPICard(title: "Tax", value: agg.totalTaxFormatted, symbol: "percent", color: DRXPalette.warning)
-                    KPICard(title: DRXContent.Navigation.newSale, value: "Ready", symbol: "checkmark.shield.fill", color: DRXPalette.accent)
+                    KPICard(title: "Subtotal", value: agg.totalSubtotalFormatted, symbol: "sum", color: DRXPalette.accent)
                 }
                 .padding(.horizontal, DRXSpacing.lg)
                 .padding(.top, DRXSpacing.md)
             }
 
             // Recent Sales Header
-            sectionHeader("Recent Sales")
+            sectionHeader(DRXContent.Navigation.sales)
 
             if recentSales.isEmpty {
                 EmptyStateCard(symbol: "cart.badge.questionmark", message: "No sales yet.\nStart your first sale.")
@@ -177,18 +179,16 @@ private struct KPICard: View {
                 Text(value)
                     .font(.title3.bold())
                     .foregroundStyle(DRXPalette.ink)
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(1)
+                    .monospacedDigit()
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(DRXPalette.muted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(DRXPalette.card)
-        .clipShape(RoundedRectangle(cornerRadius: DRXRadius.card))
-        .overlay { RoundedRectangle(cornerRadius: DRXRadius.card).stroke(DRXPalette.border, lineWidth: 1) }
+        .drxCard()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -199,31 +199,23 @@ private struct RevenueHero: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DRXSpacing.sm) {
             HStack {
-                Text("TODAY'S REVENUE")
-                    .font(.caption2.monospaced().weight(.semibold))
-                    .tracking(1.4)
+                Text("Today’s sales")
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(DRXPalette.muted)
                 Spacer()
-                Label("Live", systemImage: "circle.fill")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(DRXPalette.success)
+
             }
             Text(value)
-                .font(.system(size: 42, weight: .bold, design: .monospaced))
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
+                .font(.largeTitle.bold())
+                .monospacedDigit()
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(DRXPalette.ink)
-            Text("\(orderCount) completed orders")
+            Text("\(orderCount) saved sales")
                 .font(.subheadline)
                 .foregroundStyle(DRXPalette.muted)
         }
-        .padding(DRXSpacing.xl)
-        .background(DRXPalette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: DRXRadius.panel))
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(DRXPalette.accent).frame(height: 2)
-        }
-        .overlay { RoundedRectangle(cornerRadius: DRXRadius.panel).stroke(DRXPalette.border, lineWidth: 1) }
+        .drxCard()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -288,11 +280,8 @@ struct EmptyStateCard: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(DRXPalette.muted)
         }
-        .padding(28)
         .frame(maxWidth: .infinity)
-        .background(DRXPalette.card)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
+        .drxCard()
     }
 }
 
@@ -350,7 +339,7 @@ private struct IdentityHeaderCard: View {
                         Text(operatorName)
                             .font(.subheadline.bold())
                             .foregroundStyle(DRXPalette.ink)
-                            .lineLimit(1)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         Text(roleName)
                             .font(.system(size: 10, weight: .heavy))
@@ -368,7 +357,7 @@ private struct IdentityHeaderCard: View {
                         Text(businessName)
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
-                            .lineLimit(1)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 

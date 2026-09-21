@@ -34,11 +34,11 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-6 md:flex-row md:items-start md:justify-between mb-8",
+        "flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8",
         className,
       )}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex min-w-0 items-start gap-3">
         <Button
           variant="ghost"
           size="icon"
@@ -48,8 +48,8 @@ export function PageHeader({
           <ArrowLeft className="h-6 w-6" />
           <span className="sr-only">Go back</span>
         </Button>
-        <div className="space-y-1 py-0.5">
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight uppercase">
+        <div className="min-w-0 space-y-2 py-0.5">
+          <h1 className="font-display text-2xl md:text-4xl font-bold text-foreground tracking-tight break-words">
             {title}
           </h1>
           {description && (
@@ -59,7 +59,7 @@ export function PageHeader({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-4 pl-12 md:pl-0 mt-2 md:mt-0">
+      <div className="flex flex-wrap items-center gap-3 md:pl-0">
         {children}
       </div>
     </div>

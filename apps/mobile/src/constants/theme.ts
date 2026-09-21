@@ -1,8 +1,8 @@
 export const COLORS = {
   // Backgrounds - Dark Industrial
   background: "#0a0a0a",
-  surface: "#0c0c0c",
-  surfaceLight: "#1E1E1E",
+  surface: "#121212",
+  surfaceLight: "#1a1a1a",
   surfaceLighter: "#2A2A2A",
 
   // Accent - Neon Lime
@@ -12,8 +12,8 @@ export const COLORS = {
 
   // Text
   text: "#f5f5f5",
-  textSecondary: "#9ca3af",
-  textMuted: "#525252",
+  textSecondary: "#a3a3a3",
+  textMuted: "#a3a3a3",
 
   // Status
   success: "#10b981",
@@ -43,8 +43,8 @@ export const SPACING = {
 };
 
 export const FONT_SIZES = {
-  xs: 10,
-  sm: 12,
+  xs: 12,
+  sm: 13,
   md: 14,
   lg: 16,
   xl: 20,
@@ -54,9 +54,9 @@ export const FONT_SIZES = {
 };
 
 export const BORDER_RADIUS = {
-  sm: 4,
-  md: 8,
-  lg: 12,
+  sm: 6,
+  md: 10,
+  lg: 14,
   xl: 16,
   xxl: 24,
   full: 999,

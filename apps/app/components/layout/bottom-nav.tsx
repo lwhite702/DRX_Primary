@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { drxContent } from "@deelrx/content";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -110,7 +111,7 @@ export function BottomNav() {
           <Link
             href="/pos/sale"
             className={cn(
-              "relative -top-4 flex flex-col items-center justify-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full",
+              "relative flex flex-col items-center justify-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full",
               "active:scale-95 transition-transform duration-150",
             )}
             aria-current={isPosActive ? "page" : undefined}
@@ -118,7 +119,7 @@ export function BottomNav() {
           >
             <div
               className={cn(
-                "h-14 w-14 rounded-full bg-accent text-black flex items-center justify-center shadow-lg shadow-accent/25 border-4 border-background transition-all duration-200",
+                "h-10 w-12 rounded-2xl bg-accent text-black flex items-center justify-center  transition-all duration-200",
                 isPosActive
                   ? "scale-105 ring-2 ring-accent"
                   : "group-hover:scale-105",
@@ -128,11 +129,11 @@ export function BottomNav() {
             </div>
             <span
               className={cn(
-                "text-[10px] font-bold tracking-wider uppercase mt-0.5",
+                "text-[11px] font-medium mt-0.5",
                 isPosActive ? "text-accent" : "text-muted-foreground",
               )}
             >
-              POS
+              {drxContent.navigation.newSale}
             </span>
           </Link>
         </div>
@@ -147,10 +148,10 @@ export function BottomNav() {
               : "text-muted-foreground hover:text-foreground",
           )}
           aria-current={isSalesActive ? "page" : undefined}
-          aria-label="Orders and Receipts"
+          aria-label={drxContent.navigation.sales}
         >
           <ShoppingCart className="h-5 w-5" />
-          <span className="text-[11px] font-medium tracking-tight">Orders</span>
+          <span className="text-[11px] font-medium tracking-tight">{drxContent.navigation.sales}</span>
         </Link>
 
         {/* 5. More Drawer */}
@@ -174,12 +175,12 @@ export function BottomNav() {
           </SheetTrigger>
           <SheetContent
             side="bottom"
-            className="rounded-t-2xl p-0 max-h-[88dvh] overflow-hidden border-t border-border/80 bg-card"
+            className="flex flex-col rounded-t-2xl p-0 max-h-[88dvh] overflow-hidden border-t border-border/80 bg-card"
           >
-            <SheetHeader className="px-5 py-4 border-b border-border/60 flex flex-row items-center justify-between">
+            <SheetHeader className="shrink-0 px-5 py-4 border-b border-border/60 flex flex-row items-center justify-between">
               <div>
                 <SheetTitle className="text-base font-semibold">
-                  Workspace & Navigation
+                  {drxContent.navigation.more}
                 </SheetTitle>
                 {business && (
                   <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
@@ -190,7 +191,7 @@ export function BottomNav() {
               </div>
             </SheetHeader>
 
-            <div className="p-4 overflow-y-auto max-h-[calc(88dvh-80px)] space-y-5 pb-10">
+            <div className="min-h-0 p-4 overflow-y-auto overscroll-contain space-y-5 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
               {/* Operations Section */}
               <div className="space-y-1">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-3 mb-1.5">
@@ -260,7 +261,7 @@ export function BottomNav() {
                   >
                     <div className="flex items-center gap-3">
                       <LineChart className="h-4 w-4" />
-                      <span>Operations Insights</span>
+                      <span>{drxContent.navigation.trends}</span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                   </Link>
@@ -277,7 +278,7 @@ export function BottomNav() {
                   >
                     <div className="flex items-center gap-3">
                       <BarChart2 className="h-4 w-4" />
-                      <span>Reports & Margin</span>
+                      <span>{drxContent.navigation.reports}</span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                   </Link>

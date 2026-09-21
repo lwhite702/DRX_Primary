@@ -46,6 +46,7 @@ struct DRXPrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: expandsToFillWidth ? .infinity : nil)
             .padding(.horizontal, DRXSpacing.lg)
             .padding(.vertical, DRXSpacing.md)
+            .frame(minHeight: 48)
             .background(
                 DRXPalette.accent.opacity(configuration.isPressed ? 0.82 : 1),
                 in: RoundedRectangle(cornerRadius: DRXRadius.control)
@@ -61,5 +62,24 @@ extension ButtonStyle where Self == DRXPrimaryButtonStyle {
 
     static var drxPrimaryFullWidth: DRXPrimaryButtonStyle {
         DRXPrimaryButtonStyle(expandsToFillWidth: true)
+    }
+}
+
+/// Content-sized cards share one surface and keep Dynamic Type free to wrap.
+struct DRXCardSurface: ViewModifier {
+    var elevated = false
+
+    func body(content: Content) -> some View {
+        content
+            .padding(DRXSpacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(elevated ? DRXPalette.card : DRXPalette.surface, in: RoundedRectangle(cornerRadius: DRXRadius.panel))
+            .overlay { RoundedRectangle(cornerRadius: DRXRadius.panel).stroke(DRXPalette.border, lineWidth: 1) }
+    }
+}
+
+extension View {
+    func drxCard(elevated: Bool = false) -> some View {
+        modifier(DRXCardSurface(elevated: elevated))
     }
 }
