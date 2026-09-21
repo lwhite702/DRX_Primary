@@ -1,8 +1,9 @@
 "use server";
 
 import { getPlatformAdmin, requirePlatformAdmin } from "@/lib/auth/platform-admin";
-import { db } from "@/lib/db";
-import type { PrismaClient } from "@prisma/client";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 export type AdminUserItem = {
   id: string; // role record id
@@ -20,23 +21,14 @@ export async function fetchAdminUsers(): Promise<{
   try {
     await requirePlatformAdmin();
 
-    const roles = await (db as PrismaClient).userRole.findMany({
-      include: {
-        business: {
-          select: { businessName: true, id: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    });
+    const token = await getConvexAuthToken(); const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) return { error: "Failed to fetch users", data: [] };
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    const roles = await client.query(api.platformAdmin.listUsers, {});
 
     const formatted = roles.map((r) => ({
-      id: r.id,
-      user_id: r.userId,
-      role: r.role,
-      business_name: r.business?.businessName || "N/A",
-      business_id: r.business?.id || null, // Ensure string | null fits
-      created_at: r.createdAt,
+      id: r.id, user_id: r.userId, role: r.role,
+      business_name: r.businessName, business_id: r.businessId, created_at: new Date(r.createdAt),
     }));
 
     return { data: formatted };

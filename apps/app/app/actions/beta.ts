@@ -1,7 +1,9 @@
 "use server";
 
-import { createLegacyServerDbClient as createServerDbClient } from "@/lib/data-access/server";
 import { getCurrentUser } from "@/lib/adapters/auth";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { z } from "zod";
 
 const ticketSchema = z.object({
@@ -20,23 +22,16 @@ export async function submitSupportTicket(data: unknown) {
     };
   }
 
-  const supabase = await createServerDbClient();
   const sessionUser = await getCurrentUser();
 
   if (!sessionUser?.id) {
     return { error: "You must be logged in to submit a ticket" };
   }
 
-  const { error } = await supabase.from("support_tickets").insert({
-    user_id: sessionUser.id,
-    subject: result.data.subject,
-    message: result.data.message,
-    priority: result.data.priority,
-  });
-
-  if (error) {
-    return { error: "Failed to submit ticket" };
-  }
+  const token = await getConvexAuthToken(); const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  if (!token || !url) return { error: "Failed to submit ticket" };
+  const client = new ConvexHttpClient(url); client.setAuth(token);
+  await client.mutation(api.support.createTicket, result.data);
 
   return { success: true };
 }

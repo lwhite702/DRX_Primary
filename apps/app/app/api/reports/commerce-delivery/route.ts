@@ -6,7 +6,6 @@ import {
   canonicalSourceSummaryFromAggregate,
   combineCommerceDeliverySummaries,
   emptyCommerceDeliveryTotals,
-  getLegacyWebCommerceSummary,
   type CombinedCommerceDeliverySummary,
   type CommerceDeliverySourceSummary,
 } from "@/lib/reports/commerce-delivery";
@@ -153,17 +152,8 @@ export async function GET(request: NextRequest) {
 
     // Ordinary web checkout still writes here. Read it even when Convex is
     // healthy, excluding mirrored orders by their stable checkout references.
-    try {
-      const local = await getLegacyWebCommerceSummary(
-        businessId,
-        { from: new Date(startAt), to: new Date(endAt) },
-        canonicalSummary.orderNumbers,
-      );
-      legacySummary = local.summary;
-      duplicateOrdersExcluded = local.duplicateOrdersExcluded;
-    } catch {
-      console.warn("Commerce report: legacy web ledger unavailable");
-    }
+    // The Convex ledger is authoritative after the unified-ledger cutover.
+    legacySummary = unavailableSource("legacy_web");
 
     if (canonicalSummary.available === false && legacySummary.available === false) {
       return NextResponse.json(

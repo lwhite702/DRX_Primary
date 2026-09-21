@@ -22,6 +22,7 @@ export default defineSchema({
   notifications: defineTable({ businessId: v.optional(v.id("businesses")), userId: v.string(), title: v.string(), message: v.string(), type: v.string(), link: v.optional(v.string()), metadataJson: v.optional(v.string()), isRead: v.boolean(), isDeleted: v.boolean(), createdAt: v.number(), legacyId: v.optional(v.string()) })
     .index("by_userId_and_state", ["userId", "isDeleted", "isRead", "createdAt"])
     .index("by_legacyId", ["legacyId"]),
+  supportTickets: defineTable({ userId: v.string(), subject: v.string(), message: v.string(), priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("critical")), status: v.string(), createdAt: v.number() }).index("by_userId_and_createdAt", ["userId", "createdAt"]),
   notificationCreationReceipts: defineTable({ businessId: v.optional(v.id("businesses")), actorId: v.string(), requestId: v.string(), fingerprint: v.string(), notificationId: v.id("notifications"), recipientId: v.string(), createdAt: v.number() }).index("by_actorId_and_requestId", ["actorId", "requestId"]),
   notificationDeletions: defineTable({ notificationId: v.id("notifications"), recipientId: v.string(), legacyId: v.optional(v.string()), deletedAt: v.number() })
     .index("by_notificationId", ["notificationId"]).index("by_legacyId", ["legacyId"]),
@@ -41,6 +42,9 @@ export default defineSchema({
     ipAddress: v.optional(v.string()), userAgent: v.optional(v.string()), deviceType: v.optional(v.string()),
     city: v.optional(v.string()), country: v.optional(v.string()),
   }).index("by_sourceEventId", ["sourceEventId"]).index("by_userId_and_receivedAt", ["userId", "receivedAt"]),
+  authLockoutWindows: defineTable({
+    identifierHash: v.string(), ipHash: v.string(), failedCount: v.number(), windowStartedAt: v.number(), lockedUntil: v.optional(v.number()),
+  }).index("by_identifierHash_and_ipHash", ["identifierHash", "ipHash"]),
   // Businesses / Tenants
   businesses: defineTable({
     isActive: v.optional(v.boolean()),
@@ -298,10 +302,31 @@ export default defineSchema({
   customers: defineTable({
     businessId: v.id("businesses"),
     legacyPrismaId: v.optional(v.string()),
+    alias: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
     email: v.optional(v.string()),
+    address: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    aliasEncrypted: v.optional(v.string()),
+    firstNameEncrypted: v.optional(v.string()),
+    phoneEncrypted: v.optional(v.string()),
+    emailEncrypted: v.optional(v.string()),
+    addressEncrypted: v.optional(v.string()),
+    notesEncrypted: v.optional(v.string()),
+    aliasHash: v.optional(v.string()),
+    phoneHash: v.optional(v.string()),
+    emailHash: v.optional(v.string()),
+    piiEncryptionVersion: v.optional(v.number()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    customerType: v.optional(v.string()),
+    fixedPricePerGramCents: v.optional(v.number()),
+    ephemeral: v.optional(v.boolean()),
+    ephemeralExpiresAt: v.optional(v.number()),
+    lastActivityAt: v.optional(v.number()),
     totalPurchasesCents: v.number(),
     loyaltyEligibleSpendCents: v.optional(v.number()),
     totalCreditUsedCents: v.number(),
@@ -321,8 +346,20 @@ export default defineSchema({
       "legacyPrismaId",
     ])
     .index("by_businessId_and_isActive", ["businessId", "isActive"])
+    .index("by_businessId_and_isActive_and_createdAt", ["businessId", "isActive", "createdAt"])
     .index("by_businessId_and_isActive_and_creditEnabled", ["businessId", "isActive", "creditEnabled"])
-    .index("by_businessId_and_phone", ["businessId", "phoneNumber"]),
+    .index("by_businessId_and_phone", ["businessId", "phoneNumber"])
+    .index("by_businessId_and_aliasHash", ["businessId", "aliasHash"])
+    .index("by_businessId_and_phoneHash", ["businessId", "phoneHash"])
+    .index("by_businessId_and_emailHash", ["businessId", "emailHash"]),
+
+  privacyInventorySnapshots: defineTable({
+    businessId: v.id("businesses"),
+    aliasCount: v.number(), phoneCount: v.number(), emailCount: v.number(),
+    addressCount: v.number(), notesCount: v.number(),
+    aliasDelta: v.number(), phoneDelta: v.number(), emailDelta: v.number(),
+    addressDelta: v.number(), notesDelta: v.number(), capturedAt: v.number(),
+  }).index("by_businessId_and_capturedAt", ["businessId", "capturedAt"]),
 
   // Append-only balance changes. Opening entries preserve the pre-ledger
   // aggregate explicitly; historical source reconciliation remains a migration gate.

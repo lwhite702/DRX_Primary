@@ -1,60 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
-  class PosCheckoutError extends Error {
-    status: number;
-
-    constructor(message: string, status = 400) {
-      super(message);
-      this.status = status;
-    }
-  }
-
   return {
+    businessClient: vi.fn(),
     resolveAuthContext: vi.fn(),
-    createCart: vi.fn(),
-    addItem: vi.fn(),
-    setPayment: vi.fn(),
-    setTaxAmount: vi.fn(),
-    setFees: vi.fn(),
-    setPaymentRef: vi.fn(),
-    setAmountPaid: vi.fn(),
-    setDelivery: vi.fn(),
-    checkout: vi.fn(),
+    checkoutCanonicalCommerce: vi.fn(),
     performFullCheckout: vi.fn(),
-    salesFindFirst: vi.fn(),
-    PosCheckoutError,
   };
 });
+
+vi.mock("@/lib/business/convex-server", () => ({
+  businessClient: mocks.businessClient,
+}));
 
 vi.mock("@/app/api/pos/_lib/server", () => ({
   resolveAuthContext: mocks.resolveAuthContext,
 }));
 
-vi.mock("@/lib/pos/core", () => ({
-  PosCheckoutError: mocks.PosCheckoutError,
-  createCart: mocks.createCart,
-  addItem: mocks.addItem,
-  setPayment: mocks.setPayment,
-  setTaxAmount: mocks.setTaxAmount,
-  setFees: mocks.setFees,
-  setPaymentRef: mocks.setPaymentRef,
-  setAmountPaid: mocks.setAmountPaid,
-  setDelivery: mocks.setDelivery,
-  checkout: mocks.checkout,
+vi.mock("@/app/api/pos/_lib/convex-commerce", () => ({
+  checkoutCanonicalCommerce: mocks.checkoutCanonicalCommerce,
 }));
 
 vi.mock("@/app/api/pos/_lib/full-checkout", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/app/api/pos/_lib/full-checkout")>()),
   performFullCheckout: mocks.performFullCheckout,
-}));
-
-vi.mock("@/lib/db", () => ({
-  db: {
-    sales: {
-      findFirst: mocks.salesFindFirst,
-    },
-  },
 }));
 
 import { POST as postCheckoutEnhanced } from "@/app/api/pos/checkout-enhanced/route";
@@ -71,57 +40,12 @@ function makeRequest(url: string, body: unknown) {
 describe("POS compatibility routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user_123",
-      businessId: "business_123",
-    });
-    mocks.createCart.mockImplementation((params) => ({
-      ...params,
-      items: [],
-      payment: null,
-      fees: [],
-      taxAmount: 0,
-    }));
-    mocks.addItem.mockImplementation((cart, item) => ({
-      ...cart,
-      items: [...cart.items, item],
-    }));
-    mocks.setPayment.mockImplementation((cart, payment) => ({
-      ...cart,
-      payment,
-    }));
-    mocks.setTaxAmount.mockImplementation((cart, taxAmount) => ({
-      ...cart,
-      taxAmount,
-    }));
-    mocks.setFees.mockImplementation((cart, fees) => ({
-      ...cart,
-      fees,
-    }));
-    mocks.setPaymentRef.mockImplementation((cart, paymentRef) => ({
-      ...cart,
-      paymentRef,
-    }));
-    mocks.setAmountPaid.mockImplementation((cart, amountPaid) => ({
-      ...cart,
-      amountPaid,
-    }));
-    mocks.setDelivery.mockImplementation((cart, delivery) => ({
-      ...cart,
-      ...delivery,
-    }));
-    mocks.checkout.mockResolvedValue({
-      saleId: "sale_123",
-      orderNumber: "POS-123",
-      total: 15,
-      changeAmount: 0,
+    mocks.businessClient.mockResolvedValue({ businessId: "business_123" });
+    mocks.resolveAuthContext.mockResolvedValue({ userId: "user_123", businessId: "business_123" });
+    mocks.checkoutCanonicalCommerce.mockResolvedValue({
+      saleId: "sale_123", orderNumber: "POS-123", total: 15, changeAmount: 0,
     });
     mocks.performFullCheckout.mockResolvedValue({ saleId: "sale_123", orderNumber: "POS-123", total: 15, changeAmount: 0 });
-    mocks.salesFindFirst.mockResolvedValue({
-      id: "sale_123",
-      orderNumber: "POS-123",
-      items: [{ inventoryId: "inv_1" }],
-    });
   });
 
   it("maps checkout-enhanced payloads to the canonical service", async () => {
@@ -165,10 +89,9 @@ describe("POS compatibility routes", () => {
       idempotencyKey: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
       items: [expect.objectContaining({ weightGrams: 3.5, qty: 1, unitPrice: 28 })],
     }), "business_123");
-    expect(mocks.checkout).not.toHaveBeenCalled();
   });
 
-  it("preserves the remaining legacy /api/sales writer contract until its conversion", async () => {
+  it("routes the legacy /api/sales writer through canonical commerce", async () => {
     const res = await postSales(
       makeRequest("http://localhost/api/sales", {
         customer_id: "11111111-1111-4111-8111-111111111111",
@@ -197,27 +120,12 @@ describe("POS compatibility routes", () => {
         changeAmount: 0,
       },
       errors: [],
-      sale: {
-        id: "sale_123",
-        orderNumber: "POS-123",
-        items: [{ inventoryId: "inv_1" }],
-      },
     });
-    expect(mocks.createCart).toHaveBeenCalledWith({
+    expect(mocks.checkoutCanonicalCommerce).toHaveBeenCalledWith(expect.objectContaining({
       businessId: "business_123",
-      userId: "user_123",
-      mode: "full",
-      source: "sales-api",
       customerId: "11111111-1111-4111-8111-111111111111",
-    });
-    expect(mocks.salesFindFirst).toHaveBeenCalledWith({
-      where: {
-        id: "sale_123",
-        businessId: "business_123",
-      },
-      include: {
-        items: true,
-      },
-    });
+      paymentMethod: "cash",
+      items: [expect.objectContaining({ inventoryId: "22222222-2222-4222-8222-222222222222", qty: 2, unitPrice: 5 })],
+    }));
   });
 });

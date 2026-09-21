@@ -1,4 +1,6 @@
-import { db } from "@/lib/db";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 interface PrivacySecurityEventInput {
   action:
@@ -16,18 +18,17 @@ export async function logPrivacySecurityEvent(
   input: PrivacySecurityEventInput,
 ): Promise<void> {
   try {
-    await db.systemAuditLog.create({
-      data: {
-        action: input.action,
-        entityType: "privacy",
-        entityId: input.customerId ?? null,
-        businessId: input.businessId ?? null,
-        newValues: {
-          field: input.field ?? null,
-          route: input.route ?? null,
-          ...(input.details ?? {}),
-        },
-      },
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    const token = await getConvexAuthToken();
+    if (!url || !token || !input.businessId) return;
+    const client = new ConvexHttpClient(url);
+    client.setAuth(token);
+    await client.mutation(api.audit.logPrivacySecurityEvent, {
+      businessId: input.businessId,
+      customerId: input.customerId ?? null,
+      action: input.action,
+      field: input.field ?? null,
+      details: JSON.stringify({ route: input.route ?? null, ...(input.details ?? {}) }),
     });
   } catch (error) {
     console.error("[privacy/security-event]", error);

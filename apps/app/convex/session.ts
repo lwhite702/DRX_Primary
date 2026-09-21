@@ -17,6 +17,18 @@ export const currentBusiness = query({
   },
 });
 
+export const listMyBusinesses = query({
+  args: {},
+  returns: v.array(businessProfileValidator),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("UNAUTHENTICATED: Authentication required");
+    const memberships = await ctx.db.query("users").withIndex("by_clerkUserId", q => q.eq("clerkUserId", identity.subject)).take(100);
+    const businesses = await Promise.all(memberships.map(member => ctx.db.get(member.businessId)));
+    return businesses.filter((business): business is NonNullable<typeof business> => Boolean(business)).map(businessProfileDto);
+  },
+});
+
 export const permission = query({
   args: { businessId: v.optional(v.string()), userId: v.optional(v.string()), permission: v.string() },
   returns: v.object({ allowed: v.boolean(), role: v.string() }),
