@@ -115,7 +115,7 @@ export default function RootLayout({
         ) : null}
       </head>
       <body
-        className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} ${plusJakartaSans.className} bg-background text-foreground antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} ${inter.className} bg-background text-foreground antialiased`}
       >
         <ClerkProviderWrapper
           isBypassActive={isBypassActive}

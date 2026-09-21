@@ -37,7 +37,7 @@ function ActionCard({
     <Link
       href={href}
       className={cn(
-        "group flex flex-col rounded-xl border border-white/10 bg-surface transition-all duration-200 hover:border-white/20 hover:bg-card",
+        "group flex min-w-0 flex-col rounded-[var(--drx-radius-panel)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent border border-white/10 bg-surface transition-all duration-200 hover:border-white/20 hover:bg-card",
         compact ? "gap-2 p-3" : "gap-3 p-4",
       )}
     >
@@ -53,7 +53,7 @@ function ActionCard({
       </div>
       <div>
         <h3 className="text-sm font-bold text-white mb-0.5">{title}</h3>
-        <p className="text-[10px] uppercase tracking-wide text-white/75">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
@@ -177,10 +177,10 @@ export function QuickActions({
   return (
     <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.15)] md:p-5">
       <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-        Common actions
+        Quick actions
       </div>
       <p className="text-xs text-white/70">
-        The four most-used tasks for this dashboard view.
+        Get to the work you do most.
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

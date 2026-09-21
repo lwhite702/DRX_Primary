@@ -13,13 +13,13 @@ Illustrative screen with fictional data.
 
 ## Check your numbers
 
-1. Confirm the active business, then open **Dashboard** for its summary.
-2. Open **Orders & Receipts** to check the saved sales behind a total. The recent list shows up to 50 orders.
+1. Confirm the active business, then open **Home** for its summary.
+2. Open **Sales** to check the saved sales behind a total. The recent list shows up to 50 orders.
 3. Open **Reports** and read **Window:** before comparing figures. Check the displayed dates rather than assuming every card covers the same period.
 4. Compare **Today Sales**, **Today COGS**, **Week Gross Profit**, and **Outstanding Credit** only with records for the matching period and business.
 5. Review **Recent Sales Margin** and **Top Products This Week** where shown. Missing costs can affect a margin calculation.
 
-**Insights** is a separate web page. Its summary is not a substitute for checking saved orders. Do not change a sale or balance merely to make a chart match.
+**Trends** is a separate web page. Its summary is not a substitute for checking saved sales. Do not change a sale or balance merely to make a chart match.
 
 ## Export reconciliation data
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { marketingContent } from "@/lib/marketing-content";
 import { appWaitlistUrl } from "@/lib/app-links";
 
 export function MarketingCtaBand() {
@@ -10,11 +11,10 @@ export function MarketingCtaBand() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 lg:gap-10 text-left">
         <div className="flex-1 max-w-[640px]">
           <h2 className="font-display text-[28px] md:text-[34px] lg:text-[38px] font-extrabold leading-[36px] md:leading-[42px] lg:leading-[46px] tracking-[-0.5px] text-[#0a0a0a] mb-2.5">
-            Run the next shift from one place.
+            {marketingContent.betaAccess.title}
           </h2>
           <p className="text-[15px] md:text-[17px] font-normal leading-[24px] md:leading-[26px] text-[#0a0a0a]/90">
-            Start with the work already on your list. No invented proof. No setup
-            theatre.
+            {marketingContent.betaAccess.lead}
           </p>
         </div>
 
@@ -23,7 +23,7 @@ export function MarketingCtaBand() {
             href={appWaitlistUrl}
             className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[10px] bg-black px-6 text-[14px] font-semibold text-white hover:bg-[#1a1a1a] hover:scale-[1.02] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
           >
-            Get started
+            {marketingContent.betaAccess.cta.label}
           </Link>
           <Link
             href="#workflows"

@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { COLORS, BORDER_RADIUS, SPACING } from '../constants/theme';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   variant?: 'default' | 'elevated' | 'outlined';
 }
 
@@ -26,14 +26,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    minWidth: 0,
   },
   elevated: {
     backgroundColor: COLORS.surfaceLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.28,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 2,
   },
   outlined: {
     backgroundColor: 'transparent',

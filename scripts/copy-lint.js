@@ -128,7 +128,7 @@ const REQUIRED_FRAGMENTS = [
   {
     file: "apps/app/lib/privacy/profiles.ts",
     fragments: [
-      'import { drxCopy } from "@/lib/copy/drx";',
+      'import { drxCopy } from "../copy/drx";',
       "const privacyPresetCopy = drxCopy.onboarding.privacy.presets;",
     ],
   },

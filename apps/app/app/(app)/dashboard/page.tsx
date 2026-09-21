@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { drxContent } from "@deelrx/content";
 import { useRouter } from "next/navigation";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useDashboardPreferences } from "@/lib/hooks/use-dashboard-preferences";
@@ -71,8 +72,8 @@ export default function DashboardPage() {
         <SetupGuide />
 
         <PageHeader
-          title="Today"
-          description="Today’s business health, the exceptions that need attention, and your next action."
+          title={drxContent.navigation.home}
+          description="See today’s numbers and what needs your attention."
         >
           <Button
             type="button"

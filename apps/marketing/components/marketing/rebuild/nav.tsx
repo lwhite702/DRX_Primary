@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import { marketingContent } from "@/lib/marketing-content";
 import { X } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { appWaitlistUrl } from "@/lib/app-links";
@@ -16,9 +17,15 @@ const navLinks = [
 
 export function MarketingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/40">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/40" onKeyDown={(event) => {
+      if (event.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        menuButton.current?.focus();
+      }
+    }}>
       {/* Skip Link for WCAG 2.2 AA */}
       <a
         href="#main-content"
@@ -27,7 +34,7 @@ export function MarketingNav() {
         Skip to main content
       </a>
 
-      <div className="mx-auto flex h-[64px] md:h-[72px] max-w-[1200px] items-center justify-between px-5 md:px-12 lg:px-0">
+      <div className="mx-auto flex min-h-[64px] md:min-h-[72px] max-w-[1280px] flex-wrap gap-2 items-center justify-between px-5 md:px-8 lg:px-10 py-2">
         {/* Canonical Brand Mark */}
         <div className="flex items-center">
           <BrandMark variant="wordmark" className="h-[38px] md:h-[44px] w-auto" priority />
@@ -52,10 +59,12 @@ export function MarketingNav() {
         {/* Action Button & Mobile Menu Toggle */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
+            ref={menuButton}
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             className="md:hidden flex min-h-[44px] min-w-[44px] items-center justify-center px-2 text-[14px] text-text-primary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md"
             aria-expanded={mobileMenuOpen}
+            aria-controls="marketing-mobile-menu"
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {mobileMenuOpen ? (
@@ -69,14 +78,14 @@ export function MarketingNav() {
             href={appWaitlistUrl}
             className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[6px] bg-accent px-4 py-2 text-[14px] font-medium text-primary-foreground hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            Get started
+            {marketingContent.hero.primaryCta.label}
           </Link>
         </div>
       </div>
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background px-5 py-4 space-y-1">
+        <nav id="marketing-mobile-menu" aria-label="Mobile navigation" className="md:hidden max-h-[70dvh] overflow-y-auto border-t border-border bg-background px-5 py-4 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -87,7 +96,7 @@ export function MarketingNav() {
               {link.label}
             </Link>
           ))}
-        </div>
+        </nav>
       )}
     </header>
   );

@@ -6,7 +6,6 @@ import { ScanLine, Search, Settings } from "lucide-react";
 import { UserButton } from "@/lib/adapters/auth/ui";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { BusinessSwitcher } from "@/components/layout/business-switcher";
 import { DashboardViewSwitcher } from "@/components/layout/dashboard-view-switcher";
 import { useBusiness } from "@/lib/hooks/use-business";
@@ -25,11 +24,12 @@ export function TopNav() {
     hasPermission("settings.configure_pos");
   // Default to true while loading to prevent layout shifts
   const canQuickSale = loading || hasPermission("sales.create");
+  const canFindProduct = loading || hasPermission("catalog.view");
   const showDashboardViewSwitcher =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   return (
-    <header className="flex h-14 min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/80 backdrop-blur px-3 md:h-16 md:px-6">
+    <header className="flex min-h-16 min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-surface px-3 py-2 md:px-6">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-background focus:p-2 focus:rounded focus:z-50"
@@ -49,23 +49,17 @@ export function TopNav() {
         </div>
       </div>
 
-      {/* Desktop search */}
-      <div className="hidden max-w-md flex-1 md:block">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search..."
-            aria-label="Search Deelrx CRM"
-            className="pl-10"
-          />
-        </div>
-      </div>
+      {canFindProduct ? (
+        <Link href="/inventory" className="hidden min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent xl:inline-flex">
+          <Search className="size-4" aria-hidden="true" />
+          Find product
+        </Link>
+      ) : null}
 
       {/* Right controls */}
-      <div className="flex items-center gap-1.5 md:gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5 md:gap-3">
         {canQuickSale ? (
-          <Link href="/pos/sale" className="hidden md:block">
+          <Link href="/pos/sale" className="hidden lg:block">
             <Button className="bg-accent hover:bg-accent/90 text-black font-semibold">
               <ScanLine className="mr-2 h-4 w-4" />
               New sale
