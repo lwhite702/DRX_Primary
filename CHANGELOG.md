@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Development Knock trigger adapter (WRE-111)**: Added a server-only, opt-in adapter for the reviewed DRX P0 workflow keys. It sends structured recipient/data payloads with optional idempotency and cancellation keys, remains disabled unless explicitly enabled, and does not wire production sends or broadcasts.
+
 ## [0.9.4] - 2026-09-17
 ### Fixed
 
