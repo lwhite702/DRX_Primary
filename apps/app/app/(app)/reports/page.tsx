@@ -15,6 +15,8 @@ import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
 import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
 
+export const dynamic = "force-dynamic";
+
 const MAX_LOW_STOCK_ITEMS_DISPLAY = 8;
 
 export default async function ReportsPage({
