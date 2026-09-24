@@ -6,6 +6,7 @@ export type Permission =
   | "MANAGE_PRODUCTS"
   | "RECORD_INTAKE"
   | "MANAGE_INVENTORY"
+  | "VIEW_CUSTOMERS"
   | "MANAGE_CUSTOMERS"
   | "PROCESS_CHECKOUT"
   | "APPLY_CHECKOUT_OVERRIDE"
@@ -22,6 +23,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_PRODUCTS",
     "RECORD_INTAKE",
     "MANAGE_INVENTORY",
+    "VIEW_CUSTOMERS",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
     "APPLY_CHECKOUT_OVERRIDE",
@@ -37,6 +39,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_PRODUCTS",
     "RECORD_INTAKE",
     "MANAGE_INVENTORY",
+    "VIEW_CUSTOMERS",
     "MANAGE_CUSTOMERS",
     "PROCESS_CHECKOUT",
     "APPLY_CHECKOUT_OVERRIDE",
@@ -48,34 +51,34 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   ],
   MEMBER: [
     "PROCESS_CHECKOUT",
+    "VIEW_CUSTOMERS",
     "MANAGE_CUSTOMERS",
     "MANAGE_DELIVERIES",
     "MANAGE_PRODUCTS",
     "MANAGE_INVENTORY",
-    "APPLY_CHECKOUT_OVERRIDE",
   ],
   OPERATOR: [
     "PROCESS_CHECKOUT",
+    "VIEW_CUSTOMERS",
     "MANAGE_CUSTOMERS",
     "MANAGE_DELIVERIES",
     "MANAGE_PRODUCTS",
     "MANAGE_INVENTORY",
-    "APPLY_CHECKOUT_OVERRIDE",
   ],
   STAFF: [
     "PROCESS_CHECKOUT",
+    "VIEW_CUSTOMERS",
     "MANAGE_CUSTOMERS",
     "MANAGE_DELIVERIES",
     "MANAGE_PRODUCTS",
     "MANAGE_INVENTORY",
-    "APPLY_CHECKOUT_OVERRIDE",
   ],
 };
 
 export function hasPermission(user: Doc<"users">, permission: Permission): boolean {
   const webPermission: Record<Permission, WebPermission> = {
     MANAGE_PRICING: "pricing.manage", MANAGE_PRODUCTS: "inventory.manage", RECORD_INTAKE: "inventory.manage", MANAGE_INVENTORY: "inventory.manage",
-    MANAGE_CUSTOMERS: "customers.manage", PROCESS_CHECKOUT: "sales.create", APPLY_CHECKOUT_OVERRIDE: "pricing.manage",
+    VIEW_CUSTOMERS: "customers.view", MANAGE_CUSTOMERS: "customers.manage", PROCESS_CHECKOUT: "sales.create", APPLY_CHECKOUT_OVERRIDE: "pricing.manage",
     MANAGE_SALES_RETURNS: "sales.void", MANAGE_DELIVERIES: "sales.create",
     MANAGE_COMMERCE_SETTINGS: "settings.configure_pos", VIEW_FINANCIALS: "reports.view_all",
     MANAGE_MEMBERS: "staff.manage", VIEW_AUDIT_LOGS: "audit.view",

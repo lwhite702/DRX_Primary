@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
 import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,37 +36,11 @@ export async function POST(request: NextRequest) {
     }
     const ownerId = owner.id;
 
-    // 4. Create Business Profile
-    const business = await db.businessProfile.create({
-      data: {
-        businessName,
-        businessType: businessType || null,
-        ownerId: ownerId,
-        isActive: true,
-      },
-    });
-
-    // 5. Assign 'Owner' Role
-    await db.userRole.create({
-      data: {
-        businessId: business.id,
-        userId: ownerId,
-        role: "owner",
-        permissions: { all: true }, // Owners get all perms
-      },
-    });
-
-    // 6. Create Default Settings
-    await db.businessSettings.create({
-      data: {
-        businessId: business.id,
-        currency: "USD",
-        timezone: "America/New_York",
-        settingsData: {
-          default_tax_rate: 0.08,
-        },
-      },
-    });
+    const token = await getConvexAuthToken();
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) return NextResponse.json({ error: "Convex unavailable" }, { status: 503 });
+    const convex = new ConvexHttpClient(url); convex.setAuth(token);
+    const business = await convex.mutation(api.platformAdmin.createBusiness, { businessName, businessType: businessType || undefined, ownerId, ownerEmail: owner.emailAddresses[0]?.emailAddress ?? ownerEmail, ownerName: owner.username ?? undefined });
 
     return NextResponse.json({ success: true, business });
   } catch (error) {

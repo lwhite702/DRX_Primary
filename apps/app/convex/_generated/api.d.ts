@@ -9,6 +9,7 @@
  */
 
 import type * as businessPreferences from "../businessPreferences.js";
+import type * as audit from "../audit.js";
 import type * as businessProfiles from "../businessProfiles.js";
 import type * as categories from "../categories.js";
 import type * as checkout from "../checkout.js";
@@ -57,6 +58,7 @@ import type * as helpers_teamInvitations from "../helpers/teamInvitations.js";
 import type * as helpers_teamManagement from "../helpers/teamManagement.js";
 import type * as intake from "../intake.js";
 import type * as inventory from "../inventory.js";
+import type * as lockout from "../lockout.js";
 import type * as inventoryAdjustments from "../inventoryAdjustments.js";
 import type * as inventoryChecks from "../inventoryChecks.js";
 import type * as inventoryHealth from "../inventoryHealth.js";
@@ -70,6 +72,9 @@ import type * as notifications from "../notifications.js";
 import type * as offline from "../offline.js";
 import type * as onboarding from "../onboarding.js";
 import type * as posBootstrap from "../posBootstrap.js";
+import type * as platformAdmin from "../platformAdmin.js";
+import type * as privacyInventory from "../privacyInventory.js";
+import type * as privacyCleanup from "../privacyCleanup.js";
 import type * as products from "../products.js";
 import type * as push from "../push.js";
 import type * as refunds from "../refunds.js";
@@ -78,6 +83,7 @@ import type * as securitySessions from "../securitySessions.js";
 import type * as session from "../session.js";
 import type * as settings from "../settings.js";
 import type * as shrinkage from "../shrinkage.js";
+import type * as support from "../support.js";
 import type * as teamManagement from "../teamManagement.js";
 import type * as unitAliases from "../unitAliases.js";
 import type * as validators_dashboard from "../validators/dashboard.js";
@@ -90,6 +96,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  audit: typeof audit;
   businessPreferences: typeof businessPreferences;
   businessProfiles: typeof businessProfiles;
   categories: typeof categories;
@@ -139,6 +146,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/teamManagement": typeof helpers_teamManagement;
   intake: typeof intake;
   inventory: typeof inventory;
+  lockout: typeof lockout;
   inventoryAdjustments: typeof inventoryAdjustments;
   inventoryChecks: typeof inventoryChecks;
   inventoryHealth: typeof inventoryHealth;
@@ -152,6 +160,9 @@ declare const fullApi: ApiFromModules<{
   offline: typeof offline;
   onboarding: typeof onboarding;
   posBootstrap: typeof posBootstrap;
+  platformAdmin: typeof platformAdmin;
+  privacyInventory: typeof privacyInventory;
+  privacyCleanup: typeof privacyCleanup;
   products: typeof products;
   push: typeof push;
   refunds: typeof refunds;
@@ -160,6 +171,7 @@ declare const fullApi: ApiFromModules<{
   session: typeof session;
   settings: typeof settings;
   shrinkage: typeof shrinkage;
+  support: typeof support;
   teamManagement: typeof teamManagement;
   unitAliases: typeof unitAliases;
   "validators/dashboard": typeof validators_dashboard;

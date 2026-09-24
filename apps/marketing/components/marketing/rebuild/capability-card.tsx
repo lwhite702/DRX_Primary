@@ -17,8 +17,8 @@ export function CapabilityCard({
   ctaHref,
 }: CapabilityCardProps) {
   return (
-    <div className="group flex flex-col h-[250px] md:h-[290px] lg:h-[250px] w-full rounded-[10px] border border-border bg-surface-elevated p-6 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
-      <div className="flex size-10 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mb-3 shrink-0 transition-transform duration-300 group-hover:scale-110">
+    <div className="group flex flex-col h-full min-h-[250px] w-full rounded-[10px] border border-border bg-surface-elevated p-6 text-left transition-all duration-300 motion-safe:hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
+      <div className="flex size-10 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mb-3 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
         {icon}
       </div>
 

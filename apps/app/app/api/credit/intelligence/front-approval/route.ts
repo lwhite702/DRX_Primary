@@ -5,7 +5,8 @@ import {
   getCustomerBehaviorMetrics,
   recommendCreditLimit,
 } from "@/lib/credit/intelligenceEngine";
-import { db } from "@/lib/db";
+import { api } from "@/convex/_generated/api";
+import { businessClient } from "@/lib/business/convex-server";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,12 @@ export async function POST(request: Request) {
 
 
 
-    const metrics = await getCustomerBehaviorMetrics(customer_id, business_id);
+    const { client, expectedUserId } = await businessClient();
+    const [metrics, customerDetails, products] = await Promise.all([
+      getCustomerBehaviorMetrics(customer_id, business_id),
+      client.query(api.customers.getOperational, { businessId: business_id, expectedUserId, customerId: customer_id }),
+      client.query(api.products.listProducts, {}),
+    ]);
     if (!metrics) {
       return NextResponse.json(
         { error: "Could not load customer behavior" },
@@ -31,22 +37,15 @@ export async function POST(request: Request) {
 
     const trust = computeTrustScore(metrics);
 
-    const limitRecord = await db.creditLimit.findFirst({
-      where: { customerId: customer_id, businessId: business_id },
-      select: { maxCreditLimit: true },
-    });
-
-    const current_limit = Number(limitRecord?.maxCreditLimit || 0);
+    const current_limit = Number(customerDetails.customer?.creditLimitCents || 0) / 100;
 
     const recommendation = recommendCreditLimit(trust, metrics, current_limit);
 
-    const inventory = await db.inventory.findFirst({
-      where: { id: inventory_id, businessId: business_id },
-      select: { quantityOnHand: true, reorderLevel: true },
-    });
+    const inventory = products.find((product) => product._id === inventory_id || product.legacyPrismaId === inventory_id);
+    if (!inventory) return NextResponse.json({ error: "Inventory item unavailable" }, { status: 404 });
 
-    const quantity = Number(inventory?.quantityOnHand || 0);
-    const threshold = Number(inventory?.reorderLevel || 10);
+    const quantity = Number(inventory.quantityOnHandGrams || 0);
+    const threshold = Number(inventory.reorderLevelGrams || 10);
 
     const scarcity_level =
       quantity <= threshold * 0.5 ? "HIGH" : quantity <= threshold * 1.2 ? "MEDIUM" : "LOW";

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ findSettings: vi.fn() }));
+const mocks = vi.hoisted(() => ({ businessClient: vi.fn(), query: vi.fn() }));
 
-vi.mock("@/lib/db", () => ({
-  db: { businessSettings: { findUnique: mocks.findSettings } },
+vi.mock("@/lib/business/convex-server", () => ({
+  businessClient: mocks.businessClient,
 }));
 
 import { hasConfiguredCanonicalCommerce } from "@/app/api/pos/_lib/commerce-routing";
@@ -12,6 +12,7 @@ import { getDefaultCommerceSettings } from "@/lib/commerce/config";
 describe("server-owned commerce routing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.businessClient.mockResolvedValue({ client: { query: mocks.query } });
   });
 
   it("detects a whole-unit bulk tier from tenant settings", async () => {
@@ -33,7 +34,7 @@ describe("server-owned commerce routing", () => {
         },
       ],
     };
-    mocks.findSettings.mockResolvedValue({ settingsData: { commerce } });
+    mocks.query.mockResolvedValue({ page: [{ _id: "22222222-2222-4222-8222-222222222222", allowFractionalWeight: false, bulkPriceTiers: commerce.productConfigs["22222222-2222-4222-8222-222222222222"].bulkPriceTiers }] });
 
     await expect(
       hasConfiguredCanonicalCommerce("tenant-a", [
@@ -59,7 +60,7 @@ describe("server-owned commerce routing", () => {
         { id: "bulk", label: "Bulk", minimumQuantity: 5, unitPrice: 4 },
       ],
     };
-    mocks.findSettings.mockResolvedValue({ settingsData: { commerce } });
+    mocks.query.mockResolvedValue({ page: [{ _id: "33333333-3333-4333-8333-333333333333", allowFractionalWeight: false, bulkPriceTiers: commerce.productConfigs["33333333-3333-4333-8333-333333333333"].bulkPriceTiers }] });
 
     await expect(
       hasConfiguredCanonicalCommerce("tenant-a", [

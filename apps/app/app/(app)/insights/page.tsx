@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useBusiness } from "@/lib/hooks/use-business";
-import { createAppClient } from "@/lib/data/client/supabase-client";
 
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
@@ -43,86 +42,34 @@ export default function EventDeskPage() {
   const loadEventDeskData = async () => {
     if (!business?.id) return;
 
-    const supabase = createAppClient();
-    if (!supabase) return;
-
     try {
       setLoading(true);
 
-      // Get today's date for sales filtering
-      const today = new Date().toISOString().split("T")[0];
-
       // Fetch all event desk data concurrently
-      const [
-        todaySales,
-        lowStockItems,
-        pendingIntakes,
-        activeCustomers,
-        creditData,
-        recentIntakes,
-      ] = await Promise.all([
-        supabase
-          .from("sales")
-          .select("total_amount")
-          .eq("business_id", business.id)
-          .eq("order_status", "completed")
-          .gte("created_at", today),
-        supabase
-          .from("inventory")
-          .select("id, product_name, sku, quantity_on_hand, reorder_level")
-          .eq("business_id", business.id)
-          .lte("quantity_on_hand", "reorder_level")
-          .limit(5),
-        supabase
-          .from("inventory_intakes")
-          .select("*", { count: "exact", head: true })
-          .eq("business_id", business.id)
-          .eq("status", "pending"),
-        supabase
-          .from("customers")
-          .select("*", { count: "exact", head: true })
-          .eq("business_id", business.id)
-          .eq("is_active", true)
-          .eq("ephemeral", false),
-        supabase
-          .from("credit_limits")
-          .select("current_balance")
-          .eq("business_id", business.id),
-        supabase
-          .from("inventory_intakes")
-          .select(
-            "id, total_cost, total_weight_grams, created_at, status, inventory!inner(product_name)"
-          )
-          .eq("business_id", business.id)
-          .order("created_at", { ascending: false })
-          .limit(5),
+      const [baselineResponse, inventoryResponse, customerResponse] = await Promise.all([
+        fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
+        fetch("/api/inventory?limit=200", { credentials: "same-origin" }),
+        fetch("/api/customers?limit=200", { credentials: "same-origin" }),
       ]);
-
-      const totalSales =
-        todaySales.data?.reduce(
-          (sum: number, sale: { total_amount: number | null }) =>
-            sum + (sale.total_amount || 0),
-          0
-        ) || 0;
-      const salesCount = todaySales.data?.length || 0;
+      const baseline = await baselineResponse.json();
+      const inventory = await inventoryResponse.json();
+      const customers = await customerResponse.json();
+      const totalSales = Number(baseline.today?.salesTotal ?? 0);
+      const salesCount = Number(baseline.today?.salesCount ?? 0);
       const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
-      const creditOutstanding =
-        creditData.data?.reduce(
-          (sum: number, credit: { current_balance: number | null }) =>
-            sum + (credit.current_balance || 0),
-          0
-        ) || 0;
+      const lowStockItems = Array.isArray(baseline.lowStock?.items) ? baseline.lowStock.items : [];
+      const creditOutstanding = Number(baseline.credit?.outstandingBalance ?? 0);
 
       setMetrics({
         totalSales,
         salesCount,
         averageSale,
-        inventoryAlerts: lowStockItems.data?.length || 0,
-        pendingIntakes: pendingIntakes.count || 0,
-        activeCustomers: activeCustomers.count || 0,
+        inventoryAlerts: lowStockItems.length,
+        pendingIntakes: 0,
+        activeCustomers: Array.isArray(customers.data) ? customers.data.length : 0,
         creditOutstanding,
-        recentIntakes: recentIntakes.data || [],
-        lowStockItems: lowStockItems.data || [],
+        recentIntakes: [],
+        lowStockItems: lowStockItems.length ? lowStockItems : (Array.isArray(inventory.data) ? inventory.data.slice(0, 5) : []),
       });
     } catch (error) {
       console.error("Failed to load insights data:", error);

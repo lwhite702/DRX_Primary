@@ -24,13 +24,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <div className="flex flex-1 min-w-0 md:p-4">
-        <div className="flex min-w-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-border md:bg-muted">
+      <div className="flex flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1">
           <div className="hidden self-stretch md:block">
             <Sidebar />
           </div>
 
-          <main className="flex min-w-0 flex-1 flex-col bg-background md:bg-background/80">
+          <main className="flex min-w-0 flex-1 flex-col bg-background">
             {authBypassEnabled ? (
               <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-semibold tracking-wide text-amber-100">
                 BYPASS MODE ACTIVE: Authentication is disabled for local testing. Do not use for production validation.

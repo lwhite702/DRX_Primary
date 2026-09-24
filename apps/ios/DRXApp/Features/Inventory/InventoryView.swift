@@ -27,7 +27,14 @@ struct InventoryView: View {
             if isLoading {
                 ProgressView("Loading products…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error {
-                ContentUnavailableView("Couldn’t load products", systemImage: "exclamationmark.triangle.fill", description: Text(error))
+                ContentUnavailableView {
+                    Label("Couldn’t load products", systemImage: "exclamationmark.triangle.fill")
+                } description: {
+                    Text(error)
+                } actions: {
+                    Button(DRXContent.Actions.tryAgain) { Task { await load() } }
+                        .buttonStyle(.drxPrimary)
+                }
             } else if filtered.isEmpty && !searchText.isEmpty {
                 ContentUnavailableView.search
             } else if products.isEmpty {
@@ -46,6 +53,7 @@ struct InventoryView: View {
                 Button { showAddProduct = true } label: {
                     Image(systemName: "plus.circle.fill")
                 }
+                .accessibilityLabel(DRXContent.Actions.addProduct)
             }
         }
         .sheet(isPresented: $showAddProduct) {
@@ -66,18 +74,20 @@ struct InventoryView: View {
             if !lowStock.isEmpty {
                 Section("⚠️ Needs Attention") {
                     ForEach(lowStock) { product in
-                        ProductRowView(product: product)
-                            .contentShape(Rectangle())
-                            .onTapGesture { selectedProduct = product }
+                        Button { selectedProduct = product } label: {
+                            ProductRowView(product: product)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
 
             Section("All Products (\(filtered.count))") {
                 ForEach(filtered.filter { !$0.isLowStock && !$0.isOutOfStock }) { product in
-                    ProductRowView(product: product)
-                        .contentShape(Rectangle())
-                        .onTapGesture { selectedProduct = product }
+                    Button { selectedProduct = product } label: {
+                        ProductRowView(product: product)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

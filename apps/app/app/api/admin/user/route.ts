@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
 import { randomBytes } from "crypto";
 import { clerkClient } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
 import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { MANAGEABLE_TEAM_ROLES } from "@/lib/team/roles";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api/response";
@@ -43,8 +45,12 @@ export async function POST(request: NextRequest) {
       );
     }
     const { username, email, role, businessId } = payload.data;
-    const business = await db.businessProfile.findUnique({ where: { id: businessId }, select: { id: true } });
-    if (!business) return errorResponse("NOT_FOUND", "Business not found", 404);
+    const token = await getConvexAuthToken();
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) return errorResponse("INTERNAL_ERROR", "Convex unavailable", 503);
+    const convex = new ConvexHttpClient(url); convex.setAuth(token);
+    const businesses = await convex.query(api.platformAdmin.listBusinesses, {});
+    if (!businesses.some((business) => business.id === businessId)) return errorResponse("NOT_FOUND", "Business not found", 404);
 
     // 1. Create User in Clerk
     const client = await clerkClient();
@@ -64,29 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (businessId) {
-      await db.userRole.create({
-        data: {
-          userId: newUser.id,
-          businessId: businessId,
-          role: role || "staff",
-          permissions: { all: false },
-        },
-      });
-    }
-
-    // Log to system_audit_log
-    await db.systemAuditLog.create({
-      data: {
-        entityId: newUser.id,
-        entityType: "user",
-        action: "create_user",
-        userId: actorId,
-        newValues: { role },
-        businessId,
-        // businessId: businessId
-      },
-    });
+    await convex.mutation(api.platformAdmin.createUserMembership, { targetUserId: newUser.id, email, name: username, businessId, role: role || "STAFF" });
 
     return successResponse({ id: newUser.id }, 201);
   } catch (error) {

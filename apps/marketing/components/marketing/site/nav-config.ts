@@ -3,7 +3,6 @@ import { appWaitlistUrl } from "@/lib/app-links";
 export const topNavLinks = [
   { href: "/", label: "Home" },
   { href: "/#product", label: "Product" },
-  { href: "/#demo", label: "Demo" },
   { href: "/resources", label: "Resources" },
 ] as const;
 

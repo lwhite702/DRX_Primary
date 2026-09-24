@@ -1,7 +1,6 @@
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import type { Permission } from "@/lib/auth/permissions";
-import { db } from "@/lib/db";
 
 type CustomerAccessContext =
   | {
@@ -25,14 +24,6 @@ export async function resolveCustomerAccess(
   }
   if (!businessId) {
     return { ok: false, status: 403, error: "Business access denied" };
-  }
-
-  const business = await db.businessProfile.findUnique({
-    where: { id: businessId },
-    select: { isActive: true },
-  });
-  if (!business?.isActive) {
-    return { ok: false, status: 403, error: "Business is unavailable" };
   }
 
   if (!(await hasBusinessPermission(userId, businessId, permission))) {

@@ -1,4 +1,5 @@
-import { db } from "@/lib/db";
+import { api } from "@/convex/_generated/api";
+import { businessClient } from "@/lib/business/convex-server";
 
 export type FrontSuggestion = "APPROVE" | "CAUTION" | "DENY";
 
@@ -273,52 +274,18 @@ export function evaluateFrontApproval(input: FrontApprovalInput): FrontApprovalD
 
 export async function getCustomerBehaviorMetrics(customer_id: string, business_id: string) {
   try {
-    const tx = await db.creditTransaction.findMany({
-      where: {
-        customerId: customer_id,
-        businessId: business_id,
-      },
-      select: {
-        transactionType: true,
-        amount: true,
-        status: true,
-        createdAt: true,
-        paidDate: true,
-      },
-    });
-
-    const sales = await db.sales.findMany({
-      where: {
-        customerId: customer_id,
-        businessId: business_id,
-      },
-      select: {
-        totalAmount: true,
-        createdAt: true,
-      },
-    });
-
-    const limits = await db.creditLimit.findFirst({
-      where: {
-        customerId: customer_id,
-        businessId: business_id,
-      },
-      select: {
-        currentBalance: true,
-      },
-    });
-
     const now = Date.now();
-
-    const creditTx = (tx || []) as any[];
-    const salesRows = (sales || []) as any[];
+    const { client, expectedUserId } = await businessClient(business_id);
+    const [creditPage, salesRows] = await Promise.all([
+      client.query(api.creditTransactions.listPage, { businessId: business_id, customerId: customer_id, expectedUserId, paginationOpts: { cursor: null, numItems: 100 } }),
+      client.query(api.checkout.getSalesHistory, {}),
+    ]);
+    const creditTx = creditPage.page as Array<{ transactionType: string; amount: number; status: string; createdAt: string; balanceAfter?: number }>;
 
     const frontTx = creditTx.filter((t) => t.transactionType === "extension");
     const paymentTx = creditTx.filter((t) => t.transactionType === "payment");
     const unpaid = frontTx.filter((t) => t.status === "pending").length;
-    const forgiven = creditTx
-      .filter((t) => t.transactionType === "forgiveness")
-      .reduce((sum: number, t) => sum + Number(t.amount || 0), 0);
+    const forgiven = creditTx.filter((t) => t.transactionType === "forgiveness").reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
     const paymentOnTimeRatio =
       paymentTx.length === 0
@@ -331,7 +298,7 @@ export async function getCustomerBehaviorMetrics(customer_id: string, business_i
         ? 14
         : paymentTx.reduce((sum: number, t) => {
             const start = new Date(t.createdAt).getTime();
-            const paid = t.paidDate ? new Date(t.paidDate).getTime() : now;
+            const paid = new Date(t.createdAt).getTime();
             const days = Math.max(1, Math.round((paid - start) / (1000 * 60 * 60 * 24)));
             return sum + days;
           }, 0) / paymentTx.length;
@@ -341,12 +308,12 @@ export async function getCustomerBehaviorMetrics(customer_id: string, business_i
     ).length;
 
     const firstSale = salesRows.length
-      ? Math.min(...salesRows.map((s) => new Date(s.createdAt).getTime()))
+      ? Math.min(...salesRows.map((s) => s.createdAt))
       : now;
 
     const avgTransactionSize =
       salesRows.length > 0
-        ? salesRows.reduce((sum: number, s) => sum + Number(s.totalAmount || 0), 0) /
+        ? salesRows.reduce((sum: number, s) => sum + Number(s.totalAmountCents || 0) / 100, 0) /
           salesRows.length
         : 0;
 
@@ -362,7 +329,7 @@ export async function getCustomerBehaviorMetrics(customer_id: string, business_i
       purchase_frequency_30d: purchaseFrequency30d,
       customer_lifetime_days: Math.max(1, Math.round((now - firstSale) / (1000 * 60 * 60 * 24))),
       avg_transaction_size: avgTransactionSize,
-      open_balance: Number(limits?.currentBalance || 0),
+      open_balance: Number(creditTx[0]?.balanceAfter ?? 0),
       days_since_last_payment: Math.max(
         0,
         Math.round((now - lastPaymentDate) / (1000 * 60 * 60 * 24))

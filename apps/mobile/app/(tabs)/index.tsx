@@ -1,9 +1,9 @@
+import { FormSheet } from "../../src/components/FormSheet";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Modal,
   ScrollView,
   StyleSheet,
   Switch,
@@ -821,18 +821,7 @@ export default function POSScreen() {
         {catalog}
         {basket}
       </View>
-      <Modal
-        visible={checkoutOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setCheckoutOpen(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <ScrollView
-            style={styles.modalCard}
-            contentContainerStyle={styles.modalContent}
-            contentInsetAdjustmentBehavior="automatic"
-          >
+      <FormSheet visible={checkoutOpen} onClose={() => setCheckoutOpen(false)}>
             <Text style={styles.title}>
               Tender · {money(displayedTotalCents)}
             </Text>
@@ -1068,9 +1057,7 @@ export default function POSScreen() {
             >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-          </ScrollView>
-        </View>
-      </Modal>
+      </FormSheet>
     </View>
   );
 }

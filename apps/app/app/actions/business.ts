@@ -1,42 +1,19 @@
 "use server";
 
 import { auth } from "@/lib/adapters/auth/server";
-import { db } from "@/lib/db";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 export async function getUserBusinessesAction() {
   try {
     const { userId } = await auth();
     if (!userId) return { businesses: [], error: "Not authenticated" };
 
-    // Fetch roles to find linked businesses
-    const roles = await db.userRole.findMany({
-      where: { userId },
-      select: { businessId: true, role: true },
-    });
-
-    const businessIds = roles.map((r: any) => r.businessId);
-
-    // Fetch owned businesses (if structure allows user to own without explicit role, though role usually tracks this)
-    const ownedBusinesses = await db.businessProfile.findMany({
-      where: { ownerId: userId },
-      select: { id: true },
-    });
-
-    ownedBusinesses.forEach((b: any) => {
-      if (!businessIds.includes(b.id)) businessIds.push(b.id);
-    });
-
-    if (businessIds.length === 0) {
-      return { businesses: [] };
-    }
-
-    const businesses = await db.businessProfile.findMany({
-      where: {
-        id: { in: businessIds },
-      },
-    });
-
-    return { businesses };
+    const token = await getConvexAuthToken(); const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) return { businesses: [], error: "Business service unavailable" };
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    return { businesses: await client.query(api.session.listMyBusinesses, {}) };
   } catch (error) {
     console.error("Error fetching user businesses:", error);
     return { businesses: [], error: "Failed to fetch businesses" };

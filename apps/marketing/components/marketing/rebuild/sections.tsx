@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { marketingContent } from "@/lib/marketing-content";
 import {
   Building2,
   CheckCircle2,
@@ -17,29 +18,7 @@ import { MarketingCtaBand } from "./cta-band";
 import { MarketingFooter } from "./footer";
 import { appWaitlistUrl } from "@/lib/app-links";
 
-const faqItems = [
-  {
-    question: "Can I run DRX without a desktop?",
-    answer:
-      "Yes. Core setup and daily operating work are designed to be completed from a phone.",
-  },
-  {
-    question: "What happens when the signal drops?",
-    answer:
-      "Supported work stays on the device, pending sync remains visible, and conflicts are presented for review.",
-    defaultOpen: true,
-  },
-  {
-    question: "Can I manage more than one business?",
-    answer:
-      "Yes. Each business keeps its own records and permissions, and the active business stays visible.",
-  },
-  {
-    question: "Does the app suggestion block my work?",
-    answer:
-      "No. It is dismissible, stays out of the workflow, and waits 14 days before appearing again.",
-  },
-];
+const faqItems = marketingContent.faq;
 
 export function RebuiltMarketingSections() {
   return (
@@ -73,7 +52,7 @@ export function RebuiltMarketingSections() {
             <div className="absolute top-[35%] -left-[100px] w-[400px] h-[320px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08)_0%,transparent_60%)] blur-[44px] pointer-events-none" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0">
+          <div className="relative z-10 mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 lg:gap-14 text-left">
               {/* Hero Copy */}
               <div className="flex-1 max-w-[560px] flex flex-col gap-6">
@@ -82,22 +61,18 @@ export function RebuiltMarketingSections() {
                     <span className="animate-beacon-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                     <span className="relative inline-flex rounded-full size-2 bg-accent" />
                   </span>
-                  Mobile-First Retail POS &amp; Operations
+                  {marketingContent.hero.preheadline}
                 </div>
 
                 <h1 className="font-display text-[32px] md:text-[40px] lg:text-[48px] font-extrabold leading-[38px] md:leading-[48px] lg:leading-[56px] tracking-tight text-text-primary">
-                  Run your business from the{" "}
+                  {marketingContent.hero.headlineLead}{" "}
                   <span className="text-accent underline decoration-accent/35 decoration-2 underline-offset-4">
-                    phone in your hand.
+                    {marketingContent.hero.headlineAccent}
                   </span>
                 </h1>
 
                 <p className="text-[16px] md:text-[18px] font-normal leading-[26px] md:leading-[28px] text-text-primary/90">
-                  <span className="text-accent font-medium">
-                    Sell, track stock, manage customers, and collect what’s owed
-                  </span>
-                  — all while keeping every retail operation strictly separated.
-                  DRX keeps the work together without making you sit at a desk.
+                  {marketingContent.hero.subheadline}
                 </p>
 
                 {/* Hero Actions */}
@@ -106,7 +81,7 @@ export function RebuiltMarketingSections() {
                     href={appWaitlistUrl}
                     className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] bg-accent px-6 text-[14px] font-semibold text-black hover:opacity-95 hover:shadow-[0_0_24px_rgba(204,255,0,0.35)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    Get started
+                    {marketingContent.hero.primaryCta.label}
                   </Link>
                   <Link
                     href="#workflows"
@@ -117,16 +92,12 @@ export function RebuiltMarketingSections() {
                 </div>
 
                 <p className="text-[13px] md:text-[14px] font-normal leading-[20px] text-muted-foreground">
-                  <span className="text-text-primary font-medium">iPhone</span> ·{" "}
-                  <span className="text-text-primary font-medium">Android</span> ·{" "}
-                  <span className="text-text-primary font-medium">Mobile web</span> ·{" "}
-                  <span className="text-text-primary font-medium">PWA</span> &nbsp;|&nbsp; No desktop
-                  required for daily work.
+                  Closed beta · Join the list for early access. Features and availability vary by platform.
                 </p>
               </div>
 
               {/* Product Proof Realistic Renders */}
-              <div className="flex justify-center lg:justify-end shrink-0">
+              <div className="flex min-w-0 w-full justify-center lg:max-w-[520px] lg:justify-end">
                 <MarketingProductProof />
               </div>
             </div>
@@ -139,7 +110,7 @@ export function RebuiltMarketingSections() {
           className="w-full py-16 md:py-20 lg:py-24 bg-surface border-b border-border/40"
           aria-labelledby="value-heading"
         >
-          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0">
+          <div className="mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 lg:gap-16 text-left">
               {/* Heading */}
               <div className="flex-1 max-w-[520px]">
@@ -160,15 +131,11 @@ export function RebuiltMarketingSections() {
                 <p className="text-[16px] md:text-[18px] font-normal leading-[26px] md:leading-[28px] text-text-primary/90">
                   A customer calls while you’re out. Stock lands in the back
                   room. Somebody pays late. DRX keeps the sale, customer,
-                  inventory, and credit history tied to the right business
-                  wherever you are.
+                  stock, and payment history tied to the right business.
                 </p>
                 <p className="text-[14px] font-normal leading-[20px] text-muted-foreground">
-                  Every change shows whether it is{" "}
-                  <span className="text-emerald-400 font-medium">saved</span>,{" "}
-                  <span className="text-amber-400 font-medium">pending</span>,{" "}
-                  <span className="text-accent font-medium">offline</span>, or
-                  needs review.
+                  Review saved sales, check stock, and see balances due before
+                  the next customer comes in.
                 </p>
               </div>
             </div>
@@ -181,7 +148,7 @@ export function RebuiltMarketingSections() {
           className="w-full py-16 md:py-20 lg:py-24 border-b border-border/40"
           aria-labelledby="workflows-heading"
         >
-          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 text-left">
+          <div className="mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10 text-left">
             <div className="max-w-[760px] mb-12">
               <p className="text-[14px] font-mono uppercase tracking-[0.16em] text-accent mb-2">
                 Shift Operations
@@ -193,7 +160,7 @@ export function RebuiltMarketingSections() {
                 The <span className="text-accent">whole shift</span>, not just checkout.
               </h2>
               <p className="text-[16px] md:text-[18px] font-normal leading-[28px] text-muted-foreground">
-                DRX follows the work from the first barcode scan to the final payment settlement.
+                Keep products, sales, and recorded payments together.
               </p>
             </div>
 
@@ -201,21 +168,21 @@ export function RebuiltMarketingSections() {
               <CapabilityCard
                 icon={<ShoppingCart className="size-5" />}
                 title="Sell without the detour"
-                body="Build the sale, review it, choose a customer, record payment, and finish without losing the draft."
+                body="Build the sale, review the total, choose a customer, and record how they paid."
                 ctaText="See the sale flow →"
                 ctaHref="/product"
               />
               <CapabilityCard
                 icon={<Package className="size-5" />}
                 title="Know what you actually have"
-                body="Add stock, adjust counts, scan products, and see what needs attention before you promise it."
-                ctaText="Open inventory →"
+                body="Add stock, fix counts, and see what needs attention before you promise it."
+                ctaText="See products →"
                 ctaHref="/product"
               />
               <CapabilityCard
                 icon={<Users className="size-5" />}
                 title="Keep money and people straight"
-                body="Customer history, payments, credits, and deliveries stay connected without scattered notes."
+                body="Review customer history, recorded payments, and balances due in one place."
                 ctaText="See customer tools →"
                 ctaHref="/product"
               />
@@ -229,7 +196,7 @@ export function RebuiltMarketingSections() {
           className="w-full py-16 md:py-20 lg:py-24 bg-surface border-b border-border/40"
           aria-labelledby="privacy-heading"
         >
-          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 text-left">
+          <div className="mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10 text-left">
             <div className="max-w-[760px] mb-12">
               <p className="text-[14px] font-mono uppercase tracking-[0.16em] text-accent mb-2">
                 Trust &amp; Boundaries
@@ -249,17 +216,17 @@ export function RebuiltMarketingSections() {
               <EvidenceItem
                 icon={<Building2 className="size-5" />}
                 title="Business context stays visible"
-                body="Customers, stock, permissions, and pending sync stay attached to the selected business."
+                body="Check the selected business before working with customers, stock, or sales."
               />
               <EvidenceItem
                 icon={<EyeOff className="size-5" />}
                 title="Details stay hidden until you need them"
-                body="Contact details and money values can remain masked, then reveal only when the operator chooses."
+                body="Choose what customer details to save and who on your team can see them."
               />
               <EvidenceItem
                 icon={<CheckCircle2 className="size-5" />}
-                title="Every change has a visible state"
-                body="Saved, pending, offline, restricted, and conflict states always explain the safe next step."
+                title="Keep a history of the work"
+                body="Check saved sales and stock history before making another change."
               />
             </div>
           </div>
@@ -271,20 +238,20 @@ export function RebuiltMarketingSections() {
           className="w-full py-16 md:py-20 lg:py-24 border-b border-border/40"
           aria-labelledby="apps-heading"
         >
-          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 text-left">
+          <div className="mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10 text-left">
             <div className="max-w-[820px] mb-12">
               <p className="text-[14px] font-mono uppercase tracking-[0.16em] text-accent mb-2">
-                Multi-Surface Availability
+                Early access
               </p>
               <h2
                 id="apps-heading"
                 className="font-display text-[28px] md:text-[34px] lg:text-[40px] font-bold leading-[36px] md:leading-[42px] lg:leading-[48px] tracking-[-0.5px] text-text-primary mb-3"
               >
-                One operation. <span className="text-accent">Whichever phone you use.</span>
+                Your business. <span className="text-accent">More ways to keep up.</span>
               </h2>
               <p className="text-[16px] md:text-[18px] font-normal leading-[28px] text-muted-foreground">
-                The same business, permissions, and sync state follow you across
-                every supported mobile surface.
+                DRX is in closed beta. Access and supported tasks vary by platform;
+                join the list for availability updates.
               </p>
             </div>
 
@@ -297,8 +264,8 @@ export function RebuiltMarketingSections() {
                   Native iOS app
                 </h3>
                 <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
-                  Fast, one-handed daily work with biometrics, camera barcode tools, and
-                  offline interruption recovery.
+                  Native iPhone workflows are being checked in beta. Store availability
+                  will be announced after release verification.
                 </p>
               </div>
 
@@ -310,8 +277,8 @@ export function RebuiltMarketingSections() {
                   Android app
                 </h3>
                 <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
-                  Material-aware controls and the same complete operating
-                  workflow from start to finish.
+                  Android beta includes sales, customers, and stock. Offline checkout
+                  requires your business owner’s setup and approval.
                 </p>
               </div>
 
@@ -323,8 +290,8 @@ export function RebuiltMarketingSections() {
                   Mobile web + PWA
                 </h3>
                 <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
-                  Install from the browser or keep working there. The app
-                  suggestion stays optional and dismissible.
+                  Use the web app on a phone, tablet, or desktop during beta.
+                  Supported browsers can also install it to the home screen.
                 </p>
               </div>
             </div>
@@ -337,7 +304,7 @@ export function RebuiltMarketingSections() {
           className="w-full py-16 md:py-20 lg:py-24"
           aria-labelledby="faq-heading"
         >
-          <div className="mx-auto max-w-[1200px] px-5 md:px-12 lg:px-0 flex flex-col gap-14 md:gap-16 lg:gap-20">
+          <div className="mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10 flex flex-col gap-14 md:gap-16 lg:gap-20">
             {/* CTA Band */}
             <MarketingCtaBand />
 
@@ -351,7 +318,7 @@ export function RebuiltMarketingSections() {
                   Questions, <span className="text-accent">answered straight.</span>
                 </h2>
                 <p className="text-[15px] md:text-[16px] font-normal leading-[24px] text-muted-foreground">
-                  The basics before you start running the shift from your phone.
+                  The basics before you join early access.
                 </p>
               </div>
 

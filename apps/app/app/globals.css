@@ -3,8 +3,9 @@
 @import "@deelrx/brand/tokens.css";
 
 @theme inline {
-  --font-sans: var(--drx-font-sans);
-  --font-mono: var(--drx-font-mono);
+  --font-sans: var(--font-inter), var(--drx-font-body);
+  --font-display: var(--font-plus-jakarta-sans), var(--drx-font-sans);
+  --font-mono: var(--font-geist-mono), var(--drx-font-mono);
   --font-body: var(--drx-font-body);
 
   /* DRX Operator Console */
@@ -27,7 +28,7 @@
 
   /* Neutral grays */
   --color-muted: #0c0c0c;
-  --color-muted-foreground: #9ca3af;
+  --color-muted-foreground: var(--drx-color-muted-foreground);
   --color-input: #1a1a1a;
   --color-ring: var(--drx-color-accent);
 
@@ -45,6 +46,7 @@
   --color-card-foreground: #f5f5f5;
   --color-primary: #ccff00;
   --color-primary-foreground: #0a0a0a;
+  --color-accent-foreground: #0a0a0a;
   --color-secondary: #1a1a1a;
   --color-secondary-foreground: #f5f5f5;
 
@@ -89,7 +91,7 @@
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-display font-semibold tracking-tight;
   }
 
   h1 {

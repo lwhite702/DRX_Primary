@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
+import { api } from "@/convex/_generated/api";
+import { businessClient } from "@/lib/business/convex-server";
 import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { errorResponse, successResponse } from "@/lib/api/response";
@@ -24,7 +25,12 @@ export async function GET(request: NextRequest) {
     const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 50;
     const cursor = query.get("cursor");
 
-    let items;
+    const { client } = await businessClient(request);
+    const items = await client.query(api.audit.listForBusiness, { businessId, limit, before: cursor ? Number(cursor) : undefined, resourceType: query.get("resource_type") ?? undefined, resourceId: resourceId ?? undefined });
+    const data = items.map(item => ({ ...item, createdAt: new Date(item.timestamp).toISOString() }));
+    const nextCursor = items.length === limit ? String(items[items.length - 1].timestamp) : null;
+    return successResponse({ items: data, data, count: data.length, nextCursor });
+    /*
     if (query.get("resource_type") === "inventory") {
       if (!resourceId) return errorResponse("BAD_REQUEST", "Missing resource_id", 400);
       items = await db.inventoryLog.findMany({
@@ -50,6 +56,7 @@ export async function GET(request: NextRequest) {
     }
     const nextCursor = items.length === limit ? items[items.length - 1]?.createdAt.toISOString() : null;
     return successResponse({ items, data: items, count: items.length, nextCursor });
+    */
   } catch {
     return errorResponse("INTERNAL_ERROR", "Audit records unavailable", 500);
   }

@@ -1172,3 +1172,50 @@ export const getSalesHistory = query({
       .take(50);
   },
 });
+
+export const getSaleDetail = query({
+  args: { saleId: v.string() },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "VIEW_FINANCIALS");
+    const id = ctx.db.normalizeId("sales", args.saleId);
+    const sale = id ? await ctx.db.get(id) : null;
+    if (!sale || sale.businessId !== auth.businessId) throw new Error("NOT_FOUND: Sale not found");
+    const lineItems = await ctx.db.query("salesLineItems").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(200);
+    const allocations = await ctx.db.query("salesAllocations").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(500);
+    const customer = sale.customerId ? await ctx.db.get(sale.customerId) : null;
+    const costOfGoodsSoldCents = allocations.reduce((sum, allocation) => sum + allocation.extendedCostCents, 0);
+    return { sale, customer: customer && customer.businessId === auth.businessId ? customer : null, items: lineItems, allocations, costOfGoodsSoldCents,
+      grossProfitCents: sale.totalAmountCents - costOfGoodsSoldCents,
+      grossMarginPercent: sale.totalAmountCents > 0 ? ((sale.totalAmountCents - costOfGoodsSoldCents) / sale.totalAmountCents) * 100 : 0 };
+  },
+});
+
+export const updateSale = mutation({
+  args: { saleId: v.string(), customerId: v.optional(v.union(v.string(), v.null())), paymentMethod: v.optional(v.string()), paymentReference: v.optional(v.union(v.string(), v.null())) },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_SALES_RETURNS");
+    const id = ctx.db.normalizeId("sales", args.saleId);
+    const sale = id ? await ctx.db.get(id) : null;
+    if (!sale || sale.businessId !== auth.businessId) throw new Error("NOT_FOUND: Sale not found");
+    if (args.customerId !== undefined) {
+      if (sale.paymentMethod === "credit") throw new Error("INVALID_STATE: Credit sale customer reassignment requires reconciliation");
+      const customer = args.customerId ? (() => { const customerId = ctx.db.normalizeId("customers", args.customerId!); return customerId ? ctx.db.get(customerId) : null; })() : Promise.resolve(null);
+      const resolved = await customer;
+      if (args.customerId && (!resolved || resolved.businessId !== auth.businessId || !resolved.isActive)) throw new Error("NOT_FOUND: Customer not found");
+      await ctx.db.patch(sale._id, { customerId: resolved?._id, updatedAt: Date.now() });
+    }
+    const patch: Record<string, unknown> = { updatedAt: Date.now() };
+    if (args.paymentMethod !== undefined) {
+      if (sale.paymentMethod === "credit" || args.paymentMethod === "credit") throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
+      patch.paymentMethod = args.paymentMethod;
+    }
+    if (args.paymentReference !== undefined) patch.paymentReference = args.paymentReference ?? undefined;
+    await ctx.db.patch(sale._id, patch);
+    await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "SALE_UPDATED", entityType: "sale", entityId: sale._id, metadata: JSON.stringify({ customerChanged: args.customerId !== undefined, paymentChanged: args.paymentMethod !== undefined || args.paymentReference !== undefined }), timestamp: Date.now() });
+    return { success: true, sale: await ctx.db.get(sale._id) };
+  },
+});

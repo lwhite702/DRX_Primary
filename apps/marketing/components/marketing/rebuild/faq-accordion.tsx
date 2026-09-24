@@ -15,9 +15,9 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
         <details
           key={item.question}
           open={item.defaultOpen}
-          className="group py-4.5 text-left transition-colors duration-150"
+          className="group py-2.5 text-left transition-colors duration-150"
         >
-          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-[44px] py-2 cursor-pointer list-none items-center justify-between gap-4 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm [&::-webkit-details-marker]:hidden">
             <span className="text-[16px] font-normal leading-[24px] text-text-primary group-hover:text-white transition-colors">
               {item.question}
             </span>

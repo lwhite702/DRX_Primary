@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import Card from './Card';
 
 interface StatCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -14,7 +15,7 @@ interface StatCardProps {
 
 export default function StatCard({ icon, label, value, color = COLORS.accent, trend, trendValue }: StatCardProps) {
   return (
-    <View style={styles.container}>
+    <Card style={styles.container}>
       <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
         <Ionicons name={icon} size={20} color={color} />
       </View>
@@ -35,7 +36,7 @@ export default function StatCard({ icon, label, value, color = COLORS.accent, tr
           </Text>
         </View>
       )}
-    </View>
+    </Card>
   );
 }
 
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     flex: 1,
-    minWidth: 140,
+    minWidth: 0,
   },
   iconContainer: {
     width: 36,
@@ -64,6 +65,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: FONT_SIZES.xxl,
     fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
   trendContainer: {
     flexDirection: 'row',

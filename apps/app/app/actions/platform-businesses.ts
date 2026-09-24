@@ -1,8 +1,9 @@
 "use server";
 import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
 import { getPlatformBusinesses } from "@/lib/platform/queries";
-import { db } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 export async function fetchPlatformBusinesses() {
   try {
@@ -18,13 +19,10 @@ export async function setPlatformBusinessActive(businessId: string, active: bool
   try {
     const { userId } = await requirePlatformAdmin();
     if (!businessId || typeof active !== "boolean") return { error: "Invalid business update" };
-    await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.businessProfile.update({ where: { id: businessId }, data: { isActive: active } });
-      await tx.systemAuditLog.create({ data: {
-        userId, entityType: "business", entityId: businessId,
-        action: "platform_business_status_changed", newValues: { isActive: active },
-      } });
-    });
+    const token = await getConvexAuthToken(); const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+    if (!token || !url) return { error: "Business update failed or access denied" };
+    const client = new ConvexHttpClient(url); client.setAuth(token);
+    await client.mutation(api.platformAdmin.setBusinessActive, { businessId, active });
     return { success: true };
   } catch { return { error: "Business update failed or access denied" }; }
 }

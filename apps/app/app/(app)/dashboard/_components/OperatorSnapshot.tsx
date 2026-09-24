@@ -38,22 +38,22 @@ function SnapshotCard({
   return (
     <div
       className={cn(
-        "flex h-[132px] flex-col justify-between rounded-xl border border-white/10 bg-[#0B0B0C] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
+        "flex min-h-[144px] min-w-0 flex-col justify-between rounded-xl border border-white/10 bg-surface p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/70">
+          <h3 className="text-sm font-medium text-muted-foreground">
             {title}
           </h3>
-          <div className="text-2xl font-bold tracking-tight text-white md:text-3xl">
+          <div className="font-display break-words text-2xl font-bold tabular-nums tracking-tight text-foreground md:text-3xl">
             {value}
           </div>
         </div>
         <div className={cn("rounded-md p-1.5", iconClassName)}>{icon}</div>
       </div>
-      <div className="text-[11px] text-white/70">{sublabel}</div>
+      <div className="text-xs leading-relaxed text-muted-foreground">{sublabel}</div>
     </div>
   );
 }
@@ -99,13 +99,13 @@ export function OperatorSnapshot({
             At a glance
           </div>
           <p className="mt-1 text-xs text-white/70">
-            Daily totals, credit exposure, and stock pressure at a glance.
+            Sales, balances due, and stock for today.
           </p>
         </div>
         <button
           type="button"
           onClick={toggleCollapsed}
-          className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+          className="inline-flex min-h-11 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
           aria-expanded={!collapsed}
           aria-controls="operator-snapshot-content"
         >
