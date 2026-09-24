@@ -56,6 +56,8 @@ This document defines the authoritative environment variables across runtime env
 | `R2_ACCOUNT_ID` | Cloudflare R2 Account ID | Yes | Cloudflare |
 | `R2_BUCKET_NAME` | Cloudflare R2 Bucket Name | Yes | Cloudflare |
 | `RESEND_API_KEY` | Resend API Key for transactional emails | Yes | Resend |
+| `KNOCK_API_KEY` | Knock server API key for reviewed workflow triggers | Development / Production when enabled | Knock (Server) |
+| `KNOCK_NOTIFICATIONS_ENABLED` | Explicit runtime gate for the DRX Knock adapter (`false` by default) | No | Vercel / Runtime |
 | `INNGEST_EVENT_KEY` | Inngest event sending key | Yes | Inngest |
 | `INNGEST_SIGNING_KEY` | Inngest endpoint webhook signature verification key | Yes | Inngest |
 | `KV_REST_API_URL` | Upstash Redis REST API URL for distributed rate-limiting | Yes | Upstash |
