@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Development Knock trigger adapter (WRE-111)**: Added a server-only, opt-in adapter for the reviewed DRX P0 workflow keys. It sends structured recipient/data payloads with optional idempotency and cancellation keys, remains disabled unless explicitly enabled, and does not wire production sends or broadcasts.
 
+### Fixed
+
+- **Native production workspace connection (WRE-138)**: Production iOS and Android builds now receive the canonical Convex production URL explicitly, avoiding a missing backend URL in EAS builds. This applies to new builds; existing installed apps require an updated build to receive the configuration.
+
 ### Changed
 
 - **Cross-platform presentation (WRE-136, in progress)**: Normalize web navigation, typography, cards, focus and touch targets; improve native summary cards and inventory accessibility; reuse keyboard-aware Expo form sheets and add a recoverable daily-summary error state. Routes, permissions, checkout calculations and stored data remain unchanged. Native device and authenticated workflow verification remain required before release.
