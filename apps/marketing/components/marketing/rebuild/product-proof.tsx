@@ -6,6 +6,7 @@
 export function MarketingProductProof() {
   return (
     <figure
+      role="img"
       className="drx-hero-art relative w-full min-w-0 max-w-[640px]"
       aria-label="Illustrated DRX workspace with sales, products, and customer tools"
     >
@@ -13,7 +14,7 @@ export function MarketingProductProof() {
       <div aria-hidden="true" className="drx-hero-art__spark drx-hero-art__spark--one" />
       <div aria-hidden="true" className="drx-hero-art__spark drx-hero-art__spark--two" />
 
-      <div className="drx-app-window relative overflow-hidden rounded-[22px] border border-white/10 bg-[#111313] shadow-[0_28px_90px_rgba(0,0,0,0.58)]">
+      <div aria-hidden="true" className="drx-app-window relative overflow-hidden rounded-[22px] border border-white/10 bg-[#111313] shadow-[0_28px_90px_rgba(0,0,0,0.58)]">
         <div className="flex h-12 items-center justify-between border-b border-white/[0.07] bg-[#151717] px-4 sm:px-5">
           <div className="flex items-center gap-2.5">
             <span className="flex size-7 items-center justify-center rounded-lg bg-accent text-black">
