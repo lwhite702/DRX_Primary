@@ -1,5 +1,5 @@
 ---
-title: "Dashboard and reports"
+title: "Home and reports"
 description: "Check saved sales, report totals, and the period each number covers."
 ---
 
@@ -7,7 +7,7 @@ description: "Check saved sales, report totals, and the period each number cover
 
 These steps cover the desktop web beta. You need access to the business and its reports. An empty chart does not prove there were no sales.
 
-![Illustrative DRX dashboard with fictional daily sales, item, and Inventory figures.](../_assets/help-center/screenshots/dashboard-reports.png)
+![Illustrative DRX Home page with fictional daily sales, item, and stock figures.](../_assets/help-center/screenshots/dashboard-reports.png)
 
 Illustrative screen with fictional data.
 
@@ -37,5 +37,5 @@ If you have separately approved access to an iPhone test build, its Reports page
 
 ## Related articles
 
-- [Sales history and receipts](https://drx.featurebase.app/en/help/articles/5281725)
-- [Troubleshoot dashboard and reports](https://drx.featurebase.app/en/help/articles/3489602)
+- [Sales history and receipts](sales-history-and-receipts.md)
+- [Troubleshoot Home and reports](../troubleshooting/troubleshoot-dashboard-and-insights.md)

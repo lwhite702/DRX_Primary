@@ -20,7 +20,7 @@ A missing profile may require a retention review. Do not assume it can be restor
 
 ## Customer history is missing
 
-Open the saved sale in **Orders & Receipts** and check its customer. A sale without that customer attached may not appear in their history. The recent orders list is limited to 50 entries.
+Open the saved sale in **Sales** and check its customer. A sale without that customer attached may not appear in their history. The recent orders list is limited to 50 entries.
 
 An authorized user can review **Assign Customer** or **Change Customer** in **Sale Details**. Credit-sale reassignment needs manager or owner review. Do not recreate a completed sale to attach a profile or move balances between duplicate profiles yourself.
 
@@ -28,7 +28,7 @@ An authorized user can review **Assign Customer** or **Change Customer** in **Sa
 
 Confirm the attached customer, business, and permission. Read the available credit amount and the current total. If **CREDIT** is missing or blocked, ask an authorized manager to check eligibility and limits. Do not split a transaction or change the limit to bypass the restriction.
 
-![For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
+![For an uncertain checkout or payment, check Sales and Payments before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
 
 ## A payment or balance looks wrong
 
@@ -41,4 +41,4 @@ Do not create a new sale to record repayment. Do not change a balance just to di
 
 ## Related articles
 
-- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)
+- [Help and support](../feature_overview/help-and-support.md)

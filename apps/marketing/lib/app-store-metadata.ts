@@ -69,21 +69,19 @@ export const appStoreCopy: AppStoreCopyContract = {
   schemaVersion: 1,
   status: "blocked_pending_product_review",
   name: "Deelrx CRM",
-  subtitle: "Sales & Stock for Retail",
+  subtitle: "Stock, Sales & Customers",
   primaryCategory: "Business",
   secondaryCategory: "Productivity",
-  keywords: "pos,inventory,retail,checkout,stock,sales,customers,store",
+  keywords: "stock,sales,customers,products,payments,balances,retail,store",
   promotionalText:
     "Know what you have, what you sold, what you made, and who still owes you.",
-  description: `Keep track of customers, products, stock, sales, payments, and money owed. Deelrx CRM helps you see what came in, what went out, and what you made.
+  description: `Keep track of customers, products, stock, sales, and payments. Deelrx CRM helps you see what came in, what sold, what you made, and which balances are due.
 
-Start a new sale with product search, barcode scanning, quantity changes, discounts, supported payment types, customer lookup, and clear sale history.
+Use New sale to record a sale. Check Sales for saved sales and Payments for customer payments and balances due. DRX records the payment details you enter; it does not move money for you.
 
-See what is in stock and what is running low. Add stock, check SKUs and barcodes, and review count changes.
+Use Products to check stock, add stock, fix a count, and review stock history. Check Home for a summary of your business.
 
-See today’s numbers, keep customer records together, choose what each team member can do, and check who made supported changes.
-
-Deelrx CRM is a merchant operations tool for physical-goods sales. It is not a consumer marketplace, delivery service, payment network, lender, debt collector, or legal, tax, financial, or compliance advisor.`,
+Deelrx CRM is for businesses that sell physical goods. It is not a consumer marketplace, delivery service, payment network, lender, debt collector, or legal, tax, financial, or compliance advisor. Features and availability may vary by platform.`,
   screenshotCaptions: appStoreScreenshotPlan.map(
     (screenshot) => screenshot.caption,
   ),

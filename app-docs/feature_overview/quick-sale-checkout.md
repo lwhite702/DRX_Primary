@@ -39,5 +39,5 @@ If the result is uncertain, do not start another checkout or request payment aga
 
 ## Related articles
 
-- [Sales history and receipts](https://drx.featurebase.app/en/help/articles/5281725)
-- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)
+- [Sales history and receipts](sales-history-and-receipts.md)
+- [Troubleshoot checkout and payments](../troubleshooting/troubleshoot-checkout-and-payments.md)

@@ -44,7 +44,7 @@ export type ContentCatalogV1 = {
 
 export type CopyInventoryEntry = {
   id: string;
-  surface: "marketing" | "web" | "pwa" | "ios" | "android" | "help" | "email" | "push" | "app-store" | "google-play" | "sales";
+  surface: "marketing" | "web" | "pwa" | "ios" | "android" | "help" | "email" | "push" | "app-store" | "google-play" | "sales" | "support";
   source: string;
   context: string;
   currentText: string;

@@ -1,5 +1,5 @@
 ---
-title: "Customers and store credit"
+title: "Customers and Payments"
 description: "Keep customer records minimal and record payments against the correct open balance."
 ---
 
@@ -24,7 +24,7 @@ If a form requires contact information that your privacy policy does not allow, 
 
 ## Attach a customer at checkout
 
-1. In **Point of Sale**, use **Customer (Optional)**.
+1. In **New sale**, use **Customer (Optional)**.
 2. Enter the existing **Alias** or an allowed **Phone number**, then choose **Lookup**.
 3. Select the matching customer and confirm **Attached:** before continuing.
 4. Choose **CREDIT** only when offered and approved. Review the total and select **Confirm credit charge** before **Complete Sale**.
@@ -48,5 +48,5 @@ Have an authorized manager review unexplained balances, overdue amounts, or limi
 
 ## Related articles
 
-- [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807)
-- [Troubleshoot customers and credit](https://drx.featurebase.app/en/help/articles/9156766)
+- [Privacy and minimal data](feature-overview-privacy-controls.md)
+- [Troubleshoot customers and credit](../troubleshooting/troubleshooting-customers-and-credit.md)
