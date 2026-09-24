@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { WorkflowVisual, type WorkflowVisualKind } from "./product-proof";
 
 interface CapabilityCardProps {
   icon: ReactNode;
@@ -7,6 +8,7 @@ interface CapabilityCardProps {
   body: string;
   ctaText: string;
   ctaHref: string;
+  visual: WorkflowVisualKind;
 }
 
 export function CapabilityCard({
@@ -15,10 +17,13 @@ export function CapabilityCard({
   body,
   ctaText,
   ctaHref,
+  visual,
 }: CapabilityCardProps) {
   return (
-    <div className="group flex flex-col h-full min-h-[250px] w-full rounded-[10px] border border-border bg-surface-elevated p-6 text-left transition-all duration-300 motion-safe:hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(204,255,0,0.07)]">
-      <div className="flex size-10 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mb-3 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
+    <div className="group relative flex h-full min-h-[360px] w-full flex-col overflow-hidden rounded-[14px] border border-border bg-surface-elevated p-5 text-left transition-all duration-300 motion-safe:hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_18px_48px_rgba(0,0,0,0.24)] sm:p-6">
+      <WorkflowVisual kind={visual} />
+
+      <div className="mb-3 flex size-10 shrink-0 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent transition-transform duration-300 motion-safe:group-hover:scale-110">
         {icon}
       </div>
 
@@ -33,7 +38,7 @@ export function CapabilityCard({
       <div className="mt-auto pt-2">
         <Link
           href={ctaHref}
-          className="inline-flex min-h-[44px] items-center text-[14px] font-normal leading-[20px] text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
+          className="inline-flex min-h-[44px] items-center text-[14px] font-medium leading-[20px] text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
         >
           {ctaText}
         </Link>

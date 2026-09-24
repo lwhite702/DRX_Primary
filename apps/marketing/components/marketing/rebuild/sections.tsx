@@ -33,7 +33,7 @@ export function RebuiltMarketingSections() {
       <main id="main-content" className="flex-1 w-full">
         {/* 02 Hero Section */}
         <section
-          className="relative w-full py-12 md:py-16 lg:py-24 border-b border-border/40 overflow-hidden"
+          className="relative w-full overflow-hidden border-b border-border/40 py-12 md:py-16 lg:py-24"
           aria-label="Hero"
         >
           {/* Operator Grid Background */}
@@ -53,9 +53,9 @@ export function RebuiltMarketingSections() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-[1280px] px-5 md:px-8 lg:px-10">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 lg:gap-14 text-left">
+            <div className="flex flex-col justify-between gap-10 text-left lg:flex-row lg:items-center lg:gap-14">
               {/* Hero Copy */}
-              <div className="flex-1 max-w-[560px] flex flex-col gap-6">
+              <div className="flex max-w-[560px] flex-1 flex-col gap-6">
                 <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[12px] font-mono font-medium text-accent w-fit">
                   <span className="relative flex size-2">
                     <span className="animate-beacon-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
@@ -79,7 +79,7 @@ export function RebuiltMarketingSections() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <Link
                     href={appWaitlistUrl}
-                    className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] bg-accent px-6 text-[14px] font-semibold text-black hover:opacity-95 hover:shadow-[0_0_24px_rgba(204,255,0,0.35)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] bg-accent px-6 text-[14px] font-semibold text-black transition-colors hover:bg-[#dbff47] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     {marketingContent.hero.primaryCta.label}
                   </Link>
@@ -168,9 +168,10 @@ export function RebuiltMarketingSections() {
               <CapabilityCard
                 icon={<ShoppingCart className="size-5" />}
                 title="Sell without the detour"
-                body="Build the sale, review the total, choose a customer, and record how they paid."
+                body="Find products, check the sale, choose a customer, and record how they paid."
                 ctaText="See the sale flow →"
                 ctaHref="/product"
+                visual="checkout"
               />
               <CapabilityCard
                 icon={<Package className="size-5" />}
@@ -178,6 +179,7 @@ export function RebuiltMarketingSections() {
                 body="Add stock, fix counts, and see what needs attention before you promise it."
                 ctaText="See products →"
                 ctaHref="/product"
+                visual="inventory"
               />
               <CapabilityCard
                 icon={<Users className="size-5" />}
@@ -185,6 +187,7 @@ export function RebuiltMarketingSections() {
                 body="Review customer history, recorded payments, and balances due in one place."
                 ctaText="See customer tools →"
                 ctaHref="/product"
+                visual="customers"
               />
             </div>
           </div>
