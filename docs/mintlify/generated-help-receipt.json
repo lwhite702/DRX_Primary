@@ -9,17 +9,17 @@
       "sourcePath": "app-docs/getting_started/get-started-with-drx.md",
       "mintlifyPath": "mintlify/start/get-started-with-drx.mdx",
       "route": "/start/get-started-with-drx",
-      "sourceSha256": "703934c4d3c47dbafdb27c12b30ae318a66bbb7bd83cd1b82944949399bc45ae",
-      "outputSha256": "e94a1ff1d34a983f3097ec42fc722c53d3a0a309d9e335c49f5d215fe4b561ea"
+      "sourceSha256": "87c0d9fe5c155629a363029992be1638d2fe43c0a8bdcee65e068c941712239e",
+      "outputSha256": "266835949eea351bf2ec2dafd9b483950bd90db7eef10af408bf16b21ca42c48"
     },
     {
       "articleId": "2502678",
-      "title": "Dashboard and reports",
+      "title": "Home and reports",
       "sourcePath": "app-docs/feature_overview/feature-overview-dashboard-and-reports.md",
       "mintlifyPath": "mintlify/start/dashboard-and-reports.mdx",
       "route": "/start/dashboard-and-reports",
-      "sourceSha256": "4115446bdf13eff0a4bb534d313b36daefbf27640407e62bd1b97081f8d6dfbe",
-      "outputSha256": "0cd40ac26065add1d365c3dc9b7ecb60d5c447d2295ee85682304412fdc16881"
+      "sourceSha256": "f478cc4da7e30c3fed40cc8ce4efb1e290e4e9274f3ac92956ae32095ae0b811",
+      "outputSha256": "f7469a32cfb392991211806d7ff2e810f3e5e07ae97997397cf7509287fbdd44"
     },
     {
       "articleId": "2070517",
@@ -27,17 +27,17 @@
       "sourcePath": "app-docs/feature_overview/help-and-support.md",
       "mintlifyPath": "mintlify/start/help-and-support.mdx",
       "route": "/start/help-and-support",
-      "sourceSha256": "09bb1eb22a812fe3b39f3a6b7991727e3b35384d91388728cf8320626280f13c",
-      "outputSha256": "573c057dc1997894bc3f0d01f4fa885f22262178574a11b4c7c9ca1ada5ff0de"
+      "sourceSha256": "0c90d6af28c7a14101b8aefc7953109946bea1505f87d9276596c142a0af3945",
+      "outputSha256": "321dec6e3bced82a578ce0669125a280bb7eed0a8f0acef5c3ead113902900a4"
     },
     {
       "articleId": "3489602",
-      "title": "Troubleshoot dashboard and reports",
+      "title": "Troubleshoot Home and reports",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-dashboard-and-insights.md",
       "mintlifyPath": "mintlify/start/troubleshoot-dashboard-and-reports.mdx",
       "route": "/start/troubleshoot-dashboard-and-reports",
-      "sourceSha256": "9aecd45df6764a649d145b4a4cedaaf99e38c140a822d5566de24052588cb2ac",
-      "outputSha256": "06a7a78b2fd80fa671ba0686a8224b27879ab6b98fc1821bf2a268f41f23f483"
+      "sourceSha256": "6a0b15941a701d8c9bd08b0c9916c6e2c0df2f4bd0568ba5c34b849a6b328424",
+      "outputSha256": "222af6551ebff429f667099f8dc4789f276d651aa94d6f353a9f024f6c36a69e"
     },
     {
       "articleId": "6417807",
@@ -45,35 +45,35 @@
       "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
       "mintlifyPath": "mintlify/privacy/privacy-and-minimal-data.mdx",
       "route": "/privacy/privacy-and-minimal-data",
-      "sourceSha256": "39741ec36731a366b79ea66cfb0183ec22cf4d689d4ae938e82358f13b3ff0df",
-      "outputSha256": "73b00e2260a06fc9886cd6c90147d05deae87838b59705788b4fa103c62bf318"
+      "sourceSha256": "ead926c69b61c4c01a43171ea76fb40398f5e480ff548fd2ffc5766d21dec6ea",
+      "outputSha256": "37c44fec5abc48c205d190a0e5889ce72f3171a101e5b374843a3a3cdd64e349"
     },
     {
       "articleId": "3948745",
-      "title": "Troubleshoot workspaces and access",
+      "title": "Troubleshoot business access",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-workspace-and-access.md",
       "mintlifyPath": "mintlify/access/troubleshoot-workspaces-and-access.mdx",
       "route": "/access/troubleshoot-workspaces-and-access",
-      "sourceSha256": "7420017c4fe047d79e40a546ff8ec10f0fad6c2a51b17b3ad69e725d700f944a",
-      "outputSha256": "abf2f191e985f681103f466b6401460684dccdf7cf2b734f46498ce622856cba"
+      "sourceSha256": "c59b2ab1ebee6ca4ebd9489b064355579f1546704bef89ef1a8766670cfe136b",
+      "outputSha256": "f3f8caafb73d79bad5360a86c71e0321f0b48a5cbf498bca1f44165359aca7de"
     },
     {
       "articleId": "4735029",
-      "title": "Switch workspaces and check access",
+      "title": "Switch businesses and check access",
       "sourcePath": "app-docs/feature_overview/switch-workspaces.md",
       "mintlifyPath": "mintlify/access/switch-workspaces-and-check-access.mdx",
       "route": "/access/switch-workspaces-and-check-access",
-      "sourceSha256": "9631e67637fe2b17a4ef664fc4ba97ecb4363c5fbb8911423e9f0e6a63fa19a3",
-      "outputSha256": "c3408816526fca16ed29beea63bbfdc06f38edefce6c3aed762f970e44960130"
+      "sourceSha256": "37e0928f8d8600979fd90a3ce06e3cd00aeee059a91b4bbbf447845e3ae393fd",
+      "outputSha256": "bdc345582d55e97550e79c23a67f573f993c1fec3e3908303d40fa0bdc5cebca"
     },
     {
       "articleId": "1831819",
-      "title": "Customers and store credit",
+      "title": "Customers and Payments",
       "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
       "mintlifyPath": "mintlify/customers/customers-and-store-credit.mdx",
       "route": "/customers/customers-and-store-credit",
-      "sourceSha256": "44c74481b87ff8c8bd2c3dcccfe59adcde04f3cac19fa91c21b6780e9f76d612",
-      "outputSha256": "d46a67a436bcd0152c797a33bd46adabfc8653c1b36fe5e201c0327024e12fdf"
+      "sourceSha256": "f41a2a94bda9239d62372c05e1138b96a90f2c9323a63a620f8519a67f47ac07",
+      "outputSha256": "8b590358d79f81cd8be2feaf9ada4b5be1ab3c6b15b64526ca6228fe48a36c4b"
     },
     {
       "articleId": "9156766",
@@ -81,26 +81,26 @@
       "sourcePath": "app-docs/troubleshooting/troubleshooting-customers-and-credit.md",
       "mintlifyPath": "mintlify/customers/troubleshoot-customers-and-credit.mdx",
       "route": "/customers/troubleshoot-customers-and-credit",
-      "sourceSha256": "32aeafc884af7ec6ba869d9b54e3cfeab7028f9c0824fc7ec6d97d0ef63b0e87",
-      "outputSha256": "3f1445f0c438b0531baae625a074112c1a158a4229f671ab56ebbe5358e62c35"
+      "sourceSha256": "4facd21de29065795ae166f9fc8b8e0d0ca8ec99028113d9de42d5c6b61db385",
+      "outputSha256": "e2ea1f2bf71a0b35fe438d4600cc13e2dbc632c1fbfb9c81a5fdcc21579caccd"
     },
     {
       "articleId": "6300641",
-      "title": "Inventory intake and adjustments",
+      "title": "Add stock and fix a count",
       "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
       "mintlifyPath": "mintlify/inventory/inventory-intake-and-adjustments.mdx",
       "route": "/inventory/inventory-intake-and-adjustments",
-      "sourceSha256": "6dfa2e51a4ff62274094bd9a39099e0642b10ab3748c1f02a67f6e42218fe3e0",
-      "outputSha256": "1e79bf58ee9905a6235496d41757bd5ec47d34730ae87883aee60c31e0b7c74d"
+      "sourceSha256": "f3aa3b078ef46e4b90a28381b2fc5e19adb6b894b8322670380e00b9ff9eade2",
+      "outputSha256": "9f3797f7a7d7ff09d4c811546b09a8c2df36efbb62e943ca4e8011ca022928e6"
     },
     {
       "articleId": "0272622",
-      "title": "Troubleshoot inventory and audit",
+      "title": "Troubleshoot stock and audit",
       "sourcePath": "app-docs/troubleshooting/troubleshoot-inventory-and-audit.md",
       "mintlifyPath": "mintlify/inventory/troubleshoot-inventory-and-audit.mdx",
       "route": "/inventory/troubleshoot-inventory-and-audit",
-      "sourceSha256": "22711ced00888bebe96ae83a5d56fc83682e93dfc465ccfc8b3387ce98b959d4",
-      "outputSha256": "cdfce0480cf2c0fef55f74b35089e53698ef37b19c10dc17fbc73d901db522b0"
+      "sourceSha256": "39814f186e334738f14041d19be67ae6c341c6a89270dd401d1ef8abbb7ee9e0",
+      "outputSha256": "b944f0e11380fa76e95ffc4851820096b5352ff41ea8f4453d0d52f94bd56d93"
     },
     {
       "articleId": "2995914",
@@ -108,8 +108,8 @@
       "sourcePath": "app-docs/feature_overview/drx-intelligence.md",
       "mintlifyPath": "mintlify/inventory/drx-intelligence.mdx",
       "route": "/inventory/drx-intelligence",
-      "sourceSha256": "9d86e4266f43394a5d13a7add8423489cc6f17d162f24bc2a2540771b524a074",
-      "outputSha256": "69fce6d3248eac65a6bf3d45222972086b6511a7584c1859762ffd52a66c1fb4"
+      "sourceSha256": "a84be1f586564392708159d2b12bfa662dc8513a4a22ac64615c27e4f4ecfd60",
+      "outputSha256": "f4ad8629fd86ff5f8fcfcb50c4fe8a1f87737a5cb9150f1a68b139d3d3307540"
     },
     {
       "articleId": "3974136",
@@ -117,8 +117,8 @@
       "sourcePath": "app-docs/feature_overview/purchase-orders-beta.md",
       "mintlifyPath": "mintlify/inventory/purchase-orders-beta.mdx",
       "route": "/inventory/purchase-orders-beta",
-      "sourceSha256": "1d3188cf452c4f74f3789058d6dd121d2e2fa9b6c9c3bd5f12cb1188fc31715f",
-      "outputSha256": "970047215d621923940c259c42228b6b3520b4cb740d1d2469f074b1437b79b4"
+      "sourceSha256": "d48ed09f15b1cedd06b2c0d09083ceb01d20acd8dd0775a3200e6ad818c70dae",
+      "outputSha256": "e2a75c3dc9acd58630e53bb267f252d366305fc40a9ffa6c19388c0ca9fd8871"
     },
     {
       "articleId": "9003136",
@@ -126,8 +126,8 @@
       "sourcePath": "app-docs/troubleshooting/troubleshoot-ai-intelligence.md",
       "mintlifyPath": "mintlify/inventory/troubleshoot-ai-intelligence.mdx",
       "route": "/inventory/troubleshoot-ai-intelligence",
-      "sourceSha256": "141c3b80f236893b2ed38b14b0eb46955dd4c71777f80053295c90ea6b980160",
-      "outputSha256": "3ec62f435b2bb541f5b726e923f3767393ac86989802b166bb283d5fc69118e6"
+      "sourceSha256": "051358c25b5f6ed16b31473549db52eab73baad0df6c0eabf18372f6c0ef9aa8",
+      "outputSha256": "2c57d0b408907033a567f63812612758b4bfc1bc75168f1b3f5eff3a3731aa19"
     },
     {
       "articleId": "0236106",
@@ -135,7 +135,7 @@
       "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
       "mintlifyPath": "mintlify/sales/quick-sale-checkout.mdx",
       "route": "/sales/quick-sale-checkout",
-      "sourceSha256": "f2ab417e0e0f64662961311772ecf4d33b99cff1dbb7a8f43e901a969494b779",
+      "sourceSha256": "d877f34d907442bd9d02d4656431b453c7ea77cc0b7dbb0013fff4f28749d5a0",
       "outputSha256": "9b46ef80aa186b6e9eb79c8bf854a38a3c7fdcaea9068a4211df9b4149b3578f"
     },
     {
@@ -144,8 +144,8 @@
       "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
       "mintlifyPath": "mintlify/sales/sales-history-and-receipts.mdx",
       "route": "/sales/sales-history-and-receipts",
-      "sourceSha256": "4e8c440974185bcd3f840c7c39234318b1d8e0c485e3ffd9c5adf69fe52a2e4c",
-      "outputSha256": "39e2cecaf233fe491ef54fb80ee22c751fb2581a4c1801f57ad96f2dd63b11cd"
+      "sourceSha256": "9cbd22c03287d9e475f3dbef8b95c3222d703b3e7b2f399d8de58ff573cd5515",
+      "outputSha256": "7548c1fae44ee7e38cf2df19600e592135ef377757cc91dddc482e07204d594d"
     },
     {
       "articleId": "3230948",
@@ -153,8 +153,8 @@
       "sourcePath": "app-docs/troubleshooting/troubleshoot-checkout-and-payments.md",
       "mintlifyPath": "mintlify/sales/troubleshoot-checkout-and-payments.mdx",
       "route": "/sales/troubleshoot-checkout-and-payments",
-      "sourceSha256": "d4229b6560abeca7fe87bdd0173962cb1725c6888bcd9cd45cd8eca5f2f4da2d",
-      "outputSha256": "77ccb828022098375181f73396ab5a547a60f6633c445ceba63f94a72970d150"
+      "sourceSha256": "092d5b425c16bdbfe3a8a4cee43a6535b977d1182ca31337853d74fdeed46942",
+      "outputSha256": "7e163a56cd88de716762b548876dafe869005f7c6e7ea178f97c4199ab713678"
     },
     {
       "articleId": "7723456",
@@ -162,8 +162,8 @@
       "sourcePath": "app-docs/feature_overview/feature-overview-standard-sales-console.md",
       "mintlifyPath": "mintlify/sales/sales-and-deliveries-beta.mdx",
       "route": "/sales/sales-and-deliveries-beta",
-      "sourceSha256": "9e398aff05a298fb9bb27f878c73b3df079026c64eea806d85c52907ec396f6a",
-      "outputSha256": "1e2a4d046064aec356530409bbcef33576151e8b948b4e3b345290cc00275b3b"
+      "sourceSha256": "b117a31fee3e7c474f92e6e2fc182d66d613df4dd1b50d1b9d3b410314172634",
+      "outputSha256": "1167a9b29b58a3740bcff964bf0b48d93c652a0724e392772e94254872ba8710"
     },
     {
       "articleId": "2709969",
@@ -171,8 +171,8 @@
       "sourcePath": "app-docs/integration_guide/connect-barcode-scanners.md",
       "mintlifyPath": "mintlify/sales/connect-barcode-scanners.mdx",
       "route": "/sales/connect-barcode-scanners",
-      "sourceSha256": "758ce083773487803a08a51ed044f5ef0609308a96c094e67da74c59b808b6af",
-      "outputSha256": "8af550ac627fe24b9ea55b15d8705cbed8c59e5a38ca78b20ad7f302c705b429"
+      "sourceSha256": "31008fb9ac22275ef6748684dee6de61bf8b3f3603941a5439b04a157ab338bd",
+      "outputSha256": "197726919856824585430bec8de862293bf8d5ff9e72487ee6914aa078cbb451"
     }
   ],
   "legacyRedirectCount": 17

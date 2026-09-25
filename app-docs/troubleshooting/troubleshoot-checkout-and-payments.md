@@ -11,7 +11,7 @@ Confirm the business and read the loading or error message. Check your connectio
 
 Review the cart's product, quantity, unit, and price. Follow the specific error shown. Use **Continue to Payment** or **Pay** after the cart is valid.
 
-If you cannot verify the total, stop. Do not change prices or Inventory counts to work around the failure.
+If you cannot verify the total, stop. Do not change prices or stock counts to work around the failure.
 
 ## Complete Sale is disabled or rejected
 
@@ -23,12 +23,12 @@ If you cannot verify the total, stop. Do not change prices or Inventory counts t
 
 A payment-method choice records the method; it is not proof that money moved outside DRX.
 
-![For an uncertain checkout or payment, check Orders and Receipts and Store Credit before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
+![For an uncertain checkout or payment, check Sales and Payments before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
 
 ## The result is uncertain
 
 1. Keep the checkout open and note the time and any order reference.
-2. Check **Orders & Receipts** for a matching saved sale in the same business.
+2. Check **Sales** for a matching saved sale in the same business.
 3. Verify whether the payment was actually received through your shop's payment process.
 4. Ask an authorized manager to reconcile the sale and payment before retrying.
 
@@ -40,4 +40,4 @@ Check the saved sale first. The **PRINT** or **SMS** choice is not proof of deli
 
 ## Related articles
 
-- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)
+- [Help and support](../feature_overview/help-and-support.md)

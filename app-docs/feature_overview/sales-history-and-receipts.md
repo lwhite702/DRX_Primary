@@ -7,13 +7,13 @@ description: "Find a saved sale and check its items, customer, payment record, a
 
 These steps cover the web beta and require access to sales records. Confirm the business before opening or changing an order.
 
-![Illustrative Orders and Receipts page showing fictional Sale Details.](../_assets/help-center/screenshots/sales-history.png)
+![Illustrative Sales page showing fictional Sale Details.](../_assets/help-center/screenshots/sales-history.png)
 
 Illustrative screen with fictional data.
 
 ## Find a sale
 
-1. Open **Orders & Receipts**.
+1. Open **Sales**.
 2. Under **Recent Orders**, use **Search by ID or payment...** to narrow the loaded list by ID, payment method, or order status.
 3. Open the matching order and check **Sale Details**.
 4. Compare its date, status, **Payment Method**, customer, quantities, prices, and total with the transaction you are reviewing.
@@ -38,4 +38,4 @@ Keep the original sale and payment evidence while an unexplained difference is r
 
 ## Related articles
 
-- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)
+- [Troubleshoot checkout and payments](../troubleshooting/troubleshoot-checkout-and-payments.md)

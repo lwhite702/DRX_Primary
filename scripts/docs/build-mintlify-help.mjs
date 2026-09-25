@@ -53,7 +53,7 @@ function escapeFrontmatter(value) {
   return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 }
 
-function transformBody(body, articleRoutes) {
+function transformBody(body, articleRoutes, sourceRoutes, sourcePath) {
   let transformed = body.replace(
     /\(\.\.\/_assets\/help-center\/([^)]+)\)/g,
     "(/images/help-center/$1)",
@@ -66,6 +66,15 @@ function transformBody(body, articleRoutes) {
       return `/${route}`;
     },
   );
+  transformed = transformed.replace(/\]\(([^)]+\.md(?:#[^)]*)?)\)/g, (match, target) => {
+    if (/^(?:https?:|mailto:|\/)/i.test(target)) return match;
+    const [relativePath, fragment] = target.split("#", 2);
+    const absolutePath = path.resolve(path.dirname(path.join(root, sourcePath)), relativePath);
+    const canonicalPath = path.relative(root, absolutePath).split(path.sep).join("/");
+    const route = sourceRoutes.get(canonicalPath);
+    if (!route) throw new Error(`Unknown canonical help source link in ${sourcePath}: ${target}`);
+    return `](/${route}${fragment ? `#${fragment}` : ""})`;
+  });
   return transformed.trimEnd() + "\n";
 }
 
@@ -75,6 +84,9 @@ function build() {
   const migration = readJson(migrationPath);
   const articleRoutes = new Map(
     Object.entries(articleConfig).map(([id, config]) => [id, config.route]),
+  );
+  const sourceRoutes = new Map(
+    manifest.articles.map((article) => [article.sourcePath, articleConfig[article.id].route]),
   );
 
   if (manifest.articles.length !== 19) {
@@ -95,7 +107,7 @@ function build() {
       throw new Error(`Manifest frontmatter mismatch: ${article.sourcePath}`);
     }
     const modeLine = config.mode ? `\nmode: "${config.mode}"` : "";
-    const content = `---\ntitle: "${escapeFrontmatter(parsed.title)}"\ndescription: "${escapeFrontmatter(parsed.description)}"\nicon: "${config.icon}"${modeLine}\n---\n\n${transformBody(parsed.body, articleRoutes)}`;
+    const content = `---\ntitle: "${escapeFrontmatter(parsed.title)}"\ndescription: "${escapeFrontmatter(parsed.description)}"\nicon: "${config.icon}"${modeLine}\n---\n\n${transformBody(parsed.body, articleRoutes, sourceRoutes, article.sourcePath)}`;
     const outputPath = path.join(mintlifyRoot, `${config.route}.mdx`);
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, content);
