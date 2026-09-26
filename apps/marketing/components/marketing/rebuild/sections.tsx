@@ -15,6 +15,7 @@ import { CapabilityCard } from "./capability-card";
 import { EvidenceItem } from "./evidence-item";
 import { FaqAccordion } from "./faq-accordion";
 import { MarketingCtaBand } from "./cta-band";
+import { ComingSoonOrdering } from "./coming-soon-ordering";
 import { MarketingFooter } from "./footer";
 import { appWaitlistUrl } from "@/lib/app-links";
 
@@ -189,6 +190,9 @@ export function RebuiltMarketingSections() {
             </div>
           </div>
         </section>
+
+        {/* 04b Customer Ordering Research Teaser */}
+        <ComingSoonOrdering />
 
         {/* 05 Privacy Evidence Section */}
         <section
