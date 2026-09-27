@@ -58,9 +58,9 @@ describe("Progressive Disclosure in Inventory Form", () => {
     // Primary essential fields are immediately visible in the primary section
     expect(screen.getByText("Primary Details")).toBeInTheDocument();
     expect(screen.getByLabelText(/Product Name \*/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Selling Retail Price \(\$\) \*/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Acquisition Unit Cost \(\$\)/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Current Stock/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Retail Price \(\$\) \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Cost per g \(\$\)/i)).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: "Current stock count" })).toBeInTheDocument();
 
     // Progressive reveal trigger is present
     const progressiveTrigger = screen.getByRole("button", {
@@ -75,7 +75,7 @@ describe("Progressive Disclosure in Inventory Form", () => {
 
     // Additional fields are now revealed
     expect(screen.getByLabelText(/Storage Location/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Reorder Alert Threshold/i)).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: "Low stock alert threshold" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Subject to sales tax/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Description \/ Strain Notes/i)).toBeInTheDocument();
   });

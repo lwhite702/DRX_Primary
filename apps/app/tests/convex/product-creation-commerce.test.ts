@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { api } from "../../convex/_generated/api";
 import * as generatedApi from "../../convex/_generated/api";
 import * as products from "../../convex/products";
+import * as inventory from "../../convex/inventory";
 import * as onboarding from "../../convex/onboarding";
 import schema from "../../convex/schema";
 import {
@@ -16,6 +17,7 @@ import { calculatePurchaseUnitCost } from "../../lib/commerce/purchase-cost";
 const modules = {
   "_generated/api.js": async () => generatedApi,
   "products.ts": async () => products,
+  "inventory.ts": async () => inventory,
   "onboarding.ts": async () => onboarding,
 };
 const config = {
@@ -67,6 +69,8 @@ describe("fractional product creation", () => {
   it("generates tenant-scoped SKUs, keeps barcode separate, and stores exact cost for FIFO", async () => {
     const { t, owner } = await setup();
     const { fractionalEnabled: _fractional, bulkPriceTiers: _tiers, ...commerceConfig } = guidedCommerceProfile("g", true);
+    void _fractional;
+    void _tiers;
     const productId = await owner.mutation(api.products.createProduct, {
       sku: "", productName: "Synthetic ounce", sellingPriceCents: 3500, unitCostCents: 0,
       purchaseCostBasis: { costCents: 16000, quantity: 1, unit: "oz" },
@@ -95,6 +99,22 @@ describe("fractional product creation", () => {
     await expect(owner.mutation(api.products.createProduct, {
       ...input, sku: "OTHER", barcode: "012345678905",
     })).rejects.toThrow("ALREADY_EXISTS");
+  });
+  it("uses a manually edited unit cost for future batches and clears the old package basis", async () => {
+    const { t, owner } = await setup();
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "COST-EDIT", productName: "Cost edit", sellingPriceCents: 3500,
+      unitCostCents: 0, purchaseCostBasis: { costCents: 16000, quantity: 1, unit: "oz" },
+      commerceConfig: config,
+    });
+    const row = (await owner.query(api.products.listProducts, {}))[0];
+    await owner.mutation(api.inventory.updateProduct, {
+      businessId: row.businessId, productId, unitCostCents: 600, quantity: 1,
+    });
+    const updated = await t.run((ctx) => ctx.db.get(productId));
+    expect(updated).toMatchObject({ unitCostCents: 600, unitCostCentsExact: 600 });
+    expect(updated?.purchaseCostBasis).toBeUndefined();
+    expect((await t.run((ctx) => ctx.db.query("inventoryBatches").collect()))[0].unitCostPerGramCents).toBe(600);
   });
   it("commits precise rules and presets with the product, audit, and reciprocal suggestion", async () => {
     const { t, owner } = await setup();

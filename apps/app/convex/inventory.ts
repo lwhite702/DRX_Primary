@@ -97,7 +97,10 @@ export const updateProduct = mutation({
       const duplicate = await ctx.db.query("products").withIndex("by_businessId_and_sku", q => q.eq("businessId", auth.businessId).eq("sku", args.sku!.trim())).unique();
       if (duplicate && duplicate._id !== product._id) throw new Error("ALREADY_EXISTS: SKU exists");
     }
-    const delta = args.quantity === undefined ? 0 : await setStock(ctx, { ...product, unitCostCents: args.unitCostCents ?? product.unitCostCents }, args.quantity, auth.userId);
+    const stockProduct = args.unitCostCents === undefined ? product : {
+      ...product, unitCostCents: args.unitCostCents, unitCostCentsExact: args.unitCostCents,
+    };
+    const delta = args.quantity === undefined ? 0 : await setStock(ctx, stockProduct, args.quantity, auth.userId);
     const patch: Partial<Doc<"products">> = { updatedAt: Date.now() };
     if (args.productName !== undefined) patch.productName = args.productName.trim();
     if (args.sku !== undefined) patch.sku = args.sku.trim();
@@ -111,7 +114,11 @@ export const updateProduct = mutation({
     if (args.location !== undefined) patch.location = args.location.trim() || undefined;
     if (args.isTaxable !== undefined) patch.isTaxable = args.isTaxable;
     if (args.reorderLevel !== undefined) patch.reorderLevelGrams = args.reorderLevel;
-    if (args.unitCostCents !== undefined) patch.unitCostCents = args.unitCostCents;
+    if (args.unitCostCents !== undefined) {
+      patch.unitCostCents = args.unitCostCents;
+      patch.unitCostCentsExact = args.unitCostCents;
+      patch.purchaseCostBasis = undefined;
+    }
     if (args.sellingPriceCents !== undefined) patch.sellingPriceCents = args.sellingPriceCents;
     await ctx.db.patch(product._id, patch);
     await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "PRODUCT_UPDATED", entityType: "product", entityId: product._id,
