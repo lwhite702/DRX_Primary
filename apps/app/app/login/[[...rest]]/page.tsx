@@ -19,10 +19,7 @@ export default async function LoginPage() {
   if (userId) redirect("/dashboard");
 
   return (
-    <AuthShell
-      eyebrow="Operator access"
-      description="Sign in to open your business."
-    >
+    <AuthShell>
       {useVisualFixture ? (
         <AuthVisualFixture mode="sign-in" />
       ) : (

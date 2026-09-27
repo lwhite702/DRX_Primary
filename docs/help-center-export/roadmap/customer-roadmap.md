@@ -4,9 +4,6 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
-- **Clearer screens across devices**
-  More readable cards, consistent navigation, and forms that work better with phone keyboards and larger text. We’re checking these changes across web, iPhone, and Android before release. Availability continues to depend on beta access.
-
 - **Fractional selling from product creation and onboarding** (`in progress`)
   Choose whole-unit or fractional sales while adding a product, including the guided first-product setup. Configure the selling unit, minimum, increment, precision, and suggested amounts before checkout. Cross-client persistence and device verification remain rollout gates.
 

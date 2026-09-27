@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignUp } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
@@ -20,21 +19,7 @@ export default async function RegisterPage() {
   if (userId) redirect("/dashboard");
 
   return (
-    <AuthShell
-      eyebrow="Create your business"
-      description="Set up your operator account, then add your business details."
-      footer={
-        <p className="text-center text-sm leading-6 text-[#B8B8B8]">
-          Already have an account?{" "}
-          <Link
-            className="font-semibold text-accent underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            href="/login"
-          >
-            Sign in
-          </Link>
-        </p>
-      }
-    >
+    <AuthShell>
       {useVisualFixture ? (
         <AuthVisualFixture mode="sign-up" />
       ) : (
