@@ -8,38 +8,74 @@ struct AddProductSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var sku = ""
+    @State private var manualSku = false
+    @State private var barcode = ""
     @State private var productName = ""
     @State private var description = ""
     @State private var category = "Flower"
     @State private var sellingPriceString = ""
     @State private var unitCostString = ""
+    @State private var usePurchaseBasis = false
+    @State private var purchaseCostString = ""
+    @State private var purchaseQuantityString = "1"
+    @State private var purchaseUnit = "oz"
+    @State private var actualNetString = ""
     @State private var reorderLevelString = "10"
     @State private var isSaving = false
     @State private var saveError: String?
     @State private var fractionalEnabled = false
+    @State private var showCustomRules = false
     @State private var sellingUnit = "g"
     @State private var decimalPrecision = 2
     @State private var minimumQuantity = "0.01"
     @State private var quantityIncrement = "0.01"
     @State private var dollarPresets = "10, 20, 50"
-    @State private var quantityPresets = "1, 3.5, 7, 14, 28"
+    @State private var quantityPresets = "1, 2, 5"
 
     private var sellingPriceCents: Int { CurrencyInput.cents(from: sellingPriceString) ?? 0 }
     private var unitCostCents: Int { CurrencyInput.cents(from: unitCostString) ?? 0 }
+    private var purchaseCostCents: Int? { CurrencyInput.cents(from: purchaseCostString) }
+    private var calculatedCostCents: Double? {
+        guard usePurchaseBasis,
+              let purchaseCostCents,
+              let quantity = Double(purchaseQuantityString), quantity > 0 else { return nil }
+        let factor: [String: Double] = ["g": 1, "oz": 28.3495, "lb": 453.592, "kg": 1000,
+                                         "ml": 1, "L": 1000, "fl_oz": 29.5735, "unit": 1]
+        let weight = ["g", "oz", "lb", "kg"]
+        let volume = ["ml", "L", "fl_oz"]
+        guard (weight.contains(purchaseUnit) && weight.contains(sellingUnit)) ||
+              (volume.contains(purchaseUnit) && volume.contains(sellingUnit)) ||
+              (purchaseUnit == "unit" && sellingUnit == "unit"),
+              let buyFactor = factor[purchaseUnit], let sellFactor = factor[sellingUnit] else { return nil }
+        let converted = quantity * buyFactor / sellFactor
+        let net = actualNetString.isEmpty ? converted : (Double(actualNetString) ?? 0)
+        guard net > 0, net.isFinite else { return nil }
+        return Double(purchaseCostCents) / net
+    }
     private var reorderLevelGrams: Double { Double(reorderLevelString) ?? 10 }
 
     private var isValid: Bool {
-        !sku.trimmingCharacters(in: .whitespaces).isEmpty &&
+        (!manualSku || !sku.trimmingCharacters(in: .whitespaces).isEmpty) &&
         !productName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        sellingPriceCents > 0
+        sellingPriceCents > 0 && (!usePurchaseBasis || calculatedCostCents != nil)
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Identification") {
-                    TextField("SKU", text: $sku)
-                        .textInputAutocapitalization(.characters)
+                    if !manualSku {
+                        Text("DRX will generate a unique SKU when you save.")
+                            .font(.footnote).foregroundStyle(DRXPalette.muted)
+                    }
+                    Toggle("Enter my own SKU", isOn: $manualSku)
+                    if manualSku {
+                        TextField("SKU", text: $sku)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                    }
+                    TextField("Barcode (optional)", text: $barcode)
+                        .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                     TextField("Product Name", text: $productName)
                     Picker("Category", selection: $category) {
@@ -62,14 +98,44 @@ struct AddProductSheet: View {
                     HStack {
                         Text("$")
                             .foregroundStyle(DRXPalette.muted)
-                        TextField("Retail Price", text: $sellingPriceString)
+                        TextField("Selling price per \(sellingUnit)", text: $sellingPriceString)
                             .keyboardType(.decimalPad)
                     }
-                    HStack {
-                        Text("$")
-                            .foregroundStyle(DRXPalette.muted)
-                        TextField("Unit Cost", text: $unitCostString)
+                    Toggle("Calculate cost from purchase package", isOn: $usePurchaseBasis)
+                    if usePurchaseBasis {
+                        HStack {
+                            Text("$").foregroundStyle(DRXPalette.muted)
+                            TextField("Purchase price", text: $purchaseCostString).keyboardType(.decimalPad)
+                        }
+                        TextField("Package quantity", text: $purchaseQuantityString).keyboardType(.decimalPad)
+                        Picker("Purchase unit", selection: $purchaseUnit) {
+                            if ["g", "oz", "lb", "kg"].contains(sellingUnit) {
+                                Text("Gram (g)").tag("g")
+                                Text("Ounce (oz)").tag("oz")
+                                Text("Pound (lb)").tag("lb")
+                                Text("Kilogram (kg)").tag("kg")
+                            } else if ["ml", "L", "fl_oz"].contains(sellingUnit) {
+                                Text("Milliliter (ml)").tag("ml")
+                                Text("Liter (L)").tag("L")
+                                Text("Fluid ounce (fl oz)").tag("fl_oz")
+                            } else {
+                                Text("Unit").tag("unit")
+                            }
+                        }
+                        TextField("Actual net amount in \(sellingUnit) (optional)", text: $actualNetString)
                             .keyboardType(.decimalPad)
+                        if let calculatedCostCents {
+                            Text("Estimated cost $\(String(format: "%.2f", calculatedCostCents / 100)) per \(sellingUnit). Exact cost is retained for stock accounting.")
+                                .font(.footnote).foregroundStyle(DRXPalette.accent)
+                        } else {
+                            Text("Enter a valid package price, quantity, and matching units.")
+                                .font(.footnote).foregroundStyle(DRXPalette.muted)
+                        }
+                    } else {
+                        HStack {
+                            Text("$").foregroundStyle(DRXPalette.muted)
+                            TextField("Cost per \(sellingUnit)", text: $unitCostString).keyboardType(.decimalPad)
+                        }
                     }
                 }
 
@@ -86,6 +152,7 @@ struct AddProductSheet: View {
                 Section {
                     Toggle("Sell by weight / fractions", isOn: $fractionalEnabled)
                         .accessibilityIdentifier("createProductFractional")
+                        .onChange(of: fractionalEnabled) { _, _ in applyRecommendedRules() }
                     Picker("Selling unit", selection: $sellingUnit) {
                         Text("Unit").tag("unit")
                         Text("Gram (g)").tag("g")
@@ -95,19 +162,18 @@ struct AddProductSheet: View {
                         Text("Liter (L)").tag("L")
                     }
                     .onChange(of: sellingUnit) { _, newUnit in
-                        if newUnit == "oz" {
-                            quantityPresets = "0.125, 0.25, 0.5, 1"
-                        } else if newUnit == "g" {
-                            quantityPresets = "1, 3.5, 7, 14, 28"
-                        } else {
-                            quantityPresets = "1, 2, 5, 10"
-                        }
+                        purchaseUnit = newUnit == "g" ? "oz" : newUnit
+                        applyRecommendedRules()
                     }
-                    if fractionalEnabled {
+                    Button(showCustomRules ? "Hide custom selling rules" : "Custom selling rules") {
+                        showCustomRules.toggle()
+                    }
+                    if fractionalEnabled && showCustomRules {
                         Stepper("Decimal places: \(decimalPrecision)", value: $decimalPrecision, in: 1...6)
                         labeledQuantity("Smallest sale amount", text: $minimumQuantity)
                         labeledQuantity("Step size", text: $quantityIncrement)
                     }
+                    if showCustomRules {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Quick Dollar Buttons")
                             .font(.caption)
@@ -119,23 +185,37 @@ struct AddProductSheet: View {
                         }
                         .pickerStyle(.segmented)
                     }
+                    }
+                    if NewProductCommerceConfig.make(
+                        fractional: fractionalEnabled, unit: sellingUnit, precision: decimalPrecision,
+                        minimum: minimumQuantity, increment: quantityIncrement,
+                        dollars: dollarPresets, quantities: quantityPresets
+                    ) == nil {
+                        Text("A quick amount must be at least the minimum and rise by the step size.")
+                            .font(.footnote).foregroundStyle(DRXPalette.danger)
+                        Button("Use recommended rules") { applyRecommendedRules() }
+                    }
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Quick Quantity Buttons")
                             .font(.caption)
                             .foregroundStyle(DRXPalette.muted)
                         Picker("Quick Quantity Buttons", selection: $quantityPresets) {
-                            if sellingUnit == "oz" {
+                            if !fractionalEnabled {
+                                Text("1, 2, 5").tag("1, 2, 5")
+                                Text("1, 3, 6, 12").tag("1, 3, 6, 12")
+                            } else if sellingUnit == "oz" {
                                 Text("⅛, ¼, ½, 1 oz").tag("0.125, 0.25, 0.5, 1")
                                 Text("¼, ½, 1, 2 oz").tag("0.25, 0.5, 1, 2")
                             } else if sellingUnit == "g" {
-                                Text("1, 3.5, 7, 14, 28 g").tag("1, 3.5, 7, 14, 28")
-                                Text("0.5, 1, 2 g").tag("0.5, 1, 2")
+                                Text("½, 1, 3½, 7, 14, 28 g").tag("0.5, 1, 3.5, 7, 14, 28")
+                                Text("½, 1, 2 g").tag("0.5, 1, 2")
+                            } else if sellingUnit == "lb" {
+                                Text("¼, ½, 1 lb").tag("0.25, 0.5, 1")
                             } else {
-                                Text("1, 2, 5, 10").tag("1, 2, 5, 10")
-                                Text("1, 3, 6, 12").tag("1, 3, 6, 12")
+                                Text("½, 1, 2").tag("0.5, 1, 2")
                             }
                         }
-                        .pickerStyle(.segmented)
+                        .pickerStyle(.menu)
                     }
                 } header: {
                     Text("How this product is sold")
@@ -175,19 +255,40 @@ struct AddProductSheet: View {
         }
     }
 
+    private func applyRecommendedRules() {
+        guard fractionalEnabled else {
+            quantityPresets = "1, 2, 5"
+            return
+        }
+        switch sellingUnit {
+        case "g": decimalPrecision = 1; minimumQuantity = "0.5"; quantityIncrement = "0.5"; quantityPresets = "0.5, 1, 3.5, 7, 14, 28"
+        case "oz": decimalPrecision = 3; minimumQuantity = "0.125"; quantityIncrement = "0.125"; quantityPresets = "0.125, 0.25, 0.5, 1"
+        case "lb": decimalPrecision = 2; minimumQuantity = "0.25"; quantityIncrement = "0.25"; quantityPresets = "0.25, 0.5, 1"
+        default: decimalPrecision = 1; minimumQuantity = "0.5"; quantityIncrement = "0.5"; quantityPresets = "0.5, 1, 2"
+        }
+    }
+
     private func save() async {
         isSaving = true
         saveError = nil
         struct CreateProductArgs: Encodable, Sendable {
             let sku: String
+            let barcode: String?
             let productName: String
             let description: String?
             let category: String?
             let sellingPriceCents: Int
             let unitCostCents: Int
+            let purchaseCostBasis: PurchaseCostBasis?
             let reorderLevelGrams: Double
             let allowFractionalWeight: Bool
             let commerceConfig: NewProductCommerceConfig
+        }
+        struct PurchaseCostBasis: Encodable, Sendable {
+            let costCents: Int
+            let quantity: Double
+            let unit: String
+            let actualSellingQuantity: Double?
         }
 
         guard let config = NewProductCommerceConfig.make(
@@ -195,18 +296,26 @@ struct AddProductSheet: View {
             minimum: minimumQuantity, increment: quantityIncrement,
             dollars: dollarPresets, quantities: quantityPresets
         ) else {
-            saveError = "Please ensure your selling rules and quick-tap amounts match your step size."
+            saveError = "A quick amount must be at least the minimum and rise by the step size. Use recommended rules or edit the amounts."
             isSaving = false
             return
         }
+        let basis: PurchaseCostBasis? = usePurchaseBasis && calculatedCostCents != nil
+            ? PurchaseCostBasis(costCents: purchaseCostCents ?? 0,
+                                quantity: Double(purchaseQuantityString) ?? 0,
+                                unit: purchaseUnit,
+                                actualSellingQuantity: actualNetString.isEmpty ? nil : Double(actualNetString))
+            : nil
 
         let args = CreateProductArgs(
-            sku: sku.trimmingCharacters(in: .whitespaces).uppercased(),
+            sku: manualSku ? sku.trimmingCharacters(in: .whitespaces).uppercased() : "",
+            barcode: barcode.trimmingCharacters(in: .whitespaces).isEmpty ? nil : barcode.trimmingCharacters(in: .whitespaces),
             productName: productName.trimmingCharacters(in: .whitespaces),
             description: description.isEmpty ? nil : description,
             category: category.isEmpty ? nil : category,
             sellingPriceCents: sellingPriceCents,
-            unitCostCents: unitCostCents,
+            unitCostCents: usePurchaseBasis ? 0 : unitCostCents,
+            purchaseCostBasis: basis,
             reorderLevelGrams: reorderLevelGrams,
             allowFractionalWeight: fractionalEnabled,
             commerceConfig: config

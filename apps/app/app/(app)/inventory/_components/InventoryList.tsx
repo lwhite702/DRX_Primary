@@ -57,7 +57,8 @@ export function InventoryList({
   const filteredInventory = (Array.isArray(inventory) ? inventory : []).filter(
     (item) =>
       String(item?.product_name ?? "").toLowerCase().includes(normalizedSearch) ||
-      String(item?.sku ?? "").toLowerCase().includes(normalizedSearch),
+      String(item?.sku ?? "").toLowerCase().includes(normalizedSearch) ||
+      String(item?.barcode ?? "").toLowerCase().includes(normalizedSearch),
   );
 
   return (

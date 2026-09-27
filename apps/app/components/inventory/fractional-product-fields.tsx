@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { StepperInput } from "@/components/ui/stepper-input";
 import { Plus, X } from "lucide-react";
 import type { ProductCommerceConfig } from "@/lib/commerce/config";
-import { creationCommerceDefaults } from "@/lib/commerce/product-creation";
+import { commerceIssue, guidedCommerceProfile } from "@/lib/commerce/product-creation";
 import {
   ALL_UNIT_OPTIONS,
   unitLabel,
@@ -45,6 +45,7 @@ export function FractionalProductFields({
   const [customQty, setCustomQty] = React.useState<number>(
     value.minimumSaleQuantity || 1
   );
+  const [quantityError, setQuantityError] = React.useState<string | null>(null);
 
   // Dollar Preset Packs
   const DOLLAR_PACKS: Array<{ label: string; values: number[] }> = [
@@ -56,6 +57,10 @@ export function FractionalProductFields({
 
   // Unit-aware Quantity Preset Packs
   const getQuantityPacks = (): Array<{ label: string; values: number[] }> => {
+    if (!value.fractionalEnabled) return [
+      { label: "1, 2, 5 units", values: [1, 2, 5] },
+      { label: "1, 3, 6, 12 units", values: [1, 3, 6, 12] },
+    ];
     if (currentUnit === "g") {
       return [
         { label: "1g, 3.5g (⅛), 7g (¼), 14g (½), 28g (1oz)", values: [1, 3.5, 7, 14, 28] },
@@ -124,8 +129,12 @@ export function FractionalProductFields({
     if (customQty > 0) {
       const existing = value.suggestedQuantities || [];
       if (!existing.includes(customQty)) {
-        update({ suggestedQuantities: [...existing, customQty].sort((a, b) => a - b) });
+        const next = { ...value, suggestedQuantities: [...existing, customQty].sort((a, b) => a - b) };
+        const issue = commerceIssue(next);
+        if (issue) { setQuantityError(issue); return; }
+        onChange(next);
       }
+      setQuantityError(null);
       setShowCustomQty(false);
     }
   };
@@ -145,16 +154,8 @@ export function FractionalProductFields({
           value={value.sellingUnit}
           onChange={(event) => {
             const nextUnit = event.target.value as DRXUnit;
-            // When switching unit, choose sensible initial quantity pack
-            let defaultPack: number[] = [1, 2, 5];
-            if (nextUnit === "g") defaultPack = [1, 3.5, 7, 14, 28];
-            if (nextUnit === "oz") defaultPack = [0.125, 0.25, 0.5, 1];
-            if (nextUnit === "lb") defaultPack = [0.25, 0.5, 1];
-
-            update({
-              sellingUnit: nextUnit,
-              suggestedQuantities: defaultPack,
-            });
+            onChange({ ...guidedCommerceProfile(nextUnit, value.fractionalEnabled),
+              suggestedDollarAmounts: value.suggestedDollarAmounts });
           }}
         >
           {ALL_UNIT_OPTIONS.map((opt) => (
@@ -183,11 +184,8 @@ export function FractionalProductFields({
           checked={value.fractionalEnabled}
           onCheckedChange={(enabled) => {
             onChange({
-              ...creationCommerceDefaults(value.sellingUnit, enabled),
+              ...guidedCommerceProfile(value.sellingUnit, enabled),
               suggestedDollarAmounts: value.suggestedDollarAmounts.length > 0 ? value.suggestedDollarAmounts : [10, 20, 50],
-              suggestedQuantities: enabled
-                ? (currentUnit === "oz" ? [0.125, 0.25, 0.5, 1] : currentUnit === "g" ? [1, 3.5, 7, 14, 28] : [0.5, 1, 2])
-                : [1, 2, 5],
             });
           }}
         />
@@ -195,7 +193,8 @@ export function FractionalProductFields({
 
       {/* Steppers for Fractional Precision & Increments */}
       {value.fractionalEnabled && (
-        <div className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+        <details className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+          <summary className="cursor-pointer text-sm text-white">Custom selling rules</summary>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-white">Decimal Precision</Label>
@@ -239,8 +238,13 @@ export function FractionalProductFields({
               <span className="text-[11px] text-text-secondary">Increment between options</span>
             </div>
           </div>
-        </div>
+        </details>
       )}
+
+      {commerceIssue(value) && <div role="alert" className="space-y-2 rounded-lg border border-destructive/30 p-3 text-sm text-destructive">
+        <p>{commerceIssue(value)}</p>
+        <button type="button" className="rounded-md border border-white/30 px-3 py-2 text-white" onClick={() => onChange({ ...guidedCommerceProfile(value.sellingUnit, value.fractionalEnabled), suggestedDollarAmounts: value.suggestedDollarAmounts })}>Use recommended rules</button>
+      </div>}
 
       {/* Quick-Tap Register Presets Section */}
       <div className="space-y-4 pt-1">
@@ -419,6 +423,7 @@ export function FractionalProductFields({
               >
                 Add {customQty} {unitSymbol(currentUnit)}
               </button>
+              {quantityError && <p role="alert" className="text-xs text-destructive">{quantityError}</p>}
             </div>
           )}
         </div>

@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       if (pageCount++ >= maxPages) break;
       const result: FunctionReturnType<typeof api.products.listCatalogPage> = await client.query(api.products.listCatalogPage, { businessId, paginationOpts: { numItems: 200, cursor } });
       products.push(...result.page.filter(product => !search || (exact
-        ? product.sku.toLowerCase() === search || product.productName.toLowerCase() === search
-        : product.sku.toLowerCase().includes(search) || product.productName.toLowerCase().includes(search))));
+        ? product.sku.toLowerCase() === search || product.barcode?.toLowerCase() === search || product.productName.toLowerCase() === search
+        : product.sku.toLowerCase().includes(search) || product.barcode?.toLowerCase().includes(search) || product.productName.toLowerCase().includes(search))));
       if (result.isDone) break;
       if (result.continueCursor === cursor) throw new Error("Catalog pagination did not advance");
       cursor = result.continueCursor;

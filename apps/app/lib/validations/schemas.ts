@@ -56,11 +56,12 @@ export type BusinessSettings = z.infer<typeof businessSettingsSchema>;
 export const inventorySchema = z.object({
   id: z.string().optional(),
   business_id: z.string().min(1),
-  sku: z.string().min(1).max(100),
+  sku: z.string().max(100).default(""),
+  barcode: z.string().max(100).optional(),
   product_name: z.string().min(1).max(255),
   description: z.string().optional(),
   category: z.string().max(100).optional(),
-  unit_of_measure: z.enum(["unit", "g", "oz", "lb", "L", "ml"]).default("g"),
+  unit_of_measure: z.enum(["unit", "each", "g", "oz", "lb", "kg", "L", "ml", "fl_oz"]).default("g"),
   quantity_on_hand: z.preprocess(
     (val) => {
       if (val === "" || val === null || val === undefined) return 0;
@@ -98,6 +99,12 @@ export const inventorySchema = z.object({
   is_active: z.boolean().default(true).optional(),
   supplier_id: z.string().optional(),
   commerce_config: newProductCommerceSchema.optional(),
+  purchase_cost_basis: z.object({
+    costCents: z.number().int().nonnegative(),
+    quantity: z.number().positive(),
+    unit: z.enum(["unit", "each", "g", "oz", "lb", "kg", "ml", "L", "fl_oz"]),
+    actualSellingQuantity: z.number().positive().optional(),
+  }).optional(),
 });
 
 export type Inventory = z.infer<typeof inventorySchema>;

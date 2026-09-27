@@ -25,7 +25,8 @@ async function setStock(ctx: MutationCtx, product: Doc<"products">, quantity: nu
   const now = Date.now();
   if (delta > 0) {
     await ctx.db.insert("inventoryBatches", { businessId: product.businessId, productId: product._id,
-      originalQuantityGrams: delta, remainingQuantityGrams: delta, unitCostPerGramCents: product.unitCostCents,
+      originalQuantityGrams: delta, remainingQuantityGrams: delta,
+      unitCostPerGramCents: product.unitCostCentsExact ?? product.unitCostCents,
       receivedAt: now, createdBy: actor, createdAt: now, updatedAt: now });
   } else if (delta < 0) {
     // Indexed traversal is bounded; a large unresolved history fails atomically

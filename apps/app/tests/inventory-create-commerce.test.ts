@@ -35,6 +35,16 @@ describe("Convex catalog adapter", () => {
     }));
     expect(await response.json()).toMatchObject({ id: product._id, quantityOnHand: 2.5, sellingPrice: 10 });
   });
+  it("passes automatic SKU and purchase basis to the server without a rounded client cost", async () => {
+    const response = await POST(request({ sku: "", barcode: "012345678905", unit_cost: undefined,
+      purchase_cost_basis: { costCents: 16000, quantity: 1, unit: "oz" },
+    }));
+    expect(response.status).toBe(201);
+    expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      sku: "", barcode: "012345678905", unitCostCents: 0,
+      purchaseCostBasis: { costCents: 16000, quantity: 1, unit: "oz" },
+    }));
+  });
   it("rejects excess money precision and duplicate SKU without hiding the conflict", async () => {
     expect((await POST(request({ selling_price: 1.001 }))).status).toBe(400);
     expect(mocks.mutation).not.toHaveBeenCalled();

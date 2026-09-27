@@ -31,7 +31,7 @@ export function intakeFailure(error: unknown) {
     ["FORBIDDEN:", 403, "You do not have permission to manage stock in this business"],
     ["NOT_FOUND:", 404, "The selected product or intake is unavailable; refresh and try again"],
     ["INVALID_STATE:", 409, "Stock records need reconciliation before this change can be saved"],
-    ["ALREADY_EXISTS:", 409, "This SKU already exists in this business"],
+    ["ALREADY_EXISTS:", 409, "This SKU or barcode already exists in this business"],
     ["CONFLICT:", 409, "This request was already submitted or decided. Refresh before trying again"],
     ["INVALID_ARGUMENT:", 400, "Check the intake values and try again"],
     ["ArgumentValidationError", 400, "The selected product or intake is invalid; refresh and try again"],

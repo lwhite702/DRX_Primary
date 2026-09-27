@@ -4,6 +4,9 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Easier product setup across devices** (`in progress`)
+  Choose automatic or your own SKU, set selling amounts without conflicting quick buttons, and calculate cost when you buy by the ounce but sell by the gram. Web rollout and native app verification are tracked separately.
+
 - **Clearer screens across devices**
   More readable cards, consistent navigation, and forms that work better with phone keyboards and larger text. We’re checking these changes across web, iPhone, and Android before release. Availability continues to depend on beta access.
 

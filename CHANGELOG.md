@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Guided product setup (WRE-143)**: Add server-generated tenant-scoped SKUs, optional separate barcodes, valid fractional quantity profiles, and package purchase-cost conversion with actual net amount override across web, Expo, and iOS product creation. Preserve exact sub-cent per-unit cost for new stock batches while keeping integer-cent catalog compatibility. Native distribution and signed-in device verification remain release follow-ups.
+
 - **Development Knock trigger adapter (WRE-111)**: Added a server-only, opt-in adapter for the reviewed DRX P0 workflow keys. It sends structured recipient/data payloads with optional idempotency and cancellation keys, remains disabled unless explicitly enabled, and does not wire production sends or broadcasts.
 
 ### Changed
