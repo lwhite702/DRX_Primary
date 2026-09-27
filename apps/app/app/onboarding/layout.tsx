@@ -28,8 +28,19 @@ export default async function OnboardingLayout({
 
   // Let a Server Action return its state before navigation. On ordinary visits,
   // global cookies/claims are only routing hints after the current tenant is verified.
-  if (!isServerActionRequest && (await getCompletedOnboardingBusinessId(userId))) {
-    redirect(onboardingComplete ? "/dashboard" : "/api/onboarding/reconcile");
+  if (!isServerActionRequest) {
+    let completedBusinessId: string | null = null;
+    try {
+      completedBusinessId = await getCompletedOnboardingBusinessId(userId);
+    } catch {
+      // If verification is temporarily unavailable or requires setup, allow the operator
+      // to access the onboarding form instead of crashing the layout Server Component.
+      completedBusinessId = null;
+    }
+
+    if (completedBusinessId) {
+      redirect(onboardingComplete ? "/dashboard" : "/api/onboarding/reconcile");
+    }
   }
 
   return children;
