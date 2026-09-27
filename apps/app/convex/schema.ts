@@ -238,8 +238,8 @@ export default defineSchema({
       "businessId",
       "legacyPrismaId",
     ])
-    .index("by_businessId_and_sku", ["businessId", "sku"])
-    .index("by_businessId_and_barcode", ["businessId", "barcode"]),
+    .index("by_businessId_and_barcode", ["businessId", "barcode"])
+    .index("by_businessId_and_sku", ["businessId", "sku"]),
 
   manualLinePolicies: defineTable({
     businessId: v.id("businesses"),
