@@ -8,8 +8,8 @@
  * @module
  */
 
-import type * as businessPreferences from "../businessPreferences.js";
 import type * as audit from "../audit.js";
+import type * as businessPreferences from "../businessPreferences.js";
 import type * as businessProfiles from "../businessProfiles.js";
 import type * as categories from "../categories.js";
 import type * as checkout from "../checkout.js";
@@ -58,12 +58,12 @@ import type * as helpers_teamInvitations from "../helpers/teamInvitations.js";
 import type * as helpers_teamManagement from "../helpers/teamManagement.js";
 import type * as intake from "../intake.js";
 import type * as inventory from "../inventory.js";
-import type * as lockout from "../lockout.js";
 import type * as inventoryAdjustments from "../inventoryAdjustments.js";
 import type * as inventoryChecks from "../inventoryChecks.js";
 import type * as inventoryHealth from "../inventoryHealth.js";
 import type * as inventoryHealthActions from "../inventoryHealthActions.js";
 import type * as inventoryIntelligence from "../inventoryIntelligence.js";
+import type * as lockout from "../lockout.js";
 import type * as members from "../members.js";
 import type * as notificationActions from "../notificationActions.js";
 import type * as notificationPreferenceActions from "../notificationPreferenceActions.js";
@@ -71,10 +71,10 @@ import type * as notificationPreferences from "../notificationPreferences.js";
 import type * as notifications from "../notifications.js";
 import type * as offline from "../offline.js";
 import type * as onboarding from "../onboarding.js";
-import type * as posBootstrap from "../posBootstrap.js";
 import type * as platformAdmin from "../platformAdmin.js";
-import type * as privacyInventory from "../privacyInventory.js";
+import type * as posBootstrap from "../posBootstrap.js";
 import type * as privacyCleanup from "../privacyCleanup.js";
+import type * as privacyInventory from "../privacyInventory.js";
 import type * as products from "../products.js";
 import type * as push from "../push.js";
 import type * as refunds from "../refunds.js";
@@ -146,12 +146,12 @@ declare const fullApi: ApiFromModules<{
   "helpers/teamManagement": typeof helpers_teamManagement;
   intake: typeof intake;
   inventory: typeof inventory;
-  lockout: typeof lockout;
   inventoryAdjustments: typeof inventoryAdjustments;
   inventoryChecks: typeof inventoryChecks;
   inventoryHealth: typeof inventoryHealth;
   inventoryHealthActions: typeof inventoryHealthActions;
   inventoryIntelligence: typeof inventoryIntelligence;
+  lockout: typeof lockout;
   members: typeof members;
   notificationActions: typeof notificationActions;
   notificationPreferenceActions: typeof notificationPreferenceActions;
@@ -159,10 +159,10 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   offline: typeof offline;
   onboarding: typeof onboarding;
-  posBootstrap: typeof posBootstrap;
   platformAdmin: typeof platformAdmin;
-  privacyInventory: typeof privacyInventory;
+  posBootstrap: typeof posBootstrap;
   privacyCleanup: typeof privacyCleanup;
+  privacyInventory: typeof privacyInventory;
   products: typeof products;
   push: typeof push;
   refunds: typeof refunds;
