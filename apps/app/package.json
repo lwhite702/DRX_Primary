@@ -1,12 +1,12 @@
 {
   "name": "deelrxcrm-app",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "private": true,
   "engines": {
     "node": "22.x"
   },
   "scripts": {
-    "build": "next build --webpack",
+    "build": "prisma generate && next build --webpack",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
     "convex:typecheck": "tsc --noEmit -p convex/tsconfig.json",
