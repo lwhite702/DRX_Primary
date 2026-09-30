@@ -51,6 +51,7 @@ export function SearchView() {
         return (
           item.product_name.toLowerCase().includes(query) ||
           item.sku.toLowerCase().includes(query) ||
+          (item.barcode && item.barcode.toLowerCase().includes(query)) ||
           (item.category && item.category.toLowerCase().includes(query))
         );
       });

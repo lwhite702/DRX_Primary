@@ -11,9 +11,13 @@ import { ProgressiveSection } from "@/components/ui/progressive-section";
 import { getUnitForCategory } from "@/lib/utils/units";
 import { FractionalProductFields } from "@/components/inventory/fractional-product-fields";
 import {
+  commerceIssue,
   creationCommerceDefaults,
+  guidedCommerceProfile,
   newProductCommerceSchema,
 } from "@/lib/commerce/product-creation";
+import { calculatePurchaseUnitCost } from "@/lib/commerce/purchase-cost";
+import { type DRXUnit } from "@/lib/units/convert";
 
 import { StepperInput } from "@/components/ui/stepper-input";
 
@@ -56,6 +60,7 @@ export function InventoryForm({
     handleSubmit,
     watch,
     setValue,
+    setError,
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<Inventory>({
@@ -81,16 +86,22 @@ export function InventoryForm({
 
   const isGuided = isFirstProduct && !initialData?.id;
   const [wizardStep, setWizardStep] = React.useState(0);
+  const [manualSku, setManualSku] = React.useState(Boolean(initialData?.id || initialData?.sku));
+  const [purchaseCostInput, setPurchaseCostInput] = React.useState("");
 
   const handleNext = async () => {
     let fieldsToValidate: (keyof Inventory)[] = [];
     if (wizardStep === 0) {
-      fieldsToValidate = ["sku", "product_name"];
+      fieldsToValidate = ["product_name"];
     } else if (wizardStep === 1) {
       fieldsToValidate = ["quantity_on_hand", "reorder_level"];
     }
 
     const isValid = await trigger(fieldsToValidate);
+    if (isValid && wizardStep === 0 && manualSku && !watch("sku").trim()) {
+      setError("sku", { message: "Enter a SKU or choose automatic generation" });
+      return;
+    }
     if (isValid) {
       setWizardStep((prev) => prev + 1);
     }
@@ -110,18 +121,83 @@ export function InventoryForm({
   const sellingPrice = watch("selling_price");
   const isTaxable = watch("is_taxable");
   const commerceConfig = watch("commerce_config");
+  const purchaseBasis = watch("purchase_cost_basis");
+  const sellingUnit = (commerceConfig?.sellingUnit || watch("unit_of_measure") || "g") as DRXUnit;
+  let calculatedCost: ReturnType<typeof calculatePurchaseUnitCost> | undefined;
+  let purchaseError: string | undefined;
+  if (purchaseBasis) {
+    try {
+      calculatedCost = calculatePurchaseUnitCost(purchaseBasis, sellingUnit);
+    } catch (error) {
+      purchaseError = error instanceof Error ? error.message : "Check the purchase details";
+    }
+    if (!purchaseCostInput) purchaseError = "Enter the package purchase price";
+    if (purchaseCostInput && Math.abs(Number(purchaseCostInput) * 100 - Math.round(Number(purchaseCostInput) * 100)) > 1e-6) {
+      purchaseError = "Purchase price may use at most two decimal places";
+    }
+  }
   const invalidCommerce =
     commerceConfig &&
     !newProductCommerceSchema.safeParse(commerceConfig).success;
 
   // Calculate margins in real time
-  const cost = typeof unitCost === "number" && !isNaN(unitCost) ? unitCost : 0;
+  const cost = calculatedCost ? calculatedCost.unitCostCentsExact / 100 :
+    typeof unitCost === "number" && !isNaN(unitCost) ? unitCost : 0;
   const price =
     typeof sellingPrice === "number" && !isNaN(sellingPrice) ? sellingPrice : 0;
   const profit = price - cost;
   const marginPercentage = price > 0 ? (profit / price) * 100 : 0;
   const markupPercentage = cost > 0 ? (profit / cost) * 100 : 0;
   const userSelectedUnit = React.useRef(false);
+
+  const skuFields = (
+    <div className="space-y-2">
+      <Label>SKU</Label>
+      {!initialData?.id && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="SKU choice">
+          <Button type="button" variant={!manualSku ? "default" : "outline"} onClick={() => {
+            setManualSku(false); setValue("sku", "", { shouldDirty: true });
+          }}>Generate SKU</Button>
+          <Button type="button" variant={manualSku ? "default" : "outline"} onClick={() => setManualSku(true)}>Enter my own</Button>
+        </div>
+      )}
+      {manualSku ? <Input id="sku" aria-label="SKU" placeholder="e.g. FLOWER-01" {...register("sku")} /> :
+        <p className="text-sm text-muted-foreground">DRX will create a unique SKU when you save.</p>}
+      {errors.sku && <p role="alert" className="text-sm text-destructive">{errors.sku.message}</p>}
+      {!initialData?.id && <div className="space-y-1">
+        <Label htmlFor="barcode">Barcode (optional)</Label>
+        <Input id="barcode" placeholder="Scanner code, if different from SKU" {...register("barcode")} />
+      </div>}
+    </div>
+  );
+
+  const purchaseFields = !initialData?.id && (
+    <div className="space-y-3 rounded-lg border border-white/10 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div><Label htmlFor="purchase-basis">I buy this in a different unit</Label>
+          <p className="text-xs text-muted-foreground">Enter what you paid for the package; DRX calculates cost per {sellingUnit}.</p></div>
+        <Switch id="purchase-basis" checked={Boolean(purchaseBasis)} onCheckedChange={(enabled) => {
+          setPurchaseCostInput("");
+          setValue("purchase_cost_basis", enabled ? { costCents: 0, quantity: 1, unit: sellingUnit } : undefined, { shouldDirty: true });
+        }} />
+      </div>
+      {purchaseBasis && <>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div><Label htmlFor="purchase-cost">Purchase price ($)</Label><Input id="purchase-cost" type="number" min="0" step="0.01" defaultValue="" onChange={(event) => {
+            setPurchaseCostInput(event.target.value);
+            setValue("purchase_cost_basis.costCents", Math.round(Number(event.target.value) * 100), { shouldDirty: true, shouldValidate: true });
+          }} /></div>
+          <div><Label htmlFor="purchase-quantity">Package quantity</Label><Input id="purchase-quantity" type="number" min="0" step="any" defaultValue="1" onChange={(event) => setValue("purchase_cost_basis.quantity", Number(event.target.value), { shouldDirty: true, shouldValidate: true })} /></div>
+          <div><Label htmlFor="purchase-unit">Purchase unit</Label><select id="purchase-unit" className="h-10 w-full rounded-md border border-white/20 bg-[#222] px-2" value={purchaseBasis.unit} onChange={(event) => setValue("purchase_cost_basis.unit", event.target.value as DRXUnit, { shouldDirty: true, shouldValidate: true })}>
+            {(["g", "oz", "lb", "kg", "ml", "L", "fl_oz", "unit"] as const).map((unit) => <option key={unit} value={unit}>{unit}</option>)}
+          </select></div>
+        </div>
+        <div><Label htmlFor="actual-net">Actual net amount in {sellingUnit} (optional)</Label><Input id="actual-net" type="number" min="0" step="any" placeholder="Use if supplier weight differs from the label" defaultValue="" onChange={(event) => setValue("purchase_cost_basis.actualSellingQuantity", event.target.value ? Number(event.target.value) : undefined, { shouldDirty: true, shouldValidate: true })} /></div>
+        {calculatedCost && <p className="text-sm text-accent">{purchaseBasis.quantity} {purchaseBasis.unit} costs ${(purchaseBasis.costCents / 100).toFixed(2)} → {calculatedCost.sellingQuantity.toFixed(4).replace(/0+$/, "").replace(/\.$/, "")} {sellingUnit} → ${cost.toFixed(2)} per {sellingUnit} (display estimate; exact cost retained)</p>}
+        {purchaseError && <p role="alert" className="text-sm text-destructive">{purchaseError}</p>}
+      </>}
+    </div>
+  );
 
   // Auto-set unit based on category only if operator hasn't explicitly chosen a unit
   React.useEffect(() => {
@@ -138,7 +214,14 @@ export function InventoryForm({
   }, [category, initialData, setValue, commerceConfig]);
 
   return (
-    <form onSubmit={handleSubmit(onSuccess)} className="space-y-6 text-left">
+    <form noValidate onSubmit={handleSubmit((data) => {
+      if (manualSku && !data.sku.trim()) {
+        setError("sku", { message: "Enter a SKU or choose automatic generation" });
+        return;
+      }
+      if (data.purchase_cost_basis && (!calculatedCost || purchaseError)) return;
+      return onSuccess(data);
+    })} className="space-y-6 text-left">
       {/* Wizard Step Progress Tracker */}
       {isGuided && (
         <div className="mb-6 p-4 rounded-xl border border-white/10 bg-black/20">
@@ -172,23 +255,7 @@ export function InventoryForm({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="sku" className="flex items-center gap-1">
-                SKU *
-                <HelpTooltip content="Stock Keeping Unit - a unique barcode or code identifier used to scan/track the product." />
-              </Label>
-              <Input
-                id="sku"
-                placeholder="e.g. FLWR-BD-01"
-                className="bg-black/50 border-white/10"
-                {...register("sku")}
-              />
-              {errors.sku && (
-                <p className="text-sm text-destructive" role="alert">
-                  {errors.sku.message}
-                </p>
-              )}
-            </div>
+            {skuFields}
             <div className="space-y-2">
               <Label htmlFor="product_name" className="flex items-center gap-1">
                 Product Name *
@@ -347,7 +414,7 @@ export function InventoryForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="unit_cost" className="flex items-center gap-1 text-white font-medium">
-                Unit Cost ($)
+                Cost per {sellingUnit} ($)
                 <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses this to calculate profit.`} />
               </Label>
               <Input
@@ -355,6 +422,8 @@ export function InventoryForm({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
+                disabled={Boolean(purchaseBasis)}
+                value={purchaseBasis ? (calculatedCost ? (cost).toFixed(2) : "") : undefined}
                 className="bg-black/50 border-white/10"
                 {...register("unit_cost", { valueAsNumber: true })}
               />
@@ -388,6 +457,8 @@ export function InventoryForm({
             </div>
           </div>
 
+          {purchaseFields}
+
           {!initialData?.id && commerceConfig && (
             <>
               <FractionalProductFields
@@ -406,9 +477,10 @@ export function InventoryForm({
               />
               {(errors.commerce_config || invalidCommerce) && (
                 <p role="alert" className="text-sm text-destructive">
-                  Please ensure your selling rules and quick-tap amounts match your step size.
+                  {commerceIssue(commerceConfig) || "Check the selling rules."}
                 </p>
               )}
+              {invalidCommerce && <Button type="button" variant="outline" onClick={() => setValue("commerce_config", guidedCommerceProfile(commerceConfig.sellingUnit, commerceConfig.fractionalEnabled), { shouldDirty: true, shouldValidate: true })}>Use recommended selling rules</Button>}
             </>
           )}
 
@@ -525,6 +597,8 @@ export function InventoryForm({
               </div>
             </div>
 
+            {skuFields}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="selling_price" className="flex items-center gap-1 text-white font-medium">
@@ -548,7 +622,7 @@ export function InventoryForm({
 
               <div className="space-y-2">
                 <Label htmlFor="unit_cost" className="flex items-center gap-1 text-white font-medium">
-                  Unit Cost ($)
+                  Cost per {sellingUnit} ($)
                   <HelpTooltip content={`What you paid per ${commerceConfig?.sellingUnit || watch("unit_of_measure") || "unit"}. DRX uses this to calculate profit.`} />
                 </Label>
                 <Input
@@ -556,6 +630,8 @@ export function InventoryForm({
                   type="number"
                   step="0.01"
                   placeholder="0.00"
+                  disabled={Boolean(purchaseBasis)}
+                  value={purchaseBasis ? (calculatedCost ? cost.toFixed(2) : "") : undefined}
                   className="bg-black/50 border-white/10"
                   {...register("unit_cost", { valueAsNumber: true })}
                 />
@@ -566,6 +642,8 @@ export function InventoryForm({
                 )}
               </div>
             </div>
+
+            {purchaseFields}
 
             <div className="space-y-2">
               <Label htmlFor="quantity_on_hand" className="flex items-center gap-1 text-white font-medium">
@@ -592,28 +670,10 @@ export function InventoryForm({
           {/* PROGRESSIVE DISCLOSURE: Additional / Advanced Options */}
           <ProgressiveSection
             title="Additional Details & Advanced Rules"
-            description="SKU, location, tax, reorder alerts, strain notes, presets"
+            description="Location, tax, reorder alerts, notes, selling rules"
             defaultOpen={false}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku" className="flex items-center gap-1">
-                  SKU *
-                  <HelpTooltip content="Stock Keeping Unit - a unique identifier used to scan and track the item." />
-                </Label>
-                <Input
-                  id="sku"
-                  placeholder="e.g. FLWR-BD-01"
-                  className="bg-black/50 border-white/10"
-                  {...register("sku")}
-                />
-                {errors.sku && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errors.sku.message}
-                  </p>
-                )}
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="location" className="flex items-center gap-1">
                   Storage Location
@@ -700,9 +760,10 @@ export function InventoryForm({
                 />
                 {(errors.commerce_config || invalidCommerce) && (
                   <p role="alert" className="text-sm text-destructive">
-                    Please ensure your selling rules and quick-tap amounts match your step size.
+                    {commerceIssue(commerceConfig) || "Check the selling rules."}
                   </p>
                 )}
+                {invalidCommerce && <Button type="button" variant="outline" onClick={() => setValue("commerce_config", guidedCommerceProfile(commerceConfig.sellingUnit, commerceConfig.fractionalEnabled), { shouldDirty: true, shouldValidate: true })}>Use recommended selling rules</Button>}
               </>
             )}
 

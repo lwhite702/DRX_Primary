@@ -28,6 +28,19 @@ it("uses fresh canonical stock and price for POS lookup", async () => {
   expect(response.status).toBe(200);
   expect((await response.json()).items).toEqual([expect.objectContaining({ id: "product", quantity_on_hand: 7.25, price: 4.25 })]);
 });
+it("finds a separately entered barcode at checkout", async () => {
+  mocks.query.mockResolvedValueOnce({ userId: "owner", businessId: "business", role: "OWNER" }).mockResolvedValueOnce({
+    page: [{ _id: "product", sku: "DRX-123", barcode: "012345678905", productName: "Synthetic",
+      quantityOnHandGrams: 7, sellingPriceCents: 3500, reorderLevelGrams: 1,
+      allowFractionalWeight: true, sellingUnit: "g", quantityPrecision: 1,
+      minimumSaleQuantity: 0.5, quantityIncrement: 0.5,
+      suggestedDollarPresetsCents: [], suggestedQuantityPresets: [0.5, 1], bulkPriceTiers: [] }],
+    isDone: true, continueCursor: "end",
+  });
+  const response = await GET(new NextRequest("https://example.test/api/pos/products?search=012345678905&exact=1"));
+  expect(response.status).toBe(200);
+  expect((await response.json()).items).toEqual([expect.objectContaining({ id: "product", barcode: "012345678905" })]);
+});
 it("does not query business data without a signed-in token", async () => {
   mocks.token.mockResolvedValue(null);
   expect(await resolveAuthContext()).toEqual({ userId: null, businessId: null });

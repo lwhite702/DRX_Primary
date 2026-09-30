@@ -72,6 +72,42 @@ export function creationCommerceDefaults(
   };
 }
 
+/** A valid starting lattice for the common way each product is sold. */
+export function guidedCommerceProfile(
+  sellingUnit: string,
+  fractionalEnabled: boolean,
+): ProductCommerceConfig {
+  const base = creationCommerceDefaults(sellingUnit, fractionalEnabled);
+  if (!fractionalEnabled) {
+    return { ...base, suggestedQuantities: [1, 2, 5] };
+  }
+  const profiles: Record<string, { step: number; precision: number; quantities: number[] }> = {
+    g: { step: 0.5, precision: 1, quantities: [0.5, 1, 3.5, 7, 14, 28] },
+    oz: { step: 0.125, precision: 3, quantities: [0.125, 0.25, 0.5, 1] },
+    lb: { step: 0.25, precision: 2, quantities: [0.25, 0.5, 1] },
+  };
+  const profile = profiles[sellingUnit] ?? {
+    step: 0.5, precision: 1, quantities: [0.5, 1, 2],
+  };
+  return {
+    ...base,
+    decimalPrecision: profile.precision,
+    minimumSaleQuantity: profile.step,
+    quantityIncrement: profile.step,
+    suggestedQuantities: profile.quantities,
+  };
+}
+
+export function commerceIssue(config: ProductCommerceConfig): string | null {
+  const parsed = newProductCommerceSchema.safeParse(config);
+  if (parsed.success) return null;
+  const first = parsed.error.issues[0];
+  if (first.path.includes("suggestedQuantities")) {
+    return `A quick-tap amount must be at least ${config.minimumSaleQuantity} ${config.sellingUnit} and rise in steps of ${config.quantityIncrement} ${config.sellingUnit}. Edit the amounts or reset the selling rules.`;
+  }
+  return first.message;
+}
+
 export function parsePresetInput(value: string): number[] {
   if (!value.trim()) return [];
   return value

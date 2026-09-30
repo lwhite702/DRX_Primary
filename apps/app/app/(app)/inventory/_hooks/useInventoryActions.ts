@@ -21,6 +21,7 @@ function normalizeInventoryItem(item: InventoryApiItem): Inventory {
     id: item.id,
     business_id: String(item.business_id ?? item.businessId ?? ""),
     sku: String(item.sku ?? ""),
+    barcode: typeof item.barcode === "string" ? item.barcode : undefined,
     product_name: String(item.product_name ?? item.productName ?? ""),
     description:
       typeof item.description === "string" ? item.description : undefined,
@@ -142,10 +143,9 @@ export function useInventoryActions(businessId: string | undefined) {
 
   const handleAdd = () => {
     setEditingItem(null);
-    const randomSku = `PROD-${Math.floor(100000 + Math.random() * 900000)}`;
     setEditingItem({
       business_id: businessId || "",
-      sku: randomSku,
+      sku: "",
       quantity_on_hand: 0,
       reorder_level: 10,
       unit_of_measure: "g",

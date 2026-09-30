@@ -25,7 +25,8 @@ async function setStock(ctx: MutationCtx, product: Doc<"products">, quantity: nu
   const now = Date.now();
   if (delta > 0) {
     await ctx.db.insert("inventoryBatches", { businessId: product.businessId, productId: product._id,
-      originalQuantityGrams: delta, remainingQuantityGrams: delta, unitCostPerGramCents: product.unitCostCents,
+      originalQuantityGrams: delta, remainingQuantityGrams: delta,
+      unitCostPerGramCents: product.unitCostCentsExact ?? product.unitCostCents,
       receivedAt: now, createdBy: actor, createdAt: now, updatedAt: now });
   } else if (delta < 0) {
     // Indexed traversal is bounded; a large unresolved history fails atomically
@@ -93,10 +94,17 @@ export const updateProduct = mutation({
     }
     if (args.sellingUnit !== undefined && args.sellingUnit !== normalizeProductCommerceConfig(product).sellingUnit && product.quantityOnHandGrams !== 0) throw new Error("CONFLICT: Reconcile stock before changing its unit");
     if (args.sku !== undefined) {
-      const duplicate = await ctx.db.query("products").withIndex("by_businessId_and_sku", q => q.eq("businessId", auth.businessId).eq("sku", args.sku!.trim())).unique();
-      if (duplicate && duplicate._id !== product._id) throw new Error("ALREADY_EXISTS: SKU exists");
+      const sku = args.sku.trim();
+      const duplicateSku = await ctx.db.query("products").withIndex("by_businessId_and_sku", q => q.eq("businessId", auth.businessId).eq("sku", sku)).unique();
+      const duplicateBarcode = await ctx.db.query("products").withIndex("by_businessId_and_barcode", q => q.eq("businessId", auth.businessId).eq("barcode", sku)).unique();
+      if ((duplicateSku && duplicateSku._id !== product._id) || (duplicateBarcode && duplicateBarcode._id !== product._id)) {
+        throw new Error("ALREADY_EXISTS: Product code exists");
+      }
     }
-    const delta = args.quantity === undefined ? 0 : await setStock(ctx, { ...product, unitCostCents: args.unitCostCents ?? product.unitCostCents }, args.quantity, auth.userId);
+    const stockProduct = args.unitCostCents === undefined ? product : {
+      ...product, unitCostCents: args.unitCostCents, unitCostCentsExact: args.unitCostCents,
+    };
+    const delta = args.quantity === undefined ? 0 : await setStock(ctx, stockProduct, args.quantity, auth.userId);
     const patch: Partial<Doc<"products">> = { updatedAt: Date.now() };
     if (args.productName !== undefined) patch.productName = args.productName.trim();
     if (args.sku !== undefined) patch.sku = args.sku.trim();
@@ -110,7 +118,11 @@ export const updateProduct = mutation({
     if (args.location !== undefined) patch.location = args.location.trim() || undefined;
     if (args.isTaxable !== undefined) patch.isTaxable = args.isTaxable;
     if (args.reorderLevel !== undefined) patch.reorderLevelGrams = args.reorderLevel;
-    if (args.unitCostCents !== undefined) patch.unitCostCents = args.unitCostCents;
+    if (args.unitCostCents !== undefined) {
+      patch.unitCostCents = args.unitCostCents;
+      patch.unitCostCentsExact = args.unitCostCents;
+      patch.purchaseCostBasis = undefined;
+    }
     if (args.sellingPriceCents !== undefined) patch.sellingPriceCents = args.sellingPriceCents;
     await ctx.db.patch(product._id, patch);
     await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "PRODUCT_UPDATED", entityType: "product", entityId: product._id,

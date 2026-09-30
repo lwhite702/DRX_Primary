@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Switch } from "react-native";
+import { View, Text, TextInput, Switch, TouchableOpacity } from "react-native";
 import { COLORS, SPACING } from "../constants/theme";
 import type { ProductCommerceConfig } from "../../../app/lib/commerce/config";
 import {
-  creationCommerceDefaults,
+  commerceIssue,
+  guidedCommerceProfile,
   parsePresetInput,
 } from "../../../app/lib/commerce/product-creation";
 
@@ -16,6 +17,7 @@ export function FractionalProductFields({
 }) {
   const [dollars, setDollars] = useState("");
   const [quantities, setQuantities] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
   const update = (patch: Partial<ProductCommerceConfig>) =>
     onChange({ ...value, ...patch });
   const inputStyle = {
@@ -44,10 +46,10 @@ export function FractionalProductFields({
           value={value.fractionalEnabled}
           onValueChange={(enabled) => {
             onChange({
-              ...creationCommerceDefaults(value.sellingUnit, enabled),
+              ...guidedCommerceProfile(value.sellingUnit, enabled),
               suggestedDollarAmounts: value.suggestedDollarAmounts,
             });
-            setQuantities("");
+            setQuantities(guidedCommerceProfile(value.sellingUnit, enabled).suggestedQuantities.join(", "));
           }}
         />
       </View>
@@ -55,7 +57,10 @@ export function FractionalProductFields({
         Sell part of a unit, such as 0.5 g. Price and cost are for one full
         selling unit. This setting applies only to this product.
       </Text>
-      {value.fractionalEnabled &&
+      <TouchableOpacity accessibilityRole="button" onPress={() => setShowCustom(!showCustom)}>
+        <Text style={{ color: COLORS.accent }}>{showCustom ? "Hide custom selling rules" : "Custom selling rules"}</Text>
+      </TouchableOpacity>
+      {showCustom && value.fractionalEnabled &&
         (
           [
             ["decimalPrecision", "Decimal places (1–6)"],
@@ -74,7 +79,7 @@ export function FractionalProductFields({
             />
           </View>
         ))}
-      <Text style={{ color: COLORS.text }}>Suggested dollar amounts</Text>
+      {showCustom && <><Text style={{ color: COLORS.text }}>Suggested dollar amounts</Text>
       <TextInput
         accessibilityLabel="Suggested dollar amounts"
         style={inputStyle}
@@ -92,7 +97,7 @@ export function FractionalProductFields({
         style={inputStyle}
         placeholder={value.fractionalEnabled ? "0.5, 1, 3.5" : "1, 2, 3"}
         placeholderTextColor={COLORS.textMuted}
-        value={quantities}
+        value={quantities || value.suggestedQuantities.join(", ")}
         onChangeText={(text) => {
           setQuantities(text);
           update({ suggestedQuantities: parsePresetInput(text) });
@@ -103,6 +108,15 @@ export function FractionalProductFields({
         the minimum plus increments. Checkout suggests a quantity from the
         dollar amount.
       </Text>
+      </>}
+      {commerceIssue(value) && <View style={{ gap: 8 }}>
+        <Text accessibilityRole="alert" style={{ color: COLORS.error }}>{commerceIssue(value)}</Text>
+        <TouchableOpacity accessibilityRole="button" onPress={() => {
+          const reset = guidedCommerceProfile(value.sellingUnit, value.fractionalEnabled);
+          onChange({ ...reset, suggestedDollarAmounts: value.suggestedDollarAmounts });
+          setQuantities(reset.suggestedQuantities.join(", "));
+        }}><Text style={{ color: COLORS.accent }}>Use recommended rules</Text></TouchableOpacity>
+      </View>}
     </View>
   );
 }

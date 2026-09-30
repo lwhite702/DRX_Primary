@@ -15,6 +15,7 @@ export function catalogResponse(product: FunctionReturnType<typeof api.products.
     id: product._id,
     businessId: product.businessId,
     sku: product.sku,
+    barcode: product.barcode,
     productName: product.productName,
     description: product.description,
     category: product.category,
@@ -35,4 +36,3 @@ export function catalogResponse(product: FunctionReturnType<typeof api.products.
     updatedAt: new Date(product.updatedAt).toISOString(),
   };
 }
-

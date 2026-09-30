@@ -202,6 +202,12 @@ export default defineSchema({
     category: v.optional(v.string()),
     sellingPriceCents: v.number(), // Integer cents
     unitCostCents: v.number(), // Integer cents
+    unitCostCentsExact: v.optional(v.number()), // Preserves sub-cent purchase conversion for future stock
+    purchaseCostBasis: v.optional(v.object({
+      costCents: v.number(), quantity: v.number(), unit: v.string(),
+      actualSellingQuantity: v.optional(v.number()),
+    })),
+    barcode: v.optional(v.string()),
     isTaxable: v.optional(v.boolean()),
     location: v.optional(v.string()),
     quantityOnHandGrams: v.number(), // Weight in grams or unit count
@@ -232,6 +238,7 @@ export default defineSchema({
       "businessId",
       "legacyPrismaId",
     ])
+    .index("by_businessId_and_barcode", ["businessId", "barcode"])
     .index("by_businessId_and_sku", ["businessId", "sku"]),
 
   manualLinePolicies: defineTable({

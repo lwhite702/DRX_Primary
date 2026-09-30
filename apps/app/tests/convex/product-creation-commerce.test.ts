@@ -3,17 +3,21 @@ import { describe, expect, it } from "vitest";
 import { api } from "../../convex/_generated/api";
 import * as generatedApi from "../../convex/_generated/api";
 import * as products from "../../convex/products";
+import * as inventory from "../../convex/inventory";
 import * as onboarding from "../../convex/onboarding";
 import schema from "../../convex/schema";
 import {
   creationCommerceDefaults,
+  guidedCommerceProfile,
   newProductCommerceSchema,
   parsePresetInput,
 } from "../../lib/commerce/product-creation";
+import { calculatePurchaseUnitCost } from "../../lib/commerce/purchase-cost";
 
 const modules = {
   "_generated/api.js": async () => generatedApi,
   "products.ts": async () => products,
+  "inventory.ts": async () => inventory,
   "onboarding.ts": async () => onboarding,
 };
 const config = {
@@ -47,6 +51,97 @@ async function setup() {
 }
 
 describe("fractional product creation", () => {
+  it("uses valid recommended gram and ounce profiles", () => {
+    for (const unit of ["g", "oz", "lb", "unit"]) {
+      expect(newProductCommerceSchema.safeParse(guidedCommerceProfile(unit, true)).success).toBe(true);
+      expect(newProductCommerceSchema.safeParse(guidedCommerceProfile(unit, false)).success).toBe(true);
+    }
+  });
+
+  it("calculates purchase cost without rounding away sub-cent cost", () => {
+    const result = calculatePurchaseUnitCost({ costCents: 16000, quantity: 1, unit: "oz" }, "g");
+    expect(result.sellingQuantity).toBe(28.3495);
+    expect(result.unitCostCentsExact).toBeCloseTo(564.383851566, 6);
+    expect(calculatePurchaseUnitCost({ costCents: 16000, quantity: 1, unit: "oz", actualSellingQuantity: 28 }, "g").unitCostCentsExact).toBeCloseTo(571.4285714, 6);
+    expect(() => calculatePurchaseUnitCost({ costCents: 16000, quantity: 1, unit: "oz" }, "unit")).toThrow();
+  });
+
+  it.each([
+    { costCents: 16000, quantity: 0, unit: "oz" },
+    { costCents: 16000, quantity: 1, unit: "unit" },
+  ])("rejects invalid purchase basis as a client argument before writing: %j", async (purchaseCostBasis) => {
+    const { owner } = await setup();
+    await expect(owner.mutation(api.products.createProduct, {
+      ...input, purchaseCostBasis,
+    })).rejects.toThrow("INVALID_ARGUMENT:");
+    expect(await owner.query(api.products.listProducts, {})).toEqual([]);
+  });
+
+  it("generates tenant-scoped SKUs, keeps barcode separate, and stores exact cost for FIFO", async () => {
+    const { t, owner } = await setup();
+    const { fractionalEnabled: _fractional, bulkPriceTiers: _tiers, ...commerceConfig } = guidedCommerceProfile("g", true);
+    void _fractional;
+    void _tiers;
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "", productName: "Synthetic ounce", sellingPriceCents: 3500, unitCostCents: 0,
+      purchaseCostBasis: { costCents: 16000, quantity: 1, unit: "oz" },
+      barcode: "012345678905", initialQuantity: 28,
+      allowFractionalWeight: true,
+      commerceConfig,
+    });
+    const row = await owner.query(api.products.getCatalogProduct, {
+      businessId: (await owner.query(api.products.listProducts, {}))[0].businessId,
+      productId,
+    });
+    expect(row.sku).toMatch(/^DRX-/);
+    expect(row.barcode).toBe("012345678905");
+    expect(row.unitCostCents).toBe(564);
+    expect(row.unitCostCentsExact).toBeCloseTo(16000 / 28.3495, 8);
+    expect((await t.run((ctx) => ctx.db.query("inventoryBatches").take(10)))[0].unitCostPerGramCents)
+      .toBeCloseTo(16000 / 28.3495, 8);
+    const nextId = await owner.mutation(api.products.createProduct, {
+      sku: "", productName: "Second synthetic product", sellingPriceCents: 3500, unitCostCents: 0,
+      allowFractionalWeight: true, commerceConfig,
+    });
+    const second = await owner.query(api.products.getCatalogProduct, {
+      businessId: row.businessId, productId: nextId,
+    });
+    expect(second.sku).not.toBe(row.sku);
+    await expect(owner.mutation(api.products.createProduct, {
+      ...input, sku: "OTHER", barcode: "012345678905",
+    })).rejects.toThrow("ALREADY_EXISTS");
+  });
+  it("uses a manually edited unit cost for future batches and clears the old package basis", async () => {
+    const { t, owner } = await setup();
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "COST-EDIT", productName: "Cost edit", sellingPriceCents: 3500,
+      unitCostCents: 0, purchaseCostBasis: { costCents: 16000, quantity: 1, unit: "oz" },
+      commerceConfig: config,
+    });
+    const row = (await owner.query(api.products.listProducts, {}))[0];
+    await owner.mutation(api.inventory.updateProduct, {
+      businessId: row.businessId, productId, unitCostCents: 600, quantity: 1,
+    });
+    const updated = await t.run((ctx) => ctx.db.get(productId));
+    expect(updated).toMatchObject({ unitCostCents: 600, unitCostCentsExact: 600 });
+    expect(updated?.purchaseCostBasis).toBeUndefined();
+    expect((await t.run((ctx) => ctx.db.query("inventoryBatches").collect()))[0].unitCostPerGramCents).toBe(600);
+  });
+  it("does not let a SKU edit take another product's barcode", async () => {
+    const { owner } = await setup();
+    const firstId = await owner.mutation(api.products.createProduct, {
+      ...input, sku: "FIRST", barcode: "SCANNED-CODE",
+    });
+    const secondId = await owner.mutation(api.products.createProduct, {
+      ...input, sku: "SECOND",
+    });
+    const businessId = (await owner.query(api.products.listProducts, {}))[0].businessId;
+    await expect(owner.mutation(api.inventory.updateProduct, {
+      businessId, productId: secondId, sku: "SCANNED-CODE",
+    })).rejects.toThrow("ALREADY_EXISTS");
+    expect((await owner.query(api.products.getCatalogProduct, { businessId, productId: secondId })).sku).toBe("SECOND");
+    await owner.mutation(api.inventory.updateProduct, { businessId, productId: firstId, sku: "SCANNED-CODE" });
+  });
   it("commits precise rules and presets with the product, audit, and reciprocal suggestion", async () => {
     const { t, owner } = await setup();
     const productId = await owner.mutation(api.products.createProduct, input);
@@ -183,7 +278,7 @@ describe("fractional product creation", () => {
         .query("users")
         .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", "other"))
         .unique();
-      await ctx.db.patch(user!._id, { role: "MEMBER" });
+      await ctx.db.patch(user!._id, { role: "CASHIER" });
     });
     await expect(
       other.mutation(api.products.createProduct, input),

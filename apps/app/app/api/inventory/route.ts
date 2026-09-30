@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         businessId, paginationOpts: { numItems: Math.min(200, limit - data.length), cursor }, status,
       });
       for (const product of result.page) {
-        if (search && !product.productName.toLowerCase().includes(search) && !product.sku.toLowerCase().includes(search)) continue;
+        if (search && !product.productName.toLowerCase().includes(search) && !product.sku.toLowerCase().includes(search) && !product.barcode?.toLowerCase().includes(search)) continue;
         if (skipped++ < offset) continue;
         data.push(catalogResponse(product));
       }
@@ -49,19 +49,27 @@ export async function POST(request: NextRequest) {
       selectedRequest.headers.set("x-business-id", body.business_id);
     }
     const { client, businessId } = await intakeClient(selectedRequest);
-    if (typeof body.sku !== "string" || !body.sku.trim() || typeof body.product_name !== "string" || !body.product_name.trim()) {
-      throw new IntakeRequestError("SKU and Product Name are required");
+    if (typeof body.product_name !== "string" || !body.product_name.trim()) {
+      throw new IntakeRequestError("Product Name is required");
     }
     const commerce = body.commerce_config === undefined ? undefined : newProductCommerceSchema.safeParse(body.commerce_config);
     if (commerce && !commerce.success) throw new IntakeRequestError("Check the product selling rules");
     const config = commerce?.success ? commerce.data : undefined;
     const id = await client.mutation(api.products.createProduct, {
-      selectedBusinessId: businessId, sku: body.sku.trim(), productName: body.product_name.trim(),
+      selectedBusinessId: businessId, sku: typeof body.sku === "string" ? body.sku.trim() : "",
+      barcode: typeof body.barcode === "string" ? body.barcode.trim() || undefined : undefined,
+      productName: body.product_name.trim(),
       description: body.description || undefined, category: body.category || undefined,
       location: typeof body.location === "string" ? body.location.trim() || undefined : undefined,
       isTaxable: typeof body.is_taxable === "boolean" ? body.is_taxable : undefined,
       sellingPriceCents: moneyCents(body.selling_price, "selling price"),
-      unitCostCents: moneyCents(body.unit_cost ?? 0, "unit cost", true),
+      unitCostCents: body.purchase_cost_basis ? 0 : moneyCents(body.unit_cost ?? 0, "unit cost", true),
+      purchaseCostBasis: body.purchase_cost_basis ? {
+        costCents: moneyCents(body.purchase_cost_basis.costCents / 100, "purchase cost", true),
+        quantity: Number(body.purchase_cost_basis.quantity),
+        unit: body.purchase_cost_basis.unit,
+        actualSellingQuantity: body.purchase_cost_basis.actualSellingQuantity,
+      } : undefined,
       initialQuantity: body.quantity_on_hand ?? 0, reorderLevelGrams: body.reorder_level ?? 10,
       allowFractionalWeight: config?.fractionalEnabled ?? true,
       commerceConfig: config ? {

@@ -13,6 +13,7 @@ import {
 } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 import { canonicalCreationCommerce } from "../lib/commerce/product-creation";
+import { calculatePurchaseUnitCost } from "../lib/commerce/purchase-cost";
 import { gramFactorForUnit, type DRXUnit } from "../lib/units/convert";
 
 export const productRecord = v.object({
@@ -21,11 +22,17 @@ export const productRecord = v.object({
   businessId: v.id("businesses"),
   legacyPrismaId: v.optional(v.string()),
   sku: v.string(),
+  barcode: v.optional(v.string()),
   productName: v.string(),
   description: v.optional(v.string()),
   category: v.optional(v.string()),
   sellingPriceCents: v.number(),
   unitCostCents: v.number(),
+  unitCostCentsExact: v.optional(v.number()),
+  purchaseCostBasis: v.optional(v.object({
+    costCents: v.number(), quantity: v.number(), unit: v.string(),
+    actualSellingQuantity: v.optional(v.number()),
+  })),
   isTaxable: v.optional(v.boolean()),
   location: v.optional(v.string()),
   quantityOnHandGrams: v.number(),
@@ -381,11 +388,16 @@ export const createProduct = mutation({
   args: {
     selectedBusinessId: v.optional(v.string()),
     sku: v.string(),
+    barcode: v.optional(v.string()),
     productName: v.string(),
     description: v.optional(v.string()),
     category: v.optional(v.string()),
     sellingPriceCents: v.number(),
     unitCostCents: v.number(),
+    purchaseCostBasis: v.optional(v.object({
+      costCents: v.number(), quantity: v.number(), unit: v.string(),
+      actualSellingQuantity: v.optional(v.number()),
+    })),
     isTaxable: v.optional(v.boolean()),
     location: v.optional(v.string()),
     allowFractionalWeight: v.optional(v.boolean()),
@@ -410,18 +422,39 @@ export const createProduct = mutation({
     requirePermission(auth.userRecord, "MANAGE_INVENTORY");
     const now = Date.now();
 
-    // Check SKU uniqueness per business
-    const existing = await ctx.db
-      .query("products")
+    const requestedSku = args.sku.trim();
+    if (requestedSku && requestedSku.length > 100) {
+      throw new Error("INVALID_ARGUMENT: SKU must be at most 100 characters");
+    }
+    const findSku = (sku: string) => ctx.db.query("products")
       .withIndex("by_businessId_and_sku", (q) =>
-        q.eq("businessId", auth.businessId).eq("sku", args.sku),
-      )
-      .unique();
-
-    if (existing) {
-      throw new Error(
-        `ALREADY_EXISTS: Product SKU '${args.sku}' already exists in catalog`,
-      );
+        q.eq("businessId", auth.businessId).eq("sku", sku),
+      ).unique();
+    const findBarcode = (barcode: string) => ctx.db.query("products")
+      .withIndex("by_businessId_and_barcode", (q) =>
+        q.eq("businessId", auth.businessId).eq("barcode", barcode),
+      ).unique();
+    let sku = requestedSku;
+    if (sku) {
+      if (await findSku(sku) || await findBarcode(sku)) {
+        throw new Error(`ALREADY_EXISTS: Product code '${sku}' already exists in catalog`);
+      }
+    } else {
+      const seed = `DRX-${now.toString(36).toUpperCase()}`;
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const candidate = attempt === 0 ? seed : `${seed}-${attempt}`;
+        if (!(await findSku(candidate)) && !(await findBarcode(candidate))) { sku = candidate; break; }
+      }
+      if (!sku) throw new Error("ALREADY_EXISTS: Could not generate a unique SKU. Try again.");
+    }
+    const barcode = args.barcode?.trim() || undefined;
+    if (barcode && barcode.length > 100) {
+      throw new Error("INVALID_ARGUMENT: Barcode must be at most 100 characters");
+    }
+    if (barcode) {
+      if (await findBarcode(barcode) || (barcode !== sku && await findSku(barcode))) {
+        throw new Error("ALREADY_EXISTS: Barcode already belongs to a product in this business");
+      }
     }
 
     const allowFractionalWeight = args.allowFractionalWeight ?? true;
@@ -449,15 +482,34 @@ export const createProduct = mutation({
     }
     const location = args.location?.trim() || undefined;
     const effectiveSellingUnit = (creationCommerce?.sellingUnit ?? commerceDefaults.sellingUnit ?? "g") as DRXUnit;
+    const validUnits: DRXUnit[] = ["unit", "each", "g", "oz", "lb", "kg", "ml", "L", "fl_oz"];
+    if (!validUnits.includes(effectiveSellingUnit)) throw new Error("INVALID_ARGUMENT: Unsupported selling unit");
+    if (args.purchaseCostBasis && !validUnits.includes(args.purchaseCostBasis.unit as DRXUnit)) {
+      throw new Error("INVALID_ARGUMENT: Unsupported purchase unit");
+    }
+    let exactUnitCostCents = args.unitCostCents;
+    if (args.purchaseCostBasis) {
+      try {
+        exactUnitCostCents = calculatePurchaseUnitCost({
+          ...args.purchaseCostBasis, unit: args.purchaseCostBasis.unit as DRXUnit,
+        }, effectiveSellingUnit).unitCostCentsExact;
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "Check the purchase details";
+        throw new Error(`INVALID_ARGUMENT: ${reason}`);
+      }
+    }
     const gramFactor = gramFactorForUnit(effectiveSellingUnit);
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
-      sku: args.sku,
+      sku,
+      barcode,
       productName: args.productName,
       description: args.description,
       category: args.category || "General",
       sellingPriceCents: args.sellingPriceCents,
-      unitCostCents: args.unitCostCents,
+      unitCostCents: Math.round(exactUnitCostCents),
+      unitCostCentsExact: exactUnitCostCents,
+      purchaseCostBasis: args.purchaseCostBasis,
       isTaxable: args.isTaxable ?? true,
       location,
       quantityOnHandGrams: initialQuantity,
@@ -480,7 +532,7 @@ export const createProduct = mutation({
         productId,
         originalQuantityGrams: initialQuantity,
         remainingQuantityGrams: initialQuantity,
-        unitCostPerGramCents: args.unitCostCents,
+        unitCostPerGramCents: exactUnitCostCents,
         location,
         receivedAt: now,
         createdBy: auth.userId,
@@ -495,7 +547,7 @@ export const createProduct = mutation({
       action: "PRODUCT_CREATED",
       entityType: "product",
       entityId: productId,
-      metadata: JSON.stringify({ sku: args.sku, name: args.productName, delta: initialQuantity, reason: "Product created" }),
+      metadata: JSON.stringify({ sku, name: args.productName, delta: initialQuantity, reason: "Product created" }),
       timestamp: now,
     });
 

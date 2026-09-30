@@ -4,6 +4,8 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Easier product setup across devices** (`in progress`)
+  Choose automatic or your own SKU, set selling amounts without conflicting quick buttons, and calculate cost when you buy by the ounce but sell by the gram. Web rollout and native app verification are tracked separately.
 - **Fractional selling from product creation and onboarding** (`in progress`)
   Choose whole-unit or fractional sales while adding a product, including the guided first-product setup. Configure the selling unit, minimum, increment, precision, and suggested amounts before checkout. Cross-client persistence and device verification remain rollout gates.
 

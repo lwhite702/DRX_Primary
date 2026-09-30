@@ -20,6 +20,7 @@ import {
   creationCommerceDefaults,
   newProductCommerceSchema,
 } from "../../../../app/lib/commerce/product-creation";
+import { calculatePurchaseUnitCost } from "../../../../app/lib/commerce/purchase-cost";
 import {
   COLORS,
   SPACING,
@@ -39,6 +40,8 @@ export default function AddProductScreen() {
   // Form State
   const [productName, setProductName] = useState("");
   const [sku, setSku] = useState("");
+  const [manualSku, setManualSku] = useState(false);
+  const [barcode, setBarcode] = useState("");
   const [category, setCategory] = useState("Flower"); // Default
   const [unitOfMeasure, setUnitOfMeasure] = useState<"g" | "unit">("g");
   const [description] = useState("");
@@ -50,38 +53,25 @@ export default function AddProductScreen() {
   // Pricing State
   const [costPrice, setCostPrice] = useState("");
   const [sellingPrice, setSellingPrice] = useState(""); // Base price
+  const [usePurchaseBasis, setUsePurchaseBasis] = useState(false);
+  const [purchaseCost, setPurchaseCost] = useState("");
+  const [purchaseQuantity, setPurchaseQuantity] = useState("1");
+  const [purchaseUnit, setPurchaseUnit] = useState<"oz" | "g" | "lb" | "unit">("oz");
+  const [actualNet, setActualNet] = useState("");
 
   // Tiered Pricing State
   const [tiers, setTiers] = useState<Partial<BulkPricingTier>[]>([]);
 
-  // Bulk acquisition calculation states
-  const [bulkCost, setBulkCost] = useState("");
-  const [bulkWeight, setBulkWeight] = useState("");
-  const [bulkRetail, setBulkRetail] = useState("");
-
-  const calculatePerGram = (
-    costVal: string,
-    weightVal: string,
-    target: "cost" | "retail" | "both",
-    retailVal?: string,
-  ) => {
-    const w = parseFloat(weightVal);
-    if (!w || isNaN(w) || w <= 0) return;
-
-    if (target === "cost" || target === "both") {
-      const c = parseFloat(costVal);
-      if (!isNaN(c) && c >= 0) {
-        setCostPrice((c / w).toFixed(2));
-      }
-    }
-
-    if (target === "retail" || target === "both") {
-      const r = parseFloat(retailVal !== undefined ? retailVal : bulkRetail);
-      if (!isNaN(r) && r >= 0) {
-        setSellingPrice((r / w).toFixed(2));
-      }
-    }
-  };
+  let purchasePreview: ReturnType<typeof calculatePurchaseUnitCost> | undefined;
+  if (usePurchaseBasis && purchaseCost && purchaseQuantity) {
+    try {
+      purchasePreview = calculatePurchaseUnitCost({
+        costCents: Math.round(Number(purchaseCost) * 100),
+        quantity: Number(purchaseQuantity), unit: purchaseUnit,
+        actualSellingQuantity: actualNet ? Number(actualNet) : undefined,
+      }, unitOfMeasure);
+    } catch { /* Show a validation message when saving. */ }
+  }
 
   // Helpers for tooltips/info alerts on mobile
   const showHelp = (title: string, message: string) => {
@@ -118,20 +108,13 @@ export default function AddProductScreen() {
   );
 
   // Dynamic profit calculations
-  const parsedCost = parseFloat(costPrice) || 0;
+  const parsedCost = purchasePreview ? purchasePreview.unitCostCentsExact / 100 : parseFloat(costPrice) || 0;
   const parsedPrice = parseFloat(sellingPrice) || 0;
   const calculatedProfit = parsedPrice - parsedCost;
   const calculatedMargin =
     parsedPrice > 0 ? (calculatedProfit / parsedPrice) * 100 : 0;
   const calculatedMarkup =
     parsedCost > 0 ? (calculatedProfit / parsedCost) * 100 : 0;
-
-  const handleAddTier = () => {
-    setTiers([
-      ...tiers,
-      { min_weight_grams: 0, price_per_gram: 0, tier_name: "" },
-    ]);
-  };
 
   const updateTier = (
     index: number,
@@ -150,10 +133,10 @@ export default function AddProductScreen() {
   };
 
   const handleSave = async () => {
-    if (!productName.trim() || !sku.trim() || !sellingPrice || !costPrice) {
+    if (!productName.trim() || (manualSku && !sku.trim()) || !sellingPrice || (!usePurchaseBasis && !costPrice)) {
       Alert.alert(
         "Error",
-        "Please fill in all required fields (Name, SKU, Cost, Price)",
+        "Enter a product name, selling price, and cost. Enter a SKU if you chose your own.",
       );
       return;
     }
@@ -169,7 +152,11 @@ export default function AddProductScreen() {
           parsed.error.issues[0]?.message || "Check the selling rules",
         );
       const price = Number(sellingPrice),
-        cost = Number(costPrice);
+        cost = usePurchaseBasis ? 0 : Number(costPrice);
+      if (usePurchaseBasis && !purchasePreview) throw new Error("Check the purchase price, package quantity, and units");
+      if (usePurchaseBasis && Math.abs(Number(purchaseCost) * 100 - Math.round(Number(purchaseCost) * 100)) > 1e-6) {
+        throw new Error("Purchase price must use at most two decimal places");
+      }
       if (
         !Number.isFinite(price) ||
         price <= 0 ||
@@ -198,12 +185,18 @@ export default function AddProductScreen() {
         suggestedQuantities,
       };
       await createProduct({
-        sku: sku.trim(),
+        sku: manualSku ? sku.trim() : "",
+        barcode: barcode.trim() || undefined,
         productName: productName.trim(),
         category,
         description: description || undefined,
         sellingPriceCents: Math.round(price * 100),
         unitCostCents: Math.round(cost * 100),
+        purchaseCostBasis: usePurchaseBasis ? {
+          costCents: Math.round(Number(purchaseCost) * 100),
+          quantity: Number(purchaseQuantity), unit: purchaseUnit,
+          actualSellingQuantity: actualNet ? Number(actualNet) : undefined,
+        } : undefined,
         reorderLevelGrams: Number(minStock),
         allowFractionalWeight: fractionalEnabled,
         commerceConfig,
@@ -411,17 +404,20 @@ export default function AddProductScreen() {
 
             {renderLabel(
               "SKU",
-              true,
+              false,
               "SKU",
-              "Stock Keeping Unit - a unique barcode or code ID. Tap to type or scan a barcode to assign.",
+              "DRX can generate a unique SKU for this business. A barcode is a separate optional code.",
             )}
-            <TextInput
-              style={styles.input}
-              placeholder="Scan or type SKU"
-              value={sku}
-              onChangeText={setSku}
-              placeholderTextColor={COLORS.textMuted}
-            />
+            <View style={styles.segmentControl}>
+              {[false, true].map((manual) => <TouchableOpacity key={String(manual)}
+                style={[styles.segment, manualSku === manual && styles.segmentActive]}
+                accessibilityRole="radio" accessibilityState={{ selected: manualSku === manual }}
+                onPress={() => setManualSku(manual)}><Text style={[styles.segmentText, manualSku === manual && styles.segmentTextActive]}>{manual ? "Enter my own" : "Generate SKU"}</Text></TouchableOpacity>)}
+            </View>
+            {manualSku ? <TextInput style={styles.input} accessibilityLabel="SKU" placeholder="e.g. FLOWER-01" value={sku} onChangeText={setSku} placeholderTextColor={COLORS.textMuted} /> :
+              <Text style={{ color: COLORS.textSecondary }}>DRX will create a unique SKU when you save.</Text>}
+            {renderLabel("Barcode (optional)")}
+            <TextInput style={styles.input} accessibilityLabel="Barcode" placeholder="Scanner code, if different from SKU" value={barcode} onChangeText={setBarcode} placeholderTextColor={COLORS.textMuted} />
           </View>
 
           {/* Unit & Stock */}
@@ -519,164 +515,65 @@ export default function AddProductScreen() {
             <View style={styles.row}>
               <View style={{ flex: 1, marginRight: SPACING.md }}>
                 {renderLabel(
-                  "Cost Price ($/g)",
-                  true,
+                  `Cost per ${unitOfMeasure} ($)`,
+                  !usePurchaseBasis,
                   "Cost Price",
-                  "What you paid to acquire this product per gram. Crucial for calculating your actual profit margins.",
+                  `What you paid per ${unitOfMeasure}. Or calculate it from a package below.`,
                 )}
                 <TextInput
                   style={styles.input}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
-                  value={costPrice}
-                  onChangeText={(val) => {
-                    setCostPrice(val);
-                    setBulkCost(""); // Reset bulk helper if manually edited
-                  }}
+                  editable={!usePurchaseBasis}
+                  value={usePurchaseBasis ? (purchasePreview ? (purchasePreview.unitCostCentsExact / 100).toFixed(2) : "") : costPrice}
+                  onChangeText={setCostPrice}
                   placeholderTextColor={COLORS.textMuted}
                 />
               </View>
               <View style={{ flex: 1 }}>
                 {renderLabel(
-                  "Base Price ($/g)",
+                  `Selling price per ${unitOfMeasure} ($)`,
                   true,
                   "Base Price",
-                  "The base retail price you charge customers per gram. Click 'AI Suggest' for markup recommendations.",
+                  `What customers pay for one full ${unitOfMeasure}.`,
                 )}
                 <TextInput
                   style={[styles.input, { borderColor: COLORS.accent }]}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
                   value={sellingPrice}
-                  onChangeText={(val) => {
-                    setSellingPrice(val);
-                    setBulkRetail(""); // Reset bulk helper if manually edited
-                  }}
+                  onChangeText={setSellingPrice}
                   placeholderTextColor={COLORS.textMuted}
                 />
               </View>
             </View>
 
-            {/* Bulk Cost & Price Calculator */}
-            {unitOfMeasure === "g" && (
-              <View
-                style={{
-                  backgroundColor: "rgba(204, 255, 0, 0.04)",
-                  padding: SPACING.sm + 2,
-                  borderRadius: BORDER_RADIUS.sm,
-                  borderWidth: 1,
-                  borderColor: "rgba(204, 255, 0, 0.15)",
-                  marginBottom: SPACING.md,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: COLORS.accent,
-                    fontWeight: "700",
-                    marginBottom: 6,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Bulk Calculator Helper
-                </Text>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: COLORS.textSecondary,
-                        marginBottom: 2,
-                      }}
-                    >
-                      Bulk Cost ($)
-                    </Text>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        {
-                          marginBottom: 0,
-                          paddingVertical: 4,
-                          paddingHorizontal: 6,
-                          fontSize: 12,
-                          height: 32,
-                        },
-                      ]}
-                      placeholder="e.g. 150"
-                      keyboardType="decimal-pad"
-                      value={bulkCost}
-                      onChangeText={(val) => {
-                        setBulkCost(val);
-                        calculatePerGram(val, bulkWeight, "cost");
-                      }}
-                      placeholderTextColor={COLORS.textMuted}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: COLORS.textSecondary,
-                        marginBottom: 2,
-                      }}
-                    >
-                      Bulk Weight (g)
-                    </Text>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        {
-                          marginBottom: 0,
-                          paddingVertical: 4,
-                          paddingHorizontal: 6,
-                          fontSize: 12,
-                          height: 32,
-                        },
-                      ]}
-                      placeholder="e.g. 28"
-                      keyboardType="decimal-pad"
-                      value={bulkWeight}
-                      onChangeText={(val) => {
-                        setBulkWeight(val);
-                        calculatePerGram(bulkCost, val, "both");
-                      }}
-                      placeholderTextColor={COLORS.textMuted}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: COLORS.textSecondary,
-                        marginBottom: 2,
-                      }}
-                    >
-                      Bulk Retail ($)
-                    </Text>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        {
-                          marginBottom: 0,
-                          paddingVertical: 4,
-                          paddingHorizontal: 6,
-                          fontSize: 12,
-                          height: 32,
-                        },
-                      ]}
-                      placeholder="e.g. 450"
-                      keyboardType="decimal-pad"
-                      value={bulkRetail}
-                      onChangeText={(val) => {
-                        setBulkRetail(val);
-                        calculatePerGram(bulkCost, bulkWeight, "retail", val);
-                      }}
-                      placeholderTextColor={COLORS.textMuted}
-                    />
-                  </View>
-                </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Purchase cost</Text>
+              <View style={styles.segmentControl}>
+                {[false, true].map((basis) => <TouchableOpacity key={String(basis)}
+                  style={[styles.segment, usePurchaseBasis === basis && styles.segmentActive]}
+                  accessibilityRole="radio" accessibilityState={{ selected: usePurchaseBasis === basis }}
+                  onPress={() => setUsePurchaseBasis(basis)}><Text style={[styles.segmentText, usePurchaseBasis === basis && styles.segmentTextActive]}>{basis ? "From package" : `Per ${unitOfMeasure}`}</Text></TouchableOpacity>)}
               </View>
-            )}
+              {usePurchaseBasis && <>
+                {renderLabel("What did you pay? ($)")}
+                <TextInput style={styles.input} accessibilityLabel="Purchase price" keyboardType="decimal-pad" placeholder="160.00" value={purchaseCost} onChangeText={setPurchaseCost} placeholderTextColor={COLORS.textMuted} />
+                {renderLabel("How much did you buy?")}
+                <TextInput style={styles.input} accessibilityLabel="Purchase quantity" keyboardType="decimal-pad" value={purchaseQuantity} onChangeText={setPurchaseQuantity} />
+                <View style={styles.segmentControl}>
+                  {(unitOfMeasure === "g" ? ["g", "oz", "lb"] : ["unit"]).map((unit) => <TouchableOpacity key={unit}
+                    style={[styles.segment, purchaseUnit === unit && styles.segmentActive]}
+                    accessibilityRole="radio" accessibilityState={{ selected: purchaseUnit === unit }}
+                    onPress={() => setPurchaseUnit(unit as typeof purchaseUnit)}><Text style={[styles.segmentText, purchaseUnit === unit && styles.segmentTextActive]}>{unit}</Text></TouchableOpacity>)}
+                </View>
+                {renderLabel(`Actual net amount (${unitOfMeasure}, optional)`)}
+                <TextInput style={styles.input} accessibilityLabel="Actual net amount" keyboardType="decimal-pad" placeholder="Use if supplier weight differs" value={actualNet} onChangeText={setActualNet} placeholderTextColor={COLORS.textMuted} />
+                {purchasePreview && <Text style={{ color: COLORS.accent }}>
+                  ${Number(purchaseCost).toFixed(2)} for {purchasePreview.sellingQuantity.toFixed(4)} {unitOfMeasure} → ${(purchasePreview.unitCostCentsExact / 100).toFixed(2)} per {unitOfMeasure}. Exact cost is retained for stock accounting.
+                </Text>}
+              </>}
+            </View>
 
             {/* Dynamic Profit & Margin Stats */}
             <View
