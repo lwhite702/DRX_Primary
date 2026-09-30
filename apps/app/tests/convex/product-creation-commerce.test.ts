@@ -66,6 +66,17 @@ describe("fractional product creation", () => {
     expect(() => calculatePurchaseUnitCost({ costCents: 16000, quantity: 1, unit: "oz" }, "unit")).toThrow();
   });
 
+  it.each([
+    { costCents: 16000, quantity: 0, unit: "oz" },
+    { costCents: 16000, quantity: 1, unit: "unit" },
+  ])("rejects invalid purchase basis as a client argument before writing: %j", async (purchaseCostBasis) => {
+    const { owner } = await setup();
+    await expect(owner.mutation(api.products.createProduct, {
+      ...input, purchaseCostBasis,
+    })).rejects.toThrow("INVALID_ARGUMENT:");
+    expect(await owner.query(api.products.listProducts, {})).toEqual([]);
+  });
+
   it("generates tenant-scoped SKUs, keeps barcode separate, and stores exact cost for FIFO", async () => {
     const { t, owner } = await setup();
     const { fractionalEnabled: _fractional, bulkPriceTiers: _tiers, ...commerceConfig } = guidedCommerceProfile("g", true);

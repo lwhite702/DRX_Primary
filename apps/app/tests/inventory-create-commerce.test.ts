@@ -53,6 +53,12 @@ describe("Convex catalog adapter", () => {
     expect(response.status).toBe(409);
     expect(JSON.stringify(await response.json())).not.toContain("private identifier");
   });
+  it("returns purchase-basis validation failures as 400 without leaking provider details", async () => {
+    mocks.mutation.mockRejectedValue(new Error("INVALID_ARGUMENT: Purchase and selling units must measure the same kind of product"));
+    const response = await POST(request({ purchase_cost_basis: { costCents: 16000, quantity: 1, unit: "unit" } }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Check the intake values and try again" });
+  });
   it("reads canonical stock through bounded pages, preserving search and offset", async () => {
     mocks.query.mockResolvedValueOnce({ page: [product], continueCursor: "next", isDone: false })
       .mockResolvedValueOnce({ page: [{ ...product, _id: "second" }], continueCursor: "end", isDone: true });

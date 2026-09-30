@@ -487,11 +487,17 @@ export const createProduct = mutation({
     if (args.purchaseCostBasis && !validUnits.includes(args.purchaseCostBasis.unit as DRXUnit)) {
       throw new Error("INVALID_ARGUMENT: Unsupported purchase unit");
     }
-    const exactUnitCostCents = args.purchaseCostBasis
-      ? calculatePurchaseUnitCost({
+    let exactUnitCostCents = args.unitCostCents;
+    if (args.purchaseCostBasis) {
+      try {
+        exactUnitCostCents = calculatePurchaseUnitCost({
           ...args.purchaseCostBasis, unit: args.purchaseCostBasis.unit as DRXUnit,
-        }, effectiveSellingUnit).unitCostCentsExact
-      : args.unitCostCents;
+        }, effectiveSellingUnit).unitCostCentsExact;
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "Check the purchase details";
+        throw new Error(`INVALID_ARGUMENT: ${reason}`);
+      }
+    }
     const gramFactor = gramFactorForUnit(effectiveSellingUnit);
     const productId = await ctx.db.insert("products", {
       businessId: auth.businessId,
