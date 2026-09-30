@@ -1,20 +1,33 @@
 # Gemini capture brief for DRX Help Center screenshots
 
-Use this brief to capture current DRX product screens for the Mintlify Help Center. These are product screenshots, not generated interface concepts. Gemini may drive the browser and crop the result; it must not invent a DRX screen, label, balance, workflow, or feature.
+Capture the current DRX product for the Mintlify Help Center. These images explain real tasks to store owners and staff. They are evidence of the product, not marketing mockups. Gemini may use the browser to capture and crop a screen; it must not generate or redraw a product interface, change a label, or invent a balance, workflow, or feature.
+
+The current redesign uses a clear, dark DRX interface with the official DRX slash wordmark, white text, restrained lime accents, and quiet neutral surfaces. Keep the product itself exactly as it appears in the verified build. Do not recolor, rearrange, or retouch controls to make a capture look more branded. Do not add a second logo, headline, caption, glow, device frame, browser window, or screen inside another screen.
+
+When an article needs a supporting visual rather than a literal step-by-step screenshot, use a close crop of one or more authentic UI areas. A few separated panels may sit together as a simple collage, but they must still come from the current app and retain their original labels and values. Do not turn the collage into a fake demo screen. Keep instructional diagrams separate from product captures and use their existing editable sources.
 
 ## Capture rules
 
-- Capture the current beta from the commit recorded in the final manifest.
+- Capture the current, verified product build. Record its exact commit in the final manifest. A route or component in the repository alone does not prove that a screen is available to users.
 - Use the dedicated fictional documentation business. Never use a real customer, worker, balance, address, product, transaction, credential, verification code, or regulated-retail record.
-- Use neutral fictional data: `Northstar Demo Shop`, `Sam Reed`, `ALP-101`, and ordinary boxed goods.
-- Desktop captures use Chromium at 1440×1024. Mobile validation uses 390×844.
+- Use the dedicated fictional documentation business and the neutral sample records already approved for it: `Northstar Demo Shop`, `Sam Reed`, `ALP-101`, and ordinary boxed goods. Never add a real-looking phone number, address, credential, verification code, or regulated-retail item.
+- Capture desktop screens in Chromium at 1440×1024. Check responsive behavior at 390×844. If a documented task differs on mobile, capture and record that actual mobile state; do not squeeze the desktop screen into a phone frame.
 - Wait for fonts, totals, and loading states. Disable animation.
 - Remove browser chrome, development tools, notifications, and unrelated navigation.
-- Crop to the page identity and action being explained. Keep visible text readable at an article width of about 760 px.
+- Crop to the page identity and the action being explained. Keep visible text readable at an article width of about 760 px. Prefer a clear close crop over a tiny full-page view.
 - Export PNG in sRGB. Keep each file under 700 KB.
-- Do not blur private data. Replace it before capture.
+- Do not blur private data. Replace it with the approved fictional fixture before capture. If private data appears, do not use the image.
 - Do not add arrows or numbered markers unless the article repeats the same numbers immediately below the image.
-- If the verified screen differs from this brief, stop and record the difference. The live UI and current source are authoritative.
+- Do not add visual effects, lime glows, decorative gradients, extra status badges, or alternate brand marks to a product capture. Use only colors, status indicators, totals, and controls already visible in the verified app.
+- If the verified screen differs from this brief, stop and record the difference. Check both the current source and the running product. The running product is the capture source; current source helps confirm the behavior and exact labels.
+
+## DRX visual direction
+
+- Keep the DRX mark and wordmark exactly as shipped. Do not recreate the slash mark with text or substitute another logo.
+- Preserve the product palette as rendered: near-black and charcoal surfaces, clear white text, and DRX lime (`#CCFF00`) for existing accents. Do not add color to controls that are not lime in the app.
+- Keep screenshots crisp, calm, and easy to scan. Avoid dramatic lighting, glow, fake depth, perspective tilt, decorative framing, and visual clutter.
+- If a genuine capture is placed beside another genuine capture, crop each to its task and leave enough separation to read them as distinct pieces of the app. Do not combine them into a simulated dashboard or device mockup.
+- Do not use marketing-only vectors, fixture illustrations, or generated UI as proof that a workflow is available. The redesigned marketing hero and capability cards may use illustrative UI compositions; Help Center instructions must use verified product captures or clearly labeled current-source fixtures.
 
 ## Required product captures
 
@@ -54,7 +67,7 @@ After Mintlify deploys the branch, capture these four review images separately f
 3. Quick Sale checkout at 390×844 in dark mode.
 4. Open mobile navigation at 390×844.
 
-The review must show readable lime accents, clear focus states, no clipped images, no horizontal scrolling, and enough contrast in both themes.
+The review must show the same DRX design language across the help home, articles, and navigation. Check readable lime accents, clear focus states, no clipped images, no horizontal scrolling, and enough contrast in both themes. Article headers and diagrams should sit naturally in the page; product screenshots must remain unaltered evidence and stay readable on mobile.
 
 ## Handoff record
 
