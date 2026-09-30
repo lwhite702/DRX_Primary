@@ -127,6 +127,21 @@ describe("fractional product creation", () => {
     expect(updated?.purchaseCostBasis).toBeUndefined();
     expect((await t.run((ctx) => ctx.db.query("inventoryBatches").collect()))[0].unitCostPerGramCents).toBe(600);
   });
+  it("does not let a SKU edit take another product's barcode", async () => {
+    const { owner } = await setup();
+    const firstId = await owner.mutation(api.products.createProduct, {
+      ...input, sku: "FIRST", barcode: "SCANNED-CODE",
+    });
+    const secondId = await owner.mutation(api.products.createProduct, {
+      ...input, sku: "SECOND",
+    });
+    const businessId = (await owner.query(api.products.listProducts, {}))[0].businessId;
+    await expect(owner.mutation(api.inventory.updateProduct, {
+      businessId, productId: secondId, sku: "SCANNED-CODE",
+    })).rejects.toThrow("ALREADY_EXISTS");
+    expect((await owner.query(api.products.getCatalogProduct, { businessId, productId: secondId })).sku).toBe("SECOND");
+    await owner.mutation(api.inventory.updateProduct, { businessId, productId: firstId, sku: "SCANNED-CODE" });
+  });
   it("commits precise rules and presets with the product, audit, and reciprocal suggestion", async () => {
     const { t, owner } = await setup();
     const productId = await owner.mutation(api.products.createProduct, input);

@@ -94,8 +94,12 @@ export const updateProduct = mutation({
     }
     if (args.sellingUnit !== undefined && args.sellingUnit !== normalizeProductCommerceConfig(product).sellingUnit && product.quantityOnHandGrams !== 0) throw new Error("CONFLICT: Reconcile stock before changing its unit");
     if (args.sku !== undefined) {
-      const duplicate = await ctx.db.query("products").withIndex("by_businessId_and_sku", q => q.eq("businessId", auth.businessId).eq("sku", args.sku!.trim())).unique();
-      if (duplicate && duplicate._id !== product._id) throw new Error("ALREADY_EXISTS: SKU exists");
+      const sku = args.sku.trim();
+      const duplicateSku = await ctx.db.query("products").withIndex("by_businessId_and_sku", q => q.eq("businessId", auth.businessId).eq("sku", sku)).unique();
+      const duplicateBarcode = await ctx.db.query("products").withIndex("by_businessId_and_barcode", q => q.eq("businessId", auth.businessId).eq("barcode", sku)).unique();
+      if ((duplicateSku && duplicateSku._id !== product._id) || (duplicateBarcode && duplicateBarcode._id !== product._id)) {
+        throw new Error("ALREADY_EXISTS: Product code exists");
+      }
     }
     const stockProduct = args.unitCostCents === undefined ? product : {
       ...product, unitCostCents: args.unitCostCents, unitCostCentsExact: args.unitCostCents,
