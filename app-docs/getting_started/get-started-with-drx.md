@@ -3,7 +3,7 @@ title: "Get started with DRX"
 description: "Set up your owner account and business before recording your first sale."
 ---
 
-![A dark DRX path connects workspace setup, organized Inventory, and a saved sale record.](../_assets/help-center/headers/getting-started.webp)
+![A dark DRX path connects business setup, organized products, and a saved sale record.](../_assets/help-center/headers/getting-started.webp)
 
 ## Before you start
 
@@ -24,12 +24,12 @@ Have your business name, location, currency, time zone, and approved tax setting
 2. Enter **Full name** and **Business name**. Use **Continue** to move through setup.
 3. Choose your business type. Check **Location name**, **City**, **State or region**, and **Country**.
 4. Check **Currency** and **Time zone**. If you collect sales tax, choose **Yes** and enter your approved **Tax rate (%)**.
-5. Choose whether to track Inventory. Choose **Invite someone now** only if you are ready to send an invitation; otherwise choose **I’ll do this later**.
-6. At **Review your setup**, use **Edit** for corrections. Choose **Create My Workspace** once and wait for the result.
+5. Choose whether to track stock. Choose **Invite someone now** only if you are ready to send an invitation; otherwise choose **I’ll do this later**.
+6. At **Review your setup**, use **Edit** for corrections. Choose **Create My Workspace** once to create the Business, then wait for the result.
 
 ## What happens next
 
-Open **Settings** and review your business details and privacy settings before adding customer information. Privacy choices can permanently delete qualifying inactive records when retention cleanup runs. Read [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807) first.
+Open **Settings** and review your business details and privacy settings before adding customer information. Privacy choices can permanently delete qualifying inactive records when retention cleanup runs. Read [Privacy and minimal data](../feature_overview/feature-overview-privacy-controls.md) first.
 
 Use **Products** to add products and check stock. Use **New sale** for checkout and **Sales** to check saved sales. On a narrow web screen, open **More** for customers, payments, reports, and settings available to your account. Desktop web keeps the main navigation beside your work. Phone apps may arrange these controls differently.
 
@@ -39,6 +39,6 @@ Read the error and correct the field it names. Keep the setup page open while sa
 
 ## Related articles
 
-- [Inventory intake and adjustments](https://drx.featurebase.app/en/help/articles/6300641)
-- [Switch workspaces and check access](https://drx.featurebase.app/en/help/articles/4735029)
-- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)
+- [Add stock and fix a count](../feature_overview/inventory-intake-and-adjustments.md)
+- [Switch businesses and check access](../feature_overview/switch-workspaces.md)
+- [Help and support](../feature_overview/help-and-support.md)

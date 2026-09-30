@@ -1,28 +1,28 @@
 ---
 title: "Purchase orders (beta)"
-description: "Keep expected supplier orders separate from Inventory you have actually received."
+description: "Keep expected supplier orders separate from stock you have actually received."
 ---
 
 ## Check availability first
 
 Purchase orders are listed as beta, but the current web navigation does not provide a verified purchase-order workflow. This guide does not announce a purchasing screen on web, iPhone, or Android.
 
-Use your business's approved purchasing process for supplier orders. Do not record an expected delivery as available Inventory. Ask private support before relying on a purchase-order feature offered in a separate test.
+Use your business's approved purchasing process for supplier orders. Do not record an expected delivery as available stock. Ask private support before relying on a purchase-order feature offered in a separate test.
 
 ## Record goods that have arrived
 
 1. Count the delivered goods and compare them with your supplier order outside DRX.
 2. Record shortages, damage, substitutions, and cost differences through your approved purchasing process.
-3. In DRX **Inventory**, use **Add stock** for the goods actually received.
+3. In DRX **Products**, use **Add stock** for the goods actually received.
 4. Check the product, received amount, unit, **Total Cost**, and any supplier or delivery-cost information.
 5. Submit once and check the saved movement and any approval message before recording more goods.
 
-Use [Inventory intake and adjustments](https://drx.featurebase.app/en/help/articles/6300641) for the full receiving procedure.
+Use [Add stock and fix a count](inventory-intake-and-adjustments.md) for the full receiving procedure.
 
 ## What happens next
 
-Compare the saved intake with the physical delivery. An order in your purchasing records does not prove that goods arrived or that DRX Inventory changed. Do not enter the same delivery in two receiving workflows.
+Compare the saved stock record with the physical delivery. An order in your purchasing records does not prove that goods arrived or that DRX stock changed. Do not enter the same delivery in two receiving workflows.
 
 ## Related articles
 
-- [Troubleshoot inventory and audit](https://drx.featurebase.app/en/help/articles/0272622)
+- [Troubleshoot stock and audit](../troubleshooting/troubleshoot-inventory-and-audit.md)

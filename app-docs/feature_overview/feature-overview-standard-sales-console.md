@@ -5,7 +5,7 @@ description: "Find the current sales screens and record delivery details without
 
 ## Before you start
 
-The old Standard Sales console instructions no longer match the web beta. Use **Point of Sale** to create a sale, **Orders & Receipts** to inspect it, and **Deliveries** for enabled delivery work.
+The old Standard Sales console instructions no longer match the web beta. Use **New sale** to create a sale, **Sales** to inspect it, and **Deliveries** for enabled delivery work.
 
 Confirm delivery access, the actual vendor quote, and who will pay the fee. DRX records delivery work; it does not automatically book an Uber or other vendor order.
 
@@ -15,14 +15,14 @@ Illustrative screen with fictional data.
 
 ## Include delivery in a sale
 
-1. Build the sale in **Point of Sale**, then continue to payment.
+1. Build the sale in **New sale**, then continue to payment.
 2. In **Delivery**, turn on **Include delivery**.
 3. Enter **Delivery address** and the actual **Uber/vendor quote**. Do not put delivery details in public feedback or unrelated notes.
 4. Under **Who pays the vendor fee?**, choose **Charge customer** or **Business absorbs** according to the approved arrangement.
 5. Wait for the total to update. Review any **Delivery charged**, **Delivery tax**, or **Delivery absorbed** amount.
 6. Complete the sale once, then confirm its saved order and delivery task.
 
-For the complete payment procedure, use [Quick Sale checkout](https://drx.featurebase.app/en/help/articles/0236106).
+For the complete payment procedure, use [Quick Sale checkout](quick-sale-checkout.md).
 
 ## Update an enabled delivery task
 
@@ -40,4 +40,4 @@ Delivery is beta. If the controls are unavailable or a save is uncertain, stop a
 
 ## Related articles
 
-- [Troubleshoot checkout and payments](https://drx.featurebase.app/en/help/articles/3230948)
+- [Troubleshoot checkout and payments](../troubleshooting/troubleshoot-checkout-and-payments.md)

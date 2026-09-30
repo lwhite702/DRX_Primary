@@ -142,7 +142,7 @@
         }
       ],
       "baselineBodySha256": "c40b4647dac2399e704744683062731a4e8787a7bcc4e86d7dec4622580ee2db",
-      "title": "Dashboard and reports",
+      "title": "Home and reports",
       "description": "Check saved sales, report totals, and the period each number covers.",
       "action": "update",
       "publicSlug": "2502678-dashboard-and-reports",
@@ -249,7 +249,7 @@
         }
       ],
       "baselineBodySha256": "e89b4f6fa04f88dddacb7c86ef05c512a4201dec8b8d90cc5cf35bc95c8c948d",
-      "title": "Troubleshoot dashboard and reports",
+      "title": "Troubleshoot Home and reports",
       "description": "Check missing totals or report differences without changing the underlying records.",
       "action": "update",
       "publicSlug": "3489602-troubleshoot-dashboard-and-reports",
@@ -361,7 +361,7 @@
         }
       ],
       "baselineBodySha256": "b365bba830428a3265ad1edfc0c0de0d78fcebf9c6e4350860ccd05bfe10cb9a",
-      "title": "Troubleshoot workspaces and access",
+      "title": "Troubleshoot business access",
       "description": "Recover from an access problem without creating duplicate accounts or using someone else’s login.",
       "action": "update",
       "publicSlug": "3948745-troubleshoot-workspaces-and-access",
@@ -412,7 +412,7 @@
         }
       ],
       "baselineBodySha256": "658c00875a816b42487b3d0c4ed7342ce024b3103a995343fb0cc03403a31c90",
-      "title": "Switch workspaces and check access",
+      "title": "Switch businesses and check access",
       "description": "Choose the correct business and give each team member only the access their work needs.",
       "action": "update",
       "publicSlug": "4735029-switch-workspaces-and-check-access",
@@ -463,7 +463,7 @@
         }
       ],
       "baselineBodySha256": "3a1d8e7e2839cef4b2118ca322ad4c5fe7f352cf45553a7762b6df4975e5b563",
-      "title": "Customers and store credit",
+      "title": "Customers and Payments",
       "description": "Keep customer records minimal and record payments against the correct open balance.",
       "action": "update",
       "publicSlug": "1831819-customers-and-store-credit",
@@ -595,8 +595,8 @@
         }
       ],
       "baselineBodySha256": "5a571415a3715736453565fcc41a1ea56ea498aacf2dec9cf9c674c2b7204902",
-      "title": "Inventory intake and adjustments",
-      "description": "Add products, record goods received, and correct a verified count in Inventory.",
+      "title": "Add stock and fix a count",
+      "description": "Add products and stock, then correct a verified stock count.",
       "action": "update",
       "publicSlug": "6300641-inventory-intake-and-adjustments",
       "baselinePublicFingerprint": "4929ceaa806206b4fd3d25f4e8d5f82fe52f9696ac81a987ea606a245a90eed9"
@@ -671,7 +671,7 @@
         }
       ],
       "baselineBodySha256": "f04ebcea53884dc42e455f0e0a052beb5ac8b7b8145cc0e2fcc996fdfbb56bd5",
-      "title": "Troubleshoot inventory and audit",
+      "title": "Troubleshoot stock and audit",
       "description": "Check failed intake, incorrect counts, or missing movements before submitting another change.",
       "action": "update",
       "publicSlug": "0272622-troubleshoot-inventory-and-audit",
@@ -754,7 +754,7 @@
       ],
       "baselineBodySha256": "21da1cefce38f8611386bd182d22a84d1fff10beb75a19203472208b2a61ce80",
       "title": "Purchase orders (beta)",
-      "description": "Keep expected supplier orders separate from Inventory you have actually received.",
+      "description": "Keep expected supplier orders separate from stock you have actually received.",
       "action": "update",
       "publicSlug": "3974136-purchase-orders-beta",
       "baselinePublicFingerprint": "2e7bc7e914c2a56578780accd25d78c6de3d01ceedcec6a4665b2d0eea275d35"

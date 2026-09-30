@@ -1,5 +1,5 @@
 ---
-title: "Switch workspaces and check access"
+title: "Switch businesses and check access"
 description: "Choose the correct business and give each team member only the access their work needs."
 ---
 
@@ -7,9 +7,9 @@ description: "Choose the correct business and give each team member only the acc
 
 ## Before you start
 
-These steps cover the web beta. Finish or safely leave open checkout and unsaved work before switching businesses. A workspace means the business whose records you are using.
+These steps cover the web beta. Finish or safely leave open checkout and unsaved work before switching businesses. Each business keeps its own records.
 
-![Illustrative workspace selector and Manage Team panels with fictional business and member names.](../_assets/help-center/screenshots/workspace-team.png)
+![Illustrative business selector and Manage Team panels with fictional business and member names.](../_assets/help-center/screenshots/workspace-team.png)
 
 Illustrative screen with fictional data.
 
@@ -17,10 +17,10 @@ Illustrative screen with fictional data.
 
 1. Open **Select a business** in the header. Check the entries under **My Businesses**.
 2. Select the intended business from those attached to your account.
-3. Wait for the page to load and confirm the business name before opening **Inventory**, **Customers**, or **Orders & Receipts**.
+3. Wait for the page to load and confirm the business name before opening **Products**, **Customers**, or **Sales**.
 4. Check the business again before saving a payment, correction, or export.
 
-Switching businesses does not give you a different person's role. Do not use device, location, or privacy badges on the workspace overview as a security report; some overview details are sample content in this beta.
+Switching businesses does not give you a different person's role. Do not use device, location, or privacy badges on the Business overview as a security report; some overview details are sample content in this beta.
 
 ## Invite a team member
 
@@ -42,5 +42,5 @@ Confirm the member can perform the approved task with their own account. Stop if
 
 ## Related articles
 
-- [Privacy and minimal data](https://drx.featurebase.app/en/help/articles/6417807)
-- [Troubleshoot workspaces and access](https://drx.featurebase.app/en/help/articles/3948745)
+- [Privacy and minimal data](feature-overview-privacy-controls.md)
+- [Troubleshoot business access](../troubleshooting/troubleshoot-workspace-and-access.md)

@@ -7,7 +7,7 @@ description: "Choose what customer information to keep and understand when reten
 
 ## Before you start
 
-You need permission to change the business's privacy settings. Check outstanding balances, retention needs, and any required hold before changing a preset or running deletion. Do not use real customer records to test deletion.
+You need permission to change the business's privacy settings. Check balances due, retention needs, and any required hold before changing a preset or running deletion. Do not use real customer records to test deletion.
 
 Privacy settings apply to the selected business. Screen masking, retention cleanup, and account access are separate controls.
 
@@ -47,10 +47,10 @@ The configured schedule is not proof that a cleanup ran successfully. If you nee
 
 **Screen privacy** changes what is shown on screen. It does not itself permanently delete stored records or revoke account access.
 
-Check the actual Settings values rather than device or privacy badges on the workspace overview; those badges are not a reliable privacy status report in the beta.
+Check the actual Settings values rather than device or privacy badges on the Business overview; those badges are not a reliable privacy status report in the beta.
 
 Keep downloaded reports in approved storage. Deleting records in DRX does not delete files you already exported. For an account-wide export or permanent deletion request, contact private support for a scope review; there is no full account deletion procedure promised here.
 
 ## Related articles
 
-- [Help and support](https://drx.featurebase.app/en/help/articles/2070517)
+- [Help and support](help-and-support.md)
