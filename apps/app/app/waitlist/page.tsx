@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Waitlist } from "@/lib/adapters/auth/ui";
 import { auth } from "@/lib/adapters/auth/server";
-import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
+import { drxClerkWaitlistAppearance } from "@/lib/adapters/auth/appearance";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthVisualFixture } from "@/components/auth/auth-visual-fixture";
 import { isAuthVisualFixtureEnabled } from "@/lib/auth/visual-fixtures";
@@ -48,7 +48,7 @@ export default async function WaitlistPage() {
       ) : (
         <Waitlist
           afterJoinWaitlistUrl="/login"
-          appearance={drxClerkAuthAppearance}
+          appearance={drxClerkWaitlistAppearance}
         />
       )}
     </AuthShell>

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Form-first account access (WRE-146)**: Simplify sign-in and account creation with responsive layouts, clearer form hierarchy, and visible keyboard focus. Authentication steps, account verification, recovery, and redirect behavior remain unchanged.
 - **Cross-platform presentation (WRE-136, in progress)**: Normalize web navigation, typography, cards, focus and touch targets; improve native summary cards and inventory accessibility; reuse keyboard-aware Expo form sheets and add a recoverable daily-summary error state. Routes, permissions, checkout calculations and stored data remain unchanged. Native device and authenticated workflow verification remain required before release.
 - **Early-access marketing (WRE-136)**: Use canonical positioning and a readable fictional sale illustration; narrow unverified offline and platform claims, and improve responsive navigation and keyboard dismissal.
 

@@ -36,20 +36,20 @@ export const drxClerkAuthAppearance = {
     cardBox: "w-full bg-transparent shadow-none",
     card: "w-full gap-6 bg-transparent p-0 shadow-none",
     header: "gap-2 text-left",
-    headerTitle: "text-left text-3xl font-bold tracking-[-0.025em] text-white",
-    headerSubtitle: "text-left text-base leading-6 text-[#C7C7C7]",
-    main: "gap-5",
-    form: "gap-5",
+    headerTitle: "text-left text-[32px] font-bold leading-[1.2] tracking-[-0.04em] text-[#F5F5F5]",
+    headerSubtitle: "text-left text-[15px] leading-6 text-[#B8B8B8]",
+    main: "gap-6",
+    form: "gap-6",
     formField: "gap-2",
     formFieldLabel: "text-base font-semibold leading-6 text-[#E7E7E7]",
     formFieldInput:
-      "min-h-12 rounded-lg border border-[#737373] bg-[#262626] px-3.5 text-base text-white caret-[#CCFF00] placeholder:text-[#B3B3B3] hover:border-[#8A8A8A] focus:border-[#CCFF00] focus:bg-[#2C2C2C] focus:ring-2 focus:ring-[#CCFF00] focus:ring-offset-2 focus:ring-offset-[#121212]",
+      "min-h-[54px] rounded-lg border border-[#555555] bg-[#171717] px-3.5 text-[15px] text-[#F5F5F5] caret-[#CCFF00] placeholder:text-[#A3A3A3] hover:border-[#737373] focus:border-[#CCFF00] focus:bg-[#171717] focus:ring-2 focus:ring-[#CCFF00] focus:ring-offset-2 focus:ring-offset-[#0A0A0A]",
     formFieldInputShowPasswordButton:
       "min-h-11 min-w-11 text-[#C7C7C7] hover:text-[#CCFF00] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]",
     formFieldErrorText: "mt-1 text-sm font-medium leading-5 text-[#FCA5A5]",
     formFieldSuccessText: "mt-1 text-sm font-medium leading-5 text-[#6EE7B7]",
     formButtonPrimary:
-      "min-h-12 rounded-lg bg-[#CCFF00] px-4 text-base font-extrabold uppercase tracking-[0.04em] text-[#0A0A0A] shadow-none hover:bg-[#D7FF38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212] disabled:opacity-60",
+      "min-h-[54px] rounded-lg bg-[#CCFF00] px-4 text-[15px] font-bold text-[#0A0A0A] shadow-none hover:bg-[#D9FF4D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0A] disabled:opacity-60",
     socialButtonsBlockButton:
       "min-h-12 rounded-lg border border-white/20 bg-[#1E1E1E] text-[#F5F5F5] hover:bg-[#282828] hover:border-white/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]",
     socialButtonsBlockButtonText: "text-base font-semibold text-[#F5F5F5]",
@@ -75,5 +75,20 @@ export const drxClerkAuthAppearance = {
     backLink:
       "min-h-11 text-sm font-semibold text-[#CCFF00] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]",
     captchaBox: "rounded-lg border border-white/20 bg-[#1E1E1E] p-2",
+  },
+} as const;
+
+export const drxClerkWaitlistAppearance = {
+  ...drxClerkAuthAppearance,
+  elements: {
+    ...drxClerkAuthAppearance.elements,
+    headerTitle: "text-left text-3xl font-bold tracking-[-0.025em] text-white",
+    headerSubtitle: "text-left text-base leading-6 text-[#C7C7C7]",
+    main: "gap-5",
+    form: "gap-5",
+    formFieldInput:
+      "min-h-12 rounded-lg border border-[#737373] bg-[#262626] px-3.5 text-base text-white caret-[#CCFF00] placeholder:text-[#B3B3B3] hover:border-[#8A8A8A] focus:border-[#CCFF00] focus:bg-[#2C2C2C] focus:ring-2 focus:ring-[#CCFF00] focus:ring-offset-2 focus:ring-offset-[#121212]",
+    formButtonPrimary:
+      "min-h-12 rounded-lg bg-[#CCFF00] px-4 text-base font-extrabold uppercase tracking-[0.04em] text-[#0A0A0A] shadow-none hover:bg-[#D7FF38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212] disabled:opacity-60",
   },
 } as const;
