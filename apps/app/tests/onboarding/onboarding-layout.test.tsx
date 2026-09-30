@@ -60,10 +60,11 @@ describe("OnboardingLayout", () => {
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
 
-  it("does not treat a Convex outage as permission to skip setup", async () => {
+  it("does not treat a Convex outage as permission to skip setup and renders onboarding without crashing", async () => {
     mocks.headers.mockResolvedValue(new Headers());
     mocks.getCompletedBusinessId.mockRejectedValue(new Error("Onboarding status is temporarily unavailable"));
-    await expect(OnboardingLayout({ children: <div /> })).rejects.toThrow(/temporarily unavailable/);
+    const child = <div>Onboarding form</div>;
+    await expect(OnboardingLayout({ children: child })).resolves.toBe(child);
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
 
