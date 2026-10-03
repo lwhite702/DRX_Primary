@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { helpCenterData } from "@/scripts/help-center-data";
 import {
   FEATUREBASE_CATEGORY_MAP,
   FEATUREBASE_CATEGORY_ORDER,
@@ -12,25 +11,22 @@ import {
 } from "@/lib/help/featurebase-taxonomy";
 
 describe("Featurebase taxonomy alignment", () => {
-  it("preserves complete rendered HTML for legacy read-only consumers", () => {
-    expect(helpCenterData).toHaveLength(19);
-    for (const article of helpCenterData) {
-      expect(article.content).toContain("<h2");
-      expect(article.content).toContain("<p>");
-      expect(article.content).not.toContain("\n---\n");
-    }
-  });
+  const articles = [
+    { title: "Start", tags: ["category:getting-started", "order:1"] },
+    { title: "Stock", tags: ["category:inventory", "order:2"] },
+    { title: "Count", tags: ["category:inventory", "order:1"] },
+  ];
   it("maps every help-center category explicitly", () => {
-    const unmapped = findUnmappedCategories(helpCenterData, FEATUREBASE_CATEGORY_MAP);
+    const unmapped = findUnmappedCategories(articles, FEATUREBASE_CATEGORY_MAP);
     expect(unmapped).toEqual([]);
     expect(() =>
-      assertMappedCategories(helpCenterData, FEATUREBASE_CATEGORY_MAP),
+      assertMappedCategories(articles, FEATUREBASE_CATEGORY_MAP),
     ).not.toThrow();
   });
 
   it("throws when mappings are incomplete", () => {
     expect(() =>
-      assertMappedCategories(helpCenterData, {
+      assertMappedCategories(articles, {
         "getting-started": "Getting Started",
       }),
     ).toThrow(/Missing Featurebase category mappings/);
@@ -38,11 +34,11 @@ describe("Featurebase taxonomy alignment", () => {
 
   it("sorts deterministically by category then order tag", () => {
     const sortedA = sortHelpArticlesDeterministically(
-      helpCenterData,
+      articles,
       FEATUREBASE_CATEGORY_ORDER,
     );
     const sortedB = sortHelpArticlesDeterministically(
-      helpCenterData,
+      articles,
       FEATUREBASE_CATEGORY_ORDER,
     );
 

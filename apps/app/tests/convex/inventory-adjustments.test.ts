@@ -42,7 +42,7 @@ describe("canonical stock adjustments", () => {
     await expect(owner.mutation(api.inventory.updateProduct, { businessId: "foreign", productId, quantity: 0 })).rejects.toThrow(/FORBIDDEN/);
     await t.run(async ctx => {
       const user = await ctx.db.query("users").first();
-      await ctx.db.patch(user!._id, { role: "MEMBER" });
+      await ctx.db.patch(user!._id, { role: "cashier", permissions: {} });
     });
     await expect(adjust("member", 1)).rejects.toThrow(/FORBIDDEN/);
     await expect(owner.mutation(api.inventory.updateProduct, { businessId, productId, productName: "No" })).rejects.toThrow(/FORBIDDEN/);

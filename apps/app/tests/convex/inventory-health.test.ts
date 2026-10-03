@@ -57,7 +57,7 @@ it("enforces selected tenant, expected operator, membership and inventory grants
   await expect(foreign.query(snapshot, { ...args, expectedUserId: "foreign" })).rejects.toThrow(/FORBIDDEN/);
   await expect(owner.query(snapshot, { ...args, expectedUserId: "foreign" })).rejects.toThrow(/FORBIDDEN/);
   await expect(t.query(snapshot, args)).rejects.toThrow(/UNAUTHENTICATED/);
-  const memberId = await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "fixture@example.invalid", role: "MEMBER", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  const memberId = await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "fixture@example.invalid", role: "cashier", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
   const staff = t.withIdentity({ subject: "staff" }), staffArgs = { ...args, expectedUserId: "staff" };
   await expect(staff.query(snapshot, staffArgs)).rejects.toThrow(/FORBIDDEN/);
   await t.run(ctx => ctx.db.patch(memberId, { permissions: { "inventory.manage": true } }));

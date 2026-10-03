@@ -115,7 +115,7 @@ it("uses null for zero-base percentage and respects pricing-only member grants",
   const { t, businessId, productId } = await setup();
   await t.run(ctx => ctx.db.patch(productId, { sellingPriceCents: 0 }));
   expect((await product(request("product-intelligence", { business_id: businessId, inventory_id: productId, request_id: "zero-base" }))).status).toBe(200);
-  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "pricer", email: "pricer@example.invalid", role: "MEMBER", permissions: { "pricing.manage": true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "pricer", email: "pricer@example.invalid", role: "cashier", permissions: { "pricing.manage": true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
   const pricer = t.withIdentity({ subject: "pricer" }); mocks.user.mockResolvedValue({ id: "pricer" }); mocks.query.mockImplementation(pricer.query.bind(pricer)); mocks.mutation.mockImplementation(pricer.mutation.bind(pricer));
   const response = await posPrices(request(`../pos/ai-pricing?businessId=${businessId}`)); expect(response.status).toBe(200);
   const [row] = (await response.json()).items; expect(row.price_change_percentage).toBeNull();
