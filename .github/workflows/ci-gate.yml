@@ -37,7 +37,7 @@ jobs:
       - name: Classify complete PR diff
         id: scope
         run: node scripts/testing/ci-change-scope.mjs
-      # Visual validation uses jsdom and sharp, including on prose-only PRs.
+      # Visual validation uses sharp, including on prose-only PRs.
       - name: Install documentation validation dependencies
         run: pnpm install --frozen-lockfile
       - name: Check release integrity for every change
@@ -48,7 +48,8 @@ jobs:
           node scripts/featurebase/test-import-content.mjs
           node scripts/docs/build-mintlify-help.mjs --check
           node --experimental-strip-types scripts/testing/mintlify-docs-audit.ts
-          node scripts/featurebase/validate-help-visuals.mjs
+          node --test scripts/docs/mintlify-visuals.test.mjs
+          node scripts/docs/validate-mintlify-visuals.mjs
 
   # One dependency installation for the preflight, audit, lint/typecheck,
   # build, and inexpensive runtime gates. Each command remains blocking.

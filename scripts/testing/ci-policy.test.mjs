@@ -16,8 +16,10 @@ test("the all-changes documentation gate installs dependencies before validating
   assert.ok(changes, "changes job must exist");
   assert.match(changes, /uses: pnpm\/action-setup@v4\n\s+with:\n\s+version: 10\.17\.1/);
   const install = changes.indexOf("run: pnpm install --frozen-lockfile");
-  const validate = changes.indexOf("node scripts/featurebase/validate-help-visuals.mjs");
+  const validate = changes.indexOf("node scripts/docs/validate-mintlify-visuals.mjs");
   assert.ok(install >= 0 && validate > install, "visual validation requires an earlier frozen dependency install");
+  assert.ok(changes.indexOf("uses: pnpm/action-setup@v4") < install, "pnpm must be set up before installation");
+  assert.doesNotMatch(changes, /node scripts\/featurebase\/validate-help-visuals\.mjs/, "use canonical Mintlify content validation");
   assert.doesNotMatch(changes, /\n\s+if:|continue-on-error:/, "all changes must pass the documentation gate");
 });
 
