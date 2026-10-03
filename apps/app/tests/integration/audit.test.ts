@@ -5,6 +5,7 @@ import { hasBusinessPermission } from "@/lib/auth/server-guards";
 import { getPlatformAdmin } from "@/lib/auth/platform-admin";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
+import type { Id } from "@/convex/_generated/dataModel";
 
 const mocks = vi.hoisted(() => ({
   businessClient: vi.fn(),
@@ -18,7 +19,7 @@ vi.mock("@/lib/posthog/server-flags", () => ({ ensureServerFlag: vi.fn() }));
 vi.mock("@/lib/business/convex-server", () => ({ businessClient: mocks.businessClient }));
 
 describe("Audit Logs API Integration", () => {
-  const mockBusinessId = "test-business-123";
+  const mockBusinessId = "test-business-123" as Id<"businesses">;
 
   beforeEach(() => {
     vi.clearAllMocks();
