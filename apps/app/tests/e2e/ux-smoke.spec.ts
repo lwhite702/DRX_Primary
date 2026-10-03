@@ -20,7 +20,7 @@ test.describe("Required UX smoke", () => {
       await expect(page.locator("body")).not.toContainText(/Application error|Internal Server Error/i);
       await expect(page.locator("body")).toContainText(check.text, { timeout: 15000 });
       if (check.route === "/settings/team" && await page.getByText("Team members could not be loaded").isVisible()) {
-        await expect(page.getByRole("button", { name: "Try Again" })).toBeVisible();
+        await expect(page.locator("button").filter({ hasText: "Try Again" })).toBeVisible();
       }
       if (!check.route.startsWith("/help") && !check.route.startsWith("/pos")) {
         await expect(page.locator("#main-content")).toHaveCount(1);
