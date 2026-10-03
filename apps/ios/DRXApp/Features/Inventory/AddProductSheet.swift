@@ -314,7 +314,7 @@ struct AddProductSheet: View {
             description: description.isEmpty ? nil : description,
             category: category.isEmpty ? nil : category,
             sellingPriceCents: sellingPriceCents,
-            unitCostCents: usePurchaseBasis ? 0 : unitCostCents,
+            unitCostCents: usePurchaseBasis ? (calculatedCostCents ?? 0) : unitCostCents,
             purchaseCostBasis: basis,
             reorderLevelGrams: reorderLevelGrams,
             allowFractionalWeight: fractionalEnabled,

@@ -2,23 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  resolveAuthContext: vi.fn(),
-  salesFindFirst: vi.fn(),
-  salesUpdate: vi.fn(),
+  businessClient: vi.fn(),
+  query: vi.fn(),
+  mutation: vi.fn(),
 }));
 
-vi.mock("@/app/api/pos/_lib/server", () => ({
-  resolveAuthContext: mocks.resolveAuthContext,
-}));
-
-vi.mock("@/lib/db", () => ({
-  db: {
-    sales: {
-      findFirst: mocks.salesFindFirst,
-      update: mocks.salesUpdate,
-    },
-    $transaction: vi.fn(),
-  },
+vi.mock("@/lib/business/convex-server", () => ({
+  businessClient: mocks.businessClient,
 }));
 
 import { GET, PATCH } from "@/app/api/sales/[id]/route";
@@ -34,27 +24,41 @@ function makePatchRequest(body: unknown) {
 describe("GET/PATCH /api/sales/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveAuthContext.mockResolvedValue({
-      userId: "user_123",
+    mocks.businessClient.mockResolvedValue({
+      client: {
+        query: mocks.query,
+        mutation: mocks.mutation,
+      },
       businessId: "business_123",
+      expectedUserId: "user_123",
     });
-    mocks.salesFindFirst.mockResolvedValue({
-      id: "sale_123",
-      businessId: "business_123",
-      orderNumber: "POS-123",
-      paymentMethod: "card",
-      paymentRef: "AUTH-123",
-      totalAmount: 28,
-      amountPaid: 35,
-      changeAmount: 4.8,
-      deliveryAddress: "123 Main St",
-      deliveryPrice: 5,
+    mocks.query.mockResolvedValue({
+      sale: {
+        _id: "sale_123",
+        orderNumber: "POS-123",
+        orderStatus: "completed",
+        customerId: "cust_1",
+        paymentMethod: "card",
+        paymentReference: "AUTH-123",
+        subtotalCents: 2800,
+        taxAmountCents: 0,
+        totalAmountCents: 2800,
+        amountPaidCents: 3500,
+        changeAmountCents: 480,
+        createdAt: 1773136800000,
+        updatedAt: 1773136800000,
+      },
+      customer: {
+        id: "cust_1",
+        firstName: "Jane",
+      },
       items: [
         {
-          id: "line_123",
+          _id: "line_123",
           inventoryId: "inv_1",
-          quantity: 1,
-          unitPrice: 28,
+          quantityGrams: 3.5,
+          unitPriceCents: 2800,
+          lineTotalCents: 2800,
           unitCost: 5,
           weightSoldGrams: 3.5,
           pricePerGram: 8,
@@ -62,44 +66,34 @@ describe("GET/PATCH /api/sales/[id]", () => {
           loyaltyDiscountApplied: 0.1,
           originalPrice: 30,
           priceOverrideReason: "Manager approved",
-          inventory: {
-            id: "inv_1",
-            productName: "Weighted Item",
-          },
-          allocations: [
-            {
-              id: "alloc_1",
-              quantityGrams: 3.5,
-              unitCostPerGram: 4.25,
-              extendedCost: 14.875,
-              batch: {
-                id: "batch_1",
-                supplier: "Farm A",
-                receivedAt: "2026-03-10T10:00:00.000Z",
-                intake: {
-                  id: "intake_1",
-                  totalCost: 425,
-                  totalWeightGrams: 100,
-                },
-              },
-            },
-          ],
+          productName: "Weighted Item",
         },
       ],
-      customer: {
-        id: "cust_1",
-        firstName: "Jane",
-      },
+      allocations: [
+        {
+          _id: "alloc_1",
+          quantityGrams: 3.5,
+          unitCostPerGram: 4.25,
+          extendedCostCents: 1488,
+          batchId: "batch_1",
+        },
+      ],
+      costOfGoodsSoldCents: 1488,
+      grossProfitCents: 1312,
+      grossMarginPercent: 46.86,
     });
-    mocks.salesUpdate.mockResolvedValue({
-      id: "sale_123",
-      paymentMethod: "cash",
-      paymentRef: "CASH-REF-1",
+    mocks.mutation.mockResolvedValue({
+      success: true,
+      sale: {
+        id: "sale_123",
+        paymentMethod: "cash",
+        paymentReference: "CASH-REF-1",
+      },
     });
   });
 
   it("returns 401 when auth context is missing", async () => {
-    mocks.resolveAuthContext.mockResolvedValue({ userId: null, businessId: null });
+    mocks.businessClient.mockRejectedValue(new Error("UNAUTHORIZED:"));
 
     const res = await GET(new NextRequest("http://localhost/api/sales/sale_123"), {
       params: { id: "sale_123" },
@@ -117,61 +111,34 @@ describe("GET/PATCH /api/sales/[id]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mocks.salesFindFirst).toHaveBeenCalledWith({
-      where: { id: "sale_123", businessId: "business_123" },
-      include: {
-        items: {
-          include: {
-            inventory: true,
-            allocations: {
-              include: {
-                batch: {
-                  include: {
-                    intake: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        customer: true,
-      },
-    });
+    expect(mocks.query).toHaveBeenCalledWith(
+      expect.anything(),
+      { saleId: "sale_123" },
+    );
+    expect(data.id).toBe("sale_123");
+    expect(data.orderNumber).toBe("POS-123");
     expect(data.paymentRef).toBe("AUTH-123");
     expect(data.amountPaid).toBe(35);
-    expect(data.deliveryAddress).toBe("123 Main St");
     expect(data.costSummary).toEqual({
-      costOfGoodsSold: 14.875,
-      grossProfit: 13.125,
-      grossMarginPercent: 46.88,
+      costOfGoodsSold: 14.88,
+      grossProfit: 13.12,
+      grossMarginPercent: 46.86,
     });
     expect(data.items[0]).toEqual(
       expect.objectContaining({
-        unitCost: 5,
-        weightSoldGrams: 3.5,
-        pricePerGram: 8,
-        bulkTierApplied: "3.5g",
-        loyaltyDiscountApplied: 0.1,
-        originalPrice: 30,
+        id: "line_123",
+        unitPrice: 28,
+        quantity: 3.5,
         priceOverrideReason: "Manager approved",
       }),
     );
-    expect(data.items[0].allocations).toEqual([
+    expect(data.allocations[0]).toEqual(
       expect.objectContaining({
-        quantityGrams: 3.5,
-        unitCostPerGram: 4.25,
-        extendedCost: 14.875,
-        batch: expect.objectContaining({
-          id: "batch_1",
-          supplier: "Farm A",
-          intake: expect.objectContaining({
-            id: "intake_1",
-            totalCost: 425,
-            totalWeightGrams: 100,
-          }),
-        }),
+        id: "alloc_1",
+        quantity: 3.5,
+        extendedCost: 14.88,
       }),
-    ]);
+    );
   });
 
   it("updates payment method and paymentRef together", async () => {
@@ -184,17 +151,39 @@ describe("GET/PATCH /api/sales/[id]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mocks.salesUpdate).toHaveBeenCalledWith({
-      where: { id: "sale_123" },
-      data: {
+    expect(mocks.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        saleId: "sale_123",
         paymentMethod: "cash",
-        paymentRef: "CASH-REF-1",
+        paymentReference: "CASH-REF-1",
+      },
+    );
+    expect(data).toEqual({
+      success: true,
+      sale: {
+        id: "sale_123",
+        paymentMethod: "cash",
+        paymentReference: "CASH-REF-1",
       },
     });
-    expect(data).toEqual({
-      id: "sale_123",
-      paymentMethod: "cash",
-      paymentRef: "CASH-REF-1",
+  });
+
+  it("returns 404 when sale not found on GET", async () => {
+    mocks.query.mockRejectedValue(new Error("NOT_FOUND: Sale not found"));
+    const res = await GET(new NextRequest("http://localhost/api/sales/unknown"), {
+      params: { id: "unknown" },
     });
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "Sale not found" });
+  });
+
+  it("returns 401 when auth fails on PATCH", async () => {
+    mocks.businessClient.mockRejectedValue(new Error("UNAUTHORIZED:"));
+    const res = await PATCH(makePatchRequest({ paymentMethod: "cash" }), {
+      params: { id: "sale_123" },
+    });
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 });
