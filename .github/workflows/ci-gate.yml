@@ -17,7 +17,7 @@ concurrency:
 jobs:
   changes:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     outputs:
       runtime: ${{ steps.scope.outputs.runtime }}
       scope: ${{ steps.scope.outputs.scope }}
@@ -25,14 +25,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22.23.1
+          cache: pnpm
       - name: Validate CI routing and failure handling
         run: node --test scripts/testing/ci-policy.test.mjs scripts/release/staging-deployment.test.mjs
       - name: Classify complete PR diff
         id: scope
         run: node scripts/testing/ci-change-scope.mjs
+      # Visual validation uses jsdom and sharp, including on prose-only PRs.
+      - name: Install documentation validation dependencies
+        run: pnpm install --frozen-lockfile
       - name: Check release integrity for every change
         run: |
           node scripts/release/integrity-check.mjs
