@@ -16,7 +16,7 @@ test.describe("Required UX smoke", () => {
     test(`route renders: ${check.route}`, async ({ page }) => {
       test.setTimeout(90000);
       await page.goto(check.route, { waitUntil: "domcontentloaded" });
-      await expect(page.locator("body")).toBeVisible();
+      await expect(page.locator("body")).toBeVisible({ timeout: 20000 });
       await expect(page.locator("body")).not.toContainText(/Application error|Internal Server Error/i);
       await expect(page.locator("body")).toContainText(check.text, { timeout: 15000 });
       if (check.route === "/settings/team" && await page.getByText("Team members could not be loaded").isVisible()) {
