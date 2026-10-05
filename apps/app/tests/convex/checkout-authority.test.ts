@@ -39,6 +39,59 @@ async function setupStore(options?: {
 }
 
 describe("authoritative Convex checkout", () => {
+  it("quotes and settles exact product bundle totals from saved inventory settings", async () => {
+    const { t, owner } = await setupStore({ collectTax: false });
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "BUNDLE-1",
+      productName: "Bundle Product",
+      sellingPriceCents: 3_500,
+      unitCostCents: 1_000,
+      allowFractionalWeight: true,
+      commerceConfig: {
+        sellingUnit: "g",
+        decimalPrecision: 2,
+        minimumSaleQuantity: 0.5,
+        quantityIncrement: 0.5,
+        suggestedDollarAmounts: [],
+        suggestedQuantities: [1, 2, 3.5, 7],
+        bulkPriceTiers: [
+          { minimumQuantity: 2, unitPriceCents: 3_000, bundlePriceCents: 6_000 },
+          { minimumQuantity: 3.5, unitPriceCents: 2_571, bundlePriceCents: 9_000 },
+          { minimumQuantity: 7, unitPriceCents: 2_000, bundlePriceCents: 14_000 },
+        ],
+      },
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId,
+      totalWeightGrams: 20,
+      totalCostCents: 20_000,
+    });
+
+    for (const [quantityGrams, totalAmountCents] of [
+      [1, 3_500],
+      [2, 6_000],
+      [3.5, 9_000],
+      [7, 14_000],
+    ]) {
+      const items = [{ productId, quantityGrams }];
+      const quote = await owner.query(api.checkout.quoteCheckout, { items });
+      expect(quote).toMatchObject({
+        totalAmountCents,
+        lines: [{ lineSubtotalCents: totalAmountCents }],
+      });
+      const sale = await owner.mutation(api.checkout.processCheckout, {
+        orderNumber: `BUNDLE-${quantityGrams}`,
+        items,
+        paymentMethod: "cash",
+        amountPaidCents: totalAmountCents,
+      });
+      expect(sale).toMatchObject({ totalAmountCents, status: "COMPLETED" });
+    }
+
+    const product = await t.run((ctx) => ctx.db.get(productId));
+    expect(product?.quantityOnHandGrams).toBe(6.5);
+  });
+
   it("derives prices and product taxability on the server and requires exact card settlement", async () => {
     const { owner } = await setupStore();
     const taxableProductId = await owner.mutation(api.products.createProduct, {
