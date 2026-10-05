@@ -381,7 +381,7 @@ struct AddProductSheet: View {
                   abs((quantity - min) / step - ((quantity - min) / step).rounded()) < 0.000001,
                   let total = CurrencyInput.cents(from: draft.totalPrice), total > 0,
                   Double(total) <= (quantity * Double(sellingPriceCents)).rounded() else { return nil }
-            tiers.append(NewProductBulkPriceTier(minimumQuantity: quantity, unitPriceCents: Int((Double(total) / quantity).rounded()), bundlePriceCents: total))
+            tiers.append(NewProductBulkPriceTier(minimumQuantity: quantity, unitPriceCents: max(1, Int((Double(total) / quantity).rounded())), bundlePriceCents: total))
             previous = quantity
         }
         return tiers

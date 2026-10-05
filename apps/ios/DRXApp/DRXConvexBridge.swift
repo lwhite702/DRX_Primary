@@ -395,7 +395,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
     let productId: String
     let productName: String
     let quantity: Double
-    let appliedUnitPriceCents: Int
+    let appliedUnitPriceCents: Double
     let lineSubtotalCents: Int
     let bulkDiscountCents: Int
     let loyaltyDiscountCents: Int

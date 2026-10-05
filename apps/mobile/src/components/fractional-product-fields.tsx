@@ -21,6 +21,8 @@ export function FractionalProductFields({
   const [quantities, setQuantities] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [showBundles, setShowBundles] = useState(false);
+  const [quantityDrafts, setQuantityDrafts] = useState<Record<string, string>>({});
+  const [totalDrafts, setTotalDrafts] = useState<Record<string, string>>({});
   const update = (patch: Partial<ProductCommerceConfig>) =>
     onChange({ ...value, ...patch });
   const inputStyle = {
@@ -127,11 +129,13 @@ export function FractionalProductFields({
         <Text style={{ color: COLORS.textSecondary }}>Set the total at each quantity. With $35/g, you can enter 2g for $60, 3.5g for $90, and 7g for $140. The highest eligible tier applies to the full sale quantity.</Text>
         {value.bulkPriceTiers.map((tier, index) => <View key={tier.id} style={{ gap: 6 }}>
           <Text style={{ color: COLORS.text }}>Bundle {index + 1}</Text>
-          <TextInput accessibilityLabel={`Bundle ${index + 1} quantity`} style={inputStyle} keyboardType="decimal-pad" placeholder={`Quantity (${value.sellingUnit})`} placeholderTextColor={COLORS.textMuted} value={tier.minimumQuantity ? String(tier.minimumQuantity) : ""} onChangeText={text => {
+          <TextInput accessibilityLabel={`Bundle ${index + 1} quantity`} style={inputStyle} keyboardType="decimal-pad" placeholder={`Quantity (${value.sellingUnit})`} placeholderTextColor={COLORS.textMuted} value={quantityDrafts[tier.id] ?? (tier.minimumQuantity ? String(tier.minimumQuantity) : "")} onChangeText={text => {
+            setQuantityDrafts(drafts => ({ ...drafts, [tier.id]: text }));
             const minimumQuantity = Number(text);
             update({ bulkPriceTiers: value.bulkPriceTiers.map(item => item.id === tier.id ? { ...item, minimumQuantity, label: `${minimumQuantity}+`, unitPrice: minimumQuantity > 0 ? (item.totalPrice ?? 0) / minimumQuantity : 0 } : item) });
           }} />
-          <TextInput accessibilityLabel={`Bundle ${index + 1} total price`} style={inputStyle} keyboardType="decimal-pad" placeholder="Total price ($)" placeholderTextColor={COLORS.textMuted} value={tier.totalPrice ? String(tier.totalPrice) : ""} onChangeText={text => {
+          <TextInput accessibilityLabel={`Bundle ${index + 1} total price`} style={inputStyle} keyboardType="decimal-pad" placeholder="Total price ($)" placeholderTextColor={COLORS.textMuted} value={totalDrafts[tier.id] ?? (tier.totalPrice ? String(tier.totalPrice) : "")} onChangeText={text => {
+            setTotalDrafts(drafts => ({ ...drafts, [tier.id]: text }));
             const totalPrice = Number(text);
             update({ bulkPriceTiers: value.bulkPriceTiers.map(item => item.id === tier.id ? { ...item, totalPrice, unitPrice: item.minimumQuantity > 0 ? totalPrice / item.minimumQuantity : 0 } : item) });
           }} />

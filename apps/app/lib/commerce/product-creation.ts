@@ -102,7 +102,7 @@ export function commerceIssue(config: ProductCommerceConfig, basePrice?: number)
   const parsed = newProductCommerceSchema.safeParse(config);
   if (parsed.success) {
     if (basePrice !== undefined && config.bulkPriceTiers.some(tier =>
-      tier.unitPrice > basePrice ||
+      (tier.totalPrice === undefined && tier.unitPrice > basePrice) ||
       (tier.totalPrice !== undefined && tier.totalPrice > Math.round(tier.minimumQuantity * basePrice * 100) / 100)
     )) return "Each bundle total must be no more than the base price for that quantity.";
     return null;
@@ -137,7 +137,9 @@ export function canonicalCreationCommerce(config: ProductCommerceConfig) {
     ),
     bulkPriceTiers: parsed.bulkPriceTiers.map((tier) => ({
       minimumQuantity: tier.minimumQuantity,
-      unitPriceCents: Math.round(tier.unitPrice * 100),
+      unitPriceCents: tier.totalPrice === undefined
+        ? Math.round(tier.unitPrice * 100)
+        : Math.max(1, Math.round(tier.totalPrice * 100 / tier.minimumQuantity)),
       ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }),
     })),
   };

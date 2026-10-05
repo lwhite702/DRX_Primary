@@ -51,6 +51,27 @@ async function setup() {
 }
 
 describe("fractional product creation", () => {
+  it("accepts a positive bundle total whose per-unit rate is below one cent", async () => {
+    const { owner } = await setup();
+    const productId = await owner.mutation(api.products.createProduct, {
+      ...input,
+      sku: "LOW-RATE-BUNDLE",
+      sellingPriceCents: 1,
+      unitCostCents: 0,
+      commerceConfig: {
+        sellingUnit: "ml",
+        decimalPrecision: 1,
+        minimumSaleQuantity: 1,
+        quantityIncrement: 1,
+        suggestedDollarAmounts: [],
+        suggestedQuantities: [1, 1000],
+        bulkPriceTiers: [{ minimumQuantity: 1000, unitPriceCents: 0, bundlePriceCents: 400 }],
+      },
+    });
+    const product = (await owner.query(api.products.listProducts, {})).find(item => item._id === productId);
+    expect(product?.bulkPriceTiers).toEqual([{ minimumQuantity: 1000, unitPriceCents: 1, bundlePriceCents: 400 }]);
+  });
+
   it("persists exact bundle totals and rejects a non-grid threshold atomically", async () => {
     const { owner } = await setup();
     const commerceConfig = { ...config, minimumSaleQuantity: 0.5, quantityIncrement: 0.5,

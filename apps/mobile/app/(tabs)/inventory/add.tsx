@@ -166,7 +166,7 @@ export default function AddProductScreen() {
         quantityIncrement,
         suggestedDollarAmounts,
         suggestedQuantities,
-        bulkPriceTiers: bulkPriceTiers.map(tier => ({ minimumQuantity: tier.minimumQuantity, unitPriceCents: Math.round(tier.unitPrice * 100), ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }) })),
+        bulkPriceTiers: bulkPriceTiers.map(tier => ({ minimumQuantity: tier.minimumQuantity, unitPriceCents: tier.totalPrice === undefined ? Math.round(tier.unitPrice * 100) : Math.max(1, Math.round(tier.totalPrice * 100 / tier.minimumQuantity)), ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }) })),
       };
       await createProduct({
         sku: manualSku ? sku.trim() : "",

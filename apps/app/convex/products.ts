@@ -473,7 +473,7 @@ export const createProduct = mutation({
       bulkPriceTiers: [],
       ...((args.commerceConfig.bulkPriceTiers?.length ?? 0) > 0 ? { bulkPriceTiers: args.commerceConfig.bulkPriceTiers!.map(tier => ({
         id: String(tier.minimumQuantity), label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity,
-        unitPrice: tier.unitPriceCents / 100,
+        unitPrice: tier.bundlePriceCents === undefined ? tier.unitPriceCents / 100 : tier.bundlePriceCents / tier.minimumQuantity / 100,
         ...(tier.bundlePriceCents === undefined ? {} : { totalPrice: tier.bundlePriceCents / 100 }),
       })) } : {}),
     }) : undefined;

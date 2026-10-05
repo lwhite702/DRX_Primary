@@ -7,7 +7,9 @@ import * as onboarding from "../../convex/onboarding";
 import * as products from "../../convex/products";
 import * as commerceSettings from "../../convex/commerceSettings";
 import * as generatedApi from "../../convex/_generated/api";
-import { getDefaultCommerceSettings } from "../../lib/commerce/config";
+import { getDefaultCommerceSettings, productCommerceConfigSchema } from "../../lib/commerce/config";
+import { calculateFractionalLine } from "../../lib/quick-pos/commerce";
+import { posCatalogItem } from "../../lib/pos/catalog-item";
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), getToken: vi.fn(), query: vi.fn(), mutation: vi.fn() }));
 vi.mock("@/lib/db", () => { throw new Error("Commerce settings must not load Prisma"); });
 vi.mock("@/lib/adapters/auth/server", () => ({ auth: mocks.auth }));
@@ -24,7 +26,7 @@ const patch = (selected = businessId) => PATCH(new NextRequest("https://example.
 beforeEach(async () => {
   vi.resetAllMocks(); process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
   mocks.auth.mockResolvedValue({ userId: "settings-owner", getToken: mocks.getToken }); mocks.getToken.mockResolvedValue("synthetic-token");
-  t = convexTest(schema, modules);
+  t = createTest();
   const owner = t.withIdentity({ subject: "settings-owner", email: "owner@example.invalid" });
   businessId = (await owner.mutation(api.onboarding.createBusinessOnboarding, { name: "Owner", businessName: "Synthetic commerce", taxRateBps: 0 })).businessId;
   mocks.query.mockImplementation((ref, args) => owner.query(ref, args));
@@ -60,4 +62,39 @@ it("returns safe retryable failures without provider details", async () => {
   expect(response.status).toBe(503);
   expect(JSON.stringify(await response.json())).not.toContain("private token error");
   expect(mocks.query).not.toHaveBeenCalled();
+});
+it("keeps a sub-cent bundle rate valid through settings and POS reload", async () => {
+  const owner = t.withIdentity({ subject: "settings-owner", email: "owner@example.invalid" });
+  const productId = await owner.mutation(api.products.createProduct, {
+    sku: "LOW-RATE-SETTINGS",
+    productName: "Synthetic low-rate product",
+    sellingPriceCents: 1,
+    unitCostCents: 0,
+    allowFractionalWeight: true,
+    commerceConfig: {
+      sellingUnit: "ml",
+      decimalPrecision: 1,
+      minimumSaleQuantity: 1,
+      quantityIncrement: 1,
+      suggestedDollarAmounts: [],
+      suggestedQuantities: [1, 1000],
+      bulkPriceTiers: [{ minimumQuantity: 1000, unitPriceCents: 0, bundlePriceCents: 400 }],
+    },
+  });
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const catalog = await response.json();
+  const config = catalog.products.find((item: { id: string }) => item.id === productId).config;
+  expect(productCommerceConfigSchema.safeParse(config).success).toBe(true);
+  expect(config.bulkPriceTiers[0]).toMatchObject({ unitPrice: 0.004, totalPrice: 4 });
+  const saved = await PATCH(new NextRequest("https://example.test/api/pos/commerce-settings", {
+    method: "PATCH",
+    headers: { "x-business-id": businessId },
+    body: JSON.stringify({ product: { inventoryId: productId, baseUnitPrice: 0.01, config } }),
+  }));
+  expect(saved.status).toBe(200);
+  const page = await owner.query(api.products.listCatalogPage, { businessId, paginationOpts: { numItems: 10, cursor: null } });
+  const item = posCatalogItem(page.page.find(product => product._id === productId)!);
+  expect(item.commerce_config.bulkPriceTiers[0]).toMatchObject({ unitPrice: 0.004, totalPrice: 4 });
+  expect(calculateFractionalLine(1000, item.commerce_config).lineTotal).toBe(4);
 });
