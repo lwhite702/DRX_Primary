@@ -4,6 +4,9 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Accurate first-run setup progress** (`in progress`)
+  Home reflects saved products and other completed setup steps for the active business, and offers a retry when progress cannot be refreshed.
+
 - **Easier product setup across devices** (`in progress`)
   Choose automatic or your own SKU, set selling amounts without conflicting quick buttons, and calculate cost when you buy by the ounce but sell by the gram. Web rollout and native app verification are tracked separately.
 - **Bundle prices for product quantities** (`in progress`)

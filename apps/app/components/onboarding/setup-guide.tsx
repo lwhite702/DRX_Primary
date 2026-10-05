@@ -24,9 +24,30 @@ export function SetupGuide() {
     dismissGuide,
     isGuideDismissed,
     isLoading,
+    error,
+    refreshOnboarding,
   } = useOnboarding();
 
   if (isLoading || isGuideDismissed || isComplete) return null;
+
+  if (error) {
+    return (
+      <div
+        role="status"
+        className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3 text-sm text-white/80"
+      >
+        <span>Setup progress couldn’t be refreshed.</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void refreshOnboarding()}
+        >
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
   const checklist = [
     {
