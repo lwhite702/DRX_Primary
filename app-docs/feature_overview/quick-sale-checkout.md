@@ -20,8 +20,11 @@ Illustrative screen with fictional data.
 1. Open **New sale** from web navigation.
 2. Use **Scan SKU / barcode or search products** or the available product choices to add items.
 3. Check each product, quantity, unit, and price. Review any displayed discount before continuing.
+
 4. If needed, use **Customer (Optional)**, enter an existing **Alias** or permitted **Phone number**, choose **Lookup**, and select the correct record. Confirm **Attached:**. Credit needs an eligible customer.
 5. Choose **Continue to Payment** or the **Pay** button showing the total, depending on the screen layout.
+
+For a product with bundle prices, DRX applies the highest eligible quantity tier to that product's full sale amount. A 3.5g bundle set to $90 should show $90 before tax and any eligible loyalty benefit. Check the final quoted total before payment.
 
 ## Record payment and finish
 

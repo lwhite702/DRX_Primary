@@ -19,6 +19,11 @@ const config: FractionalProductConfig = {
 };
 
 describe("fractional commerce calculations", () => {
+  it("keeps an exact bundle total in the register preview", () => {
+    expect(calculateFractionalLine(3.5, { ...config, baseUnitPrice: 35,
+      bulkPriceTiers: [{ id: "eighth", label: "3.5g", minimumQuantity: 3.5, unitPrice: 25.71, totalPrice: 90 }],
+    }).lineTotal).toBe(90);
+  });
   it("suggests a sellable quantity from a dollar amount using the active bulk tier", () => {
     expect(suggestQuantityForDollars(25, config)).toEqual({
       quantity: 7.14,

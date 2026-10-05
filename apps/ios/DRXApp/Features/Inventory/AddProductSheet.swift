@@ -31,6 +31,8 @@ struct AddProductSheet: View {
     @State private var quantityIncrement = "0.01"
     @State private var dollarPresets = "10, 20, 50"
     @State private var quantityPresets = "1, 2, 5"
+    @State private var showBundlePrices = false
+    @State private var bundleDrafts: [BundlePriceDraft] = []
 
     private var sellingPriceCents: Int { CurrencyInput.cents(from: sellingPriceString) ?? 0 }
     private var unitCostCents: Int { CurrencyInput.cents(from: unitCostString) ?? 0 }
@@ -136,6 +138,34 @@ struct AddProductSheet: View {
                             Text("$").foregroundStyle(DRXPalette.muted)
                             TextField("Cost per \(sellingUnit)", text: $unitCostString).keyboardType(.decimalPad)
                         }
+                    }
+                }
+
+                Section("Advanced: bulk and bundle prices") {
+                    Toggle("Set bundle prices", isOn: $showBundlePrices)
+                    if showBundlePrices {
+                        Text("Set the total at each quantity. For a $35/g base price, enter 2g for $60, 3.5g for $90, and 7g for $140. The highest eligible tier applies to the full sale quantity.")
+                            .font(.footnote).foregroundStyle(DRXPalette.muted)
+                        ForEach($bundleDrafts) { $draft in
+                            HStack {
+                                TextField("Quantity (\(sellingUnit))", text: $draft.quantity)
+                                    .keyboardType(.decimalPad)
+                                    .accessibilityLabel("Bundle quantity")
+                                TextField("Total price ($)", text: $draft.totalPrice)
+                                    .keyboardType(.decimalPad)
+                                    .accessibilityLabel("Bundle total price")
+                                Button(role: .destructive) {
+                                    bundleDrafts.removeAll { $0.id == draft.id }
+                                } label: { Image(systemName: "trash") }
+                                .accessibilityLabel("Remove bundle")
+                            }
+                        }
+                        Button("Add bundle price") {
+                            let previous = Double(bundleDrafts.last?.quantity ?? "") ?? (Double(minimumQuantity) ?? 1)
+                            let next = previous + (Double(quantityIncrement) ?? 1)
+                            bundleDrafts.append(BundlePriceDraft(quantity: String(format: "%g", next), totalPrice: String(format: "%.2f", next * Double(sellingPriceCents) / 100)))
+                        }
+                        .disabled(bundleDrafts.count >= 12)
                     }
                 }
 
@@ -291,10 +321,15 @@ struct AddProductSheet: View {
             let actualSellingQuantity: Double?
         }
 
+        guard let tiers = validBundleTiers() else {
+            saveError = "Bundle quantities must rise by the selling step, and each total must be a positive amount no higher than the base price."
+            isSaving = false
+            return
+        }
         guard let config = NewProductCommerceConfig.make(
             fractional: fractionalEnabled, unit: sellingUnit, precision: decimalPrecision,
             minimum: minimumQuantity, increment: quantityIncrement,
-            dollars: dollarPresets, quantities: quantityPresets
+            dollars: dollarPresets, quantities: quantityPresets, tiers: tiers
         ) else {
             saveError = "A quick amount must be at least the minimum and rise by the step size. Use recommended rules or edit the amounts."
             isSaving = false
@@ -330,6 +365,39 @@ struct AddProductSheet: View {
         }
         isSaving = false
     }
+
+    private func validBundleTiers() -> [NewProductBulkPriceTier]? {
+        if !showBundlePrices { return [] }
+        let min = fractionalEnabled ? (Double(minimumQuantity) ?? 0) : 1
+        let step = fractionalEnabled ? (Double(quantityIncrement) ?? 0) : 1
+        let scale = pow(10.0, Double(fractionalEnabled ? decimalPrecision : 0))
+        guard min > 0, step > 0, sellingPriceCents > 0 else { return nil }
+        var previous = 0.0
+        var tiers: [NewProductBulkPriceTier] = []
+        for draft in bundleDrafts {
+            guard let quantity = Double(draft.quantity), quantity.isFinite, quantity > previous,
+                  quantity >= min,
+                  abs(quantity * scale - (quantity * scale).rounded()) < 0.000001,
+                  abs((quantity - min) / step - ((quantity - min) / step).rounded()) < 0.000001,
+                  let total = CurrencyInput.cents(from: draft.totalPrice), total > 0,
+                  Double(total) <= (quantity * Double(sellingPriceCents)).rounded() else { return nil }
+            tiers.append(NewProductBulkPriceTier(minimumQuantity: quantity, unitPriceCents: Int((Double(total) / quantity).rounded()), bundlePriceCents: total))
+            previous = quantity
+        }
+        return tiers
+    }
+}
+
+private struct BundlePriceDraft: Identifiable {
+    let id = UUID()
+    var quantity: String
+    var totalPrice: String
+}
+
+struct NewProductBulkPriceTier: Encodable, Sendable {
+    let minimumQuantity: Double
+    let unitPriceCents: Int
+    let bundlePriceCents: Int
 }
 
 struct NewProductCommerceConfig: Encodable, Sendable {
@@ -339,8 +407,9 @@ struct NewProductCommerceConfig: Encodable, Sendable {
     let quantityIncrement: Double
     let suggestedDollarAmounts: [Double]
     let suggestedQuantities: [Double]
+    let bulkPriceTiers: [NewProductBulkPriceTier]?
 
-    static func make(fractional: Bool, unit: String, precision: Int, minimum: String, increment: String, dollars: String, quantities: String) -> Self? {
+    static func make(fractional: Bool, unit: String, precision: Int, minimum: String, increment: String, dollars: String, quantities: String, tiers: [NewProductBulkPriceTier] = []) -> Self? {
         func numbers(_ text: String) -> [Double]? {
             if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return [] }
             let pieces = text.components(separatedBy: ",")
@@ -363,6 +432,6 @@ struct NewProductCommerceConfig: Encodable, Sendable {
                   abs(quantity * scale - (quantity * scale).rounded()) < 0.000001 &&
                   abs((quantity - min) / step - ((quantity - min) / step).rounded()) < 0.000001
               }) else { return nil }
-        return Self(sellingUnit: unit, decimalPrecision: decimals, minimumSaleQuantity: min, quantityIncrement: step, suggestedDollarAmounts: amounts, suggestedQuantities: presets)
+        return Self(sellingUnit: unit, decimalPrecision: decimals, minimumSaleQuantity: min, quantityIncrement: step, suggestedDollarAmounts: amounts, suggestedQuantities: presets, bulkPriceTiers: tiers.isEmpty ? nil : tiers)
     }
 }

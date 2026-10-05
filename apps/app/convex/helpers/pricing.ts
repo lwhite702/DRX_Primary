@@ -3,6 +3,7 @@ export type LoyaltyCombinationPolicy = "stack" | "best_only";
 export interface BulkPriceTier {
   minimumQuantity: number;
   unitPriceCents: number;
+  bundlePriceCents?: number;
 }
 
 export interface CommerceProduct {
@@ -180,6 +181,12 @@ function validateProduct(product: CommerceProduct): void {
       throw new Error("INVALID_ARGUMENT: Bulk tiers must use ascending, non-overlapping minimum quantities");
     }
     requireSafeCents(tier.unitPriceCents, "bulk unitPriceCents");
+    if (tier.bundlePriceCents !== undefined) {
+      requireSafeCents(tier.bundlePriceCents, "bundlePriceCents");
+      if (tier.bundlePriceCents === 0 || tier.bundlePriceCents > Math.round(tier.minimumQuantity * product.baseUnitPriceCents)) {
+        throw new Error("INVALID_ARGUMENT: Bundle total must be positive and no more than base price");
+      }
+    }
     if (tier.unitPriceCents > product.baseUnitPriceCents) {
       throw new Error("INVALID_ARGUMENT: Bulk unit price cannot exceed the base unit price");
     }
@@ -217,7 +224,9 @@ function calculateLine(input: {
   const bulkTier = product.bulkPriceTiers
     .filter((tier) => quantity >= tier.minimumQuantity)
     .at(-1);
-  const bulkUnitPriceCents = bulkTier?.unitPriceCents ?? product.baseUnitPriceCents;
+  const bulkUnitPriceCents = bulkTier?.bundlePriceCents !== undefined
+    ? bulkTier.bundlePriceCents / bulkTier.minimumQuantity
+    : bulkTier?.unitPriceCents ?? product.baseUnitPriceCents;
   const baseLineTotalCents = Math.round(quantity * product.baseUnitPriceCents);
   const bulkLineTotalCents = Math.round(quantity * bulkUnitPriceCents);
   const bulkBenefitCents = Math.max(0, baseLineTotalCents - bulkLineTotalCents);
@@ -321,14 +330,17 @@ export function calculateSuggestedQuantityForDollarAmount(input: {
     ...[...input.product.bulkPriceTiers].reverse().map((tier) => ({
       minimumQuantity: tier.minimumQuantity,
       unitPriceCents: tier.unitPriceCents,
+      ...(tier.bundlePriceCents === undefined ? {} : { bundlePriceCents: tier.bundlePriceCents }),
     })),
     {
       minimumQuantity: input.product.minimumSaleQuantity,
       unitPriceCents: input.product.baseUnitPriceCents,
+      bundlePriceCents: undefined,
     },
   ];
   for (const candidate of candidates) {
-    const rawQuantity = input.amountCents / candidate.unitPriceCents;
+    const effectiveUnitPriceCents = candidate.bundlePriceCents === undefined ? candidate.unitPriceCents : candidate.bundlePriceCents / candidate.minimumQuantity;
+    const rawQuantity = input.amountCents / effectiveUnitPriceCents;
     const incrementCount = Math.max(
       0,
       Math.round(
@@ -347,9 +359,9 @@ export function calculateSuggestedQuantityForDollarAmount(input: {
     }
     return {
       suggestedQuantity,
-      appliedUnitPriceCents: candidate.unitPriceCents,
+      appliedUnitPriceCents: effectiveUnitPriceCents,
       estimatedSubtotalCents: Math.round(
-        suggestedQuantity * candidate.unitPriceCents,
+        suggestedQuantity * effectiveUnitPriceCents,
       ),
     };
   }

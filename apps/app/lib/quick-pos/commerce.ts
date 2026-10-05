@@ -3,6 +3,7 @@ export interface BulkPriceTier {
   label: string;
   minimumQuantity: number;
   unitPrice: number;
+  totalPrice?: number;
 }
 
 export interface FractionalProductConfig {
@@ -115,7 +116,7 @@ export function calculateFractionalLine(
     "nearest",
   );
   const bulkTier = selectBulkPriceTier(quantity, config);
-  const unitPrice = bulkTier?.unitPrice ?? config.baseUnitPrice;
+  const unitPrice = bulkTier?.totalPrice !== undefined ? bulkTier.totalPrice / bulkTier.minimumQuantity : bulkTier?.unitPrice ?? config.baseUnitPrice;
 
   return {
     quantity,
@@ -139,7 +140,7 @@ export function suggestQuantityForDollars(
 
   const candidateTier = validTiers(config).find((tier) => {
     const candidateQuantity = roundToSaleGrid(
-      dollars / tier.unitPrice,
+      dollars / (tier.totalPrice === undefined ? tier.unitPrice : tier.totalPrice / tier.minimumQuantity),
       config.minimumSaleQuantity,
       quantityIncrement,
       precision,
@@ -147,7 +148,7 @@ export function suggestQuantityForDollars(
     );
     return candidateQuantity >= tier.minimumQuantity;
   });
-  const unitPrice = candidateTier?.unitPrice ?? config.baseUnitPrice;
+  const unitPrice = candidateTier?.totalPrice !== undefined ? candidateTier.totalPrice / candidateTier.minimumQuantity : candidateTier?.unitPrice ?? config.baseUnitPrice;
   const quantity =
     unitPrice > 0
       ? roundToSaleGrid(

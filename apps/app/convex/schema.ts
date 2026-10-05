@@ -225,6 +225,7 @@ export default defineSchema({
         v.object({
           minimumQuantity: v.number(),
           unitPriceCents: v.number(),
+          bundlePriceCents: v.optional(v.number()),
         }),
       ),
     ),

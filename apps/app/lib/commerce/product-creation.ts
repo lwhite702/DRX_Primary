@@ -98,9 +98,15 @@ export function guidedCommerceProfile(
   };
 }
 
-export function commerceIssue(config: ProductCommerceConfig): string | null {
+export function commerceIssue(config: ProductCommerceConfig, basePrice?: number): string | null {
   const parsed = newProductCommerceSchema.safeParse(config);
-  if (parsed.success) return null;
+  if (parsed.success) {
+    if (basePrice !== undefined && config.bulkPriceTiers.some(tier =>
+      tier.unitPrice > basePrice ||
+      (tier.totalPrice !== undefined && tier.totalPrice > Math.round(tier.minimumQuantity * basePrice * 100) / 100)
+    )) return "Each bundle total must be no more than the base price for that quantity.";
+    return null;
+  }
   const first = parsed.error.issues[0];
   if (first.path.includes("suggestedQuantities")) {
     return `A quick-tap amount must be at least ${config.minimumSaleQuantity} ${config.sellingUnit} and rise in steps of ${config.quantityIncrement} ${config.sellingUnit}. Edit the amounts or reset the selling rules.`;
@@ -132,6 +138,7 @@ export function canonicalCreationCommerce(config: ProductCommerceConfig) {
     bulkPriceTiers: parsed.bulkPriceTiers.map((tier) => ({
       minimumQuantity: tier.minimumQuantity,
       unitPriceCents: Math.round(tier.unitPrice * 100),
+      ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }),
     })),
   };
 }

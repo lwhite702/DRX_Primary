@@ -14,7 +14,6 @@ import {
   commerceIssue,
   creationCommerceDefaults,
   guidedCommerceProfile,
-  newProductCommerceSchema,
 } from "@/lib/commerce/product-creation";
 import { calculatePurchaseUnitCost } from "@/lib/commerce/purchase-cost";
 import { type DRXUnit } from "@/lib/units/convert";
@@ -138,7 +137,7 @@ export function InventoryForm({
   }
   const invalidCommerce =
     commerceConfig &&
-    !newProductCommerceSchema.safeParse(commerceConfig).success;
+    Boolean(commerceIssue(commerceConfig, typeof sellingPrice === "number" ? sellingPrice : undefined));
 
   // Calculate margins in real time
   const cost = calculatedCost ? calculatedCost.unitCostCentsExact / 100 :
@@ -220,6 +219,7 @@ export function InventoryForm({
         return;
       }
       if (data.purchase_cost_basis && (!calculatedCost || purchaseError)) return;
+      if (data.commerce_config && commerceIssue(data.commerce_config, data.selling_price)) return;
       return onSuccess(data);
     })} className="space-y-6 text-left">
       {/* Wizard Step Progress Tracker */}
@@ -463,6 +463,7 @@ export function InventoryForm({
             <>
               <FractionalProductFields
                 value={commerceConfig}
+                basePrice={price}
                 onChange={(config) => {
                   userSelectedUnit.current = true;
                   setValue("commerce_config", config, {
@@ -477,7 +478,7 @@ export function InventoryForm({
               />
               {(errors.commerce_config || invalidCommerce) && (
                 <p role="alert" className="text-sm text-destructive">
-                  {commerceIssue(commerceConfig) || "Check the selling rules."}
+                  {commerceIssue(commerceConfig, price) || "Check the selling rules."}
                 </p>
               )}
               {invalidCommerce && <Button type="button" variant="outline" onClick={() => setValue("commerce_config", guidedCommerceProfile(commerceConfig.sellingUnit, commerceConfig.fractionalEnabled), { shouldDirty: true, shouldValidate: true })}>Use recommended selling rules</Button>}
@@ -747,6 +748,7 @@ export function InventoryForm({
               <>
                 <FractionalProductFields
                   value={commerceConfig}
+                  basePrice={price}
                   onChange={(config) => {
                     setValue("commerce_config", config, {
                       shouldValidate: true,
@@ -760,7 +762,7 @@ export function InventoryForm({
                 />
                 {(errors.commerce_config || invalidCommerce) && (
                   <p role="alert" className="text-sm text-destructive">
-                    {commerceIssue(commerceConfig) || "Check the selling rules."}
+                    {commerceIssue(commerceConfig, price) || "Check the selling rules."}
                   </p>
                 )}
                 {invalidCommerce && <Button type="button" variant="outline" onClick={() => setValue("commerce_config", guidedCommerceProfile(commerceConfig.sellingUnit, commerceConfig.fractionalEnabled), { shouldDirty: true, shouldValidate: true })}>Use recommended selling rules</Button>}
