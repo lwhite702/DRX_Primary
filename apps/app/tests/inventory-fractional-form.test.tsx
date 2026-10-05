@@ -17,6 +17,19 @@ const initialData = {
 };
 
 describe("guided product setup", () => {
+  it("sends an exact bundle total with the product", async () => {
+    const save = vi.fn();
+    render(<InventoryForm initialData={initialData} businessId={businessId} onSuccess={save} onCancel={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: /Additional Details & Advanced Rules/ }));
+    fireEvent.click(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" }));
+    fireEvent.click(screen.getByText("Advanced: bulk and bundle prices"));
+    fireEvent.click(screen.getByRole("button", { name: "Add bundle price" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Bundle 1 quantity" }), { target: { value: "3.5" } });
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Bundle 1 total price" }), { target: { value: "90" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add Product" }));
+    await waitFor(() => expect(save).toHaveBeenCalled());
+    expect(save.mock.calls[0][0].commerce_config.bulkPriceTiers[0]).toMatchObject({ minimumQuantity: 3.5, totalPrice: 90 });
+  });
   it("saves a generated SKU choice with valid recommended fractional rules", async () => {
     const save = vi.fn();
     render(<InventoryForm initialData={initialData} businessId={businessId} isFirstProduct onSuccess={save} onCancel={() => {}} />);

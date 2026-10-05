@@ -5,6 +5,7 @@ export const bulkPriceTierSchema = z.object({
   label: z.string().trim().min(1).max(50),
   minimumQuantity: z.number().positive(),
   unitPrice: z.number().positive(),
+  totalPrice: z.number().positive().optional(),
 });
 
 function migrateLegacyProductConfig(value: unknown) {
@@ -96,6 +97,12 @@ export const productCommerceConfigSchema = z.preprocess(
       }
       const thresholds = new Set<number>();
       for (const [index, tier] of value.bulkPriceTiers.entries()) {
+        if (!isAnchoredQuantity(tier.minimumQuantity, value.minimumSaleQuantity, value.quantityIncrement, value.decimalPrecision)) {
+          context.addIssue({ code: z.ZodIssueCode.custom, path: ["bulkPriceTiers", index, "minimumQuantity"], message: "Bulk quantity must match the selling rules" });
+        }
+        if (tier.totalPrice !== undefined && (!Number.isSafeInteger(Math.round(tier.totalPrice * 100)) || Math.abs(tier.totalPrice * 100 - Math.round(tier.totalPrice * 100)) > 1e-6)) {
+          context.addIssue({ code: z.ZodIssueCode.custom, path: ["bulkPriceTiers", index, "totalPrice"], message: "Bundle total must use at most two decimal places" });
+        }
         if (thresholds.has(tier.minimumQuantity)) {
           context.addIssue({
             code: z.ZodIssueCode.custom,
@@ -104,6 +111,9 @@ export const productCommerceConfigSchema = z.preprocess(
           });
         }
         thresholds.add(tier.minimumQuantity);
+      }
+      if (value.bulkPriceTiers.some((tier, index, tiers) => index > 0 && tier.minimumQuantity <= tiers[index - 1].minimumQuantity)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["bulkPriceTiers"], message: "Bulk quantities must increase" });
       }
     }),
 );

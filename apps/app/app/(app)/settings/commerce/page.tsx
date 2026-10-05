@@ -297,17 +297,18 @@ function CommerceSettingsPageInner() {
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Bulk price tiers</Label>
-                        <p className="text-xs text-muted-foreground">The highest qualifying threshold is applied automatically.</p>
+                        <p className="text-xs text-muted-foreground">The highest qualifying threshold applies to the full quantity. Enter either a price per unit or an exact total at that quantity.</p>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: [...draft.config.bulkPriceTiers, { id: crypto.randomUUID(), label: "New tier", minimumQuantity: 1, unitPrice: draft.baseUnitPrice }] } })}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => { const minimumQuantity = (draft.config.bulkPriceTiers.at(-1)?.minimumQuantity ?? draft.config.minimumSaleQuantity) + draft.config.quantityIncrement; setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: [...draft.config.bulkPriceTiers, { id: crypto.randomUUID(), label: `${minimumQuantity}+`, minimumQuantity, unitPrice: draft.baseUnitPrice }] } }); }}>
                         <Plus className="mr-1 h-4 w-4" /> Add tier
                       </Button>
                     </div>
                     {draft.config.bulkPriceTiers.map((tier, index) => (
-                      <div key={tier.id} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[1fr_1fr_1fr_auto]">
+                      <div key={tier.id} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
                         <Input aria-label={`Tier ${index + 1} label`} value={tier.label} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, label: event.target.value } : item) } })} />
-                        <Input aria-label={`Tier ${index + 1} minimum quantity`} type="number" min="0.0001" step="0.0001" value={tier.minimumQuantity} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, minimumQuantity: Number(event.target.value) } : item) } })} />
-                        <Input aria-label={`Tier ${index + 1} unit price`} type="number" min="0.0001" step="0.0001" value={tier.unitPrice} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, unitPrice: Number(event.target.value) } : item) } })} />
+                        <Input aria-label={`Tier ${index + 1} minimum quantity`} type="number" min="0.0001" step="0.0001" value={tier.minimumQuantity} onChange={(event) => { const minimumQuantity = Number(event.target.value); setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, minimumQuantity, unitPrice: item.totalPrice !== undefined && minimumQuantity > 0 ? item.totalPrice / minimumQuantity : item.unitPrice } : item) } }); }} />
+                        <Input aria-label={`Tier ${index + 1} unit price`} type="number" min="0.0001" step="0.0001" value={tier.totalPrice === undefined ? tier.unitPrice : Number((tier.totalPrice / tier.minimumQuantity).toFixed(4))} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, unitPrice: Number(event.target.value), totalPrice: undefined } : item) } })} />
+                        <Input aria-label={`Tier ${index + 1} exact total price`} type="number" min="0.01" step="0.01" placeholder="Exact total ($)" value={tier.totalPrice ?? ""} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.map((item) => item.id === tier.id ? { ...item, totalPrice: event.target.value ? Number(event.target.value) : undefined, unitPrice: event.target.value ? Number(event.target.value) / item.minimumQuantity : item.unitPrice } : item) } })} />
                         <Button type="button" variant="ghost" size="icon" aria-label={`Remove tier ${index + 1}`} onClick={() => setDraft({ ...draft, config: { ...draft.config, bulkPriceTiers: draft.config.bulkPriceTiers.filter((item) => item.id !== tier.id) } })}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     ))}

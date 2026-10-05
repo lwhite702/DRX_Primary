@@ -49,6 +49,7 @@ export const productRecord = v.object({
     v.object({
       minimumQuantity: v.number(),
       unitPriceCents: v.number(),
+      bundlePriceCents: v.optional(v.number()),
     }),
   ),
   isActive: v.boolean(),
@@ -73,6 +74,7 @@ export const updateCommerceConfig = mutation({
       v.object({
         minimumQuantity: v.number(),
         unitPriceCents: v.number(),
+        bundlePriceCents: v.optional(v.number()),
       }),
     ),
   },
@@ -229,6 +231,9 @@ export const updateCommerceConfig = mutation({
       }
       if (tier.unitPriceCents > baseUnitPriceCents) {
         throw new Error("INVALID_ARGUMENT: Bulk unit price cannot exceed the base unit price");
+      }
+      if (tier.bundlePriceCents !== undefined && (!Number.isSafeInteger(tier.bundlePriceCents) || tier.bundlePriceCents <= 0 || tier.bundlePriceCents > Math.round(tier.minimumQuantity * baseUnitPriceCents))) {
+        throw new Error("INVALID_ARGUMENT: Bundle total must be positive whole cents and no more than base price");
       }
       previousMinimum = tier.minimumQuantity;
     }
@@ -409,6 +414,9 @@ export const createProduct = mutation({
       quantityIncrement: v.number(),
       suggestedDollarAmounts: v.array(v.number()),
       suggestedQuantities: v.array(v.number()),
+      bulkPriceTiers: v.optional(v.array(v.object({
+        minimumQuantity: v.number(), unitPriceCents: v.number(), bundlePriceCents: v.optional(v.number()),
+      }))),
     })),
     initialQuantity: v.optional(v.number()),
   },
@@ -463,12 +471,24 @@ export const createProduct = mutation({
       ...args.commerceConfig,
       fractionalEnabled: allowFractionalWeight,
       bulkPriceTiers: [],
+      ...((args.commerceConfig.bulkPriceTiers?.length ?? 0) > 0 ? { bulkPriceTiers: args.commerceConfig.bulkPriceTiers!.map(tier => ({
+        id: String(tier.minimumQuantity), label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity,
+        unitPrice: tier.bundlePriceCents === undefined ? tier.unitPriceCents / 100 : tier.bundlePriceCents / tier.minimumQuantity / 100,
+        ...(tier.bundlePriceCents === undefined ? {} : { totalPrice: tier.bundlePriceCents / 100 }),
+      })) } : {}),
     }) : undefined;
     if ((
       !Number.isSafeInteger(args.sellingPriceCents) || args.sellingPriceCents <= 0 ||
       !Number.isSafeInteger(args.unitCostCents) || args.unitCostCents < 0 ||
       !Number.isFinite(args.reorderLevelGrams ?? 10) || (args.reorderLevelGrams ?? 10) < 0
     )) throw new Error("INVALID_ARGUMENT: Enter valid integer-cent prices and a nonnegative reorder level");
+    for (const tier of creationCommerce?.bulkPriceTiers ?? []) {
+      if (tier.unitPriceCents > args.sellingPriceCents ||
+          (tier.bundlePriceCents !== undefined &&
+            (tier.bundlePriceCents <= 0 || tier.bundlePriceCents > Math.round(tier.minimumQuantity * args.sellingPriceCents)))) {
+        throw new Error("INVALID_ARGUMENT: Bulk price must be below the base price");
+      }
+    }
     const initialQuantity = args.initialQuantity ?? 0;
     const scale = 10 ** (creationCommerce?.quantityPrecision ?? commerceDefaults.quantityPrecision);
     if (!Number.isFinite(initialQuantity) || initialQuantity < 0 ||

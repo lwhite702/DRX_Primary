@@ -33,6 +33,7 @@ const quickPosCommerceConfigSchema = z.object({
       label: z.string().min(1),
       minimumQuantity: z.number().positive(),
       unitPrice: z.number().positive(),
+      totalPrice: z.number().positive().optional(),
     }),
   ),
 });

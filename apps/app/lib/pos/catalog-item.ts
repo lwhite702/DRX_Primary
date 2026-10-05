@@ -6,7 +6,7 @@ export function posCatalogItem(product: FunctionReturnType<typeof api.products.l
     decimalPrecision: product.quantityPrecision, minimumSaleQuantity: product.minimumSaleQuantity,
     quantityIncrement: product.quantityIncrement, baseUnitPrice: product.sellingPriceCents / 100,
     suggestedDollarAmounts: product.suggestedDollarPresetsCents.map((cents: number) => cents / 100), suggestedQuantities: product.suggestedQuantityPresets,
-    bulkPriceTiers: product.bulkPriceTiers.map((tier: { minimumQuantity: number; unitPriceCents: number }, index: number) => ({ id: `${product._id}-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.unitPriceCents / 100 })),
+    bulkPriceTiers: product.bulkPriceTiers.map((tier: { minimumQuantity: number; unitPriceCents: number; bundlePriceCents?: number }, index: number) => ({ id: `${product._id}-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.bundlePriceCents === undefined ? tier.unitPriceCents / 100 : tier.bundlePriceCents / tier.minimumQuantity / 100, ...(tier.bundlePriceCents === undefined ? {} : { totalPrice: tier.bundlePriceCents / 100 }) })),
   };
   return { id: product._id, name: product.productName, sku: product.sku, barcode: product.barcode ?? null, price: product.sellingPriceCents / 100,
     quantity_on_hand: product.quantityOnHandGrams, low_stock_threshold: product.reorderLevelGrams,

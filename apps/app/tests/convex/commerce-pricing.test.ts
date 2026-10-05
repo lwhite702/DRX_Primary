@@ -22,6 +22,18 @@ const fractionalProduct: CommerceProduct = {
 };
 
 describe("shared commerce pricing", () => {
+  it("charges exact bundle totals at fractional thresholds and keeps the rate for larger sales", () => {
+    const product = { ...fractionalProduct, baseUnitPriceCents: 3_500,
+      bulkPriceTiers: [
+        { minimumQuantity: 2, unitPriceCents: 3_000, bundlePriceCents: 6_000 },
+        { minimumQuantity: 3.5, unitPriceCents: 2_571, bundlePriceCents: 9_000 },
+        { minimumQuantity: 7, unitPriceCents: 2_000, bundlePriceCents: 14_000 },
+      ] };
+    for (const [quantity, total] of [[1, 3_500], [2, 6_000], [3.5, 9_000], [7, 14_000], [7.5, 15_000]]) {
+      expect(calculateCheckoutPricing({ lines: [{ product, quantity }], loyaltyDiscountRateBps: 0, loyaltyCombinationPolicy: "best_only" }).lines[0].lineSubtotalCents).toBe(total);
+    }
+    expect(calculateSuggestedQuantityForDollarAmount({ amountCents: 9_000, product }).suggestedQuantity).toBe(3.5);
+  });
   it("anchors quantity increments at the configured minimum", () => {
     const anchoredProduct = {
       ...fractionalProduct,

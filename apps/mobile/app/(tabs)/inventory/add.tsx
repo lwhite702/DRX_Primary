@@ -17,6 +17,7 @@ import { useMutation } from "convex/react";
 import { api } from "@drx-convex/_generated/api";
 import { FractionalProductFields } from "../../../src/components/fractional-product-fields";
 import {
+  commerceIssue,
   creationCommerceDefaults,
   newProductCommerceSchema,
 } from "../../../../app/lib/commerce/product-creation";
@@ -26,9 +27,7 @@ import {
   SPACING,
   FONT_SIZES,
   BORDER_RADIUS,
-  WEIGHT_TIERS,
 } from "../../../src/constants/theme";
-import { BulkPricingTier } from "../../../src/lib/types";
 
 export default function AddProductScreen() {
   const insets = useSafeAreaInsets();
@@ -58,9 +57,6 @@ export default function AddProductScreen() {
   const [purchaseQuantity, setPurchaseQuantity] = useState("1");
   const [purchaseUnit, setPurchaseUnit] = useState<"oz" | "g" | "lb" | "unit">("oz");
   const [actualNet, setActualNet] = useState("");
-
-  // Tiered Pricing State
-  const [tiers, setTiers] = useState<Partial<BulkPricingTier>[]>([]);
 
   let purchasePreview: ReturnType<typeof calculatePurchaseUnitCost> | undefined;
   if (usePurchaseBasis && purchaseCost && purchaseQuantity) {
@@ -116,22 +112,6 @@ export default function AddProductScreen() {
   const calculatedMarkup =
     parsedCost > 0 ? (calculatedProfit / parsedCost) * 100 : 0;
 
-  const updateTier = (
-    index: number,
-    field: keyof BulkPricingTier,
-    value: string | number,
-  ) => {
-    const newTiers = [...tiers];
-    newTiers[index] = { ...newTiers[index], [field]: value };
-    setTiers(newTiers);
-  };
-
-  const removeTier = (index: number) => {
-    const newTiers = [...tiers];
-    newTiers.splice(index, 1);
-    setTiers(newTiers);
-  };
-
   const handleSave = async () => {
     if (!productName.trim() || (manualSku && !sku.trim()) || !sellingPrice || (!usePurchaseBasis && !costPrice)) {
       Alert.alert(
@@ -167,6 +147,8 @@ export default function AddProductScreen() {
         )
       )
         throw new Error("Enter valid prices with at most two decimal places");
+      const tierIssue = commerceIssue(parsed.data, price);
+      if (tierIssue) throw new Error(tierIssue);
       const {
         fractionalEnabled,
         sellingUnit,
@@ -175,6 +157,7 @@ export default function AddProductScreen() {
         quantityIncrement,
         suggestedDollarAmounts,
         suggestedQuantities,
+        bulkPriceTiers,
       } = parsed.data;
       const commerceConfig = {
         sellingUnit,
@@ -183,6 +166,7 @@ export default function AddProductScreen() {
         quantityIncrement,
         suggestedDollarAmounts,
         suggestedQuantities,
+        bulkPriceTiers: bulkPriceTiers.map(tier => ({ minimumQuantity: tier.minimumQuantity, unitPriceCents: tier.totalPrice === undefined ? Math.round(tier.unitPrice * 100) : Math.max(1, Math.round(tier.totalPrice * 100 / tier.minimumQuantity)), ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }) })),
       };
       await createProduct({
         sku: manualSku ? sku.trim() : "",
@@ -226,50 +210,7 @@ export default function AddProductScreen() {
     const suggestedPrice = (cost * 3).toFixed(2);
     setSellingPrice(suggestedPrice);
 
-    // Suggest tiers
-    if (unitOfMeasure === "g") {
-      setTiers([
-        {
-          tier_name: "1g",
-          min_weight_grams: 1,
-          max_weight_grams: 3.4,
-          price_per_gram: parseFloat(suggestedPrice),
-        },
-        {
-          tier_name: "3.5g",
-          min_weight_grams: 3.5,
-          max_weight_grams: 6.9,
-          price_per_gram: parseFloat(suggestedPrice) * 0.9,
-        }, // 10% discount
-        {
-          tier_name: "7g",
-          min_weight_grams: 7,
-          max_weight_grams: 13.9,
-          price_per_gram: parseFloat(suggestedPrice) * 0.85,
-        }, // 15% discount
-        {
-          tier_name: "14g",
-          min_weight_grams: 14,
-          max_weight_grams: 27.9,
-          price_per_gram: parseFloat(suggestedPrice) * 0.8,
-        }, // 20% discount
-        {
-          tier_name: "28g",
-          min_weight_grams: 28,
-          max_weight_grams: null,
-          price_per_gram: parseFloat(suggestedPrice) * 0.75,
-        }, // 25% discount
-      ]);
-      Alert.alert(
-        "AI Suggestion",
-        "Applied simplified 3x markup and standard bulk tiers based on cost.",
-      );
-    } else {
-      Alert.alert(
-        "AI Suggestion",
-        "Applied simplified 3x markup based on cost.",
-      );
-    }
+    Alert.alert("AI Suggestion", "Applied a suggested base price. Open Advanced: bulk and bundle prices to set quantity totals.");
   };
 
   return (
@@ -496,6 +437,7 @@ export default function AddProductScreen() {
           <FractionalProductFields
             value={{ ...commerce, sellingUnit: unitOfMeasure }}
             onChange={setCommerce}
+            basePrice={Number(sellingPrice) || 0}
           />
           {/* Pricing */}
           <View style={styles.section}>
@@ -682,180 +624,6 @@ export default function AddProductScreen() {
               </View>
             </View>
 
-            {unitOfMeasure === "g" && (
-              <View style={{ marginTop: SPACING.md }}>
-                <View style={[styles.tierHeader, { marginBottom: 8 }]}>
-                  {renderLabel(
-                    "Bulk pricing preview — not saved here",
-                    false,
-                    "Tiered Pricing",
-                    "Add discount tiers for larger weight purchases. E.g., setting 3.5g at a lower $/g rate encourages customers to buy more.",
-                  )}
-                </View>
-
-                {/* Predefined weight unit selectors - Non-freeform */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: 6,
-                    marginBottom: 12,
-                  }}
-                >
-                  {WEIGHT_TIERS.map((wt) => {
-                    const alreadyAdded = tiers.some(
-                      (t) => t.min_weight_grams === wt.grams,
-                    );
-                    return (
-                      <TouchableOpacity
-                        key={wt.label}
-                        disabled={alreadyAdded}
-                        onPress={() => {
-                          setTiers([
-                            ...tiers,
-                            {
-                              min_weight_grams: wt.grams,
-                              price_per_gram: 0,
-                              tier_name: wt.label,
-                            },
-                          ]);
-                        }}
-                        accessibilityLabel={
-                          alreadyAdded
-                            ? `${wt.label} tier already added`
-                            : `Add ${wt.label} tier`
-                        }
-                        accessibilityRole="button"
-                        style={{
-                          paddingHorizontal: 12,
-                          paddingVertical: 8, // Larger tap targets
-                          borderRadius: BORDER_RADIUS.sm,
-                          backgroundColor: alreadyAdded
-                            ? COLORS.surface
-                            : "rgba(204, 255, 0, 0.08)",
-                          borderWidth: 1,
-                          borderColor: alreadyAdded
-                            ? COLORS.border
-                            : COLORS.accent,
-                          opacity: alreadyAdded ? 0.4 : 1,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            color: alreadyAdded
-                              ? COLORS.textMuted
-                              : COLORS.accent,
-                            fontWeight: "600",
-                          }}
-                        >
-                          + {wt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                {/* Clearly labeled columns */}
-                {tiers.length > 0 && (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      paddingVertical: 6,
-                      borderBottomWidth: 1,
-                      borderBottomColor: COLORS.border,
-                      marginBottom: 8,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        flex: 2,
-                        fontSize: 11,
-                        fontWeight: "600",
-                        color: COLORS.textSecondary,
-                      }}
-                    >
-                      Weight Tier (Unit)
-                    </Text>
-                    <Text
-                      style={{
-                        flex: 1.5,
-                        fontSize: 11,
-                        fontWeight: "600",
-                        color: COLORS.textSecondary,
-                      }}
-                    >
-                      Price ($/g)
-                    </Text>
-                    <View style={{ width: 28 }} />
-                  </View>
-                )}
-
-                {tiers.map((tier, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.tierRow,
-                      { marginBottom: 8, alignItems: "center" },
-                    ]}
-                  >
-                    <View style={{ flex: 2, justifyContent: "center" }}>
-                      <Text
-                        style={{
-                          color: COLORS.text,
-                          fontSize: 14,
-                          fontWeight: "500",
-                        }}
-                      >
-                        {tier.tier_name} ({tier.min_weight_grams}g)
-                      </Text>
-                    </View>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        {
-                          flex: 1.5,
-                          marginRight: 8,
-                          marginBottom: 0,
-                          paddingVertical: 4,
-                          height: 36,
-                        },
-                      ]}
-                      placeholder="0.00"
-                      keyboardType="decimal-pad"
-                      value={String(tier.price_per_gram || "")}
-                      onChangeText={(v) =>
-                        updateTier(index, "price_per_gram", v)
-                      }
-                    />
-                    <TouchableOpacity
-                      onPress={() => removeTier(index)}
-                      style={styles.removeBtn}
-                      accessibilityLabel={`Remove ${tier.tier_name} pricing tier`}
-                      accessibilityRole="button"
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={20}
-                        color={COLORS.error}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                {tiers.length === 0 && (
-                  <Text
-                    style={{
-                      color: COLORS.textSecondary,
-                      fontSize: 12,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    No specific tiers defined. Base price will apply to all
-                    weights.
-                  </Text>
-                )}
-              </View>
-            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

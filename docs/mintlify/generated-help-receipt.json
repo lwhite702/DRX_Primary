@@ -90,8 +90,8 @@
       "sourcePath": "app-docs/feature_overview/inventory-intake-and-adjustments.md",
       "mintlifyPath": "mintlify/inventory/inventory-intake-and-adjustments.mdx",
       "route": "/inventory/inventory-intake-and-adjustments",
-      "sourceSha256": "2bbb1c86849b5b6e04275e1bce61e06f57b58946f71d4c3ed3e7da506b814e53",
-      "outputSha256": "71d1d9e67a198928d6a7604bc68e258880c988131be4c664ac6ab247c4cd696a"
+      "sourceSha256": "8a38cd287418fb4c9ab582fea56e01ae0b44857d86f9a6afd9810d79a4e20906",
+      "outputSha256": "7efdc2ef577f1994327c2261aba00995495b3ea2b5a827308325c161310a0846"
     },
     {
       "articleId": "0272622",
@@ -135,8 +135,8 @@
       "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
       "mintlifyPath": "mintlify/sales/quick-sale-checkout.mdx",
       "route": "/sales/quick-sale-checkout",
-      "sourceSha256": "d877f34d907442bd9d02d4656431b453c7ea77cc0b7dbb0013fff4f28749d5a0",
-      "outputSha256": "9b46ef80aa186b6e9eb79c8bf854a38a3c7fdcaea9068a4211df9b4149b3578f"
+      "sourceSha256": "ebc493cbdd11caabc81a8d4a0aa5f271294af7ae2127a5c93c8d6df2320c41bf",
+      "outputSha256": "928fa47879ce556cbc0eb5f2c72472d19d04e8d4f2fc473c967f32b2d6e60ef7"
     },
     {
       "articleId": "5281725",
