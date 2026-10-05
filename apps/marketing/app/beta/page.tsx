@@ -132,8 +132,9 @@ export default function BetaPage() {
           accounting, or attribution.
         </p>
         <p>
-          Beta versions may transmit anonymized crash diagnostics and system telemetry to help our
-          engineering team identify performance bottlenecks and resolve software bugs.
+          Beta versions transmit data-minimized crash diagnostics and system telemetry (with customer
+          records, retail transactions, and PII scrubbed) to help our engineering team identify
+          performance bottlenecks and resolve software bugs.
         </p>
       </SectionBlock>
 

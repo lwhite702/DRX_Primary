@@ -14,15 +14,37 @@ const defaultState = {
 export function WaitlistForm() {
   const [form, setForm] = useState(defaultState);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    trackMarketingEvent("submit_waitlist", {
-      role: form.role,
-      teamSize: form.teamSize,
-      hasTooling: Boolean(form.tooling.trim()),
-    });
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to submit application. Please try again.");
+      }
+
+      setSubmitted(true);
+      trackMarketingEvent("submit_waitlist", {
+        role: form.role,
+        teamSize: form.teamSize,
+        hasTooling: Boolean(form.tooling.trim()),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit application.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -39,6 +61,11 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
+      {error && (
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
       <label className="grid gap-1 text-sm text-text-secondary">
         Email
         <input
@@ -99,9 +126,10 @@ export function WaitlistForm() {
 
       <button
         type="submit"
-        className="mt-2 rounded-full bg-neon-lime px-5 py-2 text-sm font-bold uppercase tracking-wide text-black"
+        disabled={loading}
+        className="mt-2 rounded-full bg-neon-lime px-5 py-2 text-sm font-bold uppercase tracking-wide text-black disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Join beta waitlist
+        {loading ? "Submitting application..." : "Join beta waitlist"}
       </button>
     </form>
   );

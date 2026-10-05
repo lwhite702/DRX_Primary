@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useIsBypassActive } from "@/lib/adapters/auth/ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,17 +68,54 @@ function slaLabel(status: DeliveryStatus, dueAt: number, now: number) {
 }
 
 export default function DeliveriesPage() {
-  const deliveries = useQuery(api.deliveries.listDeliveries, {});
-  const memberDirectory = useQuery(api.members.listMembers, {});
-  const [selectedId, setSelectedId] = useState<DeliveryId | null>(null);
-  const detail = useQuery(
+  const isBypassActive = useIsBypassActive();
+  const rawDeliveries = useQuery(api.deliveries.listDeliveries, isBypassActive ? "skip" : {});
+  const memberDirectory = useQuery(api.members.listMembers, isBypassActive ? "skip" : {});
+  const [selectedId, setSelectedId] = useState<DeliveryId | null>(isBypassActive ? ("del_1048" as DeliveryId) : null);
+  const rawDetail = useQuery(
     api.deliveries.getDelivery,
-    selectedId ? { deliveryId: selectedId } : "skip",
+    !isBypassActive && selectedId ? { deliveryId: selectedId } : "skip",
   );
-  const notifications = useQuery(
+  const rawNotifications = useQuery(
     api.deliveries.listNotifications,
-    selectedId ? { deliveryId: selectedId } : "skip",
+    !isBypassActive && selectedId ? { deliveryId: selectedId } : "skip",
   );
+
+  const bypassDeliveries = useMemo(() => [
+    {
+      _id: "del_1048" as DeliveryId,
+      orderNumber: "DRX-1048",
+      status: "ready_for_dispatch" as DeliveryStatus,
+      addressLabel: "100 Northstar Way, Suite 4B",
+      recipientName: "Sam Reed",
+      feeCents: 800,
+      customerFeeCents: 800,
+      vendorFeeCents: 600,
+      deliveryTaxCents: 66,
+      dispatchDueAt: Date.now() + 15 * 60_000,
+      estimatedArrivalAt: Date.now() + 45 * 60_000,
+      saleId: "373e9647-e921-418b-ac2c-23cc3d03aae8",
+      assignedToUserId: null,
+      createdAt: Date.now() - 10 * 60_000,
+      updatedAt: Date.now() - 5 * 60_000,
+    }
+  ], []);
+
+  const deliveries = isBypassActive ? bypassDeliveries : rawDeliveries;
+  const detail = isBypassActive
+    ? {
+        delivery: bypassDeliveries[0],
+        events: [],
+        adjustments: [],
+        sale: {
+          orderNumber: "DRX-1048",
+          totalAmount: 108.25,
+          subtotal: 100.00,
+          paymentMethod: "cash",
+        },
+      }
+    : rawDetail;
+  const notifications = isBypassActive ? [] : rawNotifications;
   const assignDelivery = useMutation(api.deliveries.assignDelivery);
   const markUberOrdered = useMutation(api.deliveries.markUberOrdered);
   const markHandedOff = useMutation(api.deliveries.markHandedOff);

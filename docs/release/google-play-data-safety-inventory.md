@@ -6,10 +6,9 @@ Status: working compliance draft for WRE-27 and WRE-49. Do not copy these answer
 
 - App: Deelrx CRM / DRX
 - Android package: `com.wrelik.drx`
-- Current Internal testing artifact: version `0.7.1`, version code `5`
-- Artifact source: `21d3d74120fd0d8a7ec9576219755e9f1a4195eb`
-- Current source reviewed: `e0f663794af0768f285ffe9932b0e6258862537f` (`origin/main` on 2026-09-03)
-- Mobile runtime changes after the artifact source are limited to the app/package version moving from `0.7.1` to `0.7.2`; later README and EAS configuration changes do not add a mobile data flow.
+- Closed testing artifact: version `0.10.0`, version code `8` (EAS Build)
+- Source baseline: `b1a58776` (`origin/main`)
+- Active version parity: `0.10.0` maintained across web, iOS, and Expo mobile.
 
 This inventory distinguishes information entered by a subscribing business from device data collected automatically. It also distinguishes customer-entered street addresses from device-derived precise location. The Android app does not request device location permission.
 
@@ -42,7 +41,7 @@ This inventory distinguishes information entered by a subscribing business from 
 - Expo and Google receive mobile distribution/device-service data and push tokens. Push payloads are limited to delivery reminder routing data; lock-screen visibility is configured as private.
 - PostHog can receive app interaction and device/technical data. Mobile session replay is explicitly disabled.
 - Sentry can receive crash, device, performance, and diagnostic data when its DSN is configured.
-- Featurebase receives webview traffic and feedback/roadmap content when an operator opens that screen.
+- Mintlify receives webview traffic for public Help Center and documentation when an operator opens the help/feedback screen (`docs.deelrxcrm.com`).
 - On-device Clerk tokens and the operator-session cache use SecureStore. The Android offline database uses SQLCipher, and Android app-data backup is disabled.
 - Network traffic is intended to use HTTPS and the Android release configuration disables cleartext traffic.
 
@@ -51,8 +50,8 @@ This inventory distinguishes information entered by a subscribing business from 
 1. Publish and anonymously verify the expanded policy at `https://deelrxcrm.com/legal/privacy`; the source change alone is not public evidence.
 2. Verify the exact PostHog mobile defaults and production project settings, including autocapture, IP handling, retention, and that session replay remains off.
 3. Verify Sentry event scrubbing, attachment settings, diagnostic retention, and that customer or transaction payloads are not added as event context.
-4. Verify Clerk, Convex, Expo/Google, PostHog, Sentry, Vercel, and Featurebase data-processing terms support the Play service-provider exception used above.
-5. Replace or remove the mobile Featurebase SSO request to `http://localhost:3000`; the release build currently cannot use that endpoint, and no cleartext exception should be added.
+4. Verify Clerk, Convex, Expo/Google, PostHog, Sentry, and Vercel data-processing terms support the Play service-provider exception used above.
+5. Resolved: Replaced retired mobile Featurebase SSO request to `http://localhost:3000` with canonical HTTPS Mintlify documentation (`https://docs.deelrxcrm.com`).
 6. Confirm the public account-deletion request URL and implement an in-app deletion initiation path. The current Android source allows account creation but exposes no account-deletion workflow.
 7. Confirm whether age-verification ID numbers and birth dates are present in the canonical Convex mobile schema or only in transitional REST types; disclose them if they can be entered or synced.
 8. Inspect the final signed AAB permission and SDK report after the next build. Re-run this inventory whenever a dependency, permission, provider, or data flow changes.
