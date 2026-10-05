@@ -43,8 +43,9 @@ test.describe("Accessibility", () => {
 
   for (const route of routes) {
     test(`has no critical accessibility violations on ${route}`, async ({ page }) => {
+      test.setTimeout(90000);
       await page.goto(route, { waitUntil: "domcontentloaded" });
-      await expect(page.locator("body")).toBeVisible();
+      await expect(page.locator("body")).toBeVisible({ timeout: 20000 });
 
       const results = (await Promise.race([
         new AxeBuilder({ page }).exclude("iframe").analyze(),

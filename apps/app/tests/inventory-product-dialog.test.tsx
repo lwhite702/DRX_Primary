@@ -35,14 +35,14 @@ afterEach(() => {
 });
 
 describe("inventory product dialog", () => {
-  it("labels a SKU-prefilled setup draft as creation, not editing", async () => {
+  it("labels an automatic-SKU setup draft as creation, not editing", async () => {
     window.history.replaceState({}, "", "/inventory?create=1");
     render(<InventoryPage />);
     await screen.findByRole("dialog");
-    expect(screen.getByDisplayValue(/^PROD-\d{6}$/)).toBeInTheDocument();
+    expect(screen.getByText("DRX will create a unique SKU when you save.")).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toHaveAccessibleName("Add product");
     expect(screen.getByRole("dialog")).toHaveAccessibleDescription("Add a product to your stock.");
-    expect(screen.getByRole("switch", { name: "Allow fractional sales" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" })).toBeInTheDocument();
   });
 
   it("retains edit copy and values for a persisted product", async () => {
@@ -58,9 +58,9 @@ describe("inventory product dialog", () => {
     window.history.replaceState({}, "", "/inventory?create=1");
     render(<InventoryPage />);
     const dialog = await screen.findByRole("dialog");
-    fireEvent.click(screen.getByRole("switch", { name: "Allow fractional sales" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" }));
     expect(dialog).toHaveClass("max-h-[calc(100dvh-2rem)]", "overflow-hidden", "flex", "flex-col");
-    const form = screen.getByLabelText("Minimum sale quantity").closest("form")!;
+    const form = screen.getByLabelText("Minimum sale amount").closest("form")!;
     expect(form.parentElement).toHaveClass("min-h-0", "overflow-y-auto");
     expect(form.parentElement).not.toContainElement(screen.getByRole("button", { name: "Close" }));
     expect(form.parentElement).not.toContainElement(screen.getByRole("heading", { level: 2 }));
@@ -78,8 +78,8 @@ describe("inventory product dialog", () => {
     window.history.replaceState({}, "", "/inventory?create=1");
     const { rerender } = render(<InventoryPage />);
     await screen.findByRole("dialog");
-    fireEvent.click(screen.getByRole("switch", { name: "Allow fractional sales" }));
-    expect(screen.getByLabelText("Minimum sale quantity")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" }));
+    expect(screen.getByLabelText("Minimum sale amount")).toBeInTheDocument();
     if (action === "Escape") {
       fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape", code: "Escape" });
     } else {

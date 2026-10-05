@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,19 @@ import { classifyChange, isDocumentationOnly } from "./ci-change-scope.mjs";
 
 const event = { pull_request: { base: { sha: "a".repeat(40) }, head: { sha: "b".repeat(40) } } };
 const report = fileURLToPath(new URL("./ci-aggregate-report.mjs", import.meta.url));
+
+test("the all-changes documentation gate installs dependencies before validating visuals", () => {
+  const workflow = readFileSync(new URL("../../.github/workflows/ci-gate.yml", import.meta.url), "utf8");
+  const changes = workflow.split("  changes:\n")[1]?.split("\n  quality:")[0];
+  assert.ok(changes, "changes job must exist");
+  assert.match(changes, /uses: pnpm\/action-setup@v4\n\s+with:\n\s+version: 10\.17\.1/);
+  const install = changes.indexOf("run: pnpm install --frozen-lockfile");
+  const validate = changes.indexOf("node scripts/docs/validate-mintlify-visuals.mjs");
+  assert.ok(install >= 0 && validate > install, "visual validation requires an earlier frozen dependency install");
+  assert.ok(changes.indexOf("uses: pnpm/action-setup@v4") < install, "pnpm must be set up before installation");
+  assert.doesNotMatch(changes, /node scripts\/featurebase\/validate-help-visuals\.mjs/, "use canonical Mintlify content validation");
+  assert.doesNotMatch(changes, /\n\s+if:|continue-on-error:/, "all changes must pass the documentation gate");
+});
 
 test("only known prose paths qualify; runtime/config/mixed/unknown and empty diffs do not", () => {
   assert.equal(isDocumentationOnly(["README.md", "docs/guide.md", "app-docs/checkout.md", ".agents/skills/example/SKILL.md"]), true);

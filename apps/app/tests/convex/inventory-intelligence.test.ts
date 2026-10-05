@@ -37,7 +37,7 @@ it("rejects foreign products and staff before creating records", async () => {
   const foreign = t.withIdentity({ subject: "foreign" });
   const other = await foreign.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Other" });
   await expect(foreign.mutation(api.inventoryIntelligence.analyzeProduct, { ...args, expectedUserId: "foreign", businessId: other.businessId })).rejects.toThrow(/NOT_FOUND/);
-  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "fixture@example.invalid", role: "MEMBER", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "fixture@example.invalid", role: "cashier", status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
   await expect(t.withIdentity({ subject: "staff" }).mutation(api.inventoryIntelligence.analyzeProduct, { ...args, expectedUserId: "staff" })).rejects.toThrow(/FORBIDDEN/);
   await expect(owner.mutation(api.inventoryIntelligence.analyzeProduct, { ...args, expectedUserId: "foreign" })).rejects.toThrow(/FORBIDDEN/);
   await t.run(ctx => ctx.db.patch(productId, { unitCostCents: 1.5 }));
@@ -141,7 +141,7 @@ it.each([{ marginRequirement: -1 }, { marginRequirement: 11 }, { supplierLeadTim
 it("separates analysis modes, permissions and latest results without replacing the other kind", async () => {
   const { t, owner, businessId, productId, args } = await setup();
   await t.run(async ctx => {
-    for (const [clerkUserId, grant] of [["pricer", "pricing.manage"], ["stock", "inventory.manage"]]) await ctx.db.insert("users", { businessId, clerkUserId, email: `${clerkUserId}@example.invalid`, role: "MEMBER", permissions: { [grant]: true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 });
+    for (const [clerkUserId, grant] of [["pricer", "pricing.manage"], ["stock", "inventory.manage"]]) await ctx.db.insert("users", { businessId, clerkUserId, email: `${clerkUserId}@example.invalid`, role: "cashier", permissions: { [grant]: true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 });
   });
   const pricer = t.withIdentity({ subject: "pricer" }), stock = t.withIdentity({ subject: "stock" });
   const priceArgs = { ...args, expectedUserId: "pricer", options: { analysisType: "pricing" as const } };

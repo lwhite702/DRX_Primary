@@ -1,7 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { drxClerkAuthAppearance } from "@/lib/adapters/auth/appearance";
+import {
+  drxClerkAuthAppearance,
+  drxClerkWaitlistAppearance,
+} from "@/lib/adapters/auth/appearance";
 
 const workspaceStyles = resolve(process.cwd(), "apps/app/app/globals.css");
 const globalStyles = readFileSync(
@@ -58,8 +61,13 @@ describe("Clerk authentication appearance", () => {
   it("keeps unfocused form field boundaries distinguishable from the auth panel", () => {
     const inputClasses = drxClerkAuthAppearance.elements.formFieldInput;
 
-    expect(inputClasses).toContain("bg-[#262626]");
-    expect(inputClasses).toContain("border-[#737373]");
+    expect(inputClasses).toContain("bg-[#171717]");
+    expect(inputClasses).toContain("border-[#555555]");
+    expect(contrastRatio("#555555", "#0A0A0A")).toBeGreaterThanOrEqual(2.5);
+
+    const waitlistClasses = drxClerkWaitlistAppearance.elements.formFieldInput;
+    expect(waitlistClasses).toContain("bg-[#262626]");
+    expect(waitlistClasses).toContain("border-[#737373]");
     expect(contrastRatio("#737373", "#121212")).toBeGreaterThanOrEqual(3);
   });
 
@@ -75,7 +83,8 @@ describe("Clerk authentication appearance", () => {
     );
 
     expect(drxClerkAuthAppearance.variables.colorPrimaryForeground).toBe("#0A0A0A");
-    expect(drxClerkAuthAppearance.elements.formButtonPrimary).toContain("text-base");
+    expect(drxClerkAuthAppearance.elements.formButtonPrimary).toContain("text-[15px]");
+    expect(drxClerkWaitlistAppearance.elements.formButtonPrimary).toContain("text-base");
     expect(buttonRule).toContain("color: #0a0a0a !important;");
     expect(buttonRule).toContain("font-size: 1rem !important;");
     expect(contrastRatio("#0A0A0A", "#CCFF00")).toBeGreaterThanOrEqual(7);

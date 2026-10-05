@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
 
-const BUILD_LAST_MODIFIED = new Date(
-  process.env.NEXT_PUBLIC_BUILD_TIMESTAMP ?? Date.now(),
-);
+const configuredBuildDate = process.env.NEXT_PUBLIC_BUILD_TIMESTAMP?.trim();
+const parsedBuildDate = configuredBuildDate ? new Date(configuredBuildDate) : new Date();
+const BUILD_LAST_MODIFIED = Number.isFinite(parsedBuildDate.getTime())
+  ? parsedBuildDate
+  : new Date();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://deelrxcrm.app";

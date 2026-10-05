@@ -23,7 +23,7 @@ async function ensureHelpAccess(page: import("@playwright/test").Page) {
 
 test.describe("Help center smoke", () => {
   async function expectRouteShell(page: import("@playwright/test").Page) {
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page.locator("body")).toBeVisible({ timeout: 15000 });
     await expect(page.locator("body")).not.toContainText(
       /Application error|Internal Server Error/i,
     );

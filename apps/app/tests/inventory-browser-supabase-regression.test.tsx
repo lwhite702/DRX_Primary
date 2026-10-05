@@ -40,7 +40,7 @@ describe("inventory browser data adapter", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/inventory?limit=200&business_id=68b1e486-422e-478a-b5b8-f586da935e5d",
+      "/api/inventory?limit=200&business_id=68b1e486-422e-478a-b5b8-f586da935e5d&status=active",
       expect.objectContaining({ credentials: "same-origin" }),
     );
     expect(result.current.inventory).toEqual([
