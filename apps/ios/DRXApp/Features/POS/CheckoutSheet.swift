@@ -202,7 +202,7 @@ struct CheckoutSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(item.product.productName), \(formatGrams(item.quantityGrams)) at \(formatCents(quotedLine?.appliedUnitPriceCents ?? item.effectiveUnitPriceCents)), line total \(formatCents(quotedLine?.lineSubtotalCents ?? store.pricedLineTotal(item)))")
+                .accessibilityLabel("\(item.product.productName), \(formatGrams(item.quantityGrams)) at \(formatUnitPriceCents(quotedLine?.appliedUnitPriceCents ?? Double(item.effectiveUnitPriceCents))), line total \(formatCents(quotedLine?.lineSubtotalCents ?? store.pricedLineTotal(item)))")
                 Divider().padding(.leading, 16)
             }
 
