@@ -161,6 +161,9 @@ struct CheckoutSheet: View {
                 }
                 .buttonStyle(.drxPrimaryFullWidth)
                 .disabled(!canConfirm || isProcessing)
+                .accessibilityLabel(isProcessing ? "Processing sale" : "Confirm sale for \(formatCents(displayedTotalCents)) with \(paymentMethod.label)")
+                .accessibilityHint(canConfirm ? "Double tap to complete payment and record transaction" : "Disabled until payment amount and delivery requirements are met")
+                .accessibilityIdentifier("confirmCheckoutButton")
                 .padding(.horizontal)
             }
             .padding(.vertical)
@@ -198,6 +201,8 @@ struct CheckoutSheet: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(item.product.productName), \(formatGrams(item.quantityGrams)) at \(formatUnitPriceCents(quotedLine?.appliedUnitPriceCents ?? Double(item.effectiveUnitPriceCents))), line total \(formatCents(quotedLine?.lineSubtotalCents ?? store.pricedLineTotal(item)))")
                 Divider().padding(.leading, 16)
             }
 
@@ -339,6 +344,7 @@ struct CheckoutSheet: View {
                         VStack(spacing: 6) {
                             Image(systemName: method.icon)
                                 .font(.system(size: 18, weight: .semibold))
+                                .accessibilityHidden(true)
                             Text(method.label)
                                 .font(.caption.weight(.semibold))
                         }
@@ -352,6 +358,8 @@ struct CheckoutSheet: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Pay with \(method.label)")
+                    .accessibilityAddTraits(paymentMethod == method ? [.isButton, .isSelected] : [.isButton])
                 }
             }
             .padding(.horizontal)

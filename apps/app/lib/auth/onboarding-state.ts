@@ -5,6 +5,9 @@ import { getConvexAuthToken } from "./convex-token";
 
 /** Completion belongs to the authenticated tenant membership, not a global Clerk flag. */
 export async function getCompletedOnboardingBusinessId(userId: string) {
+  if (process.env.BYPASS_AUTH_FOR_TESTING === "true") {
+    return null;
+  }
   const session = await auth();
   if (session.userId !== userId) throw new Error("Onboarding status is temporarily unavailable");
   const token = await getConvexAuthToken();

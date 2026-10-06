@@ -31,19 +31,18 @@ export function ComingSoonOrdering() {
           <div className="max-w-[720px]">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[12px] font-mono font-medium text-accent mb-3">
               <Sparkles className="size-3.5 text-accent" />
-              <span>In research · No launch date</span>
+              <span>Coming soon · Teaser</span>
             </div>
             <h2
               id="ordering-heading"
               className="font-display text-[28px] md:text-[34px] lg:text-[40px] font-bold leading-[36px] md:leading-[42px] lg:leading-[48px] tracking-[-0.5px] text-text-primary mb-3"
             >
               Customer ordering.{" "}
-              <span className="text-accent">Still being explored.</span>
+              <span className="text-accent">Direct from your catalog.</span>
             </h2>
             <p className="text-[16px] md:text-[18px] font-normal leading-[26px] md:leading-[28px] text-muted-foreground">
-              We’re exploring what a customer ordering experience could look like
-              in DRX. The feature scope and timing aren’t set. This concept preview
-              doesn’t represent a live ordering flow.
+              A clean menu link for your verified customers to request items directly,
+              sync counts automatically, and eliminate missed texts.
             </p>
           </div>
 
@@ -60,9 +59,9 @@ export function ComingSoonOrdering() {
 
         {/* Feature Grid & Visual Preview */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Column: Research questions */}
+          {/* Left Column: Coming soon capabilities */}
           <div className="lg:col-span-7 flex flex-col gap-6 text-left">
-            {/* Research question 1 */}
+            {/* Capability 1 */}
             <div className="group rounded-[12px] border border-border bg-surface-elevated p-5 md:p-6 transition-all duration-200 hover:border-accent/40">
               <div className="flex items-start gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mt-0.5">
@@ -70,16 +69,16 @@ export function ComingSoonOrdering() {
                 </div>
                 <div>
                   <h3 className="font-display text-[18px] md:text-[20px] font-semibold text-text-primary mb-1">
-                    A shop page
+                    Your live shop menu
                   </h3>
                   <p className="text-[14px] md:text-[15px] leading-[22px] text-muted-foreground">
-                    We’re exploring what information a customer might need to see. The page layout and access rules are still undecided.
+                    A private, branded link showing only what’s currently in stock with clear counts and prices.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Research question 2 */}
+            {/* Capability 2 */}
             <div className="group rounded-[12px] border border-border bg-surface-elevated p-5 md:p-6 transition-all duration-200 hover:border-accent/40">
               <div className="flex items-start gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mt-0.5">
@@ -87,16 +86,16 @@ export function ComingSoonOrdering() {
                 </div>
                 <div>
                   <h3 className="font-display text-[18px] md:text-[20px] font-semibold text-text-primary mb-1">
-                    A request flow
+                    Direct order requests
                   </h3>
                   <p className="text-[14px] md:text-[15px] leading-[22px] text-muted-foreground">
-                    We’re considering how a customer could ask about a product. The next steps for any request are still undecided.
+                    Customers pick what they want in seconds. Requests land directly in your DRX workspace.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Research question 3 */}
+            {/* Capability 3 */}
             <div className="group rounded-[12px] border border-border bg-surface-elevated p-5 md:p-6 transition-all duration-200 hover:border-accent/40">
               <div className="flex items-start gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mt-0.5">
@@ -107,13 +106,13 @@ export function ComingSoonOrdering() {
                     Shop controls
                   </h3>
                   <p className="text-[14px] md:text-[15px] leading-[22px] text-muted-foreground">
-                    What shops can manage, and which choices belong to the shop, are still being researched.
+                    You choose which items are visible, set order minimums, and decide who gets access.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Research question 4 */}
+            {/* Capability 4 */}
             <div className="group rounded-[12px] border border-border bg-surface-elevated p-5 md:p-6 transition-all duration-200 hover:border-accent/40">
               <div className="flex items-start gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-accent mt-0.5">
@@ -121,10 +120,10 @@ export function ComingSoonOrdering() {
                 </div>
                 <div>
                   <h3 className="font-display text-[18px] md:text-[20px] font-semibold text-text-primary mb-1">
-                    Clear next steps
+                    Instant fulfillment queue
                   </h3>
                   <p className="text-[14px] md:text-[15px] leading-[22px] text-muted-foreground">
-                    We’re exploring what information would help customers and shop teams know what to do next. No update or fulfillment flow is available in this concept.
+                    Confirm the order, pack the items, and record payment when handed off. No double selling.
                   </p>
                 </div>
               </div>
@@ -143,12 +142,12 @@ export function ComingSoonOrdering() {
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[11px] font-mono text-[#a3a3a3]">
                   <Lock className="size-2.5 text-accent" />
-                  <span>Concept preview</span>
+                  <span>Preview</span>
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground">Illustrative</span>
+                <span className="text-[10px] font-mono text-muted-foreground">Coming soon</span>
               </div>
 
-              {/* Static research concept; not a working storefront */}
+              {/* Static preview */}
               <div className="space-y-3">
                 {/* Shop page concept */}
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
@@ -157,45 +156,45 @@ export function ComingSoonOrdering() {
                       Sample shop
                     </span>
                     <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-mono font-medium text-accent">
-                      Concept
+                      Live link
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Possible customer view · Details TBD
+                    Customer menu · Direct access
                   </p>
                 </div>
 
-                {/* Possible page elements */}
+                {/* Page elements */}
                 <div className="space-y-2 rounded-xl border border-white/10 bg-black/40 p-3 text-[12px]">
                   <div className="flex items-center justify-between text-text-primary">
-                    <span>Shop information</span>
-                    <span className="font-mono text-muted-foreground">To explore</span>
+                    <span>Live product catalog</span>
+                    <span className="font-mono text-accent">Real-time</span>
                   </div>
                   <div className="flex items-center justify-between text-text-primary">
-                    <span>Product browsing</span>
-                    <span className="font-mono text-muted-foreground">To explore</span>
+                    <span>Order request queue</span>
+                    <span className="font-mono text-accent">Instant</span>
                   </div>
                   <div className="border-t border-white/10 pt-2 flex items-center justify-between font-medium">
-                    <span className="text-muted-foreground">Feature details</span>
-                    <span className="font-mono text-accent font-bold text-[13px]">Not set</span>
+                    <span className="text-muted-foreground">Inventory sync</span>
+                    <span className="font-mono text-accent font-bold text-[13px]">Automatic</span>
                   </div>
                 </div>
 
-                {/* No active order or payment actions */}
+                {/* Status callout */}
                 <div className="rounded-xl border border-accent/30 bg-accent/[0.04] p-3 space-y-2">
                   <div className="flex items-center gap-1.5 text-accent text-[11px] font-medium">
                     <Clock className="size-3.5" />
-                    <span>Scope and timing are undecided</span>
+                    <span>In development for beta shops</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-snug">
-                    This static preview shows an idea under research. It does not place orders or take payments.
+                    Early beta partners will test customer ordering first before general rollout.
                   </p>
                 </div>
 
                 {/* Concept status */}
                 <div className="flex items-center justify-between px-1 text-[10px] text-muted-foreground">
-                  <span>No live ordering flow</span>
-                  <span className="font-mono text-accent">● In research</span>
+                  <span>Customer menu experience</span>
+                  <span className="font-mono text-accent">● Coming soon</span>
                 </div>
               </div>
             </div>

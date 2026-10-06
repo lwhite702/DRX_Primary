@@ -98,15 +98,6 @@ function useBusinessState(): BusinessContextValue {
     };
   }, [authBypassEnabled, fetchBusinessProfile, identityKey, isUserLoaded]);
 
-  const availableBusinesses = useMemo(
-    () =>
-      userMemberships?.data?.map((membership: any) => ({
-        id: membership.organization.id,
-        business_name: membership.organization.name,
-      })) ?? [],
-    [userMemberships?.data],
-  );
-
   const bypassBusinesses = useMemo(
     () =>
       authBypassEnabled && business
@@ -116,12 +107,27 @@ function useBusinessState(): BusinessContextValue {
               business_name: String(
                 business.businessName ||
                   business.business_name ||
-                  "Local Business",
+                  "Northstar Demo Shop",
               ),
+            },
+            {
+              id: "org_northstar_dist",
+              business_name: "Northstar Distribution",
             },
           ]
         : [],
     [authBypassEnabled, business],
+  );
+
+  const availableBusinesses = useMemo(
+    () =>
+      authBypassEnabled
+        ? bypassBusinesses
+        : userMemberships?.data?.map((membership: any) => ({
+            id: membership.organization.id,
+            business_name: membership.organization.name,
+          })) ?? [],
+    [authBypassEnabled, bypassBusinesses, userMemberships?.data],
   );
 
   const switchBusiness = useCallback(

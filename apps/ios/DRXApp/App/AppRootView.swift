@@ -31,7 +31,7 @@ struct AppRootView: View {
                     )
                     .onAppear { environment.telemetry.screen("Welcome") }
                 case .needsOnboarding:
-                    if clerk.user != nil {
+                    if clerk.user != nil || ProcessInfo.processInfo.arguments.contains("--ui-testing-onboarding") {
                         NativeOnboardingView()
                     } else {
                         SignedOutWelcomeView(
@@ -40,7 +40,7 @@ struct AppRootView: View {
                         )
                     }
                 case .ready:
-                    if clerk.user != nil {
+                    if clerk.user != nil || ProcessInfo.processInfo.arguments.contains("--ui-testing-operator") {
                         OperatorTabView()
                     } else {
                         SignedOutWelcomeView(
@@ -75,6 +75,10 @@ struct AppRootView: View {
             completeInitialSplashIfReady()
         }
         .task(id: clerk.user?.id) {
+            guard !ProcessInfo.processInfo.arguments.contains("--ui-testing-operator") &&
+                  !ProcessInfo.processInfo.arguments.contains("--ui-testing-onboarding") else {
+                return
+            }
             guard let userID = clerk.user?.id else {
                 await environment.clerkSignedOut()
                 identifiedUserID = nil

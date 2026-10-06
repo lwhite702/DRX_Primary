@@ -1,3 +1,5 @@
+import { ScanLine } from "lucide-react";
+
 /**
  * Brand-built vector artwork for the marketing hero. It uses the current DRX
  * navigation and workflow terms without presenting invented records or totals
@@ -17,10 +19,21 @@ export function MarketingProductProof() {
       <div aria-hidden="true" className="drx-app-window relative overflow-hidden rounded-[22px] border border-white/10 bg-[#111313] shadow-[0_28px_90px_rgba(0,0,0,0.58)]">
         <div className="flex h-12 items-center justify-between border-b border-white/[0.07] bg-[#151717] px-4 sm:px-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-accent text-black">
-              <Image src="/brand/drx-mark.svg" width={20} height={20} alt="" className="size-4 object-contain" />
+            <span className="flex size-7 items-center justify-center rounded-lg bg-black/60 border border-white/10">
+              <svg
+                viewBox="0 0 64 64"
+                className="size-4.5"
+                role="img"
+                aria-label="DRX slash mark"
+              >
+                <path fill="#CCFF00" d="M41 4h16L23 60H7z" />
+                <path fill="#F5F5F5" d="M43 29h14L39 58H25z" />
+              </svg>
             </span>
-            <span className="text-[12px] font-semibold tracking-wide text-white/90">DRX</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-semibold tracking-wide text-white/90">DRX</span>
+              <span className="hidden text-[11px] font-mono uppercase tracking-wider text-white/40 md:inline">· Deelrx CRM</span>
+            </div>
           </div>
           <span className="hidden rounded-full border border-white/10 bg-white/[0.035] px-3 py-1 text-[10px] font-medium text-white/55 sm:inline-flex">
             Workspace
@@ -98,9 +111,7 @@ export function MarketingProductProof() {
               <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-[#4ad6ff]/20 bg-[linear-gradient(145deg,rgba(74,214,255,.12),rgba(156,140,255,.07)_52%,rgba(25,28,28,1)_100%)] p-3.5 sm:p-4">
                 <div>
                   <span className="inline-flex size-7 items-center justify-center rounded-lg bg-[#4ad6ff]/15 text-[#4ad6ff]">
-                    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                      <path d="M4 5h16v14H4zM8 9h8M8 13h5" strokeLinecap="round" />
-                    </svg>
+                    <ScanLine className="size-4" aria-hidden="true" />
                   </span>
                   <div className="mt-3 text-[12px] font-semibold text-white/90">New sale</div>
                   <p className="mt-1 text-[9px] leading-4 text-white/45">Find products, review the sale, and record payment.</p>
@@ -149,4 +160,3 @@ export function WorkflowVisual({ kind }: { kind: WorkflowVisualKind }) {
     </div>
   );
 }
-import Image from "next/image";

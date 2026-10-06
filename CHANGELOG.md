@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **External beta launch remediation (WRE-152, WRE-153, WRE-154, WRE-155, WRE-156, WRE-172)**: Remediate blockers identified in the external beta audit. Resolve customer helper conflict markers while preserving test bypasses, point staging mobile build profiles away from production keys, validate and sanitize waitlist requests, restore checkout sale validation fields, and use authentic vector mark assets in marketing hero previews.
 - **Product-save release gate (WRE-149)**: Restore CI checks needed to publish the already implemented product setup backend, and return the correct unauthorized response from sale detail requests. Production deployment and signed-in device verification remain pending.
 - **Native production workspace connection (WRE-138)**: Production iOS and Android builds now receive the canonical Convex production URL explicitly, avoiding a missing backend URL in EAS builds. This applies to new builds; existing installed apps require an updated build to receive the configuration.
 

@@ -1,0 +1,118 @@
+name: Mobile EAS Build and Transmit
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        type: choice
+        default: "closed-test"
+        options:
+          - "closed-test"
+          - "production"
+          - "preview"
+          - "development"
+      platform:
+        description: "Target platform"
+        required: true
+        type: choice
+        default: "android"
+        options:
+          - "android"
+          - "all"
+          - "ios"
+      transmit:
+        description: "Transmit (auto-submit) build to app store track"
+        required: true
+        type: boolean
+        default: false
+      environment:
+        description: "GitHub environment for secrets"
+        required: true
+        type: choice
+        default: "preview"
+        options:
+          - "preview"
+          - "production"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-eas-${{ github.ref }}-${{ github.event.inputs.profile || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'closed-test' }}
+  cancel-in-progress: false
+
+jobs:
+  eas-build-transmit:
+    name: EAS Build and Transmit
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'preview' }}
+    env:
+      BUILD_PROFILE: ${{ inputs.profile || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'closed-test' }}
+      BUILD_PLATFORM: ${{ inputs.platform || 'android' }}
+      AUTO_TRANSMIT: ${{ inputs.transmit != false }}
+      TARGET_ENV: ${{ inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'preview' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.1
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Verify EAS authentication credentials
+        run: |
+          if [ -z "${EXPO_TOKEN:-}" ]; then
+            echo "::error::EXPO_TOKEN secret is not set in the GitHub repository or environment '${{ env.TARGET_ENV }}'. Configure EXPO_TOKEN under Repository Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          echo "EXPO_TOKEN authentication secret is configured."
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Setup Expo and EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate EAS configuration
+        working-directory: ./apps/mobile
+        run: |
+          set -euo pipefail
+          echo "Validating EAS configuration for platform: $BUILD_PLATFORM, profile: $BUILD_PROFILE"
+          npx eas-cli config --platform "$BUILD_PLATFORM" --profile "$BUILD_PROFILE"
+
+      - name: Execute EAS Build and Transmit
+        working-directory: ./apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "$AUTO_TRANSMIT" = "true" ]; then
+            echo "Building and auto-submitting $BUILD_PLATFORM ($BUILD_PROFILE) to app store track..."
+            npx eas-cli build \
+              --platform "$BUILD_PLATFORM" \
+              --profile "$BUILD_PROFILE" \
+              --auto-submit \
+              --non-interactive
+          else
+            echo "Building $BUILD_PLATFORM ($BUILD_PROFILE) without store transmission..."
+            npx eas-cli build \
+              --platform "$BUILD_PLATFORM" \
+              --profile "$BUILD_PROFILE" \
+              --non-interactive
+          fi

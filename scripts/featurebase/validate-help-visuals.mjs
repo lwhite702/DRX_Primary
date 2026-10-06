@@ -22,9 +22,10 @@ async function loadSharp() {
     const sharpPackage = JSON.parse(
       fs.readFileSync(path.join(sharpRoot, "package.json"), "utf8"),
     );
-    const importPath = sharpPackage.exports?.["."]?.import?.default;
-    if (!importPath)
-      throw new Error("sharp does not declare an ESM entry point");
+    const importPath =
+      sharpPackage.exports?.["."]?.import?.default ||
+      sharpPackage.main ||
+      "lib/index.js";
     return (
       await import(
         pathToFileURL(path.join(sharpRoot, importPath)).href

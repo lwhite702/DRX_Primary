@@ -8,11 +8,47 @@ import { getConvexAuthToken } from "@/lib/auth/convex-token";
 export async function getCurrentBusinessProfile() {
   if (isAuthBypassEnabled()) {
     const { orgId, userId } = await auth();
+    try {
+      const { db } = await import("@/lib/db");
+      const dbProfile = await (db as any).businessProfile?.findFirst({
+        where: orgId
+          ? { OR: [{ id: orgId }, { clerkOrgId: orgId }] }
+          : (userId ? { ownerId: userId } : {}),
+        include: { settings: true },
+        orderBy: { createdAt: "asc" },
+      });
+      if (dbProfile) {
+        return {
+          id: dbProfile.id,
+          clerkOrgId: dbProfile.clerkOrgId,
+          businessName: dbProfile.businessName,
+          business_name: dbProfile.businessName,
+          businessType: dbProfile.businessType || "retail",
+          role: "owner",
+          ownerId: dbProfile.ownerId,
+          isActive: dbProfile.isActive,
+          is_active: dbProfile.isActive,
+          address: dbProfile.address || "",
+          city: dbProfile.city || "",
+          state: dbProfile.state || "",
+          zipCode: dbProfile.zipCode || "",
+          zip_code: dbProfile.zipCode || "",
+          phoneNumber: dbProfile.phoneNumber || "",
+          phone_number: dbProfile.phoneNumber || "",
+          createdAt: dbProfile.createdAt,
+          updatedAt: dbProfile.updatedAt,
+          settingsData: (dbProfile.settings?.[0]?.settingsData as Record<string, unknown>) || {},
+        };
+      }
+    } catch {
+      // Fall through to fallback
+    }
+    const defaultName = process.env.DRX_DEMO_BUSINESS_NAME || "Northstar Demo Shop";
     return {
       id: orgId ?? "bypass-business",
       clerkOrgId: orgId ?? null,
-      businessName: "Local Business",
-      business_name: "Local Business",
+      businessName: defaultName,
+      business_name: defaultName,
       businessType: "retail",
       role: "super_admin",
       ownerId: userId ?? null,

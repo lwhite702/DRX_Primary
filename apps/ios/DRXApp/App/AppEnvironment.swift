@@ -200,7 +200,9 @@ final class AppEnvironment {
     }
 
     static func live(configuration: AppConfiguration) -> AppEnvironment {
-        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") ||
+           ProcessInfo.processInfo.arguments.contains("--ui-testing-operator") ||
+           ProcessInfo.processInfo.arguments.contains("--ui-testing-onboarding") {
             return preview()
         }
 
@@ -221,12 +223,39 @@ final class AppEnvironment {
             "DRX_API_BASE_URL": "https://example.test",
             "DRX_CONVEX_URL": "https://example.convex.cloud",
         ])
-        return AppEnvironment(
+        let env = AppEnvironment(
             session: SessionStore(),
             telemetry: TelemetryService(configuration: configuration),
             configuration: configuration,
             provisioningClient: PreviewProvisioningClient()
         )
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing-operator") {
+            env.rootState = .ready
+            env.session.restore(OperatorSession(
+                operatorID: "preview_operator",
+                displayName: "Sam Reed",
+                businessID: "preview_business",
+                businessName: "Northstar Demo Shop",
+                roles: ["owner"],
+                permissions: ["*"],
+                email: "sam.reed@northstardemo.local"
+            ))
+            if let tabArgIndex = ProcessInfo.processInfo.arguments.firstIndex(of: "--ui-testing-tab"),
+               tabArgIndex + 1 < ProcessInfo.processInfo.arguments.count {
+                let tabName = ProcessInfo.processInfo.arguments[tabArgIndex + 1]
+                switch tabName {
+                case "dashboard": env.nextWorkspaceTab = .dashboard
+                case "pos": env.nextWorkspaceTab = .pos
+                case "inventory": env.nextWorkspaceTab = .inventory
+                case "customers": env.nextWorkspaceTab = .customers
+                case "more": env.nextWorkspaceTab = .more
+                default: break
+                }
+            }
+        } else if ProcessInfo.processInfo.arguments.contains("--ui-testing-onboarding") {
+            env.rootState = .needsOnboarding
+        }
+        return env
     }
 
     func clerkSignedOut() async {

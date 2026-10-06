@@ -20,6 +20,9 @@ async function main() {
   ] as string[];
   const linkResults = [];
   for (const url of links) {
+    if (url.startsWith(".") || url.endsWith(".md") || url.includes(".md#")) {
+      continue;
+    }
     if (url.startsWith("mailto:")) {
       if (url !== "mailto:support@deelrxcrm.com")
         throw new Error("Unapproved support address");

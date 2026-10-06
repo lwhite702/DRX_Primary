@@ -115,10 +115,8 @@ private struct ProductRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Stock indicator dot
-            Circle()
-                .fill(stockColor)
-                .frame(width: 10, height: 10)
+            // Stock indicator with shape and color
+            stockIndicator
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
@@ -150,6 +148,26 @@ private struct ProductRowView: View {
                 .foregroundStyle(DRXPalette.muted)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(product.productName), SKU \(product.sku), \(product.sellingPriceFormatted), \(product.stockFormatted)\(product.isOutOfStock ? ", out of stock" : product.isLowStock ? ", low stock" : "")")
+        .accessibilityHint("Double-tap to view product details")
+    }
+
+    @ViewBuilder
+    private var stockIndicator: some View {
+        if product.isOutOfStock {
+            Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 10))
+                .foregroundStyle(.red)
+        } else if product.isLowStock {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 10))
+                .foregroundStyle(.orange)
+        } else {
+            Circle()
+                .fill(.green)
+                .frame(width: 10, height: 10)
+        }
     }
 
     private var stockColor: Color {
