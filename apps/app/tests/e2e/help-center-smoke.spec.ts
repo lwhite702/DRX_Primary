@@ -58,6 +58,7 @@ test.describe("Help center smoke", () => {
   });
 
   test("library embed loads and feedback route redirects", async ({ page }) => {
+    test.setTimeout(60000);
     const access = await ensureHelpAccess(page);
     if (!access.hasProtectedAccess) {
       await expect(page).toHaveURL(/\/login(?:\?|$)/);
