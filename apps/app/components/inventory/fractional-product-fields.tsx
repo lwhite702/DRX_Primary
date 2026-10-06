@@ -29,9 +29,11 @@ function formatPresetLabel(val: number, unit: string): string {
 export function FractionalProductFields({
   value,
   onChange,
+  basePrice = 0,
 }: {
   value: ProductCommerceConfig;
   onChange: (value: ProductCommerceConfig) => void;
+  basePrice?: number;
 }) {
   const update = (patch: Partial<ProductCommerceConfig>) =>
     onChange({ ...value, ...patch });
@@ -428,6 +430,33 @@ export function FractionalProductFields({
           )}
         </div>
       </div>
+      <details className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-white">Advanced: bulk and bundle prices</summary>
+        <p className="mt-2 text-xs text-text-secondary">Set the total at each quantity. For example, with a $35/g base price: 2g for $60, 3.5g for $90, and 7g for $140. The highest eligible price applies to the full sale quantity.</p>
+        <div className="mt-3 space-y-3">
+          {value.bulkPriceTiers.map((tier, index) => (
+            <div key={tier.id} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+              <div><Label htmlFor={`bundle-quantity-${tier.id}`} className="text-xs text-white">Quantity ({value.sellingUnit})</Label>
+                <input id={`bundle-quantity-${tier.id}`} aria-label={`Bundle ${index + 1} quantity`} type="number" min={value.minimumSaleQuantity} step={value.quantityIncrement} value={tier.minimumQuantity || ""} onChange={(event) => {
+                  const minimumQuantity = Number(event.target.value);
+                  update({ bulkPriceTiers: value.bulkPriceTiers.map(item => item.id === tier.id ? { ...item, minimumQuantity, unitPrice: minimumQuantity > 0 ? (item.totalPrice ?? 0) / minimumQuantity : 0, label: `${minimumQuantity}+` } : item) });
+                }} className="h-10 w-full rounded-md border border-white/30 bg-[#222] px-2 text-white" /></div>
+              <div><Label htmlFor={`bundle-total-${tier.id}`} className="text-xs text-white">Total price ($)</Label>
+                <input id={`bundle-total-${tier.id}`} aria-label={`Bundle ${index + 1} total price`} type="number" min="0.01" step="0.01" value={tier.totalPrice ?? ""} onChange={(event) => {
+                  const totalPrice = Number(event.target.value);
+                  update({ bulkPriceTiers: value.bulkPriceTiers.map(item => item.id === tier.id ? { ...item, totalPrice, unitPrice: item.minimumQuantity > 0 ? totalPrice / item.minimumQuantity : 0 } : item) });
+                }} className="h-10 w-full rounded-md border border-white/30 bg-[#222] px-2 text-white" /></div>
+              <button type="button" aria-label={`Remove bundle ${index + 1}`} onClick={() => update({ bulkPriceTiers: value.bulkPriceTiers.filter(item => item.id !== tier.id) })} className="h-10 rounded-md border border-white/30 px-3 text-white">Remove</button>
+            </div>
+          ))}
+          <button type="button" disabled={value.bulkPriceTiers.length >= 12} onClick={() => {
+            const previous = value.bulkPriceTiers.at(-1)?.minimumQuantity ?? value.minimumSaleQuantity;
+            const minimumQuantity = Number((previous + value.quantityIncrement).toFixed(value.decimalPrecision));
+            const totalPrice = Number((minimumQuantity * basePrice).toFixed(2));
+            update({ bulkPriceTiers: [...value.bulkPriceTiers, { id: crypto.randomUUID(), label: `${minimumQuantity}+`, minimumQuantity, unitPrice: basePrice, totalPrice }] });
+          }} className="rounded-md border border-white/30 px-3 py-2 text-sm text-white disabled:opacity-40">Add bundle price</button>
+        </div>
+      </details>
     </fieldset>
   );
 }

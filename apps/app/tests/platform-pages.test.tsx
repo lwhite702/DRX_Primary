@@ -2,9 +2,10 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ auth: vi.fn(), bypass: vi.fn(), grant: vi.fn(), role: vi.fn(), metrics: vi.fn(), audit: vi.fn(), failures: vi.fn() }));
+const m = vi.hoisted(() => ({ auth: vi.fn(), bypass: vi.fn(), token: vi.fn(), query: vi.fn(), role: vi.fn(), metrics: vi.fn(), audit: vi.fn(), failures: vi.fn() }));
+vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: m.token }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = m.query; } }));
 vi.mock("@/lib/adapters/auth/server", () => ({ auth: m.auth, isAuthBypassEnabled: m.bypass }));
-vi.mock("@/lib/db", () => ({ db: { adminUser: { findFirst: m.grant }, userRole: { findFirst: m.role } } }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("@/lib/platform/queries", () => ({ getPlatformMetrics: m.metrics, getPlatformAudit: m.audit, getPlatformAiFailures: m.failures }));
 vi.mock("@/components/platform/users-client", () => ({ UsersClient: () => <p>Platform user controls</p> }));
@@ -32,9 +33,11 @@ describe.each(pages)("independent %s page authorization", (_name, Page, content)
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+    vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud");
     m.auth.mockResolvedValue({ userId: "actor" });
     m.bypass.mockReturnValue(false);
-    m.grant.mockResolvedValue(null);
+    m.token.mockResolvedValue("synthetic-token");
+    m.query.mockRejectedValue(new Error("FORBIDDEN"));
     m.metrics.mockResolvedValue({ businesses: 1, activeBusinesses: 1, memberships: 2, aiFailures: 0 });
     m.audit.mockResolvedValue([]);
     m.failures.mockResolvedValue([]);
@@ -56,43 +59,45 @@ describe.each(pages)("independent %s page authorization", (_name, Page, content)
   it("denies anonymous requests before grant lookup", async () => {
     m.auth.mockResolvedValue({ userId: null });
     await expectDenied();
-    expect(m.grant).not.toHaveBeenCalled();
+    expect(m.query).not.toHaveBeenCalled();
   });
   it("denies bypass even with a platform grant", async () => {
     m.bypass.mockReturnValue(true);
-    m.grant.mockResolvedValue({ role: "super_admin" });
+    m.query.mockResolvedValue([]);
     await expectDenied();
-    expect(m.grant).not.toHaveBeenCalled();
+    expect(m.query).not.toHaveBeenCalled();
   });
   it("denies guessed entry keys before identity lookup", async () => {
     await expectDenied("admin");
     expect(m.auth).not.toHaveBeenCalled();
   });
   it("fails closed if the grant store fails", async () => {
-    m.grant.mockRejectedValue(new Error("Synthetic private provider detail"));
+    m.query.mockRejectedValue(new Error("Synthetic private provider detail"));
     await expectDenied();
   });
   it("renders for an explicit grant without tenant membership", async () => {
-    m.grant.mockResolvedValue({ role: "super_admin" });
+    m.query.mockResolvedValue([]);
     expect(await render()).toContain(content);
-    expect(m.grant).toHaveBeenCalledWith({ where: { userId: "actor", role: "super_admin" }, select: { role: true } });
+    expect(m.query).toHaveBeenCalledOnce();
     expect(m.role).not.toHaveBeenCalled();
   });
   it("checks the grant again after revocation", async () => {
-    m.grant.mockResolvedValueOnce({ role: "super_admin" }).mockResolvedValueOnce(null);
+    m.query.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error("FORBIDDEN"));
     expect(await render()).toContain(content);
     m.metrics.mockClear(); m.audit.mockClear(); m.failures.mockClear();
     await expectDenied();
-    expect(m.grant).toHaveBeenCalledTimes(2);
+    expect(m.query).toHaveBeenCalledTimes(2);
   });
 });
 
 it("renders the canonical feature manifest as read-only", async () => {
   vi.stubEnv("PLATFORM_CONSOLE_SLUG", key);
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud");
   try {
     m.auth.mockResolvedValue({ userId: "actor" });
     m.bypass.mockReturnValue(false);
-    m.grant.mockResolvedValue({ role: "super_admin" });
+    m.token.mockResolvedValue("synthetic-token");
+    m.query.mockResolvedValue([]);
     const html = renderToStaticMarkup(await Features({ params: Promise.resolve({ consoleKey: key }) }));
     for (const flag of FLAG_MANIFEST) expect(html).toContain(flag.key);
     expect(html.match(/<tr\b/g)).toHaveLength(FLAG_MANIFEST.length + 1);

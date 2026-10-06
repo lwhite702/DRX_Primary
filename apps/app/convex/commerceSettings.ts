@@ -86,7 +86,7 @@ export const saveSettings = mutation({
       if ((!config.fractionalEnabled && !Number.isInteger(product.quantityOnHandGrams)) || Math.abs(stock - Math.round(stock)) > 1e-6) throw new Error("CONFLICT: Existing stock does not fit these quantity rules");
       if (product.quantityOnHandGrams && product.sellingUnit && product.sellingUnit !== config.sellingUnit) throw new Error("CONFLICT: Reconcile stock before changing its unit");
       const canonical = canonicalCreationCommerce(config);
-      if (canonical.bulkPriceTiers.some(tier => tier.unitPriceCents > cents)) throw new Error("INVALID_ARGUMENT: Bulk price exceeds base price");
+      if (canonical.bulkPriceTiers.some(tier => tier.unitPriceCents > cents || (tier.bundlePriceCents !== undefined && tier.bundlePriceCents > Math.round(tier.minimumQuantity * cents)))) throw new Error("INVALID_ARGUMENT: Bulk price exceeds base price");
       await ctx.db.patch(product._id, { ...canonical, sellingPriceCents: cents, allowFractionalWeight: config.fractionalEnabled, updatedAt: now });
     }
     await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "COMMERCE_SETTINGS_UPDATED", entityType: "business", entityId: auth.businessId,

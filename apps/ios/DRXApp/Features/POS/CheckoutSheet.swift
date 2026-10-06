@@ -188,7 +188,7 @@ struct CheckoutSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(DRXPalette.ink)
                     Spacer()
-                    Text("\(formatGrams(item.quantityGrams)) × \(formatCents(quotedLine?.appliedUnitPriceCents ?? item.effectiveUnitPriceCents))")
+                    Text("\(formatGrams(item.quantityGrams)) × \(formatUnitPriceCents(quotedLine?.appliedUnitPriceCents ?? Double(item.effectiveUnitPriceCents)))")
                         .font(.caption)
                         .foregroundStyle(DRXPalette.muted)
                     Text(formatCents(quotedLine?.lineSubtotalCents ?? store.pricedLineTotal(item)))
@@ -817,6 +817,14 @@ struct CustomerPickerSheet: View {
 
 private func formatCents(_ cents: Int) -> String {
     String(format: "$%.2f", Double(cents) / 100.0)
+}
+
+private func formatUnitPriceCents(_ cents: Double) -> String {
+    let formatted = String(format: "$%.4f", cents / 100.0)
+    let withoutTrailingZeros = formatted.replacingOccurrences(of: "0+$", with: "", options: .regularExpression)
+    if withoutTrailingZeros.hasSuffix(".") { return withoutTrailingZeros + "00" }
+    if withoutTrailingZeros.split(separator: ".").last?.count == 1 { return withoutTrailingZeros + "0" }
+    return withoutTrailingZeros
 }
 
 private func formatGrams(_ grams: Double) -> String {

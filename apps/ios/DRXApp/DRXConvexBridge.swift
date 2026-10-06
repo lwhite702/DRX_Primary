@@ -202,6 +202,7 @@ struct DRXLocalDeliveryReminderPayload: Equatable, Sendable {
 struct DRXBulkPriceTier: Decodable, Sendable {
     let minimumQuantity: Double
     let unitPriceCents: Int
+    let bundlePriceCents: Int?
 }
 
 // MARK: - Customer
@@ -394,7 +395,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
     let productId: String
     let productName: String
     let quantity: Double
-    let appliedUnitPriceCents: Int
+    let appliedUnitPriceCents: Double
     let lineSubtotalCents: Int
     let bulkDiscountCents: Int
     let loyaltyDiscountCents: Int
@@ -622,6 +623,20 @@ enum CheckoutMath {
 
     static func lineTotalCents(product: DRXProduct, quantity: Double) -> Int {
         guard quantity.isFinite, quantity > 0 else { return 0 }
+        let tier = (product.bulkPriceTiers ?? [])
+            .filter { $0.minimumQuantity.isFinite && $0.minimumQuantity > 0 && quantity >= $0.minimumQuantity }
+            .max { $0.minimumQuantity < $1.minimumQuantity }
+        if let tier, let total = tier.bundlePriceCents {
+            let number = NSDecimalNumber(decimal: Decimal(quantity) * Decimal(total) / Decimal(tier.minimumQuantity))
+            guard number != .notANumber,
+                  number.compare(NSDecimalNumber(value: CurrencyInput.maximumTransactionCents)) != .orderedDescending else {
+                return CurrencyInput.maximumTransactionCents
+            }
+            return number.rounding(accordingToBehavior: NSDecimalNumberHandler(
+                roundingMode: .plain, scale: 0, raiseOnExactness: false,
+                raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false
+            )).intValue
+        }
         let unitPrice = effectiveUnitPriceCents(product: product, quantity: quantity)
         let number = NSDecimalNumber(decimal: Decimal(quantity) * Decimal(unitPrice))
         guard number != .notANumber,

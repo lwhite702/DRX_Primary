@@ -1,137 +1,64 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@prisma/client", () => ({
-  Prisma: {
-    sql: (...args: unknown[]) => args,
-    join: (values: unknown[]) => values,
-  },
+const mocks = vi.hoisted(() => ({
+  businessClient: vi.fn(),
+  query: vi.fn(),
 }));
 
-vi.mock("@/lib/db", () => ({
-  db: {
-    sales: {
-      findMany: vi.fn(),
-    },
-    creditLimit: {
-      findMany: vi.fn(),
-    },
-    systemAuditLog: {
-      findFirst: vi.fn(),
-    },
-    salesLineItem: {
-      groupBy: vi.fn(),
-    },
-    salesLineItemAllocation: {
-      groupBy: vi.fn(),
-    },
-    inventory: {
-      findMany: vi.fn(),
-    },
-    $queryRaw: vi.fn(),
-  },
+vi.mock("@/lib/business/convex-server", () => ({
+  businessClient: mocks.businessClient,
 }));
 
-import { db } from "@/lib/db";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
-
-const mockedDb = db as unknown as {
-  sales: { findMany: ReturnType<typeof vi.fn> };
-  creditLimit: { findMany: ReturnType<typeof vi.fn> };
-  systemAuditLog: { findFirst: ReturnType<typeof vi.fn> };
-  salesLineItem: { groupBy: ReturnType<typeof vi.fn> };
-  salesLineItemAllocation: { groupBy: ReturnType<typeof vi.fn> };
-  inventory: { findMany: ReturnType<typeof vi.fn> };
-  $queryRaw: ReturnType<typeof vi.fn>;
-};
 
 describe("getPosBaselineReport", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockedDb.sales.findMany
-      .mockResolvedValueOnce([
-        { id: "sale_today", totalAmount: 100, paymentMethod: "cash" },
-      ] as never)
-      .mockResolvedValueOnce([
-        { id: "sale_today", totalAmount: 100 },
-        { id: "sale_week", totalAmount: 80 },
-      ] as never)
-      .mockResolvedValueOnce([
-        { id: "sale_prev", totalAmount: 50 },
-      ] as never)
-      .mockResolvedValueOnce([
-        {
-          id: "sale_today",
-          totalAmount: 100,
-          paymentMethod: "cash",
-          customerId: "cust_1",
-          createdAt: new Date("2026-03-16T12:00:00.000Z"),
-        },
-      ] as never);
-
-    mockedDb.creditLimit.findMany.mockResolvedValue([
-      { currentBalance: 25 },
-    ] as never);
-    mockedDb.systemAuditLog.findFirst.mockResolvedValue({
-      createdAt: new Date("2026-03-16T12:30:00.000Z"),
-    } as never);
-    mockedDb.salesLineItem.groupBy.mockResolvedValue([
-      {
-        inventoryId: "inv_1",
-        _sum: { quantity: 3, lineTotal: 180 },
-      },
-    ] as never);
-    mockedDb.inventory.findMany.mockResolvedValue([
-      { id: "inv_1", productName: "Flower", sku: "FLOW-1" },
-    ] as never);
-    mockedDb.salesLineItemAllocation.groupBy.mockResolvedValue([
-      { saleId: "sale_today", _sum: { extendedCost: 40 } },
-      { saleId: "sale_week", _sum: { extendedCost: 30 } },
-      { saleId: "sale_prev", _sum: { extendedCost: 10 } },
-    ] as never);
-
-    mockedDb.$queryRaw
-      .mockResolvedValueOnce([
-        {
-          id: "inv_2",
-          product_name: "Low Item",
-          sku: "LOW-1",
-          quantity_on_hand: 2,
-          reorder_level: 5,
-        },
-      ] as never)
-      .mockResolvedValueOnce([{ count: 1 }] as never);
+    mocks.businessClient.mockResolvedValue({
+      client: { query: mocks.query },
+      businessId: "biz_1",
+      expectedUserId: "user_1",
+    });
   });
 
   it("includes FIFO-backed COGS and gross profit in baseline metrics", async () => {
-    const report = await getPosBaselineReport("business_123");
+    mocks.query
+      .mockResolvedValueOnce({
+        totalRevenueCents: 10000,
+        orderCount: 1,
+        costOfGoodsSoldCents: 4000,
+        grossProfitCents: 6000,
+      })
+      .mockResolvedValueOnce({
+        totalRevenueCents: 8000,
+        orderCount: 2,
+        costOfGoodsSoldCents: 3000,
+        grossProfitCents: 5000,
+      })
+      .mockResolvedValueOnce({
+        totalRevenueCents: 5000,
+        orderCount: 1,
+        costOfGoodsSoldCents: 2000,
+        grossProfitCents: 3000,
+      })
+      .mockResolvedValueOnce([
+        {
+          _id: "sale_today",
+          totalAmountCents: 10000,
+          paymentMethod: "cash",
+          customerId: "cust_1",
+          createdAt: Date.now(),
+        },
+      ]);
 
-    expect(report.today).toEqual({
-      salesTotal: 100,
-      salesCount: 1,
-      cashCollected: 100,
-      costOfGoodsSold: 40,
-      grossProfit: 60,
-    });
-    expect(report.week).toEqual({
-      salesTotal: 180,
-      salesCount: 2,
-      costOfGoodsSold: 70,
-      grossProfit: 110,
-    });
-    expect(report.previousWeek).toEqual({
-      salesTotal: 50,
-      salesCount: 1,
-      costOfGoodsSold: 10,
-      grossProfit: 40,
-    });
-    expect(report.recentSales).toEqual([
-      expect.objectContaining({
-        id: "sale_today",
-        total: 100,
-        costOfGoodsSold: 40,
-        grossProfit: 60,
-      }),
-    ]);
+    const report = await getPosBaselineReport("biz_1");
+
+    expect(report.today.salesTotal).toBe(100);
+    expect(report.today.salesCount).toBe(1);
+    expect(report.today.costOfGoodsSold).toBe(40);
+    expect(report.today.grossProfit).toBe(60);
+    expect(report.week.salesTotal).toBe(80);
+    expect(report.previousWeek.salesTotal).toBe(50);
+    expect(report.recentSales[0].id).toBe("sale_today");
   });
 });

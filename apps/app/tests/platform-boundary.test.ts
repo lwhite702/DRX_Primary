@@ -5,10 +5,10 @@ const m = vi.hoisted(() => ({
   auth: vi.fn(), bypass: vi.fn(), admin: vi.fn(), roles: vi.fn(), owner: vi.fn(),
   listRoles: vi.fn(), updateRoles: vi.fn(), deleteRoles: vi.fn(), count: vi.fn(),
   audit: vi.fn(), writeAudit: vi.fn(), transaction: vi.fn(), clerk: vi.fn(),
-  context: vi.fn(), flag: vi.fn(), intakes: vi.fn(), token: vi.fn(), query: vi.fn(),
+  context: vi.fn(), flag: vi.fn(), intakes: vi.fn(), token: vi.fn(), query: vi.fn(), mutation: vi.fn(),
 }));
 vi.mock("@/lib/auth/convex-token", () => ({ getConvexAuthToken: m.token }));
-vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = m.query; } }));
+vi.mock("convex/browser", () => ({ ConvexHttpClient: class { setAuth() {} query = m.query; mutation = m.mutation; } }));
 vi.mock("@/lib/adapters/auth/server", () => ({ auth: m.auth, isAuthBypassEnabled: m.bypass, clerkClient: m.clerk }));
 vi.mock("@/lib/db", () => ({ db: {
   adminUser: { findFirst: m.admin },
@@ -41,7 +41,7 @@ describe("platform reads and writes reject tenant authority", () => {
     vi.resetAllMocks();
     process.env.NEXT_PUBLIC_CONVEX_URL = "https://synthetic.convex.cloud";
     m.token.mockResolvedValue("synthetic-token");
-    m.query.mockResolvedValue({ allowed: false, role: "" });
+    m.query.mockRejectedValue(new Error("FORBIDDEN: No platform grant"));
     m.auth.mockResolvedValue({ userId: "actor" }); m.bypass.mockReturnValue(false);
     m.admin.mockResolvedValue(null); m.roles.mockResolvedValue(null); m.owner.mockResolvedValue(null);
     m.context.mockResolvedValue({ userId: "actor", businessId: "business-a" });
@@ -59,15 +59,16 @@ describe("platform reads and writes reject tenant authority", () => {
   });
 
   it("returns only operational counts for an explicit platform admin", async () => {
-    m.admin.mockResolvedValue({ role: "super_admin" });
-    m.count.mockResolvedValueOnce(10).mockResolvedValueOnce(8).mockResolvedValueOnce(25).mockResolvedValueOnce(2);
-    expect(await getPlatformMetrics()).toEqual({ businesses: 10, activeBusinesses: 8, memberships: 25, aiFailures: 2 });
+    m.query.mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ isActive: true }, { isActive: false }])
+      .mockResolvedValueOnce([{}, {}]);
+    expect(await getPlatformMetrics()).toEqual({ businesses: 2, activeBusinesses: 1, memberships: 2, aiFailures: 0 });
     expect(m.roles).not.toHaveBeenCalled();
   });
-  it("platform audit selects no customer payloads and only platform events", async () => {
-    m.admin.mockResolvedValue({ role: "super_admin" });
-    await getPlatformAudit();
-    expect(m.audit).toHaveBeenCalledWith({ where: { businessId: null }, select: { id: true, action: true, entityType: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 100 });
+  it("platform audit exposes no customer payloads", async () => {
+    m.query.mockResolvedValue([]);
+    expect(await getPlatformAudit()).toEqual([]);
+    expect(m.audit).not.toHaveBeenCalled();
   });
   it("denies all global APIs and server actions before reads or mutations", async () => {
     m.roles.mockResolvedValue({ role: "owner" });
@@ -89,12 +90,11 @@ describe("platform reads and writes reject tenant authority", () => {
     expect(m.transaction).not.toHaveBeenCalled();
   });
   it("updates exactly the selected business membership with an audit event", async () => {
-    m.admin.mockResolvedValue({ role: "super_admin" }); m.owner.mockResolvedValue({ ownerId: "owner" });
-    m.updateRoles.mockResolvedValue({ count: 1 });
-    m.transaction.mockImplementation(fn => fn({ userRole: { updateMany: m.updateRoles }, systemAuditLog: { create: m.writeAudit } }));
+    m.query.mockResolvedValue([]);
+    m.mutation.mockResolvedValue({ updated: true });
     expect(await updateUserRole("target", "manager", "business-a")).toEqual({ success: true });
-    expect(m.updateRoles).toHaveBeenCalledWith({ where: { userId: "target", businessId: "business-a", role: { notIn: ["owner", "super_admin"] } }, data: { role: "manager", permissions: {} } });
-    expect(m.writeAudit).toHaveBeenCalledOnce();
+    expect(m.mutation).toHaveBeenCalledWith(expect.anything(), { targetUserId: "target", businessId: "business-a", role: "manager" });
+    expect(m.updateRoles).not.toHaveBeenCalled();
   });
   it("tenant super_admin cannot request another business audit", async () => {
     m.roles.mockResolvedValue(null); m.owner.mockResolvedValue(null);
@@ -102,10 +102,10 @@ describe("platform reads and writes reject tenant authority", () => {
     expect(result.status).toBe(403); expect(m.audit).not.toHaveBeenCalled();
   });
   it("business owners can still read their own business audit", async () => {
-    m.query.mockResolvedValue({ allowed: true, role: "owner" });
-    m.owner.mockResolvedValue({ id: "business-a" });
+    m.query.mockResolvedValueOnce({ allowed: true, role: "owner" }).mockResolvedValueOnce([]);
     expect((await auditLogs(new NextRequest("http://localhost/api/admin/audit-logs"))).status).toBe(200);
-    expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({ where: { businessId: "business-a" } }));
+    expect(m.query).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({ businessId: "business-a" }));
+    expect(m.audit).not.toHaveBeenCalled();
   });
   it("queries approvals only for the selected authenticated business", async () => {
     m.query.mockResolvedValue({ page: [], isDone: true, continueCursor: "end" });

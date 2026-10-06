@@ -30,7 +30,7 @@ export async function GET(request?: NextRequest) {
         config: { fractionalEnabled: product.allowFractionalWeight, sellingUnit: product.sellingUnit, decimalPrecision: product.quantityPrecision,
           minimumSaleQuantity: product.minimumSaleQuantity, quantityIncrement: product.quantityIncrement,
           suggestedDollarAmounts: product.suggestedDollarPresetsCents.map(cents => cents / 100), suggestedQuantities: product.suggestedQuantityPresets,
-          bulkPriceTiers: product.bulkPriceTiers.map((tier, index) => ({ id: `tier-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.unitPriceCents / 100 })) } })));
+          bulkPriceTiers: product.bulkPriceTiers.map((tier, index) => ({ id: `tier-${index}`, label: `${tier.minimumQuantity}+`, minimumQuantity: tier.minimumQuantity, unitPrice: tier.bundlePriceCents === undefined ? tier.unitPriceCents / 100 : tier.bundlePriceCents / tier.minimumQuantity / 100, ...(tier.bundlePriceCents === undefined ? {} : { totalPrice: tier.bundlePriceCents / 100 }) })) } })));
       if (result.isDone) break;
       if (result.continueCursor === cursor) throw new Error("UNAVAILABLE:");
       cursor = result.continueCursor;

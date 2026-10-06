@@ -4,6 +4,41 @@ import Testing
 
 struct CheckoutMathTests {
     @Test
+    func checkoutQuoteDecodesFractionalCentBundleRate() throws {
+        let payload: [String: Any] = [
+            "lines": [[
+                "productId": "product_1", "productName": "Bundle Product", "quantity": 3.5,
+                "appliedUnitPriceCents": 9_000.0 / 3.5, "lineSubtotalCents": 9_000,
+                "bulkDiscountCents": 3_250, "loyaltyDiscountCents": 0,
+            ]],
+            "merchandiseSubtotalCents": 9_000, "discountCents": 3_250,
+            "subtotalCents": 9_000, "taxableSubtotalCents": 0,
+            "merchandiseTaxCents": 0, "deliveryRevenueCents": 0,
+            "vendorDeliveryExpenseCents": 0, "deliveryTaxCents": 0,
+            "taxAmountCents": 0, "totalAmountCents": 9_000,
+        ]
+        let quote = try JSONDecoder().decode(CheckoutQuoteResponse.self, from: JSONSerialization.data(withJSONObject: payload))
+        #expect(quote.lines[0].appliedUnitPriceCents == 9_000.0 / 3.5)
+        #expect(quote.lines[0].lineSubtotalCents == 9_000)
+    }
+
+    @Test
+    func bundleTotalsRemainExactAtFractionalThresholds() throws {
+        let item = try product(price: 3_500, tiers: [
+            ["minimumQuantity": 2.0, "unitPriceCents": 3_000, "bundlePriceCents": 6_000],
+            ["minimumQuantity": 3.5, "unitPriceCents": 2_571, "bundlePriceCents": 9_000],
+            ["minimumQuantity": 7.0, "unitPriceCents": 2_000, "bundlePriceCents": 14_000],
+        ])
+        #expect(CheckoutMath.lineTotalCents(product: item, quantity: 2) == 6_000)
+        #expect(CheckoutMath.lineTotalCents(product: item, quantity: 3.5) == 9_000)
+        #expect(CheckoutMath.lineTotalCents(product: item, quantity: 7) == 14_000)
+        let tiers = [NewProductBulkPriceTier(minimumQuantity: 3.5, unitPriceCents: 2_571, bundlePriceCents: 9_000)]
+        let config = try #require(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 1, minimum: "0.5", increment: "0.5", dollars: "", quantities: "0.5, 1, 3.5", tiers: tiers))
+        let payload = try JSONSerialization.jsonObject(with: JSONEncoder().encode(config)) as? [String: Any]
+        let savedTiers = payload?["bulkPriceTiers"] as? [[String: Any]]
+        #expect(savedTiers?.first?["bundlePriceCents"] as? Int == 9_000)
+    }
+    @Test
     func newProductRulesPreserveFractionalMinimumAndIncrement() throws {
         let config = try #require(NewProductCommerceConfig.make(fractional: true, unit: "g", precision: 2, minimum: "0.1", increment: "0.25", dollars: "10, 20", quantities: "0.1, 0.35, 0.6"))
         #expect(config.minimumSaleQuantity == 0.1)
@@ -400,4 +435,3 @@ struct CheckoutMathTests {
         #expect(response.adjustments[0].reason == "Late courier refund")
     }
 }
-

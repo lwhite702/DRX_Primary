@@ -71,10 +71,10 @@ describe("customer schema validation", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects phone longer than 20 chars", () => {
+  it("rejects phone longer than the supported 25 characters", () => {
     const result = customerSchema.safeParse({
       business_id: businessId,
-      phone_number: "1".repeat(21),
+      phone_number: "1".repeat(26),
     });
 
     expect(result.success).toBe(false);

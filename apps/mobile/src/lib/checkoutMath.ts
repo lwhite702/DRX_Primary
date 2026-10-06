@@ -1,6 +1,7 @@
 export type BulkPriceTier = {
   minimumQuantity: number;
   unitPriceCents: number;
+  bundlePriceCents?: number;
 };
 
 export type FractionalProduct = {
@@ -104,7 +105,7 @@ export function effectiveUnitPriceCents(
     .sort((left, right) => left.minimumQuantity - right.minimumQuantity);
   return tiers.reduce(
     (price, tier) =>
-      quantity >= tier.minimumQuantity ? tier.unitPriceCents : price,
+      quantity >= tier.minimumQuantity ? (tier.bundlePriceCents === undefined ? tier.unitPriceCents : tier.bundlePriceCents / tier.minimumQuantity) : price,
     product.sellingPriceCents,
   );
 }

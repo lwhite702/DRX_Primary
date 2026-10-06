@@ -43,8 +43,10 @@ describe("Convex Phase 2 Foundation & Infrastructure", () => {
       expect(hasPermission(memberUser, "PROCESS_CHECKOUT")).toBe(true);
       expect(hasPermission(memberUser, "MANAGE_COMMERCE_SETTINGS")).toBe(false);
 
-      expect(() => requirePermission(memberUser, "MANAGE_PRODUCTS")).toThrowError(
-        /User role 'MEMBER' does not possess required permission 'MANAGE_PRODUCTS'/
+      expect(hasPermission(memberUser, "MANAGE_PRODUCTS")).toBe(true);
+      const cashierUser: any = { role: "cashier" };
+      expect(() => requirePermission(cashierUser, "MANAGE_PRODUCTS")).toThrowError(
+        /User role 'cashier' does not possess required permission 'MANAGE_PRODUCTS'/
       );
     });
   });

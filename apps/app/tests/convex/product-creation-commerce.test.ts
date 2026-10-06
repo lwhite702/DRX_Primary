@@ -51,6 +51,46 @@ async function setup() {
 }
 
 describe("fractional product creation", () => {
+  it("accepts a positive bundle total whose per-unit rate is below one cent", async () => {
+    const { owner } = await setup();
+    const productId = await owner.mutation(api.products.createProduct, {
+      ...input,
+      sku: "LOW-RATE-BUNDLE",
+      sellingPriceCents: 1,
+      unitCostCents: 0,
+      commerceConfig: {
+        sellingUnit: "ml",
+        decimalPrecision: 1,
+        minimumSaleQuantity: 1,
+        quantityIncrement: 1,
+        suggestedDollarAmounts: [],
+        suggestedQuantities: [1, 1000],
+        bulkPriceTiers: [{ minimumQuantity: 1000, unitPriceCents: 0, bundlePriceCents: 400 }],
+      },
+    });
+    const product = (await owner.query(api.products.listProducts, {})).find(item => item._id === productId);
+    expect(product?.bulkPriceTiers).toEqual([{ minimumQuantity: 1000, unitPriceCents: 1, bundlePriceCents: 400 }]);
+  });
+
+  it("persists exact bundle totals and rejects a non-grid threshold atomically", async () => {
+    const { owner } = await setup();
+    const commerceConfig = { ...config, minimumSaleQuantity: 0.5, quantityIncrement: 0.5,
+      suggestedQuantities: [0.5, 1, 2, 3.5, 7],
+      bulkPriceTiers: [
+        { minimumQuantity: 2, unitPriceCents: 3_000, bundlePriceCents: 6_000 },
+        { minimumQuantity: 3.5, unitPriceCents: 2_571, bundlePriceCents: 9_000 },
+        { minimumQuantity: 7, unitPriceCents: 2_000, bundlePriceCents: 14_000 },
+      ] };
+    await expect(owner.mutation(api.products.createProduct, { ...input, sellingPriceCents: 3_500,
+      commerceConfig: { ...commerceConfig, bulkPriceTiers: [{ minimumQuantity: 3.6, unitPriceCents: 2_500, bundlePriceCents: 9_000 }] },
+    })).rejects.toThrow();
+    await expect(owner.mutation(api.products.createProduct, { ...input, sellingPriceCents: 3_500,
+      commerceConfig: { ...commerceConfig, bulkPriceTiers: [{ minimumQuantity: 3.5, unitPriceCents: 3_714, bundlePriceCents: 13_000 }] },
+    })).rejects.toThrow("Bulk price must be below the base price");
+    expect(await owner.query(api.products.listProducts, {})).toEqual([]);
+    await owner.mutation(api.products.createProduct, { ...input, sellingPriceCents: 3_500, commerceConfig });
+    expect((await owner.query(api.products.listProducts, {}))[0].bulkPriceTiers).toEqual(commerceConfig.bulkPriceTiers);
+  });
   it("uses valid recommended gram and ounce profiles", () => {
     for (const unit of ["g", "oz", "lb", "unit"]) {
       expect(newProductCommerceSchema.safeParse(guidedCommerceProfile(unit, true)).success).toBe(true);

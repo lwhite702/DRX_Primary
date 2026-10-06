@@ -35,6 +35,14 @@ const product: FractionalProduct = {
 };
 
 describe("fractional checkout math", () => {
+  it("previews exact bundle totals", () => {
+    const bundled = { ...product, sellingPriceCents: 3_500, bulkPriceTiers: [
+      { minimumQuantity: 2, unitPriceCents: 3_000, bundlePriceCents: 6_000 },
+      { minimumQuantity: 3.5, unitPriceCents: 2_571, bundlePriceCents: 9_000 },
+      { minimumQuantity: 7, unitPriceCents: 2_000, bundlePriceCents: 14_000 },
+    ] };
+    expect([2, 3.5, 7].map(quantity => lineTotalCents(bundled, quantity))).toEqual([6_000, 9_000, 14_000]);
+  });
   it("formats display quantities to two decimals without changing calculation precision", () => {
     const precise = { ...product, quantityPrecision: 6, minimumSaleQuantity: 0.000001, quantityIncrement: 0.000001 };
     const quantity = normalizeQuantity(precise, 1.234567, 10);

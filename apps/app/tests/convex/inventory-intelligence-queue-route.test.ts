@@ -40,7 +40,7 @@ it("rejects missing retry IDs, unsigned users, inactive businesses and unauthori
   mocks.user.mockResolvedValue({ id: "owner" });
   await t.run(ctx => ctx.db.patch(businessId, { isActive: false })); expect((await POST(request("", body))).status).toBe(403);
   await t.run(ctx => ctx.db.patch(businessId, { isActive: true }));
-  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "staff@example.invalid", role: "MEMBER", permissions: { "pricing.manage": true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "staff", email: "staff@example.invalid", role: "cashier", permissions: { "pricing.manage": true }, status: "ACTIVE", createdAt: 1, updatedAt: 1 }));
   const staff = t.withIdentity({ subject: "staff" }); mocks.user.mockResolvedValue({ id: "staff" }); mocks.query.mockImplementation(staff.query.bind(staff)); mocks.mutation.mockImplementation(staff.mutation.bind(staff));
   expect((await POST(request("", body))).status).toBe(403);
   expect(await t.run(ctx => ctx.db.query("inventoryAnalysisRuns").collect())).toHaveLength(0);

@@ -22,6 +22,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(mapDetail(await client.query(api.checkout.getSaleDetail, { saleId: id })), { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    if (message.includes("UNAUTHORIZED:")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ error: message.includes("NOT_FOUND:") ? "Sale not found" : "Sale service is temporarily unavailable" }, { status: message.includes("NOT_FOUND:") ? 404 : message.includes("FORBIDDEN:") ? 403 : 503 });
   }
 }
@@ -35,6 +38,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    if (message.includes("UNAUTHORIZED:")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const status = message.includes("NOT_FOUND:") ? 404 : message.includes("FORBIDDEN:") ? 403 : message.includes("INVALID_STATE:") ? 409 : 503;
     return NextResponse.json({ error: status === 404 ? "Sale not found" : "Sale could not be updated" }, { status });
   }

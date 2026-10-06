@@ -154,7 +154,7 @@ describe("Privacy endpoints", () => {
 
     expect(res.status).toBe(200);
     expect(json.ok).toBe(true);
-    expect(mocks.db.businessSettings.update).toHaveBeenCalled();
+    expect(mocks.capturePrivacyInventorySnapshot).toHaveBeenCalledWith("biz_1");
   });
 
   it("reads the tenant operator preference from Convex", async () => {

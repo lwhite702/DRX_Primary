@@ -106,6 +106,11 @@ export async function POST(request: NextRequest) {
         sellingUnit: config.sellingUnit, decimalPrecision: config.decimalPrecision,
         minimumSaleQuantity: config.minimumSaleQuantity, quantityIncrement: config.quantityIncrement,
         suggestedDollarAmounts: config.suggestedDollarAmounts, suggestedQuantities: config.suggestedQuantities,
+        bulkPriceTiers: config.bulkPriceTiers.map(tier => ({
+          minimumQuantity: tier.minimumQuantity,
+          unitPriceCents: Math.round(tier.unitPrice * 100),
+          ...(tier.totalPrice === undefined ? {} : { bundlePriceCents: Math.round(tier.totalPrice * 100) }),
+        })),
       } : undefined,
     });
     const product = await client.query(api.products.getCatalogProduct, { businessId, productId: id });
