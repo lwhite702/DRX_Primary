@@ -7,37 +7,7 @@ import type { FunctionReturnType } from "convex/server";
 
 import { catalogResponse } from "@/lib/inventory/catalog-response";
 
-import { db } from "@/lib/db";
-
 export async function GET(request: NextRequest) {
-  if (process.env.BYPASS_AUTH_FOR_TESTING === "true") {
-    const businessId = request.headers.get("x-business-id") || request.nextUrl.searchParams.get("business_id") || "org_required_ux";
-    const items = await db.inventory.findMany({
-      where: { businessId },
-      orderBy: { productName: "asc" },
-    });
-    const data = (items || []).map((p: any) => ({
-      id: p.id,
-      product_name: p.productName,
-      productName: p.productName,
-      sku: p.sku,
-      quantity_on_hand: Number(p.quantityOnHand),
-      quantityOnHand: Number(p.quantityOnHand),
-      reorder_level: Number(p.reorderLevel),
-      reorderLevel: Number(p.reorderLevel),
-      unit_cost: Number(p.unitCost),
-      unitCost: Number(p.unitCost),
-      selling_price: Number(p.sellingPrice),
-      sellingPrice: Number(p.sellingPrice),
-      unit_of_measure: p.quantityUnit || "unit",
-      unitOfMeasure: p.quantityUnit || "unit",
-      business_id: p.businessId,
-      businessId: p.businessId,
-      created_at: p.createdAt?.toISOString(),
-      updated_at: p.updatedAt?.toISOString(),
-    }));
-    return NextResponse.json({ data, continueCursor: null, isDone: true }, { headers: { "Cache-Control": "private, no-store" } });
-  }
   try {
     const { client, businessId } = await intakeClient(request);
     const params = request.nextUrl.searchParams;

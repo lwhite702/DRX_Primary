@@ -3,12 +3,6 @@ import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 async function businessContext(selectedBusinessId?: string) {
-  if (process.env.BYPASS_AUTH_FOR_TESTING === "true") {
-    return {
-      userId: process.env.BYPASS_AUTH_USER_ID || "user_required_ux",
-      businessId: selectedBusinessId || process.env.BYPASS_AUTH_ORG_ID || "org_required_ux",
-    };
-  }
   const token = await getConvexAuthToken();
   if (!token) return null;
   const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();

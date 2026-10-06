@@ -26,13 +26,6 @@ export async function resolveCustomerAccess(
     return { ok: false, status: 403, error: "Business access denied" };
   }
 
-  if (process.env.BYPASS_AUTH_FOR_TESTING === "true") {
-    return {
-      ok: true,
-      userId: userId || process.env.BYPASS_AUTH_USER_ID || "user_required_ux",
-      businessId: businessId || process.env.BYPASS_AUTH_ORG_ID || "org_required_ux",
-    };
-  }
   if (!(await hasBusinessPermission(userId, businessId, permission))) {
     return { ok: false, status: 403, error: "Access denied" };
   }

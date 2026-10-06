@@ -5,9 +5,6 @@ import { z } from "zod";
 
 const input = z.object({ manual_enabled: z.boolean() }).strict();
 export async function GET(request: NextRequest) {
-  if (process.env.BYPASS_AUTH_FOR_TESTING === "true") {
-    return NextResponse.json({ manual_enabled: false }, { headers: { "Cache-Control": "private, no-store" } });
-  }
   try {
     const { client, ...context } = await businessClient(request);
     const preference = await client.query(api.businessPreferences.getManualPreference, context);
