@@ -12,7 +12,13 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas:build:closed-test": "eas build --platform android --profile closed-test --non-interactive",
+    "eas:build:production": "eas build --platform android --profile production --non-interactive",
+    "eas:submit:closed-test": "eas submit --platform android --profile closed-test --non-interactive",
+    "eas:submit:production": "eas submit --platform android --profile production --non-interactive",
+    "eas:ship:closed-test": "eas build --platform android --profile closed-test --auto-submit --non-interactive",
+    "eas:ship:production": "eas build --platform android --profile production --auto-submit --non-interactive"
   },
   "dependencies": {
     "@clerk/clerk-expo": "2.19.36",

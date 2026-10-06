@@ -413,27 +413,49 @@ private struct ProductTile: View {
         }
         .disabled(product.isOutOfStock)
         .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(product.productName), \(product.sellingPriceFormatted), \(product.stockFormatted)\(inCartQuantity != nil && inCartQuantity! > 0 ? ", \(formatQuantity(product, inCartQuantity!)) in cart" : "")\(product.isOutOfStock ? ", out of stock" : product.isLowStock ? ", low stock" : "")")
+        .accessibilityHint(product.isOutOfStock ? "Product is out of stock" : "Double-tap to add to cart")
+        .accessibilityAddTraits(.isButton)
     }
 
     @ViewBuilder
     private var badges: some View {
         HStack(spacing: 4) {
             if let inCart = inCartQuantity, inCart > 0 {
-                Text("✓ \(formatQuantity(product, inCart))")
-                    .font(.caption2.bold())
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(DRXPalette.accent.opacity(0.2), in: Capsule())
-                    .foregroundStyle(DRXPalette.accent)
+                HStack(spacing: 2) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 9, weight: .bold))
+                    Text(formatQuantity(product, inCart))
+                        .font(.caption2.bold())
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(DRXPalette.accent.opacity(0.2), in: Capsule())
+                .foregroundStyle(DRXPalette.accent)
             }
             if product.isOutOfStock {
-                Text("Out").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
-                    .background(DRXPalette.danger.opacity(0.15), in: Capsule())
-                    .foregroundStyle(DRXPalette.danger)
+                HStack(spacing: 2) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 9))
+                    Text("Out")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .background(DRXPalette.danger.opacity(0.15), in: Capsule())
+                .foregroundStyle(DRXPalette.danger)
             } else if product.isLowStock {
-                Text("Low").font(.caption2).padding(.horizontal, 5).padding(.vertical, 2)
-                    .background(DRXPalette.warning.opacity(0.15), in: Capsule())
-                    .foregroundStyle(DRXPalette.warning)
+                HStack(spacing: 2) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 9))
+                    Text("Low")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .background(DRXPalette.warning.opacity(0.15), in: Capsule())
+                .foregroundStyle(DRXPalette.warning)
             }
         }
     }
@@ -477,10 +499,14 @@ struct CartItemsList: View {
                             Button { store.adjustQuantity(item, delta: -item.product.saleIncrement) } label: {
                                 Image(systemName: "minus").frame(width: 30, height: 30)
                             }
+                            .accessibilityLabel("Decrease quantity of \(item.product.productName)")
+                            .accessibilityHint("Decreases quantity by \(formatQuantity(item.product, item.product.saleIncrement))")
                             Spacer()
                             Button { store.adjustQuantity(item, delta: item.product.saleIncrement) } label: {
                                 Image(systemName: "plus").frame(width: 30, height: 30)
                             }
+                            .accessibilityLabel("Increase quantity of \(item.product.productName)")
+                            .accessibilityHint("Increases quantity by \(formatQuantity(item.product, item.product.saleIncrement))")
                         }
                     }
                     Button(role: .destructive) {

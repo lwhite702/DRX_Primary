@@ -14,8 +14,13 @@ enum DRXPalette {
     static let info = Color(red: 59 / 255, green: 130 / 255, blue: 246 / 255)
 
     static let border = Color.white.opacity(0.10)
+    static let borderIncreasedContrast = Color.white.opacity(0.35)
     static let onAccent = canvas
     static let onDark = ink
+
+    static func adaptiveBorder(increasedContrast: Bool) -> Color {
+        increasedContrast ? borderIncreasedContrast : border
+    }
 }
 
 enum DRXSpacing {
@@ -67,14 +72,19 @@ extension ButtonStyle where Self == DRXPrimaryButtonStyle {
 
 /// Content-sized cards share one surface and keep Dynamic Type free to wrap.
 struct DRXCardSurface: ViewModifier {
+    @Environment(\.colorSchemeContrast) private var contrast
     var elevated = false
 
     func body(content: Content) -> some View {
+        let isHighContrast = contrast == .increased
         content
             .padding(DRXSpacing.lg)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(elevated ? DRXPalette.card : DRXPalette.surface, in: RoundedRectangle(cornerRadius: DRXRadius.panel))
-            .overlay { RoundedRectangle(cornerRadius: DRXRadius.panel).stroke(DRXPalette.border, lineWidth: 1) }
+            .overlay {
+                RoundedRectangle(cornerRadius: DRXRadius.panel)
+                    .stroke(DRXPalette.adaptiveBorder(increasedContrast: isHighContrast), lineWidth: isHighContrast ? 1.5 : 1)
+            }
     }
 }
 

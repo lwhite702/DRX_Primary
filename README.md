@@ -344,6 +344,63 @@ Migrations are automatically applied in CI/CD. For production:
 npx supabase db push
 ```
 
+### Mobile Deployment: EAS Build and Store Transmission
+
+`apps/mobile` is built and transmitted to app store tracks using Expo Application Services (EAS).
+
+#### Build and Submission Profiles
+
+| Profile | Platform | Artifact | Track | Release Status | Auto Increment |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `closed-test` | Android | AAB (`app-bundle`) | Google Play `alpha` | `draft` | Yes |
+| `production` | Android | AAB (`app-bundle`) | Google Play `production` | `draft` | Yes |
+| `preview` | Android / iOS | APK / Simulator | Internal Distribution | N/A | No |
+| `development` | Android / iOS | APK / Simulator | Dev Client | N/A | No |
+
+#### Automated Local Commands
+
+Build and transmit directly from the repository root:
+
+```bash
+# Build and transmit to Google Play Closed Testing (alpha track)
+pnpm mobile:eas:ship:closed-test
+
+# Build and transmit to Google Play Production track
+pnpm mobile:eas:ship:production
+
+# Build only without store transmission
+pnpm mobile:eas:build:closed-test
+pnpm mobile:eas:build:production
+
+# Transmit an existing build artifact
+pnpm mobile:eas:submit:closed-test
+pnpm mobile:eas:submit:production
+```
+
+#### GitHub Actions CI/CD Automation
+
+Run the `.github/workflows/mobile-eas.yml` workflow to trigger automated cloud builds and store transmission:
+
+```bash
+# Trigger closed-test build and transmit via GitHub CLI
+gh workflow run mobile-eas.yml \
+  -f profile="closed-test" \
+  -f platform="android" \
+  -f transmit=true \
+  -f environment="preview"
+
+# Trigger production build and transmit via GitHub CLI
+gh workflow run mobile-eas.yml \
+  -f profile="production" \
+  -f platform="android" \
+  -f transmit=true \
+  -f environment="production"
+```
+
+Required CI credentials:
+- `EXPO_TOKEN`: Configured in GitHub repository environment secrets (`preview` and `production`) with permissions for the `wrelik` organization.
+- Google Play Service Account JSON: Configured in the EAS project credentials vault for project ID `1eabf3ba-049a-4de5-b9ab-78b2cc1e2fd8`.
+
 ---
 
 ## 📝 Scripts
@@ -356,6 +413,10 @@ pnpm lint         # Launch readiness lint (app + marketing)
 pnpm typecheck    # Launch readiness typecheck (app + marketing)
 pnpm compliance:imports  # Enforce vendor import boundaries
 pnpm test:e2e:web # Run apps/app Playwright suite
+pnpm mobile:eas:ship:closed-test # Build and transmit Android AAB to Google Play alpha track
+pnpm mobile:eas:ship:production  # Build and transmit Android AAB to Google Play production track
+pnpm mobile:eas:build:closed-test # Build Android AAB for closed testing without submitting
+pnpm mobile:eas:build:production  # Build Android AAB for production without submitting
 ```
 
 ---

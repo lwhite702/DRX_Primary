@@ -8,6 +8,12 @@
     },
     "moxie-docs": {
       "url": "https://moxiedocs.com/api/mcp"
+    },
+    "resumecontext": {
+      "url": "https://api.resumecontext.com/mcp/bf839667-4db7-4b8b-aecd-e11a9aa94035",
+      "headers": {
+        "Authorization": "Bearer ${env:RESUMECONTEXT_TOKEN}"
+      }
     }
   }
 }

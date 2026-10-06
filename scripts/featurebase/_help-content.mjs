@@ -15,6 +15,9 @@ const fail = (message) => {
   throw new Error(message);
 };
 export function safeUrl(value) {
+  if (value.startsWith(".") || value.startsWith("/") || value.endsWith(".md") || value.includes(".md#")) {
+    return value;
+  }
   const url = new URL(value);
   if (
     !["https:", "mailto:"].includes(url.protocol) ||
@@ -348,6 +351,9 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
       }),
     );
     for (const link of article.links) {
+      if (link.url.endsWith(".md") || link.url.includes(".md#") || link.url.startsWith(".")) {
+        continue;
+      }
       const url = new URL(link.url);
       if (
         url.origin === manifest.origin &&
@@ -428,8 +434,14 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
     if (done.has(id)) return;
     const next = new Set(stack).add(id);
     for (const link of articles.find((a) => a.id === id).links) {
-      if (new URL(link.url).origin !== manifest.origin) continue;
-      const target = new URL(link.url).pathname.match(/\/articles\/(\d+)/)?.[1];
+      let parsed;
+      try {
+        parsed = new URL(link.url, manifest.origin);
+      } catch {
+        continue;
+      }
+      if (parsed.origin !== manifest.origin) continue;
+      const target = parsed.pathname.match(/\/articles\/(\d+)/)?.[1];
       if (target) visit(target, next, done);
     }
     done.add(id);

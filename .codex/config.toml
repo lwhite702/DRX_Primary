@@ -5,4 +5,6 @@ url = "https://mcp.vercel.com"
 [mcp_servers.featurebase]
 type = "http"
 url = "https://docs.featurebase.app/mcp"
-
+[mcp_servers.resumecontext]
+url = "https://api.resumecontext.com/mcp/bf839667-4db7-4b8b-aecd-e11a9aa94035"
+http_headers_helper = "sh .codex/resumecontext-auth-header"

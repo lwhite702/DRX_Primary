@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
@@ -21,6 +21,28 @@ import {
 const require = createRequire(import.meta.url);
 const { prepare, validate: validateVersions } = require("../version.js");
 
+const tempRoots = new Set();
+
+function registerTempDir(dir) {
+  tempRoots.add(dir);
+  return dir;
+}
+
+function cleanup() {
+  for (const dir of tempRoots) {
+    try {
+      if (existsSync(dir)) {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
+  tempRoots.clear();
+}
+
+process.on("exit", cleanup);
+
 function write(root, relative, value) {
   const target = join(root, relative);
   mkdirSync(dirname(target), { recursive: true });
@@ -28,7 +50,7 @@ function write(root, relative, value) {
 }
 
 function versionFixture(overrides = {}) {
-  const root = mkdtempSync(join(tmpdir(), "drx-release-integrity-"));
+  const root = registerTempDir(mkdtempSync(join(tmpdir(), "drx-release-integrity-")));
   const version = overrides.version ?? "0.6.0";
   write(root, "VERSION", `${version}\n`);
   for (const relative of ["package.json", "apps/app/package.json", "apps/mobile/package.json"]) {
@@ -166,7 +188,7 @@ for (const fixture of forwardCases) {
   }
 }
 
-const breakingPrRoot = mkdtempSync(join(tmpdir(), "drx-release-breaking-pr-"));
+const breakingPrRoot = registerTempDir(mkdtempSync(join(tmpdir(), "drx-release-breaking-pr-")));
 const git = (args) => {
   const result = spawnSync("git", args, { cwd: breakingPrRoot, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
@@ -202,7 +224,7 @@ const structuralSignalIds = [
 ];
 
 function structuralPrFixture(withReviewManifest) {
-  const root = mkdtempSync(join(tmpdir(), "drx-release-structural-pr-"));
+  const root = registerTempDir(mkdtempSync(join(tmpdir(), "drx-release-structural-pr-")));
   const runGit = (args) => {
     const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
     assert.equal(result.status, 0, result.stderr);
@@ -265,7 +287,7 @@ assert.deepEqual(
   "a non-major declaration requires an exact repository-recorded compatibility review manifest",
 );
 
-const cutRoot = mkdtempSync(join(tmpdir(), "drx-release-cut-"));
+const cutRoot = registerTempDir(mkdtempSync(join(tmpdir(), "drx-release-cut-")));
 write(cutRoot, "VERSION", "0.6.0\n");
 write(cutRoot, "CHANGELOG.md", validChangelog);
 const cut = spawnSync(process.execPath, [join(import.meta.dirname, "cut.mjs"), "0.6.0"], {
@@ -276,4 +298,5 @@ assert.equal(cut.status, 0, cut.stderr);
 assert.match(readFileSync(join(cutRoot, "CHANGELOG.md"), "utf8"), /^## \[0\.6\.0\] - \d{4}-\d{2}-\d{2}$/m);
 assert.ok(existsSync(join(cutRoot, "docs/help-center-export/changelog/drafts/0.6.0.md")));
 
+cleanup();
 console.log("Release integrity fixtures passed (version, changelog diff, SemVer, CI dependency policy, and six behavioral scenarios).");

@@ -116,3 +116,4 @@ apps/ios/Configuration/Telemetry.generated.xcconfig
 # Local Help Center exports and render previews; never commit raw API responses.
 .featurebase/
 /out/
+.agents/plugins/resumecontext/mcp_config.json
