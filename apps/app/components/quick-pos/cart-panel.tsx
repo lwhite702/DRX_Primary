@@ -4,7 +4,8 @@ import { formatQuantity, formatCount } from "@/lib/number-format";
 import { useRef, useState } from "react";
 import { QUICK_POS_LONG_PRESS_MS } from "@/lib/quick-pos/constants";
 import type { QuickPosCartItem } from "@/lib/quick-pos/types";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
+import { PriceOverrideModal } from "@/components/pos/price-override-modal";
 
 export function CartPanel({
   items,
@@ -12,6 +13,8 @@ export function CartPanel({
   onLongPressRemove,
   onRemove,
   onClear,
+  onUpdatePrice,
+  managerPin,
   subtotal,
   total,
   discountAmountCents,
@@ -24,6 +27,8 @@ export function CartPanel({
   onLongPressRemove: (id: string) => void;
   onRemove?: (id: string) => void;
   onClear?: () => void;
+  onUpdatePrice?: (id: string, newPrice: number, reason: string) => void;
+  managerPin?: string | null;
   subtotal: number;
   total: number;
   discountAmountCents?: number;
@@ -31,6 +36,7 @@ export function CartPanel({
   onSetDiscount?: (cents: number, reason?: string) => void;
   onClearDiscount?: () => void;
 }) {
+  const [overrideItem, setOverrideItem] = useState<QuickPosCartItem | null>(null);
   const [showDiscountInput, setShowDiscountInput] = useState(false);
   const [discountValue, setDiscountValue] = useState("");
   const [discountReasonInput, setDiscountReasonInput] = useState("");
@@ -110,10 +116,33 @@ export function CartPanel({
                   : `x${formatQuantity(item.qty)}${item.bulkTierApplied ? ` · ${item.bulkTierApplied}` : ""}`}
               </span>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-lg font-semibold text-accent">
-                ${(item.unitPrice * item.qty).toFixed(2)}
-              </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1.5">
+                  <span className="text-lg font-semibold text-accent">
+                    ${(item.unitPrice * item.qty).toFixed(2)}
+                  </span>
+                  {onUpdatePrice && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOverrideItem(item);
+                      }}
+                      className="p-1 text-muted-foreground hover:text-accent hover:bg-white/10 rounded transition"
+                      aria-label={`Override price for ${item.name}`}
+                      title="Override price"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                {item.originalPrice !== undefined && item.overrideReason && (
+                  <span className="block text-[11px] text-amber-400 font-medium tracking-tight">
+                    Override (was ${(item.originalPrice * item.qty).toFixed(2)})
+                  </span>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={(e) => {
@@ -250,6 +279,22 @@ export function CartPanel({
           <span className="text-accent">${total.toFixed(2)}</span>
         </div>
       </div>
+
+      {overrideItem && onUpdatePrice && (
+        <PriceOverrideModal
+          open={Boolean(overrideItem)}
+          onOpenChange={(open) => !open && setOverrideItem(null)}
+          productName={overrideItem.name}
+          currentPrice={overrideItem.unitPrice}
+          managerPin={managerPin}
+          onConfirm={(newPrice, reason) => {
+            if (reason) {
+              onUpdatePrice(overrideItem.id, newPrice, reason);
+            }
+            setOverrideItem(null);
+          }}
+        />
+      )}
     </section>
   );
 }

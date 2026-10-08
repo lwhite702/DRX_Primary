@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { initiateRTBF } from "@/app/actions/rtbf";
-import { getPlatformAdmin } from "@/lib/auth/platform-admin";
+import { getPlatformAdmin, requirePlatformAdmin } from "@/lib/auth/platform-admin";
 
 const mocks = vi.hoisted(() => ({
   deleteIdentity: vi.fn(),
@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/auth/platform-admin", () => ({
   getPlatformAdmin: vi.fn(),
+  requirePlatformAdmin: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/convex-token", () => ({
@@ -36,6 +37,7 @@ describe("platform identity removal", () => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_CONVEX_URL = "https://example.convex.cloud";
     vi.mocked(getPlatformAdmin).mockResolvedValue({ userId: "platform-1" } as any);
+    vi.mocked(requirePlatformAdmin).mockResolvedValue({ userId: "platform-1" } as any);
     mocks.getConvexAuthToken.mockResolvedValue("test-token");
     mocks.deleteIdentity.mockResolvedValue({});
     mocks.query.mockResolvedValue({});
@@ -63,6 +65,7 @@ describe("platform identity removal", () => {
 
   it("blocks non-platform actors before reading or mutating target data", async () => {
     vi.mocked(getPlatformAdmin).mockResolvedValue(null);
+    vi.mocked(requirePlatformAdmin).mockRejectedValue(new Error("Platform administrator access required"));
 
     const result = await initiateRTBF("tenant-1", "clerk-user-1");
 

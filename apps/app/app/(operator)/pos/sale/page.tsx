@@ -24,6 +24,7 @@ export default function QuickPosSalePage() {
     addItem,
     incrementItem,
     removeItem,
+    updateItemPrice,
     setCustomer,
     setSearch,
     setCreditPolicy,
@@ -318,6 +319,10 @@ export default function QuickPosSalePage() {
           onLongPressRemove={removeItem}
           onRemove={handleRemoveItem}
           onClear={handleClearCart}
+          onUpdatePrice={(id, newPrice, reason) => {
+            updateItemPrice(id, newPrice, reason);
+            setSuccess("Price override applied");
+          }}
           subtotal={subtotal}
           total={total}
           discountAmountCents={state.discount.amountCents}

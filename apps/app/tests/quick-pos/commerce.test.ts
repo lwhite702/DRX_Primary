@@ -35,6 +35,39 @@ describe("fractional commerce calculations", () => {
     });
   });
 
+  it("calculates exact fractional quantity for arbitrary dollar amounts when fractionalEnabled is true", () => {
+    const fractionalConfig: FractionalProductConfig & { fractionalEnabled: boolean } = {
+      ...config,
+      fractionalEnabled: true,
+      decimalPrecision: 4,
+      baseUnitPrice: 20, // $20/g
+      bulkPriceTiers: [],
+    };
+    // $15 / $20 = 0.75g
+    expect(suggestQuantityForDollars(15, fractionalConfig)).toMatchObject({
+      quantity: 0.75,
+      unitPrice: 20,
+      lineTotal: 15,
+      belowMinimum: false,
+    });
+    // $7 / $20 = 0.35g
+    expect(suggestQuantityForDollars(7, fractionalConfig)).toMatchObject({
+      quantity: 0.35,
+      unitPrice: 20,
+      lineTotal: 7,
+      belowMinimum: false,
+    });
+    // $10 with 3 decimal precision
+    const preciseFractional = { ...fractionalConfig, decimalPrecision: 3, baseUnitPrice: 30 };
+    // $10 / $30 = 0.333g
+    expect(suggestQuantityForDollars(10, preciseFractional)).toMatchObject({
+      quantity: 0.333,
+      unitPrice: 30,
+      lineTotal: 9.99,
+      belowMinimum: false,
+    });
+  });
+
   it("calculates a quantity-entered line and applies the highest eligible tier", () => {
     expect(calculateFractionalLine(10.25, config)).toEqual({
       quantity: 10.25,

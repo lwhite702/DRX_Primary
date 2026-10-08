@@ -104,7 +104,8 @@ async function resolveCanonicalInput(input: CanonicalInput) {
   }
 
   const customerId = identities.customerId;
-  const priceOverrides = input.usePriceOverrides ? inventoryItems.flatMap((item, index) => {
+  const itemsHaveOverrides = inventoryItems.some((item) => item.overrideReason);
+  const priceOverrides = (input.usePriceOverrides ?? itemsHaveOverrides) ? inventoryItems.flatMap((item, index) => {
     if (item.originalPrice !== undefined && !item.overrideReason) throw new Error("INVALID_ARGUMENT: A price override requires a reason");
     return item.overrideReason ? [{ productId: identities.productIds[index], unitPriceCents: checkedCents(item.unitPrice), reason: item.overrideReason }] : [];
   }) : [];

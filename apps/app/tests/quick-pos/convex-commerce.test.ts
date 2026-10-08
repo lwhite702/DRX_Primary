@@ -43,3 +43,32 @@ it("reports for canonical or explicitly mapped business with the exact period", 
   mocks.query.mockResolvedValue({ business: { _id: "other", legacyPrismaBusinessId: "not-this" } });
   await expect(getCanonicalCommerceSummary({ businessId: "business", startAt: 100, endAt: 200 })).rejects.toThrow(/not linked/);
 });
+
+it("passes price overrides when items include an overrideReason", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"], customerId: "canonical-customer" }).mockResolvedValueOnce(quote);
+  const overrideInput = {
+    ...input,
+    items: [
+      {
+        ...input.items[0],
+        originalPrice: 12,
+        unitPrice: 8,
+        overrideReason: "Manager promotional exception",
+      },
+    ],
+  };
+  await quoteCanonicalCommerce(overrideInput);
+  expect(mocks.query).toHaveBeenNthCalledWith(
+    2,
+    expect.anything(),
+    expect.objectContaining({
+      priceOverrides: [
+        {
+          productId: "canonical-product",
+          unitPriceCents: 800,
+          reason: "Manager promotional exception",
+        },
+      ],
+    }),
+  );
+});

@@ -107,4 +107,61 @@ describe("CartPanel", () => {
     expect(onTap).toHaveBeenCalledTimes(1);
     expect(onTap).toHaveBeenCalledWith("inv:item-1");
   });
+
+  it("renders override badge when item has originalPrice and overrideReason", () => {
+    const overriddenItems: QuickPosCartItem[] = [
+      {
+        ...sampleItems[0],
+        unitPrice: 12,
+        originalPrice: 15,
+        overrideReason: "Loyalty concession",
+      },
+    ];
+
+    render(
+      <CartPanel
+        items={overriddenItems}
+        onTap={vi.fn()}
+        onLongPressRemove={vi.fn()}
+        subtotal={24}
+        total={24}
+      />,
+    );
+
+    expect(screen.getByText(/Override \(was \$30\.00\)/)).toBeInTheDocument();
+  });
+
+  it("opens price override modal and submits price update", () => {
+    const onUpdatePrice = vi.fn();
+
+    render(
+      <CartPanel
+        items={sampleItems}
+        onTap={vi.fn()}
+        onLongPressRemove={vi.fn()}
+        onUpdatePrice={onUpdatePrice}
+        subtotal={50}
+        total={50}
+      />,
+    );
+
+    const overrideButton = screen.getByRole("button", {
+      name: "Override price for Blue Dream",
+    });
+    fireEvent.click(overrideButton);
+
+    expect(screen.getByText("Override Price")).toBeInTheDocument();
+
+    const priceInput = screen.getByLabelText(/New Price/);
+    fireEvent.change(priceInput, { target: { value: "12" } });
+
+    const reasonInput = screen.getByLabelText(/Reason/);
+    fireEvent.change(reasonInput, { target: { value: "Special promotional rate" } });
+
+    const nextButton = screen.getByRole("button", { name: "Next" });
+    fireEvent.click(nextButton);
+
+    expect(onUpdatePrice).toHaveBeenCalledTimes(1);
+    expect(onUpdatePrice).toHaveBeenCalledWith("inv:item-1", 12, "Special promotional rate");
+  });
 });

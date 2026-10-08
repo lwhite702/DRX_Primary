@@ -70,6 +70,10 @@ type Action =
   | { type: "add_item"; payload: QuickPosCartItem }
   | { type: "remove_item"; payload: { id: string } }
   | { type: "increment_item"; payload: { id: string } }
+  | {
+      type: "update_item_price";
+      payload: { id: string; unitPrice: number; overrideReason: string };
+    }
   | { type: "set_customer"; payload: QuickPosState["customer"] }
   | { type: "set_payment_method"; payload: QuickPosPaymentMethod | null }
   | { type: "set_receipt"; payload: QuickPosReceiptOption }
@@ -146,6 +150,20 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
       return {
         ...state,
         cartItems: state.cartItems.filter((item) => item.id !== action.payload.id),
+      };
+    case "update_item_price":
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item) =>
+          item.id === action.payload.id
+            ? {
+                ...item,
+                originalPrice: item.originalPrice ?? item.unitPrice,
+                unitPrice: action.payload.unitPrice,
+                overrideReason: action.payload.overrideReason,
+              }
+            : item,
+        ),
       };
     case "set_customer":
       return { ...state, customer: action.payload };
@@ -236,6 +254,7 @@ interface QuickPosStore {
   addItem: (item: QuickPosCartItem) => void;
   incrementItem: (id: string) => void;
   removeItem: (id: string) => void;
+  updateItemPrice: (id: string, unitPrice: number, overrideReason: string) => void;
   setCustomer: (customer: QuickPosState["customer"]) => void;
   setPaymentMethod: (method: QuickPosPaymentMethod | null) => void;
   setReceipt: (receipt: QuickPosReceiptOption) => void;
@@ -283,6 +302,11 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback((item: QuickPosCartItem) => dispatch({ type: "add_item", payload: item }), []);
   const incrementItem = useCallback((id: string) => dispatch({ type: "increment_item", payload: { id } }), []);
   const removeItem = useCallback((id: string) => dispatch({ type: "remove_item", payload: { id } }), []);
+  const updateItemPrice = useCallback(
+    (id: string, unitPrice: number, overrideReason: string) =>
+      dispatch({ type: "update_item_price", payload: { id, unitPrice, overrideReason } }),
+    [],
+  );
   const setCustomer = useCallback((customer: QuickPosState["customer"]) => dispatch({ type: "set_customer", payload: customer }), []);
   const setPaymentMethod = useCallback((method: QuickPosPaymentMethod | null) => dispatch({ type: "set_payment_method", payload: method }), []);
   const setReceipt = useCallback((receipt: QuickPosReceiptOption) => dispatch({ type: "set_receipt", payload: receipt }), []);
@@ -338,6 +362,7 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       addItem,
       incrementItem,
       removeItem,
+      updateItemPrice,
       setCustomer,
       setPaymentMethod,
       setReceipt,
@@ -366,6 +391,7 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       addItem,
       incrementItem,
       removeItem,
+      updateItemPrice,
       setCustomer,
       setPaymentMethod,
       setReceipt,

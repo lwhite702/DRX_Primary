@@ -109,7 +109,11 @@ export function FractionalEntryDialog({
           <div className="rounded-lg border border-accent/20 bg-accent/5 p-4" aria-live="polite">
             <div className="flex items-center justify-between">
               <span>{config?.fractionalEnabled ? "Suggested serving" : "Suggested quantity"}</span>
-              <strong>{formatQuantity(line.quantity)} {line.sellingUnit}</strong>
+              <strong>
+                {config?.decimalPrecision !== undefined && config.decimalPrecision > 2
+                  ? `${parseFloat(line.quantity.toFixed(config.decimalPrecision))} ${line.sellingUnit}`
+                  : `${formatQuantity(line.quantity)} ${line.sellingUnit}`}
+              </strong>
             </div>
             <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
               <span>{line.bulkTier?.label ?? "Standard price"} · ${line.unitPrice.toFixed(2)}/{line.sellingUnit}</span>

@@ -66,6 +66,11 @@ export function PriceOverrideModal({
       return;
     }
 
+    if (!reason.trim()) {
+      setError("A reason is required to override price");
+      return;
+    }
+
     // Check if price is below cost
     if (unitCost && price < unitCost) {
       setStep("warning");
@@ -99,7 +104,7 @@ export function PriceOverrideModal({
   };
 
   const confirmOverride = () => {
-    onConfirm(parseFloat(newPrice), reason || undefined);
+    onConfirm(parseFloat(newPrice), reason.trim() || undefined);
     handleClose();
   };
 
@@ -171,8 +176,8 @@ export function PriceOverrideModal({
                       <span
                         className={
                           priceDifference > 0
-                            ? "text-green-600 font-medium"
-                            : "text-red-600 font-medium"
+                            ? "text-emerald-500 font-medium"
+                            : "text-red-400 font-medium"
                         }
                       >
                         {priceDifference > 0 ? "+" : ""}$
@@ -185,12 +190,15 @@ export function PriceOverrideModal({
                 )}
 
               <div className="space-y-2">
-                <Label htmlFor="reason">Reason (Optional)</Label>
+                <Label htmlFor="reason">Reason (Required for audit)</Label>
                 <Textarea
                   id="reason"
                   value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="e.g., promotional discount, damaged item"
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="e.g., promotional discount, damaged item, price match"
                   rows={3}
                 />
               </div>
@@ -222,7 +230,7 @@ export function PriceOverrideModal({
             </DialogHeader>
 
             <div className="py-4 space-y-4">
-              <div className="p-4 bg-red-50 text-red-900 rounded-md text-sm border border-red-200">
+              <div className="p-4 bg-red-950/40 text-red-200 rounded-md text-sm border border-red-500/30">
                 <p>
                   <strong>Warning:</strong> You are about to sell this item for
                   less than it costs to acquire. Manager authorization is
@@ -231,7 +239,7 @@ export function PriceOverrideModal({
               </div>
               <div className="space-y-2">
                 <Label>Loss per unit</Label>
-                <div className="font-mono text-red-600 font-bold">
+                <div className="font-mono text-red-400 font-bold">
                   -${(unitCost! - parseFloat(newPrice)).toFixed(2)}
                 </div>
               </div>
@@ -306,7 +314,7 @@ export function PriceOverrideModal({
             </DialogHeader>
 
             <div className="py-4 space-y-4">
-              <div className="p-4 bg-amber-50 text-amber-900 rounded-md text-sm border border-amber-200">
+              <div className="p-4 bg-amber-950/40 text-amber-200 rounded-md text-sm border border-amber-500/30">
                 <p>
                   Below-cost price overrides require manager authorization. Please configure a manager PIN in <strong>Business Settings</strong> or during onboarding before overriding prices below cost.
                 </p>

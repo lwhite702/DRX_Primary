@@ -48,6 +48,38 @@ describe("quick pos store", () => {
     expect(storeRef!.state.cartItems).toHaveLength(0);
   });
 
+  it("updates item price with override reason while preserving original price", () => {
+    render(
+      <QuickPosProvider>
+        <Harness />
+      </QuickPosProvider>,
+    );
+
+    act(() => {
+      storeRef!.addItem({
+        id: "inv:override-1",
+        inventoryId: "prod-1",
+        name: "Premium Flower",
+        unitPrice: 50,
+        qty: 2,
+        source: "inventory",
+      });
+    });
+
+    expect(storeRef!.subtotal).toBe(100);
+
+    act(() => {
+      storeRef!.updateItemPrice("inv:override-1", 40, "Loyal customer discount");
+    });
+
+    expect(storeRef!.state.cartItems[0]).toMatchObject({
+      unitPrice: 40,
+      originalPrice: 50,
+      overrideReason: "Loyal customer discount",
+    });
+    expect(storeRef!.subtotal).toBe(80);
+  });
+
   it("resets after completion while preserving credit policy", () => {
     render(
       <QuickPosProvider>

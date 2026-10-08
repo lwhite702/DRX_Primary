@@ -133,31 +133,43 @@ export function suggestQuantityForDollars(
 ): FractionalLine & { belowMinimum: boolean } {
   const dollars = Math.max(0, requestedDollars);
   const precision = boundedPrecision(config.decimalPrecision);
+  const fractional = (config as { fractionalEnabled?: boolean }).fractionalEnabled === true;
   const quantityIncrement =
     config.quantityIncrement > 0
       ? config.quantityIncrement
       : 1 / 10 ** precision;
 
   const candidateTier = validTiers(config).find((tier) => {
-    const candidateQuantity = roundToSaleGrid(
-      dollars / (tier.totalPrice === undefined ? tier.unitPrice : tier.totalPrice / tier.minimumQuantity),
-      config.minimumSaleQuantity,
-      quantityIncrement,
-      precision,
-      "down",
-    );
-    return candidateQuantity >= tier.minimumQuantity;
-  });
-  const unitPrice = candidateTier?.totalPrice !== undefined ? candidateTier.totalPrice / candidateTier.minimumQuantity : candidateTier?.unitPrice ?? config.baseUnitPrice;
-  const quantity =
-    unitPrice > 0
-      ? roundToSaleGrid(
-          dollars / unitPrice,
+    const rawTierUnitPrice =
+      tier.totalPrice === undefined
+        ? tier.unitPrice
+        : tier.totalPrice / tier.minimumQuantity;
+    const candidateQuantity = fractional
+      ? Number((dollars / rawTierUnitPrice).toFixed(precision))
+      : roundToSaleGrid(
+          dollars / rawTierUnitPrice,
           config.minimumSaleQuantity,
           quantityIncrement,
           precision,
           "down",
-        )
+        );
+    return candidateQuantity >= tier.minimumQuantity;
+  });
+  const unitPrice =
+    candidateTier?.totalPrice !== undefined
+      ? candidateTier.totalPrice / candidateTier.minimumQuantity
+      : candidateTier?.unitPrice ?? config.baseUnitPrice;
+  const quantity =
+    unitPrice > 0
+      ? fractional
+        ? Number((dollars / unitPrice).toFixed(precision))
+        : roundToSaleGrid(
+            dollars / unitPrice,
+            config.minimumSaleQuantity,
+            quantityIncrement,
+            precision,
+            "down",
+          )
       : 0;
   const belowMinimum = quantity < config.minimumSaleQuantity;
 

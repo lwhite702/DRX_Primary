@@ -83,6 +83,13 @@ describe("platform reads and writes reject tenant authority", () => {
     expect(m.transaction).not.toHaveBeenCalled(); expect(m.clerk).not.toHaveBeenCalled();
     expect(m.writeAudit).not.toHaveBeenCalled();
   });
+  it("rejects unauthenticated or cross-tenant identity removal with no side effects", async () => {
+    m.auth.mockResolvedValue({ userId: null });
+    expect((await deleteIdentity(request(), { params: Promise.resolve({ tenantId: "business-a", userId: "target" }) })).status).toBe(403);
+    expect((await initiateRTBF("business-a", "target")).error).toBeTruthy();
+    expect(m.clerk).not.toHaveBeenCalled();
+    expect(m.mutation).not.toHaveBeenCalled();
+  });
   it("platform role updates cannot grant super_admin or silently update all businesses", async () => {
     m.admin.mockResolvedValue({ role: "super_admin" });
     expect((await updateUserRole("target", "super_admin", "business-a")).error).toBeTruthy();
