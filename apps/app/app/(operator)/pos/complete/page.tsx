@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 export default function QuickPosCompletePage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function QuickPosCompletePage() {
           Returning to the register to ring up the next customer.
         </p>
         <div className="mt-4 space-y-2 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-emerald-100">
-          <p>Sale ID: {state.session.lastSaleId}</p>
+          <p>Sale ID: {safeDisplayOrderNumber(state.session.lastSaleId)}</p>
           {typeof state.session.lastSaleTotal === "number" ? (
             <p>Total Charged: ${state.session.lastSaleTotal.toFixed(2)}</p>
           ) : null}

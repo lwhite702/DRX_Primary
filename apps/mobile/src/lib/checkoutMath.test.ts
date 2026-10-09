@@ -9,6 +9,8 @@ import {
   resolveLoyaltyEligibleSpendCents,
   resolveLoyaltyRateBps,
   suggestedQuantityForDollars,
+  generateSafeOrderNumber,
+  safeDisplayOrderNumber,
   type FractionalProduct,
 } from "./checkoutMath";
 import { parseDeliveryPushPayload } from "./pushNotifications";
@@ -304,5 +306,31 @@ describe("offline fractional quantity validation", () => {
       _id: "product_1",
       allowFractionalWeight: false,
     })).toBe(false);
+  });
+
+  it("generates safe 6-char base32 order numbers with ORD- prefix", () => {
+    const generated = generateSafeOrderNumber();
+    expect(generated).toMatch(/^ORD-[0-9A-Z]{6}$/);
+  });
+
+  it("formats long UUID and raw timestamp order numbers safely", () => {
+    // Already safe 6-char
+    expect(safeDisplayOrderNumber("ORD-489201")).toBe("ORD-489201");
+
+    // Long UUID order number (user screenshot)
+    expect(
+      safeDisplayOrderNumber("ORD-69397A70-E49C-4AC6-B71E-E5430730C450"),
+    ).toBe("ORD-69397A");
+    expect(
+      safeDisplayOrderNumber("ORD-260726A5-4234-482C-8DF4-ED77AD0098E8"),
+    ).toBe("ORD-260726");
+
+    // Raw timestamps
+    expect(safeDisplayOrderNumber("DRX-A-1728445123456")).toBe("ORD-123456");
+    expect(safeDisplayOrderNumber("WEB-1728445123")).toBe("ORD-445123");
+
+    // Concise order numbers preserved
+    expect(safeDisplayOrderNumber("ORD-100")).toBe("ORD-100");
+    expect(safeDisplayOrderNumber("DRX-101")).toBe("DRX-101");
   });
 });

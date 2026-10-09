@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 type DeliveryId = Id<"deliveries">;
 type DeliveryStatus =
@@ -232,7 +233,7 @@ export default function DeliveriesPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">Order {delivery.orderNumber}</span>
+                      <span className="font-semibold">Order {safeDisplayOrderNumber(delivery.orderNumber)}</span>
                       <Badge variant="outline">{statusLabels[delivery.status as DeliveryStatus]}</Badge>
                     </div>
                     <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{delivery.addressLabel}</p>
@@ -258,7 +259,7 @@ export default function DeliveriesPage() {
               <>
                 <CardHeader className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <CardTitle>Order {selected.orderNumber}</CardTitle>
+                    <CardTitle>Order {safeDisplayOrderNumber(selected.orderNumber)}</CardTitle>
                     <div className="flex items-center gap-2">
                       <Button
                         type="button"

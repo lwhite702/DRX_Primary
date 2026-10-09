@@ -896,7 +896,7 @@ private struct DeliveryQueueRow: View {
             HStack {
                 Button(action: onInspect) {
                     HStack(spacing: 6) {
-                        Text(delivery.orderNumber)
+                        Text(delivery.safeDisplayOrderNumber)
                             .font(.headline.monospaced())
                             .foregroundStyle(DRXPalette.ink)
                         Image(systemName: "info.circle")
@@ -905,7 +905,7 @@ private struct DeliveryQueueRow: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("View details and audit history for \(delivery.orderNumber)")
+                .accessibilityLabel("View details and audit history for \(delivery.safeDisplayOrderNumber)")
 
                 Spacer()
                 Text(isDispatchOverdue ? "ORDER UBER NOW" : delivery.status.label.uppercased())
@@ -1011,7 +1011,7 @@ private struct CourierWaitSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle(delivery.orderNumber)
+            .navigationTitle(delivery.safeDisplayOrderNumber)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -1047,7 +1047,7 @@ private struct DeliveryCancellationSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle(delivery.orderNumber)
+            .navigationTitle(delivery.safeDisplayOrderNumber)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Back") { dismiss() } }
@@ -1085,7 +1085,7 @@ private struct DeliveryDetailSheet: View {
                 } else if let details {
                     List {
                         Section("Fulfillment Summary") {
-                            LabeledContent("Order", value: details.delivery.orderNumber)
+                            LabeledContent("Order", value: details.delivery.safeDisplayOrderNumber)
                             LabeledContent("Status", value: details.delivery.status.label)
                             LabeledContent("Vendor Expense", value: formatDeliveryCents(details.delivery.vendorFeeCents))
                             LabeledContent("Customer Fee", value: formatDeliveryCents(details.delivery.customerFeeCents))

@@ -231,7 +231,7 @@ struct SaleRowView: View {
                 .background(paymentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(sale.orderNumber)
+                Text(sale.safeDisplayOrderNumber)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(DRXPalette.ink)
                 Text(sale.createdDate.formatted(date: .abbreviated, time: .shortened))

@@ -91,3 +91,57 @@ export function parseDecimal(value: unknown): number | undefined {
 
   return isNegative ? -Math.abs(parsed) : parsed;
 }
+
+const SAFE_ALPHANUMERIC = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+/**
+ * Generates a human-friendly order number with ORD- prefix and 6 random safe base32 alphanumeric chars (e.g. ORD-489201).
+ */
+export function generateSafeOrderNumber(): string {
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    const idx = Math.floor(Math.random() * SAFE_ALPHANUMERIC.length);
+    result += SAFE_ALPHANUMERIC[idx];
+  }
+  return `ORD-${result}`;
+}
+
+/**
+ * Formats order numbers safely for humans:
+ * - If it has a long UUID or raw timestamp suffix (e.g. ORD-69397A70-E49C-..., ORD-1728445123), shortens to 6-char safe suffix.
+ * - Otherwise preserves concise order numbers as-is.
+ */
+export function safeDisplayOrderNumber(orderNumber: string | null | undefined): string {
+  if (!orderNumber) return "";
+  const trimmed = String(orderNumber).trim();
+  if (!trimmed) return "";
+
+  // Already safe 6-char: ORD-XXXXXX
+  if (/^ORD-[0-9A-Za-z]{6}$/.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+
+  // Long UUID with ORD- prefix: ORD-69397A70-... -> ORD-69397A
+  if (/^ORD-[0-9A-Za-z]{6}[0-9A-Za-z-]{8,}$/.test(trimmed)) {
+    const stripped = trimmed.replace("ORD-", "").replace(/-/g, "");
+    if (stripped.length >= 6) {
+      return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
+    }
+  }
+
+  // Raw UUID without prefix: 69397A70-...
+  if (/^[0-9A-Fa-f]{6}[0-9A-Fa-f-]{26,}$/.test(trimmed)) {
+    const stripped = trimmed.replace(/-/g, "");
+    return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
+  }
+
+  // Timestamp suffix: DRX-A-1728445123, WEB-1728445123, ORD-1728445123
+  const tsMatch = /^(?:ORD|DRX-A|WEB|POS|OFF)-(\d{10,13})$/.exec(trimmed);
+  if (tsMatch) {
+    const digits = tsMatch[1];
+    return `ORD-${digits.slice(-6)}`;
+  }
+
+  return trimmed;
+}
+
