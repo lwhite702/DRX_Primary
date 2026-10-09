@@ -39,7 +39,7 @@ export default defineConfig({
     ["list"],
   ],
   use: {
-    baseURL: appBaseUrl,
+    baseURL: process.env.BASE_URL || appBaseUrl,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
@@ -54,20 +54,24 @@ export default defineConfig({
       use: { ...devices["Pixel 7"] },
     },
   ],
-  webServer: {
-    command: useWebpackDevServer
-      ? `pnpm exec next dev --webpack --port ${appPort}`
-      : `pnpm exec next dev --port ${appPort}`,
-    // Probe a public, database-independent asset. In bypass mode `/` redirects
-    // to the dashboard, while signed-out app pages can redirect to Clerk UI;
-    // either can make Playwright wait on application data before the server is
-    // considered ready.
-    url: `${appBaseUrl}/brand/favicon-16.png`,
-    // Avoid silently targeting an unrelated local app on the same port.
-    // Reuse only when explicitly requested.
-    reuseExistingServer,
-    timeout: 600 * 1000,
-  },
+  ...(process.env.BASE_URL
+    ? {}
+    : {
+        webServer: {
+          command: useWebpackDevServer
+            ? `pnpm exec next dev --webpack --port ${appPort}`
+            : `pnpm exec next dev --port ${appPort}`,
+          // Probe a public, database-independent asset. In bypass mode `/` redirects
+          // to the dashboard, while signed-out app pages can redirect to Clerk UI;
+          // either can make Playwright wait on application data before the server is
+          // considered ready.
+          url: `${appBaseUrl}/brand/favicon-16.png`,
+          // Avoid silently targeting an unrelated local app on the same port.
+          // Reuse only when explicitly requested.
+          reuseExistingServer,
+          timeout: 600 * 1000,
+        },
+      }),
   ...(skipGlobalSetup
     ? {}
     : { globalSetup: require.resolve("./tests/e2e/global.setup.ts") }),
