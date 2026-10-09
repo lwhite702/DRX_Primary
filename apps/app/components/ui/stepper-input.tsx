@@ -59,13 +59,13 @@ export function StepperInput({
     [precision]
   );
 
-  const [internalValue, setInternalValue] = React.useState<number>(
-    value !== undefined ? value : defaultValue
+  const [inputValue, setInputValue] = React.useState<string>(
+    value !== undefined ? String(value) : String(defaultValue)
   );
 
   React.useEffect(() => {
     if (value !== undefined) {
-      setInternalValue(value);
+      setInputValue(String(value));
     }
   }, [value]);
 
@@ -75,40 +75,52 @@ export function StepperInput({
     if (max !== undefined && clamped > max) clamped = max;
     clamped = formatVal(clamped);
 
-    setInternalValue(clamped);
+    setInputValue(String(clamped));
     onChange?.(clamped);
   };
 
   const handleDecrease = () => {
     if (disabled) return;
-    updateValue(internalValue - step);
+    const current = parseFloat(inputValue);
+    const base = isNaN(current) ? (min !== undefined ? min : 0) : current;
+    updateValue(base - step);
   };
 
   const handleIncrease = () => {
     if (disabled) return;
-    updateValue(internalValue + step);
+    const current = parseFloat(inputValue);
+    const base = isNaN(current) ? (min !== undefined ? min : 0) : current;
+    updateValue(base + step);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
+    setInputValue(raw);
+
     if (raw === "" || raw === "-") {
-      setInternalValue(0);
-      onChange?.(0);
+      // Do not force value to 0; allow user to type or backspace freely
       return;
     }
+
     const parsed = parseFloat(raw);
     if (!isNaN(parsed)) {
-      setInternalValue(parsed);
       onChange?.(parsed);
     }
   };
 
   const handleBlur = () => {
-    updateValue(internalValue);
+    const parsed = parseFloat(inputValue);
+    if (isNaN(parsed) || inputValue.trim() === "") {
+      const fallback = min !== undefined ? min : 0;
+      updateValue(fallback);
+    } else {
+      updateValue(parsed);
+    }
   };
 
-  const isMinReached = min !== undefined && internalValue <= min;
-  const isMaxReached = max !== undefined && internalValue >= max;
+  const currentNumeric = parseFloat(inputValue);
+  const isMinReached = min !== undefined && !isNaN(currentNumeric) && currentNumeric <= min;
+  const isMaxReached = max !== undefined && !isNaN(currentNumeric) && currentNumeric >= max;
 
   return (
     <div
@@ -137,7 +149,7 @@ export function StepperInput({
           step={step}
           min={min}
           max={max}
-          value={isNaN(internalValue) ? "" : internalValue}
+          value={inputValue}
           onChange={handleInputChange}
           onBlur={handleBlur}
           placeholder={placeholder}
