@@ -49,6 +49,8 @@ export interface QuickPosSessionState {
   pendingIdempotencyKey: string | null;
   lastSaleTotal: number | null;
   lastReceipt: QuickPosReceiptOption | null;
+  lastChange?: number | null;
+  lastIsDelivery?: boolean;
 }
 
 export interface QuickPosDiscountState {
@@ -80,6 +82,7 @@ export interface QuickPosCheckoutRequest {
     receipt: QuickPosReceiptOption;
     creditConfirmed: boolean;
   };
+  amountPaid?: number;
   delivery?: QuickPosDeliveryState;
   discountAmountCents?: number;
   discountReason?: string;
@@ -90,6 +93,7 @@ export interface QuickPosCheckoutResponse {
   success: boolean;
   saleId?: string;
   total?: number;
+  changeAmount?: number;
   receipt?: ReceiptOutput;
   error?: string;
 }

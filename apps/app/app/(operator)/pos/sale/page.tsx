@@ -345,6 +345,9 @@ export default function QuickPosSalePage() {
               setError("Failed to attach customer");
             }
           }}
+          onDetach={() => {
+            setCustomer({ id: null, phone: "", alias: null, remainingCredit: 0 });
+          }}
         />
 
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">

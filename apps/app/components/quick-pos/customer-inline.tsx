@@ -17,9 +17,11 @@ interface CustomerItem {
 export function CustomerInline({
   attached,
   onAttach,
+  onDetach,
 }: {
   attached: { id: string | null; phone: string; alias: string | null; remainingCredit?: number };
   onAttach: (value: { id: string; phone: string; alias: string; remainingCredit: number }) => void;
+  onDetach?: () => void;
 }) {
   const [phone, setPhone] = useState(attached.phone || "");
   const [alias, setAlias] = useState("");
@@ -117,12 +119,29 @@ export function CustomerInline({
       </div>
 
       {attached.id ? (
-        <p className="mt-2 text-sm font-semibold text-emerald-300">
-          Attached:{" "}
-          {shouldMask
-            ? maskAlias(attached.alias || attached.phone)
-            : attached.alias || attached.phone}
-        </p>
+        <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+          <p className="text-sm font-semibold text-emerald-300">
+            Attached:{" "}
+            {shouldMask
+              ? maskAlias(attached.alias || attached.phone)
+              : attached.alias || attached.phone}
+            {typeof attached.remainingCredit === "number" ? (
+              <span className="ml-2 text-xs font-normal text-emerald-200/80">
+                (Credit: ${attached.remainingCredit.toFixed(2)})
+              </span>
+            ) : null}
+          </p>
+          {onDetach && (
+            <button
+              type="button"
+              onClick={onDetach}
+              className="text-xs text-red-400 hover:text-red-300 transition underline ml-2"
+              aria-label="Remove customer"
+            >
+              Remove
+            </button>
+          )}
+        </div>
       ) : null}
 
       <div className="mt-2 space-y-2">

@@ -111,6 +111,7 @@ export const quickCheckoutPayloadSchema = z.object({
   customerId: z.string().min(1).max(128).nullable().optional(),
   source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
+  amountPaid: z.number().nonnegative().optional(),
   delivery: quickPosDeliverySchema.optional(),
   discountAmountCents: z.number().int().nonnegative().optional(),
   discountReason: z.string().min(1).max(100).optional(),
