@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-10
+
+### Added
+
+- **Reports Day Navigator**: Added date toggle navigation across web, iOS, and mobile reports to review daily sales, tax, and order totals for any selected day.
+- **Reporting Timezone**: Added configurable business timezone in settings (defaulting to Eastern Time) to calculate daily reporting cutoffs accurately.
+- **Apple-grade UI transitions & Desktop polish**: Eliminated customer inline lookup layout stutter, added smooth `.apple-enter` animations, and unified `.page-transition` wrappers across desktop screens.
+- **Safe Human-Readable Order Numbers**: Clean, compact 6-character safe order number generation and display across iOS, desktop web, and mobile point of sale.
+
+### Fixed
+
+- **Desktop checkout parity**: Full cash tender, exact change calculations, and store credit validation parity on desktop web matching mobile and iOS.
+- **Numeric input backspacing**: Resolved form input restriction where backspacing numbers was blocked on stepper and fee inputs.
+
 ### Added
 
 - **Per-product bundle totals (WRE-167)**: Add optional quantity-based bundle totals to web, iOS, and Expo product setup, persist exact-cent totals with product creation, and apply derived tier rates in server checkout and native previews. Existing unit-price tiers remain valid. Credentialed checkout and real-device verification remain release gates.

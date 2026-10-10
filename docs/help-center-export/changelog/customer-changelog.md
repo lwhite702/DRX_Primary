@@ -4,6 +4,20 @@ This page highlights changes that affect day-to-day work in DRX. Release notes u
 
 DRX is in early access, so a feature may be available on web, mobile web, or a native app at different times.
 
+## 2026-10-10 — v0.12.0
+
+### New
+
+- **Toggle between days in reports:** Easily navigate back and forth between previous days on web, iOS, and mobile to view past sales, subtotal, and tax summaries.
+- **Reporting timezone:** Configure your store's reporting timezone in settings (defaulting to Eastern Time) so daily cutoffs and summaries match your local operating hours.
+- **Safe human-readable order numbers:** Orders now display clean, memorable order numbers (e.g. `ORD-489201`) across receipts, point-of-sale screens, and customer details.
+
+### Improved
+
+- **Apple-grade desktop transitions:** Fluid, instant customer inline lookups with zero layout jump, polished loading states, and smooth interface entrances across all desktop screens.
+- **Desktop checkout parity:** Complete cash tendering, exact change calculations, and store credit validation on desktop web matching mobile and iOS.
+- **Fluid form typing:** Backspacing and rapid digit entry now work smoothly across all quantity, price, and fee inputs.
+
 ## 2026-09-17 — v0.9.4
 
 ### Improved
