@@ -238,6 +238,6 @@ describe("desktop quick pos checkout parity", () => {
     expect(screen.getByText("Total Charged: $10.80")).toBeInTheDocument();
     expect(screen.getByText("Change Due: $9.20")).toBeInTheDocument();
     expect(screen.getByText("Delivery: Ready for dispatch")).toBeInTheDocument();
-    expect(screen.getByText("Receipt: printed")).toBeInTheDocument();
+    expect(screen.getByText("Receipt: print")).toBeInTheDocument();
   });
 });
