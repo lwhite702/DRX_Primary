@@ -1,22 +1,18 @@
 {
   "schemaVersion": 1,
-  "baseSha": "9cd6bc50333046c6e0143abc2b3ee0c7c6fef36d",
+  "baseSha": "1249bd600baba4c3ee5639dab39278ddbcf83a41",
   "status": "reviewed-compatible",
   "reviewedBy": "lwhite702",
-  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/179#pullrequestreview-5119597017",
-  "rationale": "WRE-107 changes public copy inside existing components and helpers without changing their call signatures. Removed exports were unused internal marketing-canon names tied to retired terminology, so existing product consumers remain compatible.",
+  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/240#pullrequestreview-5467160982",
+  "rationale": "Extended types with optional fields for date navigation, timezone awareness, and POS UI polish. All additions are strictly backward-compatible and additive.",
   "signals": [
-    "export-contract-changed:apps/app/app/(app)/help/_components/help-support-sidebar.tsx:HelpSupportSidebar",
-    "export-contract-changed:apps/app/app/onboarding/_components/OnboardingForm.tsx:OnboardingCompletionRedirect",
-    "export-contract-changed:apps/app/components/ai/ai-intelligence-dashboard.tsx:AIIntelligenceDashboard",
-    "export-contract-changed:apps/app/components/ui/error-state.tsx:ErrorState",
-    "export-contract-changed:apps/app/lib/help/support-center.ts:normalizeHelpTopic",
-    "export-contract-changed:apps/marketing/components/marketing/landing/sections.tsx:LandingPageSections",
-    "export-contract-changed:apps/marketing/lib/feature-canon.ts:productDetailCanon",
-    "export-contract-changed:apps/marketing/lib/feature-canon.ts:productHubCards",
-    "export-contract-changed:apps/mobile/app/(tabs)/inventory/index.tsx:default",
-    "export-contract-removed:apps/marketing/lib/feature-canon.ts:PrivacyProtexionBlock",
-    "export-contract-removed:apps/marketing/lib/feature-canon.ts:PrivacyProtexionExample",
-    "export-contract-removed:apps/marketing/lib/feature-canon.ts:drxPrivacyProtexion"
+    "export-contract-changed:apps/app/components/quick-pos/customer-inline.tsx:CustomerInline",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutRequest",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutResponse",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosSessionState",
+    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:PosBaselineReport",
+    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:getPosBaselineReport",
+    "export-contract-changed:apps/mobile/app/sales-history.tsx:default",
+    "export-contract-changed:apps/mobile/src/services/apiClient.ts:getDailySummary"
   ]
 }
