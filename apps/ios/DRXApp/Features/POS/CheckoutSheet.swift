@@ -13,7 +13,7 @@ struct CheckoutSheet: View {
     @State private var checkoutError: String?
     @State private var completedSale: CheckoutResponse?
     @State private var showCustomerPicker = false
-    @State private var orderNumber = "ORD-\(UUID().uuidString.uppercased())"
+    @State private var orderNumber = OrderNumberUtils.generateSafeOrderNumber()
     @State private var deliveryEnabled = false
     @State private var deliveryAddress = ""
     @State private var vendorFeeString = ""
@@ -602,7 +602,7 @@ struct CheckoutSheet: View {
                 Text("Sale Complete")
                     .font(.title2.bold())
                     .foregroundStyle(DRXPalette.ink)
-                Text(sale.orderNumber)
+                Text(OrderNumberUtils.safeDisplay(sale.orderNumber))
                     .font(.subheadline.monospaced())
                     .foregroundStyle(DRXPalette.muted)
             }
@@ -640,6 +640,7 @@ struct CheckoutSheet: View {
 
             Button {
                 store.clearCart()
+                orderNumber = OrderNumberUtils.generateSafeOrderNumber()
                 dismiss()
             } label: {
                 Text("New Sale")

@@ -269,20 +269,6 @@ export default function QuickPosSalePage() {
           error={state.ui.hardError}
           success={state.ui.successMessage}
         />
-        {isBootstrapping ? (
-          <div
-            className="grid grid-cols-2 gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-4"
-            role="status"
-            aria-label="Loading register data and favorites"
-            aria-busy="true"
-            aria-live="polite"
-          >
-            {[0, 1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-14 bg-white/10" />
-            ))}
-          </div>
-        ) : null}
-
         <ProductSearch
           value={state.ui.search}
           onChange={setSearch}
@@ -291,19 +277,44 @@ export default function QuickPosSalePage() {
           onSubmitSearch={submitSearch}
         />
 
-        <QuickGrid
-          title="Favorite Items"
-          items={bootstrap?.favorites || []}
-          cartItems={state.cartItems}
-          onAdd={selectInventoryItem}
-        />
+        {isBootstrapping ? (
+          <section
+            className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm"
+            role="status"
+            aria-label="Loading register data and favorites"
+            aria-busy="true"
+            aria-live="polite"
+          >
+            <div className="h-6 w-32 rounded bg-white/10 animate-pulse mb-3" />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {[0, 1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="min-h-24 rounded-md border border-white/10 bg-black/40 p-3 space-y-2 animate-pulse"
+                >
+                  <div className="h-4 w-3/4 rounded bg-white/10" />
+                  <div className="h-6 w-1/2 rounded bg-white/10" />
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <div className="space-y-4 apple-enter">
+            <QuickGrid
+              title="Favorite Items"
+              items={bootstrap?.favorites || []}
+              cartItems={state.cartItems}
+              onAdd={selectInventoryItem}
+            />
 
-        <QuickGrid
-          title="Recently Sold"
-          items={bootstrap?.recentlySold || []}
-          cartItems={state.cartItems}
-          onAdd={selectInventoryItem}
-        />
+            <QuickGrid
+              title="Recently Sold"
+              items={bootstrap?.recentlySold || []}
+              cartItems={state.cartItems}
+              onAdd={selectInventoryItem}
+            />
+          </div>
+        )}
 
         <PosKeypad
           value={manualPrice}
@@ -344,6 +355,9 @@ export default function QuickPosSalePage() {
             } catch {
               setError("Failed to attach customer");
             }
+          }}
+          onDetach={() => {
+            setCustomer({ id: null, phone: "", alias: null, remainingCredit: 0 });
           }}
         />
 

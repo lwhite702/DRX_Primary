@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +13,32 @@ export function DeliveryCheckout({
   delivery: QuickPosDeliveryState;
   onChange: (delivery: QuickPosDeliveryState) => void;
 }) {
+  const [feeInput, setFeeInput] = useState<string>(
+    delivery.vendorFeeCents > 0 ? (delivery.vendorFeeCents / 100).toFixed(2) : ""
+  );
+
+  useEffect(() => {
+    const currentCents = Math.max(0, Math.round(Number(feeInput || 0) * 100));
+    if (currentCents !== delivery.vendorFeeCents) {
+      setFeeInput(delivery.vendorFeeCents > 0 ? (delivery.vendorFeeCents / 100).toFixed(2) : "");
+    }
+  }, [delivery.vendorFeeCents]);
+
+  const handleFeeChange = (val: string) => {
+    setFeeInput(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num >= 0) {
+      onChange({
+        ...delivery,
+        vendorFeeCents: Math.round(num * 100),
+      });
+    } else if (val === "") {
+      onChange({
+        ...delivery,
+        vendorFeeCents: 0,
+      });
+    }
+  };
   return (
     <section className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4" aria-labelledby="delivery-checkout-title">
       <div className="flex items-center justify-between gap-4">
@@ -48,13 +75,9 @@ export function DeliveryCheckout({
               inputMode="decimal"
               min="0"
               step="0.01"
-              value={(delivery.vendorFeeCents / 100).toFixed(2)}
-              onChange={(event) =>
-                onChange({
-                  ...delivery,
-                  vendorFeeCents: Math.max(0, Math.round(Number(event.target.value || 0) * 100)),
-                })
-              }
+              placeholder="0.00"
+              value={feeInput}
+              onChange={(event) => handleFeeChange(event.target.value)}
             />
           </div>
 

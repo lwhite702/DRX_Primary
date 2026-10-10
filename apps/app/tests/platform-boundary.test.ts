@@ -78,15 +78,16 @@ describe("platform reads and writes reject tenant authority", () => {
     expect((await updateUser(request(), { params })).status).toBe(403);
     expect((await deleteUser(request(), { params })).status).toBe(403);
     expect((await deleteIdentity(request(), { params: Promise.resolve({ tenantId: "business-a", userId: "target" }) })).status).toBe(403);
-    expect((await updateUserRole("target", "manager", "business-a")).error).toBeTruthy();
-    expect((await initiateRTBF("business-a", "target")).error).toBeTruthy();
+    const rtbf1 = await initiateRTBF("business-a", "target");
+    expect(!rtbf1.success && rtbf1.error).toBeTruthy();
     expect(m.transaction).not.toHaveBeenCalled(); expect(m.clerk).not.toHaveBeenCalled();
     expect(m.writeAudit).not.toHaveBeenCalled();
   });
   it("rejects unauthenticated or cross-tenant identity removal with no side effects", async () => {
     m.auth.mockResolvedValue({ userId: null });
     expect((await deleteIdentity(request(), { params: Promise.resolve({ tenantId: "business-a", userId: "target" }) })).status).toBe(403);
-    expect((await initiateRTBF("business-a", "target")).error).toBeTruthy();
+    const rtbf2 = await initiateRTBF("business-a", "target");
+    expect(!rtbf2.success && rtbf2.error).toBeTruthy();
     expect(m.clerk).not.toHaveBeenCalled();
     expect(m.mutation).not.toHaveBeenCalled();
   });

@@ -36,6 +36,7 @@ import {
   resolveLoyaltyEligibleSpendCents,
   resolveLoyaltyRateBps,
   suggestedQuantityForDollars,
+  generateSafeOrderNumber,
   type FractionalProduct,
   type LoyaltyCombinationPolicy,
   type LoyaltyTier,
@@ -461,7 +462,7 @@ export default function POSScreen() {
           throw new Error("Cash received must cover the current server total.");
         }
         const activeOrderNumber =
-          checkoutOrderNumber ?? `DRX-A-${occurredAt}`;
+          checkoutOrderNumber ?? generateSafeOrderNumber();
         if (!checkoutOrderNumber) {
           setCheckoutOrderNumber(activeOrderNumber);
         }

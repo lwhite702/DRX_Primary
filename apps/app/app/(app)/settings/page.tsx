@@ -18,6 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import { Tour } from "@/components/ui/tour";
@@ -93,6 +100,7 @@ export default function SettingsPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
+  const [timezone, setTimezone] = useState("America/New_York");
 
   const [taxRate, setTaxRate] = useState("");
   const [collectTax, setCollectTax] = useState(true);
@@ -133,6 +141,7 @@ export default function SettingsPage() {
       setCity(business.city || "");
       setState(business.state || "");
       setZipCode(business.zipCode || business.zip_code || "");
+      setTimezone(business.timezone || "America/New_York");
     }
   }, [business]);
 
@@ -239,6 +248,7 @@ export default function SettingsPage() {
           city,
           state,
           zipCode,
+          timezone,
         }),
       });
 
@@ -453,7 +463,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6 page-transition">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
@@ -659,6 +669,28 @@ export default function SettingsPage() {
                 placeholder="8.0"
                 disabled={saving}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timezone">Reporting Timezone</Label>
+              <Select value={timezone} onValueChange={setTimezone} disabled={saving}>
+                <SelectTrigger id="timezone" className="w-full">
+                  <SelectValue placeholder="Select reporting timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="America/New_York">Eastern Time (US &amp; Canada) - New York</SelectItem>
+                  <SelectItem value="America/Chicago">Central Time (US &amp; Canada) - Chicago</SelectItem>
+                  <SelectItem value="America/Denver">Mountain Time (US &amp; Canada) - Denver</SelectItem>
+                  <SelectItem value="America/Phoenix">Mountain Time (no DST) - Phoenix</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific Time (US &amp; Canada) - Los Angeles</SelectItem>
+                  <SelectItem value="America/Anchorage">Alaska Time - Anchorage</SelectItem>
+                  <SelectItem value="Pacific/Honolulu">Hawaii Time - Honolulu</SelectItem>
+                  <SelectItem value="UTC">Coordinated Universal Time (UTC)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Determines daily cutoffs, day navigation boundaries, and sales summaries in reports. Defaults to Eastern Standard Time.
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
           delivery: payload.delivery,
           idempotencyKey: payload.idempotencyKey,
           paymentMethod: payload.payment.method,
+          amountPaid: payload.amountPaid,
           discountAmountCents: payload.discountAmountCents,
           discountReason: payload.discountReason,
         });

@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { businessClient } from "@/lib/business/convex-server";
 import { checkoutCanonicalCommerce } from "@/app/api/pos/_lib/convex-commerce";
 import { buildCheckoutFailure, buildCheckoutSuccess } from "@/lib/pos/response";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
   try {
     const { client } = await businessClient(request);
     const result = await client.query(api.checkout.getSalesHistory, {});
-    const data = result.map(sale => ({ id: sale._id, order_number: sale.orderNumber, order_status: sale.orderStatus, subtotal: sale.subtotalCents / 100, tax_amount: sale.taxAmountCents / 100, total_amount: sale.totalAmountCents / 100, payment_method: sale.paymentMethod, payment_ref: sale.paymentReference ?? null, created_at: new Date(sale.createdAt).toISOString(), updated_at: new Date(sale.updatedAt).toISOString(), customer_id: sale.customerId ?? null, items: [] }));
+    const data = result.map(sale => ({ id: sale._id, order_number: safeDisplayOrderNumber(sale.orderNumber), order_status: sale.orderStatus, subtotal: sale.subtotalCents / 100, tax_amount: sale.taxAmountCents / 100, total_amount: sale.totalAmountCents / 100, payment_method: sale.paymentMethod, payment_ref: sale.paymentReference ?? null, created_at: new Date(sale.createdAt).toISOString(), updated_at: new Date(sale.updatedAt).toISOString(), customer_id: sale.customerId ?? null, items: [] }));
     return NextResponse.json({ data }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";

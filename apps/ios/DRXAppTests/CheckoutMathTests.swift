@@ -434,4 +434,26 @@ struct CheckoutMathTests {
         #expect(response.adjustments[0].amountCents == 500)
         #expect(response.adjustments[0].reason == "Late courier refund")
     }
+
+    @Test
+    func safeOrderNumberGenerationAndDisplay() {
+        let generated = OrderNumberUtils.generateSafeOrderNumber()
+        #expect(generated.hasPrefix("ORD-"))
+        #expect(generated.count == 10) // "ORD-" (4) + 6 chars
+
+        // Already safe 6-char order number
+        #expect(OrderNumberUtils.safeDisplay("ORD-489201") == "ORD-489201")
+
+        // Long UUID order number (like user screenshot: ORD-69397A70-E49C-4AC6-B71E-E5430730C450)
+        #expect(OrderNumberUtils.safeDisplay("ORD-69397A70-E49C-4AC6-B71E-E5430730C450") == "ORD-69397A")
+        #expect(OrderNumberUtils.safeDisplay("ORD-260726A5-4234-482C-8DF4-ED77AD0098E8") == "ORD-260726")
+
+        // Raw timestamp order numbers
+        #expect(OrderNumberUtils.safeDisplay("DRX-A-1728445123456") == "ORD-123456")
+        #expect(OrderNumberUtils.safeDisplay("WEB-1728445123") == "ORD-445123")
+
+        // Short order numbers preserved
+        #expect(OrderNumberUtils.safeDisplay("ORD-100") == "ORD-100")
+        #expect(OrderNumberUtils.safeDisplay("DRX-101") == "DRX-101")
+    }
 }

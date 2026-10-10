@@ -31,14 +31,15 @@ export function ProductSearch({
         className="mt-2 h-14 w-full rounded-md border border-white/10 bg-black/50 px-4 text-xl md:text-2xl text-white placeholder:text-muted-foreground focus:border-accent/50 focus:outline-none"
       />
 
-      <div className="mt-3 grid gap-2">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => onAdd(item)}
-            className="flex min-h-16 items-center justify-between rounded-md border border-white/10 bg-black/40 px-4 text-left transition hover:border-accent/30 hover:bg-accent/5 active:scale-[0.99]"
-          >
+      {items.length > 0 ? (
+        <div className="mt-3 grid gap-2 apple-enter">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onAdd(item)}
+              className="flex min-h-16 items-center justify-between rounded-md border border-white/10 bg-black/40 px-4 text-left transition hover:border-accent/30 hover:bg-accent/5 active:scale-[0.99]"
+            >
             <div>
               <span className="text-xl font-semibold">{item.name}</span>
               {item.sku ? (
@@ -58,6 +59,7 @@ export function ProductSearch({
           </button>
         ))}
       </div>
+      ) : null}
     </section>
   );
 }

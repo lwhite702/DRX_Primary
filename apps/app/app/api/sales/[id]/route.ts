@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/convex/_generated/api";
 import { businessClient } from "@/lib/business/convex-server";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 function mapDetail(result: any) {
   const sale = result.sale;
   return {
-    id: sale._id, orderNumber: sale.orderNumber, orderStatus: sale.orderStatus, customerId: sale.customerId ?? null,
+    id: sale._id, orderNumber: safeDisplayOrderNumber(sale.orderNumber), orderStatus: sale.orderStatus, customerId: sale.customerId ?? null,
     paymentMethod: sale.paymentMethod, paymentRef: sale.paymentReference ?? null, subtotal: sale.subtotalCents / 100,
     taxAmount: sale.taxAmountCents / 100, totalAmount: sale.totalAmountCents / 100, amountPaid: sale.amountPaidCents / 100,
     changeAmount: sale.changeAmountCents / 100, createdAt: new Date(sale.createdAt).toISOString(), updatedAt: new Date(sale.updatedAt).toISOString(),

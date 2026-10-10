@@ -69,7 +69,7 @@ describe("platform identity removal", () => {
 
     const result = await initiateRTBF("tenant-1", "clerk-user-1");
 
-    expect(result.error).toContain("requires platform administration");
+    expect(!result.success && result.error).toContain("requires platform administration");
     expect(mocks.query).not.toHaveBeenCalled();
     expect(mocks.deleteIdentity).not.toHaveBeenCalled();
     expect(mocks.mutation).not.toHaveBeenCalled();
@@ -80,15 +80,17 @@ describe("platform identity removal", () => {
 
     const result = await initiateRTBF("tenant-1", "clerk-owner-1");
 
-    expect(result.code).toBe("OWNER_CONFLICT");
+    expect(!result.success && result.code).toBe("OWNER_CONFLICT");
     expect(mocks.deleteIdentity).not.toHaveBeenCalled();
     expect(mocks.mutation).not.toHaveBeenCalled();
   });
 
   it("blocks platform accounts and self-removal", async () => {
     mocks.query.mockRejectedValue(new Error("PROTECTED_TARGET: Platform accounts cannot be removed"));
-    expect((await initiateRTBF("tenant-1", "other-platform-admin")).code).toBe("PROTECTED_TARGET");
-    expect((await initiateRTBF("tenant-1", "platform-1")).code).toBe("INVALID_TARGET");
+    const res1 = await initiateRTBF("tenant-1", "other-platform-admin");
+    const res2 = await initiateRTBF("tenant-1", "platform-1");
+    expect(!res1.success && res1.code).toBe("PROTECTED_TARGET");
+    expect(!res2.success && res2.code).toBe("INVALID_TARGET");
     expect(mocks.deleteIdentity).not.toHaveBeenCalled();
   });
 
@@ -104,7 +106,7 @@ describe("platform identity removal", () => {
 
     const result = await initiateRTBF("tenant-1", "clerk-user-1");
 
-    expect(result.code).toBe("PROVIDER_FAILURE");
+    expect(!result.success && result.code).toBe("PROVIDER_FAILURE");
     expect(mocks.mutation).not.toHaveBeenCalled();
   });
 });

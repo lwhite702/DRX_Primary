@@ -88,7 +88,13 @@ type Action =
   | { type: "set_exit_open"; payload: boolean }
   | {
       type: "mark_completed";
-      payload: { saleId: string; total: number; receipt: QuickPosReceiptOption };
+      payload: {
+        saleId: string;
+        total: number;
+        receipt: QuickPosReceiptOption;
+        changeAmount?: number;
+        isDelivery?: boolean;
+      };
     }
   | { type: "set_idempotency_key"; payload: string }
   | { type: "clear_idempotency_key" }
@@ -214,6 +220,8 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
           pendingIdempotencyKey: null,
           lastSaleTotal: action.payload.total,
           lastReceipt: action.payload.receipt,
+          lastChange: action.payload.changeAmount ?? null,
+          lastIsDelivery: action.payload.isDelivery ?? false,
         },
         ui: { ...state.ui, successMessage: "Sale completed" },
       };
@@ -267,7 +275,13 @@ interface QuickPosStore {
   setError: (value: string | null) => void;
   setSuccess: (value: string | null) => void;
   setExitOpen: (value: boolean) => void;
-  markCompleted: (payload: { saleId: string; total: number; receipt: QuickPosReceiptOption }) => void;
+  markCompleted: (payload: {
+    saleId: string;
+    total: number;
+    receipt: QuickPosReceiptOption;
+    changeAmount?: number;
+    isDelivery?: boolean;
+  }) => void;
   setIdempotencyKey: (value: string) => void;
   clearIdempotencyKey: () => void;
   resetForNextSale: () => void;
@@ -335,8 +349,13 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const setSuccess = useCallback((value: string | null) => dispatch({ type: "set_success", payload: value }), []);
   const setExitOpen = useCallback((value: boolean) => dispatch({ type: "set_exit_open", payload: value }), []);
   const markCompleted = useCallback(
-    (payload: { saleId: string; total: number; receipt: QuickPosReceiptOption }) =>
-      dispatch({ type: "mark_completed", payload }),
+    (payload: {
+      saleId: string;
+      total: number;
+      receipt: QuickPosReceiptOption;
+      changeAmount?: number;
+      isDelivery?: boolean;
+    }) => dispatch({ type: "mark_completed", payload }),
     [],
   );
   const setIdempotencyKey = useCallback(

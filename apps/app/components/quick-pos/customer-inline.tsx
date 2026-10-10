@@ -17,9 +17,11 @@ interface CustomerItem {
 export function CustomerInline({
   attached,
   onAttach,
+  onDetach,
 }: {
   attached: { id: string | null; phone: string; alias: string | null; remainingCredit?: number };
   onAttach: (value: { id: string; phone: string; alias: string; remainingCredit: number }) => void;
+  onDetach?: () => void;
 }) {
   const [phone, setPhone] = useState(attached.phone || "");
   const [alias, setAlias] = useState("");
@@ -74,28 +76,47 @@ export function CustomerInline({
     setLoading(false);
   };
 
-  if (!privacy.protocol) return (
-    <section className="rounded-xl border p-4" aria-live="polite">
-      <p>{privacy.error ?? "Loading customer privacy settings…"}</p>
-      {privacy.error && <button type="button" onClick={privacy.retry} className="underline">Retry privacy settings</button>}
-    </section>
-  );
+  if (!privacy.protocol) {
+    return (
+      <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm" aria-live="polite">
+        <h2 className="text-lg font-semibold text-white/90">Customer (Optional)</h2>
+        <div className="mt-3 space-y-3">
+          <div className="grid gap-2 md:grid-cols-2">
+            <div className="h-12 rounded-md bg-white/5 animate-pulse" />
+            <div className="h-12 rounded-md bg-white/5 animate-pulse" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="h-12 rounded-md bg-white/5 animate-pulse" />
+            <div className="h-12 rounded-md bg-accent/20 animate-pulse" />
+          </div>
+          {privacy.error ? (
+            <div className="flex items-center justify-between text-xs text-red-400">
+              <p>{privacy.error}</p>
+              <button type="button" onClick={privacy.retry} className="underline hover:text-red-300">
+                Retry
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm">
+    <section className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 shadow-sm transition-all duration-200">
       <h2 className="text-lg font-semibold">Customer (Optional)</h2>
       <div className="mt-2 grid gap-2 md:grid-cols-2">
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Phone number"
-          className="h-12 rounded-md border border-white/10 bg-black/50 px-3 text-lg placeholder:text-muted-foreground"
+          className="h-12 rounded-md border border-white/10 bg-black/50 px-3 text-lg placeholder:text-muted-foreground transition-colors duration-150 focus:border-accent/60 focus:outline-none"
         />
         <input
           value={alias}
           onChange={(e) => setAlias(e.target.value)}
           placeholder="Alias"
-          className="h-12 rounded-md border border-white/10 bg-black/50 px-3 text-lg placeholder:text-muted-foreground"
+          className="h-12 rounded-md border border-white/10 bg-black/50 px-3 text-lg placeholder:text-muted-foreground transition-colors duration-150 focus:border-accent/60 focus:outline-none"
         />
       </div>
 
@@ -103,26 +124,43 @@ export function CustomerInline({
         <button
           type="button"
           onClick={lookup}
-          className="h-12 rounded-md border border-white/10 bg-white/5 text-base font-semibold hover:bg-white/10"
+          className="h-12 rounded-md border border-white/10 bg-white/5 text-base font-semibold transition hover:bg-white/10 active:scale-[0.99]"
         >
           {loading ? "Searching..." : "Lookup"}
         </button>
         <button
           type="button"
           onClick={createInline}
-          className="h-12 rounded-md bg-accent text-base font-semibold text-black hover:bg-accent/90"
+          className="h-12 rounded-md bg-accent text-base font-semibold text-black transition hover:bg-accent/90 active:scale-[0.99]"
         >
           Quick Create
         </button>
       </div>
 
       {attached.id ? (
-        <p className="mt-2 text-sm font-semibold text-emerald-300">
-          Attached:{" "}
-          {shouldMask
-            ? maskAlias(attached.alias || attached.phone)
-            : attached.alias || attached.phone}
-        </p>
+        <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 transition-all">
+          <p className="text-sm font-semibold text-emerald-300">
+            Attached:{" "}
+            {shouldMask
+              ? maskAlias(attached.alias || attached.phone)
+              : attached.alias || attached.phone}
+            {typeof attached.remainingCredit === "number" ? (
+              <span className="ml-2 text-xs font-normal text-emerald-200/80">
+                (Credit: ${attached.remainingCredit.toFixed(2)})
+              </span>
+            ) : null}
+          </p>
+          {onDetach && (
+            <button
+              type="button"
+              onClick={onDetach}
+              className="text-xs text-red-400 hover:text-red-300 transition underline ml-2"
+              aria-label="Remove customer"
+            >
+              Remove
+            </button>
+          )}
+        </div>
       ) : null}
 
       <div className="mt-2 space-y-2">
@@ -131,7 +169,7 @@ export function CustomerInline({
             key={item.id}
             type="button"
             onClick={() => onAttach(item)}
-            className="flex h-12 w-full items-center justify-between rounded-md border border-white/10 bg-black/40 px-3 hover:border-accent/30 hover:bg-accent/5"
+            className="flex h-12 w-full items-center justify-between rounded-md border border-white/10 bg-black/40 px-3 transition hover:border-accent/30 hover:bg-accent/5 active:scale-[0.99]"
           >
             <span>{shouldMask ? maskAlias(item.alias) : item.alias}</span>
             <span className="text-sm text-muted-foreground">Credit ${item.remainingCredit.toFixed(2)}</span>

@@ -181,3 +181,45 @@ export function formatQuantity(product: FractionalProduct, quantity: number) {
   const formatted = quantityDisplay.format(quantity);
   return `${formatted === "-0.00" ? "0.00" : formatted}${product.sellingUnit ?? legacyQuantityConfig(product).sellingUnit}`;
 }
+
+const SAFE_ALPHANUMERIC = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+export function generateSafeOrderNumber(): string {
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    const idx = Math.floor(Math.random() * SAFE_ALPHANUMERIC.length);
+    result += SAFE_ALPHANUMERIC[idx];
+  }
+  return `ORD-${result}`;
+}
+
+export function safeDisplayOrderNumber(orderNumber: string | null | undefined): string {
+  if (!orderNumber) return "";
+  const trimmed = String(orderNumber).trim();
+  if (!trimmed) return "";
+
+  if (/^ORD-[0-9A-Za-z]{6}$/.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+
+  if (/^ORD-[0-9A-Za-z]{6}[0-9A-Za-z-]{8,}$/.test(trimmed)) {
+    const stripped = trimmed.replace("ORD-", "").replace(/-/g, "");
+    if (stripped.length >= 6) {
+      return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
+    }
+  }
+
+  if (/^[0-9A-Fa-f]{6}[0-9A-Fa-f-]{26,}$/.test(trimmed)) {
+    const stripped = trimmed.replace(/-/g, "");
+    return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
+  }
+
+  const tsMatch = /^(?:ORD|DRX-A|WEB|POS|OFF)-(\d{10,13})$/.exec(trimmed);
+  if (tsMatch) {
+    const digits = tsMatch[1];
+    return `ORD-${digits.slice(-6)}`;
+  }
+
+  return trimmed;
+}
+

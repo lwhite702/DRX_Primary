@@ -67,7 +67,7 @@ export default function DashboardPage() {
   const hasMovers = stats.topMovers.length > 0;
 
   return (
-    <div className="min-h-screen bg-background p-4 font-sans text-foreground selection:bg-accent selection:text-black md:p-8">
+    <div className="min-h-screen bg-background p-4 font-sans text-foreground selection:bg-accent selection:text-black md:p-8 page-transition">
       <div className="mx-auto max-w-[1400px] space-y-6">
         <SetupGuide />
 

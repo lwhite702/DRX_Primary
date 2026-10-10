@@ -31,7 +31,7 @@ struct DRXBusiness: Decodable, Identifiable, Sendable {
 
 // MARK: - Product
 
-struct DRXProduct: Decodable, Identifiable, Sendable {
+struct DRXProduct: Decodable, Identifiable, Sendable, Hashable {
     let id: String
     let sku: String
     let productName: String
@@ -199,7 +199,7 @@ struct DRXLocalDeliveryReminderPayload: Equatable, Sendable {
     }
 }
 
-struct DRXBulkPriceTier: Decodable, Sendable {
+struct DRXBulkPriceTier: Decodable, Sendable, Hashable {
     let minimumQuantity: Double
     let unitPriceCents: Int
     let bundlePriceCents: Int?
@@ -207,7 +207,7 @@ struct DRXBulkPriceTier: Decodable, Sendable {
 
 // MARK: - Customer
 
-struct DRXCustomer: Decodable, Identifiable, Sendable {
+struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
     let id: String
     let firstName: String?
     let lastName: String?
@@ -287,6 +287,7 @@ struct DRXSale: Decodable, Identifiable, Sendable {
     var subtotalFormatted: String { formatCents(subtotalCents) }
     var taxFormatted: String { formatCents(taxAmountCents) }
     var createdDate: Date { Date(timeIntervalSince1970: createdAt / 1000) }
+    var safeDisplayOrderNumber: String { OrderNumberUtils.safeDisplay(orderNumber) }
 }
 
 // MARK: - Sale Line Item
@@ -474,6 +475,7 @@ struct DRXDelivery: Decodable, Identifiable, Sendable {
     }
 
     var isOpen: Bool { status != .delivered && status != .canceled }
+    var safeDisplayOrderNumber: String { OrderNumberUtils.safeDisplay(orderNumber) }
 }
 
 struct DeliveryIdArgs: Encodable, Sendable { let deliveryId: String }
@@ -774,3 +776,66 @@ private func formatGrams(_ grams: Double) -> String {
         return String(format: "%.2f g", grams)
     }
 }
+
+// MARK: - Safe Human-Readable Order Numbers
+
+enum OrderNumberUtils {
+    private static let safeCharacters: [Character] = Array("0123456789ABCDEFGHJKMNPQRSTVWXYZ")
+
+    /// Generates a human-friendly order number with ORD- prefix and 6 random safe base32 alphanumeric chars (e.g. ORD-489201).
+    static func generateSafeOrderNumber() -> String {
+        var result = ""
+        for _ in 0..<6 {
+            let index = Int.random(in: 0..<safeCharacters.count)
+            result.append(safeCharacters[index])
+        }
+        return "ORD-\(result)"
+    }
+
+    /// Formats order numbers safely for humans:
+    /// - If it has a long UUID or raw timestamp suffix (e.g. ORD-69397A70-E49C-..., ORD-1728445123), shortens to 6-char safe suffix.
+    /// - Otherwise preserves concise order numbers as-is.
+    static func safeDisplay(_ orderNumber: String) -> String {
+        let trimmed = orderNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return trimmed }
+
+        // If format is already ORD-XXXXXX (6 alphanumeric), return as-is
+        let ordPattern = #"^ORD-([0-9A-Za-z]{6})$"#
+        if trimmed.range(of: ordPattern, options: .regularExpression) != nil {
+            return trimmed.uppercased()
+        }
+
+        // Long UUID suffix: ORD-69397A70-... -> ORD-69397A
+        let uuidOrdPattern = #"^ORD-([0-9A-Za-z]{6})[0-9A-Za-z-]{8,}$"#
+        if let match = trimmed.range(of: uuidOrdPattern, options: .regularExpression) {
+            let rawMatch = String(trimmed[match])
+            let stripped = rawMatch.replacingOccurrences(of: "ORD-", with: "").replacingOccurrences(of: "-", with: "")
+            if stripped.count >= 6 {
+                let shortSuffix = String(stripped.prefix(6)).uppercased()
+                return "ORD-\(shortSuffix)"
+            }
+        }
+
+        // Raw UUID without prefix: 69397A70-...
+        let rawUuidPattern = #"^([0-9A-Fa-f]{6})[0-9A-Fa-f-]{26,}$"#
+        if trimmed.range(of: rawUuidPattern, options: .regularExpression) != nil {
+            let stripped = trimmed.replacingOccurrences(of: "-", with: "")
+            let shortSuffix = String(stripped.prefix(6)).uppercased()
+            return "ORD-\(shortSuffix)"
+        }
+
+        // Timestamp suffix: DRX-A-1728445123 or ORD-1728445123
+        let timestampPattern = #"^(?:ORD|DRX-A|WEB|POS|OFF)-(\d{10,13})$"#
+        if let match = trimmed.range(of: timestampPattern, options: .regularExpression) {
+            let rawMatch = String(trimmed[match])
+            let digits = rawMatch.filter { $0.isNumber }
+            if digits.count >= 6 {
+                let shortSuffix = String(digits.suffix(6))
+                return "ORD-\(shortSuffix)"
+            }
+        }
+
+        return trimmed
+    }
+}
+

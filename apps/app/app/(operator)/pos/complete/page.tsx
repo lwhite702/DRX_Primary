@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 export default function QuickPosCompletePage() {
   const router = useRouter();
@@ -37,10 +38,20 @@ export default function QuickPosCompletePage() {
         <p className="mt-2 text-sm text-emerald-100/80">
           Returning to the register to ring up the next customer.
         </p>
-        <div className="mt-4 space-y-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-emerald-100">
-          <p>Sale ID: {state.session.lastSaleId}</p>
+        <div className="mt-4 space-y-2 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-emerald-100">
+          <p>Sale ID: {safeDisplayOrderNumber(state.session.lastSaleId)}</p>
           {typeof state.session.lastSaleTotal === "number" ? (
-            <p>Total: ${state.session.lastSaleTotal.toFixed(2)}</p>
+            <p>Total Charged: ${state.session.lastSaleTotal.toFixed(2)}</p>
+          ) : null}
+          {typeof state.session.lastChange === "number" && state.session.lastChange > 0 ? (
+            <p className="text-base font-bold text-emerald-300">
+              Change Due: ${state.session.lastChange.toFixed(2)}
+            </p>
+          ) : null}
+          {state.session.lastIsDelivery ? (
+            <p className="font-semibold text-accent">
+              Delivery: Ready for dispatch
+            </p>
           ) : null}
           {state.session.lastReceipt ? (
             <p className="uppercase tracking-wide text-emerald-200/90">

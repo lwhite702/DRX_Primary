@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 import {
   Table,
   TableBody,
@@ -194,7 +195,7 @@ export default function SaleDetailPage() {
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold">Sale Details</h1>
             <p className="text-muted-foreground mt-1 break-words">
-              Order #{sale.orderNumber || sale.order_number}
+              Order #{safeDisplayOrderNumber(sale.orderNumber || sale.order_number)}
             </p>
           </div>
         </div>

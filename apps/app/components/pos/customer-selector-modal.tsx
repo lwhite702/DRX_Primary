@@ -54,6 +54,24 @@ export function CustomerSelectorModal({
   const privacy = usePrivacyContext(open);
   const shouldMask = privacy.protocol ? shouldMaskFromProtocol(privacy.protocol, privacy.manualEnabled, true) : true;
 
+  if (open && !privacy.protocol) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Select Customer</DialogTitle>
+            <DialogDescription>{privacy.error ?? "Loading customer privacy settings…"}</DialogDescription>
+          </DialogHeader>
+          {privacy.error && (
+            <Button type="button" onClick={privacy.retry} className="mt-2">
+              Retry privacy settings
+            </Button>
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   const filteredCustomers = customers.filter((customer) => {
     const searchLower = searchTerm.toLowerCase();
     const fullName =
@@ -63,14 +81,7 @@ export function CustomerSelectorModal({
     const phone = customer.phone_number?.toLowerCase() || "";
     const email = customer.email?.toLowerCase() || "";
 
-    if (!privacy.protocol) return (
-    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent>
-      <DialogHeader><DialogTitle>Select Customer</DialogTitle><DialogDescription>{privacy.error ?? "Loading customer privacy settings…"}</DialogDescription></DialogHeader>
-      {privacy.error && <Button type="button" onClick={privacy.retry}>Retry privacy settings</Button>}
-    </DialogContent></Dialog>
-  );
-
-  return (
+    return (
       fullName.includes(searchLower) ||
       phone.includes(searchLower) ||
       email.includes(searchLower)

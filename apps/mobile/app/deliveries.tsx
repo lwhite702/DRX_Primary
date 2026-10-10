@@ -35,6 +35,7 @@ import {
   reconcileLocalDeliveryNotifications,
   replaceLocalDeliveryNotifications,
 } from "../src/lib/localDeliveryNotifications";
+import { safeDisplayOrderNumber } from "../src/lib/checkoutMath";
 
 type DeliveryStatus =
   | "ready_for_dispatch"
@@ -407,7 +408,7 @@ export default function DeliveriesScreen() {
                 }}
               >
                 <View style={styles.cardHeading}>
-                  <Text style={styles.order}>{item.orderNumber}</Text>
+                  <Text style={styles.order}>{safeDisplayOrderNumber(item.orderNumber)}</Text>
                   <Text style={[styles.status, overdue && styles.overdueText]}>
                     {statusLabel[item.status]}
                   </Text>
@@ -441,7 +442,7 @@ export default function DeliveriesScreen() {
               <>
                 <View style={styles.sheetHeader}>
                   <View>
-                    <Text style={styles.title}>{selected.orderNumber}</Text>
+                    <Text style={styles.title}>{safeDisplayOrderNumber(selected.orderNumber)}</Text>
                     <Text style={styles.assignmentText}>
                       {selected.assignedToUserId === userId
                         ? "Assigned to you"

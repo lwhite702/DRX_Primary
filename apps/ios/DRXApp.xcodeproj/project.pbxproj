@@ -22,6 +22,7 @@
 		4AE6030BA986A17410C4A1BD /* OnboardingModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A68937AF66AF01F8516CA2 /* OnboardingModelTests.swift */; };
 		4D3A6F9ECA6E07387C274908 /* RecordPaymentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0B9BED7BD4DC61585B2716 /* RecordPaymentSheet.swift */; };
 		51C6005114FAA81763D6F0F5 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4589834FE72A38E9D5685A3B /* SessionStoreTests.swift */; };
+		56825759E8AFF4AF3622D88D /* AppRoutes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383003C7FB9612A9E52AA98F /* AppRoutes.swift */; };
 		630D5D8C355AE8A66836B406 /* DRXPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */; };
 		65AF809E33BF98A51FA439E4 /* AddProductSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3780799ECBAA9B79650C40FA /* AddProductSheet.swift */; };
 		6766A278E551A074F4DCB164 /* CustomerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 202E319D7D94830BE0B22500 /* CustomerDetailView.swift */; };
@@ -30,6 +31,7 @@
 		7595E35143A21340364E2559 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73360F1798B2906E00047019 /* AppConfigurationTests.swift */; };
 		7D925490C89F3A44E06E571E /* ConvexClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232AC2CA12CD516858242F41 /* ConvexClientTests.swift */; };
 		84996913E7E0C99D73CFD70F /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D387246879C07454D82086A /* ClerkKit */; };
+		955C84107D00F35EBC1D27D8 /* NavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CDD28EF129A5340EE28DDF /* NavigationCoordinator.swift */; };
 		95A5962CA21D613EFC2A1AB8 /* AddCustomerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3D0F8920A8D613B9E54100 /* AddCustomerSheet.swift */; };
 		9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9A587B002BC13EFBFEB5F8 /* AppEnvironment.swift */; };
 		9E1719D08E73C33A7C824279 /* AccountAndLegalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9B29F3A2EB07F6584C3123 /* AccountAndLegalView.swift */; };
@@ -93,6 +95,7 @@
 		34CE87F196C9004F94F3DF00 /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
 		36F17473AABA9939CE0EB8C9 /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
 		3780799ECBAA9B79650C40FA /* AddProductSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProductSheet.swift; sourceTree = "<group>"; };
+		383003C7FB9612A9E52AA98F /* AppRoutes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoutes.swift; sourceTree = "<group>"; };
 		3B0EA9251C888A0BE441162F /* NativeOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeOnboardingView.swift; sourceTree = "<group>"; };
 		3E94AECC61D710F6F5E1610D /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
 		42F3936411D169627BF4D449 /* IntakeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntakeSheet.swift; sourceTree = "<group>"; };
@@ -118,6 +121,7 @@
 		919880B91AF708A0700CAA02 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		953882B6DCDFF21B7675A67D /* IssueCreditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueCreditSheet.swift; sourceTree = "<group>"; };
 		9A457BCD7B55819E511BF905 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		A4CDD28EF129A5340EE28DDF /* NavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationCoordinator.swift; sourceTree = "<group>"; };
 		A6359117F941BC2135C420A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6E0F273FA9FB7C666A16054 /* DRXPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRXPalette.swift; sourceTree = "<group>"; };
 		A8E7BBB40E3A56EA5C539027 /* TelemetryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryServiceTests.swift; sourceTree = "<group>"; };
@@ -205,6 +209,7 @@
 			children = (
 				0857FE3BA948FD61CB0A7F76 /* API */,
 				063C77C3B0452792B45900D7 /* Auth */,
+				F54EDB89ADCDF981572B2DA8 /* Navigation */,
 				69B8C635598725A31F81B33A /* Observability */,
 			);
 			path = Core;
@@ -412,6 +417,15 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		F54EDB89ADCDF981572B2DA8 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				383003C7FB9612A9E52AA98F /* AppRoutes.swift */,
+				A4CDD28EF129A5340EE28DDF /* NavigationCoordinator.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -592,6 +606,7 @@
 				FF0B65635B07D1F334438A60 /* AppConfiguration.swift in Sources */,
 				9DCF724648939B0118E0C3B4 /* AppEnvironment.swift in Sources */,
 				43AFE118065A635FEBFC6639 /* AppRootView.swift in Sources */,
+				56825759E8AFF4AF3622D88D /* AppRoutes.swift in Sources */,
 				AC337BD669302C7F37D532F5 /* AuthenticatedWebView.swift in Sources */,
 				CA7389C07640A109D198958B /* CheckoutSheet.swift in Sources */,
 				FBB42B9711C18509BF6EC8D5 /* ConvexClient.swift in Sources */,
@@ -609,6 +624,7 @@
 				A5071384ADAC519B55FACE1F /* InventoryView.swift in Sources */,
 				C86299704C919CF44DEAF3CC /* IssueCreditSheet.swift in Sources */,
 				47BD6CD2365915C70A53365D /* NativeOnboardingView.swift in Sources */,
+				955C84107D00F35EBC1D27D8 /* NavigationCoordinator.swift in Sources */,
 				E5DC699832F98C029A5D0623 /* OnboardingModel.swift in Sources */,
 				019A65EB92DC7C848E6191A0 /* POSView.swift in Sources */,
 				BEA122DB8F726D4255CDD7D3 /* ProductDetailView.swift in Sources */,
@@ -782,7 +798,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 51;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -802,7 +818,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.11.0;
+				MARKETING_VERSION = 0.12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -907,7 +923,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 51;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = L8R42BJ54K;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -921,7 +937,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.11.0;
+				MARKETING_VERSION = 0.12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
 import type { QuickPosDeliveryState, QuickPosPaymentMethod } from "@/lib/quick-pos/types";
+import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 type CanonicalCartItem = {
   id: string;
@@ -217,7 +218,7 @@ export async function checkoutCanonicalCommerce(
   });
   return {
     saleId: String(result.saleId),
-    orderNumber: result.orderNumber,
+    orderNumber: safeDisplayOrderNumber(result.orderNumber),
     total: result.totalAmountCents / 100,
     changeAmount: result.changeAmountCents / 100,
   };
@@ -244,5 +245,5 @@ export async function checkoutFullCanonicalCommerce(input: CanonicalInput & {
     amountPaidCents: input.amountPaid === undefined ? (input.paymentMethod === "credit" ? 0 : expectedTotalCents) : checkedCents(input.amountPaid),
     delivery: canonical.delivery,
   });
-  return { saleId: String(result.saleId), orderNumber: result.orderNumber, total: result.totalAmountCents / 100, changeAmount: result.changeAmountCents / 100 };
+  return { saleId: String(result.saleId), orderNumber: safeDisplayOrderNumber(result.orderNumber), total: result.totalAmountCents / 100, changeAmount: result.changeAmountCents / 100 };
 }

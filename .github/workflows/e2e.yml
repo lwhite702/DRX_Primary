@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: e2e-${{ github.event.pull_request.number || github.ref }}
@@ -97,11 +98,15 @@ jobs:
         env:
           DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
-      - name: Install Playwright browsers
-        run: pnpm --filter deelrxcrm-app test:e2e:install:ci
+      - name: Wait for Vercel deployment
+        uses: endformdev/actions/run-with-vercel-deployment@main
+        with:
+          project-name: drx-app
+          set-url-env-var: BASE_URL
 
-      - name: Run E2E tests
-        run: pnpm --filter deelrxcrm-app test:e2e:ci
+      - name: Run E2E tests with Endform
+        working-directory: apps/app
+        run: npx endform@latest test
         env:
           CI: true
           NODE_ENV: development
