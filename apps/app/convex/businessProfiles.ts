@@ -11,6 +11,7 @@ export const businessProfileValidator = v.object({
     address: v.union(v.string(), v.null()), city: v.union(v.string(), v.null()),
     state: v.union(v.string(), v.null()), zipCode: v.union(v.string(), v.null()),
     phoneNumber: v.union(v.string(), v.null()), email: v.union(v.string(), v.null()),
+    timezone: v.optional(v.string()),
     ownerId: v.string(), isActive: v.boolean(), createdAt: v.number(), updatedAt: v.number(),
   });
 export function businessProfileDto(business: Doc<"businesses">) {
@@ -20,6 +21,7 @@ export function businessProfileDto(business: Doc<"businesses">) {
     address: business.address ?? null, city: business.city ?? null,
     state: business.state ?? null, zipCode: business.zipCode ?? null,
     phoneNumber: business.phoneNumber ?? null, email: business.email ?? null,
+    timezone: business.timezone ?? "America/New_York",
     ownerId: business.ownerId, isActive: business.isActive !== false,
     createdAt: business.createdAt, updatedAt: business.updatedAt,
   };
@@ -31,6 +33,7 @@ const profilePatch = z.object({
   state: z.string().max(50).optional(), zipCode: z.string().max(20).optional(),
   phoneNumber: z.string().max(20).optional(),
   email: z.union([z.literal(""), z.string().email().max(255)]).optional(),
+  timezone: z.string().max(100).optional(),
 }).strict();
 function assertContext(auth: Awaited<ReturnType<typeof requireUserAndBusiness>>, businessId: string, expectedUserId?: string) {
   if ((businessId !== auth.businessId && businessId !== auth.businessRecord.legacyPrismaBusinessId) ||
@@ -50,6 +53,7 @@ export const updateProfile = mutation({
     businessName: v.optional(v.string()), businessType: v.optional(v.string()),
     address: v.optional(v.string()), city: v.optional(v.string()), state: v.optional(v.string()),
     zipCode: v.optional(v.string()), phoneNumber: v.optional(v.string()), email: v.optional(v.string()),
+    timezone: v.optional(v.string()),
   }) },
   returns: businessProfileValidator,
   handler: async (ctx, args) => {

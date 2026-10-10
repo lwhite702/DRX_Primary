@@ -78,7 +78,7 @@ export default function SalesHistoryPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6 animate-in fade-in-0 duration-200">
+    <div className="p-4 md:p-8 space-y-6 page-transition">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Sales</h1>

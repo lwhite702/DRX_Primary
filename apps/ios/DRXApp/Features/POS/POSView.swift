@@ -196,28 +196,37 @@ struct POSView: View {
     @State private var selectedProduct: DRXProduct?
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Product grid
-            productPanel
-                .frame(maxWidth: .infinity)
-
-            // Cart sidebar (iPad) or bottom bar (iPhone)
-            if horizontalSizeClass == .regular && !store.cartIsEmpty {
-                Divider()
-                cartPanel
-                    .frame(width: 300)
-                    .background(DRXPalette.surface)
+        Group {
+            if horizontalSizeClass == .regular {
+                NavigationSplitView {
+                    productPanel
+                        .navigationTitle(DRXContent.Navigation.newSale)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .searchable(text: $store.searchText, prompt: "Search products…")
+                        .navigationSplitViewColumnWidth(min: 440, ideal: 620, max: .infinity)
+                } detail: {
+                    cartPanel
+                        .background(DRXPalette.surface)
+                        .navigationTitle("Current Cart")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .navigationSplitViewColumnWidth(min: 300, ideal: 340, max: 420)
+                }
+                .navigationSplitViewStyle(.balanced)
+            } else {
+                productPanel
+                    .frame(maxWidth: .infinity)
+                    .safeAreaInset(edge: .bottom) {
+                        if !store.cartIsEmpty {
+                            CompactCartBar(store: store)
+                        }
+                    }
+                    .navigationTitle(DRXContent.Navigation.newSale)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { cartButton }
+                    .searchable(text: $store.searchText, prompt: "Search products…")
             }
         }
         .background(DRXPalette.canvas)
-        .safeAreaInset(edge: .bottom) {
-            if horizontalSizeClass != .regular && !store.cartIsEmpty {
-                CompactCartBar(store: store)
-            }
-        }
-        .navigationTitle(DRXContent.Navigation.newSale)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar { cartButton }
         .sheet(isPresented: $store.showCheckout) {
             CheckoutSheet(store: store)
         }
@@ -235,7 +244,6 @@ struct POSView: View {
         .task { await store.load() }
         .refreshable { await store.load() }
         .onAppear { environment.telemetry.screen("POS") }
-        .searchable(text: $store.searchText, prompt: "Search products…")
     }
 
     // MARK: - Product Panel

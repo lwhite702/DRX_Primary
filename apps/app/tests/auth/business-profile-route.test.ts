@@ -31,17 +31,17 @@ function patch(body: unknown, businessId?: string) {
 }
 it("persists aliased fields in Convex, preserves omitted fields, and audits no private values", async () => {
   const { t, actor, businessId } = await setup();
-  const update = { business_name: "Synthetic renamed", phone_number: "0000000000", email: "contact@example.invalid" };
+  const update = { business_name: "Synthetic renamed", phone_number: "0000000000", email: "contact@example.invalid", timezone: "America/Chicago" };
   expect((await PATCH(patch(update, "legacy-synthetic"))).status).toBe(200);
   const result = await GET(new NextRequest("https://example.invalid/api/business/profile", { headers: { "X-Business-Id": businessId } }));
   expect(result.headers.get("cache-control")).toBe("private, no-store");
-  expect((await result.json()).data).toMatchObject({ id: businessId, businessName: "Synthetic renamed", phoneNumber: "0000000000", email: "contact@example.invalid", address: "Synthetic address", createdAt: expect.stringMatching(/Z$/) });
-  expect(await actor.query(api.session.currentBusinessProfile, {})).toMatchObject({ businessName: "Synthetic renamed" });
+  expect((await result.json()).data).toMatchObject({ id: businessId, businessName: "Synthetic renamed", phoneNumber: "0000000000", email: "contact@example.invalid", address: "Synthetic address", timezone: "America/Chicago", createdAt: expect.stringMatching(/Z$/) });
+  expect(await actor.query(api.session.currentBusinessProfile, {})).toMatchObject({ businessName: "Synthetic renamed", timezone: "America/Chicago" });
   await PATCH(patch(update));
   const audits: any = await t.run((ctx: any) => ctx.db.query("auditEvents").collect());
   const updates = audits.filter((row: any) => row.action === "BUSINESS_PROFILE_UPDATED");
   expect(updates).toHaveLength(1);
-  expect(JSON.parse(updates[0].metadata!)).toEqual({ changedFields: expect.arrayContaining(["name", "phoneNumber", "email"]) });
+  expect(JSON.parse(updates[0].metadata!)).toEqual({ changedFields: expect.arrayContaining(["name", "phoneNumber", "email", "timezone"]) });
   expect(updates[0].metadata).not.toContain("contact@example.invalid");
   expect((await PATCH(patch({ phone_number: "", email: "" }))).status).toBe(200);
   expect(await actor.query(api.session.currentBusinessProfile, {})).toMatchObject({ phoneNumber: "", email: "", address: "Synthetic address" });

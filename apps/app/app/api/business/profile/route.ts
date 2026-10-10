@@ -11,6 +11,7 @@ const profileSchema = z.object({
   phoneNumber: z.string().optional(), phone_number: z.string().optional(),
   email: z.string().optional(), address: z.string().optional(), city: z.string().optional(),
   state: z.string().optional(), zipCode: z.string().optional(), zip_code: z.string().optional(),
+  timezone: z.string().optional(),
 }).strict();
 async function connection(request: NextRequest) {
   const { userId, businessId } = await resolveAuthContext(request);
@@ -51,6 +52,7 @@ export async function PATCH(request: NextRequest) {
       phoneNumber: body.phoneNumber ?? body.phone_number,
       zipCode: body.zipCode ?? body.zip_code,
       address: body.address, city: body.city, state: body.state, email: body.email,
+      timezone: body.timezone,
     } }));
   } catch (error) { return failure(error); }
 }

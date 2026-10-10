@@ -31,7 +31,7 @@ struct DRXBusiness: Decodable, Identifiable, Sendable {
 
 // MARK: - Product
 
-struct DRXProduct: Decodable, Identifiable, Sendable {
+struct DRXProduct: Decodable, Identifiable, Sendable, Hashable {
     let id: String
     let sku: String
     let productName: String
@@ -199,7 +199,7 @@ struct DRXLocalDeliveryReminderPayload: Equatable, Sendable {
     }
 }
 
-struct DRXBulkPriceTier: Decodable, Sendable {
+struct DRXBulkPriceTier: Decodable, Sendable, Hashable {
     let minimumQuantity: Double
     let unitPriceCents: Int
     let bundlePriceCents: Int?
@@ -207,7 +207,7 @@ struct DRXBulkPriceTier: Decodable, Sendable {
 
 // MARK: - Customer
 
-struct DRXCustomer: Decodable, Identifiable, Sendable {
+struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
     let id: String
     let firstName: String?
     let lastName: String?

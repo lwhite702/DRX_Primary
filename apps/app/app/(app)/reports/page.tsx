@@ -14,6 +14,7 @@ import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
 import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
+import { DayNavigator } from "./_components/day-navigator";
 
 export const dynamic = "force-dynamic";
 
@@ -57,23 +58,45 @@ export default async function ReportsPage({
     getPosReconciliationReport(businessId, range),
   ]);
 
+  const timeZone = report.period.timezone || "America/New_York";
+  const currentDateStr = (() => {
+    if (resolvedSearchParams?.from && /^\d{4}-\d{2}-\d{2}$/.test(resolvedSearchParams.from)) {
+      return resolvedSearchParams.from;
+    }
+    try {
+      const dtf = new Intl.DateTimeFormat("en-CA", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      return dtf.format(new Date(report.period.from));
+    } catch {
+      return new Date(report.period.from).toISOString().split("T")[0];
+    }
+  })();
+
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground mt-2">
-          Baseline sales, cost, and margin visibility from the stabilized POS ledger.
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Window: {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)}
-        </p>
-        <Link
-          href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}
-          className="text-xs text-primary underline underline-offset-4"
-        >
-          Export reconciliation CSV
-        </Link>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Reports</h1>
+          <p className="text-muted-foreground mt-2">
+            Baseline sales, cost, and margin visibility from the stabilized POS ledger.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Window: {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
+          </p>
+          <Link
+            href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}
+            className="text-xs text-primary underline underline-offset-4"
+          >
+            Export reconciliation CSV
+          </Link>
+        </div>
       </div>
+
+      <DayNavigator currentDateStr={currentDateStr} timeZone={timeZone} />
 
       <CommerceDeliverySummary
         from={report.period.from}

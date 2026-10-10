@@ -11,7 +11,6 @@ struct InventoryView: View {
     @State private var error: String?
     @State private var searchText = ""
     @State private var showAddProduct = false
-    @State private var selectedProduct: DRXProduct?
 
     var filtered: [DRXProduct] {
         guard !searchText.isEmpty else { return products }
@@ -47,6 +46,9 @@ struct InventoryView: View {
         .background(DRXPalette.canvas)
         .navigationTitle(DRXContent.Navigation.products)
         .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(for: DRXProduct.self) { product in
+            ProductDetailView(product: product) { await load() }
+        }
         .searchable(text: $searchText, prompt: "Search by name or SKU…")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -58,9 +60,6 @@ struct InventoryView: View {
         }
         .sheet(isPresented: $showAddProduct) {
             AddProductSheet { await load() }
-        }
-        .sheet(item: $selectedProduct) { product in
-            ProductDetailView(product: product) { await load() }
         }
         .refreshable { await load() }
         .task { await load() }
@@ -74,20 +73,18 @@ struct InventoryView: View {
             if !lowStock.isEmpty {
                 Section("⚠️ Needs Attention") {
                     ForEach(lowStock) { product in
-                        Button { selectedProduct = product } label: {
+                        NavigationLink(value: product) {
                             ProductRowView(product: product)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }
 
             Section("All Products (\(filtered.count))") {
                 ForEach(filtered.filter { !$0.isLowStock && !$0.isOutOfStock }) { product in
-                    Button { selectedProduct = product } label: {
+                    NavigationLink(value: product) {
                         ProductRowView(product: product)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }

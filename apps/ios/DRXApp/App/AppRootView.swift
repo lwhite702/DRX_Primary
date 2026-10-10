@@ -5,6 +5,7 @@ import UserNotifications
 
 struct AppRootView: View {
     @State private var environment: AppEnvironment
+    @State private var navigationCoordinator = NavigationCoordinator()
     @State private var identifiedUserID: String?
     @State private var authenticationRoute: AuthenticationRoute?
     @State private var minimumSplashDurationElapsed = false
@@ -62,6 +63,7 @@ struct AppRootView: View {
         .animation(.easeInOut(duration: reduceMotion ? 0.16 : 0.3), value: environment.rootState)
         .tint(DRXPalette.accent)
         .environment(environment)
+        .environment(navigationCoordinator)
         .fullScreenCover(item: $authenticationRoute) { route in
             AuthView(mode: route.mode, isDismissible: true)
                 .environment(\.clerkTheme, .drx)
@@ -98,7 +100,9 @@ struct AppRootView: View {
                 authenticationRoute = nil
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .deliveryPushRouteRequested)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .deliveryPushRouteRequested)) { notification in
+            let deliveryId = notification.object as? String
+            navigationCoordinator.openDelivery(deliveryId: deliveryId)
             environment.requestDeliveryQueue()
         }
         .task(id: "\(clerk.user?.id ?? "signed-out"):\(String(describing: environment.rootState))") {
@@ -303,72 +307,63 @@ private struct ProvisioningRecoveryView: View {
 
 private struct OperatorTabView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(NavigationCoordinator.self) private var navigationCoordinator
     @Environment(Clerk.self) private var clerk
-    @State private var selection: WorkspaceTab = .dashboard
     @State private var signOutError: String?
     @State private var presentsDeliveries = false
     @State private var consumedDeliveryRouteRequestID = 0
 
     var body: some View {
-        TabView(selection: $selection) {
-            NavigationStack {
+        @Bindable var coordinator = navigationCoordinator
+        TabView(selection: $coordinator.selectedTab) {
+            NavigationStack(path: $coordinator.dashboardPath) {
                 DashboardView()
             }
-                .tabItem { Label(DRXContent.Navigation.home, systemImage: "gauge.with.dots.needle.67percent") }
-                .tag(WorkspaceTab.dashboard)
+            .tabItem { Label(DRXContent.Navigation.home, systemImage: "gauge.with.dots.needle.67percent") }
+            .tag(WorkspaceTab.dashboard)
 
-            NavigationStack {
+            NavigationStack(path: $coordinator.posPath) {
                 POSView()
             }
-                .tabItem { Label(DRXContent.Navigation.newSale, systemImage: "cart.fill") }
-                .tag(WorkspaceTab.pos)
+            .tabItem { Label(DRXContent.Navigation.newSale, systemImage: "cart.fill") }
+            .tag(WorkspaceTab.pos)
 
-            NavigationStack {
+            NavigationStack(path: $coordinator.inventoryPath) {
                 InventoryView()
             }
-                .tabItem { Label(DRXContent.Navigation.products, systemImage: "shippingbox.fill") }
-                .tag(WorkspaceTab.inventory)
+            .tabItem { Label(DRXContent.Navigation.products, systemImage: "shippingbox.fill") }
+            .tag(WorkspaceTab.inventory)
 
-            NavigationStack {
+            NavigationStack(path: $coordinator.customerPath) {
                 CustomersView()
             }
-                .tabItem { Label(DRXContent.Navigation.customers, systemImage: "person.2.fill") }
-                .tag(WorkspaceTab.customers)
+            .tabItem { Label(DRXContent.Navigation.customers, systemImage: "person.2.fill") }
+            .tag(WorkspaceTab.customers)
 
-            NavigationStack {
+            NavigationStack(path: $coordinator.morePath) {
                 List {
                     Section("Modules") {
-                        NavigationLink {
-                            CreditView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.credit) {
                             Label(DRXContent.Navigation.payments, systemImage: "creditcard.fill")
                         }
                         .accessibilityIdentifier("module_credit")
 
-                        NavigationLink {
-                            DeliveryQueueView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.deliveries(deliveryId: nil)) {
                             Label(DRXContent.Navigation.deliveries, systemImage: "car.side.fill")
                         }
                         .accessibilityIdentifier("module_deliveries")
 
-                        NavigationLink {
-                            ReportsView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.reports) {
                             Label(DRXContent.Navigation.reports, systemImage: "chart.bar.doc.horizontal.fill")
                         }
                         .accessibilityIdentifier("module_reports")
 
-                        NavigationLink {
-                            WorkspacesView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.workspaces) {
                             Label(DRXContent.Terms.business, systemImage: "building.2.fill")
                         }
                         .accessibilityIdentifier("module_workspaces")
 
-                        NavigationLink {
-                            AIIntelligenceView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.aiIntelligence) {
                             Label(DRXContent.Navigation.trends, systemImage: "sparkles")
                         }
                         .accessibilityIdentifier("module_ai_intelligence")
@@ -391,9 +386,7 @@ private struct OperatorTabView: View {
                     }
 
                     Section("Help & Legal") {
-                        NavigationLink {
-                            AccountAndLegalView()
-                        } label: {
+                        NavigationLink(value: MoreRoute.accountAndLegal) {
                             Label("Help, Legal & Account", systemImage: "person.crop.circle.badge.questionmark")
                         }
                         .accessibilityIdentifier("helpLegalAccountButton")
@@ -402,6 +395,22 @@ private struct OperatorTabView: View {
                 .scrollContentBackground(.hidden)
                 .background(DRXPalette.canvas)
                 .navigationTitle("More")
+                .navigationDestination(for: MoreRoute.self) { route in
+                    switch route {
+                    case .credit:
+                        CreditView()
+                    case .deliveries:
+                        DeliveryQueueView()
+                    case .reports:
+                        ReportsView()
+                    case .workspaces:
+                        WorkspacesView()
+                    case .aiIntelligence:
+                        AIIntelligenceView()
+                    case .accountAndLegal:
+                        AccountAndLegalView()
+                    }
+                }
             }
             .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
             .tag(WorkspaceTab.more)
@@ -412,11 +421,13 @@ private struct OperatorTabView: View {
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
         .onAppear {
-            selection = environment.nextWorkspaceTab
+            if environment.nextWorkspaceTab != coordinator.selectedTab {
+                coordinator.selectedTab = environment.nextWorkspaceTab
+            }
             presentRequestedDeliveryQueue()
         }
         .onChange(of: environment.nextWorkspaceTab) { _, nextTab in
-            selection = nextTab
+            coordinator.selectedTab = nextTab
         }
         .onChange(of: environment.deliveryRouteRequestID) { _, _ in
             presentRequestedDeliveryQueue()
@@ -437,7 +448,7 @@ private struct OperatorTabView: View {
     private func presentRequestedDeliveryQueue() {
         guard environment.deliveryRouteRequestID != consumedDeliveryRouteRequestID else { return }
         consumedDeliveryRouteRequestID = environment.deliveryRouteRequestID
-        selection = .more
+        navigationCoordinator.selectedTab = .more
         presentsDeliveries = true
     }
 

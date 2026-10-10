@@ -7,8 +7,53 @@ struct ReportsView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var salesHistory: [DRXSale] = []
+    @State private var selectedDate = Date()
     @State private var isLoading = true
     @State private var error: String?
+
+    // Default to Eastern Standard Time ("America/New_York") or system timezone if configured
+    private var reportingTimeZone: TimeZone {
+        TimeZone(identifier: "America/New_York") ?? .current
+    }
+
+    private var calendar: Calendar {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = reportingTimeZone
+        return cal
+    }
+
+    private var isTodaySelected: Bool {
+        calendar.isDateInToday(selectedDate)
+    }
+
+    private var selectedDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.timeZone = reportingTimeZone
+        formatter.dateFormat = "EEE, MMM d, yyyy"
+        return formatter.string(from: selectedDate)
+    }
+
+    private var filteredSalesForSelectedDate: [DRXSale] {
+        salesHistory.filter { sale in
+            calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
+        }
+    }
+
+    private var filteredAggregate: DRXDailySalesAggregate {
+        let daySales = filteredSalesForSelectedDate
+        let orderCount = daySales.count
+        let totalRevenue = daySales.reduce(0) { $0 + $1.totalAmountCents }
+        let totalSubtotal = daySales.reduce(0) { $0 + $1.subtotalCents }
+        let totalTax = daySales.reduce(0) { $0 + $1.taxAmountCents }
+        let avgOrder = orderCount > 0 ? (totalRevenue / orderCount) : 0
+        return DRXDailySalesAggregate(
+            orderCount: orderCount,
+            totalRevenueCents: totalRevenue,
+            totalTaxCents: totalTax,
+            totalSubtotalCents: totalSubtotal,
+            averageOrderValueCents: avgOrder
+        )
+    }
 
     var body: some View {
         ScrollView {
@@ -28,43 +73,107 @@ struct ReportsView: View {
         .onAppear { environment.telemetry.screen("Reports") }
     }
 
-    private var content: some View {
-        VStack(spacing: 20) {
-            if let agg = aggregate {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Daily totals (UTC)")
+    private var dayNavigatorView: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Button {
+                    if let previous = calendar.date(byAdding: .day, value: -1, to: selectedDate) {
+                        selectedDate = previous
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Previous")
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(DRXPalette.accent)
+                }
+
+                Spacer()
+
+                VStack(spacing: 2) {
+                    Text(selectedDateFormatted)
                         .font(.headline)
                         .foregroundStyle(DRXPalette.ink)
-
-                    VStack(spacing: 0) {
-                        ReportSummaryRow(title: "Sales", value: agg.totalRevenueFormatted, highlight: true)
-                        Divider()
-                        ReportSummaryRow(title: "Subtotal", value: formatCents(agg.totalSubtotalCents))
-                        Divider()
-                        ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
-                        Divider()
-                        ReportSummaryRow(title: "Average sale", value: agg.averageOrderFormatted)
-                        Divider()
-                        ReportSummaryRow(title: "Orders", value: "\(agg.orderCount)")
-                    }
-                    .background(DRXPalette.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
+                    Text("Eastern Time (America/New_York)")
+                        .font(.caption2)
+                        .foregroundStyle(DRXPalette.muted)
                 }
-                .padding(.horizontal)
-                .padding(.top)
+
+                Spacer()
+
+                Button {
+                    if let next = calendar.date(byAdding: .day, value: 1, to: selectedDate) {
+                        selectedDate = next
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Next")
+                        Image(systemName: "chevron.right")
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(DRXPalette.accent)
+                }
             }
 
+            if !isTodaySelected {
+                Button {
+                    selectedDate = Date()
+                } label: {
+                    Text("Jump to Today")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(DRXPalette.accent)
+                }
+                .padding(.top, 2)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(DRXPalette.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+
+    private var content: some View {
+        VStack(spacing: 20) {
+            dayNavigatorView
+
+            let agg = filteredAggregate
             VStack(alignment: .leading, spacing: 12) {
-                Text("Sales history (\(salesHistory.count))")
+                Text(isTodaySelected ? "Today's totals" : "Daily totals for \(selectedDateFormatted)")
                     .font(.headline)
                     .foregroundStyle(DRXPalette.ink)
 
-                if salesHistory.isEmpty {
-                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales yet.")
+                VStack(spacing: 0) {
+                    ReportSummaryRow(title: "Sales", value: agg.totalRevenueFormatted, highlight: true)
+                    Divider()
+                    ReportSummaryRow(title: "Subtotal", value: formatCents(agg.totalSubtotalCents))
+                    Divider()
+                    ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
+                    Divider()
+                    ReportSummaryRow(title: "Average sale", value: agg.averageOrderFormatted)
+                    Divider()
+                    ReportSummaryRow(title: "Orders", value: "\(agg.orderCount)")
+                }
+                .background(DRXPalette.card)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
+            }
+            .padding(.horizontal)
+
+            let sales = filteredSalesForSelectedDate
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Sales for this day (\(sales.count))")
+                    .font(.headline)
+                    .foregroundStyle(DRXPalette.ink)
+
+                if sales.isEmpty {
+                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales on this day.")
                 } else {
                     LazyVStack(spacing: 0) {
-                        ForEach(salesHistory) { sale in
+                        ForEach(sales) { sale in
                             SaleRowView(sale: sale)
                             Divider().padding(.leading, 16)
                         }

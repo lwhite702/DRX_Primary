@@ -65,9 +65,13 @@ export const getSalesHistory = async (businessId: string, token: string | null) 
   return data.data || [];
 };
 
-export const getDailySummary = async (token: string | null) => {
-  // We can pass ?from and ?to if we want a specific day. By default we'll just get the baseline.
-  return fetchWithAuth("/api/reports/pos-baseline", token);
+export const getDailySummary = async (token: string | null, from?: string, to?: string) => {
+  let url = "/api/reports/pos-baseline";
+  const params = new URLSearchParams();
+  if (from) params.append("from", from);
+  if (to) params.append("to", to);
+  if (params.toString()) url += `?${params.toString()}`;
+  return fetchWithAuth(url, token);
 };
 
 export const recordDrawerEvent = async (token: string | null, eventType: string = "no_sale", note?: string) => {

@@ -11,7 +11,6 @@ struct CustomersView: View {
     @State private var error: String?
     @State private var searchText = ""
     @State private var showAddCustomer = false
-    @State private var selectedCustomer: DRXCustomer?
 
     var filtered: [DRXCustomer] {
         guard !searchText.isEmpty else { return customers }
@@ -40,6 +39,9 @@ struct CustomersView: View {
         .background(DRXPalette.canvas)
         .navigationTitle("Customers")
         .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(for: DRXCustomer.self) { customer in
+            CustomerDetailView(customer: customer) { await load() }
+        }
         .searchable(text: $searchText, prompt: "Search by name, phone, email…")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -51,9 +53,6 @@ struct CustomersView: View {
         .sheet(isPresented: $showAddCustomer) {
             AddCustomerSheet { await load() }
         }
-        .sheet(item: $selectedCustomer) { customer in
-            CustomerDetailView(customer: customer) { await load() }
-        }
         .refreshable { await load() }
         .task { await load() }
         .onAppear { environment.telemetry.screen("Customers") }
@@ -62,9 +61,9 @@ struct CustomersView: View {
     private var customerList: some View {
         List {
             ForEach(filtered) { customer in
-                CustomerRowView(customer: customer)
-                    .contentShape(Rectangle())
-                    .onTapGesture { selectedCustomer = customer }
+                NavigationLink(value: customer) {
+                    CustomerRowView(customer: customer)
+                }
             }
         }
         .listStyle(.insetGrouped)
