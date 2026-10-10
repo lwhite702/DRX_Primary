@@ -146,7 +146,7 @@ export function UsersClient() {
         selectedUser.business_id,
         selectedUser.user_id,
       );
-      if (result.error) {
+      if (!result.success) {
         toast.error(result.error);
       } else {
         toast.success("User data removal initiated (RTBF)");

@@ -75,7 +75,7 @@ function money(cents: number) { return Number((cents / 100).toFixed(2)); }
 export async function getPosBaselineReport(businessId: string, range?: { from?: Date; to?: Date; timezone?: string }): Promise<PosBaselineReport> {
   const clientContext = await businessClient(businessId);
   const client = clientContext.client;
-  let timeZone = range?.timezone || "America/New_York";
+  const timeZone = range?.timezone || "America/New_York";
 
   const now = new Date();
   const custom = Boolean(range?.from || range?.to);

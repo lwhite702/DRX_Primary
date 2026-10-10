@@ -221,7 +221,7 @@ describe("desktop quick pos checkout parity", () => {
         lastCompletedAt: Date.now(),
         pendingIdempotencyKey: null,
         lastSaleTotal: 10.8,
-        lastReceipt: "printed",
+        lastReceipt: "print",
         lastChange: 9.2,
         lastIsDelivery: true,
       },

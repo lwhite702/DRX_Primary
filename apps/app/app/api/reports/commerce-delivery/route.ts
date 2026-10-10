@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
 
     let canonicalSummary = unavailableSource("canonical");
     let legacySummary = unavailableSource("legacy_web");
-    let duplicateOrdersExcluded = 0;
+    const duplicateOrdersExcluded = 0;
 
     try {
       const canonicalAggregate = await getCanonicalCommerceSummary({
