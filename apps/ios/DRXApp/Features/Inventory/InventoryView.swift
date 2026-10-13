@@ -51,11 +51,14 @@ struct InventoryView: View {
         }
         .searchable(text: $searchText, prompt: "Search by name or SKU…")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddProduct = true } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: "plus")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(DRXPalette.ink)
                 }
                 .accessibilityLabel(DRXContent.Actions.addProduct)
+                .accessibilityIdentifier("addProductToolbarButton")
             }
         }
         .sheet(isPresented: $showAddProduct) {

@@ -253,7 +253,14 @@ struct POSView: View {
             if store.isLoading {
                 ProgressView("Loading products…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let err = store.error {
-                ContentUnavailableView("Failed to load", systemImage: "exclamationmark.triangle.fill", description: Text(err))
+                ContentUnavailableView {
+                    Label("Couldn’t load products", systemImage: "exclamationmark.triangle.fill")
+                } description: {
+                    Text(err)
+                } actions: {
+                    Button(DRXContent.Actions.tryAgain) { Task { await store.load() } }
+                        .buttonStyle(.drxPrimary)
+                }
             } else if store.filteredProducts.isEmpty {
                 ContentUnavailableView.search
             } else {
@@ -354,7 +361,7 @@ struct POSView: View {
 
     @ToolbarContentBuilder
     private var cartButton: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 store.showCheckout = true
             } label: {
@@ -369,6 +376,7 @@ struct POSView: View {
                     }
             }
             .disabled(store.cartIsEmpty)
+            .accessibilityIdentifier("posCartToolbarButton")
         }
     }
 }

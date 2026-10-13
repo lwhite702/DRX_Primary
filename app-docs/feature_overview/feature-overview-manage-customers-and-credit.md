@@ -5,46 +5,66 @@ description: "Keep customer records minimal and record payments against the corr
 
 ![A customer alias card connects to a purchase and received-payment ledger.](../_assets/help-center/headers/customers-and-credit.webp)
 
-## Before you start
+Retail regulars are gold. They're the people who stop by every Tuesday, know your crew by name, and sometimes ask: "Can I grab this now and settle up on Friday when I get paid?"
 
-Confirm the business, your customer and credit permissions, and the shop's approved credit policy. **Payments** in web navigation opens customer balances and recorded payments. Here, credit means an amount a customer owes for later payment; it is not a gift card or proof that money was received.
+DRX makes running customer tabs and store credit painless without making you act like an aggressive loan shark or collect intrusive personal data. You can manage customer tabs using simple, respectful aliases while keeping every dollar owed and paid straight to the penny.
 
 ![Illustrative customer and Record Payment forms using a fictional alias and balance.](../_assets/help-center/screenshots/customers-credit.png)
 
-Illustrative screen with fictional data.
+## 1. Adding and managing customer profiles
 
-## Find or add a customer
+### On Desktop Web (Browser)
+1. Click **Customers** in the left sidebar.
+2. Click **Add customer**.
+3. Enter an **Alias** or customer name (e.g., "Big Mike" or "Corner Coffee Sarah").
+4. Optional fields: phone number and email are completely optional! If your store runs on minimal data or Alias Mode, just save the alias.
+5. **Set a Store Credit Limit**: If you want to let this customer run a tab, enter a credit limit (e.g. $100.00). If you only want them paying cash/card at the counter, leave the credit limit at $0.
+6. Click **Add** to save the profile.
 
-1. Open **Customers** and search for an existing profile before adding another.
-2. Use **Add customer** when you have permission and no matching profile exists.
-3. Enter the alias or other details allowed by the business's privacy settings. Leave unrelated optional information blank.
-4. Review the fields, choose **Add** once, and check the saved profile in the same business.
+### On iPhone (Native iOS App)
+1. Tap the **Customers** tab at the bottom of your screen.
+2. Tap the **+** button in the top right to slide up the native customer sheet.
+3. Type the alias, set an optional credit limit, and tap **Save**.
+4. To see what a customer owes, tap their name to open their native customer card—their balance due and transaction history are laid out in clean cards!
 
-If a form requires contact information that your privacy policy does not allow, stop and ask the owner to review it. Do not enter fake information or weaken privacy settings to pass validation.
+### On Android & Mobile Web
+1. Open the **Customers** tab from the bottom navigation bar.
+2. Tap **New Customer**, type their alias and optional phone number, and save.
 
-## Attach a customer at checkout
+## 2. Attaching a customer to a sale
 
-1. In **New sale**, use **Customer (Optional)**.
-2. Enter the existing **Alias** or an allowed **Phone number**, then choose **Lookup**.
-3. Select the matching customer and confirm **Attached:** before continuing.
-4. Choose **CREDIT** only when offered and approved. Review the total and select **Confirm credit charge** before **Complete Sale**.
+When a customer steps up to the register:
 
-**Quick Create** currently asks for a phone number. Do not use it for an alias-only record when collecting that number conflicts with the business's privacy policy. A sale without a customer still creates sales records.
+1. In **New sale** on web (or **POS** on iOS and **Register** on mobile), tap **Customer (Optional)**.
+2. Type their alias or phone number and tap **Lookup**.
+3. Select their profile from the matching list.
+4. Now, if they want to put the purchase on their store tab, choose **CREDIT** at checkout and tap **Complete Sale**. Their balance due increases immediately.
 
-## Record a payment toward an existing balance
+## 3. Recording a payment when a customer settles their tab
 
-1. Confirm the payment was actually received through the shop's approved process.
-2. Open **Payments** and choose **Record Payment**.
-3. Select **Customer**, enter **Amount ($)**, and choose the matching **Payment Method**: Cash, Check, Transfer, or Other.
-4. Use **Notes** only for a necessary reference. Do not enter card numbers or account credentials.
-5. Check the amount and previous payments, then choose **Record Payment** once.
-6. Reopen the account and confirm the saved payment and remaining balance before recording anything else.
+When a customer comes in and says, "Hey, here's fifty bucks towards my tab!":
 
-This action records a received payment. It does not transfer money. Do not create a new sale to record repayment of an old balance.
+> **Golden Rule**: **Never ring up a new sale to record repayment of an old balance!** If you ring up a new sale, your store books will think you sold fifty dollars of extra merchandise, which will double-count your revenue and mess up your tax totals.
 
-## What happens next
+Here is the right way to record tab repayments:
 
-Have an authorized manager review unexplained balances, overdue amounts, or limit changes against the saved records. Do not raise limits or split a charge to bypass a restriction. Notes, loyalty, and related beta controls are available only where enabled; they are not required for a basic customer record.
+### On Desktop Web
+1. Head to **Credit** (or **Payments**) in the sidebar.
+2. Click **Record Payment**.
+3. Select the customer from the dropdown.
+4. Enter the **Amount ($)** they handed you.
+5. Select their payment method (**Cash**, **Card**, **Check**, or **Transfer**).
+6. Add an optional note (e.g. "Cash handed to cashier at front register") and click **Record Payment**.
+7. The customer's open balance drops instantly!
+
+### On iPhone (Native iOS App)
+1. Tap the **Credit** tab at the bottom.
+2. Find the customer and tap **Record Payment** to open the native payment sheet.
+3. Enter the cash amount, tap **Confirm Payment**, and feel the haptic feedback as their balance updates.
+
+### On Android & Mobile Web
+1. Tap the **Credits** tab in the bottom bar.
+2. Tap the customer's card, tap **Record payment**, enter the dollar amount, and confirm.
 
 ## Related articles
 

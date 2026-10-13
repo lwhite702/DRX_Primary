@@ -3,37 +3,44 @@ title: "Home and reports"
 description: "Check saved sales, report totals, and the period each number covers."
 ---
 
-## Before you start
-
-These steps cover the desktop web beta. You need access to the business and its reports. An empty chart does not prove there were no sales.
-
 ![Illustrative DRX Home page with fictional daily sales, item, and stock figures.](../_assets/help-center/screenshots/dashboard-reports.png)
 
-Illustrative screen with fictional data.
+At the end of a long shift, you only care about a few big questions: What did we sell today? How much cash should be sitting in the drawer? And which products flew off the shelf? 
 
-## Check your numbers
+DRX gives you clean, honest numbers without making you dig through mountains of messy spreadsheets. Here is how to check your numbers and reconcile your register across all your devices.
 
-1. Confirm the active business, then open **Home** for its summary.
-2. Open **Sales** to check the saved sales behind a total. The recent list shows up to 50 orders.
-3. Open **Reports** and read **Window:** before comparing figures. Check the displayed dates rather than assuming every card covers the same period.
-4. Compare **Today Sales**, **Today COGS**, **Week Gross Profit**, and **Outstanding Credit** only with records for the matching period and business.
-5. Review **Recent Sales Margin** and **Top Products This Week** where shown. Missing costs can affect a margin calculation.
+## Checking your numbers across platforms
 
-**Trends** is a separate web page. Its summary is not a substitute for checking saved sales. Do not change a sale or balance merely to make a chart match.
+### On Desktop Web (Browser)
+1. Make sure your active store is selected in the top-left dropdown, then click **Home** in the sidebar.
+2. Glance at your top cards: **Today Sales**, **Today Transactions**, and **Cash in Drawer**.
+3. For deep-dive analysis, click **Reports** in the left navigation:
+   - Check the **Window:** selector (choose **Today**, **Last 7 Days**, **Last 30 Days**, or custom dates).
+   - Review **Today COGS** (Cost of Goods Sold), **Gross Profit**, and **Outstanding Credit** (money customers owe your store on active tabs).
+   - Scroll down to check **Recent Sales Margin** and **Top Products This Week** to see what items are driving your revenue.
+4. Want to see individual receipts behind the totals? Click **Sales** in the sidebar to review the last 50 completed orders in chronological order.
 
-## Export reconciliation data
+### On iPhone (Native iOS App)
+1. Open the DRX app and tap the **Dashboard** tab in the bottom bar.
+2. Swipe through your primary metrics: today's gross sales volume, total item count sold, and average ticket size.
+3. Tap the **Reports** tab to see a breakdown of cash payments versus card transactions and outstanding customer balances.
+4. Need to refresh? Just pull down on the screen to grab the latest numbers from the cloud.
 
-1. In **Reports**, confirm the business and **Window:**.
-2. Choose **Export reconciliation CSV** if your account can use it. This download requires you to stay signed in.
-3. Open the file and check its period and totals against the report before sharing it through your business's approved private process.
+### On Android & Mobile Web
+1. From the register, tap the **More** tab in the bottom navigation.
+2. Select **Daily summary** to view an instant breakdown of sales recorded during the current shift.
+3. At closing time, open **End of shift** to count down your cash drawer, verify your card payment slips, and confirm your register totals before shutting down for the night.
 
-A CSV creates a separate copy of data. Keep it in approved storage; later changes or deletion in DRX do not delete downloaded copies. This export is not a full account backup.
+## Exporting reconciliation data (Web)
 
-## What happens next
+Need to send sales data to your accountant or bookkeeper? Desktop web gives you a fast, clean CSV export:
 
-Use the saved order and payment records to investigate differences. A credit sale and a payment toward an existing balance are different events.
+1. In the web app, head to **Reports**.
+2. Select your desired date range using the **Window:** selector.
+3. Click **Export reconciliation CSV**.
+4. Save the file to your secure store folder. You can open it in Excel, Numbers, or Google Sheets to verify daily tax totals, cash tenders, and line-item sales.
 
-If you have separately approved access to an iPhone test build, its Reports page labels the daily view **Daily totals (UTC)**. UTC can differ from your local day. This guide does not announce iPhone distribution or report parity on every device.
+> **Keep in mind**: A downloaded CSV file is a private snapshot of your store's sales. Store it in a secure folder—deleting records inside DRX later on will not magically delete spreadsheets you already downloaded to your laptop!
 
 ## Related articles
 

@@ -5,40 +5,50 @@ description: "Record a new sale and confirm the saved order before starting anot
 
 ![Neutral boxed goods move through a basket to a saved receipt record.](../_assets/help-center/headers/quick-sale.webp)
 
-## Before you start
+Checkout is the heartbeat of your store. When you have three people in line and someone is asking for "three and a half grams, plus a pre-roll, but wait can I put some on card and the rest in crumpled dollar bills?", you need a register that moves as fast as you do.
 
-These steps cover the web beta. Confirm the business, checkout access, products, and prices. Use the shop's approved process to receive a payment. Selecting a payment method in DRX records it; it does not by itself charge a card or transfer money.
-
-Do not use real sales to test a device or connection. Offline checkout is not promised by this guide.
+Here is how to ring up sales, calculate change down to the penny, and keep your inventory and cash drawer honest across all three platforms.
 
 ![Illustrative Quick sale screen with fictional products, a cart, and a reviewable total.](../_assets/help-center/screenshots/quick-sale.png)
 
-Illustrative screen with fictional data.
+## Ringing up a sale across platforms
 
-## Build the sale
+### On Desktop Web (Browser)
+1. Click **New sale** in the left sidebar.
+2. Add products to your cart:
+   - Scan items with your USB or Bluetooth barcode scanner.
+   - Or type in the **Scan SKU / barcode or search products** box.
+   - Or click any item from your catalog grid.
+3. Review line items: adjust quantities, fractional weights (grams or ounces), and confirm any bulk bundle pricing tiers.
+4. **Attach a Customer (Optional)**: If the shopper has a store tab or loyalty profile, type their name, alias, or phone number in **Customer (Optional)** and click **Lookup**. If they're buying on store credit, an attached customer is required!
+5. Click **Continue to Payment** (or the total button).
+6. Pick your tender method:
+   - **CASH**: Enter the amount tendered. DRX automatically calculates the exact change due so nobody has to do mental math during a rush.
+   - **CARD**: Swipe or tap the card on your physical terminal first, then select **CARD** in DRX to lock the record in.
+   - **CREDIT**: Charge the sale against the customer's verified store credit balance.
+7. Choose your receipt preference (**PRINT**, **SMS**, or **NONE**) and click **Complete Sale**.
 
-1. Open **New sale** from web navigation.
-2. Use **Scan SKU / barcode or search products** or the available product choices to add items.
-3. Check each product, quantity, unit, and price. Review any displayed discount before continuing.
+### On iPhone (Native iOS App)
+1. Open the DRX app and tap the **POS** tab at the bottom of your screen.
+2. Tap products from your category list or use the top search bar.
+3. Need to weigh out a specific fractional amount? Tap the product to open the native weight dial and select exact grams or fraction increments.
+4. Tap the green **Checkout** bar at the bottom to slide up the native checkout sheet.
+5. Tap **Cash**, **Card**, or **Credit**. For cash, type what they handed you—your change due updates instantly in bold green digits!
+6. Tap **Complete Sale** to finish with a satisfying haptic confirmation tap.
 
-4. If needed, use **Customer (Optional)**, enter an existing **Alias** or permitted **Phone number**, choose **Lookup**, and select the correct record. Confirm **Attached:**. Credit needs an eligible customer.
-5. Choose **Continue to Payment** or the **Pay** button showing the total, depending on the screen layout.
+### On Android & Mobile Web
+1. Open the **Register** tab from your bottom navigation bar.
+2. Tap items to drop them into your sliding bottom cart.
+3. Tap the cart handle to review items or apply an order discount.
+4. Tap **Pay** to open the tender sheet. Use the quick cash tender buttons (**$20**, **$50**, **$100**) for lightning-fast cash transactions!
+5. **Customer peering over your shoulder?** Turn on **Screen privacy** to hide customer account balances from in-store shoppers.
+6. Hit **Complete Sale** to lock it in.
 
-For a product with bundle prices, DRX applies the highest eligible quantity tier to that product's full sale amount. A 3.5g bundle set to $90 should show $90 before tax and any eligible loyalty benefit. Check the final quoted total before payment.
+## Common sense register rules
 
-## Record payment and finish
-
-1. Wait for the verified total. Review **Subtotal**, **Merchandise tax**, and any delivery charges or tax shown.
-2. Choose the matching **Payment Method**: **CASH**, **CARD**, or **CREDIT** when offered. This checkout uses one method; it does not offer a mixed-payment or Zelle checkout option.
-3. For credit, review eligibility and select **Confirm credit charge**. Do not use credit to record repayment of an old balance.
-4. Under **Receipt**, choose **PRINT**, **SMS**, or **NONE**. These are receipt preferences; the choice alone does not prove a receipt was printed or sent.
-5. Choose **Complete Sale** once and wait for confirmation.
-
-## What happens next
-
-Confirm the order reference and total on the completion screen. Check the saved order in **Sales** if anything is unclear. Verify printing or delivery separately if your shop uses a receipt service.
-
-If the result is uncertain, do not start another checkout or request payment again until the saved sale and actual payment have been checked.
+- **Payment recording**: Selecting Cash, Card, or Credit in DRX records the transaction in your store's bookkeeping—it doesn't pull cash out of thin air or charge credit cards by itself. Always collect the actual cash or run their card on your terminal before finalizing!
+- **Bundle pricing**: If you configured bulk pricing tiers (like an eighth for $35 or an ounce for $200), DRX automatically calculates the best volume price for the customer.
+- **Uncertain connections**: If your internet blinks right as you hit complete, don't double-charge the customer! Open **Sales** to check if the order number already saved before ringing it up a second time.
 
 ## Related articles
 

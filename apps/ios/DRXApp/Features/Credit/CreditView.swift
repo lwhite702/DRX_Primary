@@ -34,7 +34,14 @@ struct CreditView: View {
             if isLoading {
                 ProgressView("Loading payments…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error {
-                ContentUnavailableView("Couldn’t load payments", systemImage: "exclamationmark.triangle.fill", description: Text(error))
+                ContentUnavailableView {
+                    Label("Couldn’t load payments", systemImage: "exclamationmark.triangle.fill")
+                } description: {
+                    Text(error)
+                } actions: {
+                    Button(DRXContent.Actions.tryAgain) { Task { await load() } }
+                        .buttonStyle(.drxPrimary)
+                }
             } else {
                 content
             }

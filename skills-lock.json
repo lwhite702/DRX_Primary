@@ -7,6 +7,20 @@
       "skillPath": "skills/engineering/ask-matt/SKILL.md",
       "computedHash": "0cd14026efa0330083cbc7adf590976c162b60e02f696a8dcce96f0b4dab8a72"
     },
+    "brand-review": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/brand-review/SKILL.md",
+      "computedHash": "266e6795caefed694696f2b71d201295d6f0d2cce1e6ed5ee24195b09e34148d"
+    },
+    "campaign-plan": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/campaign-plan/SKILL.md",
+      "computedHash": "2335b5e87cc366b7cd6113dac41387a56e0fbf2102e3fe67fe4a2bdead60fd7d"
+    },
     "claude-handoff": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -25,17 +39,72 @@
       "skillPath": "skills/engineering/codebase-design/SKILL.md",
       "computedHash": "5a17552cc1482f1a40124bf4e6c9dbd90ac0dbb47e71c07d47369f9e5f2ae3b5"
     },
+    "competitive-brief": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/competitive-brief/SKILL.md",
+      "computedHash": "5cbd5b8ad2d9234fba1a149ad90e2889539e3f74d2cc66710f0bf92c23c9de3f"
+    },
+    "content-creation": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/content-creation/SKILL.md",
+      "computedHash": "012ed09d491de22ef3d2697e7f268597353711b8c17d72ce013c4a6e396df970"
+    },
+    "develop-ai-functions-example": {
+      "source": "vercel/ai",
+      "sourceType": "github",
+      "skillPath": "skills/develop-ai-functions-example/SKILL.md",
+      "computedHash": "e010bd3a909d292d24b734857fb5822237f5efc2721322525c1625da34639e9b"
+    },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
       "computedHash": "37b5e9c624513551da790b52864dc8c84bff996a6d03a380cc6facdcc0a88354"
     },
+    "docs-architect": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/sickn33/docs-architect",
+      "sourceType": "well-known",
+      "computedHash": "b41fb317cd174cc1dd8af2180ab9a947cf7f947f7ee9cb5dbba38b1574484a1c",
+      "wellKnownDigest": "sha256:7fe062c2213aaef83d9f9d5eb44c402a572ee77e0b6bdafd251fc00030e688bc"
+    },
+    "docs-sync": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/openai/docs-sync",
+      "sourceType": "well-known",
+      "computedHash": "90edf048cd0a69b6eac6ceda7fc3fd39a7b2293cf26cfcda14a1fcf10275203c",
+      "wellKnownDigest": "sha256:a9a011c7ef866441faa8fa3a0ca01caab9c6f17f0f9999957e71f5f388ba726c"
+    },
     "domain-modeling": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/engineering/domain-modeling/SKILL.md",
       "computedHash": "a11713c0ff7870efa3c331b2e273f09116158485246edc89ae5088eefd1b0b48"
+    },
+    "draft-content": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/draft-content/SKILL.md",
+      "computedHash": "0387c1d6dece22365c092d0c695611af0e2241b60f3e1d635a80145e4b4fc5a7"
+    },
+    "email-sequence": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/email-sequence/SKILL.md",
+      "computedHash": "7a89a7aeaf0ba16756cd0150b99e72efcaf22c8fbdb53c7ae484527874a4b258"
+    },
+    "frontend-design": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/anthropics/frontend-design",
+      "sourceType": "well-known",
+      "computedHash": "b8c8329ad9b98fa57f4a279e37bdf4a0d55743140e54bb7da3e340d754d75b43",
+      "wellKnownDigest": "sha256:1b597153443ace6e4d32a29f9143c9b094aa96242ec49120a245e765af187655"
     },
     "git-guardrails-claude-code": {
       "source": "mattpocock/skills",
@@ -85,6 +154,12 @@
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "2449db6ab1ded9581f69fcc56c1f64818112d05e271fd4c5da23c6523f9d3d9d"
     },
+    "legal-response": {
+      "source": "anthropics/knowledge-work-plugins",
+      "sourceType": "github",
+      "skillPath": "legal/skills/legal-response/SKILL.md",
+      "computedHash": "76c9c592acf53d8d9ec6d870acb4a886f8cf2f30f9181f9ad64ae81c967d87aa"
+    },
     "loop-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -97,11 +172,32 @@
       "skillPath": "skills/misc/migrate-to-shoehorn/SKILL.md",
       "computedHash": "6397731ced114f3657aa88b55ed13d1344a56d77ca449c568e3200c21740fa99"
     },
+    "nextjs-best-practices": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/davila7/nextjs-best-practices",
+      "sourceType": "well-known",
+      "computedHash": "7b31199cce0f9a1b17acdf880469b0f9ddf9eb63577b1fde567def461d888287",
+      "wellKnownDigest": "sha256:6c6f32dfe6d79994031ba2a9e0dfa8ae14da23cc3fb28e09d3820b5ee8bf93ab"
+    },
+    "performance-report": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/performance-report/SKILL.md",
+      "computedHash": "10cabcb049c9305306a1cfce1960ad20fc5d44557779214f7d1bd726b57c4d9e"
+    },
     "prototype": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/engineering/prototype/SKILL.md",
       "computedHash": "d3fc74689bd993e39c44bfae510d014eecffbeec2922764b065377fd1327c0f6"
+    },
+    "refactor": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/github/refactor",
+      "sourceType": "well-known",
+      "computedHash": "87789a786b96f99ba0680e89345a975106e10e7db1071c7cdc2e76d507c449d6",
+      "wellKnownDigest": "sha256:c47685f03d849aabf01b34038caa7599f4a57ed42861a81c4e3ec9746708a98d"
     },
     "research": {
       "source": "mattpocock/skills",
@@ -121,6 +217,13 @@
       "skillPath": "skills/misc/scaffold-exercises/SKILL.md",
       "computedHash": "354c91f6dbc9b058632f30594aacb4edc6d25012596585abb00402af8d7ec5e9"
     },
+    "seo-audit": {
+      "source": "anthropics/knowledge-work-plugins",
+      "ref": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+      "sourceType": "github",
+      "skillPath": "marketing/skills/seo-audit/SKILL.md",
+      "computedHash": "8e2ca1e7267fab10969f83a4ae6dbc15ce4082f35d8bc7fcd004b7af41ee9e4d"
+    },
     "setup-matt-pocock-skills": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -138,6 +241,12 @@
       "sourceType": "github",
       "skillPath": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
       "computedHash": "61508216ede38d8cfa712879197a76f75f4896615dbf7abc3f62571f8f5923cc"
+    },
+    "stripe-best-practices": {
+      "source": "stripe/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-best-practices/SKILL.md",
+      "computedHash": "517e425060fe9cbed9f7d17cc900cbfc812c5248c2d09ec89818937eb3c5cb0f"
     },
     "tdd": {
       "source": "mattpocock/skills",
@@ -174,6 +283,13 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/triage/SKILL.md",
       "computedHash": "b954d74c219c805bf353d6642251a713c9b2e9cfdb11babfe588bcfe7dfd16d5"
+    },
+    "turborepo": {
+      "source": "smithery.ai",
+      "sourceUrl": "https://smithery.ai/skills/vercel/turborepo",
+      "sourceType": "well-known",
+      "computedHash": "c83a6ff75c62092f71da91408164ed3426f11749b032fd23ecc855e27c2fb538",
+      "wellKnownDigest": "sha256:9681d8dfeb5e6cdff767f1bcaba5d7ac55732a9d6c02ee120f44229f8ec25e7e"
     },
     "wait-what": {
       "source": "mattpocock/skills",

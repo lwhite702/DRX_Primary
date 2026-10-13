@@ -26,7 +26,14 @@ struct CustomersView: View {
             if isLoading {
                 ProgressView("Loading customers…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error {
-                ContentUnavailableView("Failed to load", systemImage: "exclamationmark.triangle.fill", description: Text(error))
+                ContentUnavailableView {
+                    Label("Couldn’t load customers", systemImage: "exclamationmark.triangle.fill")
+                } description: {
+                    Text(error)
+                } actions: {
+                    Button(DRXContent.Actions.tryAgain) { Task { await load() } }
+                        .buttonStyle(.drxPrimary)
+                }
             } else if filtered.isEmpty && !searchText.isEmpty {
                 ContentUnavailableView.search
             } else if customers.isEmpty {
@@ -44,10 +51,14 @@ struct CustomersView: View {
         }
         .searchable(text: $searchText, prompt: "Search by name, phone, email…")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddCustomer = true } label: {
                     Image(systemName: "person.badge.plus")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(DRXPalette.ink)
                 }
+                .accessibilityLabel(DRXContent.Actions.addCustomer)
+                .accessibilityIdentifier("addCustomerToolbarButton")
             }
         }
         .sheet(isPresented: $showAddCustomer) {

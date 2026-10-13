@@ -6,40 +6,65 @@ icon: "building-2"
 
 ![Two workspaces connect to separate groups of scoped team access.](/images/help-center/headers/workspaces-and-access.webp)
 
-## Before you start
+If you juggle two dispensary locations, an annex stockroom, or a retail store and an event pop-up, you know the absolute terror of accidentally ringing up an ounce under the wrong shop's tax ID. DRX keeps your locations strictly separated so inventory, cash drawers, and customer records never bleed into one another.
 
-These steps cover the web beta. Finish or safely leave open checkout and unsaved work before switching businesses. Each business keeps its own records.
+Here is how to switch between business locations smoothly and set up your crew with exactly the permissions they need—no more, no less.
+
+## Before you flip the switch
+
+Finish whatever you are doing before switching shops. 
+- If you have an active customer standing in front of you with a cart full of pre-rolls, ring it up or park the cart first. 
+- Switching stores while halfway through building an order drops you into a brand new context. Each business maintains its own live inventory counts, customer tabs, and sales ledgers.
 
 ![Illustrative business selector and Manage Team panels with fictional business and member names.](/images/help-center/screenshots/workspace-team.png)
 
-Illustrative screen with fictional data.
+*Illustrative screen with fictional data.*
 
-## Switch businesses
+## Switching stores across your devices
 
-1. Open **Select a business** in the header. Check the entries under **My Businesses**.
-2. Select the intended business from those attached to your account.
-3. Wait for the page to load and confirm the business name before opening **Products**, **Customers**, or **Sales**.
-4. Check the business again before saving a payment, correction, or export.
+<Tabs>
+  <Tab title="Desktop Web">
+    1. Look up at the top navigation header and click **Select a business** (or your current store name).
+    2. Under **My Businesses**, click the location you want to operate.
+    3. Watch the header update. Confirm the shop name in the top corner before clicking into **Sales**, **Products**, or **Customers**.
+    4. If you have multiple tabs open in your browser, refresh them so you are not accidentally ringing up carts in yesterday's location.
+  </Tab>
+  <Tab title="Native iOS (SwiftUI)">
+    1. Tap the **Business** tab (or gear icon) in the bottom navigation bar to open `WorkspacesView`.
+    2. Check the **Current business** section at the top. You will see the active **Business Name**, your logged-in **Team member** name, and your assigned **Role** (such as Cashier or Manager).
+    3. To switch storefronts on a shared shop iPad, tap **Sign Out of Deelrx CRM**, then sign in with the credentials assigned to that terminal or store location.
+    4. Verify that the register pulls in the correct catalog and local drawer before taking your first customer.
+  </Tab>
+  <Tab title="Android & Mobile Web">
+    1. Tap **More** in the bottom tab bar.
+    2. Right beneath your profile card, check the **Connected to business** storefront banner to verify which shop you are currently logged into.
+    3. If you need to switch to your sister store, tap **Sign Out**, confirm the prompt, and sign in with the store account for your other branch.
+    4. The mobile dashboard immediately refreshes its local catalog and delivery queues for that chosen location.
+  </Tab>
+</Tabs>
 
-Switching businesses does not give you a different person's role. Do not use device, location, or privacy badges on the Business overview as a security report; some overview details are sample content in this beta.
+## Inviting team members and setting roles
 
-## Invite a team member
+Don't hand your store owner password to every weekend budtender. DRX lets you invite staff members with distinct, role-scoped access:
 
-1. With the required permission, open **Settings**, then **Manage Team**.
-2. Under **Invite a Team Member**, enter **Email address**.
-3. Choose the approved **Role** from the options your account offers. The team page includes Cashier, Supervisor, Manager, and Staff; privileged options need separate authorization.
-4. Check the email and role, then choose **Send Invitation**. This sends an invitation to that person.
-5. Check **Team Members** and confirm the membership after the person accepts. They create their own password; do not share the owner's login.
+1. On Desktop Web, click **Settings** in the main sidebar, then select **Manage Team**.
+2. Scroll to **Invite a Team Member** and enter their work **Email address**.
+3. Choose the appropriate **Role** from the dropdown:
+   - **Cashier**: Can search catalog items, build carts, accept cash and card payments, and look up customer store credits. They cannot alter past sale records or edit core business settings.
+   - **Supervisor**: Can approve discounts, void active tickets, handle customer profile updates, and oversee register shift reconciliations.
+   - **Manager**: Can receive bulk inventory shipments, perform stock counts, edit product retail prices, and view store performance dashboards.
+   - **Staff**: General operational access for floor runners and delivery fulfillment.
+4. Click **Send Invitation**. 
+5. The employee receives an invitation link where they create their own secure password. Never share accounts—individual logins protect your cash drawer and keep your shift audit trails honest.
 
-## Review or remove access
+## Reviewing or removing access
 
-Review the member's role in **Team Members** before changing it. Permissions can differ by business and task. Business ownership does not grant DRX platform administration.
+People move on, and temporary seasonal help packs up. Keep your roster tidy:
 
-For offboarding, ask the owner and private support to confirm the supported removal and session-revocation process. Do not assume changing a role signs out every device immediately. This guide does not invent a deactivation button that the current team page does not provide.
-
-## What happens next
-
-Confirm the member can perform the approved task with their own account. Stop if they can see unexpected business records or sensitive details and report it privately.
+- Regularly open **Manage Team** in **Settings** to review your active list of **Team Members**.
+- Double-check role assignments before promoting or adjusting permissions.
+- When an employee departs, revoke their invitation or contact store ownership immediately to retire their login access.
+- Changing a role does not automatically kick someone out mid-keystroke if their session is cached; ensure they log out of store hardware at the end of their final shift.
 
 ## Related articles
 

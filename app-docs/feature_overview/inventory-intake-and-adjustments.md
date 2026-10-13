@@ -5,49 +5,74 @@ description: "Add products and stock, then correct a verified stock count."
 
 ![Generic boxed goods move from intake into an organized and verified stock count.](../_assets/help-center/headers/inventory-intake.webp)
 
-## Before you start
+Stock counts don't lie, but sticky fingers, dropped jars, and supplier delivery boxes definitely happen. If your inventory count is wrong, your register will tell customers you have items that vanished three days ago—or worse, tell you you're sold out when a fresh box is sitting in the back room.
 
-These steps cover the web beta. Confirm the business and your permission to manage Products. Know the product, unit, received quantity, and costs. Count the goods before recording them.
+DRX keeps your stock counts and unit costs accurate down to the fractional gram. Here is how to add new products, receive incoming delivery boxes, and fix a count without breaking a sweat.
 
 ![Illustrative DRX Products page with fictional products, counts, and an Add stock action.](../_assets/help-center/screenshots/inventory-intake.png)
 
-Illustrative screen with fictional data.
+## 1. Adding a new product to your shelf
 
-## Add or edit a product
+### On Desktop Web (Browser)
+1. Click **Products** in the left sidebar, then click **Add product**.
+2. Type your **Product Name**.
+3. Choose your SKU: click **Generate SKU** to let DRX create a unique internal stock code, or click **Enter my own** if you already have an existing code. (You can also enter a manufacturer barcode).
+4. Select your **Selling Unit** (grams, ounces, eighths, pieces, or boxes).
+5. **Fractional selling**: If you weigh out product on a digital scale (like selling by the gram or half-ounce), toggle fractional selling on! DRX lets you set custom minimum quantities, step increments, and quick-tap quantity buttons.
+6. Set your pricing:
+   - Enter your retail **Selling price**.
+   - Enter your **Cost per selling unit**. If you bought in bulk (for example, you bought an ounce for $160 and sell by the gram), click **I buy this in a different unit**—DRX calculates your per-gram unit cost ($5.64/g) and target margin automatically!
+7. **Volume bundle pricing**: Want to offer discounts for bulk buys? Open **Advanced: bulk and bundle prices** and click **Add bundle price** (e.g., 2g for $60, 3.5g for $90, 7g for $140).
+8. Click **Add Product** to save.
 
-1. Open **Products** and check for an existing product before choosing **Add product**.
-2. Enter **Product Name**. Choose **Generate SKU** to let DRX assign a unique stock code, or **Enter my own** and type a SKU. A barcode is optional and separate from the SKU.
-3. Choose the **Selling Unit** and whether to sell fractional amounts. DRX fills in matching quick quantities. If you enter custom minimums, steps, or quick amounts and they conflict, choose **Use recommended rules** or edit the amounts before saving.
-4. Enter the **Selling price** for one full selling unit. Enter **Cost per selling unit** directly, or choose **I buy this in a different unit** and enter the package purchase price, quantity, and purchase unit. If the supplier's actual net weight differs from the package label, enter the actual amount in your selling unit. Review the calculated per-unit cost and margin. For example, $160 for 1 oz and a selling price of $35 per gram gives an estimated $5.64 cost per gram; the saved stock cost retains more precision than the preview.
-5. For volume discounts, open **Advanced: bulk and bundle prices** and choose **Add bundle price**. Enter each eligible quantity and the total you want charged. For a base price of $35/g, you can set 2g for $60, 3.5g for $90, and 7g for $140. Quantities must rise in order and fit the product's selling steps. DRX charges the exact total at each threshold and applies that tier's rate to larger amounts until the next tier.
-6. Review the initial stock count and reorder alert, then choose **Add Product**, or **Create First Product** in the guided form, once. Confirm the saved product and values in Products.
-7. To change an existing product's bundle prices, open **Settings** → **Commerce & Delivery**, select the product, then edit **Bulk price tiers** and choose **Save product rules**. Do not change a product's count to hide a missing sale or failed intake.
+### On iPhone (Native iOS App)
+1. Tap the **Inventory** tab at the bottom of your screen.
+2. Tap the **+** button in the top right corner to slide up the native product creation sheet.
+3. Fill in the product name, select unit or gram pricing, and enter your shelf price and purchase cost.
+4. Tap **Save Product** with haptic confirmation.
 
-A product name, SKU, barcode, customer alias, and quantity shortcut are different things. A shortcut does not change the selling unit. The package cost helper applies when creating a product; later deliveries still use the actual cost and quantity entered at intake. This guide does not promise camera scanning, CSV import, or bulk intake on screens that do not offer them.
+### On Android & Mobile Web
+1. Open the **Stock** tab in the bottom bar.
+2. Tap **Add product**, type the name, price, and initial quantity, and save.
 
-## Receive goods
+## 2. Receiving a new delivery box (`Receive stock`)
 
-1. In **Products**, choose **Add stock**.
-2. Select **Product** and check the unit beside the received quantity or weight.
-3. Enter **Total Cost** for the whole intake and the actual quantity received. Do not enter unit cost in the Total Cost field.
-4. Enter **Supplier (Optional)** and **Delivery Cost** only when needed. Delivery cost is separate from the displayed product cost calculation.
-5. Choose **Review & Process Intake**. Check the product, amount, unit, and costs.
-6. Choose **Confirm Intake** once and wait for the result.
+When a fresh delivery arrives at your loading dock or back door:
 
-If the result says approval is required, have an authorized approver review it before treating the goods as available. Do not submit the same intake again.
+### On Desktop Web
+1. Head to **Products** and click **Add stock**.
+2. Select the product from the dropdown.
+3. Enter the total quantity received and the **Total Cost** you paid for the whole batch (DRX calculates unit cost for FIFO accounting).
+4. Add the supplier name or invoice notes if desired.
+5. Click **Review & Process Intake**, confirm the numbers, and hit **Confirm Intake**.
 
-## Correct a count
+### On iPhone (Native iOS App)
+1. In the **Inventory** tab, tap any product to open its detail sheet.
+2. Tap **Receive Stock Intake**, type the received quantity and invoice cost, and tap **Save Intake**.
 
-1. Verify the physical count and review recent sales and movements.
-2. In **Products**, choose **Fix count**. On **Adjust inventory**, choose **Select Product**.
-3. Choose **Set Quantity To** for a final count, **Add (+)** for an increase, or **Remove (-)** for a decrease.
-4. Enter **Quantity** for that action and a specific **Reason**.
-5. Review the change, then choose **Confirm Adjustment** once.
+### On Android & Mobile Web
+1. In the **Stock** tab, tap **Intake**, pick the product, enter the new quantity, and confirm.
 
-## What happens next
+## 3. Fixing a count (Spoilage, recounts, and spot audits)
 
-Return to Products and choose **Refresh**. Use **Stock history** to check the saved movement and resulting count. A pending approval or uncertain response needs review before another entry. A reorder threshold is a warning setting, not a correction to the actual count.
+Did someone drop a jar, or did a physical count reveal 14 units on the shelf when the computer says 16? Fix it right away:
+
+### On Desktop Web
+1. In **Products**, click **Fix count**.
+2. Select the product.
+3. Choose your action:
+   - **Set Quantity To**: Overwrite the total with your physical recount (e.g., "Shelf count is 14").
+   - **Add (+)**: Add found inventory (e.g., "Found 2 extra behind counter").
+   - **Remove (-)**: Log shrinkage or damaged goods (e.g., "Dropped 1 jar").
+4. Type a short **Reason** so your team knows what happened, and click **Confirm Adjustment**.
+
+### On iPhone (Native iOS App)
+1. Tap the product in **Inventory**, select **Adjust Count**, enter the new count and reason, and tap **Confirm**.
+
+### On Android & Mobile Web
+1. In **Stock**, tap the item, tap **Adjust**, enter the recount, and tap **Save**.
 
 ## Related articles
 
 - [Troubleshoot stock and audit](../troubleshooting/troubleshoot-inventory-and-audit.md)
+- [New sale checkout](quick-sale-checkout.md)

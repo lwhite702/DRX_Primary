@@ -200,12 +200,11 @@ struct ReportsView: View {
 
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
-            Label("Couldn't load reports", systemImage: "exclamationmark.triangle.fill")
-                .foregroundStyle(DRXPalette.danger)
+            Label("Couldn’t load reports", systemImage: "exclamationmark.triangle.fill")
         } description: {
-            Text(message).foregroundStyle(DRXPalette.muted)
+            Text(message)
         } actions: {
-            Button("Try again") { Task { await load() } }
+            Button(DRXContent.Actions.tryAgain) { Task { await load() } }
                 .buttonStyle(.drxPrimary)
         }
         .padding(.top, 60)
