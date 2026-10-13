@@ -361,7 +361,7 @@ struct POSView: View {
 
     @ToolbarContentBuilder
     private var cartButton: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 store.showCheckout = true
             } label: {
@@ -376,6 +376,7 @@ struct POSView: View {
                     }
             }
             .disabled(store.cartIsEmpty)
+            .accessibilityIdentifier("posCartToolbarButton")
         }
     }
 }

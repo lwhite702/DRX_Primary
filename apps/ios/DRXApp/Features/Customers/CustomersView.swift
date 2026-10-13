@@ -51,10 +51,14 @@ struct CustomersView: View {
         }
         .searchable(text: $searchText, prompt: "Search by name, phone, email…")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddCustomer = true } label: {
                     Image(systemName: "person.badge.plus")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(DRXPalette.ink)
                 }
+                .accessibilityLabel(DRXContent.Actions.addCustomer)
+                .accessibilityIdentifier("addCustomerToolbarButton")
             }
         }
         .sheet(isPresented: $showAddCustomer) {
