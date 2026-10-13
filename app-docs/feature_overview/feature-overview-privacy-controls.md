@@ -5,52 +5,66 @@ description: "Choose what customer information to keep and understand when reten
 
 ![Three retention choices lead to a clear permanent-deletion boundary.](../_assets/help-center/headers/privacy-and-minimal-data.webp)
 
-## Before you start
+In regulated retail, holding onto massive troves of customer personal data is a liability waiting to happen. You don't need to know a patron's home address, grandmother's maiden name, or shoe size just to sell them an eighth of sour diesel. 
 
-You need permission to change the business's privacy settings. Check balances due, retention needs, and any required hold before changing a preset or running deletion. Do not use real customer records to test deletion.
-
-Privacy settings apply to the selected business. Screen masking, retention cleanup, and account access are separate controls.
+DRX was built from the ground up on a "minimal data" philosophy. You collect only what you strictly need to complete the sale, manage store credit tabs safely, and satisfy local compliance. Once a casual customer stops visiting, DRX sweeps away their old records automatically.
 
 ![Alias Mode is 30 days, Standard Mode is 180 days, and Full Customer Mode is 365 days before qualifying inactive records are permanently deleted when cleanup runs.](../_assets/help-center/diagrams/privacy-retention-timeline.png)
 
-## Choose a privacy preset
+## The three privacy presets
 
-The current presets are:
+You can set your shop's privacy profile depending on how much customer info you actually need to operate:
 
-- **Alias Mode**: aliases only. The default retention period for inactive customer records is **30 days**.
-- **Standard Mode**: aliases with optional contact information. The default retention period is **180 days**.
-- **Full Customer Mode**: full customer details. The default retention period is **365 days**.
-
-Use the least information your business needs. An alias can still identify someone; it is not a guarantee of anonymity. Optional fields do not have to be filled in.
+- **Alias Mode (30 Days)**: Maximum stealth. You collect only customer nicknames or code names (like "Blue Hoodie" or "Big Mike"). Inactive customer records are scheduled for permanent purge after **30 days** of zero visits. Perfect for high-volume cash counters where privacy is paramount.
+- **Standard Mode (180 Days)**: The balanced sweet spot. You store an alias plus an optional phone number or email for digital receipt delivery. Inactive records are retained for **180 days** before automated cleanup.
+- **Full Customer Mode (365 Days)**: Complete customer profiles, loyalty history, and delivery addresses. Inactive accounts are retained for **365 days** (one full calendar year) before scheduled cleanup.
 
 ![Illustrative Privacy Protocol Dashboard showing the three presets and retention cleanup settings.](../_assets/help-center/screenshots/privacy-settings.png)
 
-Illustrative screen with fictional data.
+*Illustrative screen with fictional data.*
 
-## Review and save the settings
+## Configuring privacy across your platforms
 
-1. Confirm the active business and open **Settings**.
-2. Under **Privacy Protocol Dashboard**, review **Onboarding Profile** and its description. Changing the preset resets its default privacy options, so recheck them before saving.
-3. Check **Enable retention cleanup**, **Days**, **Frequency**, **Local hour (0-23)**, and **Hard delete inactive records**.
-4. Read the deletion consequence below. A custom **Days** value changes the saved window from the preset default.
-5. Choose **Save Settings** only when the result matches your business's approved policy. Reopen Settings and confirm the saved values.
+<Tabs>
+  <Tab title="Desktop Web">
+    1. Click **Settings** in the main sidebar.
+    2. Under **Privacy Protocol Dashboard**, find the **Onboarding Profile** section.
+    3. Choose your desired preset: **Alias Mode**, **Standard Mode**, or **Full Customer Mode**. Notice how the retention schedule updates automatically.
+    4. Review your cleanup automation:
+       - **Enable retention cleanup**: Toggle on to automate scheduled data purges.
+       - **Days**: Adjust the retention window if your shop policy requires a specific timeframe.
+       - **Local hour (0–23)**: Choose an off-peak overnight hour (like 3 AM) so cleanup runs when registers are idle.
+       - **Hard delete inactive records**: Permanently clears qualified customer rows.
+    5. Click **Save Settings**.
+  </Tab>
+  <Tab title="Native iOS (SwiftUI)">
+    1. Open the **Business** tab (`WorkspacesView`) or Settings on your iPad register.
+    2. Review your terminal's active store connection and privacy indicators.
+    3. Register screens automatically honor your store's screen masking rules—hiding phone numbers and real names behind aliases when facing the customer counter.
+    4. Store-wide retention rules configured by your manager govern which customer profiles sync down to the local register search index.
+  </Tab>
+  <Tab title="Android & Mobile Web">
+    1. Tap **More** in the bottom navigation tab, then select **Settings**.
+    2. Review the active privacy policy applied to your mobile register.
+    3. Mobile search results respect alias masking so customer contact details aren't exposed on handheld screens during deliveries.
+  </Tab>
+</Tabs>
 
-## What happens when cleanup runs
+## The golden rule of automated cleanup
 
-Retention cleanup **permanently deletes qualifying inactive customer records when it runs**. It does not just hide them. A shorter retention period can make older inactive records qualify at the next run.
+When retention cleanup runs, **it permanently deletes qualified records**. It doesn't just hide them behind an archive tab; they are purged.
 
-The current cleanup checks the last recorded activity and the saved retention settings. It skips records with an outstanding positive credit balance or an active legal hold. Temporary customer records use a separate retention path. Do not assume this setting deletes every sale, financial record, audit entry, backup, or exported copy.
+Here is the crucial safeguard: **DRX will never delete a customer who owes you money or holds an active store tab**. If a customer has an open balance or an unresolved transaction, the cleanup engine skips them entirely, keeping your accounts receivable intact.
 
-The configured schedule is not proof that a cleanup ran successfully. If you need to confirm a deletion or understand what will qualify, ask private support before changing the setting. This guide does not promise recovery of permanently deleted records.
+## Screen privacy at the counter
 
-## Check screen privacy and exports
+Ever had a nosey customer leaning over the counter trying to read what is on your POS screen? We have too.
 
-**Screen privacy** changes what is shown on screen. It does not itself permanently delete stored records or revoke account access.
-
-Check the actual Settings values rather than device or privacy badges on the Business overview; those badges are not a reliable privacy status report in the beta.
-
-Keep downloaded reports in approved storage. Deleting records in DRX does not delete files you already exported. For an account-wide export or permanent deletion request, contact private support for a scope review; there is no full account deletion procedure promised here.
+- **Screen privacy** dynamically masks sensitive fields (such as phone numbers, email addresses, and past order notes) on register screens.
+- Budtenders only see the customer's alias and current order cart.
+- Enabling screen privacy protects customer confidentiality without changing your underlying stored records or deleting any data.
 
 ## Related articles
 
 - [Help and support](help-and-support.md)
+

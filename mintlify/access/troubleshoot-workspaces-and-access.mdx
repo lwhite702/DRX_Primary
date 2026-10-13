@@ -6,32 +6,57 @@ icon: "key-round"
 
 ![Access recovery checks the invited account, active business, and permission before contacting the owner or private support.](/images/help-center/diagrams/workspace-access-recovery.png)
 
-## You cannot sign in
+Getting locked out of your cash register ten minutes before the Friday evening rush is nobody's idea of a good time. Before you panic, try to guess the owner's master password, or create three duplicate test accounts, walk through these quick sanity checks. 
 
-1. Use the account attached to your access invitation. When the field says **Username or email**, enter the username or email already on that account.
-2. Check spelling and complete the sign-in checks shown. Use the recovery option on that screen if you need to recover the account.
-3. If recovery is unavailable or access is still blocked, contact private support. Never send a password or verification code.
+Nine times out of ten, access hiccups come down to a mistyped email address, an invitation that landed in a spam folder, or standing in the wrong storefront.
 
-Creating another owner account will not repair the original membership.
+## 1. You cannot sign in
 
-## The business you need is missing
+If the sign-in screen throws an error or rejects your credentials:
 
-Confirm that you accepted the correct business invitation. Ask the owner to review your membership in **Settings** through **Manage Team**. Do not select another business as a substitute.
+- **Check the email address**: Make sure you are using the exact email address where your store invitation was sent. If the shop owner invited `alex@greenleaf.com` but you are trying to log in with `alex.personal@gmail.com`, DRX won't recognize your access.
+- **Check for invitation links**: If this is your first shift, did you click the confirmation link in your invite email? You must set your password through that link before logging in directly.
+- **Don't make duplicate accounts**: Creating a brand new personal account will just give you an empty workspace without your store's inventory or cash registers. Ask your shop manager to re-send the invitation link if yours expired.
+- **Password reset**: Use the password recovery link on the sign-in screen. If you still cannot get in, have your store owner reach out to `support@deelrxcrm.com`.
 
-## A page or action is blocked
+## 2. Your store location is missing
 
-1. Stop before submitting the action again.
-2. Confirm the active business and read the access message.
-3. Ask an authorized owner or manager to check the task's required permission in **Manage Team**.
-4. After a confirmed change, reopen the page with your own account. If access is still wrong, report it privately.
+You log in, but your downtown dispensary or annex shop isn't listed under **Select a business**:
 
-A role name alone does not prove access to every action. Owning a business does not grant access to DRX platform administration.
+<Tabs>
+  <Tab title="Desktop Web">
+    1. Look at the top navigation bar. If the store selector shows an unfamiliar shop or says "No Store Selected," click the dropdown.
+    2. Check the list under **My Businesses**. If your location is missing, your email invitation was likely assigned to a different workspace.
+    3. Have your store manager open **Settings** > **Manage Team** and verify that your email address is actively listed under **Team Members** for that specific branch.
+  </Tab>
+  <Tab title="Native iOS (SwiftUI)">
+    1. Tap the **Business** tab in the bottom bar to open `WorkspacesView`.
+    2. Verify the **Business Name** listed in the current session.
+    3. If the terminal is connected to the wrong store branch, tap **Sign Out of Deelrx CRM** and sign in with the designated operator account for that station.
+  </Tab>
+  <Tab title="Android & Mobile Web">
+    1. Tap **More** in the bottom navigation tab.
+    2. Review the **Connected to business** card. 
+    3. If the store name does not match where you are standing, sign out and sign in using the specific branch credentials.
+  </Tab>
+</Tabs>
 
-## The wrong business appears
+## 3. A button, page, or action is blocked
 
-Do not record another sale, payment, or stock change. Leave unsaved work safely, switch to the intended business, and confirm its name before continuing. If a change may already have saved in the wrong business, have an authorized manager review it. Do not recreate it elsewhere as a correction.
+You try to receive a pallet of gummies or approve a discount, but the button is grayed out or a banner pops up saying you lack permission:
 
-Business device, location, and privacy badges are not reliable account-security evidence in the beta. Use Settings and verified membership records for those checks.
+- **Cashier vs. Manager permissions**: By default, Cashiers cannot adjust wholesale purchase costs, override stock discrepancies, or edit customer credit limits. Those guardrails exist to protect the store ledger.
+- **Ask for a supervisor override or role update**: If your shift duties changed, ask a store manager to update your role in **Settings** > **Manage Team**.
+- **Refresh your session**: Once the manager updates your role from Cashier to Supervisor or Manager, refresh your browser tab or close and reopen the mobile app to pick up your new permissions.
+
+## 4. You realize you are ringing up sales in the wrong store
+
+You look up and notice you just rung up a sale in "North Branch" while standing behind the counter at "South Branch":
+
+1. **Stop immediately**: Do not keep scanning items or closing out carts.
+2. **Void or reverse the mistaken order**: Open **Sales History** in the wrong store, locate the transaction you just completed, and process a void or refund so the wrong store's inventory ledger isn't distorted.
+3. **Switch to your correct store**: Use the store switcher in the header (Web), `WorkspacesView` (iOS), or **More** (Mobile) to enter your actual location.
+4. **Ring up the sale under the right roof**: Re-scan the items and take tender under the correct business so your inventory counts and cash drawer end the night in balance.
 
 ## Related articles
 

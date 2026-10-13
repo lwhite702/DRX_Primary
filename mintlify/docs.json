@@ -189,7 +189,8 @@
       {
         "group": "Privacy",
         "pages": [
-          "privacy/privacy-and-minimal-data"
+          "privacy/privacy-and-minimal-data",
+          "privacy/data-requests-and-legal-holds"
         ]
       },
       {
@@ -199,6 +200,7 @@
           "CHANGELOG",
           "glossary",
           "legal-disclaimer",
+          "legal-faq",
           "roadmap"
         ]
       }

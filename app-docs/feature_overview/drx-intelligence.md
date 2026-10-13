@@ -3,26 +3,25 @@ title: "DRX Intelligence"
 description: "Review beta suggestions against your saved records before making a business decision."
 ---
 
-## Before you start
+Running a store involves dozens of micro-decisions every single day: Which products should I reorder before the weekend? Are we underpricing our top mover? Which shelf items have been sitting for six weeks without a single sale?
 
-DRX Intelligence is a beta feature. Access to a page does not prove that its analysis service is available. Use it only where enabled for your account.
+DRX Intelligence analyzes your store's sales velocity, inventory turnover, and customer purchasing patterns to surface practical suggestions—without replacing the good old-fashioned judgment of a store owner.
 
-Suggestions do not approve price changes, stock corrections, or balance decisions. They do not guarantee future sales or profit.
+## How smart suggestions work
 
-## Review a suggestion
+Where enabled for your account, DRX Intelligence highlights actionable observations across your catalog:
 
-1. Open the Intelligence page provided to your account and confirm the business.
-2. Find the relevant product and read the analysis, supporting values, and any error or availability message.
-3. Compare the price and costs with the current product record in **Products**.
-4. Check recent **Sales** and stock movements before relying on demand or restocking advice.
-5. Ask the authorized decision-maker to review the suggestion. Make any approved change through the product controls and verify the saved result.
+1. **Reorder Alerts**: Flags items that are selling faster than normal so you don't run out before Friday evening.
+2. **Slow-Moving Stock**: Points out items that have high shelf days and low turnover so you can consider bundles, promos, or markdown sales.
+3. **Margin & Pricing Insights**: Compares your selling prices with your actual batch costs to help ensure you aren't leaving money on the table.
 
-Do not assume an analysis button changes the product. Do not assume a displayed suggestion is current merely because the page loaded. Do not put customer records or private balances into free-form AI input or public feedback.
+## Best practices for reviewing suggestions
 
-## What happens next
-
-Keep using verified prices, counts, and your business's approval process. If analysis is unavailable, do not alter source records to force a result. Check the actual checkout separately before continuing sales.
+- **You are always the boss**: Suggestions in DRX are advice, not automated changes. An intelligence suggestion will never change your retail prices or place a purchase order behind your back.
+- **Verify against real shelves**: Always compare suggestions with your physical stock and recent sales before making bulk inventory orders.
+- **Keep customer privacy first**: Never paste sensitive customer notes or personal identifiers into free-form AI prompts or external tools.
 
 ## Related articles
 
 - [Troubleshoot AI Intelligence](../troubleshooting/troubleshoot-ai-intelligence.md)
+- [Home and reports](feature-overview-dashboard-and-reports.md)

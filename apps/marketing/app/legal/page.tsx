@@ -5,6 +5,7 @@ import { PageFrame } from "@/components/marketing/site/page-frame";
 import { SectionBlock } from "@/components/marketing/site/section-block";
 import { CtaRow } from "@/components/marketing/site/cta-row";
 import { LegalPageView } from "@/components/marketing/site/legal-page-view";
+import { FaqAccordion } from "@/components/marketing/rebuild/faq-accordion";
 
 export const metadata: Metadata = {
   title: "Legal Hub | Deelrx CRM",
@@ -94,6 +95,55 @@ export default function LegalHubPage() {
         </div>
       </SectionBlock>
 
+      <SectionBlock title="Frequently Asked Legal & Compliance Questions" className="mt-8">
+        <p className="mb-6 text-sm text-text-secondary leading-relaxed">
+          Common questions regarding commercial retail boundaries, data retention, customer privacy rights, and regulatory compliance. For detailed operational workflows, consult the{" "}
+          <a
+            href="https://docs.deelrxcrm.com/legal-faq"
+            className="text-neon-lime hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            DRX Help Center Legal FAQ
+          </a>
+          .
+        </p>
+        <FaqAccordion
+          items={[
+            {
+              question: "Does DRX calculate and file sales taxes for retail merchants?",
+              answer:
+                "No. DRX records operator-entered tax rates on receipts and daily summaries. Merchants are responsible for calculating, reporting, and remitting all applicable municipal, state, and federal taxes.",
+            },
+            {
+              question: "Is DRX certified for medical dispensaries or prescription pharmacy workflows?",
+              answer:
+                "No. DRX is designed for lawful general regulated retail. It is not healthcare or pharmacy dispensing software and does not support HIPAA-covered clinical records.",
+            },
+            {
+              question: "Does DRX or Wrelik Brands LLC sell customer mobile numbers or store records?",
+              answer:
+                "Never. We maintain a strict zero-sale policy. Customer phone numbers and transaction records are never sold, rented, or shared with third parties or data brokers. SMS messaging is used solely for store operational notices with affirmative consent.",
+            },
+            {
+              question: "How do retail customers request data access or profile deletion?",
+              answer:
+                "Customers can submit a verified request directly to their store or through support@deelrxcrm.com. Personal identifiers are permanently deleted from active systems, while anonymous sales ledger totals are preserved to satisfy statutory tax accounting requirements.",
+            },
+            {
+              question: "How does DRX respond to law enforcement requests or subpoenas?",
+              answer:
+                "Wrelik Brands LLC complies with valid, lawful legal process only after thorough review by designated legal counsel. We do not volunteer store records, and all customer data is protected by multi-tenant isolation and AES-256 encryption.",
+            },
+            {
+              question: "How does automated retention cleanup affect store records?",
+              answer:
+                "Store operators can configure retention cleanup to automatically delete inactive customer records after 30, 180, or 365 days. Cleanup automatically skips customer profiles with active store credit balances or unresolved operational disputes.",
+            },
+          ]}
+        />
+      </SectionBlock>
+
       <SectionBlock title="Data Protection & Operator Governance" className="mt-8">
         <p className="text-sm text-text-secondary leading-relaxed">
           DRX is built on a privacy-first, minimal-data architectural foundation with TLS 1.3 encryption in transit, AES-256 encryption at rest, field-level encryption for sensitive identifiers, and automated data retention cleanup. Store operators retain full control over customer data retention parameters and daily reconciliation exports.
@@ -102,6 +152,14 @@ export default function LegalHubPage() {
           <Link className="text-neon-lime hover:underline" href="/legal/privacy#privacy-rights">
             Exercise Privacy Rights
           </Link>
+          <a
+            className="text-neon-lime hover:underline"
+            href="https://docs.deelrxcrm.com/privacy/data-requests-and-legal-holds"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Operator Data Requests Runbook
+          </a>
           <a className="text-neon-lime hover:underline" href="mailto:legal@wrelik.com">
             Contact Wrelik Legal
           </a>

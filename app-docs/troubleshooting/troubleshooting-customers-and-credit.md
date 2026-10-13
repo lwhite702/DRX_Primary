@@ -5,40 +5,41 @@ description: "Check missing profiles or uncertain payments without duplicating r
 
 ![Illustrative customer and Record Payment forms using a fictional alias and balance.](../_assets/help-center/screenshots/customers-credit.png)
 
-Illustrative screen with fictional data.
+A regular steps up to the counter and says, "Put it on my tab!", but the register says they have $0 credit. Or someone hands you a twenty toward their balance, but their profile still shows the old total.
 
-## A customer will not save or appear
+Here is how to untangle customer accounts and balance issues without pulling your hair out.
 
-1. Confirm the active business and search the agreed alias or another permitted identifier.
-2. Check spelling and search for an existing profile before creating another.
-3. Read the validation message. Enter only information allowed by the business's privacy settings.
-4. If saving appeared to fail, check the customer list before retrying.
+## 1. Why is the "Credit" button blocked at checkout?
 
-Checkout **Quick Create** requires a phone number in the current web beta. If the business uses alias-only records, do not collect a number or invent one to work around this. Ask the owner to review the profile through **Customers**.
+If you try to select **CREDIT** at checkout and the register won't let you:
 
-A missing profile may require a retention review. Do not assume it can be restored after permanent deletion.
+1. **Did you attach the customer profile?**
+   - You cannot charge store credit to an anonymous customer. You must look up their profile first and ensure their name appears under **Attached Customer**.
+2. **Did they hit their credit limit?**
+   - Every store credit customer has an approved credit limit (for example, \$100.00). If their current unpaid tab is already \$85.00 and their new cart is \$25.00, the purchase exceeds their limit (\$110.00 > \$100.00).
+   - Have an authorized manager either collect partial cash at the counter or raise their credit limit in **Customers** before ringing up the sale.
+3. **Does their profile have credit enabled?**
+   - If a customer's credit limit is set to \$0.00, credit is disabled for their account.
 
-## Customer history is missing
+## 2. A customer made a payment, but their balance didn't change
 
-Open the saved sale in **Sales** and check its customer. A sale without that customer attached may not appear in their history. The recent orders list is limited to 50 entries.
+If you recorded a tab payment and the customer's balance due looks identical:
 
-An authorized user can review **Assign Customer** or **Change Customer** in **Sale Details**. Credit-sale reassignment needs manager or owner review. Do not recreate a completed sale to attach a profile or move balances between duplicate profiles yourself.
-
-## Credit is unavailable
-
-Confirm the attached customer, business, and permission. Read the available credit amount and the current total. If **CREDIT** is missing or blocked, ask an authorized manager to check eligibility and limits. Do not split a transaction or change the limit to bypass the restriction.
+1. **Check the payment log**:
+   - In **Credit** (or **Payments**), look at the recent payments table. Confirm that the payment was saved and check the timestamp.
+2. **Did you record a payment or ring up a new sale?**
+   - We see this all the time: a cashier accidentally rings up an item called "Tab Payment" in New Sale instead of using **Record Payment** in the Credit menu!
+   - Ringing up a sale *adds* to your store sales; it does not reduce an open customer tab. If this happened, have a manager void the accidental sale and record the payment properly under **Record Payment**.
 
 ![For an uncertain checkout or payment, check Sales and Payments before retrying.](../_assets/help-center/diagrams/uncertain-checkout-payment.png)
 
-## A payment or balance looks wrong
+## 3. A customer alias doesn't appear in search
 
-1. Check whether the payment was received outside DRX.
-2. Check the saved payment and customer before recording it again.
-3. Compare credit sales, repayments, and approved corrections. Available credit and the amount owed are different figures.
-4. Have an authorized manager reconcile the difference. Stop if the first submission's result is uncertain.
-
-Do not create a new sale to record repayment. Do not change a balance just to dismiss an overdue warning.
+If you type a regular's nickname and no results come up:
+- Check for slight spelling variations (e.g., "Mike" vs. "Michael" or "Dave B." vs. "Davey").
+- If your store uses **Alias Mode** with automated retention cleanup set to 30 days, inactive customer profiles with zero balance due and no purchases in the last 30 days may have been cleanly purged by retention cleanup. Simply create a fresh profile for them!
 
 ## Related articles
 
+- [Customers and Payments](../feature_overview/feature-overview-manage-customers-and-credit.md)
 - [Help and support](../feature_overview/help-and-support.md)

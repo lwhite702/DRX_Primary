@@ -6,31 +6,42 @@ icon: "clipboard-check"
 
 ![Stock troubleshooting checks the business, item, saved movement, and current count before another change.](/images/help-center/diagrams/inventory-save-and-count.png)
 
-## Intake will not save
+You just opened the stockroom to grab a top-selling SKU, but the register claims you're sold out—or conversely, you thought you had ten units on the shelf and the bin is completely empty.
 
-1. Confirm the business and permission to manage **Products**.
-2. Select **Product**, enter a positive **Total Cost**, and check the received quantity and displayed unit.
-3. Read the validation message. Correct the named field before **Review & Process Intake** and **Confirm Intake**.
-4. If you already submitted, check the saved result before trying again.
+Before you accuse anyone of running off with inventory, here is how to track down count discrepancies and fix your stock logs cleanly.
 
-Do not invent a cost or switch units just to pass validation. The current intake requires a positive cost; ask the owner how to handle goods that do not fit that rule.
+## 1. Why didn't my stock intake update the count?
 
-## A saved change did not affect the count
+If you entered a batch of incoming products and the on-hand count didn't increase:
 
-Check whether the intake result requires approval. Ask an authorized approver to review it. A request awaiting approval is not proof that stock has increased.
+1. **Check for Manager Approval**:
+   - In some stores, inventory intake over a certain dollar amount or quantity requires manager sign-off before the stock goes live on registers.
+   - If your intake is marked "Pending Approval", an authorized manager just needs to open the intake queue and approve it.
+2. **Did the intake save with an error?**
+   - DRX requires a valid, positive cost for inventory intake so your accounting and Cost of Goods Sold (COGS) numbers don't get thrown out of whack. If the cost field was left blank or zero, the intake won't process.
+3. **Check the Stock History**:
+   - In **Products**, click **Stock history**. Look at the most recent entries: if the intake saved, you'll see the exact timestamp, quantity added, and batch cost logged right there.
 
-For an adjustment, open **Stock history** from **Products** and compare the product, action, quantity, reason, and time with the current count. Check recent sales and other changes too. Do not repeat **Add (+)** or **Remove (-)** because a page looks unchanged.
+## 2. Solving count mysteries (Register vs. Shelf)
 
-## An adjustment is rejected
+If your physical shelf count doesn't match the register screen:
 
-On **Adjust stock**, check **Select Product**, **Action**, **Quantity**, and **Reason**. **Set Quantity To** expects the final count; **Add (+)** and **Remove (-)** expect the amount of change. Use the product's displayed unit and resolve the actual error shown.
+1. **Pull the recent Sales History**:
+   - Check if another cashier rang up the item on another register or mobile device five minutes ago.
+2. **Review Recent Adjustments**:
+   - In **Stock history**, check if a teammate logged shrinkage, breakage, or a spot recount earlier in the day.
+3. **Make a Clean Adjustment**:
+   - Don't try to "fix" a bad count by ringing up a fake \$0 sale or creating duplicate intake records.
+   - Use **Fix count > Set Quantity To**, type your actual physical count, write a clear reason (e.g. *"Midday physical shelf audit"*), and save. DRX logs the delta automatically.
 
-## Products could not refresh
+## 3. The product screen fails to refresh
 
-The page may show previously loaded items after a refresh fails. Check its error message and connection, then use **Refresh** once. Do not treat an old count as a verified current count.
-
-If movement history is unavailable or the result remains uncertain, stop making corrections and ask private support to investigate. Do not change a threshold, supplier label, or count to hide the difference.
+If you made a count adjustment on your phone or laptop and the screen looks unchanged:
+- Give the page a quick refresh. On iPhone, pull down on the list to refresh.
+- Check your connection: if your device temporarily dropped Wi-Fi, the screen will update the moment it reconnects.
+- Never spam the **Add (+)** or **Remove (-)** buttons repeatedly—otherwise you'll end up adding 10 units three times in a row!
 
 ## Related articles
 
+- [Add stock and fix a count](/inventory/inventory-intake-and-adjustments)
 - [Help and support](/start/help-and-support)

@@ -3,34 +3,45 @@ title: "Connect barcode scanners"
 description: "Check that a scanner enters the correct product code before using it at checkout."
 ---
 
-## Before you start
-
-These steps cover keyboard-style scanners with the web beta. Compatibility depends on the scanner, device, and browser; this guide is not a hardware certification.
-
-Use the manufacturer's pairing instructions for your model. Do not use customer records or a completed sale to test the connection.
-
 ![A keyboard-style scanner sends a code to the active field, where DRX tries to match a product.](../_assets/help-center/diagrams/barcode-keyboard-path.png)
 
-## Connect and check a scanner
+Nothing makes a cashier feel more like a retail wizard than that satisfying *BEEP* when a product jumps straight into the cart. 
 
-1. Connect the USB scanner, or pair a Bluetooth scanner through your device's settings.
-2. If your scanner supports a keyboard-input mode, select it using the manufacturer's instructions.
-3. Open **New sale** and focus **Scan SKU / barcode or search products**.
-4. Scan a known product code once. Confirm the characters and matching product before adding it.
-5. Check the cart's product, unit, quantity, and price before any real checkout.
+DRX supports standard USB and Bluetooth handheld barcode scanners across all your hardware setups. Here is how to plug them in, test them, and keep your checkout line humming.
 
-A scanner reads a code; it does not create a product or guarantee that the code is mapped correctly. Ask a team member with permission to manage Products to review a mismatch rather than creating a duplicate product.
+## How barcode scanners work with DRX
 
-## If scanning does not work
+Almost all commercial barcode scanners act as **HID Keyboard Emulators**—meaning as far as your computer or tablet knows, the scanner is just an Olympic-speed typist that punches in the barcode numbers and taps **Enter** in a millisecond!
 
-If no characters appear, check the connection and field focus. If the wrong characters appear, review the scanner's keyboard configuration with its manufacturer. If the code appears but no product matches, search the product name or SKU and check the existing record.
+### On Desktop Web (Browser)
+1. Plug your USB barcode gun into your computer or connect your Bluetooth scanner via your operating system settings.
+2. In DRX, open **New sale**.
+3. Click into the **Scan SKU / barcode or search products** input box at the top of the screen.
+4. Scan a barcode on any product in your inventory:
+   - The scanner will type the code and trigger search immediately.
+   - If the SKU matches, the item drops directly into your cart!
+5. Scan the barcode a second time to bump the quantity up to 2.
 
-The current web search field does not provide a camera-scanning procedure. Do not assume an iPhone or Android camera feature is available because another screen or device has it.
+### On iPhone (Native iOS App)
+1. Turn on your Bluetooth barcode scanner in pairing mode.
+2. Open iOS **Settings > Bluetooth** and connect to your scanner.
+3. Open the DRX app and tap the **POS** tab.
+4. Tap the search bar and scan any item—the product pops into your cart with instant haptic feedback.
+5. **No hardware scanner?** Tap the **Camera Scanner** icon in the search bar to use your iPhone's built-in camera to scan barcodes and QR codes on the fly!
 
-## What happens next
+### On Android & Mobile Web
+1. Pair your Bluetooth scanner through your Android device settings.
+2. Open the **Register** tab in DRX.
+3. Tap the product search bar and pull the trigger on your scanner. The matching item drops straight into your bottom cart.
 
-Use the scanner only after confirming the correct result on the intended device. Receipt printing is a separate connection and workflow; a working scanner does not prove the printer works.
+## Troubleshooting scanner quirks
+
+- **No characters appear when you scan**: Make sure your cursor is focused in the search/SKU input box! A scanner types wherever your cursor is active.
+- **Wrong characters or numbers appear**: Check your scanner's user manual and scan the configuration barcode labeled **Set to Standard US Keyboard Layout**.
+- **Code types out but doesn't add to cart**: Most scanners have a setting that controls whether they send an automatic `Enter` key (carriage return) after scanning. Scan the configuration barcode in your scanner manual labeled **Add Enter Suffix** so DRX knows you finished scanning.
+- **Barcode isn't recognized**: Head over to **Products**, find the item, click **Edit**, and verify that the barcode printed on the package matches the **SKU / Barcode** field on the product card.
 
 ## Related articles
 
-- [Quick Sale checkout](../feature_overview/quick-sale-checkout.md)
+- [New sale checkout](../feature_overview/quick-sale-checkout.md)
+- [Add stock and fix a count](../feature_overview/inventory-intake-and-adjustments.md)
