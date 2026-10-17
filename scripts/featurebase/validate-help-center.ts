@@ -21,7 +21,7 @@ async function main() {
   const linkResults = [];
   for (const url of links) {
     if (url.startsWith(".") || url.endsWith(".md") || url.includes(".md#")) {
-      continue;
+      throw new Error(`Unresolved relative link in Help Center: ${url}`);
     }
     if (url.startsWith("mailto:")) {
       if (url !== "mailto:support@deelrxcrm.com")

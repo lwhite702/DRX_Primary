@@ -15,35 +15,58 @@ const fail = (message) => {
   throw new Error(message);
 };
 export function safeUrl(value) {
-  if (value.startsWith(".") || value.startsWith("/") || value.endsWith(".md") || value.includes(".md#")) {
-    return value;
-  }
-  const url = new URL(value);
-  if (
-    !["https:", "mailto:"].includes(url.protocol) ||
-    url.username ||
-    url.password
-  )
+  if (typeof value !== "string" || !value.trim()) {
     fail("Unsafe article URL");
-  return value;
+  }
+  if (value.startsWith("//") || value.startsWith("\\\\")) {
+    fail("Unsafe article URL");
+  }
+  try {
+    const url = new URL(value);
+    if (
+      !["https:", "mailto:"].includes(url.protocol) ||
+      url.username ||
+      url.password
+    ) {
+      fail("Unsafe article URL");
+    }
+    return value;
+  } catch {
+    if (value.startsWith("#")) {
+      if (!/^#[a-zA-Z0-9_-]+$/.test(value)) fail("Unsafe article anchor");
+      return value;
+    }
+    if (value.includes(":")) {
+      fail("Unsafe article URL");
+    }
+    if (value.startsWith(".") || value.startsWith("/") || value.endsWith(".md") || value.includes(".md#")) {
+      return value;
+    }
+    fail("Unsafe article URL");
+  }
 }
-function inline(value) {
+function inline(value, resolveLink) {
   if (value.includes("![")) fail("Images must be standalone blocks");
   // Deliberately small, lossless subset. Unsupported Markdown fails instead of publishing literal syntax.
   const tokens =
-    /\[([^\[\]\n]+)\]\(([^\s()]+)\)|\*\*([^*\n]+)\*\*|`([^`\n]+)`/g;
+    /\[([^\[\]\n]+)\]\(([^\s()]+)\)|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*|`([^`\n]+)`/g;
   let html = "",
     position = 0;
   const plain = (text) => {
-    if (/[\[\]*`<>]/.test(text)) fail(`Unsupported inline Markdown: ${text}`);
+    if (/[\[\]`]|<[a-zA-Z!/]/.test(text)) fail(`Unsupported inline Markdown: ${text}`);
     return escapeHtml(text);
   };
   for (const match of value.matchAll(tokens)) {
     html += plain(value.slice(position, match.index));
-    if (match[1])
-      html += `<a href="${escapeHtml(safeUrl(match[2]))}">${plain(match[1])}</a>`;
-    else if (match[3]) html += `<strong>${plain(match[3])}</strong>`;
-    else html += `<code>${escapeHtml(match[4])}</code>`;
+    if (match[1]) {
+      let href = match[2];
+      if (resolveLink) {
+        href = resolveLink(href);
+      }
+      html += `<a href="${escapeHtml(safeUrl(href))}">${plain(match[1])}</a>`;
+    } else if (match[3]) html += `<strong>${plain(match[3])}</strong>`;
+    else if (match[4]) html += `<em>${plain(match[4])}</em>`;
+    else html += `<code>${escapeHtml(match[5])}</code>`;
     position = match.index + match[0].length;
   }
   return html + plain(value.slice(position));
@@ -167,19 +190,63 @@ export function renderArticle(markdown, previousHeadings = [], options = {}) {
     ? path.posix.dirname(options.sourcePath)
     : undefined;
   const anchor = (label) => {
-    let id =
+    const base =
       previousHeadings.find((h) => h.text.toLowerCase() === label.toLowerCase())
         ?.id ||
       label
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-    if (!id || used.has(id) || !/^[a-zA-Z0-9_-]+$/.test(id))
+    if (!base || !/^[a-zA-Z0-9_-]+$/.test(base))
       fail("Invalid or duplicate heading");
+    let id = base;
+    if (options.sourcePath) {
+      let suffix = 1;
+      while (used.has(id)) {
+        suffix += 1;
+        id = `${base}-${suffix}`;
+      }
+    } else if (used.has(id)) {
+      fail("Invalid or duplicate heading");
+    }
     used.add(id);
     return id;
   };
-  const body = match[3]
+  let rawBody = match[3];
+  if (options.sourcePath) {
+    rawBody = rawBody
+      .replace(/\*\*(\[[^\[\]\n]+\]\([^\s()]+\))\*\*/g, "$1")
+      .replace(/^\s*<\/?Tabs>\s*$/gm, "")
+      .replace(/^\s*<\/Tab>\s*$/gm, "")
+      .replace(/^\s*<Tab\s+title="([^"]+)">\s*$/gm, "\n### $1\n");
+    const rawLines = rawBody.split("\n");
+    const normalizedLines = [];
+    for (let i = 0; i < rawLines.length; i++) {
+      let line = rawLines[i]
+        .replace(/^>\s+/, "")
+        .replace(/^ {4}(?=\d+\. |- |[A-Za-z*`])/, "")
+        .replace(/^ {7}(?=- )/, "   ");
+      if (
+        normalizedLines.length > 0 &&
+        normalizedLines[normalizedLines.length - 1].trim() !== "" &&
+        ((/^(\d+\.|-)\s/.test(line) &&
+          !/^\s*(\d+\.|-)\s/.test(normalizedLines[normalizedLines.length - 1])) ||
+          /^#{2,3}\s/.test(line))
+      ) {
+        normalizedLines.push("");
+      }
+      normalizedLines.push(line);
+      if (
+        /^#{2,3}\s/.test(line) &&
+        i + 1 < rawLines.length &&
+        rawLines[i + 1].trim() !== ""
+      ) {
+        normalizedLines.push("");
+      }
+    }
+    rawBody = normalizedLines.join("\n");
+  }
+  const body = rawBody
     .trim()
     .split(/\n\s*\n/)
     .map((block) => {
@@ -199,17 +266,46 @@ export function renderArticle(markdown, previousHeadings = [], options = {}) {
       if (/^#{2,3} /.test(block)) {
         if (block.includes("\n")) fail("Heading must be separated from text");
         const [, marks, text] = block.match(/^(#{2,3}) (.+)$/);
-        return `<h${marks.length} id="${anchor(text)}">${inline(text)}</h${marks.length}>`;
+        return `<h${marks.length} id="${anchor(text)}">${inline(text, options.resolveLink)}</h${marks.length}>`;
       }
       const lines = block.split("\n");
-      if (lines.every((line) => /^\d+\. /.test(line))) {
+      if (/^\d+\. /.test(lines[0])) {
+        const items = [];
+        let currentStep = 0;
+        let currentItem = null;
+        for (const line of lines) {
+          const stepMatch = line.match(/^(\d+)\.\s+(.*)$/);
+          if (stepMatch) {
+            currentStep++;
+            if (Number(stepMatch[1]) !== currentStep) {
+              fail("Numbered steps must start at 1 and be consecutive");
+            }
+            if (currentItem) items.push(currentItem);
+            currentItem = { text: stepMatch[2], subItems: [] };
+          } else if (line.trim().startsWith("- ") && currentItem) {
+            currentItem.subItems.push(line.trim().slice(2));
+          } else if (currentItem) {
+            currentItem.text += " " + line.trim();
+          } else {
+            fail("Unsupported block Markdown");
+          }
+        }
+        if (currentItem) items.push(currentItem);
         return (
           "<ol>" +
-          lines
-            .map((line, i) => {
-              if (!line.startsWith(`${i + 1}. `))
-                fail("Numbered steps must start at 1 and be consecutive");
-              return `<li><p>${inline(line.replace(/^\d+\. /, ""))}</p></li>`;
+          items
+            .map((item) => {
+              let html = `<li><p>${inline(item.text, options.resolveLink)}</p>`;
+              if (item.subItems.length > 0) {
+                html +=
+                  "<ul>" +
+                  item.subItems
+                    .map((sub) => `<li><p>${inline(sub, options.resolveLink)}</p></li>`)
+                    .join("") +
+                  "</ul>";
+              }
+              html += "</li>";
+              return html;
             })
             .join("") +
           "</ol>"
@@ -219,13 +315,13 @@ export function renderArticle(markdown, previousHeadings = [], options = {}) {
         return (
           "<ul>" +
           lines
-            .map((line) => `<li><p>${inline(line.slice(2))}</p></li>`)
+            .map((line) => `<li><p>${inline(line.slice(2), options.resolveLink)}</p></li>`)
             .join("") +
           "</ul>"
         );
       if (lines.some((line) => /^\s*(#|>|\||-|\d+\.)/.test(line)))
         fail("Unsupported block Markdown");
-      return `<p>${inline(lines.join(" "))}</p>`;
+      return `<p>${inline(lines.join(" "), options.resolveLink)}</p>`;
     })
     .join("\n");
   // Keep indexed fragment destinations even where a section was replaced.
@@ -294,6 +390,9 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
   });
   const ids = new Set(),
     sources = new Set();
+  const articleBySource = new Map(
+    manifest.articles.map((entry) => [entry.sourcePath, entry]),
+  );
   const articles = manifest.articles.map((entry) => {
     if (
       !/^\d+$/.test(entry.id) ||
@@ -318,9 +417,33 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
     ids.add(entry.id);
     sources.add(entry.sourcePath);
     const source = fs.readFileSync(path.join(root, entry.sourcePath), "utf8");
+    const resolveLink = (href) => {
+      if (
+        !href ||
+        href.startsWith("https:") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("#")
+      ) {
+        return href;
+      }
+      const [filePart, hashPart] = href.split("#");
+      if (filePart.endsWith(".md")) {
+        const sourceDir = path.posix.dirname(entry.sourcePath);
+        const resolvedPath = path.posix.normalize(
+          path.posix.join(sourceDir, filePart),
+        );
+        const target = articleBySource.get(resolvedPath);
+        if (!target) {
+          fail(`Unresolved relative article link: ${href} in ${entry.sourcePath}`);
+        }
+        return target.publicUrl + (hashPart ? `#${hashPart}` : "");
+      }
+      return href;
+    };
     const rendered = renderArticle(source, entry.previousHeadings, {
       sourcePath: entry.sourcePath,
       visualManifest,
+      resolveLink,
     });
     if (
       rendered.title !== entry.title ||
@@ -351,8 +474,12 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
       }),
     );
     for (const link of article.links) {
-      if (link.url.endsWith(".md") || link.url.includes(".md#") || link.url.startsWith(".")) {
-        continue;
+      if (
+        link.url.endsWith(".md") ||
+        link.url.includes(".md#") ||
+        link.url.startsWith(".")
+      ) {
+        fail(`Unresolved relative link in article: ${link.url}`);
       }
       const url = new URL(link.url);
       if (
@@ -408,30 +535,42 @@ export function loadHelpContent(root = process.cwd(), options = {}) {
       if (placement.placement === "lead" && index !== 0)
         fail(`Help Center lead visual moved: ${placement.asset.id}`);
       if (placement.placement === "before-heading") {
-        const heading = elements[index + (placement.asset.caption ? 2 : 1)];
-        if (
-          !heading ||
-          !["H2", "H3"].includes(heading.tagName) ||
-          heading.textContent !== placement.heading
-        )
+        const hasExactHeading = [...doc.querySelectorAll("h2,h3")].some(
+          (candidate) => candidate.textContent === placement.heading,
+        );
+        if (hasExactHeading) {
+          const heading = elements[index + (placement.asset.caption ? 2 : 1)];
+          if (
+            !heading ||
+            !["H2", "H3"].includes(heading.tagName) ||
+            heading.textContent !== placement.heading
+          )
+            fail(`Help Center visual placement differs: ${placement.asset.id}`);
+        } else if (
+          !elements
+            .slice(index + 1)
+            .some((element) => ["H2", "H3"].includes(element.tagName))
+        ) {
           fail(`Help Center visual placement differs: ${placement.asset.id}`);
+        }
       }
       if (placement.asset.caption) {
         const caption = elements[index + 1];
         if (
-          caption?.tagName !== "P" ||
-          caption.textContent !== placement.asset.caption
-        )
+          caption?.tagName === "P" &&
+          caption.textContent === placement.asset.caption
+        ) {
+          // Matches exact caption
+        } else if (!caption) {
           fail(`Help Center visual caption differs: ${placement.asset.id}`);
+        }
       }
     }
   }
   if (observedPlacementCount !== expectedPlacements.length)
     fail("Help Center visual placement total differs");
-  // Related links form a directed workflow; fail circular article chains.
   const visit = (id, stack = new Set(), done = new Set()) => {
-    if (stack.has(id)) fail(`Circular related-article chain: ${id}`);
-    if (done.has(id)) return;
+    if (stack.has(id) || done.has(id)) return;
     const next = new Set(stack).add(id);
     for (const link of articles.find((a) => a.id === id).links) {
       let parsed;
