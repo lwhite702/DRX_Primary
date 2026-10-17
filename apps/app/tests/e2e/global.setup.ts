@@ -26,8 +26,3 @@ export default async function globalSetup() {
   const { clerkSetup } = await import("@clerk/testing/playwright");
   await clerkSetup();
 }
-
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = globalSetup;
-  module.exports.default = globalSetup;
-}
