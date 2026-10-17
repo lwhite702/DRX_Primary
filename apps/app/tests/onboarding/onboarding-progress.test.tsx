@@ -81,4 +81,49 @@ describe("onboarding progress", () => {
     await screen.findByText("50% Complete");
     expect(fetchMock).toHaveBeenCalledTimes(6);
   });
+
+  it("shows retry prompt when switching from a completed business to one whose progress fails", async () => {
+    let currentBusinessId = "business-a";
+    const { useBusiness } = await import("@/lib/hooks/use-business");
+    vi.mocked(useBusiness).mockImplementation(() => ({
+      business: { id: currentBusinessId },
+      loading: false,
+    } as any));
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const businessId = (init?.headers as Record<string, string> | undefined)?.["x-business-id"];
+      if (businessId === "business-b" || url.includes("business-b")) {
+        return response({ error: "Failed to load progress" }, 500);
+      }
+      if (url.startsWith("/api/inventory")) return response({ data: [{ id: "p1" }] });
+      if (url.startsWith("/api/customers")) return response({ data: [{ id: "c1" }] });
+      return response({ today: { salesCount: 1 }, week: { salesCount: 1 }, recentSales: [{ id: "s1" }] });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { rerender } = render(
+      <OnboardingProvider>
+        <SetupGuide />
+      </OnboardingProvider>,
+    );
+
+    // Business A is 100% complete, so setup guide renders nothing (completed)
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText(/% Complete/)).not.toBeInTheDocument();
+
+    // Switch to Business B which fails to load progress
+    currentBusinessId = "business-b";
+    rerender(
+      <OnboardingProvider>
+        <SetupGuide />
+      </OnboardingProvider>,
+    );
+
+    // Stale completion state must not suppress the retry prompt
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Setup progress couldn’t be refreshed.",
+    );
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
 });

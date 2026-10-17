@@ -28,7 +28,7 @@ export function SetupGuide() {
     refreshOnboarding,
   } = useOnboarding();
 
-  if (isLoading || isGuideDismissed || isComplete) return null;
+  if (isLoading || isGuideDismissed) return null;
 
   if (error) {
     return (
@@ -48,6 +48,8 @@ export function SetupGuide() {
       </div>
     );
   }
+
+  if (isComplete) return null;
 
   const checklist = [
     {
