@@ -16,7 +16,7 @@ async function ensureHelpAccess(page: import("@playwright/test").Page) {
 
   const redirectedToLogin = /\/login(?:\?|$)/.test(new URL(page.url()).pathname);
   return {
-    hasProtectedAccess: (hasBypassAuth || hasClerkTestingEnv) && !redirectedToLogin,
+    hasProtectedAccess: !redirectedToLogin,
     redirectedToLogin,
   };
 }

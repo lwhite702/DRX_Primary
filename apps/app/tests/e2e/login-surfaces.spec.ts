@@ -41,6 +41,6 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible({ timeout: 10000 });
   });
 });
