@@ -26,7 +26,12 @@ if (betaE2ERequired && !betaE2EEnabled) {
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.spec.ts",
-  testIgnore: betaE2EEnabled ? [] : ["**/beta-real-workflow.spec.ts"],
+  testIgnore: [
+    ...(betaE2EEnabled ? [] : ["**/beta-real-workflow.spec.ts"]),
+    ...(process.env.BASE_URL && !process.env.VISUAL_FIXTURES
+      ? ["**/visual-regression.spec.ts"]
+      : []),
+  ],
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}",
   fullyParallel: true,
