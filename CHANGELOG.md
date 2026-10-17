@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Home setup progress (WRE-168)**: Scope the first-product checklist lookup to the active business and show a retry prompt when setup progress cannot be refreshed.
+
 ## [0.12.0] - 2026-10-10
 
 ### Added

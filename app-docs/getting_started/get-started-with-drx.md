@@ -57,6 +57,8 @@ Once your store is live, here's how your daily workflow looks across your device
 - **iPhone App**: Designed for handheld retail. Tap **POS** at the bottom to ring up customers, tap **Inventory** to check stock, or tap **Customers** to look up store credit and tabs.
 - **Android / Mobile Register**: Built for compact tablet stands and mobile phones. Use the bottom navigation bar to switch between the **Register**, **Stock**, **Customers**, and **More** menus.
 
+The **Getting Started** checklist on Home updates from the selected business’s saved profile, products, customers, and sales. If DRX cannot refresh that progress, choose **Try again**; the checklist stays hidden until its status can be checked.
+
 Head over to **Settings** first to review your store's privacy settings before adding customer details. Then jump into **Products** to put your first items on the shelf!
 
 ## Related articles

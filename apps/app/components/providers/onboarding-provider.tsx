@@ -68,7 +68,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
     try {
       const [inventoryRes, customerRes, baselineRes] = await Promise.all([
-        fetch("/api/inventory?limit=1", { credentials: "same-origin" }),
+        fetch("/api/inventory?limit=1", {
+          credentials: "same-origin",
+          headers: { "x-business-id": business.id },
+        }),
         fetch("/api/customers?limit=1", { credentials: "same-origin" }),
         fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
       ]);
