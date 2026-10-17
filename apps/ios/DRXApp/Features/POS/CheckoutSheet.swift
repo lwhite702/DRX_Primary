@@ -6,6 +6,7 @@ import SwiftUI
 struct CheckoutSheet: View {
     @Bindable var store: POSStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppEnvironment.self) private var environment
 
     @State private var paymentMethod: PaymentMethod = .cash
     @State private var amountTenderedString: String = ""
@@ -13,6 +14,10 @@ struct CheckoutSheet: View {
     @State private var checkoutError: String?
     @State private var completedSale: CheckoutResponse?
     @State private var showCustomerPicker = false
+    @State private var attachCustomerAfterSale = false
+    @State private var saleCustomerSelection: DRXCustomer?
+    @State private var isUpdatingSaleCustomer = false
+    @State private var saleCustomerError: String?
     @State private var orderNumber = OrderNumberUtils.generateSafeOrderNumber()
     @State private var deliveryEnabled = false
     @State private var deliveryAddress = ""
@@ -104,6 +109,35 @@ struct CheckoutSheet: View {
                 checkoutForm
             }
         }
+        .sheet(isPresented: $showCustomerPicker, onDismiss: {
+            attachCustomerAfterSale = false
+        }) {
+            CustomerPickerSheet(
+                customers: store.customers,
+                selected: customerPickerSelection,
+                onSelect: { customer in
+                    guard attachCustomerAfterSale, let sale = completedSale else { return }
+                    Task {
+                        await attachCustomer(customer, to: sale)
+                        showCustomerPicker = false
+                    }
+                },
+                onCreate: { customerId, createdCustomer in
+                    await store.load()
+                    let customer = store.customers.first(where: { $0.id == customerId }) ?? createdCustomer
+                    guard let customer else {
+                        saleCustomerError = "The customer was saved but could not be selected. Reopen the list and try again."
+                        return
+                    }
+                    if attachCustomerAfterSale, let sale = completedSale {
+                        await attachCustomer(customer, to: sale)
+                    } else {
+                        store.selectedCustomer = customer
+                    }
+                    showCustomerPicker = false
+                }
+            )
+        }
     }
 
     // MARK: - Checkout Form
@@ -175,9 +209,6 @@ struct CheckoutSheet: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
             }
-        }
-        .sheet(isPresented: $showCustomerPicker) {
-            CustomerPickerSheet(customers: store.customers, selected: $store.selectedCustomer)
         }
         .task(id: quoteInputKey) { await refreshQuote() }
     }
@@ -282,6 +313,10 @@ struct CheckoutSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .overlay { RoundedRectangle(cornerRadius: 14).stroke(DRXPalette.border, lineWidth: 1) }
         .padding(.horizontal)
+    }
+
+    private var customerPickerSelection: Binding<DRXCustomer?> {
+        attachCustomerAfterSale ? $saleCustomerSelection : $store.selectedCustomer
     }
 
     private var customerSection: some View {
@@ -608,6 +643,33 @@ struct CheckoutSheet: View {
             }
 
             VStack(spacing: 6) {
+                if let customer = store.selectedCustomer {
+                    HStack {
+                        Text("Customer")
+                        Spacer()
+                        Text(customer.displayName).bold()
+                    }
+                } else {
+                    Button {
+                        attachCustomerAfterSale = true
+                        saleCustomerSelection = store.selectedCustomer
+                        saleCustomerError = nil
+                        showCustomerPicker = true
+                    } label: {
+                        Label("Add customer to this sale", systemImage: "person.crop.circle.badge.plus")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 46)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isUpdatingSaleCustomer)
+                }
+                if let saleCustomerError {
+                    Text(saleCustomerError)
+                        .font(.footnote)
+                        .foregroundStyle(DRXPalette.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if isUpdatingSaleCustomer { ProgressView("Adding customer…") }
                 HStack {
                     Text("Total Charged")
                     Spacer()
@@ -750,6 +812,28 @@ struct CheckoutSheet: View {
         }
         isProcessing = false
     }
+
+    @MainActor
+    private func attachCustomer(_ customer: DRXCustomer, to sale: CheckoutResponse) async {
+        guard !isUpdatingSaleCustomer else { return }
+        isUpdatingSaleCustomer = true
+        saleCustomerError = nil
+        struct Args: Encodable, Sendable { let saleId: String; let customerId: String }
+        struct Receipt: Decodable, Sendable { let success: Bool }
+        defer { isUpdatingSaleCustomer = false }
+        do {
+            let receipt: Receipt = try await ConvexClient.shared.mutation(
+                "checkout:updateSale",
+                args: Args(saleId: sale.saleId, customerId: customer.id)
+            )
+            guard receipt.success else { throw ConvexError.invalidResponse }
+            await store.load()
+            store.selectedCustomer = store.customers.first(where: { $0.id == customer.id }) ?? customer
+            saleCustomerSelection = store.selectedCustomer
+        } catch {
+            saleCustomerError = error.localizedDescription
+        }
+    }
 }
 
 private enum CheckoutSubmissionError: LocalizedError {
@@ -768,8 +852,11 @@ private enum CheckoutSubmissionError: LocalizedError {
 struct CustomerPickerSheet: View {
     let customers: [DRXCustomer]
     @Binding var selected: DRXCustomer?
+    let onSelect: (DRXCustomer) -> Void
+    let onCreate: (String, DRXCustomer?) async -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
+    @State private var showCreateCustomer = false
 
     var filtered: [DRXCustomer] {
         guard !searchText.isEmpty else { return customers }
@@ -782,6 +869,14 @@ struct CustomerPickerSheet: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    Button {
+                        showCreateCustomer = true
+                    } label: {
+                        Label("Create new customer", systemImage: "person.crop.circle.badge.plus")
+                    }
+                }
+
                 Button("No Customer") {
                     selected = nil
                     dismiss()
@@ -791,6 +886,7 @@ struct CustomerPickerSheet: View {
                 ForEach(filtered) { customer in
                     Button {
                         selected = customer
+                        onSelect(customer)
                         dismiss()
                     } label: {
                         HStack {
@@ -821,6 +917,91 @@ struct CustomerPickerSheet: View {
                 }
             }
         }
+        .sheet(isPresented: $showCreateCustomer) {
+            QuickCreateCustomerSheet(onCreated: onCreate)
+        }
+    }
+}
+
+private struct QuickCreateCustomerSheet: View {
+    let onCreated: (String, DRXCustomer?) async -> Void
+    @Environment(AppEnvironment.self) private var environment
+    @Environment(\.dismiss) private var dismiss
+    @State private var phone = ""
+    @State private var alias = ""
+    @State private var isSaving = false
+    @State private var saveError: String?
+
+    private var isValid: Bool { !phone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Customer") {
+                    TextField("Phone number", text: $phone)
+                        .keyboardType(.phonePad)
+                    TextField("Alias (optional)", text: $alias)
+                        .textInputAutocapitalization(.words)
+                }
+                Section {
+                    Text("Only the details needed to identify this customer are requested here. Your business privacy settings still apply.")
+                        .font(.footnote)
+                        .foregroundStyle(DRXPalette.muted)
+                }
+                if let saveError {
+                    Section {
+                        Label(saveError, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(DRXPalette.danger)
+                            .font(.footnote)
+                    }
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(DRXPalette.canvas)
+            .navigationTitle("Create Customer")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { Task { await save() } }
+                        .disabled(!isValid || isSaving)
+                        .overlay { if isSaving { ProgressView().scaleEffect(0.7) } }
+                }
+            }
+        }
+    }
+
+    private func save() async {
+        isSaving = true
+        saveError = nil
+        struct Input: Encodable, Sendable { let phone: String; let alias: String }
+        struct Response: Decodable, Sendable {
+            let id: String
+            let customer: DRXCustomer?
+        }
+        do {
+            let body = try JSONEncoder().encode(Input(
+                phone: phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                alias: alias.trimmingCharacters(in: .whitespacesAndNewlines)
+            ))
+            let client = URLSessionAPIClient(
+                baseURL: environment.configuration.apiBaseURL,
+                tokenStore: ClerkTokenStore()
+            )
+            let response: Response = try await client.send(APIRequest(
+                path: "/api/pos/customers/quick-create",
+                method: .post,
+                body: body
+            ))
+            await onCreated(response.id, response.customer)
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
+        isSaving = false
     }
 }
 

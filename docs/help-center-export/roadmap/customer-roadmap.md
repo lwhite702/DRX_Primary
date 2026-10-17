@@ -4,6 +4,8 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Create or attach customers during checkout** (`in progress`)
+  Create an allowed minimal customer profile from the payment step without losing the current sale, or link an active customer to a completed anonymous sale from transaction review.
 - **Accurate first-run setup progress** (`in progress`)
   Home reflects saved products and other completed setup steps for the active business, and offers a retry when progress cannot be refreshed.
 

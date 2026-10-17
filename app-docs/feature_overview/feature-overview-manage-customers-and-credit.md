@@ -40,6 +40,12 @@ When a customer steps up to the register:
 3. Select their profile from the matching list.
 4. Now, if they want to put the purchase on their store tab, choose **CREDIT** at checkout and tap **Complete Sale**. Their balance due increases immediately.
 
+You can also use **Quick Create** on the payment step without leaving the current sale. On iOS, choose **Create new customer** from the customer picker; on Android, choose **Create a customer here**. Quick Create asks for a phone number and optional alias, and applies the same customer permission and privacy rules. If the business policy does not allow collecting a phone number, stop and ask the owner to review the policy. A sale without a customer still creates sales records.
+
+## Add a customer after a sale
+
+If a completed cash or card sale was left anonymous, an authorized operator can link a customer afterward: open **Sale Details** on desktop web, use **Add customer to this sale** on the iOS receipt, or choose **Add customer** in Android **Sales history**. Choose the matching active customer and confirm once. This records customer attribution and updates purchase history; it does not change the sale total, payment, stock, or credit ledger. Credit sales cannot be reassigned this way.
+
 ## 3. Recording a payment when a customer settles their tab
 
 When a customer comes in and says, "Hey, here's fifty bucks towards my tab!":

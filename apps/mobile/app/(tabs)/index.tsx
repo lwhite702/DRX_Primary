@@ -26,6 +26,7 @@ import {
   getCachedCatalog,
   saveCachedCatalog,
 } from "../../src/offline/database";
+import { quickCreateCustomer } from "../../src/services/apiClient";
 import {
   effectiveUnitPriceCents,
   formatQuantity,
@@ -84,18 +85,22 @@ const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 const pricing = (product: Product) => product as PricedProduct;
 const maskCustomerName = (customer: Customer) => {
   const name = `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim();
-  if (!name) return "Customer";
-  return name
-    .split(/\s+/)
-    .map((part) => `${part[0]?.toUpperCase() ?? "C"}***`)
-    .join(" ");
+  if (name) {
+    return name
+      .split(/\s+/)
+      .map((part) => `${part[0]?.toUpperCase() ?? "C"}***`)
+      .join(" ");
+  }
+  if (customer.alias) return customer.alias;
+  if (customer.phoneNumber) return `Customer (…${customer.phoneNumber.slice(-4)})`;
+  return "Customer";
 };
 
 export default function POSScreen() {
   usePreventScreenCapture("drx-pos");
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { businessId, userId } = useAuth();
+  const { businessId, userId, getToken } = useAuth();
   const liveProducts = useProducts();
   const liveCustomers = useCustomers();
   const [cachedProducts, setCachedProducts] = useState<Product[] | null>(null);
@@ -113,6 +118,12 @@ export default function POSScreen() {
   const [tender, setTender] = useState<Tender>("cash");
   const [cashReceived, setCashReceived] = useState("");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [createCustomerOpen, setCreateCustomerOpen] = useState(false);
+  const [newCustomerPhone, setNewCustomerPhone] = useState("");
+  const [newCustomerAlias, setNewCustomerAlias] = useState("");
+  const [customerCreateError, setCustomerCreateError] = useState<string | null>(null);
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const checkoutGeneration = useRef(0);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutOrderNumber, setCheckoutOrderNumber] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -324,8 +335,10 @@ export default function POSScreen() {
         text: "Clear",
         style: "destructive",
         onPress: () => {
+          checkoutGeneration.current += 1;
           setCheckoutOrderNumber(null);
           setCart([]);
+          setCustomer(null);
           setDiscountDollars("");
           void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           triggerFeedback("Cart cleared");
@@ -416,8 +429,59 @@ export default function POSScreen() {
     updateDollarAmount(productId, String(cents / 100));
   };
 
+  const createCustomerForCheckout = async () => {
+    const phone = newCustomerPhone.trim();
+    if (!phone) {
+      setCustomerCreateError("Enter a phone number to create or find a customer.");
+      return;
+    }
+    if (!isOnline) {
+      setCustomerCreateError("Reconnect before creating a customer.");
+      return;
+    }
+    if (creatingCustomer) return;
+    const generation = checkoutGeneration.current;
+    setCreatingCustomer(true);
+    setCustomerCreateError(null);
+    try {
+      const token = await getToken();
+      const created = await quickCreateCustomer(phone, newCustomerAlias.trim(), token);
+      if (generation !== checkoutGeneration.current) return;
+      const targetCustomer = created.customer ?? {
+        _id: created.id,
+        businessId: businessId as Id<"businesses">,
+        alias: created.alias,
+        phoneNumber: created.phone,
+        totalPurchasesCents: 0,
+        loyaltyEligibleSpendCents: 0,
+        totalCreditUsedCents: 0,
+        creditLimitCents: 0,
+        creditEnabled: true,
+        purchaseCount: 0,
+        loyaltyTier: "standard",
+        discountRateBps: 0,
+        isActive: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      setCustomer(targetCustomer as Customer);
+      setNewCustomerPhone("");
+      setNewCustomerAlias("");
+      setCreateCustomerOpen(false);
+      setCustomerCreateError(null);
+    } catch (error: unknown) {
+      if (generation === checkoutGeneration.current) {
+        setCustomerCreateError(error instanceof Error ? error.message : "Customer could not be saved. Try again.");
+      }
+    } finally {
+      if (generation === checkoutGeneration.current) {
+        setCreatingCustomer(false);
+      }
+    }
+  };
+
   const submitSale = async () => {
-    if (!businessId || !userId || cart.length === 0) return;
+    if (!businessId || !userId || cart.length === 0 || creatingCustomer) return;
     if (tender === "credit" && !customer)
       return Alert.alert(
         "Customer required",
@@ -535,6 +599,7 @@ export default function POSScreen() {
           "The receipt will be finalized after Convex reconciliation.",
         );
       }
+      checkoutGeneration.current += 1;
       setCart([]);
       setCustomer(null);
       setDiscountDollars("");
@@ -862,6 +927,65 @@ export default function POSScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+            {createCustomerOpen ? (
+              <View style={styles.customerCreatePanel}>
+                <Text style={styles.modalLabel}>Create customer</Text>
+                <TextInput
+                  value={newCustomerPhone}
+                  onChangeText={setNewCustomerPhone}
+                  placeholder="Phone number"
+                  accessibilityLabel="New customer phone number"
+                  keyboardType="phone-pad"
+                  style={styles.customerCreateInput}
+                />
+                <TextInput
+                  value={newCustomerAlias}
+                  onChangeText={setNewCustomerAlias}
+                  placeholder="Alias (optional)"
+                  accessibilityLabel="New customer alias"
+                  autoCapitalize="words"
+                  style={styles.customerCreateInput}
+                />
+                {customerCreateError ? (
+                  <Text accessibilityRole="alert" style={styles.customerCreateError}>
+                    {customerCreateError}
+                  </Text>
+                ) : null}
+                <View style={styles.customerCreateActions}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: creatingCustomer, busy: creatingCustomer }}
+                    style={[styles.customerCreateSave, (creatingCustomer || !newCustomerPhone.trim()) && styles.disabled]}
+                    onPress={() => void createCustomerForCheckout()}
+                    disabled={creatingCustomer || !newCustomerPhone.trim()}
+                  >
+                    {creatingCustomer ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.customerCreateSaveText}>Save and select</Text>}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    style={styles.customerCreateCancel}
+                    onPress={() => {
+                      setCreateCustomerOpen(false);
+                      setCustomerCreateError(null);
+                    }}
+                    disabled={creatingCustomer}
+                  >
+                    <Text style={styles.customerCreateCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                accessibilityRole="button"
+                style={styles.customerCreateLink}
+                onPress={() => {
+                  setCustomerCreateError(null);
+                  setCreateCustomerOpen(true);
+                }}
+              >
+                <Text style={styles.customerCreateLinkText}>+ Create a customer here</Text>
+              </TouchableOpacity>
+            )}
             <View style={styles.discountSection}>
               <View style={styles.discountHeaderRow}>
                 <Text style={styles.modalLabel}>Discount</Text>
@@ -1039,10 +1163,10 @@ export default function POSScreen() {
             <TouchableOpacity
               style={[
                 styles.checkout,
-                (submitting || !deliveryDetailsValid || (isOnline && !checkoutQuote)) && styles.disabled,
+                (submitting || creatingCustomer || !deliveryDetailsValid || (isOnline && !checkoutQuote)) && styles.disabled,
               ]}
               onPress={submitSale}
-              disabled={submitting || !deliveryDetailsValid || (isOnline && !checkoutQuote)}
+              disabled={submitting || creatingCustomer || !deliveryDetailsValid || (isOnline && !checkoutQuote)}
             >
               {submitting ? (
                 <ActivityIndicator color={COLORS.background} />
@@ -1368,6 +1492,16 @@ const styles = StyleSheet.create({
   allocationActive: { borderColor: COLORS.accent },
   allocationText: { color: COLORS.text, fontSize: 10, fontWeight: "800" },
   deliveryHint: { color: COLORS.textMuted, fontSize: FONT_SIZES.xs, lineHeight: 18 },
+  customerCreateLink: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center", paddingHorizontal: SPACING.sm },
+  customerCreateLinkText: { color: COLORS.accent, fontSize: FONT_SIZES.sm, fontWeight: "800" },
+  customerCreatePanel: { backgroundColor: COLORS.surface, borderColor: COLORS.border, borderWidth: 1, borderRadius: BORDER_RADIUS.md, padding: SPACING.md, marginTop: SPACING.sm },
+  customerCreateInput: { backgroundColor: COLORS.surfaceLight, borderColor: COLORS.border, borderWidth: 1, borderRadius: BORDER_RADIUS.md, color: COLORS.text, minHeight: 48, marginBottom: SPACING.sm, padding: SPACING.md },
+  customerCreateError: { color: COLORS.error, fontSize: FONT_SIZES.xs, lineHeight: 18, marginBottom: SPACING.sm },
+  customerCreateActions: { flexDirection: "row", gap: SPACING.sm },
+  customerCreateSave: { flex: 1, minHeight: 46, alignItems: "center", justifyContent: "center", backgroundColor: COLORS.accent, borderRadius: BORDER_RADIUS.md, paddingHorizontal: SPACING.md },
+  customerCreateSaveText: { color: COLORS.background, fontSize: FONT_SIZES.sm, fontWeight: "900" },
+  customerCreateCancel: { minHeight: 46, alignItems: "center", justifyContent: "center", paddingHorizontal: SPACING.md },
+  customerCreateCancelText: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, fontWeight: "700" },
   chips: { gap: SPACING.sm },
   chip: {
     backgroundColor: COLORS.surfaceLight,

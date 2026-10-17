@@ -209,6 +209,7 @@ struct DRXBulkPriceTier: Decodable, Sendable, Hashable {
 
 struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
     let id: String
+    let alias: String?
     let firstName: String?
     let lastName: String?
     let phoneNumber: String?
@@ -227,6 +228,7 @@ struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
+        case alias
         case firstName, lastName, phoneNumber, email
         case totalPurchasesCents, loyaltyEligibleSpendCents, totalCreditUsedCents, creditLimitCents, creditEnabled
         case purchaseCount, loyaltyTier, discountRateBps
@@ -235,7 +237,9 @@ struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
 
     var displayName: String {
         let full = [firstName, lastName].compactMap { $0 }.joined(separator: " ")
-        return full.isEmpty ? (phoneNumber ?? "Guest") : full
+        if !full.isEmpty { return full }
+        if let alias, !alias.isEmpty { return alias }
+        return phoneNumber ?? "Customer"
     }
     var creditAvailableCents: Int { creditEnabled == false ? 0 : max(0, creditLimitCents - totalCreditUsedCents) }
     var hasUnlimitedStoreAccount: Bool { creditEnabled != false && creditLimitCents == 0 }

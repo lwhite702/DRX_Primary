@@ -106,6 +106,15 @@ export const getCustomers = async (
   return data.data || [];
 };
 
+export const quickCreateCustomer = async (
+  phone: string,
+  alias: string,
+  token: string | null,
+) => fetchWithAuth("/api/pos/customers/quick-create", token, {
+  method: "POST",
+  body: JSON.stringify({ phone, alias }),
+});
+
 export const getBusinessSettings = async (token: string | null) => {
   return fetchWithAuth("/api/business/settings", token);
 };
