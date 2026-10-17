@@ -103,14 +103,18 @@ function balancedTypeDeclaration(source, start) {
 
 function exportedContracts(source) {
   const contracts = new Map();
-  const declaration = /^\s*export\s+(?:(?:declare|abstract|async)\s+)*(function|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm;
+  const declaration = /^\s*export\s+(?:(?:declare|abstract|async|default)\s+)*(function|interface|type|enum)\s*([A-Za-z_$][\w$]*)?/gm;
   for (const match of source.matchAll(declaration)) {
     const [full, kind, symbol] = match;
     const start = match.index + full.search(/export\s/);
     const contract = kind === "function"
       ? functionSignature(source, start)
       : balancedTypeDeclaration(source, start);
-    contracts.set(symbol, normalizeContract(contract));
+    const name = symbol || (full.includes("default") ? "default" : null);
+    if (name) contracts.set(name, normalizeContract(contract));
+    if (full.includes("default")) {
+      contracts.set("default", normalizeContract(contract));
+    }
   }
 
   for (const line of source.split("\n")) {
