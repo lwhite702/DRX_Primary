@@ -26,7 +26,20 @@ export async function POST(request: NextRequest) {
       isActive: true, changedFields: ["alias", "phone", "ephemeral"],
     });
     const model = await mapConvexCustomer(result.customer);
-    return NextResponse.json({ id: model.id, phone: model.phone, alias: model.alias || `Customer ${phone.slice(-4)}`, ephemeral: model.ephemeral, ephemeral_expires_at: model.ephemeral_expires_at, remainingCredit: Math.max(0, Number(model.credit_limit || 0) - Number(model.total_credit_used || 0)) }, { status: result.created ? 201 : 200, headers: { "Cache-Control": "private, no-store" } });
+    return NextResponse.json({
+      id: model.id,
+      phone: model.phone,
+      alias: model.alias || `Customer ${phone.slice(-4)}`,
+      ephemeral: model.ephemeral,
+      ephemeral_expires_at: model.ephemeral_expires_at,
+      remainingCredit: Math.max(0, Number(model.credit_limit || 0) - Number(model.total_credit_used || 0)),
+      customer: {
+        ...result.customer,
+        _id: result.customer._id,
+        alias: model.alias || `Customer ${phone.slice(-4)}`,
+        phoneNumber: model.phone,
+      },
+    }, { status: result.created ? 201 : 200, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return customerFailure(error);
   }

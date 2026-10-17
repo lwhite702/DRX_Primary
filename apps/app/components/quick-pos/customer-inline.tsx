@@ -27,11 +27,12 @@ export function CustomerInline({
   const [alias, setAlias] = useState("");
   const [results, setResults] = useState<CustomerItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
   const privacy = usePrivacyContext();
   const requestGeneration = useRef(0);
   useEffect(() => {
     requestGeneration.current += 1;
-    setResults([]); setPhone(""); setAlias(""); setLoading(false);
+    setResults([]); setPhone(""); setAlias(""); setLoading(false); setRequestError(null);
   }, [privacy.businessId]);
   const shouldMask = privacy.protocol ? shouldMaskFromProtocol(privacy.protocol, privacy.manualEnabled, true) : true;
 
@@ -48,32 +49,43 @@ export function CustomerInline({
     params.set("search", searchValue);
     if (phoneValue) params.set("phone", phoneValue);
 
-    const res = await fetch(`/api/pos/customers?${params.toString()}`, { headers: { "X-Business-Id": privacy.businessId! } });
-    const data = (await res.json()) as { items?: CustomerItem[] };
-    if (generation !== requestGeneration.current) return;
-    setResults(data.items || []);
-    setLoading(false);
+    setRequestError(null);
+    try {
+      const res = await fetch(`/api/pos/customers?${params.toString()}`, { headers: { "X-Business-Id": privacy.businessId! } });
+      const data = (await res.json()) as { items?: CustomerItem[]; error?: string };
+      if (!res.ok) throw new Error(data.error || "Customer search is unavailable. Try again.");
+      if (generation !== requestGeneration.current) return;
+      setResults(data.items || []);
+    } catch (error) {
+      if (generation === requestGeneration.current) setRequestError(error instanceof Error ? error.message : "Customer search is unavailable. Try again.");
+    } finally {
+      if (generation === requestGeneration.current) setLoading(false);
+    }
   };
 
   const createInline = async () => {
     if (!phone.trim()) return;
     const generation = ++requestGeneration.current;
     setLoading(true);
+    setRequestError(null);
 
-    const res = await fetch("/api/pos/customers/quick-create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Business-Id": privacy.businessId! },
-      body: JSON.stringify({ phone, alias }),
-    });
+    try {
+      const res = await fetch("/api/pos/customers/quick-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Business-Id": privacy.businessId! },
+        body: JSON.stringify({ phone, alias }),
+      });
 
-    const data = (await res.json()) as CustomerItem;
-    if (generation !== requestGeneration.current) return;
-    if (data.id) {
+      const data = (await res.json()) as CustomerItem & { error?: string };
+      if (!res.ok || !data.id) throw new Error(data.error || "Customer was not saved. Try again.");
+      if (generation !== requestGeneration.current) return;
       onAttach(data);
       setResults([]);
+    } catch (error) {
+      if (generation === requestGeneration.current) setRequestError(error instanceof Error ? error.message : "Customer was not saved. Try again.");
+    } finally {
+      if (generation === requestGeneration.current) setLoading(false);
     }
-
-    setLoading(false);
   };
 
   if (!privacy.protocol) {
@@ -124,18 +136,24 @@ export function CustomerInline({
         <button
           type="button"
           onClick={lookup}
-          className="h-12 rounded-md border border-white/10 bg-white/5 text-base font-semibold transition hover:bg-white/10 active:scale-[0.99]"
+          disabled={loading}
+          aria-busy={loading}
+          className="h-12 rounded-md border border-white/10 bg-white/5 text-base font-semibold transition hover:bg-white/10 active:scale-[0.99] disabled:opacity-50"
         >
           {loading ? "Searching..." : "Lookup"}
         </button>
         <button
           type="button"
           onClick={createInline}
-          className="h-12 rounded-md bg-accent text-base font-semibold text-black transition hover:bg-accent/90 active:scale-[0.99]"
+          disabled={loading || !phone.trim()}
+          aria-busy={loading}
+          className="h-12 rounded-md bg-accent text-base font-semibold text-black transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
         >
           Quick Create
         </button>
       </div>
+
+      {requestError ? <p className="mt-2 text-sm text-red-300" role="alert">{requestError}</p> : null}
 
       {attached.id ? (
         <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 transition-all">

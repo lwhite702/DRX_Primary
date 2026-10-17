@@ -1121,7 +1121,7 @@ export const processCheckout = mutation({
         loyaltyEligibleSpendCents:
           (customer.loyaltyEligibleSpendCents ??
             customer.totalPurchasesCents ??
-            0) + subtotalCents,
+            0) + discountedSubtotalCents,
         purchaseCount: customer.purchaseCount + 1,
         updatedAt: now,
       });
@@ -1211,15 +1211,68 @@ export const updateSale = mutation({
   returns: v.any(),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
-    requirePermission(auth.userRecord, "MANAGE_SALES_RETURNS");
+    const changesCustomer = args.customerId !== undefined;
+    const changesPayment = args.paymentMethod !== undefined || args.paymentReference !== undefined;
+    if (!changesCustomer && !changesPayment) throw new Error("INVALID_ARGUMENT: No sale changes were provided");
+    if (changesCustomer) {
+      requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
+      requirePermission(auth.userRecord, "MANAGE_CUSTOMERS");
+    }
+    if (changesPayment) {
+      requirePermission(auth.userRecord, "MANAGE_SALES_RETURNS");
+    }
     const id = ctx.db.normalizeId("sales", args.saleId);
     const sale = id ? await ctx.db.get(id) : null;
     if (!sale || sale.businessId !== auth.businessId) throw new Error("NOT_FOUND: Sale not found");
     if (args.customerId !== undefined) {
-      if (sale.paymentMethod === "credit") throw new Error("INVALID_STATE: Credit sale customer reassignment requires reconciliation");
+      if (sale.orderStatus !== "completed") throw new Error("INVALID_STATE: Only completed sales can change customer attribution");
+      if (sale.paymentMethod === "credit" || (sale.creditAmountCents ?? 0) > 0) throw new Error("INVALID_STATE: Credit sale customer reassignment requires reconciliation");
       const customer = args.customerId ? (() => { const customerId = ctx.db.normalizeId("customers", args.customerId!); return customerId ? ctx.db.get(customerId) : null; })() : Promise.resolve(null);
       const resolved = await customer;
       if (args.customerId && (!resolved || resolved.businessId !== auth.businessId || !resolved.isActive)) throw new Error("NOT_FOUND: Customer not found");
+      const now = Date.now();
+      if (sale.customerId !== resolved?._id) {
+        const totalCents = sale.totalAmountCents;
+        let loyaltyCents = sale.loyaltyEligibleSpendCents;
+        if (loyaltyCents === undefined) {
+          loyaltyCents = sale.merchandiseRevenueCents ?? Math.max(0, (sale.subtotalCents ?? 0) - (sale.discountCents ?? 0));
+          await ctx.db.patch(sale._id, { loyaltyEligibleSpendCents: loyaltyCents });
+        }
+        if (![totalCents, loyaltyCents].every(value => Number.isSafeInteger(value) && value >= 0)) throw new Error("INVALID_STATE: Sale totals require reconciliation");
+
+        const adjustCustomer = async (target: Doc<"customers">, direction: 1 | -1) => {
+          const currentTotal = target.totalPurchasesCents;
+          const currentLoyalty = target.loyaltyEligibleSpendCents ?? target.totalPurchasesCents;
+          const currentCount = target.purchaseCount;
+          if (![currentTotal, currentLoyalty, currentCount].every(value => Number.isSafeInteger(value) && value >= 0)) throw new Error("INVALID_STATE: Customer purchase totals require reconciliation");
+          let nextTotal = currentTotal + direction * totalCents;
+          let nextLoyalty = currentLoyalty + direction * loyaltyCents;
+          const nextCount = currentCount + direction;
+          if (direction < 0 && nextCount === 0) {
+            nextTotal = 0;
+            nextLoyalty = 0;
+          }
+          if (![nextTotal, nextLoyalty, nextCount].every(value => Number.isSafeInteger(value) && value >= 0)) throw new Error("INVALID_STATE: Customer purchase totals require reconciliation");
+          await ctx.db.patch(target._id, {
+            totalPurchasesCents: nextTotal,
+            loyaltyEligibleSpendCents: nextLoyalty,
+            purchaseCount: nextCount,
+            updatedAt: now,
+            ...(direction > 0 ? { lastActivityAt: now } : {}),
+          });
+        };
+
+        if (sale.customerId) {
+          const previous = await ctx.db.get(sale.customerId);
+          if (!previous || previous.businessId !== auth.businessId) throw new Error("INVALID_STATE: Previous sale customer requires reconciliation");
+          await adjustCustomer(previous, -1);
+        }
+        if (resolved) await adjustCustomer(resolved, 1);
+
+        const deliveries = await ctx.db.query("deliveries").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(2);
+        if (deliveries.length > 1 || deliveries.some(delivery => delivery.businessId !== auth.businessId)) throw new Error("INVALID_STATE: Delivery ownership requires reconciliation");
+        for (const delivery of deliveries) await ctx.db.patch(delivery._id, { customerId: resolved?._id, updatedAt: now });
+      }
       await ctx.db.patch(sale._id, { customerId: resolved?._id, updatedAt: Date.now() });
     }
     const patch: Record<string, unknown> = { updatedAt: Date.now() };

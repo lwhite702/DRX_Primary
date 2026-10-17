@@ -92,6 +92,170 @@ describe("authoritative Convex checkout", () => {
     expect(product?.quantityOnHandGrams).toBe(6.5);
   });
 
+  it("allows checkout operators to attribute a completed cash sale and transfers customer totals", async () => {
+    const { t, owner, businessId } = await setupStore({ collectTax: false });
+    const previousCustomerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "Previous",
+      creditLimitCents: 5000,
+    });
+    const nextCustomerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "New",
+      creditLimitCents: 5000,
+    });
+    const saleId = await t.run(async (ctx) => {
+      const now = Date.now();
+      await ctx.db.patch(previousCustomerId, {
+        totalPurchasesCents: 1100,
+        loyaltyEligibleSpendCents: 800,
+        purchaseCount: 1,
+      });
+      await ctx.db.insert("users", {
+        clerkUserId: "checkout_operator",
+        email: "operator@example.test",
+        role: "OPERATOR",
+        businessId,
+        status: "ACTIVE",
+        createdAt: now,
+        updatedAt: now,
+      });
+      await ctx.db.insert("users", {
+        clerkUserId: "checkout_customer_viewer",
+        email: "viewer@example.test",
+        role: "VIEWER",
+        businessId,
+        status: "ACTIVE",
+        createdAt: now,
+        updatedAt: now,
+      });
+      return ctx.db.insert("sales", {
+        businessId,
+        customerId: previousCustomerId,
+        orderNumber: "POST-SALE-CUSTOMER",
+        orderStatus: "completed",
+        subtotalCents: 800,
+        loyaltyEligibleSpendCents: 800,
+        taxAmountCents: 300,
+        totalAmountCents: 1100,
+        amountPaidCents: 1100,
+        changeAmountCents: 0,
+        paymentMethod: "cash",
+        createdBy: "checkout_owner",
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
+    const operator = t.withIdentity({ subject: "checkout_operator", email: "operator@example.test" });
+    const viewer = t.withIdentity({ subject: "checkout_customer_viewer", email: "viewer@example.test" });
+
+    await expect(viewer.mutation(api.checkout.updateSale, { saleId, customerId: nextCustomerId })).rejects.toThrow("PROCESS_CHECKOUT");
+
+    await operator.mutation(api.checkout.updateSale, {
+      saleId,
+      customerId: nextCustomerId,
+    });
+
+    const result = await t.run(async (ctx) => ({
+      sale: await ctx.db.get(saleId),
+      previous: await ctx.db.get(previousCustomerId),
+      next: await ctx.db.get(nextCustomerId),
+      audits: await ctx.db.query("auditEvents").collect(),
+    }));
+    expect(result.sale?.customerId).toBe(nextCustomerId);
+    expect(result.sale).toMatchObject({
+      subtotalCents: 800,
+      taxAmountCents: 300,
+      totalAmountCents: 1100,
+      amountPaidCents: 1100,
+      paymentMethod: "cash",
+    });
+    expect(result.previous).toMatchObject({ totalPurchasesCents: 0, loyaltyEligibleSpendCents: 0, purchaseCount: 0 });
+    expect(result.next).toMatchObject({ totalPurchasesCents: 1100, loyaltyEligibleSpendCents: 800, purchaseCount: 1 });
+    expect(result.audits.filter((event) => event.action === "SALE_UPDATED")).toHaveLength(1);
+  });
+
+  it("reassigns a manually discounted sale without leaving residual loyalty spend", async () => {
+    const { t, owner } = await setupStore({ collectTax: false });
+    const productId = await owner.mutation(api.products.createProduct, {
+      sku: "DISC-LOYALTY-1",
+      productName: "Discount Item",
+      sellingPriceCents: 1000,
+      unitCostCents: 400,
+    });
+    await owner.mutation(api.intake.recordIntake, {
+      productId,
+      totalWeightGrams: 5,
+      totalCostCents: 2000,
+    });
+    const customerA = await owner.mutation(api.customers.createCustomer, { firstName: "Customer A", creditLimitCents: 0 });
+    const customerB = await owner.mutation(api.customers.createCustomer, { firstName: "Customer B", creditLimitCents: 0 });
+
+    // Process checkout with 1000-cent subtotal and 200-cent manual discount -> 800 total
+    await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "MANUAL-DISC-SALE",
+      customerId: customerA,
+      items: [{ productId, quantityGrams: 1 }],
+      discountAmountCents: 200,
+      paymentMethod: "cash",
+      amountPaidCents: 800,
+    });
+
+    const sale = await t.run(async (ctx) => {
+      const sales = await ctx.db.query("sales").filter((q) => q.eq(q.field("orderNumber"), "MANUAL-DISC-SALE")).collect();
+      return sales[0];
+    });
+
+    // Customer A after sale: subtotal 1000 - discount 200 = 800 loyalty cents
+    const custABefore = await t.run((ctx) => ctx.db.get(customerA));
+    expect(custABefore?.loyaltyEligibleSpendCents).toBe(800);
+    expect(custABefore?.totalPurchasesCents).toBe(800);
+    expect(custABefore?.purchaseCount).toBe(1);
+
+    // Reassign sale from Customer A to Customer B
+    await owner.mutation(api.checkout.updateSale, {
+      saleId: sale._id,
+      customerId: customerB,
+    });
+
+    // Customer A after reassignment: sole purchase was removed -> exactly 0 remaining loyalty cents
+    const custAAfter = await t.run((ctx) => ctx.db.get(customerA));
+    expect(custAAfter?.loyaltyEligibleSpendCents).toBe(0);
+    expect(custAAfter?.totalPurchasesCents).toBe(0);
+    expect(custAAfter?.purchaseCount).toBe(0);
+
+    // Customer B after reassignment: received the 800 loyalty cents
+    const custBAfter = await t.run((ctx) => ctx.db.get(customerB));
+    expect(custBAfter?.loyaltyEligibleSpendCents).toBe(800);
+    expect(custBAfter?.totalPurchasesCents).toBe(800);
+    expect(custBAfter?.purchaseCount).toBe(1);
+  });
+
+  it("refuses post-sale customer attribution when the sale carries credit", async () => {
+    const { t, owner, businessId } = await setupStore({ collectTax: false });
+    const customerId = await owner.mutation(api.customers.createCustomer, { firstName: "Credit", creditLimitCents: 5000 });
+    const saleId = await t.run(async (ctx) => {
+      const now = Date.now();
+      return ctx.db.insert("sales", {
+        businessId,
+        orderNumber: "POST-SALE-CREDIT",
+        orderStatus: "completed",
+        subtotalCents: 800,
+        loyaltyEligibleSpendCents: 800,
+        taxAmountCents: 0,
+        totalAmountCents: 800,
+        amountPaidCents: 0,
+        changeAmountCents: 0,
+        paymentMethod: "credit",
+        creditAmountCents: 800,
+        createdBy: "checkout_owner",
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
+
+    await expect(owner.mutation(api.checkout.updateSale, { saleId, customerId })).rejects.toThrow("Credit sale customer reassignment requires reconciliation");
+    expect((await t.run((ctx) => ctx.db.get(saleId)))?.customerId).toBeUndefined();
+  });
+
   it("derives prices and product taxability on the server and requires exact card settlement", async () => {
     const { owner } = await setupStore();
     const taxableProductId = await owner.mutation(api.products.createProduct, {

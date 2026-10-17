@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PaymentMethods } from "@/components/quick-pos/payment-methods";
 import { ReceiptChoice } from "@/components/quick-pos/receipt-choice";
 import { StatusFeedback } from "@/components/quick-pos/status-feedback";
+import { CustomerInline } from "@/components/quick-pos/customer-inline";
 import { useQuickPosStore } from "@/lib/quick-pos/store";
 import { canUseCredit } from "@/lib/quick-pos/selectors";
 import type {
@@ -20,6 +21,7 @@ export default function QuickPosPaymentPage() {
   const [quote, setQuote] = useState<PosAuthoritativeQuote | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
   const [amountTenderedStr, setAmountTenderedStr] = useState<string>("");
+  const [editingCustomer, setEditingCustomer] = useState(false);
   const store = useQuickPosStore();
   const {
     state,
@@ -33,6 +35,7 @@ export default function QuickPosPaymentPage() {
     setSuccess,
     markCompleted,
     setIdempotencyKey,
+    setCustomer,
   } = useQuickPosStore();
 
   useEffect(() => {
@@ -212,29 +215,67 @@ export default function QuickPosPaymentPage() {
         success={state.ui.successMessage}
       />
 
-      {state.customer.id ? (
-        <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+      {editingCustomer ? (
+        <CustomerInline
+          attached={state.customer}
+          onAttach={(customer) => {
+            setCustomer(customer);
+            setError(null);
+            setEditingCustomer(false);
+          }}
+          onDetach={() => {
+            setCustomer({ id: null, phone: "", alias: null, remainingCredit: 0 });
+            setError(null);
+            setEditingCustomer(false);
+          }}
+        />
+      ) : state.customer.id ? (
+        <div className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
               Customer
             </p>
-            <p className="text-base font-bold text-white">
+            <p className="mt-1 text-base font-medium text-white">
               {state.customer.alias || state.customer.phone || "Attached Customer"}
             </p>
-            {state.customer.phone && state.customer.alias ? (
-              <p className="text-xs text-white/60">{state.customer.phone}</p>
-            ) : null}
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wider text-white/60">
-              Available Credit
-            </p>
-            <p className={`text-base font-bold ${customerRemainingCredit >= activeTotal ? "text-emerald-300" : "text-amber-300"}`}>
-              ${customerRemainingCredit.toFixed(2)}
-            </p>
+          <div className="flex items-center gap-3">
+            {state.customer.remainingCredit !== undefined && (
+              <div className="text-right">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                  Remaining credit
+                </p>
+                <p className={`mt-1 text-base font-bold ${customerRemainingCredit >= activeTotal ? "text-emerald-400" : "text-amber-400"}`}>
+                  ${customerRemainingCredit.toFixed(2)}
+                </p>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditingCustomer(true)}
+              className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
+            >
+              Change customer
+            </button>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-white">Customer (Optional)</h2>
+            <p className="mt-0.5 text-xs text-white/60">
+              Look up or quick-create a customer without leaving checkout.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditingCustomer(true)}
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10"
+          >
+            Add customer
+          </button>
+        </div>
+      )}
 
       <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/10 via-white/5 to-white/0 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">

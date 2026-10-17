@@ -46,6 +46,9 @@ Here is how to ring up sales, calculate change down to the penny, and keep your 
 
 ## Common sense register rules
 
+- **Customer Quick Create**: If the sale has no customer, use **Customer (Optional)** to look up or quick-create one without leaving checkout. Quick Create asks for a phone number and optional alias and follows the business's privacy settings.
+- **Store Credit**: For credit sales, review customer eligibility and confirm the credit charge. Do not use credit to record repayment of an old balance.
+
 - **Payment recording**: Selecting Cash, Card, or Credit in DRX records the transaction in your store's bookkeeping—it doesn't pull cash out of thin air or charge credit cards by itself. Always collect the actual cash or run their card on your terminal before finalizing!
 - **Bundle pricing**: If you configured bulk pricing tiers (like an eighth for $35 or an ounce for $200), DRX automatically calculates the best volume price for the customer.
 - **Uncertain connections**: If your internet blinks right as you hit complete, don't double-charge the customer! Open **Sales** to check if the order number already saved before ringing it up a second time.

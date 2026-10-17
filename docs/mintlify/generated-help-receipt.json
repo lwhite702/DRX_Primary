@@ -72,8 +72,8 @@
       "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
       "mintlifyPath": "mintlify/customers/customers-and-store-credit.mdx",
       "route": "/customers/customers-and-store-credit",
-      "sourceSha256": "96d730edae0ef31814ec21ac89e00e573cf59ec4971fae45f051226dff621073",
-      "outputSha256": "34cf43de0dbca52abde8a262c031f78d6a44588dbe043c68ac55b8f54d2e2bb0"
+      "sourceSha256": "d3238d70d89e6dfca7589352cb58bb10e2946854c1758be39137ef21282d8ed9",
+      "outputSha256": "656954d5fc0f0c1743ac0e29d4e96423c12c1715d739528bb7dd5e8ad6f520cb"
     },
     {
       "articleId": "9156766",
@@ -135,8 +135,8 @@
       "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
       "mintlifyPath": "mintlify/sales/quick-sale-checkout.mdx",
       "route": "/sales/quick-sale-checkout",
-      "sourceSha256": "27558977b74202309cebaf5396d95925f46d59dee2369498d5b4bc7db80c5cc8",
-      "outputSha256": "8e5f039ea9b22b179d8151313cca27cef85ba650cc64e2e6f1610e50a427a04b"
+      "sourceSha256": "f7b70f1b8a8c4b04f16b29879fdec8830f7762a8af5ad031254008994300240b",
+      "outputSha256": "dd053a52a89ad4b75ce7755d4b6accc6a43f765ee6f2e25a6215b2e71f6939f8"
     },
     {
       "articleId": "5281725",
@@ -144,8 +144,8 @@
       "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
       "mintlifyPath": "mintlify/sales/sales-history-and-receipts.mdx",
       "route": "/sales/sales-history-and-receipts",
-      "sourceSha256": "984fb271b534817c8cbeeab6008fcd8ad461c684b618257d034492991f3ed46f",
-      "outputSha256": "7d3e0200151f7f74571ebcfd45e3734116994f96d0374b3c018ac221bad64fcc"
+      "sourceSha256": "648555e9180c45abeffc038f7c6566fca1eb5c8f0cb428fca92160f3a8471b7b",
+      "outputSha256": "78f81cc1422ad2810ef990fb1cce21c12269622ae33be14eaaba44512570d598"
     },
     {
       "articleId": "3230948",
