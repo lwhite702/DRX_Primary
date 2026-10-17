@@ -28,6 +28,7 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   testIgnore: [
     ...(betaE2EEnabled ? [] : ["**/beta-real-workflow.spec.ts"]),
+    "**/testsprite-*.spec.ts",
     ...(process.env.BASE_URL && !process.env.VISUAL_FIXTURES
       ? ["**/visual-regression.spec.ts"]
       : []),
