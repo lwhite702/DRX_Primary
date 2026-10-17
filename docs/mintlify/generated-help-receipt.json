@@ -45,8 +45,8 @@
       "sourcePath": "app-docs/feature_overview/feature-overview-privacy-controls.md",
       "mintlifyPath": "mintlify/privacy/privacy-and-minimal-data.mdx",
       "route": "/privacy/privacy-and-minimal-data",
-      "sourceSha256": "8502ad8ee07cb6ceb848ab92e2074a7b816dba4a643ab25f2ec38de482b1624a",
-      "outputSha256": "eed7b65f77d0d6c6589d526a51e7c0c6ca2e28e354a59a6a4b683a13b7c9f0cb"
+      "sourceSha256": "bee9f3e87bef0f65105ef1cc55a05d22d30aaf2b7ca22e7f57e0a4e59cd01247",
+      "outputSha256": "be485e4cd7106d1aa9a67bd0ede4c8c8fa44b94e38ec60e609440ad50ec9460c"
     },
     {
       "articleId": "3948745",
@@ -144,8 +144,8 @@
       "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
       "mintlifyPath": "mintlify/sales/sales-history-and-receipts.mdx",
       "route": "/sales/sales-history-and-receipts",
-      "sourceSha256": "0e97326dd3a6c2b0dfc675adcf6c398c1f7e56e00f6d832abe92fae9bf2891d6",
-      "outputSha256": "4316fe74172a7e8e0865f47cc701159be6de01cec1e7cd545c413315a13d4a86"
+      "sourceSha256": "984fb271b534817c8cbeeab6008fcd8ad461c684b618257d034492991f3ed46f",
+      "outputSha256": "7d3e0200151f7f74571ebcfd45e3734116994f96d0374b3c018ac221bad64fcc"
     },
     {
       "articleId": "3230948",

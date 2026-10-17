@@ -7,7 +7,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 dotenv.config({ path: path.resolve(__dirname, "../../../../.env.local") });
 dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 
-export default async function globalSetup() {
+async function globalSetup() {
   // Clerk testing expects CLERK_PUBLISHABLE_KEY; local app config uses NEXT_PUBLIC_*.
   process.env.CLERK_PUBLISHABLE_KEY ??=
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -25,4 +25,11 @@ export default async function globalSetup() {
 
   const { clerkSetup } = await import("@clerk/testing/playwright");
   await clerkSetup();
+}
+
+export default globalSetup;
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = globalSetup;
+  module.exports.default = globalSetup;
 }
