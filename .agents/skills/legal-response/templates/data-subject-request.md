@@ -57,16 +57,16 @@ support@deelrxcrm.com
 ```markdown
 Dear {{requester_name}},
 
-This notice confirms that in response to your verified deletion request dated {{request_date}}, {{business_name}} and Wrelik Brands LLC have processed the permanent deletion of your personal contact records from active systems.
+This notice confirms that in response to your verified data subject request dated {{request_date}}, {{business_name}} and Wrelik Brands LLC have processed your request across active customer management systems.
 
-### What Was Permanently Deleted:
-- Your customer profile details, stored contact information (phone number, email address), and delivery addresses.
-- Your marketing communication preferences and SMS opt-in entries.
+### Personal Information Actioned:
+- Stored personal contact identifiers (including customer name, phone number, email address, and delivery notes) have been cleared and removed from your active profile.
+- Operational and marketing messaging preferences have been deactivated.
 
-### Lawful Exceptions & Retained Operational Records:
-In compliance with applicable commercial law, retail accounting regulations, and statutory tax obligations:
-- Completed sales receipts, tax remittance records, and financial transaction totals are retained in anonymized form as required by municipal, state, and federal law. These records do not contain marketing contact information.
-- Encrypted disaster-recovery rotation backups purge automatically in accordance with scheduled backup retention cycles.
+### Statutory Retention & Operational Records:
+In compliance with applicable commercial law, retail accounting standards, and tax reporting requirements:
+- Completed sales receipts, tax remittance records, and transaction ledger entries are retained to satisfy statutory audit mandates. These financial ledger entries do not include marketing contact details.
+- System backups and transaction logs rotate and overwrite in the ordinary course of technical operations.
 
 If you have any questions or require additional details regarding our privacy controls, please consult our public Privacy Policy at https://deelrxcrm.com/legal/privacy or contact us at support@deelrxcrm.com.
 

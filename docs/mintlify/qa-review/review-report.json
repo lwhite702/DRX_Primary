@@ -1,0 +1,26 @@
+[
+  {
+    "shot": "1. Home page at 1440x1024 in dark mode",
+    "path": "/Volumes/Projects/Projects/DRX_Primary/docs/mintlify/qa-review/review-1-home-dark-1440x1024.png",
+    "bytes": 852197,
+    "sha256": "f2105c326b89ff085dcc5aee9a5301462f83efdbabd92dd0e8f5e8f76665ae94"
+  },
+  {
+    "shot": "2. Privacy and minimal data at 1440x1024 in light mode",
+    "path": "/Volumes/Projects/Projects/DRX_Primary/docs/mintlify/qa-review/review-2-privacy-light-1440x1024.png",
+    "bytes": 934858,
+    "sha256": "412ee0490ee6e6837b589b242980885b5a3052116f6c76a5feae1a59c7a2da6e"
+  },
+  {
+    "shot": "3. Quick Sale checkout at 390x844 in dark mode",
+    "path": "/Volumes/Projects/Projects/DRX_Primary/docs/mintlify/qa-review/review-3-quick-sale-dark-390x844.png",
+    "bytes": 335101,
+    "sha256": "b0651e96fd962373a0365062ace62d545284462265b9529e743b33c5743c7756"
+  },
+  {
+    "shot": "4. Open mobile navigation at 390x844",
+    "path": "/Volumes/Projects/Projects/DRX_Primary/docs/mintlify/qa-review/review-4-mobile-nav-390x844.png",
+    "bytes": 165169,
+    "sha256": "5a6e37043047bd2c42e88bbabd13ecd2125b3025bfa94c6048abe01629da0ace"
+  }
+]

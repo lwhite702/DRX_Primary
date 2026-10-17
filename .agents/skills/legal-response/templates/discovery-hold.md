@@ -41,7 +41,7 @@ Effective immediately, you must preserve all documents, data, and Electronically
 
 1. SUSPEND DELETIONS:
    - Do NOT run manual deletion scripts or delete customer profiles, aliases, or transaction records related to this matter.
-   - For store administrators: Verify that the customer record is marked with an active dispute flag or hold status in DRX to prevent automated retention cleanup from purging inactive records.
+   - For store administrators: Temporarily disable automated retention cleanup in DRX under Settings → Privacy Protocol Dashboard to prevent scheduled purging of inactive records while this matter remains pending.
 2. PRESERVE EXPORTS:
    - Do NOT discard, overwrite, or shred printed receipts, end-of-day register z-reports, or exported CSV summaries.
    - Store all existing exports in a dedicated, secure folder labeled "PRESERVE - {{matter_reference}}".

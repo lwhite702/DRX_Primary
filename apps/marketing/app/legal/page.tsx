@@ -123,7 +123,7 @@ export default function LegalHubPage() {
             {
               question: "Does DRX or Wrelik Brands LLC sell customer mobile numbers or store records?",
               answer:
-                "Never. We maintain a strict zero-sale policy. Customer phone numbers and transaction records are never sold, rented, or shared with third parties or data brokers. SMS messaging is used solely for store operational notices with affirmative consent.",
+                "Never. We maintain a strict zero-sale policy. Customer phone numbers and transaction records are never sold, rented, or shared with third-party marketers or data brokers. Data is processed solely by authorized infrastructure service providers to operate the platform and deliver store services in accordance with our Terms.",
             },
             {
               question: "How do retail customers request data access or profile deletion?",
@@ -138,7 +138,7 @@ export default function LegalHubPage() {
             {
               question: "How does automated retention cleanup affect store records?",
               answer:
-                "Store operators can configure retention cleanup to automatically delete inactive customer records after 30, 180, or 365 days. Cleanup automatically skips customer profiles with active store credit balances or unresolved operational disputes.",
+                "Store operators can configure retention policy thresholds to delete inactive customer records after 30, 180, or 365 days. The cleanup routine permanently removes eligible customer records while automatically preserving profiles linked to open sales or active store credit balances.",
             },
           ]}
         />
