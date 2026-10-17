@@ -30,12 +30,37 @@ test("rejects unsupported Markdown, unsafe links and skipped numbered steps", ()
   for (const body of [
     "<script>alert(1)</script>",
     "[click](javascript:evil)",
+    "[click](javascript:alert(1)//.md)",
+    "[click](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==//.md)",
+    "[click](//evil.com/test.md)",
     "![image](https://example.com/image.png)",
     "2. Second first",
     "## Heading\ntext",
     "| table |",
   ])
     assert.throws(() => renderArticle(md(body)));
+});
+test("resolves relative markdown links to manifest public URLs and preserves anchors", () => {
+  const rendered = renderArticle(
+    md("Read [Troubleshoot stock and audit](../troubleshooting/troubleshoot-inventory-and-audit.md#fix-a-count)."),
+    [],
+    {
+      sourcePath: "app-docs/feature_overview/inventory-intake-and-adjustments.md",
+      resolveLink: (href) => {
+        if (href.startsWith("../troubleshooting/troubleshoot-inventory-and-audit.md")) {
+          const hash = href.split("#")[1];
+          return `https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit${hash ? `#${hash}` : ""}`;
+        }
+        return href;
+      },
+    },
+  );
+  const doc = new JSDOM(rendered.body).window.document;
+  const link = doc.querySelector("a");
+  assert.equal(
+    link.href,
+    "https://drx.featurebase.app/en/help/articles/0272622-troubleshoot-inventory-and-audit#fix-a-count",
+  );
 });
 test("preserves old heading IDs and fragment destinations when sections change", () => {
   const a = renderArticle(md("## Save\n\nSave once."), [
@@ -128,7 +153,7 @@ test("entire canonical publication set renders, has unique stable IDs, and no li
     "180 days",
     "Full Customer Mode",
     "365 days",
-    "permanently deletes qualifying inactive customer records when it runs",
+    "permanently deletes qualified records",
   ])
     assert.ok(text.includes(term), term);
   assert.doesNotMatch(

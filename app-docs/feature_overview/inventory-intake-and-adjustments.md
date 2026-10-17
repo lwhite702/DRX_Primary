@@ -75,4 +75,3 @@ Did someone drop a jar, or did a physical count reveal 14 units on the shelf whe
 ## Related articles
 
 - [Troubleshoot stock and audit](../troubleshooting/troubleshoot-inventory-and-audit.md)
-- [New sale checkout](quick-sale-checkout.md)
