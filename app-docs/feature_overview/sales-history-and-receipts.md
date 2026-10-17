@@ -7,7 +7,7 @@ description: "Find a saved sale and check its items, customer, payment record, a
 
 A customer walks back in thirty minutes after their purchase saying, "Hey, did you charge me for that extra lighter?" Or maybe your shift supervisor is auditing the register before drawer count. 
 
-Whatever the reason, DRX keeps an immutable record of every completed order so you can pull up receipts, verify payment methods, and settle questions in seconds.
+Whatever the reason, DRX keeps a permanent record of every completed order so you can pull up receipts, verify payment methods, and settle questions in seconds.
 
 ## Finding past orders across platforms
 

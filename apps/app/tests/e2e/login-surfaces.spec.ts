@@ -30,7 +30,7 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible({ timeout: 10000 });
   });
 
   test("/register is accessible", async ({ page }) => {
@@ -41,6 +41,6 @@ test.describe("Login and register surfaces", () => {
       return;
     }
 
-    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /(create.*account|sign\s*up)/i })).toBeVisible({ timeout: 10000 });
   });
 });

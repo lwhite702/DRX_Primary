@@ -110,6 +110,7 @@ jobs:
         env:
           CI: true
           NODE_ENV: development
+          PW_SKIP_GLOBAL_SETUP: "1"
           DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
           NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY2MjMyODMyMCwiZXhwIjoxOTc3OTAyMzIwfQ.s_fd0Q-qQV5_Ikh_I_w_w"
