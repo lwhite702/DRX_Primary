@@ -209,7 +209,7 @@ struct DRXBulkPriceTier: Decodable, Sendable, Hashable {
 
 struct DRXCustomer: Decodable, Identifiable, Sendable, Hashable {
     let id: String
-    let alias: String?
+    var alias: String? = nil
     let firstName: String?
     let lastName: String?
     let phoneNumber: String?
