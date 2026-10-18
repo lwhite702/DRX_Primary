@@ -42,8 +42,11 @@ export function normalizePaymentReference(value: string | undefined) {
 export function calculateSettlement(method: CheckoutPaymentMethod, total: number, paid: number) {
   if (![total, paid].every(value => Number.isSafeInteger(value) && value >= 0)) throw new Error("INVALID_ARGUMENT: Invalid settlement amount");
   if (method === "cash" && paid < total) throw new Error("PAYMENT_ERROR: Cash tender does not cover the order");
-  if ((method === "card" || method === "zelle" || method === "split" || method.startsWith("p2p_")) && paid !== total) {
-    throw new Error(`PAYMENT_ERROR: ${method} tender amount must equal the order total`);
+  if ((method === "card" || method === "zelle") && paid !== total) {
+    throw new Error(`PAYMENT_ERROR: ${method === "card" ? "Card" : "Zelle"} tender amount must equal the order total`);
+  }
+  if ((method === "split" || method.startsWith("p2p_")) && paid !== total) {
+    throw new Error(`PAYMENT_ERROR: ${method === "split" ? "Split" : "P2P"} tender amount must equal the order total`);
   }
   if (method === "credit" && paid !== 0) throw new Error("PAYMENT_ERROR: Credit sales cannot record a tender amount");
   if (method === "comp" && (paid !== 0 || total !== 0)) throw new Error("PAYMENT_ERROR: Comped sales must have zero total and zero tender amount");
