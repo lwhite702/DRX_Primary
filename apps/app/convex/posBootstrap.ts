@@ -69,7 +69,7 @@ export const policies = query({
       deliveryPolicy: { feeTaxable: settings?.deliveryFeeTaxable ?? false, dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? 5 },
       cardFeePolicy: {
         enabled: settings?.cardProcessorFeeEnabled ?? false,
-        feeType: settings?.cardProcessorFeeType ?? "percent",
+        feeType: (settings?.cardProcessorFeeType === "percentage" ? "percent" : settings?.cardProcessorFeeType) ?? "percent",
         feeBps: settings?.cardProcessorFeeBps ?? 350,
         feeFlatCents: settings?.cardProcessorFeeFlatCents ?? 0,
       },

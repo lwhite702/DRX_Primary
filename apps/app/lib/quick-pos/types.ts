@@ -48,7 +48,7 @@ export interface QuickPosPaymentTender {
 
 export interface QuickPosCardFeePolicy {
   enabled: boolean;
-  feeType: "percent" | "flat";
+  feeType: "percent" | "percentage" | "flat" | "both";
   feeBps: number;
   feeFlatCents: number;
 }

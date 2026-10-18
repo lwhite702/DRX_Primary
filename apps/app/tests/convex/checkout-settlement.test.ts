@@ -82,3 +82,54 @@ it("allows fully settled mixed tender without a credit customer", async () => {
   const result = await owner.mutation(api.checkout.processCheckout, { items, orderNumber: "MIXED-SETTLED", paymentMethod: "mixed", amountPaidCents: 1100 });
   expect(result).toMatchObject({ totalAmountCents: 1100, changeAmountCents: 0 });
 });
+
+it("atomically records credit ledger entries for split store-credit tenders and enforces limits", async () => {
+  const { t, owner, items, customerId } = await fixture();
+  // Total is 1100 (1000 subtotal + 100 tax). Credit limit is 700.
+  // Split: 600 cash + 500 credit = 1100 total.
+  const splitTenders = [
+    { method: "cash" as const, amountCents: 600 },
+    { method: "credit" as const, amountCents: 500 },
+  ];
+  const result = await owner.mutation(api.checkout.processCheckout, {
+    items,
+    customerId,
+    orderNumber: "SPLIT-CREDIT-1",
+    paymentMethod: "split",
+    amountPaidCents: 1100,
+    paymentTenders: splitTenders,
+  });
+  expect(result.status).toBe("COMPLETED");
+
+  const state = await t.run(async ctx => ({
+    customer: await ctx.db.get(customerId),
+    sale: await ctx.db.get(result.saleId),
+    saleLedgerEntries: (await ctx.db.query("creditEntries").withIndex("by_customerId", q => q.eq("customerId", customerId)).collect()).filter(e => e.kind === "sale"),
+  }));
+  expect(state.customer?.totalCreditUsedCents).toBe(500);
+  expect(state.sale?.creditAmountCents).toBe(500);
+  expect(state.saleLedgerEntries).toHaveLength(1);
+  expect(state.saleLedgerEntries[0]).toMatchObject({
+    kind: "sale",
+    deltaCents: 500,
+    balanceAfterCents: 500,
+    saleId: result.saleId,
+  });
+
+  // Second split tender trying to use 300 credit (500 + 300 = 800 > limit 700) should be rejected
+  const overLimitTenders = [
+    { method: "cash" as const, amountCents: 800 },
+    { method: "credit" as const, amountCents: 300 },
+  ];
+  await expect(
+    owner.mutation(api.checkout.processCheckout, {
+      items,
+      customerId,
+      orderNumber: "SPLIT-OVER-LIMIT",
+      paymentMethod: "split",
+      amountPaidCents: 1100,
+      paymentTenders: overLimitTenders,
+    }),
+  ).rejects.toThrow(/CREDIT_LIMIT_EXCEEDED/);
+});
+

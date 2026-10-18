@@ -526,7 +526,9 @@ export default function QuickPosPaymentPage() {
                 {state.cardFeePolicy?.enabled
                   ? state.cardFeePolicy.feeType === "flat"
                     ? `Default flat fee ($${(state.cardFeePolicy.feeFlatCents / 100).toFixed(2)})`
-                    : `Default ${(state.cardFeePolicy.feeBps / 100).toFixed(2)}% card fee`
+                    : state.cardFeePolicy.feeType === "both"
+                      ? `Default ${(state.cardFeePolicy.feeBps / 100).toFixed(2)}% + $${(state.cardFeePolicy.feeFlatCents / 100).toFixed(2)} card fee`
+                      : `Default ${(state.cardFeePolicy.feeBps / 100).toFixed(2)}% card fee`
                   : "Optional processor surcharge passed to customer"}
               </p>
             </div>

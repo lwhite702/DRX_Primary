@@ -580,11 +580,33 @@ export const updateDeliveryDetails = mutation({
     const patch: Record<string, unknown> = {
       updatedAt: Date.now(),
     };
-    if (args.vendorFeeCents !== undefined) patch.vendorFeeCents = args.vendorFeeCents;
-    if (args.customerFeeCents !== undefined) patch.customerFeeCents = args.customerFeeCents;
+    if (args.customerFeeCents !== undefined && args.customerFeeCents !== delivery.customerFeeCents) {
+      throw new Error(
+        "INVALID_STATE: Customer delivery fee is immutable after checkout. Financial adjustments must use the authorized adjustment workflow.",
+      );
+    }
+    if (args.vendorFeeCents !== undefined) {
+      if (
+        !Number.isSafeInteger(args.vendorFeeCents) ||
+        args.vendorFeeCents < 0 ||
+        args.vendorFeeCents > 500000
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid vendor fee cents");
+      }
+      patch.vendorFeeCents = args.vendorFeeCents;
+    }
     if (args.dispatchType !== undefined) patch.dispatchType = args.dispatchType;
     if (args.feeSplitMode !== undefined) patch.feeSplitMode = args.feeSplitMode;
-    if (args.estimatedArrivalMinutes !== undefined) patch.estimatedArrivalMinutes = args.estimatedArrivalMinutes;
+    if (args.estimatedArrivalMinutes !== undefined) {
+      if (
+        !Number.isSafeInteger(args.estimatedArrivalMinutes) ||
+        args.estimatedArrivalMinutes < 0 ||
+        args.estimatedArrivalMinutes > 1440
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid estimated arrival minutes");
+      }
+      patch.estimatedArrivalMinutes = args.estimatedArrivalMinutes;
+    }
     if (args.uberTrackingUrl !== undefined) patch.uberTrackingUrl = args.uberTrackingUrl ?? undefined;
     if (args.address !== undefined) {
       const encrypted = await encryptDeliveryAddress(args.address, {

@@ -234,7 +234,7 @@ export const quickPosBootstrapResponseSchema = z.object({
   }).optional(),
   cardFeePolicy: z.object({
     enabled: z.boolean(),
-    feeType: z.enum(["percent", "flat"]),
+    feeType: z.enum(["percent", "percentage", "flat", "both"]),
     feeBps: z.number().int().nonnegative(),
     feeFlatCents: z.number().int().nonnegative(),
   }).optional(),

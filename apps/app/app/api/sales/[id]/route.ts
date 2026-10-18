@@ -43,6 +43,10 @@ async function mapDetail(result: any) {
         fallbackId: sale.customerId ?? result.customer._id,
       });
     }
+  } else if (sale.customerId) {
+    customerMasked = formatMaskedCustomerIdentifier({
+      fallbackId: sale.customerId,
+    });
   }
   return {
     id: sale._id,
@@ -125,14 +129,31 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await Promise.resolve(params);
     const body: any = await request.json();
     const { client } = await businessClient(request);
-    const result = await client.mutation(api.checkout.updateSale, {
-      saleId: id,
-      ...(body.customerId !== undefined ? { customerId: body.customerId } : {}),
-      ...(body.paymentMethod !== undefined ? { paymentMethod: body.paymentMethod } : {}),
-      ...(body.paymentRef !== undefined ? { paymentReference: body.paymentRef } : {}),
-      ...(body.paymentTenders !== undefined ? { paymentTenders: body.paymentTenders } : {}),
-    });
-    if (body.delivery && body.delivery.deliveryId) {
+    const hasSaleUpdates =
+      body.customerId !== undefined ||
+      body.paymentMethod !== undefined ||
+      body.paymentRef !== undefined ||
+      body.paymentTenders !== undefined;
+    const hasDeliveryUpdates = Boolean(body.delivery && body.delivery.deliveryId);
+
+    if (!hasSaleUpdates && !hasDeliveryUpdates) {
+      return NextResponse.json(
+        { error: "No sale or delivery changes were provided" },
+        { status: 400 },
+      );
+    }
+
+    let result: any = null;
+    if (hasSaleUpdates) {
+      result = await client.mutation(api.checkout.updateSale, {
+        saleId: id,
+        ...(body.customerId !== undefined ? { customerId: body.customerId } : {}),
+        ...(body.paymentMethod !== undefined ? { paymentMethod: body.paymentMethod } : {}),
+        ...(body.paymentRef !== undefined ? { paymentReference: body.paymentRef } : {}),
+        ...(body.paymentTenders !== undefined ? { paymentTenders: body.paymentTenders } : {}),
+      });
+    }
+    if (hasDeliveryUpdates) {
       await client.mutation((api.deliveries as any).updateDeliveryDetails, {
         deliveryId: body.delivery.deliveryId,
         ...(body.delivery.vendorFeeCents !== undefined ? { vendorFeeCents: body.delivery.vendorFeeCents } : {}),
@@ -144,7 +165,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(body.delivery.address !== undefined ? { address: body.delivery.address } : {}),
       });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result ?? { success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("UNAUTHORIZED:")) {

@@ -12,6 +12,20 @@ export async function POST(request: NextRequest) {
     const parsed = posCheckoutSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ success: false, error: "Invalid checkout payload" }, { status: 400 });
     const payload = parsed.data;
+    const nonCardFees = (payload.fees ?? []).filter((f) => f.type !== "card_processor_fee");
+    const existingCardFee = (payload.fees ?? []).find((f) => f.type === "card_processor_fee");
+    const canonicalCardFeeCents =
+      payload.payment.cardFeeCents && payload.payment.cardFeeCents > 0
+        ? payload.payment.cardFeeCents
+        : existingCardFee?.amount
+          ? Math.round(existingCardFee.amount * 100)
+          : 0;
+    const fees = [
+      ...nonCardFees,
+      ...(canonicalCardFeeCents > 0
+        ? [{ type: "card_processor_fee", amount: canonicalCardFeeCents / 100 }]
+        : []),
+    ];
     const result = payload.mode === "full"
       ? await performFullCheckout(payload, businessId)
       : await checkoutCanonicalCommerce({
@@ -23,12 +37,7 @@ export async function POST(request: NextRequest) {
           paymentMethod: payload.payment.method,
           paymentRef: payload.paymentRef ?? payload.payment.paymentRef,
           paymentTenders: payload.paymentTenders ?? payload.payment.tenders,
-          fees: [
-            ...(payload.fees ?? []),
-            ...(payload.payment.cardFeeCents && payload.payment.cardFeeCents > 0
-              ? [{ type: "card_processor_fee", amount: payload.payment.cardFeeCents / 100 }]
-              : []),
-          ],
+          fees,
           amountPaid: payload.amountPaid,
           discountAmountCents: payload.discountAmountCents,
           discountReason: payload.discountReason,

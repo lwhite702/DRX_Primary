@@ -82,10 +82,16 @@ export function getCardProcessorFeeCents(state: QuickPosState, baseAmountCents: 
   }
   if (cardBaseCents <= 0) return 0;
 
-  if (policy.feeType === "flat") {
-    return Math.max(0, policy.feeFlatCents || 0);
-  }
-  return Math.round((cardBaseCents * Math.max(0, policy.feeBps || 0)) / 10000);
+  const feeType = policy.feeType;
+  const percentPart =
+    feeType === "percent" || feeType === "percentage" || feeType === "both"
+      ? Math.round((cardBaseCents * Math.max(0, policy.feeBps || 0)) / 10000)
+      : 0;
+  const flatPart =
+    feeType === "flat" || feeType === "both"
+      ? Math.max(0, policy.feeFlatCents || 0)
+      : 0;
+  return percentPart + flatPart;
 }
 
 export function getTotal(state: QuickPosState): number {
