@@ -21,6 +21,7 @@ export default function QuickPosSalePage() {
   const router = useRouter();
   const {
     state,
+    subtotal,
     addItem,
     incrementItem,
     removeItem,
@@ -28,6 +29,7 @@ export default function QuickPosSalePage() {
     setCustomer,
     setSearch,
     setCreditPolicy,
+    setCardFeePolicy,
     setDeliveryFeeTaxable,
     setDiscount,
     clearDiscount,
@@ -67,6 +69,9 @@ export default function QuickPosSalePage() {
         setBootstrap(data);
         setCreditPolicy(Boolean(data.creditPolicy?.enabled));
         setDeliveryFeeTaxable(Boolean(data.deliveryPolicy?.feeTaxable));
+        if (data.cardFeePolicy) {
+          setCardFeePolicy(data.cardFeePolicy);
+        }
       } catch {
         setError("Unable to load POS");
       } finally {
@@ -75,7 +80,33 @@ export default function QuickPosSalePage() {
     };
 
     load();
-  }, [setCreditPolicy, setDeliveryFeeTaxable, setError]);
+  }, [setCardFeePolicy, setCreditPolicy, setDeliveryFeeTaxable, setError]);
+
+  useEffect(() => {
+    const onAddFavorite = (event: Event) => {
+      const custom = event as CustomEvent<{
+        productId: string;
+        name: string;
+        unitPrice: number;
+      }>;
+      const fav = custom.detail;
+      if (!fav?.productId) return;
+      addItem({
+        id: `inv:${fav.productId}`,
+        inventoryId: fav.productId,
+        name: fav.name,
+        unitPrice: fav.unitPrice,
+        qty: 1,
+        source: "inventory",
+      });
+      setError(null);
+      setSuccess(`Added ${fav.name} to cart`);
+    };
+    window.addEventListener("drx:quick-pos-add-favorite", onAddFavorite);
+    return () => {
+      window.removeEventListener("drx:quick-pos-add-favorite", onAddFavorite);
+    };
+  }, [addItem, setError, setSuccess]);
 
   useEffect(() => {
     if (!state.ui.successMessage) return;
@@ -251,12 +282,6 @@ export default function QuickPosSalePage() {
     }
   };
 
-  const subtotal = useMemo(
-    () =>
-      state.cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0),
-    [state.cartItems],
-  );
-
   const totalCartItems = useMemo(
     () => state.cartItems.reduce((sum, item) => sum + item.qty, 0),
     [state.cartItems],
@@ -346,18 +371,26 @@ export default function QuickPosSalePage() {
           attached={state.customer}
           onAttach={(customer) => {
             try {
+              const rich = customer as any;
               setCustomer({
                 id: customer.id,
                 phone: customer.phone,
                 alias: customer.alias,
                 remainingCredit: customer.remainingCredit,
+                loyaltyTier: rich.loyaltyTier ?? null,
+                discountRateBps: rich.discountRateBps ?? null,
+                fixedPricePerGram: rich.fixedPricePerGram ?? null,
+                purchaseCount: rich.purchaseCount,
+                totalPurchases: rich.totalPurchases,
               });
+              setSuccess(`Attached ${customer.alias || customer.phone || "customer"}`);
             } catch {
               setError("Failed to attach customer");
             }
           }}
           onDetach={() => {
             setCustomer({ id: null, phone: "", alias: null, remainingCredit: 0 });
+            setSuccess("Customer detached");
           }}
         />
 

@@ -21,6 +21,14 @@ export async function POST(request: NextRequest) {
           delivery: payload.delivery,
           idempotencyKey: payload.idempotencyKey,
           paymentMethod: payload.payment.method,
+          paymentRef: payload.paymentRef ?? payload.payment.paymentRef,
+          paymentTenders: payload.paymentTenders ?? payload.payment.tenders,
+          fees: [
+            ...(payload.fees ?? []),
+            ...(payload.payment.cardFeeCents && payload.payment.cardFeeCents > 0
+              ? [{ type: "card_processor_fee", amount: payload.payment.cardFeeCents / 100 }]
+              : []),
+          ],
           amountPaid: payload.amountPaid,
           discountAmountCents: payload.discountAmountCents,
           discountReason: payload.discountReason,

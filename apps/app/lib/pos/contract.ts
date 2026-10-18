@@ -6,7 +6,15 @@ export const posPaymentMethodSchema = z.enum([
   "card",
   "credit",
   "mixed",
+  "split",
   "zelle",
+  "p2p_cashapp",
+  "p2p_paypal",
+  "p2p_zelle",
+  "p2p_onepay",
+  "p2p_chime",
+  "p2p_venmo",
+  "p2p_other",
 ]);
 export const posQuickPaymentMethodSchema = z.enum(["cash", "card", "credit"]);
 export const posReceiptOptionSchema = z.enum(["print", "sms", "none"]);
@@ -17,6 +25,25 @@ export const posCheckoutSourceSchema = z.enum([
   "checkout-enhanced",
   "sales-api",
 ]);
+
+export const posPaymentTenderSchema = z.object({
+  method: z.enum([
+    "cash",
+    "card",
+    "credit",
+    "zelle",
+    "p2p_cashapp",
+    "p2p_paypal",
+    "p2p_zelle",
+    "p2p_onepay",
+    "p2p_chime",
+    "p2p_venmo",
+    "p2p_other",
+  ]),
+  amountCents: z.number().int().positive(),
+  reference: z.string().max(120).optional(),
+  processorFeeCents: z.number().int().nonnegative().optional(),
+});
 
 const quickPosCommerceConfigSchema = z.object({
   fractionalEnabled: z.boolean(),
@@ -86,23 +113,33 @@ export const posFeeSchema = z.object({
 });
 
 export const quickPosPaymentSchema = z.object({
-  method: posQuickPaymentMethodSchema,
+  method: posPaymentMethodSchema,
   receipt: posReceiptOptionSchema,
   creditConfirmed: z.boolean().default(false),
+  cardFeeCents: z.number().int().nonnegative().optional(),
+  paymentRef: z.string().max(120).optional(),
+  tenders: z.array(posPaymentTenderSchema).optional(),
 });
 
 export const quickPosDeliverySchema = z.object({
   enabled: z.boolean(),
-  address: z.string().trim().min(1).max(500),
+  address: z.string().trim().max(500).default(""),
   vendorFeeCents: z.number().int().nonnegative(),
   feeAllocation: z.enum(["charge_customer", "absorb"]),
   feeTaxable: z.boolean(),
+  dispatchType: z.enum(["merchant_dispatch", "customer_pickup_car"]).optional(),
+  feeSplitMode: z.enum(["pass_full", "absorb_full", "split_half", "custom"]).optional(),
+  customerFeeCents: z.number().int().nonnegative().optional(),
+  estimatedArrivalMinutes: z.number().int().positive().max(1440).optional(),
+  uberTrackingUrl: z.string().trim().max(1000).optional(),
 });
 
 export const fullPosPaymentSchema = z.object({
   method: posPaymentMethodSchema,
   receipt: posReceiptOptionSchema.default("none"),
   creditConfirmed: z.boolean().default(false),
+  cardFeeCents: z.number().int().nonnegative().optional(),
+  tenders: z.array(posPaymentTenderSchema).optional(),
 });
 
 export const quickCheckoutPayloadSchema = z.object({
@@ -112,6 +149,9 @@ export const quickCheckoutPayloadSchema = z.object({
   source: posCheckoutSourceSchema.optional().default("quick-pos"),
   payment: quickPosPaymentSchema,
   amountPaid: z.number().nonnegative().optional(),
+  paymentRef: z.string().max(120).optional(),
+  paymentTenders: z.array(posPaymentTenderSchema).optional(),
+  fees: z.array(posFeeSchema).optional(),
   delivery: quickPosDeliverySchema.optional(),
   discountAmountCents: z.number().int().nonnegative().optional(),
   discountReason: z.string().min(1).max(100).optional(),
@@ -122,6 +162,7 @@ export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
   mode: true,
   customerId: true,
   delivery: true,
+  fees: true,
   discountAmountCents: true,
   discountReason: true,
   items: true,
@@ -148,10 +189,12 @@ export const fullCheckoutPayloadSchema = z.object({
   taxAmount: z.number().nonnegative().default(0),
   fees: z.array(posFeeSchema).optional().default([]),
   paymentRef: z.string().min(1).optional(),
+  paymentTenders: z.array(posPaymentTenderSchema).optional(),
   amountPaid: z.number().nonnegative().optional(),
   deliveryManagementId: z.string().min(1).max(128).nullable().optional(),
   deliveryAddress: z.string().optional(),
   deliveryPrice: z.number().nonnegative().optional().default(0),
+  delivery: quickPosDeliverySchema.optional(),
 });
 
 export const checkoutPayloadSchema = z.discriminatedUnion("mode", [
@@ -188,6 +231,12 @@ export const quickPosBootstrapResponseSchema = z.object({
   deliveryPolicy: z.object({
     feeTaxable: z.boolean(),
     dispatchSlaMinutes: z.number().int().positive().optional(),
+  }).optional(),
+  cardFeePolicy: z.object({
+    enabled: z.boolean(),
+    feeType: z.enum(["percent", "flat"]),
+    feeBps: z.number().int().nonnegative(),
+    feeFlatCents: z.number().int().nonnegative(),
   }).optional(),
 });
 

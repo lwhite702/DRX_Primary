@@ -54,7 +54,7 @@ export const catalog = query({
 
 export const policies = query({
   args: { businessId: v.string() },
-  returns: v.object({ creditPolicy: v.object({ enabled: v.boolean() }), deliveryPolicy: v.object({ feeTaxable: v.boolean(), dispatchSlaMinutes: v.number() }) }),
+  returns: v.object({ creditPolicy: v.object({ enabled: v.boolean() }), deliveryPolicy: v.object({ feeTaxable: v.boolean(), dispatchSlaMinutes: v.number() }), cardFeePolicy: v.optional(v.object({ enabled: v.boolean(), feeType: v.union(v.literal("percent"), v.literal("flat")), feeBps: v.number(), feeFlatCents: v.number() })) }),
   handler: async (ctx, args) => {
     const auth = await access(ctx, args.businessId);
     const [settings, enabledCustomer, legacyCustomer] = await Promise.all([
@@ -64,7 +64,16 @@ export const policies = query({
     ]);
     // Missing flags preserve existing canonical behavior. Disabled credit must
     // never become unlimited merely because its monetary limit is zero.
-    return { creditPolicy: { enabled: Boolean(enabledCustomer || legacyCustomer) }, deliveryPolicy: { feeTaxable: settings?.deliveryFeeTaxable ?? false, dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? 5 } };
+    return {
+      creditPolicy: { enabled: Boolean(enabledCustomer || legacyCustomer) },
+      deliveryPolicy: { feeTaxable: settings?.deliveryFeeTaxable ?? false, dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? 5 },
+      cardFeePolicy: {
+        enabled: settings?.cardProcessorFeeEnabled ?? false,
+        feeType: settings?.cardProcessorFeeType ?? "percent",
+        feeBps: settings?.cardProcessorFeeBps ?? 350,
+        feeFlatCents: settings?.cardProcessorFeeFlatCents ?? 0,
+      },
+    };
   },
 });
 

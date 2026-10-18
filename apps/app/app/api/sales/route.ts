@@ -5,6 +5,8 @@ import { businessClient } from "@/lib/business/convex-server";
 import { checkoutCanonicalCommerce } from "@/app/api/pos/_lib/convex-commerce";
 import { buildCheckoutFailure, buildCheckoutSuccess } from "@/lib/pos/response";
 import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
+import { mapConvexCustomer } from "@/lib/customers/convex-operational";
+import { formatMaskedCustomerIdentifier } from "@/lib/customers/core/customer-normalizer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,10 +22,13 @@ export async function POST(request: NextRequest) {
     if (!items.length) throw new Error("INVALID_ARGUMENT: A sale requires at least one item");
     const result = await checkoutCanonicalCommerce({
       businessId, customerId: body.customer_id ?? null, items, idempotencyKey: body.idempotencyKey ?? randomUUID(),
-      paymentMethod: body.payment_method ?? "cash", amountPaid: body.amount_paid === undefined ? undefined : Number(body.amount_paid),
+      paymentMethod: body.payment_method ?? "cash",
+      paymentRef: body.payment_ref ?? undefined,
+      paymentTenders: Array.isArray(body.payment_tenders) ? body.payment_tenders : undefined,
+      amountPaid: body.amount_paid === undefined ? undefined : Number(body.amount_paid),
       discountAmountCents: body.discount_amount_cents, discountReason: body.discount_reason,
       fees: Array.isArray(body.fees) ? body.fees : undefined,
-      delivery: body.delivery_address ? { enabled: true, address: String(body.delivery_address), vendorFeeCents: Math.round(Number(body.delivery_price ?? 0) * 100), feeAllocation: "charge_customer" as const, feeTaxable: false } : undefined,
+      delivery: body.delivery?.enabled ? body.delivery : body.delivery_address ? { enabled: true, address: String(body.delivery_address), vendorFeeCents: Math.round(Number(body.delivery_price ?? 0) * 100), feeAllocation: "charge_customer" as const, feeTaxable: false } : undefined,
     });
     return NextResponse.json(buildCheckoutSuccess(result), { status: 201 });
   } catch (error) {
@@ -37,7 +42,66 @@ export async function GET(request: NextRequest) {
   try {
     const { client } = await businessClient(request);
     const result = await client.query(api.checkout.getSalesHistory, {});
-    const data = result.map(sale => ({ id: sale._id, order_number: safeDisplayOrderNumber(sale.orderNumber), order_status: sale.orderStatus, subtotal: sale.subtotalCents / 100, tax_amount: sale.taxAmountCents / 100, total_amount: sale.totalAmountCents / 100, payment_method: sale.paymentMethod, payment_ref: sale.paymentReference ?? null, created_at: new Date(sale.createdAt).toISOString(), updated_at: new Date(sale.updatedAt).toISOString(), customer_id: sale.customerId ?? null, items: [] }));
+    const data = await Promise.all(
+      result.map(async (sale: any) => {
+        let customerMasked: string | null = null;
+        let customerLoyaltyTier: string | null = null;
+        if (sale.customer) {
+          try {
+            const decoded = await mapConvexCustomer(sale.customer);
+            customerMasked = formatMaskedCustomerIdentifier({
+              alias: String(decoded.alias || ""),
+              firstName: String(decoded.first_name || ""),
+              lastName: String(decoded.last_name || ""),
+              phone: String(decoded.phone || ""),
+              fallbackId: sale.customerId ?? sale.customer._id,
+            });
+            customerLoyaltyTier = String(decoded.loyalty_tier || "none");
+          } catch {
+            customerMasked = formatMaskedCustomerIdentifier({
+              lastName: sale.customer.lastName ?? null,
+              fallbackId: sale.customerId ?? sale.customer._id,
+            });
+          }
+        } else if (sale.customerId) {
+          customerMasked = formatMaskedCustomerIdentifier({ fallbackId: sale.customerId });
+        }
+        const itemCount = typeof sale.itemCount === "number" ? sale.itemCount : 0;
+        const itemSummary = typeof sale.itemSummary === "string" && sale.itemSummary ? sale.itemSummary : null;
+        return {
+          id: sale._id,
+          order_number: safeDisplayOrderNumber(sale.orderNumber || sale._id),
+          order_status: sale.orderStatus,
+          subtotal: sale.subtotalCents / 100,
+          discount_amount: (sale.discountCents ?? 0) / 100,
+          tax_amount: sale.taxAmountCents / 100,
+          total_amount: sale.totalAmountCents / 100,
+          payment_method: sale.paymentMethod,
+          payment_ref: sale.paymentReference ?? null,
+          payment_tenders: sale.paymentTenders ?? null,
+          created_at: new Date(sale.createdAt).toISOString(),
+          updated_at: new Date(sale.updatedAt).toISOString(),
+          customer_id: sale.customerId ?? null,
+          customer_masked: customerMasked,
+          customer_loyalty_tier: customerLoyaltyTier,
+          item_count: itemCount,
+          item_summary: itemSummary,
+          delivery: sale.delivery
+            ? {
+                id: sale.delivery._id,
+                status: sale.delivery.status,
+                dispatchType: sale.delivery.dispatchType ?? "merchant_dispatch",
+                feeSplitMode: sale.delivery.feeSplitMode ?? (sale.delivery.chargeCustomer ? "pass_full" : "absorb_full"),
+                vendorFee: sale.delivery.vendorFeeCents / 100,
+                customerFee: (sale.delivery.customerFeeCents ?? (sale.delivery.chargeCustomer ? sale.delivery.vendorFeeCents : 0)) / 100,
+                estimatedArrivalMinutes: sale.delivery.estimatedArrivalMinutes ?? null,
+                uberTrackingUrl: sale.delivery.uberTrackingUrl ?? null,
+              }
+            : null,
+          items: Array.from({ length: itemCount }, (_, idx) => ({ id: `${sale._id}-line-${idx}` })),
+        };
+      }),
+    );
     return NextResponse.json({ data }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";

@@ -355,6 +355,98 @@ function CommerceSettingsPageInner() {
             <Switch id="delivery-taxable" checked={merchant.deliveryFeeTaxable} onCheckedChange={(deliveryFeeTaxable) => setMerchant({ ...merchant, deliveryFeeTaxable })} />
           </div>
 
+          <div className="space-y-4 rounded-lg border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="card-fee-enabled">Card processor fee</Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically apply a processor surcharge when Card is selected at checkout.
+                </p>
+              </div>
+              <Switch
+                id="card-fee-enabled"
+                checked={Boolean(merchant.cardProcessorFeeEnabled)}
+                onCheckedChange={(cardProcessorFeeEnabled) =>
+                  setMerchant({
+                    ...merchant,
+                    cardProcessorFeeEnabled,
+                    cardProcessorFeeType:
+                      merchant.cardProcessorFeeType ?? "percentage",
+                    cardProcessorFeeBps: merchant.cardProcessorFeeBps ?? 300,
+                    cardProcessorFeeFlatCents:
+                      merchant.cardProcessorFeeFlatCents ?? 0,
+                  })
+                }
+              />
+            </div>
+
+            {merchant.cardProcessorFeeEnabled && (
+              <div className="grid gap-4 md:grid-cols-3 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="card-fee-type">Fee calculation mode</Label>
+                  <select
+                    id="card-fee-type"
+                    value={merchant.cardProcessorFeeType ?? "percentage"}
+                    onChange={(event) =>
+                      setMerchant({
+                        ...merchant,
+                        cardProcessorFeeType: event.target.value as
+                          | "percentage"
+                          | "flat"
+                          | "both",
+                      })
+                    }
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="percentage">Percentage only (%)</option>
+                    <option value="flat">Flat amount only ($)</option>
+                    <option value="both">Percentage + Flat ($ + %)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="card-fee-percent">Processor percentage (%)</Label>
+                  <Input
+                    id="card-fee-percent"
+                    type="number"
+                    min="0"
+                    max="50"
+                    step="0.05"
+                    value={((merchant.cardProcessorFeeBps ?? 300) / 100).toFixed(2)}
+                    onChange={(event) =>
+                      setMerchant({
+                        ...merchant,
+                        cardProcessorFeeBps: Math.max(
+                          0,
+                          Math.min(5000, Math.round(Number(event.target.value) * 100)),
+                        ),
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="card-fee-flat">Flat processor fee ($)</Label>
+                  <Input
+                    id="card-fee-flat"
+                    type="number"
+                    min="0"
+                    max="500"
+                    step="0.01"
+                    value={((merchant.cardProcessorFeeFlatCents ?? 0) / 100).toFixed(2)}
+                    onChange={(event) =>
+                      setMerchant({
+                        ...merchant,
+                        cardProcessorFeeFlatCents: Math.max(
+                          0,
+                          Math.min(50000, Math.round(Number(event.target.value) * 100)),
+                        ),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2"><Label htmlFor="dispatch-sla">Minutes to order Uber</Label><Input id="dispatch-sla" type="number" min="1" max="120" value={merchant.dispatchSlaMinutes} onChange={(event) => setMerchant({ ...merchant, dispatchSlaMinutes: Number(event.target.value) })} /></div>
             <div className="space-y-2"><Label htmlFor="escalation-delay">Manager escalation delay</Label><Input id="escalation-delay" type="number" min="1" max="240" value={merchant.escalationDelayMinutes} onChange={(event) => setMerchant({ ...merchant, escalationDelayMinutes: Number(event.target.value) })} /></div>

@@ -1,6 +1,6 @@
 import type {
   CartLineItem,
-  PosQuickPaymentMethod,
+  PosPaymentMethod as PosQuickPaymentMethod,
   PosReceiptOption,
   QuickPosBootstrapResponseContract,
   ReceiptOutput,
@@ -112,3 +112,68 @@ export interface QuickPosExitVerifyResponse {
   allowed: boolean;
   hasPinConfigured?: boolean;
 }
+
+export type DeliveryDispatchType = "merchant_dispatch" | "customer_pickup_car";
+export type DeliveryFeeSplitMode = "pass_full" | "absorb_full" | "split_half" | "custom";
+
+export interface QuickPosPaymentTender {
+  method: Exclude<QuickPosPaymentMethod, "mixed" | "split">;
+  amountCents: number;
+  reference?: string;
+  processorFeeCents?: number;
+}
+
+export interface QuickPosCardFeePolicy {
+  enabled: boolean;
+  feeType: "percent" | "flat";
+  feeBps: number;
+  feeFlatCents: number;
+}
+
+export interface QuickPosCustomerFavoriteItem {
+  productId: string;
+  name: string;
+  sku: string | null;
+  unitPrice: number;
+  lastQuantityGrams: number;
+  orderCount: number;
+}
+
+interface QuickPosCustomer {
+  firstName?: string | null;
+  lastName?: string | null;
+  loyaltyTier?: string | null;
+  discountRateBps?: number | null;
+  fixedPricePerGram?: number | null;
+  purchaseCount?: number;
+  totalPurchases?: number;
+  recentFavorites?: QuickPosCustomerFavoriteItem[];
+}
+
+interface QuickPosPaymentState {
+  cardFeeCents?: number;
+  cardFeeWaived?: boolean;
+  cardFeeCustomCents?: number | null;
+  paymentRef?: string;
+  tenders?: QuickPosPaymentTender[];
+}
+
+interface QuickPosDeliveryState {
+  dispatchType?: DeliveryDispatchType;
+  feeSplitMode?: DeliveryFeeSplitMode;
+  customerFeeCents?: number;
+  estimatedArrivalMinutes?: number;
+  uberTrackingUrl?: string;
+}
+
+interface QuickPosState {
+  previousCustomer?: QuickPosCustomer | null;
+  cardFeePolicy?: QuickPosCardFeePolicy;
+}
+
+interface QuickPosCheckoutRequest {
+  paymentRef?: string;
+  paymentTenders?: QuickPosPaymentTender[];
+  fees?: Array<{ type: string; amount?: number; value?: string }>;
+}
+

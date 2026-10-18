@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       customerId: parsed.data.customerId,
       items: parsed.data.items,
       delivery: parsed.data.delivery,
+      fees: parsed.data.fees,
       discountAmountCents: parsed.data.discountAmountCents,
       discountReason: parsed.data.discountReason,
     });

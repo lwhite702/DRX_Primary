@@ -121,9 +121,15 @@ export function safeDisplayOrderNumber(orderNumber: string | null | undefined): 
     return trimmed.toUpperCase();
   }
 
-  // Long UUID with ORD- prefix: ORD-69397A70-... -> ORD-69397A
-  if (/^ORD-[0-9A-Za-z]{6}[0-9A-Za-z-]{8,}$/.test(trimmed)) {
-    const stripped = trimmed.replace("ORD-", "").replace(/-/g, "");
+  // Prefixed UUID or long token: ORD-69397A70-..., WEB-69397A70-..., POS-..., OFF-..., DRX-A-...
+  const prefixMatch = /^(?:ORD|WEB|POS|OFF|DRX-A)-([0-9A-Za-z-]{8,})$/i.exec(trimmed);
+  if (prefixMatch) {
+    const rawSuffix = prefixMatch[1]!;
+    // Pure numeric timestamp suffix: take last 6 digits
+    if (/^\d{10,13}$/.test(rawSuffix)) {
+      return `ORD-${rawSuffix.slice(-6)}`;
+    }
+    const stripped = rawSuffix.replace(/-/g, "");
     if (stripped.length >= 6) {
       return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
     }
@@ -135,11 +141,9 @@ export function safeDisplayOrderNumber(orderNumber: string | null | undefined): 
     return `ORD-${stripped.slice(0, 6).toUpperCase()}`;
   }
 
-  // Timestamp suffix: DRX-A-1728445123, WEB-1728445123, ORD-1728445123
-  const tsMatch = /^(?:ORD|DRX-A|WEB|POS|OFF)-(\d{10,13})$/.exec(trimmed);
-  if (tsMatch) {
-    const digits = tsMatch[1];
-    return `ORD-${digits.slice(-6)}`;
+  // Raw Convex ID or long alphanumeric token (>= 20 chars without spaces)
+  if (/^[0-9A-Za-z]{20,}$/.test(trimmed)) {
+    return `ORD-${trimmed.slice(-6).toUpperCase()}`;
   }
 
   return trimmed;
