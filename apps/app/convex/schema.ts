@@ -92,6 +92,17 @@ export default defineSchema({
     deliveryDispatchSlaMinutes: v.optional(v.number()),
     deliveryManagerEscalationMinutes: v.optional(v.number()),
     deliveryManagerNotificationUserIds: v.optional(v.array(v.string())),
+    cardProcessorFeeEnabled: v.optional(v.boolean()),
+    cardProcessorFeeType: v.optional(
+      v.union(
+        v.literal("percentage"),
+        v.literal("percent"),
+        v.literal("flat"),
+        v.literal("both"),
+      ),
+    ),
+    cardProcessorFeeBps: v.optional(v.number()),
+    cardProcessorFeeFlatCents: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_businessId", ["businessId"]),
@@ -450,6 +461,16 @@ export default defineSchema({
     changeAmountCents: v.number(),
     paymentMethod: v.string(), // "cash" | "card" | "credit"
     paymentReference: v.optional(v.string()),
+    paymentTenders: v.optional(
+      v.array(
+        v.object({
+          method: v.string(),
+          amountCents: v.number(),
+          reference: v.optional(v.string()),
+          processorFeeCents: v.optional(v.number()),
+        }),
+      ),
+    ),
     fees: v.optional(v.array(v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) }))),
     feeRevenueCents: v.optional(v.number()),
     deliveryFeeCents: v.optional(v.number()),
@@ -556,6 +577,10 @@ export default defineSchema({
       v.literal("canceled"),
     ),
     dispatchDueAt: v.number(),
+    dispatchType: v.optional(v.union(v.literal("merchant_dispatch"), v.literal("customer_pickup_car"))),
+    feeSplitMode: v.optional(v.string()),
+    estimatedArrivalMinutes: v.optional(v.number()),
+    uberTrackingUrl: v.optional(v.string()),
     estimatedArrivalAt: v.optional(v.number()),
     handedOffAt: v.optional(v.number()),
     deliveredAt: v.optional(v.number()),

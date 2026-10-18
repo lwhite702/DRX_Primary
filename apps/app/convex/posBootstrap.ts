@@ -54,7 +54,7 @@ export const catalog = query({
 
 export const policies = query({
   args: { businessId: v.string() },
-  returns: v.object({ creditPolicy: v.object({ enabled: v.boolean() }), deliveryPolicy: v.object({ feeTaxable: v.boolean(), dispatchSlaMinutes: v.number() }), cardFeePolicy: v.optional(v.object({ enabled: v.boolean(), feeType: v.union(v.literal("percent"), v.literal("flat")), feeBps: v.number(), feeFlatCents: v.number() })) }),
+  returns: v.object({ creditPolicy: v.object({ enabled: v.boolean() }), deliveryPolicy: v.object({ feeTaxable: v.boolean(), dispatchSlaMinutes: v.number() }), cardFeePolicy: v.optional(v.object({ enabled: v.boolean(), feeType: v.union(v.literal("percent"), v.literal("percentage"), v.literal("flat"), v.literal("both")), feeBps: v.number(), feeFlatCents: v.number() })) }),
   handler: async (ctx, args) => {
     const auth = await access(ctx, args.businessId);
     const [settings, enabledCustomer, legacyCustomer] = await Promise.all([

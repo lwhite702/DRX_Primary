@@ -9,7 +9,10 @@ import {
 } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireUserAndBusiness } from "./helpers/auth";
-import { decryptDeliveryAddress } from "./helpers/deliveryCrypto";
+import {
+  decryptDeliveryAddress,
+  encryptDeliveryAddress,
+} from "./helpers/deliveryCrypto";
 import { requirePermission } from "./helpers/permissions";
 import {
   enqueueDeliveryPush,
@@ -54,6 +57,10 @@ const queueRecord = v.object({
   customerFeeCents: v.number(),
   deliveryTaxCents: v.number(),
   dispatchDueAt: v.number(),
+  dispatchType: v.optional(v.string()),
+  feeSplitMode: v.optional(v.string()),
+  estimatedArrivalMinutes: v.optional(v.number()),
+  uberTrackingUrl: v.optional(v.string()),
   estimatedArrivalAt: v.optional(v.number()),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -227,10 +234,16 @@ function toQueueRecord(delivery: Doc<"deliveries">, orderNumber: string) {
     status: delivery.status,
     addressLabel: "Address on file",
     assignedToUserId: delivery.assignedToUserId,
+    profileId: delivery.profileId,
+    vendorExpenseKnown: delivery.vendorExpenseKnown,
     vendorFeeCents: delivery.vendorFeeCents,
     customerFeeCents: delivery.customerFeeCents,
     deliveryTaxCents: delivery.deliveryTaxCents,
     dispatchDueAt: delivery.dispatchDueAt,
+    dispatchType: (delivery as any).dispatchType,
+    feeSplitMode: (delivery as any).feeSplitMode,
+    estimatedArrivalMinutes: (delivery as any).estimatedArrivalMinutes,
+    uberTrackingUrl: (delivery as any).uberTrackingUrl,
     estimatedArrivalAt: delivery.estimatedArrivalAt,
     createdAt: delivery.createdAt,
     updatedAt: delivery.updatedAt,
@@ -465,7 +478,12 @@ export const assignDelivery = mutation({
 });
 
 export const markUberOrdered = mutation({
-  args: { deliveryId: v.id("deliveries"), waitMinutes: v.number() },
+  args: {
+    deliveryId: v.id("deliveries"),
+    waitMinutes: v.number(),
+    uberTrackingUrl: v.optional(v.string()),
+    vendorFeeCents: v.optional(v.number()),
+  },
   returns: v.object({
     success: v.literal(true),
     estimatedArrivalAt: v.number(),
@@ -489,8 +507,17 @@ export const markUberOrdered = mutation({
       delivery,
       actorUserId: auth.userId,
       nextStatus: "uber_ordered",
-      patch: { estimatedArrivalAt },
-      metadata: { waitMinutes: args.waitMinutes, estimatedArrivalAt },
+      patch: {
+        estimatedArrivalAt,
+        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
+        ...(args.vendorFeeCents !== undefined ? { vendorFeeCents: args.vendorFeeCents } : {}),
+        estimatedArrivalMinutes: args.waitMinutes,
+      },
+      metadata: {
+        waitMinutes: args.waitMinutes,
+        estimatedArrivalAt,
+        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
+      },
     });
     const warningAt = Math.max(now, estimatedArrivalAt - 2 * 60_000);
     const reminders: Array<{
@@ -523,6 +550,53 @@ export const markUberOrdered = mutation({
       );
     }
     return { success: true as const, estimatedArrivalAt };
+  },
+});
+
+export const updateDeliveryDetails = mutation({
+  args: {
+    deliveryId: v.id("deliveries"),
+    vendorFeeCents: v.optional(v.number()),
+    feeSplitMode: v.optional(v.string()),
+    customerFeeCents: v.optional(v.number()),
+    dispatchType: v.optional(
+      v.union(v.literal("merchant_dispatch"), v.literal("customer_pickup_car")),
+    ),
+    estimatedArrivalMinutes: v.optional(v.number()),
+    uberTrackingUrl: v.optional(v.union(v.string(), v.null())),
+    address: v.optional(v.string()),
+  },
+  returns: v.object({
+    success: v.literal(true),
+  }),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "MANAGE_DELIVERIES");
+    const delivery = await requireDelivery(
+      ctx,
+      args.deliveryId,
+      auth.businessId,
+    );
+    const patch: Record<string, unknown> = {
+      updatedAt: Date.now(),
+    };
+    if (args.vendorFeeCents !== undefined) patch.vendorFeeCents = args.vendorFeeCents;
+    if (args.customerFeeCents !== undefined) patch.customerFeeCents = args.customerFeeCents;
+    if (args.dispatchType !== undefined) patch.dispatchType = args.dispatchType;
+    if (args.feeSplitMode !== undefined) patch.feeSplitMode = args.feeSplitMode;
+    if (args.estimatedArrivalMinutes !== undefined) patch.estimatedArrivalMinutes = args.estimatedArrivalMinutes;
+    if (args.uberTrackingUrl !== undefined) patch.uberTrackingUrl = args.uberTrackingUrl ?? undefined;
+    if (args.address !== undefined) {
+      const encrypted = await encryptDeliveryAddress(args.address, {
+        businessId: String(auth.businessId),
+        saleId: String(delivery.saleId),
+        deliveryId: String(delivery._id),
+      });
+      patch.addressEncrypted = encrypted.ciphertext;
+      patch.addressEncryptionVersion = encrypted.version;
+    }
+    await ctx.db.patch(delivery._id, patch);
+    return { success: true as const };
   },
 });
 

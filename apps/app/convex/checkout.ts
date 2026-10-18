@@ -28,12 +28,27 @@ import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calcu
 
 import { priceOverride, normalizeOverrides, deliveryTerms, validateDeliveryTerms, type PriceOverride, type DeliveryTerms } from "./helpers/checkoutTerms";
 
+const paymentTenderInput = v.object({
+  method: v.string(),
+  amountCents: v.number(),
+  reference: v.optional(v.string()),
+  processorFeeCents: v.optional(v.number()),
+});
+
 const paymentMethod = v.union(
   v.literal("cash"),
   v.literal("card"),
   v.literal("credit"),
   v.literal("mixed"),
+  v.literal("split"),
   v.literal("zelle"),
+  v.literal("p2p_cashapp"),
+  v.literal("p2p_paypal"),
+  v.literal("p2p_zelle"),
+  v.literal("p2p_onepay"),
+  v.literal("p2p_chime"),
+  v.literal("p2p_venmo"),
+  v.literal("p2p_other"),
   v.literal("comp"),
 );
 
@@ -569,6 +584,7 @@ export const processCheckout = mutation({
     priceOverrides: v.optional(v.array(priceOverride)),
     paymentMethod,
     paymentReference: v.optional(v.string()),
+    paymentTenders: v.optional(v.array(paymentTenderInput)),
     deliveryFeeCents: v.optional(v.number()),
     discountAmountCents: v.optional(v.number()),
     isComp: v.optional(v.boolean()),
@@ -973,6 +989,7 @@ export const processCheckout = mutation({
       changeAmountCents,
       paymentMethod: args.paymentMethod,
       ...(paymentReference ? { paymentReference } : {}),
+      ...(args.paymentTenders?.length ? { paymentTenders: args.paymentTenders } : {}),
       ...(fees.length ? { fees, feeRevenueCents } : {}),
       ...(args.deliveryFeeCents !== undefined ? { deliveryFeeCents: args.deliveryFeeCents } : {}),
       ...(args.discountAmountCents !== undefined ? { discountAmountCents: args.discountAmountCents } : {}),
@@ -1207,12 +1224,21 @@ export const getSaleDetail = query({
 });
 
 export const updateSale = mutation({
-  args: { saleId: v.string(), customerId: v.optional(v.union(v.string(), v.null())), paymentMethod: v.optional(v.string()), paymentReference: v.optional(v.union(v.string(), v.null())) },
+  args: {
+    saleId: v.string(),
+    customerId: v.optional(v.union(v.string(), v.null())),
+    paymentMethod: v.optional(v.string()),
+    paymentReference: v.optional(v.union(v.string(), v.null())),
+    paymentTenders: v.optional(v.array(paymentTenderInput)),
+  },
   returns: v.any(),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     const changesCustomer = args.customerId !== undefined;
-    const changesPayment = args.paymentMethod !== undefined || args.paymentReference !== undefined;
+    const changesPayment =
+      args.paymentMethod !== undefined ||
+      args.paymentReference !== undefined ||
+      args.paymentTenders !== undefined;
     if (!changesCustomer && !changesPayment) throw new Error("INVALID_ARGUMENT: No sale changes were provided");
     if (changesCustomer) {
       requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
@@ -1281,8 +1307,20 @@ export const updateSale = mutation({
       patch.paymentMethod = args.paymentMethod;
     }
     if (args.paymentReference !== undefined) patch.paymentReference = args.paymentReference ?? undefined;
+    if (args.paymentTenders !== undefined) patch.paymentTenders = args.paymentTenders;
     await ctx.db.patch(sale._id, patch);
-    await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "SALE_UPDATED", entityType: "sale", entityId: sale._id, metadata: JSON.stringify({ customerChanged: args.customerId !== undefined, paymentChanged: args.paymentMethod !== undefined || args.paymentReference !== undefined }), timestamp: Date.now() });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "SALE_UPDATED",
+      entityType: "sale",
+      entityId: sale._id,
+      metadata: JSON.stringify({
+        customerChanged: args.customerId !== undefined,
+        paymentChanged: changesPayment,
+      }),
+      timestamp: Date.now(),
+    });
     return { success: true, sale: await ctx.db.get(sale._id) };
   },
 });

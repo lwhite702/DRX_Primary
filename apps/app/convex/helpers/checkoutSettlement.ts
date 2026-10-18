@@ -2,7 +2,21 @@ import { v } from "convex/values";
 
 export const checkoutFee = v.object({ type: v.string(), amountCents: v.number(), value: v.optional(v.string()) });
 export type CheckoutFee = { type: string; amountCents: number; value?: string };
-export type CheckoutPaymentMethod = "cash" | "card" | "credit" | "mixed" | "zelle" | "comp";
+export type CheckoutPaymentMethod =
+  | "cash"
+  | "card"
+  | "credit"
+  | "mixed"
+  | "split"
+  | "zelle"
+  | "p2p_cashapp"
+  | "p2p_paypal"
+  | "p2p_zelle"
+  | "p2p_onepay"
+  | "p2p_chime"
+  | "p2p_venmo"
+  | "p2p_other"
+  | "comp";
 
 export function normalizeFees(fees: CheckoutFee[] | undefined): CheckoutFee[] {
   if ((fees?.length ?? 0) > 20) throw new Error("INVALID_ARGUMENT: Too many fees");
@@ -28,7 +42,9 @@ export function normalizePaymentReference(value: string | undefined) {
 export function calculateSettlement(method: CheckoutPaymentMethod, total: number, paid: number) {
   if (![total, paid].every(value => Number.isSafeInteger(value) && value >= 0)) throw new Error("INVALID_ARGUMENT: Invalid settlement amount");
   if (method === "cash" && paid < total) throw new Error("PAYMENT_ERROR: Cash tender does not cover the order");
-  if ((method === "card" || method === "zelle") && paid !== total) throw new Error(`PAYMENT_ERROR: ${method === "card" ? "Card" : "Zelle"} tender amount must equal the order total`);
+  if ((method === "card" || method === "zelle" || method === "split" || method.startsWith("p2p_")) && paid !== total) {
+    throw new Error(`PAYMENT_ERROR: ${method} tender amount must equal the order total`);
+  }
   if (method === "credit" && paid !== 0) throw new Error("PAYMENT_ERROR: Credit sales cannot record a tender amount");
   if (method === "comp" && (paid !== 0 || total !== 0)) throw new Error("PAYMENT_ERROR: Comped sales must have zero total and zero tender amount");
   if (method === "mixed" && (paid <= 0 || paid > total)) throw new Error("PAYMENT_ERROR: Mixed tender must be positive and cannot exceed the order total");
