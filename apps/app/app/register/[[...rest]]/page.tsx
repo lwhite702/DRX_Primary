@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 
 export default async function RegisterPage() {
   const useVisualFixture = isAuthVisualFixtureEnabled();
-  const userId = useVisualFixture ? null : (await auth()).userId;
+  let userId: string | null = null;
+  if (!useVisualFixture) {
+    try {
+      userId = (await auth()).userId;
+    } catch (error) {
+      console.warn("[register] auth() failed on register page; treating as unauthenticated", error);
+      userId = null;
+    }
+  }
 
   if (userId) redirect("/dashboard");
 
