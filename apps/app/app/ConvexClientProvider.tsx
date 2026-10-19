@@ -6,7 +6,9 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useAuth, useIsBypassActive } from "@/lib/adapters/auth/ui";
 
 const rawConvexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
-const convexUrl = rawConvexUrl ? rawConvexUrl.replace(/^["']|["']$/g, "").trim() : undefined;
+const convexUrl = rawConvexUrl
+  ? rawConvexUrl.replace(/^["']|["']$/g, "").trim().replace(/\/+$/, "")
+  : undefined;
 const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
 
 function useConvexAuth() {

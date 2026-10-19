@@ -69,7 +69,8 @@ function getValidConvexUrl(): string {
     throw new Error("Invalid Convex hostname");
   }
 
-  return parsed.toString();
+  // Strip trailing slash so ConvexHttpClient endpoint ${address}/api/query does not become //api/query
+  return parsed.toString().replace(/\/+$/, "");
 }
 
 function createTimeoutSignal(ms: number): { signal: AbortSignal; cleanup: () => void } {
