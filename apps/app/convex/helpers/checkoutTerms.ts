@@ -59,13 +59,29 @@ export async function validateDeliveryTerms(ctx: QueryCtx | MutationCtx, busines
   if (![delivery.vendorFeeCents, customerFee].every(value => Number.isSafeInteger(value) && value >= 0) || (!delivery.chargeCustomer && customerFee !== 0)) throw new Error("INVALID_ARGUMENT: Invalid delivery charge");
   // Existing native/quick callers retain their positive vendor-fee contract.
   if (delivery.customerFeeCents === undefined && delivery.vendorFeeCents === 0) throw new Error("INVALID_ARGUMENT: Delivery vendor fee must be positive");
+  if (delivery.feeSplitMode === "pass_full" && customerFee !== delivery.vendorFeeCents) {
+    throw new Error("INVALID_ARGUMENT: Customer fee must equal vendor fee in pass_full split mode");
+  }
+  if (delivery.feeSplitMode === "absorb_full" && customerFee !== 0) {
+    throw new Error("INVALID_ARGUMENT: Customer fee must be 0 in absorb_full split mode");
+  }
+  if (delivery.feeSplitMode === "split_half" && customerFee !== Math.round(delivery.vendorFeeCents / 2)) {
+    throw new Error("INVALID_ARGUMENT: Customer fee must be half vendor fee in split_half split mode");
+  }
   if (delivery.estimatedArrivalMinutes !== undefined) {
-    if (!Number.isSafeInteger(delivery.estimatedArrivalMinutes) || delivery.estimatedArrivalMinutes < 0) {
+    if (
+      !Number.isSafeInteger(delivery.estimatedArrivalMinutes) ||
+      delivery.estimatedArrivalMinutes < 0 ||
+      delivery.estimatedArrivalMinutes > 1440
+    ) {
       throw new Error("INVALID_ARGUMENT: Invalid estimated arrival minutes");
     }
   }
-  if (delivery.uberTrackingUrl !== undefined && delivery.uberTrackingUrl.length > 2000) {
-    throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
+  if (delivery.uberTrackingUrl !== undefined) {
+    const trimmed = delivery.uberTrackingUrl.trim();
+    if (trimmed.length === 0 || trimmed.length > 2000 || !trimmed.startsWith("https://")) {
+      throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
+    }
   }
   if (delivery.profileId) {
     const profile = await ctx.db.get(delivery.profileId);

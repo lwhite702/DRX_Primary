@@ -44,30 +44,46 @@ export async function GET(request: NextRequest) {
     const result = await client.query(api.checkout.getSalesHistory, {});
     const data = await Promise.all(
       result.map(async (sale: any) => {
+        let detail: any = null;
+        try {
+          detail = await client.query(api.checkout.getSaleDetail, { saleId: sale._id });
+        } catch {
+          // fallback to raw sale row if detail query is unavailable
+        }
+        const customerSource = detail?.customer ?? sale.customer ?? null;
         let customerMasked: string | null = null;
         let customerLoyaltyTier: string | null = null;
-        if (sale.customer) {
+        if (customerSource) {
           try {
-            const decoded = await mapConvexCustomer(sale.customer);
+            const decoded = await mapConvexCustomer(customerSource);
             customerMasked = formatMaskedCustomerIdentifier({
               alias: String(decoded.alias || ""),
               firstName: String(decoded.first_name || ""),
               lastName: String(decoded.last_name || ""),
               phone: String(decoded.phone || ""),
-              fallbackId: sale.customerId ?? sale.customer._id,
+              fallbackId: sale.customerId ?? customerSource._id,
             });
             customerLoyaltyTier = String(decoded.loyalty_tier || "none");
           } catch {
             customerMasked = formatMaskedCustomerIdentifier({
-              lastName: sale.customer.lastName ?? null,
-              fallbackId: sale.customerId ?? sale.customer._id,
+              lastName: customerSource.lastName ?? null,
+              fallbackId: sale.customerId ?? customerSource._id,
             });
           }
         } else if (sale.customerId) {
           customerMasked = formatMaskedCustomerIdentifier({ fallbackId: sale.customerId });
         }
-        const itemCount = typeof sale.itemCount === "number" ? sale.itemCount : 0;
-        const itemSummary = typeof sale.itemSummary === "string" && sale.itemSummary ? sale.itemSummary : null;
+        const items = detail?.items ?? [];
+        const itemCount = items.length;
+        const itemNames = items
+          .map((item: any) => item.productName || item.manualName || "Item")
+          .filter(Boolean);
+        const itemSummary =
+          itemNames.length > 0
+            ? itemNames.slice(0, 3).join(", ") +
+              (itemNames.length > 3 ? ` +${itemNames.length - 3} more` : "")
+            : null;
+        const deliverySource = detail?.delivery ?? sale.delivery ?? null;
         return {
           id: sale._id,
           order_number: safeDisplayOrderNumber(sale.orderNumber || sale._id),
@@ -86,19 +102,25 @@ export async function GET(request: NextRequest) {
           customer_loyalty_tier: customerLoyaltyTier,
           item_count: itemCount,
           item_summary: itemSummary,
-          delivery: sale.delivery
+          delivery: deliverySource
             ? {
-                id: sale.delivery._id,
-                status: sale.delivery.status,
-                dispatchType: sale.delivery.dispatchType ?? "merchant_dispatch",
-                feeSplitMode: sale.delivery.feeSplitMode ?? (sale.delivery.chargeCustomer ? "pass_full" : "absorb_full"),
-                vendorFee: sale.delivery.vendorFeeCents / 100,
-                customerFee: (sale.delivery.customerFeeCents ?? (sale.delivery.chargeCustomer ? sale.delivery.vendorFeeCents : 0)) / 100,
-                estimatedArrivalMinutes: sale.delivery.estimatedArrivalMinutes ?? null,
-                uberTrackingUrl: sale.delivery.uberTrackingUrl ?? null,
+                id: deliverySource._id,
+                status: deliverySource.status,
+                dispatchType: deliverySource.dispatchType ?? "merchant_dispatch",
+                feeSplitMode: deliverySource.feeSplitMode ?? (deliverySource.chargeCustomer ? "pass_full" : "absorb_full"),
+                vendorFee: deliverySource.vendorFeeCents / 100,
+                customerFee: (deliverySource.customerFeeCents ?? (deliverySource.chargeCustomer ? deliverySource.vendorFeeCents : 0)) / 100,
+                estimatedArrivalMinutes: deliverySource.estimatedArrivalMinutes ?? null,
+                uberTrackingUrl: deliverySource.uberTrackingUrl ?? null,
               }
             : null,
-          items: Array.from({ length: itemCount }, (_, idx) => ({ id: `${sale._id}-line-${idx}` })),
+          items: items.map((item: any, idx: number) => ({
+            id: item._id ?? `${sale._id}-line-${idx}`,
+            productName: item.productName ?? item.manualName ?? "Inventory Item",
+            unitPrice: (item.unitPriceCents ?? 0) / 100,
+            lineTotal: (item.lineTotalCents ?? 0) / 100,
+            quantity: item.quantityGrams ?? 1,
+          })),
         };
       }),
     );

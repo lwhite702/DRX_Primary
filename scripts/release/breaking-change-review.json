@@ -4,9 +4,11 @@
   "status": "reviewed-compatible",
   "reviewedBy": "lwhite702",
   "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/244#pullrequestreview-5467160999",
-  "rationale": "Additive extensions to POS types and settlement payment methods for split tenders and customer loyalty. All additions are backward-compatible and preserve existing caller contracts.",
+  "rationale": "Additive extensions to POS types, delivery options, and settlement payment methods for split tenders and customer loyalty. All additions are backward-compatible and preserve existing caller contracts.",
   "signals": [
     "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:CheckoutPaymentMethod",
+    "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:calculateSettlement",
+    "export-contract-changed:apps/app/convex/helpers/checkoutTerms.ts:DeliveryTerms",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutRequest",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCustomer",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosDeliveryState",

@@ -607,7 +607,17 @@ export const updateDeliveryDetails = mutation({
       }
       patch.estimatedArrivalMinutes = args.estimatedArrivalMinutes;
     }
-    if (args.uberTrackingUrl !== undefined) patch.uberTrackingUrl = args.uberTrackingUrl ?? undefined;
+    if (args.uberTrackingUrl !== undefined) {
+      if (args.uberTrackingUrl !== null) {
+        const trimmed = args.uberTrackingUrl.trim();
+        if (trimmed.length === 0 || trimmed.length > 2000 || !trimmed.startsWith("https://")) {
+          throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
+        }
+        patch.uberTrackingUrl = trimmed;
+      } else {
+        patch.uberTrackingUrl = undefined;
+      }
+    }
     if (args.address !== undefined) {
       const encrypted = await encryptDeliveryAddress(args.address, {
         businessId: String(auth.businessId),

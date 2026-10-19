@@ -349,6 +349,10 @@ async function createCheckoutFingerprint(input: {
           ...(input.delivery.customerFeeCents === undefined ? {} : { customerFeeCents: input.delivery.customerFeeCents }),
           ...(input.delivery.profileId ? { profileId: input.delivery.profileId } : {}),
           ...(input.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: input.delivery.vendorExpenseKnown }),
+          ...(input.delivery.dispatchType ? { dispatchType: input.delivery.dispatchType } : {}),
+          ...(input.delivery.feeSplitMode ? { feeSplitMode: input.delivery.feeSplitMode } : {}),
+          ...(input.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: input.delivery.estimatedArrivalMinutes } : {}),
+          ...(input.delivery.uberTrackingUrl ? { uberTrackingUrl: input.delivery.uberTrackingUrl } : {}),
         }
       : null,
   });
@@ -1223,16 +1227,55 @@ export const getSaleDetail = query({
     const sale = id ? await ctx.db.get(id) : null;
     if (!sale || sale.businessId !== auth.businessId) throw new Error("NOT_FOUND: Sale not found");
     const lineItems = await ctx.db.query("salesLineItems").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(200);
+    const itemsWithNames = await Promise.all(
+      lineItems.map(async (item) => {
+        let productName = item.manualName;
+        if (!productName && item.productId) {
+          const product = await ctx.db.get(item.productId);
+          productName = product?.productName;
+        }
+        return {
+          ...item,
+          productName: productName ?? "Inventory Item",
+        };
+      })
+    );
     const allocations = await ctx.db.query("salesAllocations").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(500);
     const canViewCustomers = hasPermission(auth.userRecord, "VIEW_CUSTOMERS");
     const customer = canViewCustomers && sale.customerId ? await ctx.db.get(sale.customerId) : null;
     const delivery = await ctx.db.query("deliveries").withIndex("by_saleId", q => q.eq("saleId", sale._id)).unique();
     const costOfGoodsSoldCents = allocations.reduce((sum, allocation) => sum + allocation.extendedCostCents, 0);
+    const safeDelivery =
+      delivery && delivery.businessId === auth.businessId
+        ? {
+            _id: delivery._id,
+            saleId: delivery.saleId,
+            businessId: delivery.businessId,
+            customerId: delivery.customerId,
+            profileId: delivery.profileId,
+            vendorExpenseKnown: delivery.vendorExpenseKnown,
+            dispatchType: (delivery as any).dispatchType,
+            feeSplitMode: (delivery as any).feeSplitMode,
+            estimatedArrivalMinutes: (delivery as any).estimatedArrivalMinutes,
+            uberTrackingUrl: (delivery as any).uberTrackingUrl,
+            vendorFeeCents: delivery.vendorFeeCents,
+            customerFeeCents: delivery.customerFeeCents,
+            deliveryTaxCents: delivery.deliveryTaxCents,
+            chargeCustomer: delivery.chargeCustomer,
+            status: delivery.status,
+            dispatchDueAt: delivery.dispatchDueAt,
+            assignedToUserId: delivery.assignedToUserId,
+            estimatedArrivalAt: delivery.estimatedArrivalAt,
+            createdAt: delivery.createdAt,
+            updatedAt: delivery.updatedAt,
+            address: "Address on file",
+          }
+        : null;
     return {
       sale,
       customer: customer && customer.businessId === auth.businessId ? customer : null,
-      delivery: delivery && delivery.businessId === auth.businessId ? { ...delivery, address: "Address on file" } : null,
-      items: lineItems,
+      delivery: safeDelivery,
+      items: itemsWithNames,
       allocations,
       costOfGoodsSoldCents,
       grossProfitCents: sale.totalAmountCents - costOfGoodsSoldCents,
