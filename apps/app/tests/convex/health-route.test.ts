@@ -44,6 +44,23 @@ it("prefers CONVEX_URL and rejects non-HTTPS URLs in production", async () => {
   expect(insecureRes.status).toBe(503);
 });
 
+it("sanitizes surrounding quotes from Convex URL configuration", async () => {
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  // Strips surrounding double quotes
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", '"https://synthetic.convex.cloud"');
+  const doubleQuoteRes = await GET();
+  expect(doubleQuoteRes.status).toBe(200);
+  expect((await doubleQuoteRes.json()).status).toBe("healthy");
+
+  // Strips surrounding single quotes
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "'https://synthetic.convex.cloud'");
+  const singleQuoteRes = await GET();
+  expect(singleQuoteRes.status).toBe(200);
+  expect((await singleQuoteRes.json()).status).toBe("healthy");
+});
+
 it("enforces machine authorization when HEALTHCHECK_SECRET is configured", async () => {
   vi.stubEnv("HEALTHCHECK_SECRET", "super-secret-probe-token");
   const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });

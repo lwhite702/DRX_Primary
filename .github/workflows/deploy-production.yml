@@ -98,6 +98,7 @@ jobs:
           HEALTH_RESPONSE="$HEALTH_RESPONSE" node -e '
             const response = JSON.parse(process.env.HEALTH_RESPONSE);
             if (response.status !== "healthy" || response.checks?.database !== true) {
+              console.error("Health check response payload:", JSON.stringify(response, null, 2));
               throw new Error("Production health check did not report a healthy database");
             }
           '

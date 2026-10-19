@@ -45,7 +45,13 @@ function isAuthorizedProbe(request?: Request): boolean {
 }
 
 function getValidConvexUrl(): string {
-  const rawUrl = (process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL)?.trim();
+  let rawUrl = (process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL)?.trim();
+  if (!rawUrl) {
+    throw new Error("Convex unavailable");
+  }
+
+  // Strip surrounding quotes if present (e.g. from environment variable misconfiguration)
+  rawUrl = rawUrl.replace(/^["']|["']$/g, "").trim();
   if (!rawUrl) {
     throw new Error("Convex unavailable");
   }
