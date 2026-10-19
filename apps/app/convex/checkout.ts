@@ -636,7 +636,13 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
-    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
+    const normalizedDelivery = args.delivery
+      ? {
+          ...args.delivery,
+          uberTrackingUrl: args.delivery.uberTrackingUrl?.trim() || undefined,
+        }
+      : undefined;
+    await validateDeliveryTerms(ctx, auth.businessId, normalizedDelivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
@@ -649,7 +655,7 @@ export const processCheckout = mutation({
       discountAmountCents: args.discountAmountCents,
       isComp: args.isComp,
       amountPaidCents: args.amountPaidCents,
-      delivery: args.delivery,
+      delivery: normalizedDelivery,
     });
 
     let existingOrder =
@@ -1011,32 +1017,32 @@ export const processCheckout = mutation({
     });
 
     let deliveryId: Id<"deliveries"> | undefined;
-    if (args.delivery) {
+    if (normalizedDelivery) {
       const dispatchDueAt =
         now + (commerceSettings?.deliveryDispatchSlaMinutes ?? 5) * 60_000;
       deliveryId = await ctx.db.insert("deliveries", {
         businessId: auth.businessId,
         saleId,
         customerId: args.customerId,
-        ...(args.delivery.profileId ? { profileId: args.delivery.profileId } : {}),
-        ...(args.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: args.delivery.vendorExpenseKnown }),
-        ...(args.delivery.dispatchType ? { dispatchType: args.delivery.dispatchType } : {}),
-        ...(args.delivery.feeSplitMode ? { feeSplitMode: args.delivery.feeSplitMode } : {}),
-        ...(args.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: args.delivery.estimatedArrivalMinutes } : {}),
-        ...(args.delivery.uberTrackingUrl ? { uberTrackingUrl: args.delivery.uberTrackingUrl } : {}),
+        ...(normalizedDelivery.profileId ? { profileId: normalizedDelivery.profileId } : {}),
+        ...(normalizedDelivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: normalizedDelivery.vendorExpenseKnown }),
+        ...(normalizedDelivery.dispatchType ? { dispatchType: normalizedDelivery.dispatchType } : {}),
+        ...(normalizedDelivery.feeSplitMode ? { feeSplitMode: normalizedDelivery.feeSplitMode } : {}),
+        ...(normalizedDelivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: normalizedDelivery.estimatedArrivalMinutes } : {}),
+        ...(normalizedDelivery.uberTrackingUrl ? { uberTrackingUrl: normalizedDelivery.uberTrackingUrl } : {}),
         addressEncrypted: "pending",
         addressEncryptionVersion: 0,
         vendorFeeCents: vendorDeliveryExpenseCents,
         customerFeeCents: deliveryRevenueCents,
         deliveryTaxCents,
-        chargeCustomer: args.delivery.chargeCustomer,
+        chargeCustomer: normalizedDelivery.chargeCustomer,
         status: "ready_for_dispatch",
         dispatchDueAt,
         createdBy: auth.userId,
         createdAt: now,
         updatedAt: now,
       });
-      const encrypted = await encryptDeliveryAddress(args.delivery.address, {
+      const encrypted = await encryptDeliveryAddress(normalizedDelivery.address, {
         businessId: String(auth.businessId),
         saleId: String(saleId),
         deliveryId: String(deliveryId),
@@ -1052,7 +1058,7 @@ export const processCheckout = mutation({
         type: "created",
         toStatus: "ready_for_dispatch",
         metadata: JSON.stringify({
-          chargeCustomer: args.delivery.chargeCustomer,
+          chargeCustomer: normalizedDelivery.chargeCustomer,
           dispatchDueAt,
         }),
         createdAt: now,

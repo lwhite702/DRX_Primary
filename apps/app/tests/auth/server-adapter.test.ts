@@ -90,5 +90,6 @@ describe("server auth adapter", () => {
 
     const result = await auth();
     expect(result.userId).toBeNull();
+    expect(mocks.clerkAuth).toHaveBeenCalledOnce();
   });
 });

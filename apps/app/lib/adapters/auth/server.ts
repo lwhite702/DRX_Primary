@@ -30,10 +30,7 @@ export function isTrueProductionEnvironment() {
   if (process.env.VERCEL_ENV === "production") {
     return true;
   }
-  return (
-    process.env.NODE_ENV === "production" &&
-    Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://deelrxcrm.app"))
-  );
+  return process.env.NODE_ENV === "production";
 }
 
 export function isClerkServerConfigured() {
