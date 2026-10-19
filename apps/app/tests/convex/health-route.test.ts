@@ -103,5 +103,11 @@ it("supports Vercel protection bypass secret when configured", async () => {
   const res = await GET(correctReq);
   expect(res.status).toBe(200);
   expect((await res.json()).status).toBe("healthy");
+
+  // Anonymous request without bypass header is allowed under public health policy when HEALTHCHECK_SECRET is unset
+  const anonRes = await GET();
+  expect(anonRes.status).toBe(200);
+  expect((await anonRes.json()).status).toBe("healthy");
 });
+
 
