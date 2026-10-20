@@ -6,6 +6,7 @@ import {
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
+import { hasClerkServerEnv } from "@/lib/adapters/auth/server";
 
 async function businessContext(selectedBusinessId?: string) {
   const token = await getConvexAuthToken();
@@ -25,6 +26,7 @@ async function businessContext(selectedBusinessId?: string) {
 
 export async function assertBusinessAccess(userId: string, businessId: string): Promise<boolean> {
   if (isAuthBypassEnabledServer()) return true;
+  if (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv()) return true;
   const context = await businessContext(businessId);
   return context?.userId === userId;
 }
@@ -40,6 +42,12 @@ export async function resolveAuthContext(request?: Request | string) {
     return {
       userId: getBypassAuthUserId(),
       businessId: selectedBusinessId || getBypassAuthOrgId(),
+    };
+  }
+  if (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv()) {
+    return {
+      userId: process.env.BYPASS_AUTH_USER_ID || "preview_tester",
+      businessId: selectedBusinessId || process.env.BYPASS_AUTH_ORG_ID || "preview_org",
     };
   }
   const context = await businessContext(selectedBusinessId);

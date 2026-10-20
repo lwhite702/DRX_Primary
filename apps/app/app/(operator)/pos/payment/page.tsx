@@ -236,8 +236,12 @@ export default function QuickPosPaymentPage() {
         setError("Add at least one payment tender to complete a split sale");
         return;
       }
-      if (splitAllocatedCents < activeTotalCents && !allowCredit) {
-        setError("Split tenders must cover the full sale total");
+      if (splitAllocatedCents !== activeTotalCents) {
+        setError(
+          splitAllocatedCents < activeTotalCents
+            ? "Split tenders must cover the full sale total"
+            : "Split tenders cannot exceed the sale total",
+        );
         return;
       }
     }
@@ -253,6 +257,11 @@ export default function QuickPosPaymentPage() {
     }
 
     try {
+      const isCardOrP2P = method === "card" || method.startsWith("p2p_");
+      const trimmedRef =
+        isCardOrP2P && state.payment.paymentRef?.trim()
+          ? state.payment.paymentRef.trim()
+          : undefined;
       const fees =
         cardFeeCents > 0
           ? [{ type: "card_processor_fee", amount: cardFeeCents / 100 }]
@@ -266,10 +275,10 @@ export default function QuickPosPaymentPage() {
           receipt: state.payment.receipt,
           creditConfirmed: state.payment.creditConfirmed,
           ...(cardFeeCents > 0 ? { cardFeeCents } : {}),
-          ...(state.payment.paymentRef?.trim() ? { paymentRef: state.payment.paymentRef.trim() } : {}),
+          ...(trimmedRef ? { paymentRef: trimmedRef } : {}),
           ...(method === "split" && tenders.length > 0 ? { tenders } : {}),
         },
-        ...(state.payment.paymentRef?.trim() ? { paymentRef: state.payment.paymentRef.trim() } : {}),
+        ...(trimmedRef ? { paymentRef: trimmedRef } : {}),
         ...(method === "split" && tenders.length > 0 ? { paymentTenders: tenders } : {}),
         ...(fees ? { fees } : {}),
         delivery: state.delivery.enabled ? state.delivery : undefined,
@@ -506,6 +515,9 @@ export default function QuickPosPaymentPage() {
             return;
           }
           setPaymentMethod(method);
+          if (method !== "card" && !method.startsWith("p2p_")) {
+            setPaymentDetails({ paymentRef: "" });
+          }
           setError(null);
         }}
         allowCredit={allowCredit}
@@ -889,7 +901,7 @@ export default function QuickPosPaymentPage() {
           !state.payment.method ||
           (state.payment.method === "cash" && numericTendered !== undefined && numericTendered < activeTotal) ||
           (state.payment.method === "credit" && (!creditCoversTotal || !state.payment.creditConfirmed)) ||
-          (state.payment.method === "split" && (tenders.length === 0 || (splitAllocatedCents < activeTotalCents && !allowCredit)))
+          (state.payment.method === "split" && (tenders.length === 0 || splitAllocatedCents !== activeTotalCents))
         }
         className="h-16 w-full rounded-lg bg-accent text-2xl font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Complete Sale"

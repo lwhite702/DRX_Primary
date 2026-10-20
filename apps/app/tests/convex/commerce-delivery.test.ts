@@ -1432,4 +1432,168 @@ describe("Convex commerce and delivery workflow", () => {
       }),
     ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
   });
+
+  it("synchronizes vendorFeeCents to sale.vendorDeliveryExpenseCents on updateDeliveryDetails and markUberOrdered", async () => {
+    const { owner, productId } = await setupCommerceStore();
+
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "DELIVERY-SYNC-EXPENSE",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "cash",
+      amountPaidCents: 1_100,
+      delivery: {
+        address: "456 Synchronized Expense Blvd",
+        vendorFeeCents: 500,
+        chargeCustomer: false,
+      },
+    });
+
+    const deliveryId = checkoutResult.deliveryId!;
+    const saleId = checkoutResult.saleId;
+
+    // Verify initial vendor delivery expense on sale
+    const initialSaleDetail = await owner.query(api.checkout.getSaleDetail, {
+      saleId,
+    });
+    expect(initialSaleDetail.sale.vendorDeliveryExpenseCents).toBe(500);
+
+    // Update delivery details with a new vendorFeeCents
+    await owner.mutation(api.deliveries.updateDeliveryDetails, {
+      deliveryId,
+      vendorFeeCents: 750,
+    });
+
+    const updatedSaleDetail = await owner.query(api.checkout.getSaleDetail, {
+      saleId,
+    });
+    expect(updatedSaleDetail.sale.vendorDeliveryExpenseCents).toBe(750);
+
+    // Mark Uber ordered with updated vendor fee
+    await owner.mutation(api.deliveries.markUberOrdered, {
+      deliveryId,
+      waitMinutes: 15,
+      vendorFeeCents: 850,
+      uberTrackingUrl: "https://uber.com/track/ordered123",
+    });
+
+    const afterUberSaleDetail = await owner.query(api.checkout.getSaleDetail, {
+      saleId,
+    });
+    expect(afterUberSaleDetail.sale.vendorDeliveryExpenseCents).toBe(850);
+  });
+
+  it("validates paymentTenders in updateSale and requires breakdown to match total for split sales", async () => {
+    const { owner, productId } = await setupCommerceStore();
+
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "UPDATE-SALE-SPLIT-VALIDATION",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "cash",
+      amountPaidCents: 1_100,
+    });
+
+    const saleId = checkoutResult.saleId;
+    const totalAmountCents = checkoutResult.totalAmountCents; // 1,100 cents
+
+    // Rejects invalid tender method
+    await expect(
+      owner.mutation(api.checkout.updateSale, {
+        saleId,
+        paymentMethod: "split",
+        paymentTenders: [
+          { method: "bitcoin", amountCents: totalAmountCents },
+        ],
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid payment tender method");
+
+    // Rejects non-positive tender amount
+    await expect(
+      owner.mutation(api.checkout.updateSale, {
+        saleId,
+        paymentMethod: "split",
+        paymentTenders: [
+          { method: "cash", amountCents: 0 },
+        ],
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Payment tender amount must be a positive integer");
+
+    // Rejects credit tender in updateSale (requires reconciliation)
+    await expect(
+      owner.mutation(api.checkout.updateSale, {
+        saleId,
+        paymentMethod: "split",
+        paymentTenders: [
+          { method: "credit", amountCents: totalAmountCents },
+        ],
+      }),
+    ).rejects.toThrow("INVALID_STATE: Credit payment changes require reconciliation");
+
+    // Rejects mismatched split sum
+    await expect(
+      owner.mutation(api.checkout.updateSale, {
+        saleId,
+        paymentMethod: "split",
+        paymentTenders: [
+          { method: "cash", amountCents: 500 },
+          { method: "card", amountCents: 500 },
+        ],
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Payment tenders sum does not match sale total");
+
+    // Accepts matching split breakdown
+    await owner.mutation(api.checkout.updateSale, {
+      saleId,
+      paymentMethod: "split",
+      paymentTenders: [
+        { method: "cash", amountCents: 600 },
+        { method: "card", amountCents: 500 },
+      ],
+    });
+
+    const updatedSale = await owner.query(api.checkout.getSaleDetail, {
+      saleId,
+    });
+    expect(updatedSale.sale.paymentMethod).toBe("split");
+    expect(updatedSale.sale.paymentTenders).toBeDefined();
+    expect(updatedSale.sale.paymentTenders).toHaveLength(2);
+    expect(updatedSale.sale.paymentTenders?.[0].amountCents).toBe(600);
+    expect(updatedSale.sale.paymentTenders?.[1].amountCents).toBe(500);
+  });
+
+  it("retrieves tenant-scoped recent customer favorites through getCustomerRecentFavorites", async () => {
+    const { owner, productId } = await setupCommerceStore();
+
+    // Create a customer
+    const customerId = await owner.mutation(api.customers.createCustomer, {
+      firstName: "Loyal",
+      lastName: "Shopper",
+      phoneNumber: "+15551234567",
+    });
+
+    // Run a checkout with this customer
+    await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "FAVORITES-CHECKOUT-1",
+      customerId,
+      items: [{ productId, quantityGrams: 2 }],
+      paymentMethod: "cash",
+      amountPaidCents: 2_200,
+    });
+
+    // Query customer recent favorites
+    const favorites = await owner.query(api.checkout.getCustomerRecentFavorites, {
+      customerId,
+    });
+
+    expect(favorites).toHaveLength(1);
+    expect(favorites[0].productId).toBe(productId);
+    expect(favorites[0].name).toBe("Fractional Commerce Product");
+    expect(favorites[0].orderCount).toBe(1);
+    expect(favorites[0].lastQuantityGrams).toBe(2);
+
+    // Unrelated customer returns empty favorites
+    const emptyFavorites = await owner.query(api.checkout.getCustomerRecentFavorites, {
+      customerId: "non_existent_id",
+    });
+    expect(emptyFavorites).toEqual([]);
+  });
 });
