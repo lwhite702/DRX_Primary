@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baseSha": "f18b929e22a9806a88a94843ec25d9a9c234b64f",
+  "baseSha": "a19672076dc2e70a17a136509da5270751df7092",
   "status": "reviewed-compatible",
   "reviewedBy": "lwhite702",
   "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/244#pullrequestreview-5467160999",
@@ -13,6 +13,7 @@
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCustomer",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosDeliveryState",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosPaymentState",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosState"
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosState",
+    "export-contract-changed:apps/app/proxy.ts:proxy"
   ]
 }

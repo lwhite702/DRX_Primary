@@ -32,6 +32,7 @@ export function AuthShell({ children, eyebrow, description, footer }: AuthShellP
   return (
     <main
       id="main-content"
+      role="main"
       className="min-h-dvh bg-background font-sans text-foreground"
     >
       <div className="mx-auto flex min-h-dvh w-full max-w-[544px] flex-col px-6 pb-6 pt-12 sm:px-8 sm:pb-8 sm:pt-[152px] lg:pt-[112px]">

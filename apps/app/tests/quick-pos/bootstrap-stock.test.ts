@@ -100,3 +100,15 @@ it("denies register data to a member without checkout permission", async () => {
   await t.run(async ctx => { const user = await ctx.db.query("users").first(); await ctx.db.patch(user!._id, { role: "viewer" }); });
   expect((await GET()).status).toBe(403);
 });
+
+it("returns a valid bootstrap response when auth bypass is enabled", async () => {
+  vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "true");
+  vi.stubEnv("BYPASS_AUTH_USER_ID", "bypass_user");
+  vi.stubEnv("BYPASS_AUTH_ORG_ID", businessId);
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const data = await response.json();
+  expect(data).toHaveProperty("favorites");
+  expect(data).toHaveProperty("creditPolicy");
+  expect(data).toHaveProperty("deliveryPolicy");
+});

@@ -246,7 +246,39 @@ const clerkProtectedMiddleware = hasClerkMiddlewareEnv
     })
   : null;
 
-export const proxy = (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
+function applySecurityHeaders(res: NextResponse | Response) {
+  if (!res.headers.has("X-Content-Type-Options")) res.headers.set("X-Content-Type-Options", "nosniff");
+  if (!res.headers.has("X-Frame-Options")) res.headers.set("X-Frame-Options", "DENY");
+  if (!res.headers.has("Referrer-Policy")) res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (!res.headers.has("Content-Security-Policy")) {
+    res.headers.set(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://snippet.meticulous.ai",
+        "style-src 'self' 'unsafe-inline' https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+        "img-src 'self' data: blob: https://img.clerk.com https://images.clerk.dev https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+        "font-src 'self' data: https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+        "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com https://*.ingest.sentry.io https://*.posthog.com https://app.posthog.com https://us.i.posthog.com https://snippet.meticulous.ai",
+        "frame-src 'self' https://challenges.cloudflare.com https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+        "frame-ancestors 'none'",
+        "object-src 'none'",
+        "base-uri 'self'",
+      ].join("; "),
+    );
+  }
+  return res;
+}
+
+const baseProxy = (hasClerkMiddlewareEnv ? clerkProtectedMiddleware : middlewareWithoutClerk)!;
+
+export const proxy = async (...args: any[]) => {
+  const res = await (baseProxy as any)(...args);
+  if (res && typeof res.headers?.set === "function") {
+    applySecurityHeaders(res);
+  }
+  return res;
+};
 
 export const config = {
   matcher: [

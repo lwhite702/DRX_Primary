@@ -8,8 +8,18 @@ function isAuthorizedProbe(request?: Request): boolean {
   const secret = process.env.HEALTHCHECK_SECRET?.trim();
   const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
 
-  // When no machine-auth secret is configured, allow the probe under the minimal non-sensitive public health policy.
-  if (!secret && !vercelBypassSecret) {
+  // If a Vercel protection bypass token is provided, validate it
+  const bypassHeader = request?.headers.get("x-vercel-protection-bypass")?.trim();
+  if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
+    return true;
+  }
+
+  // When no machine-auth secret is configured, allow the probe under the minimal non-sensitive public health policy
+  // unless an explicit invalid bypass token was supplied.
+  if (!secret) {
+    if (vercelBypassSecret && bypassHeader && bypassHeader !== vercelBypassSecret) {
+      return false;
+    }
     return true;
   }
 
@@ -31,17 +41,17 @@ function isAuthorizedProbe(request?: Request): boolean {
     return true;
   }
 
-  // Check Vercel protection bypass header
-  const bypassHeader = request.headers.get("x-vercel-protection-bypass")?.trim();
-  if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
-    return true;
-  }
-
   return false;
 }
 
 function getValidConvexUrl(): string {
-  const rawUrl = (process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL)?.trim();
+  let rawUrl = (process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL)?.trim();
+  if (!rawUrl) {
+    throw new Error("Convex unavailable");
+  }
+
+  // Strip surrounding quotes if present (e.g. from environment variable misconfiguration)
+  rawUrl = rawUrl.replace(/^["']|["']$/g, "").trim();
   if (!rawUrl) {
     throw new Error("Convex unavailable");
   }
@@ -59,7 +69,8 @@ function getValidConvexUrl(): string {
     throw new Error("Invalid Convex hostname");
   }
 
-  return parsed.toString();
+  // Strip trailing slash so ConvexHttpClient endpoint ${address}/api/query does not become //api/query
+  return parsed.toString().replace(/\/+$/, "");
 }
 
 function createTimeoutSignal(ms: number): { signal: AbortSignal; cleanup: () => void } {

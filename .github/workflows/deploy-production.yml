@@ -83,12 +83,14 @@ jobs:
             fi
           else
             if [ -n "$HEALTHCHECK_SECRET" ]; then
-              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 \
+                curl /api/health \
                 --deployment "${{ steps.vercel.outputs.preview-url }}" \
                 --yes \
                 -- --header "Authorization: Bearer $HEALTHCHECK_SECRET")
             else
-              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 curl /api/health \
+              HEALTH_RESPONSE=$(pnpm dlx vercel@59.3.0 \
+                curl /api/health \
                 --deployment "${{ steps.vercel.outputs.preview-url }}" \
                 --yes)
             fi
@@ -96,6 +98,7 @@ jobs:
           HEALTH_RESPONSE="$HEALTH_RESPONSE" node -e '
             const response = JSON.parse(process.env.HEALTH_RESPONSE);
             if (response.status !== "healthy" || response.checks?.database !== true) {
+              console.error("Health check response payload:", JSON.stringify(response, null, 2));
               throw new Error("Production health check did not report a healthy database");
             }
           '

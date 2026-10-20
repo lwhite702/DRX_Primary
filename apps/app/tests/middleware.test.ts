@@ -105,6 +105,9 @@ describe("proxy auth and routing", () => {
     const req = makeRequest("/", "deelrxcrm.app");
     const res = await runMiddleware(req, { userId: null });
     expect(res.headers.get("location")).toBe("https://deelrxcrm.app/login");
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(res.headers.get("x-frame-options")).toBe("DENY");
+    expect(res.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
   });
 
   it("redirects root to onboarding when signed in but onboarding incomplete", async () => {

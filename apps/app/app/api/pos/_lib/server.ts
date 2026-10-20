@@ -1,6 +1,11 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
+import {
+  isAuthBypassEnabledServer,
+  getBypassAuthUserId,
+  getBypassAuthOrgId,
+} from "@/lib/auth/bypass";
 
 async function businessContext(selectedBusinessId?: string) {
   const token = await getConvexAuthToken();
@@ -19,6 +24,7 @@ async function businessContext(selectedBusinessId?: string) {
 }
 
 export async function assertBusinessAccess(userId: string, businessId: string): Promise<boolean> {
+  if (isAuthBypassEnabledServer()) return true;
   const context = await businessContext(businessId);
   return context?.userId === userId;
 }
@@ -29,6 +35,12 @@ export async function resolveAuthContext(request?: Request | string) {
   else if (request) {
     const url = new URL(request.url);
     selectedBusinessId = request.headers.get("x-business-id") || url.searchParams.get("businessId") || url.searchParams.get("business_id") || undefined;
+  }
+  if (isAuthBypassEnabledServer()) {
+    return {
+      userId: getBypassAuthUserId(),
+      businessId: selectedBusinessId || getBypassAuthOrgId(),
+    };
   }
   const context = await businessContext(selectedBusinessId);
   return { userId: context?.userId ?? null, businessId: context?.businessId ?? null };

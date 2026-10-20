@@ -3,10 +3,17 @@ import { convexTest } from "convex-test";
 import schema from "../../convex/schema";
 import * as health from "../../convex/health";
 import * as generatedApi from "../../convex/_generated/api";
-const mocks = vi.hoisted(() => ({ query: vi.fn() }));
-vi.mock("convex/browser", () => ({ ConvexHttpClient: class { query = mocks.query; } }));
+const mocks = vi.hoisted(() => ({ query: vi.fn(), clientUrls: [] as string[] }));
+vi.mock("convex/browser", () => ({
+  ConvexHttpClient: class {
+    constructor(url: string) {
+      mocks.clientUrls.push(url);
+    }
+    query = mocks.query;
+  },
+}));
 import { GET } from "../../app/api/health/route";
-beforeEach(() => { vi.resetAllMocks(); vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud"); });
+beforeEach(() => { vi.resetAllMocks(); mocks.clientUrls.length = 0; vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud"); });
 afterEach(() => { vi.unstubAllEnvs(); });
 it("probes the canonical database without returning tenant records and disables caching", async () => {
   const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
@@ -42,6 +49,34 @@ it("prefers CONVEX_URL and rejects non-HTTPS URLs in production", async () => {
   vi.stubEnv("CONVEX_URL", "http://insecure.convex.cloud");
   const insecureRes = await GET();
   expect(insecureRes.status).toBe(503);
+});
+
+it("sanitizes surrounding quotes from Convex URL configuration", async () => {
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  // Strips surrounding double quotes
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", '"https://synthetic.convex.cloud"');
+  const doubleQuoteRes = await GET();
+  expect(doubleQuoteRes.status).toBe(200);
+  expect((await doubleQuoteRes.json()).status).toBe("healthy");
+
+  // Strips surrounding single quotes
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "'https://synthetic.convex.cloud'");
+  const singleQuoteRes = await GET();
+  expect(singleQuoteRes.status).toBe(200);
+  expect((await singleQuoteRes.json()).status).toBe("healthy");
+});
+
+it("strips trailing slashes from Convex URL so ConvexHttpClient endpoints are not malformed", async () => {
+  const t = convexTest(schema, { "health.ts": async () => health, "_generated/api.js": async () => generatedApi });
+  mocks.query.mockImplementation(t.query.bind(t));
+
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud/");
+  const res = await GET();
+  expect(res.status).toBe(200);
+  expect((await res.json()).status).toBe("healthy");
+  expect(mocks.clientUrls.at(-1)).toBe("https://synthetic.convex.cloud");
 });
 
 it("enforces machine authorization when HEALTHCHECK_SECRET is configured", async () => {
@@ -103,5 +138,11 @@ it("supports Vercel protection bypass secret when configured", async () => {
   const res = await GET(correctReq);
   expect(res.status).toBe(200);
   expect((await res.json()).status).toBe("healthy");
+
+  // Anonymous request without bypass header is allowed under public health policy when HEALTHCHECK_SECRET is unset
+  const anonRes = await GET();
+  expect(anonRes.status).toBe(200);
+  expect((await anonRes.json()).status).toBe("healthy");
 });
+
 
