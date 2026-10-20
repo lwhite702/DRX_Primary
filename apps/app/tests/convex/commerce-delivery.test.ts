@@ -1402,4 +1402,34 @@ describe("Convex commerce and delivery workflow", () => {
     const cleared = deliveriesListAfterClear.find((d) => d._id === deliveryId);
     expect(cleared?.uberTrackingUrl).toBeUndefined();
   });
+
+  it("rejects blank or whitespace-only uberTrackingUrl in quoteCheckout and processCheckout", async () => {
+    const { owner, productId } = await setupCommerceStore();
+
+    await expect(
+      owner.query(api.checkout.quoteCheckout, {
+        items: [{ productId, quantityGrams: 1 }],
+        delivery: {
+          vendorFeeCents: 500,
+          chargeCustomer: false,
+          uberTrackingUrl: "   ",
+        },
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
+
+    await expect(
+      owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "DELIVERY-BLANK-TRACKING",
+        items: [{ productId, quantityGrams: 1 }],
+        paymentMethod: "cash",
+        amountPaidCents: 1_000,
+        delivery: {
+          address: "123 Delivery Test Lane",
+          vendorFeeCents: 500,
+          chargeCustomer: false,
+          uberTrackingUrl: "   ",
+        },
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
+  });
 });

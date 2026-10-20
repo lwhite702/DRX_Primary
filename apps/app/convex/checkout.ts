@@ -636,13 +636,13 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     const normalizedDelivery = args.delivery
       ? {
           ...args.delivery,
           uberTrackingUrl: args.delivery.uberTrackingUrl?.trim() || undefined,
         }
       : undefined;
-    await validateDeliveryTerms(ctx, auth.businessId, normalizedDelivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
