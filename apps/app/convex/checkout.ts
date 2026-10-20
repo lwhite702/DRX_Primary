@@ -16,6 +16,9 @@ import {
   calculateCheckoutPricing,
   resolveLoyaltyDiscountRate,
   validateSaleQuantity,
+  type CheckoutPricing,
+  type CommerceProduct,
+  type PricedLine,
 } from "./helpers/pricing";
 import {
   encryptDeliveryAddress,
@@ -222,6 +225,63 @@ function normalizeItems(
     quantityGrams,
   }));
   return [...standardLines, ...fixedAmountLines].sort((left, right) => String(left.productId).localeCompare(String(right.productId)));
+}
+
+type RequestedAmountPricing = Omit<CheckoutPricing, "lines"> & {
+  lines: Array<PricedLine & {
+    requestedAmountCents?: number;
+    operatorPriceAdjustmentCents: number;
+  }>;
+  priceAdjustmentCents: number;
+};
+
+function calculateCheckoutPricingWithRequestedAmounts(input: {
+  lines: Array<{
+    product: CommerceProduct;
+    quantity: number;
+    requestedAmountCents?: number;
+  }>;
+  loyaltyDiscountRateBps: number;
+  loyaltyCombinationPolicy: "stack" | "best_only";
+}): RequestedAmountPricing {
+  const pricing = calculateCheckoutPricing({
+    lines: input.lines.map(({ product, quantity }) => ({ product, quantity })),
+    loyaltyDiscountRateBps: input.loyaltyDiscountRateBps,
+    loyaltyCombinationPolicy: input.loyaltyCombinationPolicy,
+  });
+  const lines = pricing.lines.map((line, index) => {
+    const requestedAmountCents = input.lines[index]?.requestedAmountCents;
+    if (requestedAmountCents === undefined) {
+      return { ...line, operatorPriceAdjustmentCents: 0 };
+    }
+    if (!Number.isSafeInteger(requestedAmountCents) || requestedAmountCents <= 0) {
+      throw new Error("INVALID_ARGUMENT: requestedAmountCents must be positive integer cents");
+    }
+    return {
+      ...line,
+      requestedAmountCents,
+      operatorPriceAdjustmentCents: requestedAmountCents - line.lineSubtotalCents,
+      lineSubtotalCents: requestedAmountCents,
+      appliedUnitPriceCents: requestedAmountCents / line.quantity,
+    };
+  });
+
+  return {
+    ...pricing,
+    lines,
+    taxableMerchandiseCents: lines.reduce(
+      (total, line) => total + (line.taxable ? line.lineSubtotalCents : 0),
+      0,
+    ),
+    priceAdjustmentCents: lines.reduce(
+      (total, line) => total + line.operatorPriceAdjustmentCents,
+      0,
+    ),
+    merchandiseTotalCents: lines.reduce(
+      (total, line) => total + line.lineSubtotalCents,
+      0,
+    ),
+  };
 }
 
 function normalizeManualItems(
@@ -453,7 +513,7 @@ export const quoteCheckout = query({
       discountCents: 0,
       priceAdjustmentCents: 0,
       merchandiseTotalCents: 0,
-    } : calculateCheckoutPricing({
+    } : calculateCheckoutPricingWithRequestedAmounts({
       lines: products.map(({ item, product }) => {
         const commerceConfig = normalizeProductCommerceConfig(product);
         return {
@@ -814,7 +874,7 @@ export const processCheckout = mutation({
       discountCents: 0,
       priceAdjustmentCents: 0,
       merchandiseTotalCents: 0,
-    } : calculateCheckoutPricing({
+    } : calculateCheckoutPricingWithRequestedAmounts({
       lines: normalizedItems.map((item) => {
         const product = productsById.get(String(item.productId))!;
         const commerceConfig = normalizeProductCommerceConfig(product);
