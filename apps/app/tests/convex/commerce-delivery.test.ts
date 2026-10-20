@@ -149,6 +149,8 @@ describe("Convex commerce and delivery workflow", () => {
       amountPaidCents: quote.totalAmountCents,
     });
     expect(replay).toMatchObject({ status: "ALREADY_PROCESSED", priceAdjustmentCents: 1_800 });
+    const productAfterReplay = await t.run((ctx) => ctx.db.get(productId));
+    expect(productAfterReplay?.quantityOnHandGrams).toBeCloseTo(9.3);
   });
 
   it("deducts duplicate fixed-amount lines from product stock only once in aggregate", async () => {

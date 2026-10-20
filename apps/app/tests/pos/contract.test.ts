@@ -24,6 +24,9 @@ describe("POS contract", () => {
       }],
     });
     expect(result.success).toBe(false);
+    expect(!result.success && result.error.issues.some((issue) =>
+      issue.path.join(".") === "items.0.requestedAmountCents",
+    )).toBe(true);
   });
 
   it("validates product shape with optional sku/barcode", () => {

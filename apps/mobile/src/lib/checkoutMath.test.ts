@@ -41,6 +41,9 @@ describe("fractional checkout math", () => {
   it("converts dollar strings to cents without binary float rounding errors", () => {
     expect(parseDollarAmountCents("1.005")).toBe(101);
     expect(parseDollarAmountCents("25")).toBe(2_500);
+    expect(parseDollarAmountCents(".50")).toBe(50);
+    expect(parseDollarAmountCents(".")).toBe(null);
+    expect(parseDollarAmountCents("")).toBe(null);
     expect(parseDollarAmountCents("0.004")).toBe(null);
   });
   it("previews exact bundle totals", () => {

@@ -28,9 +28,10 @@ export type LoyaltySpend = {
 };
 
 export function parseDollarAmountCents(raw: string): number | null {
-  const match = /^(\d+)(?:\.(\d*))?$/.exec(raw.trim());
+  const match = /^(\d*)(?:\.(\d*))?$/.exec(raw.trim());
   if (!match) return null;
-  const dollars = BigInt(match[1]);
+  if (!match[1] && !match[2]) return null;
+  const dollars = BigInt(match[1] || "0");
   const fraction = match[2] ?? "";
   let cents = dollars * 100n + BigInt((fraction + "00").slice(0, 2));
   if ((fraction[2] ?? "0") >= "5") cents += 1n;

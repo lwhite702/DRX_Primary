@@ -114,6 +114,7 @@ export default function POSScreen() {
   const { isOnline, authorization, queue, queueSale, syncPending } =
     useOffline();
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [dollarDrafts, setDollarDrafts] = useState<Record<string, string>>({});
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [discountDollars, setDiscountDollars] = useState("");
   const [tender, setTender] = useState<Tender>("cash");
@@ -305,7 +306,7 @@ export default function POSScreen() {
       triggerFeedback(`Added ${product.productName} (${formatQuantity(pricing(product), initialQuantity)}) to cart`);
     } else {
       const nextQty = Math.min(
-        product.quantityOnHandGrams,
+        availableForLine,
         existing.quantityGrams + increment,
       );
       if (nextQty === existing.quantityGrams) {
@@ -847,17 +848,22 @@ export default function POSScreen() {
                     <View style={styles.entryField}>
                       <Text style={styles.entryLabel}>DOLLARS</Text>
                       <TextInput
-                        key={`${line.id}-${line.quantityGrams}`}
                         style={styles.quantity}
-                        defaultValue={((line.requestedAmountCents ?? pricedLineTotalCents(
+                        value={dollarDrafts[line.id] ?? ((line.requestedAmountCents ?? pricedLineTotalCents(
                           pricingForCheckout(line.product),
                           line.quantityGrams,
                           loyaltyRateBps,
                           loyaltyPolicy,
                         )) / 100).toFixed(2)}
-                        onEndEditing={(event) =>
-                          updateDollarAmount(line.id, event.nativeEvent.text)
-                        }
+                        onChangeText={(value) => setDollarDrafts((current) => ({ ...current, [line.id]: value }))}
+                        onEndEditing={(event) => {
+                          updateDollarAmount(line.id, event.nativeEvent.text);
+                          setDollarDrafts((current) => {
+                            const next = { ...current };
+                            delete next[line.id];
+                            return next;
+                          });
+                        }}
                         keyboardType="decimal-pad"
                         accessibilityLabel={`${line.product.productName} dollar amount`}
                       />
