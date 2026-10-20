@@ -19,7 +19,8 @@ import {
 import type { QuickPosBootstrapItem, QuickPosCartItem } from "@/lib/quick-pos/types";
 
 function parseRequestedAmountCents(input: string): number | undefined {
-  const match = /^(\d*)(?:\.(\d*))?$/.exec(input.trim());
+  const trimmed = input.trim();
+  const match = /^(\d*)(?:\.(\d*))?$/.exec(/e/i.test(trimmed) ? Number(trimmed).toFixed(3) : trimmed);
   if (!match || (!match[1] && !match[2])) return undefined;
   const fraction = match[2] ?? "";
   const dollars = Number(match[1] || "0");
