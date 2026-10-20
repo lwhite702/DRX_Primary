@@ -6,6 +6,7 @@ import ClerkKit
 
 struct CreditView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var customers: [DRXCustomer] = []
     @State private var isLoading = true
     @State private var error: String?
@@ -32,7 +33,9 @@ struct CreditView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading payments…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                DRXLoadingPlaceholder(label: "Loading payments…", layout: .credit)
+                    .padding(DRXSpacing.lg)
+                    .transition(.opacity)
             } else if let error {
                 ContentUnavailableView {
                     Label("Couldn’t load payments", systemImage: "exclamationmark.triangle.fill")
@@ -42,11 +45,14 @@ struct CreditView: View {
                     Button(DRXContent.Actions.tryAgain) { Task { await load() } }
                         .buttonStyle(.drxPrimary)
                 }
+                .transition(.opacity)
             } else {
-                content
+                content.transition(.opacity)
             }
         }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: error != nil)
         .navigationTitle(DRXContent.Navigation.payments)
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await load() }

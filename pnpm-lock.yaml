@@ -770,6 +770,12 @@ importers:
       '@deelrx/ui':
         specifier: link:../../packages/ui
         version: link:../../packages/ui
+      animejs:
+        specifier: 4.3.0
+        version: 4.3.0
+      framer-motion:
+        specifier: ^12.23.26
+        version: 12.23.26(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@19.1.0)
@@ -6647,6 +6653,9 @@ packages:
 
   alien-signals@2.0.6:
     resolution: {integrity: sha512-P3TxJSe31bUHBiblg59oU1PpaWPtmxF9GhJ/cB7OkgJ0qN/ifFSKUI25/v8ZhsT+lIG6ac8DpTOplXxORX6F3Q==}
+
+  animejs@4.3.0:
+    resolution: {integrity: sha512-68OxbkOYV/+0h8c45Quv277jPs93TEKM2tq8SxtF7S4ftICcTgG7MNOCRMIE1PlOXcXl/nndPCcgAKBEsYakNg==}
 
   anser@1.4.10:
     resolution: {integrity: sha512-hCv9AqTQ8ycjpSd3upOJd7vFwW1JaoYQ7tpham03GJ1ca8/65rqn0RpaWpItOAd6ylW9wAw6luXYPJIyPFVOww==}
@@ -19256,6 +19265,8 @@ snapshots:
       require-from-string: 2.0.2
 
   alien-signals@2.0.6: {}
+
+  animejs@4.3.0: {}
 
   anser@1.4.10: {}
 

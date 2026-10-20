@@ -5,6 +5,7 @@ import SwiftUI
 
 struct ReportsView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var salesHistory: [DRXSale] = []
     @State private var selectedDate = Date()
@@ -60,12 +61,14 @@ struct ReportsView: View {
             if isLoading {
                 loadingView
             } else if let error {
-                errorView(message: error)
+                errorView(message: error).transition(.opacity)
             } else {
-                content
+                content.transition(.opacity)
             }
         }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: error != nil)
         .navigationTitle("Reports")
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await load() }
@@ -189,13 +192,9 @@ struct ReportsView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView().tint(DRXPalette.accent)
-            Text("Loading your numbers…")
-                .font(.subheadline)
-                .foregroundStyle(DRXPalette.muted)
-        }
-        .frame(maxWidth: .infinity, minHeight: 300)
+        DRXLoadingPlaceholder(label: "Loading your numbers…", layout: .reports)
+            .padding(DRXSpacing.lg)
+            .transition(.opacity)
     }
 
     private func errorView(message: String) -> some View {

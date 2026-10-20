@@ -8,6 +8,7 @@ struct DashboardView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var recentSales: [DRXSale] = []
     @State private var isLoading = true
@@ -19,13 +20,15 @@ struct DashboardView: View {
             if isLoading {
                 loadingView
             } else if let error {
-                errorView(message: error)
+                errorView(message: error).transition(.opacity)
             } else {
-                content
+                content.transition(.opacity)
             }
         }
         .refreshable { await load() }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: error != nil)
         .navigationTitle(DRXContent.Navigation.home)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -101,13 +104,10 @@ struct DashboardView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView().tint(DRXPalette.accent)
-            Text("Loading today’s numbers…")
-                .font(.subheadline)
-                .foregroundStyle(DRXPalette.muted)
-        }
-        .frame(maxWidth: .infinity, minHeight: 300)
+        DRXLoadingPlaceholder(label: "Loading today’s numbers…", layout: .dashboard)
+            .padding(.horizontal, DRXSpacing.lg)
+            .padding(.top, DRXSpacing.md)
+            .transition(.opacity)
     }
 
     private func errorView(message: String) -> some View {
@@ -375,7 +375,7 @@ private struct IdentityHeaderCard: View {
                     .stroke(DRXPalette.border, lineWidth: 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DRXQuietButtonStyle())
         .accessibilityIdentifier("identityHeaderCard")
     }
 }

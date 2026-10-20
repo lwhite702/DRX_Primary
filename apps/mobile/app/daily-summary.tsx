@@ -1,13 +1,7 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonSummary } from "../src/components/LoadingSkeleton";
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  useWindowDimensions,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -73,15 +67,15 @@ export default function DailySummary() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Daily summary</Text>
         <View style={{ width: 48 }} />
       </View>
 
       <View style={styles.dateBar}>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.dayNavBtn}
           onPress={() => handleDateChange(shiftDay(currentDateStr, -1))}
           accessibilityRole="button"
@@ -89,14 +83,14 @@ export default function DailySummary() {
         >
           <Ionicons name="chevron-back" size={20} color={COLORS.accent} />
           <Text style={styles.dayNavBtnText}>Previous</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
 
         <View style={styles.dateLabelContainer}>
           <Text style={styles.dateLabelText}>{currentDateStr}</Text>
           <Text style={styles.timezoneText}>Eastern Time</Text>
         </View>
 
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.dayNavBtn}
           onPress={() => handleDateChange(shiftDay(currentDateStr, 1))}
           accessibilityRole="button"
@@ -104,30 +98,31 @@ export default function DailySummary() {
         >
           <Text style={styles.dayNavBtnText}>Next</Text>
           <Ionicons name="chevron-forward" size={20} color={COLORS.accent} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
 
       {!isToday && (
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.todayBtn}
           onPress={() => handleDateChange(todayStr)}
           accessibilityRole="button"
           accessibilityLabel="Jump to today"
         >
           <Text style={styles.todayBtnText}>Jump to Today</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       )}
 
       {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={COLORS.accent} accessibilityLabel="Loading sales summary" />
-        </View>
+        <ScrollView contentContainerStyle={styles.summaryLoading}>
+          <SkeletonSummary />
+          <SkeletonSummary accessibleStatus={false} />
+        </ScrollView>
       ) : error ? (
         <View style={styles.centerContainer}>
           <Text style={styles.emptyText} accessibilityRole="alert">{error}</Text>
-          <TouchableOpacity onPress={() => fetchSummary(currentDateStr)} style={styles.retryButton} accessibilityRole="button">
+          <MotionTouchableOpacity onPress={() => fetchSummary(currentDateStr)} style={styles.retryButton} accessibilityRole="button">
             <Text style={styles.retryText}>Try again</Text>
-          </TouchableOpacity>
+          </MotionTouchableOpacity>
         </View>
       ) : summary ? (
         <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + SPACING.xl }}>
@@ -193,6 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: SPACING.lg,
   },
+  summaryLoading: { flexGrow: 1, padding: SPACING.md, gap: SPACING.md },
   emptyText: {
     color: COLORS.textMuted,
     fontSize: FONT_SIZES.md,

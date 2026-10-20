@@ -56,7 +56,8 @@ export function SiteHeader() {
           </Link>
           <Link
             href={headerCta.href}
-            className="rounded-xl border border-accent/40 bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wide text-black shadow-[0_14px_24px_rgba(204,255,0,0.2)] transition hover:brightness-95"
+            data-motion="button"
+            className="drx-button-motion rounded-xl border border-accent/40 bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wide text-black shadow-[0_14px_24px_rgba(204,255,0,0.2)] hover:brightness-95"
             onClick={() =>
               trackMarketingEvent("click_primary_cta", {
                 location: "header",

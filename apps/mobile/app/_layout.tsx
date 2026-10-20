@@ -7,6 +7,8 @@ import { OfflineProvider } from '../src/contexts/OfflineContext';
 import { PushNotificationProvider } from '../src/contexts/PushNotificationContext';
 import { initErrors } from '@wrelik/errors/react-native';
 import { PostHogProvider } from 'posthog-react-native';
+import { useReducedMotion } from 'react-native-reanimated';
+import { MOTION_DURATION } from '../src/constants/theme';
 
 // Initialize Sentry for mobile error tracking
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -19,6 +21,7 @@ if (SENTRY_DSN) {
 }
 
 export default function RootLayout() {
+  const reduceMotion = useReducedMotion();
   return (
     <PostHogProvider
       apiKey={process.env.EXPO_PUBLIC_POSTHOG_API_KEY!}
@@ -36,7 +39,8 @@ export default function RootLayout() {
                 screenOptions={{
                   headerShown: false,
                   contentStyle: { backgroundColor: '#0A0A0A' },
-                  animation: 'slide_from_right',
+                  animation: reduceMotion ? 'none' : 'fade_from_bottom',
+                  animationDuration: MOTION_DURATION.standard,
                 }}
               />
             </View>

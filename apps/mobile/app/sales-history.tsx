@@ -1,6 +1,8 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonRows } from "../src/components/LoadingSkeleton";
 import { FormSheet } from "../src/components/FormSheet";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -158,14 +160,14 @@ export default function SalesHistory() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} accessibilityRole="button">
+        <MotionTouchableOpacity onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.back}>‹ Back</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Sales history</Text>
         <View style={styles.spacer} />
       </View>
       {sales === undefined ? (
-        <ActivityIndicator style={styles.loader} color={COLORS.accent} />
+        <SkeletonRows style={{ flex: 1 }} />
       ) : (
         <FlatList
           data={sales}
@@ -190,7 +192,7 @@ export default function SalesHistory() {
                   <Text style={styles.customerLabel}>Customer: {customerDisplayName(linkedCustomer)}</Text>
                 ) : null}
                 {canAttachCustomer ? (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessibilityRole="button"
                     accessibilityLabel={`Add customer to sale ${item.orderNumber}`}
                     style={styles.attachButton}
@@ -201,7 +203,7 @@ export default function SalesHistory() {
                     }}
                   >
                     <Text style={styles.attachText}>Add customer</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ) : null}
               </View>
             );
@@ -222,7 +224,7 @@ export default function SalesHistory() {
             keyExtractor={(customer) => customer._id}
             style={styles.customerList}
             renderItem={({ item }) => (
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 accessibilityRole="button"
                 accessibilityState={{ selected: selectedCustomerId === item._id }}
                 style={[styles.customerOption, selectedCustomerId === item._id && styles.customerOptionSelected]}
@@ -230,12 +232,12 @@ export default function SalesHistory() {
               >
                 <Text style={styles.customerOptionText}>{customerDisplayName(item)}</Text>
                 {selectedCustomerId === item._id ? <Text style={styles.selectedMark}>Selected</Text> : null}
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             )}
           />
         )}
         {linkError ? <Text accessibilityRole="alert" style={styles.error}>{linkError}</Text> : null}
-        <TouchableOpacity
+        <MotionTouchableOpacity
           accessibilityRole="button"
           accessibilityState={{ disabled: !selectedCustomerId || linking, busy: linking }}
           style={[styles.primary, (!selectedCustomerId || linking) && styles.disabled]}
@@ -243,10 +245,10 @@ export default function SalesHistory() {
           disabled={!selectedCustomerId || linking}
         >
           {linking ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.primaryText}>Add to sale</Text>}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancel} onPress={() => setSelectedSaleId(null)} disabled={linking}>
+        </MotionTouchableOpacity>
+        <MotionTouchableOpacity style={styles.cancel} onPress={() => setSelectedSaleId(null)} disabled={linking}>
           <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </FormSheet>
     </View>
   );

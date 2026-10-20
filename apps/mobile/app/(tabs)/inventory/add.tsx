@@ -1,15 +1,6 @@
+import MotionTouchableOpacity from "../../../src/components/MotionTouchableOpacity";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Alert,
-  KeyboardAvoidingView,
-} from "react-native";
+import { View, Text, StyleSheet, TextInput, ScrollView, Platform, Alert, KeyboardAvoidingView } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -88,7 +79,7 @@ export default function AddProductScreen() {
         {required ? " *" : ""}
       </Text>
       {helpTitle && helpText && (
-        <TouchableOpacity
+        <MotionTouchableOpacity
           onPress={() => showHelp(helpTitle, helpText)}
           style={{ paddingHorizontal: 6, paddingVertical: 2 }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -98,7 +89,7 @@ export default function AddProductScreen() {
             size={14}
             color={COLORS.textSecondary}
           />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       )}
     </View>
   );
@@ -216,14 +207,14 @@ export default function AddProductScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Add New Product</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -319,7 +310,7 @@ export default function AddProductScreen() {
                 (
                   cat, // copy-lint-disable
                 ) => (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     key={cat}
                     style={[
                       styles.categoryChip,
@@ -338,7 +329,7 @@ export default function AddProductScreen() {
                     >
                       {cat}
                     </Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ),
               )}
             </View>
@@ -350,10 +341,10 @@ export default function AddProductScreen() {
               "DRX can generate a unique SKU for this business. A barcode is a separate optional code.",
             )}
             <View style={styles.segmentControl}>
-              {[false, true].map((manual) => <TouchableOpacity key={String(manual)}
+              {[false, true].map((manual) => <MotionTouchableOpacity key={String(manual)}
                 style={[styles.segment, manualSku === manual && styles.segmentActive]}
                 accessibilityRole="radio" accessibilityState={{ selected: manualSku === manual }}
-                onPress={() => setManualSku(manual)}><Text style={[styles.segmentText, manualSku === manual && styles.segmentTextActive]}>{manual ? "Enter my own" : "Generate SKU"}</Text></TouchableOpacity>)}
+                onPress={() => setManualSku(manual)}><Text style={[styles.segmentText, manualSku === manual && styles.segmentTextActive]}>{manual ? "Enter my own" : "Generate SKU"}</Text></MotionTouchableOpacity>)}
             </View>
             {manualSku ? <TextInput style={styles.input} accessibilityLabel="SKU" placeholder="e.g. FLOWER-01" value={sku} onChangeText={setSku} placeholderTextColor={COLORS.textMuted} /> :
               <Text style={{ color: COLORS.textSecondary }}>DRX will create a unique SKU when you save.</Text>}
@@ -374,7 +365,7 @@ export default function AddProductScreen() {
                   "Choose Weight (grams) for items sold in bulk flower/concentrates. Choose Unit (each) for pre-packaged goods.",
                 )}
                 <View style={styles.segmentControl}>
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     style={[
                       styles.segment,
                       unitOfMeasure === "g" && styles.segmentActive,
@@ -392,8 +383,8 @@ export default function AddProductScreen() {
                     >
                       Weight (g)
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </MotionTouchableOpacity>
+                  <MotionTouchableOpacity
                     style={[
                       styles.segment,
                       unitOfMeasure === "unit" && styles.segmentActive,
@@ -411,7 +402,7 @@ export default function AddProductScreen() {
                     >
                       Unit (ea)
                     </Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 </View>
               </View>
 
@@ -443,7 +434,7 @@ export default function AddProductScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Pricing Strategy</Text>
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 onPress={suggestPricing}
                 style={styles.aiButton}
                 accessibilityLabel="Get AI pricing suggestions"
@@ -451,7 +442,7 @@ export default function AddProductScreen() {
               >
                 <Ionicons name="sparkles" size={16} color="white" />
                 <Text style={styles.aiButtonText}>AI Suggest</Text>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             </View>
 
             <View style={styles.row}>
@@ -493,10 +484,10 @@ export default function AddProductScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Purchase cost</Text>
               <View style={styles.segmentControl}>
-                {[false, true].map((basis) => <TouchableOpacity key={String(basis)}
+                {[false, true].map((basis) => <MotionTouchableOpacity key={String(basis)}
                   style={[styles.segment, usePurchaseBasis === basis && styles.segmentActive]}
                   accessibilityRole="radio" accessibilityState={{ selected: usePurchaseBasis === basis }}
-                  onPress={() => setUsePurchaseBasis(basis)}><Text style={[styles.segmentText, usePurchaseBasis === basis && styles.segmentTextActive]}>{basis ? "From package" : `Per ${unitOfMeasure}`}</Text></TouchableOpacity>)}
+                  onPress={() => setUsePurchaseBasis(basis)}><Text style={[styles.segmentText, usePurchaseBasis === basis && styles.segmentTextActive]}>{basis ? "From package" : `Per ${unitOfMeasure}`}</Text></MotionTouchableOpacity>)}
               </View>
               {usePurchaseBasis && <>
                 {renderLabel("What did you pay? ($)")}
@@ -504,10 +495,10 @@ export default function AddProductScreen() {
                 {renderLabel("How much did you buy?")}
                 <TextInput style={styles.input} accessibilityLabel="Purchase quantity" keyboardType="decimal-pad" value={purchaseQuantity} onChangeText={setPurchaseQuantity} />
                 <View style={styles.segmentControl}>
-                  {(unitOfMeasure === "g" ? ["g", "oz", "lb"] : ["unit"]).map((unit) => <TouchableOpacity key={unit}
+                  {(unitOfMeasure === "g" ? ["g", "oz", "lb"] : ["unit"]).map((unit) => <MotionTouchableOpacity key={unit}
                     style={[styles.segment, purchaseUnit === unit && styles.segmentActive]}
                     accessibilityRole="radio" accessibilityState={{ selected: purchaseUnit === unit }}
-                    onPress={() => setPurchaseUnit(unit as typeof purchaseUnit)}><Text style={[styles.segmentText, purchaseUnit === unit && styles.segmentTextActive]}>{unit}</Text></TouchableOpacity>)}
+                    onPress={() => setPurchaseUnit(unit as typeof purchaseUnit)}><Text style={[styles.segmentText, purchaseUnit === unit && styles.segmentTextActive]}>{unit}</Text></MotionTouchableOpacity>)}
                 </View>
                 {renderLabel(`Actual net amount (${unitOfMeasure}, optional)`)}
                 <TextInput style={styles.input} accessibilityLabel="Actual net amount" keyboardType="decimal-pad" placeholder="Use if supplier weight differs" value={actualNet} onChangeText={setActualNet} placeholderTextColor={COLORS.textMuted} />
@@ -629,7 +620,7 @@ export default function AddProductScreen() {
       </KeyboardAvoidingView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.saveButton}
           onPress={handleSave}
           disabled={saving}
@@ -641,7 +632,7 @@ export default function AddProductScreen() {
           <Text style={styles.saveButtonText}>
             {saving ? "Saving..." : "Create Product"}
           </Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
     </View>
   );

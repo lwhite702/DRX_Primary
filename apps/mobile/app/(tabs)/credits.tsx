@@ -1,17 +1,11 @@
+import MotionTouchableOpacity from "../../src/components/MotionTouchableOpacity";
+import { SkeletonRows } from "../../src/components/LoadingSkeleton";
 import { FormSheet } from "../../src/components/FormSheet";
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-  Modal,
-  TextInput,
-} from "react-native";
+  View, Text, StyleSheet, FlatList, RefreshControl, Alert, Modal, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useReducedMotion } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../src/contexts/AuthContext";
 import {
@@ -40,6 +34,7 @@ interface CreditWithCustomer {
 
 export default function Credits() {
   const insets = useSafeAreaInsets();
+  const reduceMotion = useReducedMotion();
   const { legacyBusinessId, getToken } = useAuth();
 
   const [transactions, setTransactions] = useState<CreditWithCustomer[]>([]);
@@ -231,7 +226,7 @@ export default function Credits() {
           </View>
         </View>
 
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.paymentBtn}
           onPress={() => {
             setSelectedCustomer(item);
@@ -241,7 +236,7 @@ export default function Credits() {
         >
           <Ionicons name="cash" size={18} color={COLORS.background} />
           <Text style={styles.paymentBtnText}>Record Payment</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
     );
   };
@@ -305,12 +300,12 @@ export default function Credits() {
             {formatCurrency(totalOutstanding)}
           </Text>
         </View>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.headerBtn}
           onPress={() => setExtensionModalVisible(true)}
         >
           <Ionicons name="add-circle" size={32} color={COLORS.accent} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
 
       {/* Balances due */}
@@ -318,7 +313,9 @@ export default function Credits() {
         <Text style={styles.sectionTitle}>
           Balances due ({customersWithCredit.length})
         </Text>
-        {customersWithCredit.length > 0 ? (
+        {loading ? (
+          <SkeletonRows count={2} />
+        ) : customersWithCredit.length > 0 ? (
           <FlatList
             data={customersWithCredit}
             keyExtractor={(item) => item.id}
@@ -340,7 +337,7 @@ export default function Credits() {
       {/* Recent activity */}
       <View style={[styles.section, { flex: 1 }]}>
         <Text style={styles.sectionTitle}>Recent activity</Text>
-        <FlatList
+        {loading ? <SkeletonRows count={3} style={{ flex: 1 }} /> : <FlatList
           data={transactions.slice(0, 20)}
           keyExtractor={(item) => item.id}
           renderItem={renderTransaction}
@@ -362,16 +359,16 @@ export default function Credits() {
               <Text style={styles.emptySectionText}>No activity yet</Text>
             </View>
           }
-        />
+        />}
       </View>
 
       {/* Payment Modal */}
       <FormSheet visible={paymentModalVisible} onClose={() => setPaymentModalVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Record Payment</Text>
-              <TouchableOpacity accessibilityLabel="Close payment" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setPaymentModalVisible(false)}>
+              <MotionTouchableOpacity accessibilityLabel="Close payment" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setPaymentModalVisible(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             </View>
 
             {selectedCustomer && (
@@ -402,7 +399,7 @@ export default function Credits() {
                     const amount =
                       getCustomerBalance(selectedCustomer.id) * fraction;
                     return (
-                      <TouchableOpacity
+                      <MotionTouchableOpacity
                         key={fraction}
                         style={styles.quickAmountBtn}
                         onPress={() => setPaymentAmount(amount.toFixed(2))}
@@ -410,7 +407,7 @@ export default function Credits() {
                         <Text style={styles.quickAmountText}>
                           {fraction === 1 ? "Full" : `${fraction * 100}%`}
                         </Text>
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     );
                   })}
                 </View>
@@ -418,18 +415,18 @@ export default function Credits() {
             )}
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 style={styles.cancelBtn}
                 onPress={() => setPaymentModalVisible(false)}
               >
                 <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </MotionTouchableOpacity>
+              <MotionTouchableOpacity
                 style={styles.confirmBtn}
                 onPress={handleRecordPayment}
               >
                 <Text style={styles.confirmBtnText}>Record Payment</Text>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             </View>
       </FormSheet>
 
@@ -437,15 +434,15 @@ export default function Credits() {
       <FormSheet visible={extensionModalVisible} onClose={() => setExtensionModalVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add to balance</Text>
-              <TouchableOpacity accessibilityLabel="Close balance" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setExtensionModalVisible(false)}>
+              <MotionTouchableOpacity accessibilityLabel="Close balance" accessibilityRole="button" style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }} onPress={() => setExtensionModalVisible(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             </View>
 
             <View style={styles.paymentForm}>
               {/* Customer Selection */}
               <Text style={styles.inputLabel}>Customer</Text>
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 style={styles.customerSelector}
                 onPress={() => setCustomerSelectionModalVisible(true)}
               >
@@ -464,7 +461,7 @@ export default function Credits() {
                   size={20}
                   color={COLORS.textSecondary}
                 />
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
 
               {/* Amount */}
               <Text style={styles.inputLabel}>Amount to add</Text>
@@ -499,18 +496,18 @@ export default function Credits() {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 style={styles.cancelBtn}
                 onPress={() => setExtensionModalVisible(false)}
               >
                 <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </MotionTouchableOpacity>
+              <MotionTouchableOpacity
                 style={styles.confirmBtn}
                 onPress={handleExtendCredit}
               >
                 <Text style={styles.confirmBtnText}>Add to balance</Text>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             </View>
       </FormSheet>
 
@@ -518,23 +515,23 @@ export default function Credits() {
       <Modal
         visible={customerSelectionModalVisible}
         onRequestClose={() => setCustomerSelectionModalVisible(false)}
-        animationType="slide"
+        animationType={reduceMotion ? "none" : "slide"}
         presentationStyle="pageSheet"
       >
         <View style={[styles.container, { paddingTop: SPACING.md }]}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Customer</Text>
-            <TouchableOpacity
+            <MotionTouchableOpacity
               onPress={() => setCustomerSelectionModalVisible(false)}
             >
               <Ionicons name="close" size={24} color={COLORS.text} />
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           </View>
           <FlatList
             data={customers}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 style={styles.customerSelectItem}
                 onPress={() => {
                   setExtensionCustomer(item);
@@ -557,7 +554,7 @@ export default function Credits() {
                     </>
                   );
                 })()}
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             )}
           />
         </View>

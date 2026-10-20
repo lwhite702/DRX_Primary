@@ -18,7 +18,11 @@
   --drx-radius-control: 6px;
   --drx-radius-card: 10px;
   --drx-radius-panel: 14px;
-  --drx-motion-fast: 150ms;
-  --drx-motion-standard: 180ms;
-  --drx-motion-deliberate: 220ms;
+  --drx-motion-instant: 100ms;
+  --drx-motion-fast: 140ms;
+  --drx-motion-standard: 200ms;
+  --drx-motion-deliberate: 280ms;
+  --drx-ease-standard: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --drx-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --drx-ease-exit: cubic-bezier(0.4, 0, 1, 1);
 }

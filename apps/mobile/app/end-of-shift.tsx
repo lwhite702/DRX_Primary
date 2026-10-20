@@ -1,12 +1,7 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonSummary } from "../src/components/LoadingSkeleton";
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -60,20 +55,21 @@ export default function EndOfShift() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>End of Shift</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={loadReport}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={loadReport}>
           <Ionicons name="refresh" size={20} color={COLORS.accent} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {loading ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={COLORS.accent} />
-            <Text style={styles.loadingText}>Checking the day’s numbers…</Text>
+          <View style={styles.summaryLoading}>
+            <SkeletonSummary />
+            <SkeletonSummary accessibleStatus={false} />
+            <Text style={styles.loadingText} accessibilityRole="text">Checking the day’s numbers…</Text>
           </View>
         ) : report ? (
           <View>
@@ -175,6 +171,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: SPACING.xxl,
   },
+  summaryLoading: { gap: SPACING.md, paddingVertical: SPACING.md },
   loadingText: { color: COLORS.textSecondary, marginTop: SPACING.md },
   summaryCard: {
     backgroundColor: COLORS.surface,

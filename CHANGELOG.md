@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Customer continuity through checkout (WRE-166)**: Allow authorized operators to quick-create a privacy-scoped customer during payment without losing the sale, and link an anonymous completed sale to a customer from native transaction review. Customer attribution updates purchase and loyalty totals and linked delivery records atomically with an audit event; sale settlement, inventory, and credit entries remain unchanged. Credit-sale reassignment remains blocked.
 
+### Improved
+
+- **Cross-surface motion and feedback (WRE-218)**: Add consistent button press depth, stable loading transitions, and restrained screen and panel motion across web, Android, and iOS, with reduced-motion support.
+
 ### Fixed
 
 - **Home setup progress (WRE-168)**: Scope the first-product checklist lookup to the active business and show a retry prompt when setup progress cannot be refreshed.

@@ -360,7 +360,7 @@ struct CheckoutSheet: View {
                 .overlay { RoundedRectangle(cornerRadius: 12).stroke(DRXPalette.border, lineWidth: 1) }
                 .padding(.horizontal)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DRXQuietButtonStyle())
         }
     }
 
@@ -392,7 +392,7 @@ struct CheckoutSheet: View {
                                 .stroke(paymentMethod == method ? DRXPalette.accent : DRXPalette.border, lineWidth: paymentMethod == method ? 2 : 1)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(DRXQuietButtonStyle())
                     .accessibilityLabel("Pay with \(method.label)")
                     .accessibilityAddTraits(paymentMethod == method ? [.isButton, .isSelected] : [.isButton])
                 }
@@ -580,7 +580,7 @@ struct CheckoutSheet: View {
                         .clipShape(Capsule())
                         .overlay { Capsule().stroke(DRXPalette.border, lineWidth: 1) }
                         .foregroundStyle(DRXPalette.ink)
-                        .buttonStyle(.plain)
+                        .buttonStyle(DRXQuietButtonStyle())
                     }
                 }
                 .padding(.horizontal)

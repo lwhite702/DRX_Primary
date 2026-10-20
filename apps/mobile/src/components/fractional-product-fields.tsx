@@ -1,5 +1,6 @@
+import MotionTouchableOpacity from "./MotionTouchableOpacity";
 import React, { useState } from "react";
-import { View, Text, TextInput, Switch, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Switch } from "react-native";
 import { COLORS, SPACING } from "../constants/theme";
 import type { ProductCommerceConfig } from "../../../app/lib/commerce/config";
 import {
@@ -62,9 +63,9 @@ export function FractionalProductFields({
         Sell part of a unit, such as 0.5 g. Price and cost are for one full
         selling unit. This setting applies only to this product.
       </Text>
-      <TouchableOpacity accessibilityRole="button" onPress={() => setShowCustom(!showCustom)}>
+      <MotionTouchableOpacity accessibilityRole="button" onPress={() => setShowCustom(!showCustom)}>
         <Text style={{ color: COLORS.accent }}>{showCustom ? "Hide custom selling rules" : "Custom selling rules"}</Text>
-      </TouchableOpacity>
+      </MotionTouchableOpacity>
       {showCustom && value.fractionalEnabled &&
         (
           [
@@ -116,15 +117,15 @@ export function FractionalProductFields({
       </>}
       {commerceIssue(value) && <View style={{ gap: 8 }}>
         <Text accessibilityRole="alert" style={{ color: COLORS.error }}>{commerceIssue(value)}</Text>
-        <TouchableOpacity accessibilityRole="button" onPress={() => {
+        <MotionTouchableOpacity accessibilityRole="button" onPress={() => {
           const reset = guidedCommerceProfile(value.sellingUnit, value.fractionalEnabled);
           onChange({ ...reset, suggestedDollarAmounts: value.suggestedDollarAmounts });
           setQuantities(reset.suggestedQuantities.join(", "));
-        }}><Text style={{ color: COLORS.accent }}>Use recommended rules</Text></TouchableOpacity>
+        }}><Text style={{ color: COLORS.accent }}>Use recommended rules</Text></MotionTouchableOpacity>
       </View>}
-      <TouchableOpacity accessibilityRole="button" onPress={() => setShowBundles(!showBundles)}>
+      <MotionTouchableOpacity accessibilityRole="button" onPress={() => setShowBundles(!showBundles)}>
         <Text style={{ color: COLORS.accent, fontWeight: "700" }}>{showBundles ? "Hide bulk and bundle prices" : "Advanced: bulk and bundle prices"}</Text>
-      </TouchableOpacity>
+      </MotionTouchableOpacity>
       {showBundles && <View style={{ gap: SPACING.md }}>
         <Text style={{ color: COLORS.textSecondary }}>Set the total at each quantity. With $35/g, you can enter 2g for $60, 3.5g for $90, and 7g for $140. The highest eligible tier applies to the full sale quantity.</Text>
         {value.bulkPriceTiers.map((tier, index) => <View key={tier.id} style={{ gap: 6 }}>
@@ -139,13 +140,13 @@ export function FractionalProductFields({
             const totalPrice = Number(text);
             update({ bulkPriceTiers: value.bulkPriceTiers.map(item => item.id === tier.id ? { ...item, totalPrice, unitPrice: item.minimumQuantity > 0 ? totalPrice / item.minimumQuantity : 0 } : item) });
           }} />
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove bundle ${index + 1}`} onPress={() => update({ bulkPriceTiers: value.bulkPriceTiers.filter(item => item.id !== tier.id) })}><Text style={{ color: COLORS.error }}>Remove bundle</Text></TouchableOpacity>
+          <MotionTouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove bundle ${index + 1}`} onPress={() => update({ bulkPriceTiers: value.bulkPriceTiers.filter(item => item.id !== tier.id) })}><Text style={{ color: COLORS.error }}>Remove bundle</Text></MotionTouchableOpacity>
         </View>)}
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add bundle price" disabled={value.bulkPriceTiers.length >= 12} onPress={() => {
+        <MotionTouchableOpacity accessibilityRole="button" accessibilityLabel="Add bundle price" disabled={value.bulkPriceTiers.length >= 12} onPress={() => {
           const minimumQuantity = Number(((value.bulkPriceTiers.at(-1)?.minimumQuantity ?? value.minimumSaleQuantity) + value.quantityIncrement).toFixed(value.decimalPrecision));
           const totalPrice = Number((minimumQuantity * basePrice).toFixed(2));
           update({ bulkPriceTiers: [...value.bulkPriceTiers, { id: String(Date.now()), label: `${minimumQuantity}+`, minimumQuantity, unitPrice: basePrice, totalPrice }] });
-        }}><Text style={{ color: COLORS.accent }}>Add bundle price</Text></TouchableOpacity>
+        }}><Text style={{ color: COLORS.accent }}>Add bundle price</Text></MotionTouchableOpacity>
       </View>}
     </View>
   );

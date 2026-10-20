@@ -192,6 +192,7 @@ final class POSStore {
 struct POSView: View {
     @State private var store = POSStore()
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedProduct: DRXProduct?
 
@@ -227,6 +228,8 @@ struct POSView: View {
             }
         }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: store.isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: store.error != nil)
         .sheet(isPresented: $store.showCheckout) {
             CheckoutSheet(store: store)
         }
@@ -251,7 +254,9 @@ struct POSView: View {
     private var productPanel: some View {
         Group {
             if store.isLoading {
-                ProgressView("Loading products…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                DRXLoadingPlaceholder(label: "Loading products…", layout: .productGrid)
+                    .padding(DRXSpacing.lg)
+                    .transition(.opacity)
             } else if let err = store.error {
                 ContentUnavailableView {
                     Label("Couldn’t load products", systemImage: "exclamationmark.triangle.fill")
@@ -261,8 +266,9 @@ struct POSView: View {
                     Button(DRXContent.Actions.tryAgain) { Task { await store.load() } }
                         .buttonStyle(.drxPrimary)
                 }
+                .transition(.opacity)
             } else if store.filteredProducts.isEmpty {
-                ContentUnavailableView.search
+                ContentUnavailableView.search.transition(.opacity)
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
@@ -279,6 +285,7 @@ struct POSView: View {
                     }
                     .padding(16)
                 }
+                .transition(.opacity)
             }
         }
         .overlay(alignment: .top) {
@@ -428,7 +435,7 @@ private struct ProductTile: View {
             .opacity(product.isOutOfStock ? 0.5 : 1)
         }
         .disabled(product.isOutOfStock)
-        .buttonStyle(.plain)
+        .buttonStyle(DRXQuietButtonStyle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(product.productName), \(product.sellingPriceFormatted), \(product.stockFormatted)\(inCartQuantity != nil && inCartQuantity! > 0 ? ", \(formatQuantity(product, inCartQuantity!)) in cart" : "")\(product.isOutOfStock ? ", out of stock" : product.isLowStock ? ", low stock" : "")")
         .accessibilityHint(product.isOutOfStock ? "Product is out of stock" : "Double-tap to add to cart")
@@ -533,7 +540,7 @@ struct CartItemsList: View {
                             .foregroundStyle(DRXPalette.danger)
                             .frame(width: 28, height: 28)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(DRXQuietButtonStyle())
                     .accessibilityLabel("Remove \(item.product.productName) from cart")
                 }
                 .swipeActions(edge: .trailing) {
