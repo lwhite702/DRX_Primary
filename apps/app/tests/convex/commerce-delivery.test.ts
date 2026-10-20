@@ -127,7 +127,13 @@ describe("Convex commerce and delivery workflow", () => {
     const lines = await t.run((ctx) =>
       ctx.db.query("salesLineItems").withIndex("by_saleId", (q) => q.eq("saleId", result.saleId)).collect(),
     );
+    const allocations = await t.run((ctx) =>
+      ctx.db.query("salesAllocations").withIndex("by_saleId", (q) => q.eq("saleId", result.saleId)).collect(),
+    );
     expect(result.totalAmountCents).toBe(2_750);
+    const productAfterCheckout = await t.run((ctx) => ctx.db.get(productId));
+    expect(productAfterCheckout?.quantityOnHandGrams).toBeCloseTo(9.3);
+    expect(allocations.reduce((sum, allocation) => sum + allocation.quantityGrams, 0)).toBeCloseTo(0.7);
     expect(lines[0]).toMatchObject({
       quantityGrams: 0.7,
       requestedAmountCents: 2_500,
@@ -136,6 +142,13 @@ describe("Convex commerce and delivery workflow", () => {
     });
     const salesHistory = await owner.query(api.checkout.getSalesHistory, {});
     expect(salesHistory.find((sale) => sale._id === result.saleId)?.priceAdjustmentCents).toBe(1_800);
+    const replay = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "EXACT-AMOUNT-001",
+      items,
+      paymentMethod: "card",
+      amountPaidCents: quote.totalAmountCents,
+    });
+    expect(replay).toMatchObject({ status: "ALREADY_PROCESSED", priceAdjustmentCents: 1_800 });
   });
 
   it("deducts duplicate fixed-amount lines from product stock only once in aggregate", async () => {

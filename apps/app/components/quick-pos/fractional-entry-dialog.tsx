@@ -34,6 +34,11 @@ export function FractionalEntryDialog({
   useEffect(() => {
     if (!config?.fractionalEnabled) setMode("quantity");
   }, [config?.fractionalEnabled]);
+  useEffect(() => {
+    setValue("");
+    setQuantityEdit("");
+    setMode(config?.fractionalEnabled ? "dollars" : "quantity");
+  }, [config?.fractionalEnabled, product?.id]);
   const numericValue = Number(value);
   const suggestedLine = useMemo(() => {
     if (!config || !Number.isFinite(numericValue) || numericValue <= 0) return null;
@@ -75,6 +80,7 @@ export function FractionalEntryDialog({
       commerceConfig: fractional ? undefined : config,
     });
     setValue("");
+    setQuantityEdit("");
     onClose();
   };
 
@@ -119,8 +125,8 @@ export function FractionalEntryDialog({
           {(mode === "dollars"
             ? config?.suggestedDollarAmounts
             : config?.suggestedQuantities
-          )?.map((preset) => (
-            <Button key={preset} type="button" size="sm" variant="outline" onClick={() => setValue(String(preset))}>
+            )?.map((preset) => (
+            <Button key={preset} type="button" size="sm" variant="outline" onClick={() => { setValue(String(preset)); setQuantityEdit(""); }}>
               {mode === "dollars" ? `$${preset}` : `${preset}${config?.sellingUnit}`}
             </Button>
           ))}
@@ -149,6 +155,9 @@ export function FractionalEntryDialog({
                   step={config?.quantityIncrement}
                   value={quantityEdit || String(suggestedLine.quantity)}
                   onChange={(event) => setQuantityEdit(event.target.value)}
+                  onBlur={() => {
+                    if (line) setQuantityEdit(String(line.quantity));
+                  }}
                 />
                 <div className="flex items-center justify-between text-sm">
                   <span>Requested amount</span>

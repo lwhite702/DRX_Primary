@@ -63,6 +63,8 @@ describe("quick pos store", () => {
         unitPrice: 50,
         qty: 2,
         source: "inventory",
+        weightGrams: 0.7,
+        requestedAmountCents: 5_000,
       });
     });
 
@@ -76,6 +78,7 @@ describe("quick pos store", () => {
       unitPrice: 40,
       originalPrice: 50,
       overrideReason: "Loyal customer discount",
+      requestedAmountCents: undefined,
     });
     expect(storeRef!.subtotal).toBe(80);
   });

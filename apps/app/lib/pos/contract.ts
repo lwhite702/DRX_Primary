@@ -107,6 +107,16 @@ export const cartLineItemSchema = z.object({
   commerceConfig: quickPosCommerceConfigSchema.optional(),
 });
 
+const quickPosCartLineItemSchema = cartLineItemSchema.superRefine((item, context) => {
+  if (item.source === "manual" && item.requestedAmountCents !== undefined) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["requestedAmountCents"],
+      message: "Requested dollar amounts are only supported for inventory lines",
+    });
+  }
+});
+
 export const posFeeSchema = z.object({
   type: z.string().min(1),
   amount: z.number().nonnegative().optional(),
@@ -156,7 +166,7 @@ export const quickCheckoutPayloadSchema = z.object({
   delivery: quickPosDeliverySchema.optional(),
   discountAmountCents: z.number().int().nonnegative().optional(),
   discountReason: z.string().min(1).max(100).optional(),
-  items: z.array(cartLineItemSchema).min(1),
+  items: z.array(quickPosCartLineItemSchema).min(1),
 });
 
 export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({

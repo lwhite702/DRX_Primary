@@ -37,6 +37,7 @@ import {
   resolveLoyaltyEligibleSpendCents,
   resolveLoyaltyRateBps,
   suggestedQuantityForDollars,
+  parseDollarAmountCents,
   generateSafeOrderNumber,
   type FractionalProduct,
   type LoyaltyCombinationPolicy,
@@ -401,7 +402,8 @@ export default function POSScreen() {
   };
   const updateDollarAmount = (productId: Id<"products">, raw: string) => {
     setCheckoutOrderNumber(null);
-    const cents = Math.round(Number(raw) * 100);
+    const cents = parseDollarAmountCents(raw);
+    if (cents === null) return;
     setCart((current) =>
       current.flatMap((line) => {
         if (line.product._id !== productId) return [line];
@@ -816,24 +818,26 @@ export default function POSScreen() {
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <View style={styles.entryField}>
-                    <Text style={styles.entryLabel}>DOLLARS</Text>
-                    <TextInput
-                      key={`${line.product._id}-${line.quantityGrams}`}
-                      style={styles.quantity}
-                      defaultValue={((line.requestedAmountCents ?? pricedLineTotalCents(
-                        pricingForCheckout(line.product),
-                        line.quantityGrams,
-                        loyaltyRateBps,
-                        loyaltyPolicy,
-                      )) / 100).toFixed(2)}
-                      onEndEditing={(event) =>
-                        updateDollarAmount(line.product._id, event.nativeEvent.text)
-                      }
-                      keyboardType="decimal-pad"
-                      accessibilityLabel={`${line.product.productName} dollar amount`}
-                    />
-                  </View>
+                  {line.product.allowFractionalWeight ? (
+                    <View style={styles.entryField}>
+                      <Text style={styles.entryLabel}>DOLLARS</Text>
+                      <TextInput
+                        key={`${line.product._id}-${line.quantityGrams}`}
+                        style={styles.quantity}
+                        defaultValue={((line.requestedAmountCents ?? pricedLineTotalCents(
+                          pricingForCheckout(line.product),
+                          line.quantityGrams,
+                          loyaltyRateBps,
+                          loyaltyPolicy,
+                        )) / 100).toFixed(2)}
+                        onEndEditing={(event) =>
+                          updateDollarAmount(line.product._id, event.nativeEvent.text)
+                        }
+                        keyboardType="decimal-pad"
+                        accessibilityLabel={`${line.product.productName} dollar amount`}
+                      />
+                    </View>
+                  ) : null}
                 </View>
                 {line.requestedAmountCents !== undefined ? (
                   <Text style={styles.offlineNotice}>
@@ -849,7 +853,7 @@ export default function POSScreen() {
                     ))}
                   </ScrollView>
                 ) : null}
-                {(pricing(line.product).suggestedDollarPresetsCents?.length ?? 0) > 0 ? (
+                {line.product.allowFractionalWeight && (pricing(line.product).suggestedDollarPresetsCents?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedDollarPresetsCents?.map((cents: number) => (
                       <TouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.product._id, cents)}>

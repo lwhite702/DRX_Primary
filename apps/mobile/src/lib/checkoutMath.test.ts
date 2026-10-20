@@ -9,6 +9,7 @@ import {
   resolveLoyaltyEligibleSpendCents,
   resolveLoyaltyRateBps,
   suggestedQuantityForDollars,
+  parseDollarAmountCents,
   generateSafeOrderNumber,
   safeDisplayOrderNumber,
   type FractionalProduct,
@@ -37,6 +38,11 @@ const product: FractionalProduct = {
 };
 
 describe("fractional checkout math", () => {
+  it("converts dollar strings to cents without binary float rounding errors", () => {
+    expect(parseDollarAmountCents("1.005")).toBe(101);
+    expect(parseDollarAmountCents("25")).toBe(2_500);
+    expect(parseDollarAmountCents("0.004")).toBe(null);
+  });
   it("previews exact bundle totals", () => {
     const bundled = { ...product, sellingPriceCents: 3_500, bulkPriceTiers: [
       { minimumQuantity: 2, unitPriceCents: 3_000, bundlePriceCents: 6_000 },

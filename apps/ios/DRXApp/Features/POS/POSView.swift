@@ -140,7 +140,7 @@ final class POSStore {
         guard normalized > 0 else { return }
         if let idx = cartItems.firstIndex(where: { $0.product.id == product.id }) {
             cartItems[idx].quantityGrams = normalized
-            cartItems[idx].requestedAmountCents = requestedAmountCents
+            cartItems[idx].requestedAmountCents = requestedAmountCents ?? cartItems[idx].requestedAmountCents
         } else {
             cartItems.append(CartItem(product: product, quantityGrams: normalized, requestedAmountCents: requestedAmountCents))
         }

@@ -44,13 +44,13 @@ Here is how to ring up sales, calculate change down to the penny, and keep your 
 5. **Customer peering over your shoulder?** Turn on **Screen privacy** to hide customer account balances from in-store shoppers.
 6. Hit **Complete Sale** to lock it in.
 
-## Set a sale by dollar amount
+## Set a sale by dollar amount (beta)
 
-For a fractional product, enter the amount the customer wants to spend. DRX suggests a quantity using the current unit, bulk, and loyalty pricing. Review the suggested quantity and edit it to match the amount you weigh or measure. Confirm the amount and quantity before adding the item or completing checkout.
+For a fractional product, enter the amount the customer wants to spend. On web, DRX suggests a quantity using the configured unit and bulk pricing; the suggestion does not include a customer's loyalty discount. The native iOS and Expo mobile apps include eligible loyalty pricing in their suggestion. Review the suggested quantity and edit it to match the amount you weigh or measure. Confirm the amount and quantity before adding the item or completing checkout. Cross-platform verification is still in progress.
 
 If the confirmed quantity's normal price differs from the requested merchandise amount, DRX flags the variance and keeps the requested amount as the line price. This flag does not block checkout or require manager approval. Configured taxes and fees are added separately. The confirmed quantity determines the stock reduction and cost of goods.
 
-On Android, dollar-amount sales require a live server quote. Reconnect before completing that sale; offline checkout cannot verify and record the requested amount and its variance.
+Dollar-amount sales in the Expo mobile app (Android and iOS) require a live server quote. Reconnect before completing that sale; offline checkout cannot verify and record the requested amount and its variance. The separate native iOS app also requires a live quote for dollar-amount checkout and cannot complete that sale offline.
 
 ## Common sense register rules
 

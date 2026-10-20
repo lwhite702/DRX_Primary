@@ -135,8 +135,8 @@
       "sourcePath": "app-docs/feature_overview/quick-sale-checkout.md",
       "mintlifyPath": "mintlify/sales/quick-sale-checkout.mdx",
       "route": "/sales/quick-sale-checkout",
-      "sourceSha256": "35fb8a18623c060548ddd7b1e7ce03ed02fd1a8cbbec1c0cc32fece65c2a7aac",
-      "outputSha256": "030853ff58be9c4b9e9cd5191a96ac65071d2c2c388eafed37d7758cc47b532f"
+      "sourceSha256": "af191ed5f2bb30a997331fceec5d4eb2cf87b508be8a6c5534ed4fbe8f9f0bad",
+      "outputSha256": "d39bb5d1ce6ec068ae5bf3cdce39788cbd7aebed1927c870902fb0a9d7dd2f24"
     },
     {
       "articleId": "5281725",

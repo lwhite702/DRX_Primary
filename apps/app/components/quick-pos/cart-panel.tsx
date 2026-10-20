@@ -144,7 +144,7 @@ export function CartPanel({
                 )}
                 {item.requestedAmountCents !== undefined ? (
                   <span role="status" className="block text-[11px] text-amber-400 font-medium tracking-tight">
-                    Requested amount confirmed · price variance flagged
+                    Requested amount confirmed
                   </span>
                 ) : null}
               </div>
