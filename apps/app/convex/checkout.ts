@@ -94,11 +94,14 @@ const quoteResult = v.object({
       bulkDiscountCents: v.number(),
       loyaltyDiscountCents: v.number(),
       lineDiscountCents: v.number(),
+      requestedAmountCents: v.optional(v.number()),
+      operatorPriceAdjustmentCents: v.number(),
     }),
   ),
   merchandiseSubtotalCents: v.number(),
   feeRevenueCents: v.optional(v.number()),
   discountCents: v.number(),
+  priceAdjustmentCents: v.optional(v.number()),
   subtotalCents: v.number(),
   taxableSubtotalCents: v.number(),
   merchandiseTaxCents: v.number(),
@@ -117,6 +120,7 @@ const checkoutResult = v.object({
   merchandiseSubtotalCents: v.number(),
   feeRevenueCents: v.optional(v.number()),
   discountCents: v.number(),
+  priceAdjustmentCents: v.optional(v.number()),
   merchandiseTaxCents: v.number(),
   deliveryRevenueCents: v.number(),
   vendorDeliveryExpenseCents: v.number(),
@@ -189,32 +193,35 @@ function requireNonnegativeSafeInteger(value: number, field: string): void {
 }
 
 function normalizeItems(
-  items: Array<{ productId: Id<"products">; quantityGrams: number }>,
-): Array<{ productId: Id<"products">; quantityGrams: number }> {
-  const quantitiesByProduct = new Map<string, number>();
+  items: Array<{ productId: Id<"products">; quantityGrams: number; requestedAmountCents?: number }>,
+): Array<{ productId: Id<"products">; quantityGrams: number; requestedAmountCents?: number }> {
+  const standardQuantities = new Map<string, number>();
+  const fixedAmountLines: Array<{ productId: Id<"products">; quantityGrams: number; requestedAmountCents: number }> = [];
   for (const item of items) {
     if (!Number.isFinite(item.quantityGrams) || item.quantityGrams <= 0) {
       throw new Error(
         "INVALID_ARGUMENT: Item quantity must be a positive finite number",
       );
     }
-    const productId = String(item.productId);
-    const quantity =
-      (quantitiesByProduct.get(productId) ?? 0) + item.quantityGrams;
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      throw new Error(
-        "INVALID_ARGUMENT: Aggregated item quantity must be a positive finite number",
-      );
+    if (item.requestedAmountCents !== undefined && (!Number.isSafeInteger(item.requestedAmountCents) || item.requestedAmountCents <= 0)) {
+      throw new Error("INVALID_ARGUMENT: requestedAmountCents must be positive integer cents");
     }
-    quantitiesByProduct.set(productId, quantity);
+    if (item.requestedAmountCents !== undefined) {
+      fixedAmountLines.push({ ...item, requestedAmountCents: item.requestedAmountCents });
+      continue;
+    }
+    const productId = String(item.productId);
+    const quantity = (standardQuantities.get(productId) ?? 0) + item.quantityGrams;
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new Error("INVALID_ARGUMENT: Aggregated item quantity must be a positive finite number");
+    }
+    standardQuantities.set(productId, quantity);
   }
-
-  return Array.from(quantitiesByProduct.entries())
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([productId, quantityGrams]) => ({
-      productId: productId as Id<"products">,
-      quantityGrams,
-    }));
+  const standardLines = [...standardQuantities.entries()].map(([productId, quantityGrams]) => ({
+    productId: productId as Id<"products">,
+    quantityGrams,
+  }));
+  return [...standardLines, ...fixedAmountLines].sort((left, right) => String(left.productId).localeCompare(String(right.productId)));
 }
 
 function normalizeManualItems(
@@ -309,7 +316,7 @@ function requireNonemptyCart(inventoryCount: number, manualCount: number): void 
 
 async function createCheckoutFingerprint(input: {
   customerId?: Id<"customers">;
-  items: Array<{ productId: Id<"products">; quantityGrams: number }>;
+  items: Array<{ productId: Id<"products">; quantityGrams: number; requestedAmountCents?: number }>;
   manualItems: ManualItem[];
   paymentMethod: CheckoutPaymentMethod;
   fees?: CheckoutFee[];
@@ -326,6 +333,7 @@ async function createCheckoutFingerprint(input: {
     items: input.items.map((item) => [
       String(item.productId),
       item.quantityGrams,
+      item.requestedAmountCents ?? null,
     ]),
     manualItems: input.manualItems.map((item) => ({
       lineId: item.lineId,
@@ -365,6 +373,7 @@ export const quoteCheckout = query({
       v.object({
         productId: v.id("products"),
         quantityGrams: v.number(),
+        requestedAmountCents: v.optional(v.number()),
       }),
     ),
     manualItems: v.optional(v.array(manualItemInput)),
@@ -442,12 +451,14 @@ export const quoteCheckout = query({
       merchandiseSubtotalCents: 0,
       taxableMerchandiseCents: 0,
       discountCents: 0,
+      priceAdjustmentCents: 0,
       merchandiseTotalCents: 0,
     } : calculateCheckoutPricing({
       lines: products.map(({ item, product }) => {
         const commerceConfig = normalizeProductCommerceConfig(product);
         return {
           quantity: item.quantityGrams,
+          requestedAmountCents: item.requestedAmountCents,
           product: {
           productId: String(product._id),
           productName: product.productName,
@@ -496,6 +507,7 @@ export const quoteCheckout = query({
         bulkDiscountCents: 0,
         loyaltyDiscountCents,
         lineDiscountCents: loyaltyDiscountCents,
+        operatorPriceAdjustmentCents: 0,
       };
     });
     const manualMerchandiseSubtotalCents = manualLines.reduce(
@@ -561,6 +573,7 @@ export const quoteCheckout = query({
       merchandiseSubtotalCents:
         pricing.merchandiseSubtotalCents + manualMerchandiseSubtotalCents,
       discountCents,
+      priceAdjustmentCents: pricing.priceAdjustmentCents,
       subtotalCents: baseMerchandiseTotalCents,
       taxableSubtotalCents,
       merchandiseTaxCents,
@@ -581,6 +594,7 @@ export const processCheckout = mutation({
       v.object({
         productId: v.id("products"),
         quantityGrams: v.number(),
+        requestedAmountCents: v.optional(v.number()),
       }),
     ),
     manualItems: v.optional(v.array(manualItemInput)),
@@ -798,6 +812,7 @@ export const processCheckout = mutation({
       merchandiseSubtotalCents: 0,
       taxableMerchandiseCents: 0,
       discountCents: 0,
+      priceAdjustmentCents: 0,
       merchandiseTotalCents: 0,
     } : calculateCheckoutPricing({
       lines: normalizedItems.map((item) => {
@@ -805,6 +820,7 @@ export const processCheckout = mutation({
         const commerceConfig = normalizeProductCommerceConfig(product);
         return {
           quantity: item.quantityGrams,
+          requestedAmountCents: item.requestedAmountCents,
           product: {
             productId: String(product._id),
             productName: product.productName,
@@ -825,12 +841,14 @@ export const processCheckout = mutation({
     const processedLineItems = pricing.lines.map((line) => ({
       product: productsById.get(line.productId)!,
       quantityGrams: line.quantity,
+      ...(line.requestedAmountCents === undefined ? {} : { requestedAmountCents: line.requestedAmountCents }),
       unitPriceCents: line.appliedUnitPriceCents,
       lineTotalCents: line.lineSubtotalCents,
       unitCostCents: productsById.get(line.productId)!.unitCostCents,
       baseLineTotalCents: line.baseLineTotalCents,
       bulkDiscountCents: line.bulkDiscountCents,
       loyaltyDiscountCents: line.loyaltyDiscountCents,
+      operatorPriceAdjustmentCents: line.operatorPriceAdjustmentCents,
     }));
     const processedManualLineItems = resolvedManualItems.map((item) => {
       const lineCostCents = Math.round(item.quantity * item.unitCostCents);
@@ -854,7 +872,10 @@ export const processCheckout = mutation({
       };
     });
     for (const lineItem of processedLineItems) {
-      if (lineItem.product.quantityOnHandGrams < lineItem.quantityGrams) {
+      const aggregateQuantity = processedLineItems
+        .filter((candidate) => candidate.product._id === lineItem.product._id)
+        .reduce((total, candidate) => total + candidate.quantityGrams, 0);
+      if (lineItem.product.quantityOnHandGrams < aggregateQuantity) {
         throw new Error(
           `INSUFFICIENT_STOCK: Product '${lineItem.product.productName}' does not have enough stock`,
         );
@@ -989,6 +1010,7 @@ export const processCheckout = mutation({
       subtotalCents,
       merchandiseSubtotalCents,
       discountCents,
+      priceAdjustmentCents: pricing.priceAdjustmentCents,
       merchandiseRevenueCents: discountedSubtotalCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents,
@@ -1080,6 +1102,8 @@ export const processCheckout = mutation({
         quantityGrams: lineItem.quantityGrams,
         unitPriceCents: lineItem.unitPriceCents,
         lineTotalCents: lineItem.lineTotalCents,
+        ...(lineItem.requestedAmountCents === undefined ? {} : { requestedAmountCents: lineItem.requestedAmountCents }),
+        operatorPriceAdjustmentCents: lineItem.operatorPriceAdjustmentCents,
         baseUnitPriceCents: lineItem.product.sellingPriceCents,
         ...(overrides.find(override => override.productId === lineItem.product._id) ? { priceOverrideReason: overrides.find(override => override.productId === lineItem.product._id)!.reason, catalogUnitPriceCents: lineItem.product.sellingPriceCents } : {}),
         baseLineTotalCents: lineItem.baseLineTotalCents,
@@ -1174,6 +1198,7 @@ export const processCheckout = mutation({
         subtotalCents,
         merchandiseSubtotalCents,
         discountCents,
+        priceAdjustmentCents: pricing.priceAdjustmentCents,
         deliveryRevenueCents,
         vendorDeliveryExpenseCents,
         deliveryTaxCents,
@@ -1195,6 +1220,7 @@ export const processCheckout = mutation({
       subtotalCents,
       merchandiseSubtotalCents,
       discountCents,
+      priceAdjustmentCents: pricing.priceAdjustmentCents,
       merchandiseTaxCents,
       deliveryRevenueCents,
       vendorDeliveryExpenseCents,

@@ -51,13 +51,13 @@ import {
 
 type Product = NonNullable<ReturnType<typeof useProducts>>[number];
 type Customer = NonNullable<ReturnType<typeof useCustomers>>[number];
-type CartLine = { product: Product; quantityGrams: number };
+type CartLine = { product: Product; quantityGrams: number; requestedAmountCents?: number };
 type Tender = "cash" | "card" | "credit";
 type PricedProduct = Product & FractionalProduct;
 type CheckoutRequest = {
   customerId?: Id<"customers">;
   orderNumber: string;
-  items: { productId: Id<"products">; quantityGrams: number }[];
+  items: { productId: Id<"products">; quantityGrams: number; requestedAmountCents?: number }[];
   paymentMethod: Tender;
   amountPaidCents: number;
   discountAmountCents?: number;
@@ -66,7 +66,7 @@ type CheckoutRequest = {
 type CheckoutResult = { orderNumber: string; totalAmountCents: number; deliveryId?: string };
 type CheckoutQuoteRequest = {
   customerId?: Id<"customers">;
-  items: { productId: Id<"products">; quantityGrams: number }[];
+  items: { productId: Id<"products">; quantityGrams: number; requestedAmountCents?: number }[];
   discountAmountCents?: number;
   delivery?: { vendorFeeCents: number; chargeCustomer: boolean };
 };
@@ -162,6 +162,9 @@ export default function POSScreen() {
     ? resolveLoyaltyRateBps(loyaltyEligibleSpendCents, commerceSettings?.loyaltyTiers ?? [])
     : 0;
   const loyaltyPolicy = commerceSettings?.loyaltyCombinationPolicy ?? "best_only";
+  const cartLineTotalCents = useCallback((line: CartLine) => line.requestedAmountCents ?? pricedLineTotalCents(
+    pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy,
+  ), [loyaltyPolicy, loyaltyRateBps, pricingForCheckout]);
 
   useEffect(() => {
     let active = true;
@@ -192,15 +195,10 @@ export default function POSScreen() {
     () =>
       cart.reduce(
         (sum, line) =>
-          sum + pricedLineTotalCents(
-            pricingForCheckout(line.product),
-            line.quantityGrams,
-            loyaltyRateBps,
-            loyaltyPolicy,
-          ),
+          sum + cartLineTotalCents(line),
         0,
       ),
-    [cart, loyaltyPolicy, loyaltyRateBps, pricingForCheckout],
+    [cart, cartLineTotalCents],
   );
   const taxableSubtotalCents = useMemo(
     () =>
@@ -208,15 +206,10 @@ export default function POSScreen() {
         (sum, line) =>
           line.product.isTaxable === false
             ? sum
-            : sum + pricedLineTotalCents(
-                pricingForCheckout(line.product),
-                line.quantityGrams,
-                loyaltyRateBps,
-                loyaltyPolicy,
-              ),
+            : sum + cartLineTotalCents(line),
         0,
       ),
-    [cart, loyaltyPolicy, loyaltyRateBps, pricingForCheckout],
+    [cart, cartLineTotalCents],
   );
   const discountAmountCents = useMemo(() => {
     const parsed = Number(discountDollars);
@@ -258,6 +251,7 @@ export default function POSScreen() {
     items: cart.map((line) => ({
       productId: line.product._id,
       quantityGrams: line.quantityGrams,
+      ...(line.requestedAmountCents === undefined ? {} : { requestedAmountCents: line.requestedAmountCents }),
     })),
     ...(discountAmountCents > 0 ? { discountAmountCents } : {}),
     ...(deliveryEnabled
@@ -418,7 +412,7 @@ export default function POSScreen() {
           loyaltyRateBps,
           loyaltyPolicy,
         );
-        return quantity > 0 ? [{ ...line, quantityGrams: quantity }] : [];
+        return quantity > 0 ? [{ ...line, quantityGrams: quantity, requestedAmountCents: cents }] : [];
       }),
     );
   };
@@ -480,7 +474,7 @@ export default function POSScreen() {
     }
   };
 
-  const submitSale = async () => {
+  const submitSale = async (confirmedRequestedAmounts = false) => {
     if (!businessId || !userId || cart.length === 0 || creatingCustomer) return;
     if (tender === "credit" && !customer)
       return Alert.alert(
@@ -492,6 +486,29 @@ export default function POSScreen() {
         "Card unavailable offline",
         "Use cash or authorized customer credit until connectivity returns.",
       );
+    const dollarAmountLines = cart.filter((line) => line.requestedAmountCents !== undefined);
+    if (dollarAmountLines.length && !isOnline)
+      return Alert.alert(
+        "Connection required",
+        "Reconnect to verify the requested amount and record any price difference before checkout.",
+      );
+    if (dollarAmountLines.length && !confirmedRequestedAmounts) {
+      const details = dollarAmountLines.map((line) => {
+        const normalCents = pricedLineTotalCents(
+          pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy,
+        );
+        const variance = line.requestedAmountCents! - normalCents;
+        return `${line.product.productName}: ${formatQuantity(pricing(line.product), line.quantityGrams)} · requested ${money(line.requestedAmountCents!)} · normal ${money(normalCents)} · variance ${variance >= 0 ? "+" : "−"}${money(Math.abs(variance))}`;
+      }).join("\n");
+      return Alert.alert(
+        "Confirm dollar amount sale",
+        `${details}\n\nThe requested merchandise amount will be charged. Any price difference is flagged in the sale record.`,
+        [
+          { text: "Review cart", style: "cancel" },
+          { text: "Confirm sale", onPress: () => { void submitSale(true); } },
+        ],
+      );
+    }
     if (deliveryEnabled && !isOnline)
       return Alert.alert(
         "Delivery requires a connection",
@@ -536,6 +553,7 @@ export default function POSScreen() {
           items: cart.map((line) => ({
             productId: line.product._id,
             quantityGrams: line.quantityGrams,
+            ...(line.requestedAmountCents === undefined ? {} : { requestedAmountCents: line.requestedAmountCents }),
           })),
           paymentMethod: tender,
           amountPaidCents,
@@ -740,7 +758,7 @@ export default function POSScreen() {
                       {money(
                         checkoutQuote?.lines.find(
                           (quotedLine: { productId: string }) => quotedLine.productId === line.product._id,
-                        )?.lineSubtotalCents ?? pricedLineTotalCents(
+                        )?.lineSubtotalCents ?? line.requestedAmountCents ?? pricedLineTotalCents(
                           pricingForCheckout(line.product),
                           line.quantityGrams,
                           loyaltyRateBps,
@@ -803,12 +821,12 @@ export default function POSScreen() {
                     <TextInput
                       key={`${line.product._id}-${line.quantityGrams}`}
                       style={styles.quantity}
-                      defaultValue={(pricedLineTotalCents(
+                      defaultValue={((line.requestedAmountCents ?? pricedLineTotalCents(
                         pricingForCheckout(line.product),
                         line.quantityGrams,
                         loyaltyRateBps,
                         loyaltyPolicy,
-                      ) / 100).toFixed(2)}
+                      )) / 100).toFixed(2)}
                       onEndEditing={(event) =>
                         updateDollarAmount(line.product._id, event.nativeEvent.text)
                       }
@@ -817,6 +835,11 @@ export default function POSScreen() {
                     />
                   </View>
                 </View>
+                {line.requestedAmountCents !== undefined ? (
+                  <Text style={styles.offlineNotice}>
+                    Confirmed amount {money(line.requestedAmountCents)} · normal price {money(pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy))} · variance {line.requestedAmountCents - pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy) >= 0 ? "+" : "−"}{money(Math.abs(line.requestedAmountCents - pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy)))} flagged
+                  </Text>
+                ) : null}
                 {(pricing(line.product).suggestedQuantityPresets?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedQuantityPresets?.map((quantity: number) => (
@@ -1165,7 +1188,7 @@ export default function POSScreen() {
                 styles.checkout,
                 (submitting || creatingCustomer || !deliveryDetailsValid || (isOnline && !checkoutQuote)) && styles.disabled,
               ]}
-              onPress={submitSale}
+              onPress={() => { void submitSale(); }}
               disabled={submitting || creatingCustomer || !deliveryDetailsValid || (isOnline && !checkoutQuote)}
             >
               {submitting ? (

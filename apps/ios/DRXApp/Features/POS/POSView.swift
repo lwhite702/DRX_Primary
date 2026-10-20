@@ -23,9 +23,10 @@ final class POSStore {
         let id = UUID()
         let product: DRXProduct
         var quantityGrams: Double
+        var requestedAmountCents: Int? = nil
 
         var lineTotal: Int {
-            CheckoutMath.lineTotalCents(product: product, quantity: quantityGrams)
+            requestedAmountCents ?? CheckoutMath.lineTotalCents(product: product, quantity: quantityGrams)
         }
 
         var effectiveUnitPriceCents: Int {
@@ -70,7 +71,10 @@ final class POSStore {
             }
     }
     func pricedLineTotal(_ item: CartItem) -> Int {
-        CheckoutMath.pricedLineTotalCents(
+        if let requestedAmountCents = item.requestedAmountCents {
+            return requestedAmountCents
+        }
+        return CheckoutMath.pricedLineTotalCents(
             product: item.product,
             quantity: item.quantityGrams,
             loyaltyRateBps: loyaltyRateBps,
@@ -131,13 +135,14 @@ final class POSStore {
         }
     }
 
-    func setQuantity(for product: DRXProduct, quantity: Double) {
+    func setQuantity(for product: DRXProduct, quantity: Double, requestedAmountCents: Int? = nil) {
         let normalized = CheckoutMath.normalizeQuantity(product: product, quantity: quantity)
         guard normalized > 0 else { return }
         if let idx = cartItems.firstIndex(where: { $0.product.id == product.id }) {
             cartItems[idx].quantityGrams = normalized
+            cartItems[idx].requestedAmountCents = requestedAmountCents
         } else {
-            cartItems.append(CartItem(product: product, quantityGrams: normalized))
+            cartItems.append(CartItem(product: product, quantityGrams: normalized, requestedAmountCents: requestedAmountCents))
         }
         triggerFeedback("Set \(product.productName) to \(formatQuantity(product, normalized))")
     }
@@ -237,8 +242,8 @@ struct POSView: View {
                     ?? min(product.quantityOnHandGrams, max(product.saleMinimum, 1)),
                 loyaltyRateBps: store.loyaltyRateBps,
                 loyaltyPolicy: store.loyaltyPolicy
-            ) { quantity in
-                store.setQuantity(for: product, quantity: quantity)
+            ) { quantity, requestedAmountCents in
+                store.setQuantity(for: product, quantity: quantity, requestedAmountCents: requestedAmountCents)
             }
         }
         .task { await store.load() }
@@ -648,7 +653,7 @@ private struct SaleAmountSheet: View {
     let product: DRXProduct
     let loyaltyRateBps: Int
     let loyaltyPolicy: String
-    let onSave: (Double) -> Void
+    let onSave: (Double, Int?) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var mode: EntryMode = .quantity
     @State private var quantityString: String
@@ -659,7 +664,7 @@ private struct SaleAmountSheet: View {
         initialQuantity: Double,
         loyaltyRateBps: Int,
         loyaltyPolicy: String,
-        onSave: @escaping (Double) -> Void
+        onSave: @escaping (Double, Int?) -> Void
     ) {
         self.product = product
         self.loyaltyRateBps = loyaltyRateBps
@@ -686,6 +691,18 @@ private struct SaleAmountSheet: View {
                 policy: loyaltyPolicy
             )
         }
+    }
+
+    private var requestedAmountCents: Int? {
+        mode == .dollars ? CurrencyInput.cents(from: dollarString) : nil
+    }
+    private var estimatedLineCents: Int {
+        CheckoutMath.pricedLineTotalCents(
+            product: product,
+            quantity: enteredQuantity,
+            loyaltyRateBps: loyaltyRateBps,
+            policy: loyaltyPolicy
+        )
     }
 
     var body: some View {
@@ -725,12 +742,16 @@ private struct SaleAmountSheet: View {
                 Section("Sale preview") {
                     LabeledContent("Suggested quantity", value: formatQuantity(product, enteredQuantity))
                     LabeledContent("Unit price", value: "\(formatCents(CheckoutMath.effectiveUnitPriceCents(product: product, quantity: enteredQuantity)))/\(product.saleUnit)")
-                    LabeledContent("Line total", value: formatCents(CheckoutMath.pricedLineTotalCents(
-                        product: product,
-                        quantity: enteredQuantity,
-                        loyaltyRateBps: loyaltyRateBps,
-                        policy: loyaltyPolicy
-                    )))
+                    LabeledContent("Normal price", value: formatCents(estimatedLineCents))
+                    if let requestedAmountCents {
+                        LabeledContent("Requested merchandise amount", value: formatCents(requestedAmountCents))
+                        if requestedAmountCents != estimatedLineCents {
+                            Text("Price variance flagged: \(formatCents(abs(requestedAmountCents - estimatedLineCents))) \(requestedAmountCents > estimatedLineCents ? "above" : "below") normal price. The requested amount is preserved.")
+                                .font(.footnote)
+                                .foregroundStyle(DRXPalette.warning)
+                        }
+                    }
+                    LabeledContent("Line total", value: formatCents(requestedAmountCents ?? estimatedLineCents))
                     if enteredQuantity >= product.quantityOnHandGrams {
                         Text("You can’t sell more than the stock on hand.")
                             .font(.footnote)
@@ -746,7 +767,7 @@ private struct SaleAmountSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
-                        onSave(enteredQuantity)
+                        onSave(enteredQuantity, requestedAmountCents)
                         dismiss()
                     }
                     .disabled(enteredQuantity <= 0)

@@ -98,6 +98,7 @@ export const cartLineItemSchema = z.object({
   qty: z.number().int().positive(),
   source: posCartItemSourceSchema,
   weightGrams: z.number().positive().optional(),
+  requestedAmountCents: z.number().int().positive().optional(),
   pricePerGram: z.number().positive().optional(),
   bulkTierApplied: z.string().min(1).optional(),
   loyaltyDiscountApplied: z.number().nonnegative().optional(),

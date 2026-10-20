@@ -87,6 +87,28 @@ describe("shared commerce pricing", () => {
     });
   });
 
+  it("keeps the operator-confirmed dollar amount while retaining its quantity and price variance", () => {
+    const product = { ...fractionalProduct, baseUnitPriceCents: 3_500, bulkPriceTiers: [] };
+    const result = calculateCheckoutPricing({
+      lines: [{ product, quantity: 0.7, requestedAmountCents: 2_500 }],
+      loyaltyDiscountRateBps: 0,
+      loyaltyCombinationPolicy: "best_only",
+    });
+
+    expect(result.lines[0]).toMatchObject({
+      quantity: 0.7,
+      requestedAmountCents: 2_500,
+      lineSubtotalCents: 2_500,
+      appliedUnitPriceCents: 2_500 / 0.7,
+      operatorPriceAdjustmentCents: 50,
+    });
+    expect(result).toMatchObject({
+      merchandiseSubtotalCents: 2_450,
+      merchandiseTotalCents: 2_500,
+      priceAdjustmentCents: 50,
+    });
+  });
+
   it("stacks loyalty after bulk pricing when configured", () => {
     const result = calculateCheckoutPricing({
       lines: [{ product: fractionalProduct, quantity: 5 }],

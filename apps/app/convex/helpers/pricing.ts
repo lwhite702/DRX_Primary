@@ -30,6 +30,8 @@ export interface PricedLine {
   bulkDiscountCents: number;
   loyaltyDiscountCents: number;
   lineDiscountCents: number;
+  requestedAmountCents?: number;
+  operatorPriceAdjustmentCents: number;
 }
 
 export interface CheckoutPricing {
@@ -37,6 +39,7 @@ export interface CheckoutPricing {
   merchandiseSubtotalCents: number;
   taxableMerchandiseCents: number;
   discountCents: number;
+  priceAdjustmentCents: number;
   merchandiseTotalCents: number;
 }
 
@@ -197,6 +200,7 @@ function validateProduct(product: CommerceProduct): void {
 function calculateLine(input: {
   product: CommerceProduct;
   quantity: number;
+  requestedAmountCents?: number;
   loyaltyDiscountRateBps: number;
   loyaltyCombinationPolicy: LoyaltyCombinationPolicy;
 }): PricedLine {
@@ -255,6 +259,17 @@ function calculateLine(input: {
     throw new Error("INVALID_ARGUMENT: Calculated line total is outside the safe range");
   }
 
+  let operatorPriceAdjustmentCents = 0;
+  if (input.requestedAmountCents !== undefined) {
+    requireSafeCents(input.requestedAmountCents, "requestedAmountCents");
+    if (input.requestedAmountCents <= 0) {
+      throw new Error("INVALID_ARGUMENT: requestedAmountCents must be positive");
+    }
+    operatorPriceAdjustmentCents = input.requestedAmountCents - lineSubtotalCents;
+    lineSubtotalCents = input.requestedAmountCents;
+    appliedUnitPriceCents = lineSubtotalCents / quantity;
+  }
+
   return {
     productId: product.productId,
     productName: product.productName,
@@ -267,11 +282,13 @@ function calculateLine(input: {
     bulkDiscountCents,
     loyaltyDiscountCents,
     lineDiscountCents: bulkDiscountCents + loyaltyDiscountCents,
+    ...(input.requestedAmountCents === undefined ? {} : { requestedAmountCents: input.requestedAmountCents }),
+    operatorPriceAdjustmentCents,
   };
 }
 
 export function calculateCheckoutPricing(input: {
-  lines: Array<{ product: CommerceProduct; quantity: number }>;
+  lines: Array<{ product: CommerceProduct; quantity: number; requestedAmountCents?: number }>;
   loyaltyDiscountRateBps: number;
   loyaltyCombinationPolicy: LoyaltyCombinationPolicy;
 }): CheckoutPricing {
@@ -287,6 +304,7 @@ export function calculateCheckoutPricing(input: {
       taxableMerchandiseCents:
         totals.taxableMerchandiseCents + (line.taxable ? line.lineSubtotalCents : 0),
       discountCents: totals.discountCents + line.lineDiscountCents,
+      priceAdjustmentCents: totals.priceAdjustmentCents + line.operatorPriceAdjustmentCents,
       merchandiseTotalCents: totals.merchandiseTotalCents + line.lineSubtotalCents,
     }),
     {
@@ -294,6 +312,7 @@ export function calculateCheckoutPricing(input: {
       merchandiseSubtotalCents: 0,
       taxableMerchandiseCents: 0,
       discountCents: 0,
+      priceAdjustmentCents: 0,
       merchandiseTotalCents: 0,
     },
   );

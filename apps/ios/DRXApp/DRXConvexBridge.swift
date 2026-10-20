@@ -376,6 +376,7 @@ struct CheckoutArgs: Encodable, Sendable {
 struct CheckoutItem: Encodable, Sendable {
     let productId: String
     let quantityGrams: Double
+    let requestedAmountCents: Int?
 }
 
 struct CheckoutDelivery: Encodable, Sendable {

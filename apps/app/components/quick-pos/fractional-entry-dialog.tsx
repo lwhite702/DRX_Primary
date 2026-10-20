@@ -29,17 +29,30 @@ export function FractionalEntryDialog({
 }) {
   const [mode, setMode] = useState<"dollars" | "quantity">("dollars");
   const [value, setValue] = useState("");
+  const [quantityEdit, setQuantityEdit] = useState("");
   const config = product?.commerce_config ?? product?.fractional_config;
   const numericValue = Number(value);
-  const line = useMemo(() => {
+  const suggestedLine = useMemo(() => {
     if (!config || !Number.isFinite(numericValue) || numericValue <= 0) return null;
     return mode === "dollars"
       ? suggestQuantityForDollars(numericValue, config)
       : calculateFractionalLine(numericValue, config);
   }, [config, mode, numericValue]);
+  const line = useMemo(() => {
+    if (!config || !suggestedLine || !quantityEdit.trim()) return suggestedLine;
+    const quantity = Number(quantityEdit);
+    if (!Number.isFinite(quantity) || quantity <= 0) return null;
+    return calculateFractionalLine(quantity, config);
+  }, [config, quantityEdit, suggestedLine]);
+  const requestedAmountCents = mode === "dollars" && Number.isFinite(numericValue)
+    ? Math.round(numericValue * 100)
+    : undefined;
+  const priceVarianceCents = requestedAmountCents === undefined || !line
+    ? 0
+    : requestedAmountCents - Math.round(line.lineTotal * 100);
 
   const add = () => {
-    if (!product || !config || !line || line.quantity <= 0) return;
+    if (!product || !config || !line || line.quantity <= 0 || (mode === "dollars" && (!requestedAmountCents || requestedAmountCents <= 0))) return;
     const fractional = config.fractionalEnabled;
     onAdd({
       id: `inv:${product.id}:fractional:${Date.now()}`,
@@ -47,11 +60,14 @@ export function FractionalEntryDialog({
       name: product.name,
       sku: product.sku,
       barcode: product.barcode,
-      unitPrice: fractional ? line.lineTotal : line.unitPrice,
+      unitPrice: fractional
+        ? requestedAmountCents === undefined ? line.lineTotal : requestedAmountCents / 100
+        : line.unitPrice,
       qty: fractional ? 1 : line.quantity,
       source: "inventory",
       weightGrams: fractional ? line.quantity : undefined,
       pricePerGram: fractional ? line.unitPrice : undefined,
+      ...(requestedAmountCents === undefined ? {} : { requestedAmountCents }),
       bulkTierApplied: line.bulkTier?.label,
       commerceConfig: fractional ? undefined : config,
     });
@@ -70,10 +86,10 @@ export function FractionalEntryDialog({
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-2" role="group" aria-label="Entry mode">
-          <Button type="button" variant={mode === "dollars" ? "default" : "outline"} onClick={() => { setMode("dollars"); setValue(""); }}>
+          <Button type="button" variant={mode === "dollars" ? "default" : "outline"} onClick={() => { setMode("dollars"); setValue(""); setQuantityEdit(""); }}>
             Dollar amount
           </Button>
-          <Button type="button" variant={mode === "quantity" ? "default" : "outline"} onClick={() => { setMode("quantity"); setValue(""); }}>
+          <Button type="button" variant={mode === "quantity" ? "default" : "outline"} onClick={() => { setMode("quantity"); setValue(""); setQuantityEdit(""); }}>
             Quantity
           </Button>
         </div>
@@ -89,7 +105,7 @@ export function FractionalEntryDialog({
             min={mode === "quantity" ? config?.minimumSaleQuantity : 0.01}
             step={mode === "quantity" ? config?.quantityIncrement : 0.01}
             value={value}
-            onChange={(event) => setValue(event.target.value)}
+            onChange={(event) => { setValue(event.target.value); setQuantityEdit(""); }}
             autoFocus
           />
         </div>
@@ -108,13 +124,36 @@ export function FractionalEntryDialog({
         {line ? (
           <div className="rounded-lg border border-accent/20 bg-accent/5 p-4" aria-live="polite">
             <div className="flex items-center justify-between">
-              <span>{config?.fractionalEnabled ? "Suggested serving" : "Suggested quantity"}</span>
+              <span>{config?.fractionalEnabled ? "Suggested serving · edit to confirm" : "Suggested quantity"}</span>
               <strong>
                 {config?.decimalPrecision !== undefined && config.decimalPrecision > 2
                   ? `${parseFloat(line.quantity.toFixed(config.decimalPrecision))} ${line.sellingUnit}`
                   : `${formatQuantity(line.quantity)} ${line.sellingUnit}`}
               </strong>
             </div>
+            {mode === "dollars" ? (
+              <div className="mt-3 space-y-2">
+                <Label htmlFor="fractional-confirmed-quantity">Confirmed quantity ({line.sellingUnit})</Label>
+                <Input
+                  id="fractional-confirmed-quantity"
+                  type="number"
+                  inputMode="decimal"
+                  min={config?.minimumSaleQuantity}
+                  step={config?.quantityIncrement}
+                  value={quantityEdit || String(line.quantity)}
+                  onChange={(event) => setQuantityEdit(event.target.value)}
+                />
+                <div className="flex items-center justify-between text-sm">
+                  <span>Requested amount</span>
+                  <strong>${(requestedAmountCents! / 100).toFixed(2)}</strong>
+                </div>
+                {priceVarianceCents !== 0 ? (
+                  <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-sm text-amber-800 dark:text-amber-200">
+                    Price variance flagged: normal price at this quantity is ${line.lineTotal.toFixed(2)}; adjustment {priceVarianceCents > 0 ? "+" : "−"}${(Math.abs(priceVarianceCents) / 100).toFixed(2)}. Checkout will keep the requested amount.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
               <span>{line.bulkTier?.label ?? "Standard price"} · ${line.unitPrice.toFixed(2)}/{line.sellingUnit}</span>
               <span>${line.lineTotal.toFixed(2)}</span>
@@ -125,8 +164,8 @@ export function FractionalEntryDialog({
           </div>
         ) : null}
 
-        <Button type="button" className="h-12" onClick={add} disabled={!line || line.quantity <= 0}>
-          Add suggested amount
+        <Button type="button" className="h-12" onClick={add} disabled={!line || line.quantity <= 0 || (mode === "dollars" && (!requestedAmountCents || requestedAmountCents <= 0))}>
+          {mode === "dollars" ? "Confirm amount and quantity" : "Add quantity"}
         </Button>
       </DialogContent>
     </Dialog>

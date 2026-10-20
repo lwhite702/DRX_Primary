@@ -100,6 +100,42 @@ describe("Convex commerce and delivery workflow", () => {
     vi.useRealTimers();
   });
 
+  it("quotes and records an exact requested amount while allocating stock by confirmed quantity", async () => {
+    const { t, owner, productId } = await setupCommerceStore();
+    const items = [{ productId, quantityGrams: 0.7, requestedAmountCents: 2_500 }];
+    const quote = await owner.query(api.checkout.quoteCheckout, { items });
+    expect(quote).toMatchObject({
+      merchandiseSubtotalCents: 700,
+      subtotalCents: 2_500,
+      priceAdjustmentCents: 1_800,
+      taxableSubtotalCents: 2_500,
+      totalAmountCents: 2_750,
+    });
+    expect(quote.lines[0]).toMatchObject({
+      quantity: 0.7,
+      requestedAmountCents: 2_500,
+      lineSubtotalCents: 2_500,
+      operatorPriceAdjustmentCents: 1_800,
+    });
+
+    const result = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "EXACT-AMOUNT-001",
+      items,
+      paymentMethod: "card",
+      amountPaidCents: quote.totalAmountCents,
+    });
+    const lines = await t.run((ctx) =>
+      ctx.db.query("salesLineItems").withIndex("by_saleId", (q) => q.eq("saleId", result.saleId)).collect(),
+    );
+    expect(result.totalAmountCents).toBe(2_750);
+    expect(lines[0]).toMatchObject({
+      quantityGrams: 0.7,
+      requestedAmountCents: 2_500,
+      lineTotalCents: 2_500,
+      operatorPriceAdjustmentCents: 1_800,
+    });
+  });
+
   it("validates commerce presets and tiers from the configured minimum anchor", async () => {
     const { owner, productId } = await setupCommerceStore();
     await expect(
