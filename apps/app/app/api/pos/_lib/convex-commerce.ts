@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 
-import type { QuickPosDeliveryState, QuickPosPaymentMethod } from "@/lib/quick-pos/types";
+import type { QuickPosDeliveryState, QuickPosPaymentMethod, QuickPosPaymentTender } from "@/lib/quick-pos/types";
 import { safeDisplayOrderNumber } from "@/lib/utils/number-formatting";
 
 type CanonicalCartItem = {
@@ -26,10 +26,20 @@ type CanonicalInput = {
   customerId?: string | null;
   items: CanonicalCartItem[];
   delivery?: QuickPosDeliveryState;
-  fullDelivery?: { profileId?: string; address: string; customerFeeCents: number };
+  fullDelivery?: {
+    profileId?: string;
+    address: string;
+    customerFeeCents: number;
+    dispatchType?: "merchant_dispatch" | "customer_pickup_car";
+    feeSplitMode?: "pass_full" | "absorb_full" | "split_half" | "custom";
+    estimatedArrivalMinutes?: number;
+    uberTrackingUrl?: string;
+  };
   discountAmountCents?: number;
   discountReason?: string;
   fees?: Array<{ type: string; amount?: number; value?: string }>;
+  paymentRef?: string;
+  paymentTenders?: QuickPosPaymentTender[];
   usePriceOverrides?: boolean;
 };
 
@@ -113,6 +123,10 @@ async function resolveCanonicalInput(input: CanonicalInput) {
   const fullDelivery = input.fullDelivery ? {
     ...(await client.query(api.deliveryProfiles.resolve, { businessId: input.businessId, profileId: input.fullDelivery.profileId, customerFeeCents: input.fullDelivery.customerFeeCents })),
     address: input.fullDelivery.address,
+    ...(input.fullDelivery.dispatchType ? { dispatchType: input.fullDelivery.dispatchType } : {}),
+    ...(input.fullDelivery.feeSplitMode ? { feeSplitMode: input.fullDelivery.feeSplitMode } : {}),
+    ...(input.fullDelivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: input.fullDelivery.estimatedArrivalMinutes } : {}),
+    ...(input.fullDelivery.uberTrackingUrl ? { uberTrackingUrl: input.fullDelivery.uberTrackingUrl } : {}),
   } : undefined;
 
   return {
@@ -128,6 +142,11 @@ async function resolveCanonicalInput(input: CanonicalInput) {
           vendorFeeCents: input.delivery.vendorFeeCents,
           chargeCustomer:
             input.delivery.feeAllocation === "charge_customer",
+          ...(input.delivery.dispatchType ? { dispatchType: input.delivery.dispatchType } : {}),
+          ...(input.delivery.feeSplitMode ? { feeSplitMode: input.delivery.feeSplitMode } : {}),
+          ...(input.delivery.customerFeeCents !== undefined ? { customerFeeCents: input.delivery.customerFeeCents } : {}),
+          ...(input.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: input.delivery.estimatedArrivalMinutes } : {}),
+          ...(input.delivery.uberTrackingUrl ? { uberTrackingUrl: input.delivery.uberTrackingUrl } : {}),
         }
       : undefined),
   };
@@ -176,7 +195,13 @@ export async function quoteCanonicalCommerce(input: CanonicalInput) {
       ? {
           vendorFeeCents: canonical.delivery.vendorFeeCents,
           chargeCustomer: canonical.delivery.chargeCustomer,
-          ...("customerFeeCents" in canonical.delivery ? { customerFeeCents: canonical.delivery.customerFeeCents, profileId: canonical.delivery.profileId, vendorExpenseKnown: canonical.delivery.vendorExpenseKnown } : {}),
+          ...("customerFeeCents" in canonical.delivery && canonical.delivery.customerFeeCents !== undefined ? { customerFeeCents: canonical.delivery.customerFeeCents } : {}),
+          ...("profileId" in canonical.delivery && canonical.delivery.profileId !== undefined ? { profileId: canonical.delivery.profileId } : {}),
+          ...("vendorExpenseKnown" in canonical.delivery && canonical.delivery.vendorExpenseKnown !== undefined ? { vendorExpenseKnown: canonical.delivery.vendorExpenseKnown } : {}),
+          ...("dispatchType" in canonical.delivery && canonical.delivery.dispatchType !== undefined ? { dispatchType: canonical.delivery.dispatchType } : {}),
+          ...("feeSplitMode" in canonical.delivery && canonical.delivery.feeSplitMode !== undefined ? { feeSplitMode: canonical.delivery.feeSplitMode } : {}),
+          ...("estimatedArrivalMinutes" in canonical.delivery && canonical.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: canonical.delivery.estimatedArrivalMinutes } : {}),
+          ...("uberTrackingUrl" in canonical.delivery && canonical.delivery.uberTrackingUrl !== undefined ? { uberTrackingUrl: canonical.delivery.uberTrackingUrl } : {}),
         }
       : undefined,
   });
@@ -213,6 +238,8 @@ export async function checkoutCanonicalCommerce(
       ? { manualItems: canonical.manualItems }
       : {}),
     paymentMethod: input.paymentMethod,
+    ...(input.paymentRef ? { paymentReference: input.paymentRef } : {}),
+    ...(input.paymentTenders?.length ? { paymentTenders: input.paymentTenders } : {}),
     amountPaidCents: input.paymentMethod === "credit" ? 0 : input.amountPaid === undefined ? quote.totalAmountCents : checkedCents(input.amountPaid),
     delivery: canonical.delivery,
   });
@@ -240,7 +267,8 @@ export async function checkoutFullCanonicalCommerce(input: CanonicalInput & {
     customerId: canonical.customerId, orderNumber: `WEB-${input.idempotencyKey}`,
     items: canonical.items, priceOverrides: canonical.priceOverrides, fees: canonical.fees,
     ...(input.discountAmountCents !== undefined ? { discountAmountCents: input.discountAmountCents } : {}),
-    paymentMethod: input.paymentMethod, paymentReference: input.paymentRef,
+    paymentMethod: input.paymentMethod as QuickPosPaymentMethod, paymentReference: input.paymentRef,
+    ...(input.paymentTenders?.length ? { paymentTenders: input.paymentTenders } : {}),
     expectedTotalCents,
     amountPaidCents: input.amountPaid === undefined ? (input.paymentMethod === "credit" ? 0 : expectedTotalCents) : checkedCents(input.amountPaid),
     delivery: canonical.delivery,

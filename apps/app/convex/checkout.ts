@@ -11,7 +11,7 @@ import { internal } from "./_generated/api";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { allocateFifoInventoryBatches } from "./helpers/fifo";
 import { calculateTaxCents } from "./helpers/money";
-import { requirePermission } from "./helpers/permissions";
+import { requirePermission, hasPermission } from "./helpers/permissions";
 import {
   calculateCheckoutPricing,
   resolveLoyaltyDiscountRate,
@@ -28,12 +28,27 @@ import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calcu
 
 import { priceOverride, normalizeOverrides, deliveryTerms, validateDeliveryTerms, type PriceOverride, type DeliveryTerms } from "./helpers/checkoutTerms";
 
+const paymentTenderInput = v.object({
+  method: v.string(),
+  amountCents: v.number(),
+  reference: v.optional(v.string()),
+  processorFeeCents: v.optional(v.number()),
+});
+
 const paymentMethod = v.union(
   v.literal("cash"),
   v.literal("card"),
   v.literal("credit"),
   v.literal("mixed"),
+  v.literal("split"),
   v.literal("zelle"),
+  v.literal("p2p_cashapp"),
+  v.literal("p2p_paypal"),
+  v.literal("p2p_zelle"),
+  v.literal("p2p_onepay"),
+  v.literal("p2p_chime"),
+  v.literal("p2p_venmo"),
+  v.literal("p2p_other"),
   v.literal("comp"),
 );
 
@@ -334,6 +349,10 @@ async function createCheckoutFingerprint(input: {
           ...(input.delivery.customerFeeCents === undefined ? {} : { customerFeeCents: input.delivery.customerFeeCents }),
           ...(input.delivery.profileId ? { profileId: input.delivery.profileId } : {}),
           ...(input.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: input.delivery.vendorExpenseKnown }),
+          ...(input.delivery.dispatchType ? { dispatchType: input.delivery.dispatchType } : {}),
+          ...(input.delivery.feeSplitMode ? { feeSplitMode: input.delivery.feeSplitMode } : {}),
+          ...(input.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: input.delivery.estimatedArrivalMinutes } : {}),
+          ...(input.delivery.uberTrackingUrl ? { uberTrackingUrl: input.delivery.uberTrackingUrl } : {}),
         }
       : null,
   });
@@ -569,6 +588,7 @@ export const processCheckout = mutation({
     priceOverrides: v.optional(v.array(priceOverride)),
     paymentMethod,
     paymentReference: v.optional(v.string()),
+    paymentTenders: v.optional(v.array(paymentTenderInput)),
     deliveryFeeCents: v.optional(v.number()),
     discountAmountCents: v.optional(v.number()),
     isComp: v.optional(v.boolean()),
@@ -616,7 +636,13 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
-    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
+    const normalizedDelivery = args.delivery
+      ? {
+          ...args.delivery,
+          uberTrackingUrl: args.delivery.uberTrackingUrl?.trim() || undefined,
+        }
+      : undefined;
+    await validateDeliveryTerms(ctx, auth.businessId, normalizedDelivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
@@ -629,7 +655,7 @@ export const processCheckout = mutation({
       discountAmountCents: args.discountAmountCents,
       isComp: args.isComp,
       amountPaidCents: args.amountPaidCents,
-      delivery: args.delivery,
+      delivery: normalizedDelivery,
     });
 
     let existingOrder =
@@ -930,7 +956,12 @@ export const processCheckout = mutation({
     }
 
     if (args.expectedTotalCents !== undefined && args.expectedTotalCents !== totalAmountCents) throw new Error("QUOTE_CHANGED: Refresh and review the checkout total");
-    const { creditAmountCents, changeAmountCents } = calculateSettlement(args.paymentMethod, totalAmountCents, args.amountPaidCents);
+    const { creditAmountCents, changeAmountCents } = calculateSettlement(
+      args.paymentMethod,
+      totalAmountCents,
+      args.amountPaidCents,
+      args.paymentTenders,
+    );
 
     if (creditAmountCents > 0 && !customer) throw new Error("INVALID_ARGUMENT: Unpaid mixed sales require a customer");
     if (creditAmountCents > 0 && customer) {
@@ -944,7 +975,7 @@ export const processCheckout = mutation({
         newCreditUsedCents > customer.creditLimitCents
       ) {
         throw new Error(
-          `CREDIT_LIMIT_EXCEEDED: Transaction total (${totalAmountCents}¢) exceeds available customer credit`,
+          `CREDIT_LIMIT_EXCEEDED: Credit tender amount (${creditAmountCents}¢) exceeds available customer credit`,
         );
       }
     }
@@ -973,6 +1004,7 @@ export const processCheckout = mutation({
       changeAmountCents,
       paymentMethod: args.paymentMethod,
       ...(paymentReference ? { paymentReference } : {}),
+      ...(args.paymentTenders?.length ? { paymentTenders: args.paymentTenders } : {}),
       ...(fees.length ? { fees, feeRevenueCents } : {}),
       ...(args.deliveryFeeCents !== undefined ? { deliveryFeeCents: args.deliveryFeeCents } : {}),
       ...(args.discountAmountCents !== undefined ? { discountAmountCents: args.discountAmountCents } : {}),
@@ -985,28 +1017,32 @@ export const processCheckout = mutation({
     });
 
     let deliveryId: Id<"deliveries"> | undefined;
-    if (args.delivery) {
+    if (normalizedDelivery) {
       const dispatchDueAt =
         now + (commerceSettings?.deliveryDispatchSlaMinutes ?? 5) * 60_000;
       deliveryId = await ctx.db.insert("deliveries", {
         businessId: auth.businessId,
         saleId,
         customerId: args.customerId,
-        ...(args.delivery.profileId ? { profileId: args.delivery.profileId } : {}),
-        ...(args.delivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: args.delivery.vendorExpenseKnown }),
+        ...(normalizedDelivery.profileId ? { profileId: normalizedDelivery.profileId } : {}),
+        ...(normalizedDelivery.vendorExpenseKnown === undefined ? {} : { vendorExpenseKnown: normalizedDelivery.vendorExpenseKnown }),
+        ...(normalizedDelivery.dispatchType ? { dispatchType: normalizedDelivery.dispatchType } : {}),
+        ...(normalizedDelivery.feeSplitMode ? { feeSplitMode: normalizedDelivery.feeSplitMode } : {}),
+        ...(normalizedDelivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: normalizedDelivery.estimatedArrivalMinutes } : {}),
+        ...(normalizedDelivery.uberTrackingUrl ? { uberTrackingUrl: normalizedDelivery.uberTrackingUrl } : {}),
         addressEncrypted: "pending",
         addressEncryptionVersion: 0,
         vendorFeeCents: vendorDeliveryExpenseCents,
         customerFeeCents: deliveryRevenueCents,
         deliveryTaxCents,
-        chargeCustomer: args.delivery.chargeCustomer,
+        chargeCustomer: normalizedDelivery.chargeCustomer,
         status: "ready_for_dispatch",
         dispatchDueAt,
         createdBy: auth.userId,
         createdAt: now,
         updatedAt: now,
       });
-      const encrypted = await encryptDeliveryAddress(args.delivery.address, {
+      const encrypted = await encryptDeliveryAddress(normalizedDelivery.address, {
         businessId: String(auth.businessId),
         saleId: String(saleId),
         deliveryId: String(deliveryId),
@@ -1022,7 +1058,7 @@ export const processCheckout = mutation({
         type: "created",
         toStatus: "ready_for_dispatch",
         metadata: JSON.stringify({
-          chargeCustomer: args.delivery.chargeCustomer,
+          chargeCustomer: normalizedDelivery.chargeCustomer,
           dispatchDueAt,
         }),
         createdAt: now,
@@ -1197,22 +1233,79 @@ export const getSaleDetail = query({
     const sale = id ? await ctx.db.get(id) : null;
     if (!sale || sale.businessId !== auth.businessId) throw new Error("NOT_FOUND: Sale not found");
     const lineItems = await ctx.db.query("salesLineItems").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(200);
+    const itemsWithNames = await Promise.all(
+      lineItems.map(async (item) => {
+        let productName = item.manualName;
+        if (!productName && item.productId) {
+          const product = await ctx.db.get(item.productId);
+          productName = product?.productName;
+        }
+        return {
+          ...item,
+          productName: productName ?? "Inventory Item",
+        };
+      })
+    );
     const allocations = await ctx.db.query("salesAllocations").withIndex("by_saleId", q => q.eq("saleId", sale._id)).take(500);
-    const customer = sale.customerId ? await ctx.db.get(sale.customerId) : null;
+    const canViewCustomers = hasPermission(auth.userRecord, "VIEW_CUSTOMERS");
+    const customer = canViewCustomers && sale.customerId ? await ctx.db.get(sale.customerId) : null;
+    const delivery = await ctx.db.query("deliveries").withIndex("by_saleId", q => q.eq("saleId", sale._id)).unique();
     const costOfGoodsSoldCents = allocations.reduce((sum, allocation) => sum + allocation.extendedCostCents, 0);
-    return { sale, customer: customer && customer.businessId === auth.businessId ? customer : null, items: lineItems, allocations, costOfGoodsSoldCents,
+    const safeDelivery =
+      delivery && delivery.businessId === auth.businessId
+        ? {
+            _id: delivery._id,
+            saleId: delivery.saleId,
+            businessId: delivery.businessId,
+            customerId: delivery.customerId,
+            profileId: delivery.profileId,
+            vendorExpenseKnown: delivery.vendorExpenseKnown,
+            dispatchType: (delivery as any).dispatchType,
+            feeSplitMode: (delivery as any).feeSplitMode,
+            estimatedArrivalMinutes: (delivery as any).estimatedArrivalMinutes,
+            uberTrackingUrl: (delivery as any).uberTrackingUrl,
+            vendorFeeCents: delivery.vendorFeeCents,
+            customerFeeCents: delivery.customerFeeCents,
+            deliveryTaxCents: delivery.deliveryTaxCents,
+            chargeCustomer: delivery.chargeCustomer,
+            status: delivery.status,
+            dispatchDueAt: delivery.dispatchDueAt,
+            assignedToUserId: delivery.assignedToUserId,
+            estimatedArrivalAt: delivery.estimatedArrivalAt,
+            createdAt: delivery.createdAt,
+            updatedAt: delivery.updatedAt,
+            address: "Address on file",
+          }
+        : null;
+    return {
+      sale,
+      customer: customer && customer.businessId === auth.businessId ? customer : null,
+      delivery: safeDelivery,
+      items: itemsWithNames,
+      allocations,
+      costOfGoodsSoldCents,
       grossProfitCents: sale.totalAmountCents - costOfGoodsSoldCents,
-      grossMarginPercent: sale.totalAmountCents > 0 ? ((sale.totalAmountCents - costOfGoodsSoldCents) / sale.totalAmountCents) * 100 : 0 };
+      grossMarginPercent: sale.totalAmountCents > 0 ? ((sale.totalAmountCents - costOfGoodsSoldCents) / sale.totalAmountCents) * 100 : 0,
+    };
   },
 });
 
 export const updateSale = mutation({
-  args: { saleId: v.string(), customerId: v.optional(v.union(v.string(), v.null())), paymentMethod: v.optional(v.string()), paymentReference: v.optional(v.union(v.string(), v.null())) },
+  args: {
+    saleId: v.string(),
+    customerId: v.optional(v.union(v.string(), v.null())),
+    paymentMethod: v.optional(v.string()),
+    paymentReference: v.optional(v.union(v.string(), v.null())),
+    paymentTenders: v.optional(v.array(paymentTenderInput)),
+  },
   returns: v.any(),
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     const changesCustomer = args.customerId !== undefined;
-    const changesPayment = args.paymentMethod !== undefined || args.paymentReference !== undefined;
+    const changesPayment =
+      args.paymentMethod !== undefined ||
+      args.paymentReference !== undefined ||
+      args.paymentTenders !== undefined;
     if (!changesCustomer && !changesPayment) throw new Error("INVALID_ARGUMENT: No sale changes were provided");
     if (changesCustomer) {
       requirePermission(auth.userRecord, "PROCESS_CHECKOUT");
@@ -1281,8 +1374,20 @@ export const updateSale = mutation({
       patch.paymentMethod = args.paymentMethod;
     }
     if (args.paymentReference !== undefined) patch.paymentReference = args.paymentReference ?? undefined;
+    if (args.paymentTenders !== undefined) patch.paymentTenders = args.paymentTenders;
     await ctx.db.patch(sale._id, patch);
-    await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "SALE_UPDATED", entityType: "sale", entityId: sale._id, metadata: JSON.stringify({ customerChanged: args.customerId !== undefined, paymentChanged: args.paymentMethod !== undefined || args.paymentReference !== undefined }), timestamp: Date.now() });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "SALE_UPDATED",
+      entityType: "sale",
+      entityId: sale._id,
+      metadata: JSON.stringify({
+        customerChanged: args.customerId !== undefined,
+        paymentChanged: changesPayment,
+      }),
+      timestamp: Date.now(),
+    });
     return { success: true, sale: await ctx.db.get(sale._id) };
   },
 });

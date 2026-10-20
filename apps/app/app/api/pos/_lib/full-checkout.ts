@@ -6,23 +6,35 @@ import { buildCheckoutFailure } from "@/lib/pos/response";
 
 type FullPayload = z.infer<typeof fullCheckoutPayloadSchema>;
 export function fullCommerceInput(payload: Omit<FullPayload, "idempotencyKey">, businessId: string) {
-  const hasDelivery = Boolean(payload.deliveryManagementId || payload.deliveryAddress || payload.deliveryPrice);
-  if (hasDelivery && (!payload.deliveryAddress || payload.deliveryAddress.trim().length < 5)) throw new Error("INVALID_ARGUMENT: Enter a delivery address");
-  const fee = Math.round((payload.deliveryPrice ?? 0) * 100);
-  if (!Number.isSafeInteger(fee) || Math.abs(fee - (payload.deliveryPrice ?? 0) * 100) > 1e-6) throw new Error("INVALID_ARGUMENT: Invalid delivery charge");
+  const isPickupCar = payload.delivery?.dispatchType === "customer_pickup_car";
+  const hasDelivery = Boolean(payload.delivery?.enabled || payload.deliveryManagementId || payload.deliveryAddress || payload.deliveryPrice);
+  const resolvedAddress = payload.delivery?.address || payload.deliveryAddress || "";
+  if (hasDelivery && !isPickupCar && resolvedAddress.trim().length < 5) throw new Error("INVALID_ARGUMENT: Enter a delivery address");
+  const fee = payload.delivery?.customerFeeCents ?? Math.round((payload.deliveryPrice ?? 0) * 100);
+  if (!Number.isSafeInteger(fee) || fee < 0) throw new Error("INVALID_ARGUMENT: Invalid delivery charge");
   return {
     businessId, customerId: payload.customerId, fees: payload.fees, usePriceOverrides: true,
     discountAmountCents: payload.discountAmountCents,
     discountReason: payload.discountReason,
     items: payload.items.map(item => ({ ...item, unitPrice: item.overrideReason && item.weightGrams ? Math.round(item.unitPrice * 100 / item.weightGrams) / 100 : item.unitPrice })),
-    fullDelivery: hasDelivery ? { profileId: payload.deliveryManagementId ?? undefined, address: payload.deliveryAddress!, customerFeeCents: fee } : undefined,
+    delivery: payload.delivery?.enabled ? payload.delivery : undefined,
+    fullDelivery: hasDelivery && !payload.delivery?.enabled ? { profileId: payload.deliveryManagementId ?? undefined, address: resolvedAddress, customerFeeCents: fee } : undefined,
   };
 }
 export async function performFullCheckout(payload: FullPayload, businessId: string) {
   if (payload.payment.method === "credit" && (!payload.customerId || !payload.payment.creditConfirmed)) throw new Error("INVALID_ARGUMENT: Confirm the credit customer");
   const displayedTotal = payload.expectedTotal ?? Math.round((payload.items.reduce((sum, item) => sum + item.unitPrice * item.qty, 0) + payload.taxAmount + payload.fees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0) + (payload.deliveryPrice ?? 0)) * 100) / 100;
   if (payload.payment.method === "mixed" && payload.amountPaid !== undefined && payload.amountPaid < displayedTotal && (!payload.customerId || !payload.payment.creditConfirmed)) throw new Error("INVALID_ARGUMENT: Confirm the customer credit remainder");
-  return checkoutFullCanonicalCommerce({ ...fullCommerceInput(payload, businessId), idempotencyKey: payload.idempotencyKey, paymentMethod: payload.payment.method, paymentRef: payload.paymentRef, amountPaid: payload.amountPaid, expectedTotal: displayedTotal });
+  const tenders = payload.paymentTenders ?? payload.payment.tenders;
+  return checkoutFullCanonicalCommerce({
+    ...fullCommerceInput(payload, businessId),
+    idempotencyKey: payload.idempotencyKey,
+    paymentMethod: payload.payment.method as any,
+    paymentRef: payload.paymentRef,
+    paymentTenders: tenders,
+    amountPaid: payload.amountPaid,
+    expectedTotal: displayedTotal,
+  });
 }
 export function checkoutFailure(error: unknown) {
   const raw = error instanceof Error ? error.message : "";

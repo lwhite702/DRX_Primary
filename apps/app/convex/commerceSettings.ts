@@ -31,6 +31,10 @@ export const getSettings = query({
       dispatchSlaMinutes: settings?.deliveryDispatchSlaMinutes ?? defaults.dispatchSlaMinutes,
       escalationDelayMinutes: settings?.deliveryManagerEscalationMinutes ?? defaults.escalationDelayMinutes,
       managerNotificationTargets: settings?.deliveryManagerNotificationUserIds ?? [],
+      ...(settings?.cardProcessorFeeEnabled !== undefined ? { cardProcessorFeeEnabled: settings.cardProcessorFeeEnabled } : {}),
+      ...(settings?.cardProcessorFeeType !== undefined ? { cardProcessorFeeType: settings.cardProcessorFeeType } : {}),
+      ...(settings?.cardProcessorFeeBps !== undefined ? { cardProcessorFeeBps: settings.cardProcessorFeeBps } : {}),
+      ...(settings?.cardProcessorFeeFlatCents !== undefined ? { cardProcessorFeeFlatCents: settings.cardProcessorFeeFlatCents } : {}),
     };
     return { businessId: auth.businessId, merchantJson: JSON.stringify(merchant) };
   },
@@ -71,7 +75,12 @@ export const saveSettings = mutation({
       const existing = await ctx.db.query("businessSettings").withIndex("by_businessId", q => q.eq("businessId", auth.businessId)).unique();
       const values = { loyaltyCombinationPolicy: merchant.loyaltyCombinationPolicy, loyaltyTiers,
         deliveryFeeTaxable: merchant.deliveryFeeTaxable, deliveryDispatchSlaMinutes: merchant.dispatchSlaMinutes,
-        deliveryManagerEscalationMinutes: merchant.escalationDelayMinutes, deliveryManagerNotificationUserIds: [...new Set(managerIds)], updatedAt: now };
+        deliveryManagerEscalationMinutes: merchant.escalationDelayMinutes, deliveryManagerNotificationUserIds: [...new Set(managerIds)],
+        ...(merchant.cardProcessorFeeEnabled !== undefined ? { cardProcessorFeeEnabled: merchant.cardProcessorFeeEnabled } : {}),
+        ...(merchant.cardProcessorFeeType !== undefined ? { cardProcessorFeeType: merchant.cardProcessorFeeType } : {}),
+        ...(merchant.cardProcessorFeeBps !== undefined ? { cardProcessorFeeBps: merchant.cardProcessorFeeBps } : {}),
+        ...(merchant.cardProcessorFeeFlatCents !== undefined ? { cardProcessorFeeFlatCents: merchant.cardProcessorFeeFlatCents } : {}),
+        updatedAt: now };
       if (existing) await ctx.db.patch(existing._id, values);
       else await ctx.db.insert("businessSettings", { businessId: auth.businessId, ...values, createdAt: now });
     }

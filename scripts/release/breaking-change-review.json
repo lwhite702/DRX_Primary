@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
-  "baseSha": "1249bd600baba4c3ee5639dab39278ddbcf83a41",
+  "baseSha": "a19672076dc2e70a17a136509da5270751df7092",
   "status": "reviewed-compatible",
   "reviewedBy": "lwhite702",
-  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/240#pullrequestreview-5467160982",
-  "rationale": "Extended types with optional fields for date navigation, timezone awareness, and POS UI polish. All additions are strictly backward-compatible and additive.",
+  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/244#pullrequestreview-5467160999",
+  "rationale": "Additive extensions to POS types, delivery options, and settlement payment methods for split tenders and customer loyalty. All additions are backward-compatible and preserve existing caller contracts.",
   "signals": [
-    "export-contract-changed:apps/app/components/quick-pos/customer-inline.tsx:CustomerInline",
+    "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:CheckoutPaymentMethod",
+    "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:calculateSettlement",
+    "export-contract-changed:apps/app/convex/helpers/checkoutTerms.ts:DeliveryTerms",
     "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutRequest",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutResponse",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosSessionState",
-    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:PosBaselineReport",
-    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:getPosBaselineReport",
-    "export-contract-changed:apps/mobile/app/sales-history.tsx:default",
-    "export-contract-changed:apps/mobile/src/services/apiClient.ts:getDailySummary"
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCustomer",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosDeliveryState",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosPaymentState",
+    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosState",
+    "export-contract-changed:apps/app/proxy.ts:proxy"
   ]
 }

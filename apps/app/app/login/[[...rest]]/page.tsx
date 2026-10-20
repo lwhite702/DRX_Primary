@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   const useVisualFixture = isAuthVisualFixtureEnabled();
-  const userId = useVisualFixture ? null : (await auth()).userId;
+  let userId: string | null = null;
+  if (!useVisualFixture) {
+    try {
+      userId = (await auth()).userId;
+    } catch (error) {
+      console.warn("[login] auth() failed on login page; treating as unauthenticated", error);
+      userId = null;
+    }
+  }
 
   if (userId) redirect("/dashboard");
 

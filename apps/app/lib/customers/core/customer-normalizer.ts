@@ -96,6 +96,14 @@ export function mapCustomerToOperationalModel(
       customer.fixedPricePerGram !== null && customer.fixedPricePerGram !== undefined
         ? toNumberSafe(customer.fixedPricePerGram)
         : null,
+    discount_rate_bps:
+      customer.discountRateBps !== null && customer.discountRateBps !== undefined
+        ? toNumberSafe(customer.discountRateBps)
+        : null,
+    discount_rate:
+      customer.discountRateBps !== null && customer.discountRateBps !== undefined
+        ? toNumberSafe(customer.discountRateBps) / 10000
+        : null,
     credit_limit: (() => {
       const limitRecord = Array.isArray(customer.creditLimits) ? customer.creditLimits[0] : undefined;
       if (limitRecord?.maxCreditLimit != null) return toNumberSafe(limitRecord.maxCreditLimit);
@@ -120,14 +128,70 @@ export function customerMatchesSearch(
   const searchPhone = search.phone;
   const searchEmail = search.email;
 
-  const alias = normalizeAlias(row.alias || row.first_name || row.last_name || "");
+  const alias = normalizeAlias(row.alias || "");
+  const firstName = normalizeAlias(row.first_name || "");
+  const lastName = normalizeAlias(row.last_name || "");
+  const fullName = normalizeAlias([row.alias, row.first_name, row.last_name].filter(Boolean).join(" "));
   const phone = normalizePhone(row.phone);
   const email = normalizeEmail(row.email);
-  const lastName = normalizeAlias(row.last_name || "");
 
-  return (
-    (!!searchAlias && (alias.includes(searchAlias) || lastName.includes(searchAlias))) ||
-    (!!searchPhone && phone === searchPhone) ||
-    (!!searchEmail && email === searchEmail)
-  );
+  const nameMatch =
+    !!searchAlias &&
+    (alias.includes(searchAlias) ||
+      firstName.includes(searchAlias) ||
+      lastName.includes(searchAlias) ||
+      fullName.includes(searchAlias));
+
+  const phoneMatch =
+    !!searchPhone &&
+    !!phone &&
+    (phone === searchPhone ||
+      (searchPhone.length >= 3 && (phone.includes(searchPhone) || phone.endsWith(searchPhone))));
+
+  const emailMatch = !!searchEmail && !!email && (email === searchEmail || email.includes(searchEmail));
+
+  return nameMatch || phoneMatch || emailMatch;
 }
+
+export function formatMaskedCustomerIdentifier(input: {
+  alias?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  fallbackId?: string | null;
+}): string {
+  const rawName = (
+    input.alias?.trim() ||
+    [input.firstName?.trim(), input.lastName?.trim()].filter(Boolean).join(" ") ||
+    ""
+  ).trim();
+  const maskedName = rawName
+    ? rawName
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => {
+          if (part.length <= 1) return `${part.toUpperCase()}*`;
+          return `${part[0]!.toUpperCase()}${"*".repeat(Math.min(3, Math.max(2, part.length - 1)))}`;
+        })
+        .join(" ")
+    : "";
+
+  const digits = normalizePhone(input.phone) ?? "";
+  const maskedPhone = digits.length >= 4 ? `***-${digits.slice(-4)}` : "";
+
+  if (maskedName && maskedPhone) {
+    return `${maskedName} • ${maskedPhone}`;
+  }
+  if (maskedName) {
+    return maskedName;
+  }
+  if (maskedPhone) {
+    return `Customer • ${maskedPhone}`;
+  }
+  if (input.fallbackId) {
+    const cleanId = String(input.fallbackId).replace(/[^A-Za-z0-9]/g, "");
+    return `Cust #${cleanId.slice(-4).toUpperCase()}`;
+  }
+  return "Walk-in";
+}
+

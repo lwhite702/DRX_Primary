@@ -211,4 +211,28 @@ describe("quick POS quote route", () => {
     expect(response.status).toBe(401);
     expect(mocks.getAuthoritativeQuote).not.toHaveBeenCalled();
   });
+
+  it("computes quote under auth bypass when Convex throws", async () => {
+    vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "true");
+    vi.stubEnv("BYPASS_AUTH_USER_ID", "bypass_user");
+    vi.stubEnv("BYPASS_AUTH_ORG_ID", "bypass_org");
+    mocks.resolveAuthContext.mockResolvedValue({
+      userId: "bypass_user",
+      businessId: "bypass_org",
+    });
+    mocks.quoteCanonicalCommerce.mockRejectedValue(new Error("Convex unavailable under bypass"));
+    const response = await POST(
+      new NextRequest("http://localhost/api/pos/quote", {
+        method: "POST",
+        body: JSON.stringify({
+          mode: "quick",
+          items: [{ id: "item-1", inventoryId: null, name: "Sample", unitPrice: 15, qty: 2, source: "manual" }],
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.quote.total).toBe(30);
+  });
 });

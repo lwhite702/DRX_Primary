@@ -23,10 +23,20 @@ export function hasClerkServerEnv() {
   );
 }
 
-function isClerkServerConfigured() {
+export function isTrueProductionEnvironment() {
+  if (process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "development") {
+    return false;
+  }
+  if (process.env.VERCEL_ENV === "production") {
+    return true;
+  }
+  return process.env.NODE_ENV === "production";
+}
+
+export function isClerkServerConfigured() {
   const configured = hasClerkServerEnv();
   const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
-  if (!configured && process.env.NODE_ENV === "production" && !isProductionBuild) {
+  if (!configured && isTrueProductionEnvironment() && !isProductionBuild) {
     throw new Error("[auth] Clerk server and publishable keys are required in production.");
   }
   return configured;
@@ -85,7 +95,15 @@ export async function auth() {
   if (!isClerkServerConfigured()) {
     return getAnonymousAuthState() as never;
   }
-  return clerkAuth();
+  try {
+    return await clerkAuth();
+  } catch (error) {
+    if (!isTrueProductionEnvironment()) {
+      console.warn("[auth] clerkAuth failed; falling back to anonymous auth state", error);
+      return getAnonymousAuthState() as never;
+    }
+    throw error;
+  }
 }
 
 export async function getWorkflowSession(): Promise<WorkflowSession> {
@@ -101,8 +119,16 @@ export async function getWorkflowSession(): Promise<WorkflowSession> {
   if (!isClerkServerConfigured()) {
     return { userId: null, tenantId: null, roles: [] };
   }
-  // Clerk v6 returns a richer auth object shape than the current @wrelik/auth type surface expects.
-  return fromClerkAuth((await clerkAuth()) as never);
+  try {
+    // Clerk v6 returns a richer auth object shape than the current @wrelik/auth type surface expects.
+    return fromClerkAuth((await clerkAuth()) as never);
+  } catch (error) {
+    if (!isTrueProductionEnvironment()) {
+      console.warn("[auth] getWorkflowSession failed; falling back to anonymous session", error);
+      return { userId: null, tenantId: null, roles: [] };
+    }
+    throw error;
+  }
 }
 
 export async function getWorkflowUserId(): Promise<string | null> {

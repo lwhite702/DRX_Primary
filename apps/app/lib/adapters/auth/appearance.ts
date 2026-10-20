@@ -23,13 +23,7 @@ export const drxClerkAuthAppearance = {
     borderRadius: "10px",
     fontFamily: "var(--font-plus-jakarta-sans), var(--font-inter), sans-serif",
     fontFamilyButtons: "var(--font-plus-jakarta-sans), var(--font-inter), sans-serif",
-    fontSize: {
-      xs: "0.875rem",
-      sm: "1rem",
-      md: "1rem",
-      lg: "1.125rem",
-      xl: "1.75rem",
-    },
+    fontSize: "1rem",
   },
   elements: {
     rootBox: "w-full",

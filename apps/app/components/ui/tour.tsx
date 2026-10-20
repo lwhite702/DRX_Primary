@@ -55,6 +55,9 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
     targetElementRef.current = null;
     setTargetElement(null);
     setIsActive(false);
+    if (typeof document !== "undefined" && document.body.style.pointerEvents === "none") {
+      document.body.style.pointerEvents = "";
+    }
     window.localStorage.setItem(storageKey, "true");
     releaseTour();
     onComplete();
@@ -77,6 +80,9 @@ export function Tour({ steps, onComplete, tourId }: TourProps) {
     return () => {
       window.removeEventListener(TOUR_RELEASED_EVENT, tryToStart);
       removeHighlight(targetElementRef.current);
+      if (typeof document !== "undefined" && document.body.style.pointerEvents === "none") {
+        document.body.style.pointerEvents = "";
+      }
       if (activeTourId === tourId) {
         releaseTour();
       }

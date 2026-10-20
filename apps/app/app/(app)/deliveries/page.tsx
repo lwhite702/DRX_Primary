@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import {
   AlertTriangle,
+  Car,
   CheckCircle2,
   Clock3,
+  Copy,
+  ExternalLink,
   MapPin,
   PackageCheck,
   RefreshCw,
@@ -91,8 +94,11 @@ export default function DeliveriesPage() {
       recipientName: "Sam Reed",
       feeCents: 800,
       customerFeeCents: 800,
-      vendorFeeCents: 600,
+      vendorFeeCents: 1600,
       deliveryTaxCents: 66,
+      dispatchType: "merchant_dispatch" as const,
+      feeSplitMode: "split_50_50" as const,
+      uberTrackingUrl: "https://m.uber.com/ul/track-1048",
       dispatchDueAt: Date.now() + 15 * 60_000,
       estimatedArrivalAt: Date.now() + 45 * 60_000,
       saleId: "373e9647-e921-418b-ac2c-23cc3d03aae8",
@@ -119,6 +125,7 @@ export default function DeliveriesPage() {
   const notifications = isBypassActive ? [] : rawNotifications;
   const assignDelivery = useMutation(api.deliveries.assignDelivery);
   const markUberOrdered = useMutation(api.deliveries.markUberOrdered);
+  const updateDeliveryDetails = useMutation(api.deliveries.updateDeliveryDetails);
   const markHandedOff = useMutation(api.deliveries.markHandedOff);
   const markDelivered = useMutation(api.deliveries.markDelivered);
   const cancelDelivery = useMutation(api.deliveries.cancelDelivery);
@@ -126,7 +133,7 @@ export default function DeliveriesPage() {
   const getDeliveryAddress = useMutation(api.deliveries.getDeliveryAddress);
 
   const [now, setNow] = useState(() => Date.now());
-  const [waitMinutes, setWaitMinutes] = useState("10");
+  const [waitMinutes, setWaitMinutes] = useState("15");
   const [assigneeUserId, setAssigneeUserId] = useState("");
   const [revealedAddress, setRevealedAddress] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
@@ -140,10 +147,23 @@ export default function DeliveriesPage() {
   );
   const [working, setWorking] = useState(false);
 
+  // Editable Uber / Delivery Dispatch state
+  const [dispatchType, setDispatchType] = useState<
+    "merchant_dispatch" | "customer_pickup_car"
+  >("merchant_dispatch");
+  const [vendorFeeDollars, setVendorFeeDollars] = useState("0.00");
+  const [feeSplitMode, setFeeSplitMode] = useState<
+    "pass_100" | "absorb_100" | "split_50_50" | "custom"
+  >("pass_100");
+  const [customerFeeDollars, setCustomerFeeDollars] = useState("0.00");
+  const [uberTrackingUrl, setUberTrackingUrl] = useState("");
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  const selected = detail?.delivery;
 
   useEffect(() => {
     setRevealedAddress(null);
@@ -153,6 +173,37 @@ export default function DeliveriesPage() {
     setAdjustmentReason("");
     setAdjustmentIdempotencyKey(crypto.randomUUID());
   }, [selectedId]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const vendorCents = Number(selected.vendorFeeCents ?? 0);
+    const custCents = Number(selected.customerFeeCents ?? 0);
+    setVendorFeeDollars((vendorCents / 100).toFixed(2));
+    setCustomerFeeDollars((custCents / 100).toFixed(2));
+    setDispatchType(
+      (selected as any).dispatchType === "customer_pickup_car"
+        ? "customer_pickup_car"
+        : "merchant_dispatch",
+    );
+    setFeeSplitMode(
+      (selected as any).feeSplitMode ||
+        (custCents === 0 && vendorCents > 0
+          ? "absorb_100"
+          : custCents === vendorCents
+            ? "pass_100"
+            : Math.abs(custCents - Math.round(vendorCents / 2)) <= 1 && vendorCents > 0
+              ? "split_50_50"
+              : "custom"),
+    );
+    setUberTrackingUrl((selected as any).uberTrackingUrl || "");
+    if (selected.estimatedArrivalAt) {
+      const mins = Math.max(
+        1,
+        Math.round((selected.estimatedArrivalAt - Date.now()) / 60_000),
+      );
+      setWaitMinutes(String(mins));
+    }
+  }, [selected]);
 
   const activeCount = useMemo(
     () =>
@@ -185,8 +236,26 @@ export default function DeliveriesPage() {
     }
   }
 
-  const selected = detail?.delivery;
   const selectedDueAt = selected?.estimatedArrivalAt ?? selected?.dispatchDueAt;
+  const computedVendorCents = Math.max(
+    0,
+    Math.round((Number(vendorFeeDollars) || 0) * 100),
+  );
+  const computedCustomerCents =
+    feeSplitMode === "pass_100"
+      ? computedVendorCents
+      : feeSplitMode === "absorb_100"
+        ? 0
+        : feeSplitMode === "split_50_50"
+          ? Math.round(computedVendorCents / 2)
+          : Math.min(
+              computedVendorCents,
+              Math.max(0, Math.round((Number(customerFeeDollars) || 0) * 100)),
+            );
+  const computedAbsorbedCents = Math.max(
+    0,
+    computedVendorCents - computedCustomerCents,
+  );
 
   return (
     <main className="mx-auto w-full max-w-7xl space-y-6 p-4 pb-24 md:p-8">
@@ -195,7 +264,7 @@ export default function DeliveriesPage() {
           <p className="text-sm font-medium text-muted-foreground">Fulfillment operations</p>
           <h1 className="text-3xl font-bold tracking-tight">Deliveries</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Work the oldest and overdue orders first. Every assignment and status change is audited.
+            Manage Uber &amp; courier dispatch, customer pickup cars, cost splits, ETAs, and live tracking links.
           </p>
         </div>
         <div className="flex gap-2">
@@ -206,7 +275,7 @@ export default function DeliveriesPage() {
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(380px,0.8fr)]">
         <section className="space-y-3" aria-label="Delivery queue">
           {deliveries === undefined ? (
             <Card><CardContent className="flex items-center gap-2 p-6 text-muted-foreground"><RefreshCw className="h-4 w-4 animate-spin" />Loading queue…</CardContent></Card>
@@ -216,6 +285,7 @@ export default function DeliveriesPage() {
             const dueAt = delivery.estimatedArrivalAt ?? delivery.dispatchDueAt;
             const sla = slaLabel(delivery.status as DeliveryStatus, dueAt, now);
             const selectedRow = delivery._id === selectedId;
+            const isPickupCar = (delivery as any).dispatchType === "customer_pickup_car";
             return (
               <button
                 key={delivery._id}
@@ -232,16 +302,31 @@ export default function DeliveriesPage() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">Order {safeDisplayOrderNumber(delivery.orderNumber)}</span>
                       <Badge variant="outline">{statusLabels[delivery.status as DeliveryStatus]}</Badge>
+                      <Badge variant="secondary" className="text-[11px]">
+                        <Car className="mr-1 h-3 w-3" />
+                        {isPickupCar ? "Customer Pickup Car" : "We Send Car"}
+                      </Badge>
                     </div>
                     <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{delivery.addressLabel}</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground"><UserRoundCheck className="h-4 w-4" />{delivery.assignedToUserId ? "Assigned" : "Unassigned"}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <UserRoundCheck className="h-3.5 w-3.5" />
+                        {delivery.assignedToUserId ? "Assigned" : "Unassigned"}
+                      </span>
+                      <span>
+                        Uber: {formatMoney(delivery.vendorFeeCents)} (Customer: {formatMoney(delivery.customerFeeCents)})
+                      </span>
+                      {(delivery as any).uberTrackingUrl && (
+                        <span className="text-accent font-medium">• Tracking link attached</span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <Badge variant={sla.overdue ? "destructive" : "secondary"}>{sla.overdue && <AlertTriangle className="mr-1 h-3 w-3" />}{sla.label}</Badge>
-                    <p className="mt-2 text-xs text-muted-foreground">Due {formatTime(dueAt)}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">ETA / Due {formatTime(dueAt)}</p>
                   </div>
                 </div>
               </button>
@@ -278,16 +363,213 @@ export default function DeliveriesPage() {
                   </div>
                   {selectedDueAt && (
                     <div className={`flex items-center gap-2 text-sm ${selectedDueAt < now && selected.status !== "delivered" && selected.status !== "canceled" ? "font-medium text-destructive" : "text-muted-foreground"}`}>
-                      <Clock3 className="h-4 w-4" />Next deadline {formatTime(selectedDueAt)}
+                      <Clock3 className="h-4 w-4" />Next deadline / ETA {formatTime(selectedDueAt)}
                     </div>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted p-3 text-sm">
-                    <div><p className="text-muted-foreground">Customer fee</p><p className="font-medium">{formatMoney(selected.customerFeeCents)}</p></div>
-                    <div><p className="text-muted-foreground">Vendor cost</p><p className="font-medium">{formatMoney(selected.vendorFeeCents)}</p></div>
-                    <div><p className="text-muted-foreground">Delivery tax</p><p className="font-medium">{formatMoney(selected.deliveryTaxCents)}</p></div>
-                    <div><p className="text-muted-foreground">Allocation</p><p className="font-medium">{selected.customerFeeCents > 0 ? "Customer charged" : "Merchant absorbed"}</p></div>
+                    <div><p className="text-muted-foreground">Customer charged</p><p className="font-medium">{formatMoney(selected.customerFeeCents)}</p></div>
+                    <div><p className="text-muted-foreground">Uber / vendor cost</p><p className="font-medium">{formatMoney(selected.vendorFeeCents)}</p></div>
+                    <div><p className="text-muted-foreground">Merchant absorbed</p><p className="font-medium">{formatMoney(Math.max(0, selected.vendorFeeCents - selected.customerFeeCents))}</p></div>
+                    <div><p className="text-muted-foreground">Dispatch mode</p><p className="font-medium">{(selected as any).dispatchType === "customer_pickup_car" ? "Customer Pickup Car" : "Merchant Sends Car"}</p></div>
+                  </div>
+
+                  {/* Uber Cost, Split Mode, Car Direction, ETA & Tracking Link Editor */}
+                  <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-3.5">
+                    <h3 className="text-sm font-semibold">Uber &amp; Dispatch Details</h3>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDispatchType("merchant_dispatch")}
+                        className={`rounded-lg border px-2.5 py-2 text-left text-xs transition-colors ${
+                          dispatchType === "merchant_dispatch"
+                            ? "border-accent bg-accent/15 font-semibold"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        We Send Car
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDispatchType("customer_pickup_car")}
+                        className={`rounded-lg border px-2.5 py-2 text-left text-xs transition-colors ${
+                          dispatchType === "customer_pickup_car"
+                            ? "border-accent bg-accent/15 font-semibold"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        Customer Sends Car
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="uber-vendor-cost" className="text-xs">Uber Amount ($)</Label>
+                        <Input
+                          id="uber-vendor-cost"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={vendorFeeDollars}
+                          onChange={(e) => setVendorFeeDollars(e.target.value)}
+                          className="h-9 text-sm font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="uber-eta-mins" className="text-xs">ETA (minutes)</Label>
+                        <Input
+                          id="uber-eta-mins"
+                          type="number"
+                          min="1"
+                          max="1440"
+                          value={waitMinutes}
+                          onChange={(e) => setWaitMinutes(e.target.value)}
+                          className="h-9 text-sm font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Cost Split</Label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {(
+                          [
+                            { id: "pass_100", label: "Pass 100%" },
+                            { id: "absorb_100", label: "Pass 0% (Absorb)" },
+                            { id: "split_50_50", label: "Split 50/50" },
+                            { id: "custom", label: "Custom Split" },
+                          ] as const
+                        ).map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setFeeSplitMode(opt.id)}
+                            className={`rounded-md border px-2 py-1.5 text-xs transition-colors ${
+                              feeSplitMode === opt.id
+                                ? "border-accent bg-accent/15 font-semibold"
+                                : "border-border bg-card text-muted-foreground"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {feeSplitMode === "custom" && (
+                        <div className="pt-1">
+                          <Label htmlFor="custom-cust-fee" className="text-xs">
+                            Pass to Customer ($)
+                          </Label>
+                          <Input
+                            id="custom-cust-fee"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={customerFeeDollars}
+                            onChange={(e) => setCustomerFeeDollars(e.target.value)}
+                            className="mt-1 h-9 text-sm font-mono"
+                          />
+                        </div>
+                      )}
+                      <p className="text-[11px] text-muted-foreground">
+                        Customer pays {formatMoney(computedCustomerCents)} • Business absorbs {formatMoney(computedAbsorbedCents)}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="uber-tracking-url" className="text-xs">Uber Tracking Link</Label>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1.5 text-[11px]"
+                            onClick={async () => {
+                              try {
+                                const text = await navigator.clipboard.readText();
+                                if (text.trim()) {
+                                  setUberTrackingUrl(text.trim());
+                                  toast.success("Tracking link pasted");
+                                }
+                              } catch {
+                                toast.error("Paste directly into the field");
+                              }
+                            }}
+                          >
+                            Paste
+                          </Button>
+                          {uberTrackingUrl.trim() && (
+                            <>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-[11px]"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(uberTrackingUrl.trim());
+                                    toast.success("Tracking link copied");
+                                  } catch {
+                                    toast.error("Unable to copy link");
+                                  }
+                                }}
+                              >
+                                <Copy className="h-3 w-3 mr-1" />
+                                Copy
+                              </Button>
+                              <a
+                                href={uberTrackingUrl.trim()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-0.5 text-[11px] text-accent hover:underline px-1"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Open
+                              </a>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <Input
+                        id="uber-tracking-url"
+                        type="url"
+                        placeholder="https://m.uber.com/ul/..."
+                        value={uberTrackingUrl}
+                        onChange={(e) => setUberTrackingUrl(e.target.value)}
+                        className="h-9 text-xs"
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={working}
+                      onClick={() =>
+                        void runAction(
+                          () =>
+                            updateDeliveryDetails({
+                              deliveryId: selected._id,
+                              vendorFeeCents: computedVendorCents,
+                              feeSplitMode,
+                              customerFeeCents: computedCustomerCents,
+                              dispatchType,
+                              estimatedArrivalMinutes:
+                                Number.isSafeInteger(Number(waitMinutes)) &&
+                                Number(waitMinutes) > 0
+                                  ? Number(waitMinutes)
+                                  : undefined,
+                              uberTrackingUrl: uberTrackingUrl.trim() || null,
+                            }),
+                          "Uber & delivery details saved",
+                        )
+                      }
+                    >
+                      Save Uber &amp; Split Details
+                    </Button>
                   </div>
 
                   <div className="space-y-2">
@@ -324,9 +606,42 @@ export default function DeliveriesPage() {
 
                   {selected.status === "ready_for_dispatch" && (
                     <div className="space-y-2 border-t pt-4">
-                      <Label htmlFor="wait-minutes">Uber wait time / ETA (minutes)</Label>
-                      <div className="flex gap-2"><Input id="wait-minutes" inputMode="numeric" min={1} max={1440} type="number" value={waitMinutes} onChange={(event) => setWaitMinutes(event.target.value)} /><Button type="button" disabled={working || !Number.isSafeInteger(Number(waitMinutes)) || Number(waitMinutes) <= 0 || Number(waitMinutes) > 1440} onClick={() => void runAction(() => markUberOrdered({ deliveryId: selected._id, waitMinutes: Number(waitMinutes) }), "Uber ordered; reminders scheduled")}>Mark ordered</Button></div>
-                      <p className="text-xs text-muted-foreground">The shared queue records reminders two minutes before ETA, at ETA, every five minutes overdue, and manager escalation after the configured delay. Device push delivery remains subject to notification registration.</p>
+                      <Label htmlFor="wait-minutes">Dispatch / Mark Uber Ordered (ETA mins)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="wait-minutes"
+                          inputMode="numeric"
+                          min={1}
+                          max={1440}
+                          type="number"
+                          value={waitMinutes}
+                          onChange={(event) => setWaitMinutes(event.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          disabled={
+                            working ||
+                            !Number.isSafeInteger(Number(waitMinutes)) ||
+                            Number(waitMinutes) <= 0 ||
+                            Number(waitMinutes) > 1440
+                          }
+                          onClick={() =>
+                            void runAction(
+                              () =>
+                                markUberOrdered({
+                                  deliveryId: selected._id,
+                                  waitMinutes: Number(waitMinutes),
+                                  uberTrackingUrl: uberTrackingUrl.trim() || undefined,
+                                  vendorFeeCents: computedVendorCents,
+                                }),
+                              "Uber ordered; reminders scheduled",
+                            )
+                          }
+                        >
+                          Mark ordered
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">The shared queue records reminders two minutes before ETA, at ETA, every five minutes overdue, and manager escalation after the configured delay.</p>
                     </div>
                   )}
 

@@ -133,6 +133,10 @@ export const merchantCommerceSettingsSchema = z
     dispatchSlaMinutes: z.number().int().min(1).max(120),
     escalationDelayMinutes: z.number().int().min(1).max(240),
     managerNotificationTargets: z.array(z.string().trim().min(1).max(200)).max(20),
+    cardProcessorFeeEnabled: z.boolean().optional(),
+    cardProcessorFeeType: z.enum(["percentage", "flat", "both"]).optional(),
+    cardProcessorFeeBps: z.number().int().min(0).max(5000).optional(),
+    cardProcessorFeeFlatCents: z.number().int().min(0).max(50000).optional(),
   })
   .superRefine((value, context) => {
     let previous = -1;

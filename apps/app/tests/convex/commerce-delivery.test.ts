@@ -1342,4 +1342,64 @@ describe("Convex commerce and delivery workflow", () => {
       }),
     ).rejects.toThrow("endAt must be greater than startAt");
   });
+
+  it("validates and applies updates to delivery details including Uber tracking URLs", async () => {
+    const { owner, productId } = await setupCommerceStore();
+    const checkoutResult = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "DELIVERY-UPDATE-DETAILS",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "cash",
+      amountPaidCents: 1_500,
+      delivery: {
+        address: "123 Delivery Details Lane",
+        vendorFeeCents: 500,
+        chargeCustomer: false,
+      },
+    });
+    const deliveryId = checkoutResult.deliveryId!;
+
+    // Rejects non-https URL
+    await expect(
+      owner.mutation(api.deliveries.updateDeliveryDetails, {
+        deliveryId,
+        uberTrackingUrl: "http://uber.com/track/123",
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
+
+    // Rejects oversized URL (> 2000 chars)
+    await expect(
+      owner.mutation(api.deliveries.updateDeliveryDetails, {
+        deliveryId,
+        uberTrackingUrl: `https://uber.com/track/${"a".repeat(2000)}`,
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
+
+    // Accepts valid https URL with whitespace and trims it
+    await owner.mutation(api.deliveries.updateDeliveryDetails, {
+      deliveryId,
+      uberTrackingUrl: "  https://uber.com/track/abc123xyz  ",
+      dispatchType: "customer_pickup_car",
+      feeSplitMode: "absorb_full",
+      estimatedArrivalMinutes: 25,
+    });
+
+    const deliveriesList = await owner.query(api.deliveries.listDeliveries, {});
+    const updated = deliveriesList.find((d) => d._id === deliveryId);
+    expect(updated).toMatchObject({
+      uberTrackingUrl: "https://uber.com/track/abc123xyz",
+      dispatchType: "customer_pickup_car",
+      feeSplitMode: "absorb_full",
+      estimatedArrivalMinutes: 25,
+    });
+
+    // Clears uberTrackingUrl when null is passed
+    await owner.mutation(api.deliveries.updateDeliveryDetails, {
+      deliveryId,
+      uberTrackingUrl: null,
+    });
+
+    const deliveriesListAfterClear = await owner.query(api.deliveries.listDeliveries, {});
+    const cleared = deliveriesListAfterClear.find((d) => d._id === deliveryId);
+    expect(cleared?.uberTrackingUrl).toBeUndefined();
+  });
 });

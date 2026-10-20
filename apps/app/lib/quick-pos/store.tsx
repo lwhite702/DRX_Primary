@@ -13,6 +13,7 @@ import {
   QUICK_POS_STORAGE_KEY,
 } from "@/lib/quick-pos/constants";
 import type {
+  QuickPosCardFeePolicy,
   QuickPosCartItem,
   QuickPosDeliveryState,
   QuickPosPaymentMethod,
@@ -30,10 +31,16 @@ const initialState: QuickPosState = {
     alias: null,
     remainingCredit: 0,
   },
+  previousCustomer: null,
   payment: {
     method: null,
     receipt: "none",
     creditConfirmed: false,
+    cardFeeCents: 0,
+    cardFeeWaived: false,
+    cardFeeCustomCents: null,
+    paymentRef: "",
+    tenders: [],
   },
   delivery: {
     enabled: false,
@@ -41,6 +48,11 @@ const initialState: QuickPosState = {
     vendorFeeCents: 0,
     feeAllocation: "charge_customer",
     feeTaxable: false,
+    dispatchType: "merchant_dispatch",
+    feeSplitMode: "pass_full",
+    customerFeeCents: 0,
+    estimatedArrivalMinutes: undefined,
+    uberTrackingUrl: "",
   },
   discount: {
     amountCents: 0,
@@ -61,12 +73,19 @@ const initialState: QuickPosState = {
     lastReceipt: null,
   },
   creditPolicyEnabled: false,
+  cardFeePolicy: {
+    enabled: false,
+    feeType: "percent",
+    feeBps: 350,
+    feeFlatCents: 0,
+  },
 };
 
 type Action =
   | { type: "hydrate"; payload: QuickPosState }
   | { type: "set_search"; payload: string }
   | { type: "set_credit_policy"; payload: boolean }
+  | { type: "set_card_fee_policy"; payload: QuickPosCardFeePolicy }
   | { type: "add_item"; payload: QuickPosCartItem }
   | { type: "remove_item"; payload: { id: string } }
   | { type: "increment_item"; payload: { id: string } }
@@ -75,7 +94,9 @@ type Action =
       payload: { id: string; unitPrice: number; overrideReason: string };
     }
   | { type: "set_customer"; payload: QuickPosState["customer"] }
+  | { type: "undo_customer" }
   | { type: "set_payment_method"; payload: QuickPosPaymentMethod | null }
+  | { type: "set_payment_details"; payload: Partial<QuickPosState["payment"]> }
   | { type: "set_receipt"; payload: QuickPosReceiptOption }
   | { type: "set_credit_confirmed"; payload: boolean }
   | { type: "set_delivery"; payload: QuickPosDeliveryState }
@@ -117,6 +138,8 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
       return { ...state, ui: { ...state.ui, search: action.payload } };
     case "set_credit_policy":
       return { ...state, creditPolicyEnabled: action.payload };
+    case "set_card_fee_policy":
+      return { ...state, cardFeePolicy: action.payload };
     case "add_item": {
       const existing = state.cartItems.find((item) => item.id === action.payload.id);
       if (existing) {
@@ -171,8 +194,25 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
             : item,
         ),
       };
-    case "set_customer":
-      return { ...state, customer: action.payload };
+    case "set_customer": {
+      const hasCurrent = Boolean(state.customer.id);
+      const isDifferent = state.customer.id !== action.payload.id;
+      const previousCustomer = hasCurrent && isDifferent ? state.customer : state.previousCustomer ?? null;
+      return {
+        ...state,
+        previousCustomer,
+        customer: action.payload,
+      };
+    }
+    case "undo_customer": {
+      if (!state.previousCustomer) return state;
+      const restored = state.previousCustomer;
+      return {
+        ...state,
+        previousCustomer: state.customer.id ? state.customer : null,
+        customer: restored,
+      };
+    }
     case "set_payment_method":
       return {
         ...state,
@@ -180,6 +220,14 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
           ...state.payment,
           method: action.payload,
           creditConfirmed: action.payload === "credit" ? state.payment.creditConfirmed : false,
+        },
+      };
+    case "set_payment_details":
+      return {
+        ...state,
+        payment: {
+          ...state.payment,
+          ...action.payload,
         },
       };
     case "set_receipt":
@@ -245,6 +293,7 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
       return {
         ...initialState,
         creditPolicyEnabled: state.creditPolicyEnabled,
+        cardFeePolicy: state.cardFeePolicy,
       };
     default:
       return state;
@@ -259,12 +308,15 @@ interface QuickPosStore {
   hydrate: (value: QuickPosState) => void;
   setSearch: (value: string) => void;
   setCreditPolicy: (enabled: boolean) => void;
+  setCardFeePolicy: (policy: QuickPosCardFeePolicy) => void;
   addItem: (item: QuickPosCartItem) => void;
   incrementItem: (id: string) => void;
   removeItem: (id: string) => void;
   updateItemPrice: (id: string, unitPrice: number, overrideReason: string) => void;
   setCustomer: (customer: QuickPosState["customer"]) => void;
+  undoCustomerChange: () => void;
   setPaymentMethod: (method: QuickPosPaymentMethod | null) => void;
+  setPaymentDetails: (patch: Partial<QuickPosState["payment"]>) => void;
   setReceipt: (receipt: QuickPosReceiptOption) => void;
   setCreditConfirmed: (value: boolean) => void;
   setDelivery: (delivery: QuickPosDeliveryState) => void;
@@ -313,6 +365,7 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
   const hydrate = useCallback((value: QuickPosState) => dispatch({ type: "hydrate", payload: value }), []);
   const setSearch = useCallback((value: string) => dispatch({ type: "set_search", payload: value }), []);
   const setCreditPolicy = useCallback((enabled: boolean) => dispatch({ type: "set_credit_policy", payload: enabled }), []);
+  const setCardFeePolicy = useCallback((policy: QuickPosCardFeePolicy) => dispatch({ type: "set_card_fee_policy", payload: policy }), []);
   const addItem = useCallback((item: QuickPosCartItem) => dispatch({ type: "add_item", payload: item }), []);
   const incrementItem = useCallback((id: string) => dispatch({ type: "increment_item", payload: { id } }), []);
   const removeItem = useCallback((id: string) => dispatch({ type: "remove_item", payload: { id } }), []);
@@ -322,7 +375,9 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
     [],
   );
   const setCustomer = useCallback((customer: QuickPosState["customer"]) => dispatch({ type: "set_customer", payload: customer }), []);
+  const undoCustomerChange = useCallback(() => dispatch({ type: "undo_customer" }), []);
   const setPaymentMethod = useCallback((method: QuickPosPaymentMethod | null) => dispatch({ type: "set_payment_method", payload: method }), []);
+  const setPaymentDetails = useCallback((patch: Partial<QuickPosState["payment"]>) => dispatch({ type: "set_payment_details", payload: patch }), []);
   const setReceipt = useCallback((receipt: QuickPosReceiptOption) => dispatch({ type: "set_receipt", payload: receipt }), []);
   const setCreditConfirmed = useCallback((value: boolean) => dispatch({ type: "set_credit_confirmed", payload: value }), []);
   const setDelivery = useCallback(
@@ -378,12 +433,15 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       hydrate,
       setSearch,
       setCreditPolicy,
+      setCardFeePolicy,
       addItem,
       incrementItem,
       removeItem,
       updateItemPrice,
       setCustomer,
+      undoCustomerChange,
       setPaymentMethod,
+      setPaymentDetails,
       setReceipt,
       setCreditConfirmed,
       setDelivery,
@@ -407,12 +465,15 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
       hydrate,
       setSearch,
       setCreditPolicy,
+      setCardFeePolicy,
       addItem,
       incrementItem,
       removeItem,
       updateItemPrice,
       setCustomer,
+      undoCustomerChange,
       setPaymentMethod,
+      setPaymentDetails,
       setReceipt,
       setCreditConfirmed,
       setDelivery,
