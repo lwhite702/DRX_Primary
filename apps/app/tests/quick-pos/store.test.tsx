@@ -61,12 +61,14 @@ describe("quick pos store", () => {
         inventoryId: "prod-1",
         name: "Premium Flower",
         unitPrice: 50,
-        qty: 2,
+        qty: 1,
         source: "inventory",
+        weightGrams: 0.7,
+        requestedAmountCents: 5_000,
       });
     });
 
-    expect(storeRef!.subtotal).toBe(100);
+    expect(storeRef!.subtotal).toBe(50);
 
     act(() => {
       storeRef!.updateItemPrice("inv:override-1", 40, "Loyal customer discount");
@@ -76,8 +78,9 @@ describe("quick pos store", () => {
       unitPrice: 40,
       originalPrice: 50,
       overrideReason: "Loyal customer discount",
+      requestedAmountCents: undefined,
     });
-    expect(storeRef!.subtotal).toBe(80);
+    expect(storeRef!.subtotal).toBe(40);
   });
 
   it("resets after completion while preserving credit policy", () => {

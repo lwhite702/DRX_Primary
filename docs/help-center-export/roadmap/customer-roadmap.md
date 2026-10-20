@@ -13,6 +13,8 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
   Choose automatic or your own SKU, set selling amounts without conflicting quick buttons, and calculate cost when you buy by the ounce but sell by the gram. Web rollout and native app verification are tracked separately.
 - **Bundle prices for product quantities** (`in progress`)
   Set exact totals for larger amounts while adding a product, such as 2g for $60 or 3.5g for $90. Checkout and device verification are part of this work.
+- **Exact dollar-amount checkout for fractional products** (`in progress`)
+  Keep the requested merchandise amount exact while the operator reviews or edits the suggested fractional quantity. Flag price differences on the sale record without blocking checkout, and use the confirmed quantity for stock and cost of goods. Cross-platform checkout and audit verification are in progress.
 - **Fractional selling from product creation and onboarding** (`in progress`)
   Choose whole-unit or fractional sales while adding a product, including the guided first-product setup. Configure the selling unit, minimum, increment, precision, and suggested amounts before checkout. Cross-client persistence and device verification remain rollout gates.
 

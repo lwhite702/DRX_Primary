@@ -27,6 +27,17 @@ export type LoyaltySpend = {
   loyaltyEligibleSpendCents?: number;
 };
 
+export function parseDollarAmountCents(raw: string): number | null {
+  const match = /^(\d*)(?:\.(\d*))?$/.exec(raw.trim());
+  if (!match) return null;
+  if (!match[1] && !match[2]) return null;
+  const dollars = BigInt(match[1] || "0");
+  const fraction = match[2] ?? "";
+  let cents = dollars * 100n + BigInt((fraction + "00").slice(0, 2));
+  if ((fraction[2] ?? "0") >= "5") cents += 1n;
+  return cents > 0n && cents <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(cents) : null;
+}
+
 export const LEGACY_FRACTIONAL_QUANTITY_CONFIG = Object.freeze({
   sellingUnit: "unit",
   quantityPrecision: 6,

@@ -447,6 +447,8 @@ export default defineSchema({
     subtotalCents: v.number(),
     merchandiseSubtotalCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
+    // Signed requested amount minus post-discount catalog price; separate from pre-discount merchandiseSubtotalCents.
+    priceAdjustmentCents: v.optional(v.number()),
     merchandiseRevenueCents: v.optional(v.number()),
     deliveryRevenueCents: v.optional(v.number()),
     vendorDeliveryExpenseCents: v.optional(v.number()),
@@ -521,6 +523,8 @@ export default defineSchema({
     quantityGrams: v.number(),
     unitPriceCents: v.number(),
     lineTotalCents: v.number(),
+    requestedAmountCents: v.optional(v.number()),
+    operatorPriceAdjustmentCents: v.optional(v.number()),
     priceOverrideReason: v.optional(v.string()),
     catalogUnitPriceCents: v.optional(v.number()),
     baseUnitPriceCents: v.optional(v.number()),
