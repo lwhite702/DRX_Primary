@@ -144,6 +144,7 @@ const saleRecord = v.object({
   orderNumber: v.string(),
   orderStatus: v.string(),
   subtotalCents: v.number(),
+  priceAdjustmentCents: v.optional(v.number()),
   merchandiseSubtotalCents: v.optional(v.number()),
   discountCents: v.optional(v.number()),
   merchandiseRevenueCents: v.optional(v.number()),
@@ -256,6 +257,9 @@ function calculateCheckoutPricingWithRequestedAmounts(input: {
     }
     if (!Number.isSafeInteger(requestedAmountCents) || requestedAmountCents <= 0) {
       throw new Error("INVALID_ARGUMENT: requestedAmountCents must be positive integer cents");
+    }
+    if (!input.lines[index]?.product.allowFractional) {
+      throw new Error("INVALID_ARGUMENT: requestedAmountCents is only supported for fractional products");
     }
     return {
       ...line,
@@ -390,11 +394,9 @@ async function createCheckoutFingerprint(input: {
 }): Promise<string> {
   return JSON.stringify({
     customerId: input.customerId ? String(input.customerId) : null,
-    items: input.items.map((item) => [
-      String(item.productId),
-      item.quantityGrams,
-      item.requestedAmountCents ?? null,
-    ]),
+    items: input.items.map((item) => item.requestedAmountCents === undefined
+      ? [String(item.productId), item.quantityGrams]
+      : [String(item.productId), item.quantityGrams, item.requestedAmountCents]),
     manualItems: input.manualItems.map((item) => ({
       lineId: item.lineId,
       name: item.name,
@@ -799,6 +801,7 @@ export const processCheckout = mutation({
         merchandiseSubtotalCents:
           existingOrder.merchandiseSubtotalCents ?? existingOrder.subtotalCents,
         discountCents: existingOrder.discountCents ?? 0,
+        priceAdjustmentCents: existingOrder.priceAdjustmentCents ?? 0,
         merchandiseTaxCents:
           existingOrder.merchandiseTaxCents ?? existingOrder.taxAmountCents,
         deliveryRevenueCents: existingOrder.deliveryRevenueCents ?? 0,
@@ -1194,18 +1197,26 @@ export const processCheckout = mutation({
       }
       allocationsCount += allocations.length;
 
-      await ctx.db.patch(lineItem.product._id, {
-        quantityOnHandGrams:
-          lineItem.product.quantityOnHandGrams - lineItem.quantityGrams,
-        updatedAt: now,
+    }
+    const quantitiesByProduct = new Map<string, { product: (typeof processedLineItems)[number]["product"]; quantity: number }>();
+    for (const lineItem of processedLineItems) {
+      const key = String(lineItem.product._id);
+      const existing = quantitiesByProduct.get(key);
+      quantitiesByProduct.set(key, {
+        product: lineItem.product,
+        quantity: (existing?.quantity ?? 0) + lineItem.quantityGrams,
       });
+    }
+    for (const { product, quantity } of quantitiesByProduct.values()) {
+      const remainingQuantity = product.quantityOnHandGrams - quantity;
+      await ctx.db.patch(product._id, { quantityOnHandGrams: remainingQuantity, updatedAt: now });
       await ctx.db.insert("auditEvents", {
         businessId: auth.businessId,
         userId: auth.userId,
         action: "INVENTORY_SOLD",
         entityType: "product",
-        entityId: lineItem.product._id,
-        metadata: JSON.stringify({ saleId, delta: -lineItem.quantityGrams, reason: "Checkout", previousQuantity: lineItem.product.quantityOnHandGrams, quantity: lineItem.product.quantityOnHandGrams - lineItem.quantityGrams }),
+        entityId: product._id,
+        metadata: JSON.stringify({ saleId, delta: -quantity, reason: "Checkout", previousQuantity: product.quantityOnHandGrams, quantity: remainingQuantity }),
         timestamp: now,
       });
     }

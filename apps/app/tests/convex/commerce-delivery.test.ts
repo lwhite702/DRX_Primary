@@ -134,6 +134,48 @@ describe("Convex commerce and delivery workflow", () => {
       lineTotalCents: 2_500,
       operatorPriceAdjustmentCents: 1_800,
     });
+    const salesHistory = await owner.query(api.checkout.getSalesHistory, {});
+    expect(salesHistory.find((sale) => sale._id === result.saleId)?.priceAdjustmentCents).toBe(1_800);
+  });
+
+  it("deducts duplicate fixed-amount lines from product stock only once in aggregate", async () => {
+    const { t, owner, productId } = await setupCommerceStore();
+    const items = [
+      { productId, quantityGrams: 0.6, requestedAmountCents: 2_000 },
+      { productId, quantityGrams: 0.7, requestedAmountCents: 3_000 },
+    ];
+    const quote = await owner.query(api.checkout.quoteCheckout, { items });
+    const result = await owner.mutation(api.checkout.processCheckout, {
+      orderNumber: "EXACT-AMOUNT-DUPLICATE-LINES",
+      items,
+      paymentMethod: "card",
+      amountPaidCents: quote.totalAmountCents,
+    });
+
+    const productAfterCheckout = await t.run((ctx) => ctx.db.get(productId));
+    const allocations = await t.run((ctx) =>
+      ctx.db.query("salesAllocations").withIndex("by_saleId", (q) => q.eq("saleId", result.saleId)).collect(),
+    );
+    expect(productAfterCheckout?.quantityOnHandGrams).toBeCloseTo(8.7);
+    expect(allocations.reduce((sum, allocation) => sum + allocation.quantityGrams, 0)).toBeCloseTo(1.3);
+  });
+
+  it("rejects fixed-dollar pricing for non-fractional products", async () => {
+    const { owner, productId } = await setupCommerceStore();
+    await owner.mutation(api.products.updateCommerceConfig, {
+      productId,
+      allowFractionalQuantity: false,
+      sellingUnit: "unit",
+      quantityPrecision: 0,
+      minimumSaleQuantity: 1,
+      quantityIncrement: 1,
+      suggestedQuantityPresets: [],
+      suggestedDollarPresetsCents: [],
+      bulkPriceTiers: [],
+    });
+    await expect(owner.query(api.checkout.quoteCheckout, {
+      items: [{ productId, quantityGrams: 1, requestedAmountCents: 1 }],
+    })).rejects.toThrow("requestedAmountCents is only supported for fractional products");
   });
 
   it("validates commerce presets and tiers from the configured minimum anchor", async () => {

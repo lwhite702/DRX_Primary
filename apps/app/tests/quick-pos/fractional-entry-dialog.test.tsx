@@ -29,8 +29,12 @@ describe("fractional dollar entry", () => {
     fireEvent.change(screen.getByLabelText("Dollar amount"), { target: { value: "25" } });
     const quantity = screen.getByLabelText("Confirmed quantity (g)");
     expect(quantity).toHaveValue(0.7);
+    fireEvent.change(quantity, { target: { value: "0" } });
+    expect(screen.getByLabelText("Confirmed quantity (g)")).toBeInTheDocument();
     fireEvent.change(quantity, { target: { value: "0.6" } });
-    expect(screen.getByRole("status")).toHaveTextContent("Price variance flagged");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Price variance flagged: normal price at this quantity is $21.00; adjustment +$4.00. Checkout will keep the requested amount.",
+    );
     fireEvent.click(screen.getByRole("button", { name: "Confirm amount and quantity" }));
 
     expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({

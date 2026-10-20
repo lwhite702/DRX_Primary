@@ -1,7 +1,7 @@
 "use client";
 
 import { formatQuantity } from "@/lib/number-format";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +31,9 @@ export function FractionalEntryDialog({
   const [value, setValue] = useState("");
   const [quantityEdit, setQuantityEdit] = useState("");
   const config = product?.commerce_config ?? product?.fractional_config;
+  useEffect(() => {
+    if (!config?.fractionalEnabled) setMode("quantity");
+  }, [config?.fractionalEnabled]);
   const numericValue = Number(value);
   const suggestedLine = useMemo(() => {
     if (!config || !Number.isFinite(numericValue) || numericValue <= 0) return null;
@@ -86,9 +89,11 @@ export function FractionalEntryDialog({
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-2" role="group" aria-label="Entry mode">
-          <Button type="button" variant={mode === "dollars" ? "default" : "outline"} onClick={() => { setMode("dollars"); setValue(""); setQuantityEdit(""); }}>
-            Dollar amount
-          </Button>
+          {config?.fractionalEnabled ? (
+            <Button type="button" variant={mode === "dollars" ? "default" : "outline"} onClick={() => { setMode("dollars"); setValue(""); setQuantityEdit(""); }}>
+              Dollar amount
+            </Button>
+          ) : null}
           <Button type="button" variant={mode === "quantity" ? "default" : "outline"} onClick={() => { setMode("quantity"); setValue(""); setQuantityEdit(""); }}>
             Quantity
           </Button>
@@ -121,44 +126,46 @@ export function FractionalEntryDialog({
           ))}
         </div>
 
-        {line ? (
+        {suggestedLine ? (
           <div className="rounded-lg border border-accent/20 bg-accent/5 p-4" aria-live="polite">
             <div className="flex items-center justify-between">
-              <span>{config?.fractionalEnabled ? "Suggested serving · edit to confirm" : "Suggested quantity"}</span>
+              <span>{mode === "dollars" && quantityEdit ? "Confirmed quantity" : config?.fractionalEnabled ? "Suggested serving · edit to confirm" : "Suggested quantity"}</span>
               <strong>
-                {config?.decimalPrecision !== undefined && config.decimalPrecision > 2
-                  ? `${parseFloat(line.quantity.toFixed(config.decimalPrecision))} ${line.sellingUnit}`
-                  : `${formatQuantity(line.quantity)} ${line.sellingUnit}`}
+                {line
+                  ? config?.decimalPrecision !== undefined && config.decimalPrecision > 2
+                    ? `${parseFloat(line.quantity.toFixed(config.decimalPrecision))} ${line.sellingUnit}`
+                    : `${formatQuantity(line.quantity)} ${line.sellingUnit}`
+                  : `${quantityEdit} ${suggestedLine.sellingUnit}`}
               </strong>
             </div>
             {mode === "dollars" ? (
               <div className="mt-3 space-y-2">
-                <Label htmlFor="fractional-confirmed-quantity">Confirmed quantity ({line.sellingUnit})</Label>
+                <Label htmlFor="fractional-confirmed-quantity">Confirmed quantity ({suggestedLine.sellingUnit})</Label>
                 <Input
                   id="fractional-confirmed-quantity"
                   type="number"
                   inputMode="decimal"
                   min={config?.minimumSaleQuantity}
                   step={config?.quantityIncrement}
-                  value={quantityEdit || String(line.quantity)}
+                  value={quantityEdit || String(suggestedLine.quantity)}
                   onChange={(event) => setQuantityEdit(event.target.value)}
                 />
                 <div className="flex items-center justify-between text-sm">
                   <span>Requested amount</span>
                   <strong>${(requestedAmountCents! / 100).toFixed(2)}</strong>
                 </div>
-                {priceVarianceCents !== 0 ? (
+                {line && priceVarianceCents !== 0 ? (
                   <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-sm text-amber-800 dark:text-amber-200">
                     Price variance flagged: normal price at this quantity is ${line.lineTotal.toFixed(2)}; adjustment {priceVarianceCents > 0 ? "+" : "−"}${(Math.abs(priceVarianceCents) / 100).toFixed(2)}. Checkout will keep the requested amount.
                   </p>
                 ) : null}
               </div>
             ) : null}
-            <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+            {line ? <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
               <span>{line.bulkTier?.label ?? "Standard price"} · ${line.unitPrice.toFixed(2)}/{line.sellingUnit}</span>
               <span>${line.lineTotal.toFixed(2)}</span>
-            </div>
-            {"belowMinimum" in line && line.belowMinimum ? (
+            </div> : null}
+            {line && "belowMinimum" in line && line.belowMinimum ? (
               <p className="mt-2 text-sm text-destructive">Amount is below the minimum sellable increment.</p>
             ) : null}
           </div>

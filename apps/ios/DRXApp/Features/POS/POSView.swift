@@ -658,6 +658,7 @@ private struct SaleAmountSheet: View {
     @State private var mode: EntryMode = .quantity
     @State private var quantityString: String
     @State private var dollarString: String
+    @State private var confirmedQuantityString = ""
 
     init(
         product: DRXProduct,
@@ -684,12 +685,16 @@ private struct SaleAmountSheet: View {
         case .quantity:
             return CheckoutMath.normalizeQuantity(product: product, quantity: Double(quantityString) ?? 0)
         case .dollars:
-            return CheckoutMath.suggestedQuantity(
+            let suggested = CheckoutMath.suggestedQuantity(
                 product: product,
                 dollarAmountCents: CurrencyInput.cents(from: dollarString) ?? 0,
                 loyaltyRateBps: loyaltyRateBps,
                 policy: loyaltyPolicy
             )
+            guard !confirmedQuantityString.isEmpty else { return suggested }
+            let confirmed = Double(confirmedQuantityString) ?? 0
+            guard confirmed > 0 else { return 0 }
+            return CheckoutMath.normalizeQuantity(product: product, quantity: confirmed)
         }
     }
 
@@ -710,7 +715,10 @@ private struct SaleAmountSheet: View {
             Form {
                 Section {
                     Picker("Entry mode", selection: $mode) {
-                        ForEach(EntryMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                        Text(EntryMode.quantity.rawValue).tag(EntryMode.quantity)
+                        if product.allowFractionalWeight {
+                            Text(EntryMode.dollars.rawValue).tag(EntryMode.dollars)
+                        }
                     }
                     .pickerStyle(.segmented)
 
@@ -719,6 +727,12 @@ private struct SaleAmountSheet: View {
                             .keyboardType(.decimalPad)
                     } else {
                         TextField("Dollar amount", text: $dollarString)
+                            .keyboardType(.decimalPad)
+                            .onChange(of: dollarString) { _, _ in confirmedQuantityString = "" }
+                        TextField("Confirmed quantity", text: confirmedQuantityString.isEmpty ? Binding(
+                            get: { String(enteredQuantity) },
+                            set: { confirmedQuantityString = $0 }
+                        ) : $confirmedQuantityString)
                             .keyboardType(.decimalPad)
                     }
                 }
@@ -782,7 +796,10 @@ private struct SaleAmountSheet: View {
             ForEach(Array(presets.enumerated()), id: \.offset) { _, preset in
                 Button(preset.label) {
                     if mode == .quantity { quantityString = preset.value }
-                    else { dollarString = preset.value }
+                    else {
+                        dollarString = preset.value
+                        confirmedQuantityString = ""
+                    }
                 }
                 .buttonStyle(.bordered)
             }
