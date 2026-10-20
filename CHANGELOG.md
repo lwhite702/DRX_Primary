@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Customer continuity through checkout (WRE-166)**: Allow authorized operators to quick-create a privacy-scoped customer during payment without losing the sale, and link an anonymous completed sale to a customer from native transaction review. Customer attribution updates purchase and loyalty totals and linked delivery records atomically with an audit event; sale settlement, inventory, and credit entries remain unchanged. Credit-sale reassignment remains blocked.
-- **Exact dollar-amount fractional checkout (WRE-215)**: Preserve requested merchandise cents through the server quote and sale record while recording the operator-confirmed quantity. Flag the difference from normal pricing without requiring manager approval; use confirmed quantity for stock deduction and FIFO COGS.
+- **Exact dollar-amount fractional checkout (WRE-215)**: Preserve requested merchandise cents through the server quote and sale record while recording the operator-confirmed quantity. Reconcile the checkout subtotal to the requested amount after the signed price adjustment, flag differences from normal pricing without requiring manager approval, and use confirmed quantity for stock deduction and FIFO COGS.
 
 ### Fixed
 
