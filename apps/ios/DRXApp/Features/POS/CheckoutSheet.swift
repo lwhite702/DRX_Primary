@@ -223,7 +223,11 @@ struct CheckoutSheet: View {
     private var orderSummarySection: some View {
         VStack(spacing: 0) {
             ForEach(store.cartItems) { item in
-                let quotedLine = quote?.lines.first { $0.productId == item.product.id }
+                let quotedLine = quote?.lines.first {
+                    $0.productId == item.product.id &&
+                    $0.quantity == item.quantityGrams &&
+                    $0.requestedAmountCents == item.requestedAmountCents
+                }
                 HStack {
                     Text(item.product.productName)
                         .font(.subheadline)
@@ -263,6 +267,14 @@ struct CheckoutSheet: View {
                         Spacer()
                         Text("−\(formatCents(discountAmountCents))")
                             .foregroundStyle(.green)
+                    }
+                }
+                if let priceAdjustmentCents = quote?.priceAdjustmentCents, priceAdjustmentCents != 0 {
+                    HStack {
+                        Text("Requested amount adjustment")
+                        Spacer()
+                        Text("\(priceAdjustmentCents > 0 ? "+" : "−")\(formatCents(abs(priceAdjustmentCents)))")
+                            .foregroundStyle(priceAdjustmentCents > 0 ? DRXPalette.warning : .green)
                     }
                 }
                 let merchandiseTax = quote?.merchandiseTaxCents ?? store.cartTaxCents

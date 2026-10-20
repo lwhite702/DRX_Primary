@@ -33,7 +33,7 @@ describe("fractional dollar entry", () => {
     expect(screen.getByLabelText("Confirmed quantity (g)")).toBeInTheDocument();
     fireEvent.change(quantity, { target: { value: "0.6" } });
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Price variance flagged: normal price at this quantity is $21.00; adjustment +$4.00. Checkout will keep the requested amount.",
+      "Difference from pre-loyalty normal price: $21.00 at this quantity, +$4.00. Checkout will keep the requested amount; its recorded adjustment reflects applied discounts.",
     );
     fireEvent.click(screen.getByRole("button", { name: "Confirm amount and quantity" }));
 

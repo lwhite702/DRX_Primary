@@ -111,9 +111,9 @@ final class POSStore {
 
     func addToCart(_ product: DRXProduct, grams: Double? = nil) {
         let quantity = grams ?? product.saleIncrement
-        let previousQuantity = cartItems.first(where: { $0.product.id == product.id })?.quantityGrams ?? 0
+        let previousQuantity = cartItems.filter { $0.product.id == product.id }.reduce(0) { $0 + $1.quantityGrams }
         let newQuantity: Double
-        if let idx = cartItems.firstIndex(where: { $0.product.id == product.id }) {
+        if let idx = cartItems.firstIndex(where: { $0.product.id == product.id && $0.requestedAmountCents == nil }) {
             newQuantity = CheckoutMath.normalizeQuantity(
                 product: product,
                 quantity: cartItems[idx].quantityGrams + quantity
@@ -671,6 +671,7 @@ private struct SaleAmountSheet: View {
         self.loyaltyRateBps = loyaltyRateBps
         self.loyaltyPolicy = loyaltyPolicy
         self.onSave = onSave
+        _mode = State(initialValue: !product.allowFractionalWeight && (product.suggestedDollarPresetsCents?.isEmpty == false) ? .dollars : .quantity)
         _quantityString = State(initialValue: String(initialQuantity))
         _dollarString = State(initialValue: CurrencyInput.string(fromCents: CheckoutMath.pricedLineTotalCents(
             product: product,
@@ -699,7 +700,7 @@ private struct SaleAmountSheet: View {
     }
 
     private var requestedAmountCents: Int? {
-        mode == .dollars ? CurrencyInput.cents(from: dollarString) : nil
+        mode == .dollars && product.allowFractionalWeight ? CurrencyInput.cents(from: dollarString) : nil
     }
     private var estimatedLineCents: Int {
         CheckoutMath.pricedLineTotalCents(
@@ -716,7 +717,7 @@ private struct SaleAmountSheet: View {
                 Section {
                     Picker("Entry mode", selection: $mode) {
                         Text(EntryMode.quantity.rawValue).tag(EntryMode.quantity)
-                        if product.allowFractionalWeight {
+                        if product.allowFractionalWeight || (product.suggestedDollarPresetsCents?.isEmpty == false) {
                             Text(EntryMode.dollars.rawValue).tag(EntryMode.dollars)
                         }
                     }
@@ -757,6 +758,12 @@ private struct SaleAmountSheet: View {
                     LabeledContent("Suggested quantity", value: formatQuantity(product, enteredQuantity))
                     LabeledContent("Unit price", value: "\(formatCents(CheckoutMath.effectiveUnitPriceCents(product: product, quantity: enteredQuantity)))/\(product.saleUnit)")
                     LabeledContent("Normal price", value: formatCents(estimatedLineCents))
+                    if mode == .dollars && !product.allowFractionalWeight, let targetAmountCents = CurrencyInput.cents(from: dollarString) {
+                        LabeledContent("Target amount", value: formatCents(targetAmountCents))
+                        Text("This amount suggests a quantity; the normal unit or bulk price applies.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     if let requestedAmountCents {
                         LabeledContent("Requested merchandise amount", value: formatCents(requestedAmountCents))
                         if requestedAmountCents != estimatedLineCents {

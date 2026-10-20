@@ -52,7 +52,7 @@ import {
 
 type Product = NonNullable<ReturnType<typeof useProducts>>[number];
 type Customer = NonNullable<ReturnType<typeof useCustomers>>[number];
-type CartLine = { product: Product; quantityGrams: number; requestedAmountCents?: number };
+type CartLine = { id: string; product: Product; quantityGrams: number; requestedAmountCents?: number };
 type Tender = "cash" | "card" | "credit";
 type PricedProduct = Product & FractionalProduct;
 type CheckoutRequest = {
@@ -268,6 +268,12 @@ export default function POSScreen() {
     : estimatedTotalCents;
   const quotePending = isOnline && cart.length > 0 && deliveryDetailsValid && checkoutQuote === undefined;
   const isTablet = width >= 800;
+  const normalLineCents = (line: CartLine) => pricedLineTotalCents(
+    pricingForCheckout(line.product),
+    line.quantityGrams,
+    loyaltyRateBps,
+    loyaltyPolicy,
+  );
 
   const addProduct = (product: Product) => {
     if (product.quantityOnHandGrams <= 0) {
@@ -279,15 +285,23 @@ export default function POSScreen() {
     setCheckoutOrderNumber(null);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const existing = cart.find((line) => line.product._id === product._id);
+    const existing = cart.find((line) => line.product._id === product._id && line.requestedAmountCents === undefined);
+    const usedQuantity = cart
+      .filter((line) => line.product._id === product._id)
+      .reduce((total, line) => total + line.quantityGrams, 0);
+    const availableForLine = Math.max(0, product.quantityOnHandGrams - (usedQuantity - (existing?.quantityGrams ?? 0)));
     const initialQuantity = Math.min(
-      product.quantityOnHandGrams,
+      availableForLine,
       Math.max(minimumSaleQuantity(pricing(product)), 1),
     );
     const increment = quantityIncrement(pricing(product));
 
     if (!existing) {
-      setCart((current) => [...current, { product, quantityGrams: initialQuantity }]);
+      if (initialQuantity <= 0) {
+        triggerFeedback(`Max stock reached for ${product.productName}`);
+        return;
+      }
+      setCart((current) => [...current, { id: `inv:${product._id}:${Date.now()}`, product, quantityGrams: initialQuantity }]);
       triggerFeedback(`Added ${product.productName} (${formatQuantity(pricing(product), initialQuantity)}) to cart`);
     } else {
       const nextQty = Math.min(
@@ -300,7 +314,7 @@ export default function POSScreen() {
       }
       setCart((current) =>
         current.map((line) =>
-          line.product._id === product._id
+          line.id === existing.id
             ? {
                 ...line,
                 quantityGrams: nextQty,
@@ -312,10 +326,10 @@ export default function POSScreen() {
     }
   };
 
-  const removeProduct = (productId: Id<"products">) => {
+  const removeProduct = (lineId: string) => {
     setCheckoutOrderNumber(null);
-    const removedLine = cart.find((line) => line.product._id === productId);
-    setCart((current) => current.filter((line) => line.product._id !== productId));
+    const removedLine = cart.find((line) => line.id === lineId);
+    setCart((current) => current.filter((line) => line.id !== lineId));
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (removedLine) {
       triggerFeedback(`Removed ${removedLine.product.productName} from cart`);
@@ -342,24 +356,26 @@ export default function POSScreen() {
     ]);
   };
 
-  const adjustLineQuantity = (productId: Id<"products">, delta: 1 | -1) => {
+  const adjustLineQuantity = (lineId: string, delta: 1 | -1) => {
     setCheckoutOrderNumber(null);
-    const line = cart.find((l) => l.product._id === productId);
+    const line = cart.find((l) => l.id === lineId);
     if (!line) return;
     const step = quantityIncrement(pricing(line.product));
     const minQty = minimumSaleQuantity(pricing(line.product));
-    const maxQty = line.product.quantityOnHandGrams;
+    const maxQty = Math.max(0, line.product.quantityOnHandGrams - cart
+      .filter((candidate) => candidate.product._id === line.product._id && candidate.id !== lineId)
+      .reduce((total, candidate) => total + candidate.quantityGrams, 0));
 
     if (delta === -1) {
       const targetQty = line.quantityGrams - step;
       if (targetQty < minQty - 1e-9) {
-        removeProduct(productId);
+        removeProduct(lineId);
         return;
       }
       const normalized = normalizeQuantity(pricing(line.product), targetQty, maxQty);
       setCart((current) =>
         current.map((l) =>
-          l.product._id === productId ? { ...l, quantityGrams: normalized } : l,
+          l.id === lineId ? { ...l, quantityGrams: normalized } : l,
         ),
       );
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -373,19 +389,19 @@ export default function POSScreen() {
       }
       setCart((current) =>
         current.map((l) =>
-          l.product._id === productId ? { ...l, quantityGrams: normalized } : l,
+          l.id === lineId ? { ...l, quantityGrams: normalized } : l,
         ),
       );
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       triggerFeedback(`${line.product.productName}: ${formatQuantity(pricing(line.product), normalized)}`);
     }
   };
-  const updateQuantity = (productId: Id<"products">, raw: string) => {
+  const updateQuantity = (lineId: string, raw: string) => {
     setCheckoutOrderNumber(null);
     const quantity = Number(raw);
     setCart((current) =>
       current.flatMap((line) => {
-        if (line.product._id !== productId) return [line];
+        if (line.id !== lineId) return [line];
         if (!Number.isFinite(quantity) || quantity <= 0) return [];
         return [
           {
@@ -393,24 +409,28 @@ export default function POSScreen() {
             quantityGrams: normalizeQuantity(
               pricing(line.product),
               quantity,
-              line.product.quantityOnHandGrams,
+              Math.max(0, line.product.quantityOnHandGrams - current
+                .filter((candidate) => candidate.product._id === line.product._id && candidate.id !== lineId)
+                .reduce((total, candidate) => total + candidate.quantityGrams, 0)),
             ),
           },
         ];
       }),
     );
   };
-  const updateDollarAmount = (productId: Id<"products">, raw: string) => {
+  const updateDollarAmount = (lineId: string, raw: string) => {
     setCheckoutOrderNumber(null);
     const cents = parseDollarAmountCents(raw);
     if (cents === null) return;
     setCart((current) =>
       current.flatMap((line) => {
-        if (line.product._id !== productId) return [line];
+        if (line.id !== lineId) return [line];
         const quantity = suggestedQuantityForDollars(
           pricingForCheckout(line.product),
           cents,
-          line.product.quantityOnHandGrams,
+          Math.max(0, line.product.quantityOnHandGrams - current
+            .filter((candidate) => candidate.product._id === line.product._id && candidate.id !== lineId)
+            .reduce((total, candidate) => total + candidate.quantityGrams, 0)),
           loyaltyRateBps,
           loyaltyPolicy,
         );
@@ -418,11 +438,11 @@ export default function POSScreen() {
       }),
     );
   };
-  const setQuantityPreset = (productId: Id<"products">, quantity: number) => {
-    updateQuantity(productId, String(quantity));
+  const setQuantityPreset = (lineId: string, quantity: number) => {
+    updateQuantity(lineId, String(quantity));
   };
-  const setDollarPreset = (productId: Id<"products">, cents: number) => {
-    updateDollarAmount(productId, String(cents / 100));
+  const setDollarPreset = (lineId: string, cents: number) => {
+    updateDollarAmount(lineId, String(cents / 100));
   };
 
   const createCustomerForCheckout = async () => {
@@ -676,25 +696,27 @@ export default function POSScreen() {
         contentContainerStyle={styles.productGrid}
         columnWrapperStyle={styles.productRow}
         renderItem={({ item }) => {
-          const inCartLine = cart.find((line) => line.product._id === item._id);
+          const inCartQuantity = cart
+            .filter((line) => line.product._id === item._id)
+            .reduce((total, line) => total + line.quantityGrams, 0);
           return (
             <TouchableOpacity
-              style={[styles.productCard, inCartLine && styles.productCardInCart]}
+              style={[styles.productCard, inCartQuantity > 0 && styles.productCardInCart]}
               onPress={() => addProduct(item)}
               accessible={true}
               accessibilityRole="button"
-              accessibilityLabel={`${item.productName}, ${money(item.sellingPriceCents)} per ${pricing(item).sellingUnit ?? "g"}${inCartLine ? `, ${formatQuantity(pricing(item), inCartLine.quantityGrams)} in cart` : ""}`}
+              accessibilityLabel={`${item.productName}, ${money(item.sellingPriceCents)} per ${pricing(item).sellingUnit ?? "g"}${inCartQuantity > 0 ? `, ${formatQuantity(pricing(item), inCartQuantity)} in cart` : ""}`}
               accessibilityHint="Tap to add to cart or increase quantity"
             >
               <View style={styles.productCardHeader}>
                 <Text style={styles.productName} numberOfLines={2}>
                   {item.productName}
                 </Text>
-                {inCartLine ? (
+                {inCartQuantity > 0 ? (
                   <View style={styles.inCartBadge}>
                     <Ionicons name="checkmark-circle" size={12} color={COLORS.accent} />
                     <Text style={styles.inCartBadgeText}>
-                      {formatQuantity(pricing(item), inCartLine.quantityGrams)}
+                      {formatQuantity(pricing(item), inCartQuantity)}
                     </Text>
                   </View>
                 ) : null}
@@ -751,7 +773,7 @@ export default function POSScreen() {
           <Text style={styles.empty}>Tap a product to begin.</Text>
         ) : (
           cart.map((line) => (
-            <View key={line.product._id} style={styles.line}>
+            <View key={line.id} style={styles.line}>
               <View style={styles.lineContent}>
                 <View style={styles.lineHeading}>
                   <View style={styles.lineInfo}>
@@ -759,7 +781,10 @@ export default function POSScreen() {
                     <Text style={styles.linePrice}>
                       {money(
                         checkoutQuote?.lines.find(
-                          (quotedLine: { productId: string }) => quotedLine.productId === line.product._id,
+                          (quotedLine: { productId: string; quantity: number; requestedAmountCents?: number }) =>
+                            quotedLine.productId === line.product._id &&
+                            quotedLine.quantity === line.quantityGrams &&
+                            quotedLine.requestedAmountCents === line.requestedAmountCents,
                         )?.lineSubtotalCents ?? line.requestedAmountCents ?? pricedLineTotalCents(
                           pricingForCheckout(line.product),
                           line.quantityGrams,
@@ -782,7 +807,7 @@ export default function POSScreen() {
                     accessibilityLabel={`Remove ${line.product.productName} from cart`}
                     accessibilityHint="Deletes this product line from the cart"
                     style={styles.removeButton}
-                    onPress={() => removeProduct(line.product._id)}
+                    onPress={() => removeProduct(line.id)}
                   >
                     <Ionicons name="trash-outline" size={16} color={COLORS.error} />
                   </TouchableOpacity>
@@ -796,14 +821,14 @@ export default function POSScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Decrease ${line.product.productName} quantity`}
                         style={styles.stepperButton}
-                        onPress={() => adjustLineQuantity(line.product._id, -1)}
+                        onPress={() => adjustLineQuantity(line.id, -1)}
                       >
                         <Ionicons name="remove" size={14} color={COLORS.text} />
                       </TouchableOpacity>
                       <TextInput
                         style={styles.stepperInput}
                         value={String(line.quantityGrams)}
-                        onChangeText={(value) => updateQuantity(line.product._id, value)}
+                        onChangeText={(value) => updateQuantity(line.id, value)}
                         keyboardType="decimal-pad"
                         accessibilityLabel={`${line.product.productName} quantity in ${pricing(line.product).sellingUnit ?? "grams"}`}
                       />
@@ -812,7 +837,7 @@ export default function POSScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Increase ${line.product.productName} quantity`}
                         style={styles.stepperButton}
-                        onPress={() => adjustLineQuantity(line.product._id, 1)}
+                        onPress={() => adjustLineQuantity(line.id, 1)}
                       >
                         <Ionicons name="add" size={14} color={COLORS.text} />
                       </TouchableOpacity>
@@ -822,7 +847,7 @@ export default function POSScreen() {
                     <View style={styles.entryField}>
                       <Text style={styles.entryLabel}>DOLLARS</Text>
                       <TextInput
-                        key={`${line.product._id}-${line.quantityGrams}`}
+                        key={`${line.id}-${line.quantityGrams}`}
                         style={styles.quantity}
                         defaultValue={((line.requestedAmountCents ?? pricedLineTotalCents(
                           pricingForCheckout(line.product),
@@ -831,7 +856,7 @@ export default function POSScreen() {
                           loyaltyPolicy,
                         )) / 100).toFixed(2)}
                         onEndEditing={(event) =>
-                          updateDollarAmount(line.product._id, event.nativeEvent.text)
+                          updateDollarAmount(line.id, event.nativeEvent.text)
                         }
                         keyboardType="decimal-pad"
                         accessibilityLabel={`${line.product.productName} dollar amount`}
@@ -839,15 +864,15 @@ export default function POSScreen() {
                     </View>
                   ) : null}
                 </View>
-                {line.requestedAmountCents !== undefined ? (
+                {line.requestedAmountCents !== undefined && line.requestedAmountCents !== normalLineCents(line) ? (
                   <Text style={styles.offlineNotice}>
-                    Confirmed amount {money(line.requestedAmountCents)} · normal price {money(pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy))} · variance {line.requestedAmountCents - pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy) >= 0 ? "+" : "−"}{money(Math.abs(line.requestedAmountCents - pricedLineTotalCents(pricingForCheckout(line.product), line.quantityGrams, loyaltyRateBps, loyaltyPolicy)))} flagged
+                    Confirmed amount {money(line.requestedAmountCents)} · normal price {money(normalLineCents(line))} · variance {line.requestedAmountCents - normalLineCents(line) >= 0 ? "+" : "−"}{money(Math.abs(line.requestedAmountCents - normalLineCents(line)))} flagged
                   </Text>
                 ) : null}
                 {(pricing(line.product).suggestedQuantityPresets?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedQuantityPresets?.map((quantity: number) => (
-                      <TouchableOpacity key={`q-${quantity}`} style={styles.preset} onPress={() => setQuantityPreset(line.product._id, quantity)}>
+                      <TouchableOpacity key={`q-${quantity}`} style={styles.preset} onPress={() => setQuantityPreset(line.id, quantity)}>
                         <Text style={styles.presetText}>{formatQuantity(pricing(line.product), quantity)}</Text>
                       </TouchableOpacity>
                     ))}
@@ -856,7 +881,7 @@ export default function POSScreen() {
                 {line.product.allowFractionalWeight && (pricing(line.product).suggestedDollarPresetsCents?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedDollarPresetsCents?.map((cents: number) => (
-                      <TouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.product._id, cents)}>
+                      <TouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.id, cents)}>
                         <Text style={styles.presetText}>{money(cents)}</Text>
                       </TouchableOpacity>
                     ))}
@@ -923,6 +948,7 @@ export default function POSScreen() {
                 <Text style={styles.quoteVerified}>
                   SERVER VERIFIED · {money(checkoutQuote.merchandiseSubtotalCents)} merchandise
                   {checkoutQuote.discountCents > 0 ? ` · −${money(checkoutQuote.discountCents)} discounts` : ""}
+                  {checkoutQuote.priceAdjustmentCents ? ` · ${checkoutQuote.priceAdjustmentCents > 0 ? "+" : "−"}${money(Math.abs(checkoutQuote.priceAdjustmentCents))} requested amount adjustment` : ""}
                   {checkoutQuote.taxAmountCents > 0 ? ` · ${money(checkoutQuote.taxAmountCents)} tax` : ""}
                 </Text>
               ) : (

@@ -401,6 +401,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
     let productId: String
     let productName: String
     let quantity: Double
+    let requestedAmountCents: Int?
     let appliedUnitPriceCents: Double
     let lineSubtotalCents: Int
     let bulkDiscountCents: Int
@@ -410,6 +411,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
 struct CheckoutQuoteResponse: Decodable, Sendable {
     let lines: [CheckoutQuoteLine]
     let merchandiseSubtotalCents: Int
+    let priceAdjustmentCents: Int?
     let discountCents: Int
     let subtotalCents: Int
     let taxableSubtotalCents: Int

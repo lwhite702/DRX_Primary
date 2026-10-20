@@ -4,6 +4,17 @@ import Testing
 
 struct CheckoutMathTests {
     @Test
+    func checkoutItemsEncodeRequestedAmountOnlyWhenProvided() throws {
+        let fixedAmount = CheckoutItem(productId: "product_1", quantityGrams: 0.7, requestedAmountCents: 2_500)
+        let standard = CheckoutItem(productId: "product_2", quantityGrams: 1, requestedAmountCents: nil)
+        let fixedJSON = try JSONSerialization.jsonObject(with: JSONEncoder().encode(fixedAmount)) as? [String: Any]
+        let standardJSON = try JSONSerialization.jsonObject(with: JSONEncoder().encode(standard)) as? [String: Any]
+
+        #expect(fixedJSON?["requestedAmountCents"] as? Int == 2_500)
+        #expect(standardJSON?["requestedAmountCents"] == nil)
+    }
+
+    @Test
     func checkoutQuoteDecodesFractionalCentBundleRate() throws {
         let payload: [String: Any] = [
             "lines": [[
