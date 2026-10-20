@@ -6,9 +6,10 @@ Status: working compliance draft for WRE-27 and WRE-49. Do not copy these answer
 
 - App: Deelrx CRM / DRX
 - Android package: `com.wrelik.drx`
-- Closed testing artifact: version `0.10.0`, version code `8` (EAS Build)
-- Source baseline: `b1a58776` (`origin/main`)
-- Active version parity: `0.10.0` maintained across web, iOS, and Expo mobile.
+- Target closed testing artifact: version `0.12.0`, version code `51` (EAS Build)
+- Source baseline: `d4b9a2d9` (`origin/main`)
+- Active version parity: `0.12.0` maintained across web, iOS, and Expo mobile.
+- Historical closed testing artifact in EAS: version `0.10.0`, version code `8` (Build `e3f86ab1-c442-4ebc-92a4-0536a36a9c90`, baseline `b1a58776`).
 
 This inventory distinguishes information entered by a subscribing business from device data collected automatically. It also distinguishes customer-entered street addresses from device-derived precise location. The Android app does not request device location permission.
 
@@ -47,7 +48,7 @@ This inventory distinguishes information entered by a subscribing business from 
 
 ## Verification required before saving Data Safety in Play
 
-1. Publish and anonymously verify the expanded policy at `https://deelrxcrm.com/legal/privacy`; the source change alone is not public evidence.
+1. Resolved: Verified live published policy at `https://www.deelrxcrm.com/legal/privacy` (HTTP 200).
 2. Verify the exact PostHog mobile defaults and production project settings, including autocapture, IP handling, retention, and that session replay remains off.
 3. Verify Sentry event scrubbing, attachment settings, diagnostic retention, and that customer or transaction payloads are not added as event context.
 4. Verify Clerk, Convex, Expo/Google, PostHog, Sentry, and Vercel data-processing terms support the Play service-provider exception used above.
