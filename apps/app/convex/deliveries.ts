@@ -501,6 +501,26 @@ export const markUberOrdered = mutation({
       auth.businessId,
     );
     requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
+    let trimmedTrackingUrl: string | undefined = undefined;
+    if (args.uberTrackingUrl !== undefined) {
+      trimmedTrackingUrl = args.uberTrackingUrl.trim();
+      if (
+        trimmedTrackingUrl.length === 0 ||
+        trimmedTrackingUrl.length > 2000 ||
+        !trimmedTrackingUrl.startsWith("https://")
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
+      }
+    }
+    if (args.vendorFeeCents !== undefined) {
+      if (
+        !Number.isSafeInteger(args.vendorFeeCents) ||
+        args.vendorFeeCents < 0 ||
+        args.vendorFeeCents > 500000
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid vendor fee cents");
+      }
+    }
     const now = Date.now();
     const estimatedArrivalAt = now + args.waitMinutes * 60_000;
     await transitionDelivery(ctx, {
@@ -509,16 +529,25 @@ export const markUberOrdered = mutation({
       nextStatus: "uber_ordered",
       patch: {
         estimatedArrivalAt,
-        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
+        ...(trimmedTrackingUrl ? { uberTrackingUrl: trimmedTrackingUrl } : {}),
         ...(args.vendorFeeCents !== undefined ? { vendorFeeCents: args.vendorFeeCents } : {}),
         estimatedArrivalMinutes: args.waitMinutes,
       },
       metadata: {
         waitMinutes: args.waitMinutes,
         estimatedArrivalAt,
-        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
+        ...(trimmedTrackingUrl ? { uberTrackingUrl: trimmedTrackingUrl } : {}),
       },
     });
+    if (args.vendorFeeCents !== undefined) {
+      const sale = await ctx.db.get(delivery.saleId);
+      if (sale && sale.businessId === auth.businessId) {
+        await ctx.db.patch(sale._id, {
+          vendorDeliveryExpenseCents: args.vendorFeeCents,
+          updatedAt: Date.now(),
+        });
+      }
+    }
     const warningAt = Math.max(now, estimatedArrivalAt - 2 * 60_000);
     const reminders: Array<{
       at: number;
@@ -628,6 +657,15 @@ export const updateDeliveryDetails = mutation({
       patch.addressEncryptionVersion = encrypted.version;
     }
     await ctx.db.patch(delivery._id, patch);
+    if (args.vendorFeeCents !== undefined) {
+      const sale = await ctx.db.get(delivery.saleId);
+      if (sale && sale.businessId === auth.businessId) {
+        await ctx.db.patch(sale._id, {
+          vendorDeliveryExpenseCents: args.vendorFeeCents,
+          updatedAt: Date.now(),
+        });
+      }
+    }
     return { success: true as const };
   },
 });

@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
+import { hasClerkServerEnv } from "@/lib/adapters/auth/server";
 import { QUICK_POS_FAVORITES_LIMIT, QUICK_POS_RECENT_LIMIT } from "@/lib/quick-pos/constants";
 import { posCatalogItem } from "@/lib/pos/catalog-item";
 
@@ -21,7 +22,10 @@ export async function GET(request?: NextRequest) {
     try {
       policies = await client.query(api.posBootstrap.policies, { businessId });
     } catch (err) {
-      if (isAuthBypassEnabledServer()) {
+      if (
+        isAuthBypassEnabledServer() ||
+        (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv())
+      ) {
         return NextResponse.json({
           favorites: [],
           recentlySold: [],

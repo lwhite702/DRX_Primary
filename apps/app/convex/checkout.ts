@@ -636,13 +636,13 @@ export const processCheckout = mutation({
       auth.businessId,
       normalizedManualItems,
     );
+    await validateDeliveryTerms(ctx, auth.businessId, args.delivery);
     const normalizedDelivery = args.delivery
       ? {
           ...args.delivery,
           uberTrackingUrl: args.delivery.uberTrackingUrl?.trim() || undefined,
         }
       : undefined;
-    await validateDeliveryTerms(ctx, auth.businessId, normalizedDelivery);
     const fingerprint = await createCheckoutFingerprint({
       customerId: args.customerId,
       items: normalizedItems,
@@ -1290,6 +1290,99 @@ export const getSaleDetail = query({
   },
 });
 
+export const getCustomerRecentFavorites = query({
+  args: {
+    customerId: v.string(),
+  },
+  returns: v.array(
+    v.object({
+      productId: v.id("products"),
+      name: v.string(),
+      sku: v.optional(v.string()),
+      unitPriceCents: v.number(),
+      lastQuantityGrams: v.number(),
+      orderCount: v.number(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "VIEW_CUSTOMERS");
+
+    const customerId = ctx.db.normalizeId("customers", args.customerId);
+    if (!customerId) return [];
+
+    const customer = await ctx.db.get(customerId);
+    if (!customer || customer.businessId !== auth.businessId || !customer.isActive) {
+      return [];
+    }
+
+    const sales = await ctx.db
+      .query("sales")
+      .withIndex("by_customerId", (q) => q.eq("customerId", customerId))
+      .order("desc")
+      .take(25);
+
+    const productStats = new Map<
+      string,
+      { lastQuantityGrams: number; orderCount: number; lastSeenAt: number }
+    >();
+
+    for (const sale of sales) {
+      if (
+        sale.businessId !== auth.businessId ||
+        sale.orderStatus === "cancelled" ||
+        sale.orderStatus === "voided"
+      ) {
+        continue;
+      }
+
+      const lineItems = await ctx.db
+        .query("salesLineItems")
+        .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+        .take(50);
+
+      for (const line of lineItems) {
+        if (!line.productId) continue;
+        const productIdStr = String(line.productId);
+        const existing = productStats.get(productIdStr);
+        if (existing) {
+          existing.orderCount += 1;
+        } else {
+          productStats.set(productIdStr, {
+            lastQuantityGrams: line.quantityGrams,
+            orderCount: 1,
+            lastSeenAt: sale.createdAt,
+          });
+        }
+      }
+    }
+
+    const sorted = Array.from(productStats.entries())
+      .sort(
+        (a, b) =>
+          b[1].orderCount - a[1].orderCount || b[1].lastSeenAt - a[1].lastSeenAt,
+      )
+      .slice(0, 5);
+
+    const results = [];
+    for (const [productIdStr, stats] of sorted) {
+      const product = await ctx.db.get(productIdStr as Id<"products">);
+      if (product && product.businessId === auth.businessId && product.isActive) {
+        results.push({
+          productId: product._id,
+          name: product.productName,
+          ...(product.sku ? { sku: product.sku } : {}),
+          unitPriceCents: product.sellingPriceCents,
+          lastQuantityGrams: stats.lastQuantityGrams,
+          orderCount: stats.orderCount,
+        });
+      }
+    }
+
+    return results;
+  },
+});
+
 export const updateSale = mutation({
   args: {
     saleId: v.string(),
@@ -1369,12 +1462,72 @@ export const updateSale = mutation({
       await ctx.db.patch(sale._id, { customerId: resolved?._id, updatedAt: Date.now() });
     }
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
+    const validPaymentMethods = new Set([
+      "cash",
+      "card",
+      "split",
+      "zelle",
+      "p2p_cashapp",
+      "p2p_paypal",
+      "p2p_zelle",
+      "p2p_onepay",
+      "p2p_chime",
+      "p2p_venmo",
+      "p2p_other",
+    ]);
+    const allowedTenderMethods = new Set([
+      "cash",
+      "card",
+      "zelle",
+      "p2p_cashapp",
+      "p2p_paypal",
+      "p2p_zelle",
+      "p2p_onepay",
+      "p2p_chime",
+      "p2p_venmo",
+      "p2p_other",
+    ]);
+
     if (args.paymentMethod !== undefined) {
-      if (sale.paymentMethod === "credit" || args.paymentMethod === "credit") throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
+      if (sale.paymentMethod === "credit" || args.paymentMethod === "credit") {
+        throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
+      }
+      if (!validPaymentMethods.has(args.paymentMethod)) {
+        throw new Error("INVALID_ARGUMENT: Invalid payment method");
+      }
       patch.paymentMethod = args.paymentMethod;
     }
     if (args.paymentReference !== undefined) patch.paymentReference = args.paymentReference ?? undefined;
-    if (args.paymentTenders !== undefined) patch.paymentTenders = args.paymentTenders;
+    if (args.paymentTenders !== undefined) {
+      if (args.paymentTenders.some((t) => t.method === "credit")) {
+        throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
+      }
+      for (const tender of args.paymentTenders) {
+        if (!allowedTenderMethods.has(tender.method)) {
+          throw new Error("INVALID_ARGUMENT: Invalid payment tender method");
+        }
+        if (!Number.isSafeInteger(tender.amountCents) || tender.amountCents <= 0) {
+          throw new Error("INVALID_ARGUMENT: Payment tender amount must be a positive integer");
+        }
+      }
+      const effectiveMethod = args.paymentMethod ?? sale.paymentMethod;
+      if (effectiveMethod === "split") {
+        if (args.paymentTenders.length === 0) {
+          throw new Error("INVALID_ARGUMENT: Split payment requires tender breakdown");
+        }
+        const tendersSum = args.paymentTenders.reduce((sum, t) => sum + t.amountCents, 0);
+        if (tendersSum !== sale.totalAmountCents) {
+          throw new Error("INVALID_ARGUMENT: Payment tenders sum does not match sale total");
+        }
+      }
+      patch.paymentTenders = args.paymentTenders;
+    } else if (args.paymentMethod === "split") {
+      const existingTenders = sale.paymentTenders ?? [];
+      const tendersSum = existingTenders.reduce((sum, t) => sum + t.amountCents, 0);
+      if (existingTenders.length === 0 || tendersSum !== sale.totalAmountCents) {
+        throw new Error("INVALID_ARGUMENT: Split payment requires tender breakdown matching sale total");
+      }
+    }
     await ctx.db.patch(sale._id, patch);
     await ctx.db.insert("auditEvents", {
       businessId: auth.businessId,
