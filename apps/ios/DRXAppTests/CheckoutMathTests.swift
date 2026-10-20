@@ -106,6 +106,7 @@ struct CheckoutMathTests {
     func parsesRetailCurrencyWithoutTreatingDecimalCommasAsThousands() {
         #expect(CurrencyInput.cents(from: "20") == 2_000)
         #expect(CurrencyInput.cents(from: "20.50") == 2_050)
+        #expect(CurrencyInput.cents(from: ".50") == 50)
         #expect(CurrencyInput.cents(from: "1,020.50") == 102_050)
         #expect(CurrencyInput.cents(from: "20,50") == nil)
         #expect(CurrencyInput.cents(from: "100000000.01") == nil)

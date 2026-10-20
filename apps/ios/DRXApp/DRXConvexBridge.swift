@@ -599,9 +599,9 @@ enum CurrencyInput {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "$", with: "")
         guard !normalized.isEmpty,
-              normalized.range(of: #"^(?:(?:\d+)|(?:\d{1,3}(?:,\d{3})+))(?:\.\d{1,2})?$"#, options: .regularExpression) != nil,
+              normalized.range(of: #"^(?:(?:(?:\d+)|(?:\d{1,3}(?:,\d{3})+))(?:\.\d{1,2})?|\.\d{1,2})$"#, options: .regularExpression) != nil,
               let value = Decimal(
-                string: normalized.replacingOccurrences(of: ",", with: ""),
+                string: normalized.hasPrefix(".") ? "0\(normalized)" : normalized.replacingOccurrences(of: ",", with: ""),
                 locale: Locale(identifier: "en_US_POSIX")
               ),
               value >= 0 else { return nil }

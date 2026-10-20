@@ -22,6 +22,16 @@ const product = {
 } as unknown as QuickPosBootstrapItem;
 
 describe("fractional dollar entry", () => {
+  it("rounds decimal dollar input to cents without floating-point loss", () => {
+    const onAdd = vi.fn<(item: QuickPosCartItem) => void>();
+    render(<FractionalEntryDialog product={product} onClose={vi.fn()} onAdd={onAdd} />);
+
+    fireEvent.change(screen.getByLabelText("Dollar amount"), { target: { value: "35.005" } });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm amount and quantity" }));
+
+    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ requestedAmountCents: 3_501 }));
+  });
+
   it("lets the operator edit the suggested quantity and confirms the exact requested cents", () => {
     const onAdd = vi.fn<(item: QuickPosCartItem) => void>();
     render(<FractionalEntryDialog product={product} onClose={vi.fn()} onAdd={onAdd} />);

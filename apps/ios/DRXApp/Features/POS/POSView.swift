@@ -135,12 +135,19 @@ final class POSStore {
         }
     }
 
-    func setQuantity(for product: DRXProduct, quantity: Double, requestedAmountCents: Int? = nil) {
+    func setQuantity(
+        for product: DRXProduct,
+        quantity: Double,
+        requestedAmountCents: Int? = nil,
+        clearRequestedAmount: Bool = false
+    ) {
         let normalized = CheckoutMath.normalizeQuantity(product: product, quantity: quantity)
         guard normalized > 0 else { return }
         if let idx = cartItems.firstIndex(where: { $0.product.id == product.id }) {
             cartItems[idx].quantityGrams = normalized
-            cartItems[idx].requestedAmountCents = requestedAmountCents ?? cartItems[idx].requestedAmountCents
+            cartItems[idx].requestedAmountCents = clearRequestedAmount
+                ? nil
+                : requestedAmountCents ?? cartItems[idx].requestedAmountCents
         } else {
             cartItems.append(CartItem(product: product, quantityGrams: normalized, requestedAmountCents: requestedAmountCents))
         }
@@ -240,10 +247,16 @@ struct POSView: View {
                 product: product,
                 initialQuantity: store.cartItems.first(where: { $0.product.id == product.id })?.quantityGrams
                     ?? min(product.quantityOnHandGrams, max(product.saleMinimum, 1)),
+                initialRequestedAmountCents: store.cartItems.first(where: { $0.product.id == product.id })?.requestedAmountCents,
                 loyaltyRateBps: store.loyaltyRateBps,
                 loyaltyPolicy: store.loyaltyPolicy
-            ) { quantity, requestedAmountCents in
-                store.setQuantity(for: product, quantity: quantity, requestedAmountCents: requestedAmountCents)
+            ) { quantity, requestedAmountCents, clearRequestedAmount in
+                store.setQuantity(
+                    for: product,
+                    quantity: quantity,
+                    requestedAmountCents: requestedAmountCents,
+                    clearRequestedAmount: clearRequestedAmount
+                )
             }
         }
         .task { await store.load() }
@@ -653,27 +666,29 @@ private struct SaleAmountSheet: View {
     let product: DRXProduct
     let loyaltyRateBps: Int
     let loyaltyPolicy: String
-    let onSave: (Double, Int?) -> Void
+    let onSave: (Double, Int?, Bool) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var mode: EntryMode = .quantity
     @State private var quantityString: String
     @State private var dollarString: String
     @State private var confirmedQuantityString = ""
+    @State private var clearRequestedAmount = false
 
     init(
         product: DRXProduct,
         initialQuantity: Double,
+        initialRequestedAmountCents: Int?,
         loyaltyRateBps: Int,
         loyaltyPolicy: String,
-        onSave: @escaping (Double, Int?) -> Void
+        onSave: @escaping (Double, Int?, Bool) -> Void
     ) {
         self.product = product
         self.loyaltyRateBps = loyaltyRateBps
         self.loyaltyPolicy = loyaltyPolicy
         self.onSave = onSave
-        _mode = State(initialValue: !product.allowFractionalWeight && (product.suggestedDollarPresetsCents?.isEmpty == false) ? .dollars : .quantity)
+        _mode = State(initialValue: initialRequestedAmountCents != nil || (!product.allowFractionalWeight && (product.suggestedDollarPresetsCents?.isEmpty == false)) ? .dollars : .quantity)
         _quantityString = State(initialValue: String(initialQuantity))
-        _dollarString = State(initialValue: CurrencyInput.string(fromCents: CheckoutMath.pricedLineTotalCents(
+        _dollarString = State(initialValue: CurrencyInput.string(fromCents: initialRequestedAmountCents ?? CheckoutMath.pricedLineTotalCents(
             product: product,
             quantity: initialQuantity,
             loyaltyRateBps: loyaltyRateBps,
@@ -715,7 +730,13 @@ private struct SaleAmountSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Entry mode", selection: $mode) {
+                    Picker("Entry mode", selection: Binding(
+                        get: { mode },
+                        set: { newMode in
+                            clearRequestedAmount = newMode == .quantity
+                            mode = newMode
+                        }
+                    )) {
                         Text(EntryMode.quantity.rawValue).tag(EntryMode.quantity)
                         if product.allowFractionalWeight || (product.suggestedDollarPresetsCents?.isEmpty == false) {
                             Text(EntryMode.dollars.rawValue).tag(EntryMode.dollars)
@@ -788,7 +809,7 @@ private struct SaleAmountSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
-                        onSave(enteredQuantity, requestedAmountCents)
+                        onSave(enteredQuantity, requestedAmountCents, clearRequestedAmount)
                         dismiss()
                     }
                     .disabled(enteredQuantity <= 0)

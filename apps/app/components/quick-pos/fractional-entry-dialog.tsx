@@ -18,6 +18,17 @@ import {
 } from "@/lib/quick-pos/commerce";
 import type { QuickPosBootstrapItem, QuickPosCartItem } from "@/lib/quick-pos/types";
 
+function parseRequestedAmountCents(input: string): number | undefined {
+  const match = /^(\d*)(?:\.(\d*))?$/.exec(input.trim());
+  if (!match || (!match[1] && !match[2])) return undefined;
+  const fraction = match[2] ?? "";
+  const dollars = Number(match[1] || "0");
+  if (!Number.isSafeInteger(dollars) || dollars > Math.floor(Number.MAX_SAFE_INTEGER / 100)) return undefined;
+  let cents = dollars * 100 + Number((fraction + "00").slice(0, 2));
+  if ((fraction[2] ?? "0") >= "5") cents += 1;
+  return cents > 0 && Number.isSafeInteger(cents) ? cents : undefined;
+}
+
 export function FractionalEntryDialog({
   product,
   onClose,
@@ -53,8 +64,8 @@ export function FractionalEntryDialog({
     if (!Number.isFinite(quantity) || quantity <= 0) return null;
     return calculateFractionalLine(quantity, config);
   }, [config, quantityEdit, suggestedLine]);
-  const requestedAmountCents = mode === "dollars" && config?.fractionalEnabled && Number.isFinite(numericValue)
-    ? Math.round(numericValue * 100)
+  const requestedAmountCents = mode === "dollars" && config?.fractionalEnabled
+    ? parseRequestedAmountCents(value)
     : undefined;
   const priceVarianceCents = requestedAmountCents === undefined || !line
     ? 0

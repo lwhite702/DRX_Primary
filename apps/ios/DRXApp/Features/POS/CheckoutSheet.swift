@@ -776,7 +776,7 @@ struct CheckoutSheet: View {
             guard let requested = item.requestedAmountCents else { return nil }
             let normal = CheckoutMath.pricedLineTotalCents(product: item.product, quantity: item.quantityGrams, loyaltyRateBps: store.loyaltyRateBps, policy: store.loyaltyPolicy)
             let variance = requested - normal
-            return "\(item.product.productName): \(formatGrams(item.quantityGrams)) · requested \(formatCents(requested)) · normal \(formatCents(normal)) · variance \(variance >= 0 ? "+" : "−")\(formatCents(abs(variance)))"
+            return "\(item.product.productName): \(formatSaleQuantity(item.quantityGrams, unit: item.product.saleUnit)) · requested \(formatCents(requested)) · normal \(formatCents(normal)) · variance \(variance >= 0 ? "+" : "−")\(formatCents(abs(variance)))"
         }.joined(separator: "\n") + "\n\nRequested merchandise amounts are preserved. Any price difference is flagged in the sale record."
     }
 
@@ -1051,4 +1051,8 @@ private func formatUnitPriceCents(_ cents: Double) -> String {
 
 private func formatGrams(_ grams: Double) -> String {
     String(format: "%.2fg", grams)
+}
+
+private func formatSaleQuantity(_ quantity: Double, unit: String) -> String {
+    String(format: "%.2f %@", quantity, unit)
 }
